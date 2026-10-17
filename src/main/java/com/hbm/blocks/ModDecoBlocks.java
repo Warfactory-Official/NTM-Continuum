@@ -56,37 +56,37 @@ public final class ModDecoBlocks {
             .and(handle -> handle.loot(Loot.self()).tag(BlockTag.PICKAXE));
 
     // Steel structural pieces (OBJ-rendered from their old ModelBase box models; custom collision)
-    public static final RegistryObject<Block> steel_wall   = decoObj("steel_wall", Shape.WALL, p -> p.strength(5.0F, 15.0F));
-    public static final RegistryObject<Block> steel_corner = decoObj("steel_corner", Shape.CORNER, p -> p.strength(15.0F, 15.0F));
+    public static final RegistryObject<Block> steel_wall   = decoObj("steel_wall", Shape.WALL, p -> p.requiresCorrectToolForDrops().strength(5.0F, 15.0F));
+    public static final RegistryObject<Block> steel_corner = decoObj("steel_corner", Shape.CORNER, p -> p.requiresCorrectToolForDrops().strength(15.0F, 15.0F));
     // 1.7 ItemRenderDecoBlock: the flat steel_roof block icon in a slot, ModelSteelRoof in hand and on the ground
-    public static final RegistryObject<Block> steel_roof   = decoObj("steel_roof", Shape.ROOF, p -> p.strength(5.0F, 15.0F))
+    public static final RegistryObject<Block> steel_roof   = decoObj("steel_roof", Shape.ROOF, p -> p.requiresCorrectToolForDrops().strength(5.0F, 15.0F))
             .andThen(h -> ItemRendererDeclarations.heldBlockIcon(h.path(), "hbm:blocks/steel_roof", "deco_block"));
     // steel_beam kept as a static JSON central post (its old model was a simple beam.obj post); the model is authored.
-    public static final RegistryObject<Block> steel_beam   = deco("steel_beam", Shape.BEAM, p -> p.strength(5.0F, 15.0F))
+    public static final RegistryObject<Block> steel_beam   = deco("steel_beam", Shape.BEAM, p -> p.requiresCorrectToolForDrops().strength(5.0F, 15.0F))
             .transform(Presets.statesOnly(HORIZONTAL))
             .icon(d -> d.models(Models.blockItem("hbm:block/steel_beam")))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     // Satellite dishes (OBJ-rendered, full-cube collision)
-    public static final RegistryObject<Block> deco_sat_mapper    = decoObj("deco_sat_mapper", Shape.FULL, p -> p.strength(5.0F, 10.0F));
-    public static final RegistryObject<Block> deco_sat_radar     = decoObj("deco_sat_radar", Shape.FULL, p -> p.strength(5.0F, 10.0F));
-    public static final RegistryObject<Block> deco_sat_scanner   = decoObj("deco_sat_scanner", Shape.FULL, p -> p.strength(5.0F, 10.0F));
-    public static final RegistryObject<Block> deco_sat_laser     = decoObj("deco_sat_laser", Shape.FULL, p -> p.strength(5.0F, 10.0F));
-    public static final RegistryObject<Block> deco_sat_foeq      = decoObj("deco_sat_foeq", Shape.FULL, p -> p.strength(5.0F, 10.0F));
-    public static final RegistryObject<Block> deco_sat_resonator = decoObj("deco_sat_resonator", Shape.FULL, p -> p.strength(5.0F, 10.0F));
+    public static final RegistryObject<Block> deco_sat_mapper    = decoObj("deco_sat_mapper", Shape.FULL, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F));
+    public static final RegistryObject<Block> deco_sat_radar     = decoObj("deco_sat_radar", Shape.FULL, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F));
+    public static final RegistryObject<Block> deco_sat_scanner   = decoObj("deco_sat_scanner", Shape.FULL, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F));
+    public static final RegistryObject<Block> deco_sat_laser     = decoObj("deco_sat_laser", Shape.FULL, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F));
+    public static final RegistryObject<Block> deco_sat_foeq      = decoObj("deco_sat_foeq", Shape.FULL, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F));
+    public static final RegistryObject<Block> deco_sat_resonator = decoObj("deco_sat_resonator", Shape.FULL, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F));
 
     // Vehicles (OBJ-rendered, metal sound)
-    public static final RegistryObject<Block> boxcar = decoObj("boxcar", Shape.FULL, p -> p.strength(10.0F, 10.0F).sound(SoundType.METAL));
-    public static final RegistryObject<Block> boat   = decoObj("boat", Shape.FULL, p -> p.strength(10.0F, 10.0F).sound(SoundType.METAL));
+    public static final RegistryObject<Block> boxcar = decoObj("boxcar", Shape.FULL, p -> p.requiresCorrectToolForDrops().strength(10.0F, 10.0F).sound(SoundType.METAL));
+    public static final RegistryObject<Block> boat   = decoObj("boat", Shape.FULL, p -> p.requiresCorrectToolForDrops().strength(10.0F, 10.0F).sound(SoundType.METAL));
 
     // Current ntm-next DecoBlock registrations: ordinary stone-sounding full cubes, hardness 5, resistance 100.
     // They drop themselves even out of an explosion.
-    public static final RegistryObject<Block> deco_rbmk = solidDeco("deco_rbmk", p -> p.strength(5.0F, 100.0F).sound(SoundType.STONE))
+    public static final RegistryObject<Block> deco_rbmk = solidDeco("deco_rbmk", p -> p.requiresCorrectToolForDrops().strength(5.0F, 100.0F).sound(SoundType.STONE))
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> deco_rbmk_smooth = solidDeco("deco_rbmk_smooth", p -> p.strength(5.0F, 100.0F).sound(SoundType.STONE))
+    public static final RegistryObject<Block> deco_rbmk_smooth = solidDeco("deco_rbmk_smooth", p -> p.requiresCorrectToolForDrops().strength(5.0F, 100.0F).sound(SoundType.STONE))
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);

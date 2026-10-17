@@ -55,8 +55,16 @@ public class TileEntityICF extends TileEntityMachineBase
 
     public long laser;
     public long maxLaser;
+    private long laserSync;
+    private long maxLaserSync;
     public long heat;
     public static final long maxHeat = 1_000_000_000_000L;
+
+    /** Last tick's laser input and capacity, as the client sees them; the live pair is zeroed every tick. */
+    public long laserSync() { return laserSync; }
+
+    public long maxLaserSync() { return maxLaserSync; }
+
     public long heatup;
     public int consumption;
     public int output;
@@ -185,6 +193,8 @@ public class TileEntityICF extends TileEntityMachineBase
         if (markDirty) this.setChanged();
 
         this.networkPackNT();
+        this.laserSync = laser;
+        this.maxLaserSync = maxLaser;
         this.laser = 0;
         this.maxLaser = 0;
     }

@@ -78,7 +78,7 @@ public final class ModProductionBlocks {
             "machine_funnel", MachineFunnel::new,
             p -> p.strength(10.0F, 20.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(Presets.rendered(Variants.simple()))
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<BlockItem> MACHINE_ROTARY_FURNACE_ITEM = REG.blockItem(
             MACHINE_ROTARY_FURNACE, Compat::blockDescription)

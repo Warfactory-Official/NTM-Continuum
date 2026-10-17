@@ -8,6 +8,9 @@ import com.hbm.Constants;
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.ModOutgasBlocks;
 import com.hbm.blocks.generic.BlockSlag;
+import com.hbm.blocks.generic.BlockMeteoriteTreasure;
+import com.hbm.blocks.generic.BlockNetherFireOre;
+import com.hbm.blocks.machine.BlockCybercrab;
 import com.hbm.blocks.generic.HbmStairBlock;
 import com.hbm.creativetabs.HbmTab;
 import dev.golem.core.registry.BlockTag;
@@ -94,324 +97,324 @@ public final class ModBlocks {
     // --- simple full-cube blocks (Wave 1) ---
     public static final RegistryObject<Block> fatduck = block("fatduck", HbmTab.BLOCKS, p -> p)
             .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> structure_anchor = block("structure_anchor", HbmTab.BLOCKS, p -> p.strength(2.5F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> crystal_hardened = block("crystal_hardened", HbmTab.BLOCKS, p -> p.strength(15.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> reinforced_stone = block("reinforced_stone", HbmTab.BLOCKS, p -> p.strength(15.0F, 100.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> brick_concrete_cracked = block("brick_concrete_cracked", HbmTab.BLOCKS, p -> p.strength(15.0F, 60.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> brick_concrete_broken = block("brick_concrete_broken", HbmTab.BLOCKS, p -> p.strength(15.0F, 45.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> brick_light = block("brick_light", HbmTab.BLOCKS, p -> p.strength(15.0F, 20.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> reinforced_sand = block("reinforced_sand", HbmTab.BLOCKS, p -> p.strength(15.0F, 40.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> brick_obsidian = block("brick_obsidian", HbmTab.BLOCKS, p -> p.strength(15.0F, 120.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> cmb_brick = block("cmb_brick", HbmTab.BLOCKS, p -> p.strength(25.0F, 5000.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> concrete = block("concrete", HbmTab.BLOCKS, p -> p.strength(15.0F, 140.0F))
-            .transform(Presets.cubeAll("hbm:blocks/concrete_tile")).loot(Loot.self());
-    public static final RegistryObject<Block> concrete_smooth = block("concrete_smooth", HbmTab.BLOCKS, p -> p.strength(15.0F, 140.0F))
-            .transform(Presets.cubeAll("hbm:blocks/concrete")).loot(Loot.self());
-    public static final RegistryObject<Block> concrete_asbestos = block("concrete_asbestos", HbmTab.BLOCKS, p -> p.strength(15.0F, 1500.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
+    public static final RegistryObject<Block> structure_anchor = block("structure_anchor", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(2.5F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> crystal_hardened = block("crystal_hardened", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> reinforced_stone = block("reinforced_stone", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 100.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_concrete_cracked = block("brick_concrete_cracked", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 60.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_concrete_broken = block("brick_concrete_broken", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 45.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_light = block("brick_light", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 20.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> reinforced_sand = block("reinforced_sand", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 40.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_obsidian = block("brick_obsidian", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 120.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> cmb_brick = block("cmb_brick", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(25.0F, 5000.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete = block("concrete", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 140.0F))
+            .transform(Presets.cubeAll("hbm:blocks/concrete_tile")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_smooth = block("concrete_smooth", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 140.0F))
+            .transform(Presets.cubeAll("hbm:blocks/concrete")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_asbestos = block("concrete_asbestos", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 1500.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_bedrock_oil = block("ore_bedrock_oil", HbmTab.RESOURCES, p -> p.strength(-1.0F, 3600000.0F))
             .transform(Presets.cubeAll()).loot(Loot.nothing());
-    public static final RegistryObject<Block> ore_oil_empty = block("ore_oil_empty", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> stone_gneiss = block("stone_gneiss", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> gneiss_brick = block("gneiss_brick", HbmTab.BLOCKS, p -> p.strength(1.5F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> gneiss_tile = block("gneiss_tile", HbmTab.BLOCKS, p -> p.strength(1.5F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> gneiss_chiseled = block("gneiss_chiseled", HbmTab.BLOCKS, p -> p.strength(1.5F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> meteor_polished = block("meteor_polished", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> meteor_brick = block("meteor_brick", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> meteor_brick_mossy = block("meteor_brick_mossy", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> meteor_brick_cracked = block("meteor_brick_cracked", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> meteor_brick_chiseled = block("meteor_brick_chiseled", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> meteor_battery = block("meteor_battery", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.column("hbm:blocks/meteor_power", "hbm:blocks/meteor_spawner_side")).loot(Loot.self());
-    public static final RegistryObject<Block> meteor_spawner = block("meteor_spawner", HbmTab.BLOCKS, com.hbm.blocks.machine.BlockCybercrab::new, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeBottomTop("hbm:blocks/meteor_polished", "hbm:blocks/meteor_spawner_side", "hbm:blocks/meteor_spawner_top")).loot(Loot.nothing());
-    public static final RegistryObject<Block> brick_jungle = block("brick_jungle", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> brick_jungle_cracked = block("brick_jungle_cracked", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> brick_dungeon = block("brick_dungeon", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> brick_dungeon_flat = block("brick_dungeon_flat", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> brick_dungeon_tile = block("brick_dungeon_tile", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> brick_dungeon_circle = block("brick_dungeon_circle", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_niter = block("block_niter", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_sulfur = block("block_sulfur", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_titanium = block("block_titanium", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_copper = block("block_copper", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_red_copper = block("block_red_copper", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_tungsten = block("block_tungsten", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_aluminium = block("block_aluminium", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_fluorite = block("block_fluorite", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_steel = block("block_steel", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_beryllium = block("block_beryllium", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_euphemium = block("block_euphemium", HbmTab.BLOCKS, p -> p.strength(5.0F, 30000.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_dineutronium = block("block_dineutronium", HbmTab.BLOCKS, p -> p.strength(5.0F, 60000.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_combine_steel = block("block_combine_steel", HbmTab.BLOCKS, p -> p.strength(5.0F, 300.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_desh = block("block_desh", HbmTab.BLOCKS, p -> p.strength(5.0F, 300.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_dura_steel = block("block_dura_steel", HbmTab.BLOCKS, p -> p.strength(5.0F, 300.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_saturnite = block("block_saturnite", HbmTab.BLOCKS, p -> p.strength(6.0F, 400.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
+    public static final RegistryObject<Block> ore_oil_empty = block("ore_oil_empty", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> stone_gneiss = block("stone_gneiss", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> gneiss_brick = block("gneiss_brick", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> gneiss_tile = block("gneiss_tile", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> gneiss_chiseled = block("gneiss_chiseled", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> meteor_polished = block("meteor_polished", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> meteor_brick = block("meteor_brick", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> meteor_brick_mossy = block("meteor_brick_mossy", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> meteor_brick_cracked = block("meteor_brick_cracked", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> meteor_brick_chiseled = block("meteor_brick_chiseled", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> meteor_battery = block("meteor_battery", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.column("hbm:blocks/meteor_power", "hbm:blocks/meteor_spawner_side")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> meteor_spawner = block("meteor_spawner", HbmTab.BLOCKS, BlockCybercrab::new, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeBottomTop("hbm:blocks/meteor_polished", "hbm:blocks/meteor_spawner_side", "hbm:blocks/meteor_spawner_top")).loot(Loot.nothing()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_jungle = block("brick_jungle", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_jungle_cracked = block("brick_jungle_cracked", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_dungeon = block("brick_dungeon", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_dungeon_flat = block("brick_dungeon_flat", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_dungeon_tile = block("brick_dungeon_tile", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_dungeon_circle = block("brick_dungeon_circle", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_niter = block("block_niter", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_sulfur = block("block_sulfur", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_titanium = block("block_titanium", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_copper = block("block_copper", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_red_copper = block("block_red_copper", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_tungsten = block("block_tungsten", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_aluminium = block("block_aluminium", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_fluorite = block("block_fluorite", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_steel = block("block_steel", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_beryllium = block("block_beryllium", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_euphemium = block("block_euphemium", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 30000.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_dineutronium = block("block_dineutronium", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 60000.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_combine_steel = block("block_combine_steel", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 300.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_desh = block("block_desh", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 300.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_dura_steel = block("block_dura_steel", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 300.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_saturnite = block("block_saturnite", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(6.0F, 400.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> tektite = block("tektite", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F).sound(SoundType.STONE))
             .transform(Presets.cubeAll()).loot(Loot.self());
     public static final RegistryObject<Block> ore_tektite_osmiridium = block("ore_tektite_osmiridium", HbmTab.RESOURCES, p -> p.strength(2.5F, 20.0F).sound(SoundType.STONE))
             .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> deco_titanium = block("deco_titanium", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> deco_red_copper = block("deco_red_copper", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> deco_tungsten = block("deco_tungsten", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> deco_aluminium = block("deco_aluminium", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> deco_steel = block("deco_steel", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> deco_rusty_steel = block("deco_rusty_steel", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> deco_lead = block("deco_lead", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> deco_beryllium = block("deco_beryllium", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> stone_cracked = block("stone_cracked", HbmTab.RESOURCES, p -> p.strength(5.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_smore = block("block_smore", HbmTab.BLOCKS, p -> p.strength(15.0F, 450.0F))
-            .transform(Presets.column("hbm:blocks/block_smore_top", "hbm:blocks/block_smore_side")).loot(Loot.self());
-    public static final RegistryObject<Block> block_starmetal = block("block_starmetal", HbmTab.BLOCKS, p -> p.strength(5.0F, 300.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_cobalt = block("block_cobalt", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
+    public static final RegistryObject<Block> deco_titanium = block("deco_titanium", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> deco_red_copper = block("deco_red_copper", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> deco_tungsten = block("deco_tungsten", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> deco_aluminium = block("deco_aluminium", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> deco_steel = block("deco_steel", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> deco_rusty_steel = block("deco_rusty_steel", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> deco_lead = block("deco_lead", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> deco_beryllium = block("deco_beryllium", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> stone_cracked = block("stone_cracked", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_smore = block("block_smore", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 450.0F))
+            .transform(Presets.column("hbm:blocks/block_smore_top", "hbm:blocks/block_smore_side")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_starmetal = block("block_starmetal", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 300.0F).sound(SoundType.METAL))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_cobalt = block("block_cobalt", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> block_foam = block("block_foam", HbmTab.BLOCKS, p -> p.strength(0.5F, 0.0F).sound(SoundType.SNOW))
             .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> basalt = block("basalt", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.column("hbm:blocks/basalt_top", "hbm:blocks/basalt")).loot(Loot.self());
-    public static final RegistryObject<Block> basalt_smooth = block("basalt_smooth", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> basalt_brick = block("basalt_brick", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> basalt_polished = block("basalt_polished", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> basalt_tiles = block("basalt_tiles", HbmTab.BLOCKS, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> seal_frame = block("seal_frame", HbmTab.MACHINES, p -> p.strength(10.0F, 100.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> machine_transformer = block("machine_transformer", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeBottomTop("hbm:blocks/machine_transformer_bottom_iron", "hbm:blocks/machine_transformer_iron", "hbm:blocks/machine_transformer_top_iron")).loot(Loot.self());
-    public static final RegistryObject<Block> machine_transformer_20 = block("machine_transformer_20", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeBottomTop("hbm:blocks/machine_transformer_top_iron", "hbm:blocks/machine_transformer_iron", "hbm:blocks/machine_transformer_bottom_iron")).loot(Loot.self());
-    public static final RegistryObject<Block> machine_transformer_dnt = block("machine_transformer_dnt", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeBottomTop("hbm:blocks/machine_transformer_bottom", "hbm:blocks/machine_transformer", "hbm:blocks/machine_transformer_top")).loot(Loot.self());
-    public static final RegistryObject<Block> machine_transformer_dnt_20 = block("machine_transformer_dnt_20", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeBottomTop("hbm:blocks/machine_transformer_top", "hbm:blocks/machine_transformer", "hbm:blocks/machine_transformer_bottom")).loot(Loot.self());
+    public static final RegistryObject<Block> basalt = block("basalt", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.column("hbm:blocks/basalt_top", "hbm:blocks/basalt")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> basalt_smooth = block("basalt_smooth", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> basalt_brick = block("basalt_brick", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> basalt_polished = block("basalt_polished", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> basalt_tiles = block("basalt_tiles", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> seal_frame = block("seal_frame", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(10.0F, 100.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> machine_transformer = block("machine_transformer", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeBottomTop("hbm:blocks/machine_transformer_bottom_iron", "hbm:blocks/machine_transformer_iron", "hbm:blocks/machine_transformer_top_iron")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> machine_transformer_20 = block("machine_transformer_20", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeBottomTop("hbm:blocks/machine_transformer_top_iron", "hbm:blocks/machine_transformer_iron", "hbm:blocks/machine_transformer_bottom_iron")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> machine_transformer_dnt = block("machine_transformer_dnt", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeBottomTop("hbm:blocks/machine_transformer_bottom", "hbm:blocks/machine_transformer", "hbm:blocks/machine_transformer_top")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> machine_transformer_dnt_20 = block("machine_transformer_dnt_20", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeBottomTop("hbm:blocks/machine_transformer_top", "hbm:blocks/machine_transformer", "hbm:blocks/machine_transformer_bottom")).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> muffler = block("muffler", HbmTab.BLOCKS, p -> p.strength(0.8F).sound(SoundType.WOOL))
             .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> struct_launcher = block("struct_launcher", HbmTab.MISSILES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> struct_scaffold = block("struct_scaffold", HbmTab.MISSILES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> fusion_heater = block("fusion_heater", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.column("hbm:blocks/fusion_heater_top", "hbm:blocks/fusion_heater_side")).loot(Loot.self());
-    public static final RegistryObject<Block> fusion_hatch = block("fusion_hatch", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.shape(Models.parented("minecraft:block/cube", Slots.of("particle", "hbm:blocks/fusion_hatch").and("north", "hbm:blocks/fusion_hatch").and("south", "hbm:blocks/fusion_heater_side").and("east", "hbm:blocks/fusion_heater_side").and("west", "hbm:blocks/fusion_heater_side").and("up", "hbm:blocks/block_tungsten").and("down", "hbm:blocks/block_tungsten")))).loot(Loot.self());
-    public static final RegistryObject<Block> fusion_core_block = block("fusion_core_block", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.column("hbm:blocks/fusion_core_side_alt", "hbm:blocks/fusion_core_side_alt")).loot(Loot.self());
-    public static final RegistryObject<Block> watz_element = block("watz_element", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.column("hbm:blocks/watz_element_top", "hbm:blocks/watz_element_side")).loot(Loot.self());
-    public static final RegistryObject<Block> watz_cooler = block("watz_cooler", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F))
-            .transform(Presets.column("hbm:blocks/watz_cooler_top", "hbm:blocks/watz_cooler_side")).loot(Loot.self());
+    public static final RegistryObject<Block> struct_launcher = block("struct_launcher", HbmTab.MISSILES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> struct_scaffold = block("struct_scaffold", HbmTab.MISSILES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> fusion_heater = block("fusion_heater", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.column("hbm:blocks/fusion_heater_top", "hbm:blocks/fusion_heater_side")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> fusion_hatch = block("fusion_hatch", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.shape(Models.parented("minecraft:block/cube", Slots.of("particle", "hbm:blocks/fusion_hatch").and("north", "hbm:blocks/fusion_hatch").and("south", "hbm:blocks/fusion_heater_side").and("east", "hbm:blocks/fusion_heater_side").and("west", "hbm:blocks/fusion_heater_side").and("up", "hbm:blocks/block_tungsten").and("down", "hbm:blocks/block_tungsten")))).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> fusion_core_block = block("fusion_core_block", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.column("hbm:blocks/fusion_core_side_alt", "hbm:blocks/fusion_core_side_alt")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> watz_element = block("watz_element", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.column("hbm:blocks/watz_element_top", "hbm:blocks/watz_element_side")).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> watz_cooler = block("watz_cooler", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
+            .transform(Presets.column("hbm:blocks/watz_cooler_top", "hbm:blocks/watz_cooler_side")).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> pink_planks = block("pink_planks", HbmTab.BLOCKS, p -> p.sound(SoundType.WOOD))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> brick_fire = block("brick_fire", HbmTab.BLOCKS, p -> p.strength(10.0F, 10.0F))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> tile_lab = block("tile_lab", HbmTab.BLOCKS, p -> p.strength(1.0F, 20.0F).sound(SoundType.GLASS))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> tile_lab_cracked = block("tile_lab_cracked", HbmTab.BLOCKS, p -> p.strength(1.0F, 20.0F).sound(SoundType.GLASS))
-            .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> block_slag = block("block_slag", HbmTab.BLOCKS, BlockSlag::new, p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE))
-            .model(d -> d.models(Models.group().and("", Models.cubeAll("hbm:blocks/block_slag")).and("_cracked", Models.cubeAll("hbm:blocks/block_slag_broken"))).states(Variants.select("cracked", "false", "", "true", "_cracked")).blockItemDirect()).loot(Loot.self());
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.AXE);
+    public static final RegistryObject<Block> brick_fire = block("brick_fire", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(10.0F, 10.0F))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> tile_lab = block("tile_lab", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(1.0F, 20.0F).sound(SoundType.GLASS))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> tile_lab_cracked = block("tile_lab_cracked", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(1.0F, 20.0F).sound(SoundType.GLASS))
+            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> block_slag = block("block_slag", HbmTab.BLOCKS, BlockSlag::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.STONE))
+            .model(d -> d.models(Models.group().and("", Models.cubeAll("hbm:blocks/block_slag")).and("_cracked", Models.cubeAll("hbm:blocks/block_slag_broken"))).states(Variants.select("cracked", "false", "", "true", "_cracked")).blockItemDirect()).loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     // --- ores (Wave 2b); XP ores drop materials, plain ores drop themselves ---
-    public static final RegistryObject<Block> ore_schrabidium = block("ore_schrabidium", HbmTab.RESOURCES, p -> p.strength(15.0F, 600.0F))
+    public static final RegistryObject<Block> ore_schrabidium = block("ore_schrabidium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(15.0F, 600.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_thorium = block("ore_thorium", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_thorium = block("ore_thorium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_titanium = block("ore_titanium", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_titanium = block("ore_titanium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_sulfur = oreXp("ore_sulfur", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_sulfur = oreXp("ore_sulfur", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:sulfur", 2, 4)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_niter = oreXp("ore_niter", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_niter = oreXp("ore_niter", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:niter", 2, 4)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_copper = block("ore_copper", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_copper = block("ore_copper", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_tungsten = block("ore_tungsten", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_tungsten = block("ore_tungsten", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_aluminium = block("ore_aluminium", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_aluminium = block("ore_aluminium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_fluorite = oreXp("ore_fluorite", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_fluorite = oreXp("ore_fluorite", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:fluorite", 2, 4)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_lead = block("ore_lead", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_lead = block("ore_lead", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_beryllium = block("ore_beryllium", HbmTab.RESOURCES, p -> p.strength(5.0F, 15.0F))
+    public static final RegistryObject<Block> ore_beryllium = block("ore_beryllium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 15.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_lignite = block("ore_lignite", HbmTab.RESOURCES, p -> p.strength(5.0F, 15.0F))
+    public static final RegistryObject<Block> ore_lignite = block("ore_lignite", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 15.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:lignite", 1, 1)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_asbestos = oreXp("ore_asbestos", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 15.0F))
+    public static final RegistryObject<Block> ore_asbestos = oreXp("ore_asbestos", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 15.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:ingot_asbestos", 1, 1)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_rare = block("ore_rare", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_rare = block("ore_rare", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:chunk_ore_rare", 1, 1)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_cobalt = oreXp("ore_cobalt", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_cobalt = oreXp("ore_cobalt", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:fragment_cobalt", 4, 9)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_cinnabar = oreXp("ore_cinnabar", HbmTab.RESOURCES, 0, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_cinnabar = oreXp("ore_cinnabar", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:cinnabar", 1, 1)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_coltan = oreXp("ore_coltan", HbmTab.RESOURCES, 0, p -> p.strength(15.0F, 10.0F))
+    public static final RegistryObject<Block> ore_coltan = oreXp("ore_coltan", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(15.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:fragment_coltan", 1, 1)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_australium = block("ore_australium", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_australium = block("ore_australium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     // ore_oil: hand-registered functional block (see ModOilBlocks), assets still generated
-    public static final RegistryObject<Block> ore_gneiss_iron = block("ore_gneiss_iron", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
+    public static final RegistryObject<Block> ore_gneiss_iron = block("ore_gneiss_iron", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_gneiss_gold = block("ore_gneiss_gold", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
+    public static final RegistryObject<Block> ore_gneiss_gold = block("ore_gneiss_gold", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_gneiss_copper = block("ore_gneiss_copper", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
+    public static final RegistryObject<Block> ore_gneiss_copper = block("ore_gneiss_copper", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_gneiss_asbestos = oreXp("ore_gneiss_asbestos", HbmTab.RESOURCES, 0, p -> p.strength(1.5F, 10.0F))
+    public static final RegistryObject<Block> ore_gneiss_asbestos = oreXp("ore_gneiss_asbestos", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:ingot_asbestos", 1, 1)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_gneiss_lithium = block("ore_gneiss_lithium", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
+    public static final RegistryObject<Block> ore_gneiss_lithium = block("ore_gneiss_lithium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_gneiss_schrabidium = block("ore_gneiss_schrabidium", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
+    public static final RegistryObject<Block> ore_gneiss_schrabidium = block("ore_gneiss_schrabidium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_gneiss_rare = block("ore_gneiss_rare", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
+    public static final RegistryObject<Block> ore_gneiss_rare = block("ore_gneiss_rare", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:chunk_ore_rare", 1, 1)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_gneiss_gas = block("ore_gneiss_gas", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F))
+    public static final RegistryObject<Block> ore_gneiss_gas = block("ore_gneiss_gas", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(1.5F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_tikite = block("ore_tikite", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F))
+    public static final RegistryObject<Block> ore_tikite = block("ore_tikite", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F))
             .transform(Presets.cubeAll("hbm:blocks/ore_tikite_alt")).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_nether_cobalt = block("ore_nether_cobalt", HbmTab.RESOURCES, p -> p.strength(0.4F, 10.0F))
+    public static final RegistryObject<Block> ore_nether_cobalt = block("ore_nether_cobalt", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(0.4F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:fragment_cobalt", 5, 12)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_nether_tungsten = block("ore_nether_tungsten", HbmTab.RESOURCES, p -> p.strength(0.4F, 10.0F))
+    public static final RegistryObject<Block> ore_nether_tungsten = block("ore_nether_tungsten", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(0.4F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_nether_sulfur = oreXp("ore_nether_sulfur", HbmTab.RESOURCES, 0, p -> p.strength(0.4F, 10.0F))
+    public static final RegistryObject<Block> ore_nether_sulfur = oreXp("ore_nether_sulfur", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(0.4F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:sulfur", 2, 4)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_nether_fire = block("ore_nether_fire", HbmTab.RESOURCES, com.hbm.blocks.generic.BlockNetherFireOre::new, p -> p.strength(0.4F, 10.0F).noLootTable())
+    public static final RegistryObject<Block> ore_nether_fire = block("ore_nether_fire", HbmTab.RESOURCES, BlockNetherFireOre::new, p -> p.requiresCorrectToolForDrops().strength(0.4F, 10.0F).noLootTable())
             .transform(Presets.cubeAll()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_nether_plutonium = block("ore_nether_plutonium", HbmTab.RESOURCES, p -> p.strength(0.4F, 10.0F))
+    public static final RegistryObject<Block> ore_nether_plutonium = block("ore_nether_plutonium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(0.4F, 10.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_nether_schrabidium = block("ore_nether_schrabidium", HbmTab.RESOURCES, p -> p.strength(15.0F, 600.0F))
+    public static final RegistryObject<Block> ore_nether_schrabidium = block("ore_nether_schrabidium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(15.0F, 600.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> block_meteor = block("block_meteor", HbmTab.RESOURCES, p -> p.strength(15.0F, 360.0F))
+    public static final RegistryObject<Block> block_meteor = block("block_meteor", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> block_meteor_cobble = oreXp("block_meteor_cobble", HbmTab.RESOURCES, 0, p -> p.strength(15.0F, 360.0F))
+    public static final RegistryObject<Block> block_meteor_cobble = oreXp("block_meteor_cobble", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreNoFortune("hbm:fragment_meteorite", 1, 1)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> block_meteor_broken = oreXp("block_meteor_broken", HbmTab.RESOURCES, 0, p -> p.strength(15.0F, 360.0F))
+    public static final RegistryObject<Block> block_meteor_broken = oreXp("block_meteor_broken", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreNoFortune("hbm:fragment_meteorite", 1, 3)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> block_meteor_treasure = block("block_meteor_treasure", HbmTab.RESOURCES, com.hbm.blocks.generic.BlockMeteoriteTreasure::new, p -> p.strength(15.0F, 360.0F).noLootTable())
+    public static final RegistryObject<Block> block_meteor_treasure = block("block_meteor_treasure", HbmTab.RESOURCES, BlockMeteoriteTreasure::new, p -> p.requiresCorrectToolForDrops().strength(15.0F, 360.0F).noLootTable())
             .transform(Presets.cubeAll()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> waste_planks = block("waste_planks", HbmTab.RESOURCES, p -> p.strength(0.5F, 2.5F).sound(SoundType.WOOD))
-            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:charcoal", 1, 1)).tag(BlockTag.PICKAXE);
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:charcoal", 1, 1)).tag(BlockTag.AXE);
 
     // --- slabs (Wave 2c); vanilla SlabBlock (TYPE=bottom/top/double replaces the old *_double_slab) ---
-    public static final RegistryObject<Block> reinforced_stone_slab = slab("reinforced_stone_slab", HbmTab.BLOCKS, "hbm:blocks/reinforced_stone", p -> p.strength(15.0F, 60.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_concrete_slab = slab("brick_concrete_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_concrete_mossy_slab = slab("brick_concrete_mossy_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete_mossy", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_concrete_cracked_slab = slab("brick_concrete_cracked_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete_cracked", p -> p.strength(15.0F, 30.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_concrete_broken_slab = slab("brick_concrete_broken_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete_broken", p -> p.strength(15.0F, 22.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> reinforced_stone_slab = slab("reinforced_stone_slab", HbmTab.BLOCKS, "hbm:blocks/reinforced_stone", p -> p.requiresCorrectToolForDrops().strength(15.0F, 60.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_concrete_slab = slab("brick_concrete_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_concrete_mossy_slab = slab("brick_concrete_mossy_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete_mossy", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_concrete_cracked_slab = slab("brick_concrete_cracked_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete_cracked", p -> p.requiresCorrectToolForDrops().strength(15.0F, 30.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_concrete_broken_slab = slab("brick_concrete_broken_slab", HbmTab.BLOCKS, "hbm:blocks/brick_concrete_broken", p -> p.requiresCorrectToolForDrops().strength(15.0F, 22.0F)).tag(BlockTag.PICKAXE);
     /** 1.7 concrete_brick_slab meta 4 (BlockMultiSlab takes the brick's own hardness/resistance); History §19ej-1b. */
-    public static final RegistryObject<Block> brick_ducrete_slab = slab("brick_ducrete_slab", HbmTab.BLOCKS, "hbm:blocks/brick_ducrete", p -> p.strength(15.0F, 750.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> reinforced_brick_slab = slab("reinforced_brick_slab", HbmTab.BLOCKS, "hbm:blocks/reinforced_brick", p -> p.strength(15.0F, 150.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_light_slab = slab("brick_light_slab", null, "hbm:blocks/brick_light", p -> p.strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_compound_slab = slab("brick_compound_slab", HbmTab.BLOCKS, "hbm:blocks/brick_compound", p -> p.strength(15.0F, 200.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_asbestos_slab = slab("brick_asbestos_slab", HbmTab.BLOCKS, "hbm:blocks/brick_asbestos", p -> p).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> lightstone_tile_slab = slab("lightstone_tile_slab", HbmTab.BLOCKS, "hbm:blocks/lightstone.tile", p -> p.strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> lightstone_bricks_slab = slab("lightstone_bricks_slab", HbmTab.BLOCKS, "hbm:blocks/lightstone.bricks", p -> p.strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_fire_slab = slab("brick_fire_slab", null, "hbm:blocks/brick_fire", p -> p.strength(15.0F, 35.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> reinforced_sand_slab = slab("reinforced_sand_slab", HbmTab.BLOCKS, "hbm:blocks/reinforced_sand", p -> p.strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_obsidian_slab = slab("brick_obsidian_slab", HbmTab.BLOCKS, "hbm:blocks/brick_obsidian", p -> p.strength(15.0F, 60.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> cmb_brick_reinforced_slab = slab("cmb_brick_reinforced_slab", HbmTab.BLOCKS, "hbm:blocks/cmb_brick_reinforced", p -> p.strength(25.0F, 25000.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_slab = slab("concrete_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_tile", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_smooth_slab = slab("concrete_smooth_slab", HbmTab.BLOCKS, "hbm:blocks/concrete", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_white_slab = slab("concrete_white_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_white", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_orange_slab = slab("concrete_orange_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_orange", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_magenta_slab = slab("concrete_magenta_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_magenta", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_light_blue_slab = slab("concrete_light_blue_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_light_blue", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_yellow_slab = slab("concrete_yellow_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_yellow", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_lime_slab = slab("concrete_lime_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_lime", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_pink_slab = slab("concrete_pink_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_pink", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_gray_slab = slab("concrete_gray_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_gray", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_silver_slab = slab("concrete_silver_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_silver", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_cyan_slab = slab("concrete_cyan_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_cyan", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_purple_slab = slab("concrete_purple_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_purple", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_blue_slab = slab("concrete_blue_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_blue", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_brown_slab = slab("concrete_brown_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_brown", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_green_slab = slab("concrete_green_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_green", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_red_slab = slab("concrete_red_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_red", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_black_slab = slab("concrete_black_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_black", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_asbestos_slab = slab("concrete_asbestos_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_asbestos", p -> p.strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ducrete_smooth_slab = slab("ducrete_smooth_slab", HbmTab.BLOCKS, "hbm:blocks/ducrete_smooth", p -> p.strength(20.0F, 250.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ducrete_slab = slab("ducrete_slab", HbmTab.BLOCKS, "hbm:blocks/ducrete", p -> p.strength(20.0F, 250.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ducrete_brick_slab = slab("ducrete_brick_slab", HbmTab.BLOCKS, "hbm:blocks/ducrete_brick", p -> p.strength(15.0F, 375.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ducrete_reinforced_slab = slab("ducrete_reinforced_slab", HbmTab.BLOCKS, "hbm:blocks/ducrete_reinforced", p -> p.strength(20.0F, 500.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> tile_lab_slab = slab("tile_lab_slab", HbmTab.BLOCKS, "hbm:blocks/tile_lab", p -> p.strength(1.0F, 10.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> tile_lab_cracked_slab = slab("tile_lab_cracked_slab", HbmTab.BLOCKS, "hbm:blocks/tile_lab_cracked", p -> p.strength(1.0F, 10.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> tile_lab_broken_slab = slab("tile_lab_broken_slab", HbmTab.BLOCKS, "hbm:blocks/tile_lab_broken", p -> p.strength(1.0F, 10.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_ducrete_slab = slab("brick_ducrete_slab", HbmTab.BLOCKS, "hbm:blocks/brick_ducrete", p -> p.requiresCorrectToolForDrops().strength(15.0F, 750.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> reinforced_brick_slab = slab("reinforced_brick_slab", HbmTab.BLOCKS, "hbm:blocks/reinforced_brick", p -> p.requiresCorrectToolForDrops().strength(15.0F, 150.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_light_slab = slab("brick_light_slab", null, "hbm:blocks/brick_light", p -> p.requiresCorrectToolForDrops().strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_compound_slab = slab("brick_compound_slab", HbmTab.BLOCKS, "hbm:blocks/brick_compound", p -> p.requiresCorrectToolForDrops().strength(15.0F, 200.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_asbestos_slab = slab("brick_asbestos_slab", HbmTab.BLOCKS, "hbm:blocks/brick_asbestos", p -> p.requiresCorrectToolForDrops().strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> lightstone_tile_slab = slab("lightstone_tile_slab", HbmTab.BLOCKS, "hbm:blocks/lightstone.tile", p -> p.requiresCorrectToolForDrops().strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> lightstone_bricks_slab = slab("lightstone_bricks_slab", HbmTab.BLOCKS, "hbm:blocks/lightstone.bricks", p -> p.requiresCorrectToolForDrops().strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_fire_slab = slab("brick_fire_slab", null, "hbm:blocks/brick_fire", p -> p.requiresCorrectToolForDrops().strength(15.0F, 35.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> reinforced_sand_slab = slab("reinforced_sand_slab", HbmTab.BLOCKS, "hbm:blocks/reinforced_sand", p -> p.requiresCorrectToolForDrops().strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_obsidian_slab = slab("brick_obsidian_slab", HbmTab.BLOCKS, "hbm:blocks/brick_obsidian", p -> p.requiresCorrectToolForDrops().strength(15.0F, 60.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> cmb_brick_reinforced_slab = slab("cmb_brick_reinforced_slab", HbmTab.BLOCKS, "hbm:blocks/cmb_brick_reinforced", p -> p.requiresCorrectToolForDrops().strength(25.0F, 25000.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_slab = slab("concrete_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_tile", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_smooth_slab = slab("concrete_smooth_slab", HbmTab.BLOCKS, "hbm:blocks/concrete", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_white_slab = slab("concrete_white_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_white", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_orange_slab = slab("concrete_orange_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_orange", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_magenta_slab = slab("concrete_magenta_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_magenta", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_light_blue_slab = slab("concrete_light_blue_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_light_blue", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_yellow_slab = slab("concrete_yellow_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_yellow", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_lime_slab = slab("concrete_lime_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_lime", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_pink_slab = slab("concrete_pink_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_pink", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_gray_slab = slab("concrete_gray_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_gray", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_silver_slab = slab("concrete_silver_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_silver", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_cyan_slab = slab("concrete_cyan_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_cyan", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_purple_slab = slab("concrete_purple_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_purple", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_blue_slab = slab("concrete_blue_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_blue", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_brown_slab = slab("concrete_brown_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_brown", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_green_slab = slab("concrete_green_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_green", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_red_slab = slab("concrete_red_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_red", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_black_slab = slab("concrete_black_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_black", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_asbestos_slab = slab("concrete_asbestos_slab", HbmTab.BLOCKS, "hbm:blocks/concrete_asbestos", p -> p.requiresCorrectToolForDrops().strength(15.0F, 70.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ducrete_smooth_slab = slab("ducrete_smooth_slab", HbmTab.BLOCKS, "hbm:blocks/ducrete_smooth", p -> p.requiresCorrectToolForDrops().strength(20.0F, 250.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ducrete_slab = slab("ducrete_slab", HbmTab.BLOCKS, "hbm:blocks/ducrete", p -> p.requiresCorrectToolForDrops().strength(20.0F, 250.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ducrete_brick_slab = slab("ducrete_brick_slab", HbmTab.BLOCKS, "hbm:blocks/ducrete_brick", p -> p.requiresCorrectToolForDrops().strength(15.0F, 375.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ducrete_reinforced_slab = slab("ducrete_reinforced_slab", HbmTab.BLOCKS, "hbm:blocks/ducrete_reinforced", p -> p.requiresCorrectToolForDrops().strength(20.0F, 500.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> tile_lab_slab = slab("tile_lab_slab", HbmTab.BLOCKS, "hbm:blocks/tile_lab", p -> p.requiresCorrectToolForDrops().strength(1.0F, 10.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> tile_lab_cracked_slab = slab("tile_lab_cracked_slab", HbmTab.BLOCKS, "hbm:blocks/tile_lab_cracked", p -> p.requiresCorrectToolForDrops().strength(1.0F, 10.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> tile_lab_broken_slab = slab("tile_lab_broken_slab", HbmTab.BLOCKS, "hbm:blocks/tile_lab_broken", p -> p.requiresCorrectToolForDrops().strength(1.0F, 10.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> pink_slab = slab("pink_slab", null, "hbm:blocks/pink_planks", p -> p.sound(SoundType.WOOD)).tag(BlockTag.AXE);
 
     // --- stairs (Wave 2c); base block must be registered above so defaultBlockState() resolves ---
-    public static final RegistryObject<Block> reinforced_stone_stairs = stairs("reinforced_stone_stairs", HbmTab.BLOCKS, reinforced_stone, "hbm:blocks/reinforced_stone", p -> p.strength(15.0F, 76.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_concrete_stairs = stairs("brick_concrete_stairs", HbmTab.BLOCKS, ModHazardBlocks.brick_concrete, "hbm:blocks/brick_concrete", p -> p.strength(15.0F, 95.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_concrete_mossy_stairs = stairs("brick_concrete_mossy_stairs", HbmTab.BLOCKS, ModHazardBlocks.brick_concrete_mossy, "hbm:blocks/brick_concrete_mossy", p -> p.strength(15.0F, 94.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_concrete_cracked_stairs = stairs("brick_concrete_cracked_stairs", HbmTab.BLOCKS, brick_concrete_cracked, "hbm:blocks/brick_concrete_cracked", p -> p.strength(15.0F, 40.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_concrete_broken_stairs = stairs("brick_concrete_broken_stairs", HbmTab.BLOCKS, brick_concrete_broken, "hbm:blocks/brick_concrete_broken", p -> p.strength(15.0F, 30.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> reinforced_brick_stairs = stairs("reinforced_brick_stairs", HbmTab.BLOCKS, ModHazardBlocks.reinforced_brick, "hbm:blocks/reinforced_brick", p -> p.strength(15.0F, 240.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_compound_stairs = stairs("brick_compound_stairs", HbmTab.BLOCKS, ModHazardBlocks.brick_compound, "hbm:blocks/brick_compound", p -> p.strength(15.0F, 320.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_asbestos_stairs = stairs("brick_asbestos_stairs", HbmTab.BLOCKS, ModOutgasBlocks.brick_asbestos, "hbm:blocks/brick_asbestos", p -> p).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_light_stairs = stairs("brick_light_stairs", HbmTab.BLOCKS, brick_light, "hbm:blocks/brick_light", p -> p.strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> reinforced_sand_stairs = stairs("reinforced_sand_stairs", HbmTab.BLOCKS, reinforced_sand, "hbm:blocks/reinforced_sand", p -> p.strength(15.0F, 32.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_obsidian_stairs = stairs("brick_obsidian_stairs", HbmTab.BLOCKS, brick_obsidian, "hbm:blocks/brick_obsidian", p -> p.strength(15.0F, 96.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> cmb_brick_reinforced_stairs = stairs("cmb_brick_reinforced_stairs", HbmTab.BLOCKS, ModHazardBlocks.cmb_brick_reinforced, "hbm:blocks/cmb_brick_reinforced", p -> p.strength(25.0F, 45000.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_stairs = stairs("concrete_stairs", HbmTab.BLOCKS, concrete, "hbm:blocks/concrete_tile", p -> p.strength(15.0F, 94.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_smooth_stairs = stairs("concrete_smooth_stairs", HbmTab.BLOCKS, concrete_smooth, "hbm:blocks/concrete", p -> p.strength(15.0F, 94.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_asbestos_stairs = stairs("concrete_asbestos_stairs", HbmTab.BLOCKS, concrete_asbestos, "hbm:blocks/concrete_asbestos", p -> p.strength(15.0F, 94.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ducrete_smooth_stairs = stairs("ducrete_smooth_stairs", HbmTab.BLOCKS, ModHazardBlocks.ducrete_smooth, "hbm:blocks/ducrete_smooth", p -> p.strength(20.0F, 360.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ducrete_stairs = stairs("ducrete_stairs", HbmTab.BLOCKS, ModHazardBlocks.ducrete, "hbm:blocks/ducrete", p -> p.strength(20.0F, 360.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> tile_lab_stairs = stairs("tile_lab_stairs", HbmTab.BLOCKS, tile_lab, "hbm:blocks/tile_lab", p -> p.strength(1.0F, 15.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> tile_lab_cracked_stairs = stairs("tile_lab_cracked_stairs", HbmTab.BLOCKS, tile_lab_cracked, "hbm:blocks/tile_lab_cracked", p -> p.strength(1.0F, 15.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> tile_lab_broken_stairs = stairs("tile_lab_broken_stairs", HbmTab.BLOCKS, ModOutgasBlocks.tile_lab_broken, "hbm:blocks/tile_lab_broken", p -> p.strength(1.0F, 15.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_fire_stairs = stairs("brick_fire_stairs", HbmTab.BLOCKS, brick_fire, "hbm:blocks/brick_fire", p -> p.strength(15.0F, 35.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> reinforced_stone_stairs = stairs("reinforced_stone_stairs", HbmTab.BLOCKS, reinforced_stone, "hbm:blocks/reinforced_stone", p -> p.requiresCorrectToolForDrops().strength(15.0F, 76.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_concrete_stairs = stairs("brick_concrete_stairs", HbmTab.BLOCKS, ModHazardBlocks.brick_concrete, "hbm:blocks/brick_concrete", p -> p.requiresCorrectToolForDrops().strength(15.0F, 95.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_concrete_mossy_stairs = stairs("brick_concrete_mossy_stairs", HbmTab.BLOCKS, ModHazardBlocks.brick_concrete_mossy, "hbm:blocks/brick_concrete_mossy", p -> p.requiresCorrectToolForDrops().strength(15.0F, 94.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_concrete_cracked_stairs = stairs("brick_concrete_cracked_stairs", HbmTab.BLOCKS, brick_concrete_cracked, "hbm:blocks/brick_concrete_cracked", p -> p.requiresCorrectToolForDrops().strength(15.0F, 40.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_concrete_broken_stairs = stairs("brick_concrete_broken_stairs", HbmTab.BLOCKS, brick_concrete_broken, "hbm:blocks/brick_concrete_broken", p -> p.requiresCorrectToolForDrops().strength(15.0F, 30.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> reinforced_brick_stairs = stairs("reinforced_brick_stairs", HbmTab.BLOCKS, ModHazardBlocks.reinforced_brick, "hbm:blocks/reinforced_brick", p -> p.requiresCorrectToolForDrops().strength(15.0F, 240.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_compound_stairs = stairs("brick_compound_stairs", HbmTab.BLOCKS, ModHazardBlocks.brick_compound, "hbm:blocks/brick_compound", p -> p.requiresCorrectToolForDrops().strength(15.0F, 320.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_asbestos_stairs = stairs("brick_asbestos_stairs", HbmTab.BLOCKS, ModOutgasBlocks.brick_asbestos, "hbm:blocks/brick_asbestos", p -> p.requiresCorrectToolForDrops().strength(15.0F, 32.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_light_stairs = stairs("brick_light_stairs", HbmTab.BLOCKS, brick_light, "hbm:blocks/brick_light", p -> p.requiresCorrectToolForDrops().strength(15.0F, 20.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> reinforced_sand_stairs = stairs("reinforced_sand_stairs", HbmTab.BLOCKS, reinforced_sand, "hbm:blocks/reinforced_sand", p -> p.requiresCorrectToolForDrops().strength(15.0F, 32.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_obsidian_stairs = stairs("brick_obsidian_stairs", HbmTab.BLOCKS, brick_obsidian, "hbm:blocks/brick_obsidian", p -> p.requiresCorrectToolForDrops().strength(15.0F, 96.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> cmb_brick_reinforced_stairs = stairs("cmb_brick_reinforced_stairs", HbmTab.BLOCKS, ModHazardBlocks.cmb_brick_reinforced, "hbm:blocks/cmb_brick_reinforced", p -> p.requiresCorrectToolForDrops().strength(25.0F, 45000.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_stairs = stairs("concrete_stairs", HbmTab.BLOCKS, concrete, "hbm:blocks/concrete_tile", p -> p.requiresCorrectToolForDrops().strength(15.0F, 94.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_smooth_stairs = stairs("concrete_smooth_stairs", HbmTab.BLOCKS, concrete_smooth, "hbm:blocks/concrete", p -> p.requiresCorrectToolForDrops().strength(15.0F, 94.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> concrete_asbestos_stairs = stairs("concrete_asbestos_stairs", HbmTab.BLOCKS, concrete_asbestos, "hbm:blocks/concrete_asbestos", p -> p.requiresCorrectToolForDrops().strength(15.0F, 94.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ducrete_smooth_stairs = stairs("ducrete_smooth_stairs", HbmTab.BLOCKS, ModHazardBlocks.ducrete_smooth, "hbm:blocks/ducrete_smooth", p -> p.requiresCorrectToolForDrops().strength(20.0F, 360.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> ducrete_stairs = stairs("ducrete_stairs", HbmTab.BLOCKS, ModHazardBlocks.ducrete, "hbm:blocks/ducrete", p -> p.requiresCorrectToolForDrops().strength(20.0F, 360.0F)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> tile_lab_stairs = stairs("tile_lab_stairs", HbmTab.BLOCKS, tile_lab, "hbm:blocks/tile_lab", p -> p.requiresCorrectToolForDrops().strength(1.0F, 15.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> tile_lab_cracked_stairs = stairs("tile_lab_cracked_stairs", HbmTab.BLOCKS, tile_lab_cracked, "hbm:blocks/tile_lab_cracked", p -> p.requiresCorrectToolForDrops().strength(1.0F, 15.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> tile_lab_broken_stairs = stairs("tile_lab_broken_stairs", HbmTab.BLOCKS, ModOutgasBlocks.tile_lab_broken, "hbm:blocks/tile_lab_broken", p -> p.requiresCorrectToolForDrops().strength(1.0F, 15.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> brick_fire_stairs = stairs("brick_fire_stairs", HbmTab.BLOCKS, brick_fire, "hbm:blocks/brick_fire", p -> p.requiresCorrectToolForDrops().strength(15.0F, 35.0F)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> pink_stairs = stairs("pink_stairs", null, pink_planks, "hbm:blocks/pink_planks", p -> p.sound(SoundType.WOOD)).tag(BlockTag.AXE);
 
     public static void init() {}

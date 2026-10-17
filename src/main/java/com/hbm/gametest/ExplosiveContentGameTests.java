@@ -2,7 +2,10 @@ package com.hbm.gametest;
 
 import com.hbm.api.block.IToolable.ToolType;
 import com.hbm.blocks.bomb.BlockTNTBase;
+import com.hbm.blocks.ModBombs2Blocks;
+import com.hbm.blocks.ModExplosivesBlocks;
 import com.hbm.blocks.bomb.ItemNukeBlock;
+import com.hbm.explosion.BlastInfo;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
@@ -41,6 +44,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -311,26 +315,34 @@ public final class ExplosiveContentGameTests {
     }
 
     public static void nuclearTooltipFormulas(GameTestHelper helper) {
-        helper.assertTrue(ItemNukeBlock.baseRadius(ItemNukeBlock.Type.FAT_MAN) == BombConfig.manRadius
-                        && ItemNukeBlock.baseRadius(ItemNukeBlock.Type.N2) == BombConfig.n2Radius
-                        && ItemNukeBlock.baseRadius(ItemNukeBlock.Type.LITTLE_BOY) == BombConfig.boyRadius
-                        && ItemNukeBlock.baseRadius(ItemNukeBlock.Type.GADGET) == BombConfig.gadgetRadius
-                        && ItemNukeBlock.baseRadius(ItemNukeBlock.Type.TSAR) == BombConfig.tsarRadius
-                        && ItemNukeBlock.baseRadius(ItemNukeBlock.Type.IVY_MIKE) == BombConfig.mikeRadius,
-                "nuclear block items lost an old bomb-specific base radius");
-        helper.assertTrue(ItemNukeBlock.falloutRadius(BombConfig.manRadius)
-                        == BombConfig.manRadius * (1 + BombConfig.falloutRange / 100)
-                        && ItemNukeBlock.falloutRadius(BombConfig.boyRadius)
-                        == BombConfig.boyRadius * (1 + BombConfig.falloutRange / 100)
-                        && ItemNukeBlock.n2ChargeRadius() == BombConfig.n2Radius / 12,
-                "nuclear tooltip fallout or N2 charge arithmetic changed");
-        helper.assertTrue(!ItemNukeBlock.hasFallout(ItemNukeBlock.Type.N2)
-                        && ItemNukeBlock.hasFallout(ItemNukeBlock.Type.FAT_MAN)
-                        && ItemNukeBlock.hasFallout(ItemNukeBlock.Type.LITTLE_BOY)
-                        && ItemNukeBlock.hasFallout(ItemNukeBlock.Type.GADGET)
-                        && ItemNukeBlock.hasFallout(ItemNukeBlock.Type.TSAR)
-                        && ItemNukeBlock.hasFallout(ItemNukeBlock.Type.IVY_MIKE),
-                "nuclear tooltip fallout policy changed");
+        helper.assertTrue(BlastInfo.FAT_MAN.radius() == BombConfig.manRadius
+                        && BlastInfo.N2.radius() == BombConfig.n2Radius
+                        && BlastInfo.FLEIJA.radius() == BombConfig.fleijaRadius
+                        && BlastInfo.PROTOTYPE.radius() == BombConfig.prototypeRadius
+                        && BlastInfo.SOLINIUM.radius() == BombConfig.soliniumRadius
+                        && BlastInfo.BALEFIRE.radius() == 250
+                        && BlastInfo.DUD_BALEFIRE.radius() == (int) (BombConfig.fatmanRadius * 1.25)
+                        && BlastInfo.NUCLEAR_CHARGE.radius() == BombConfig.missileRadius
+                        && BlastInfo.MISSILE_DOOMSDAY.radius() == BombConfig.missileRadius * 2,
+                "a blast tooltip lost the radius its 1.7 explosion uses");
+        helper.assertTrue(BlastInfo.FAT_MAN.falloutRadius()
+                        == (int) (BombConfig.manRadius * 2.5) * BombConfig.falloutRange / 100
+                        && BlastInfo.DUD_SALTED.falloutRadius() == (int) (25 * 2.5 + 25) * BombConfig.falloutRange / 100
+                        && BlastInfo.n2ChargeRadius() == BombConfig.n2Radius / 12
+                        && BlastInfo.shownRadius(437) == 435 && BlastInfo.shownRadius(43) == 45
+                        && BlastInfo.shownRadius(88) == 90 && BlastInfo.shownRadius(175) == 175,
+                "blast tooltip fallout or N2 charge arithmetic differs from 1.7 EntityNukeExplosionMK5");
+        helper.assertTrue(!BlastInfo.N2.hasFallout() && !BlastInfo.FLEIJA.hasFallout()
+                        && !BlastInfo.BALEFIRE.hasFallout() && !BlastInfo.FISSURE.hasFallout()
+                        && BlastInfo.FAT_MAN.hasFallout() && BlastInfo.TSAR.hasFallout()
+                        && BlastInfo.NUCLEAR_CHARGE.hasFallout() && BlastInfo.MISSILE_MICRO.hasFallout(),
+                "blast tooltip fallout policy differs from which 1.7 explosions spawn fallout");
+        for (Block block : List.of(ModBombs2Blocks.nuke_fleija.get(), ModBombs2Blocks.nuke_prototype.get(),
+                ModBombs2Blocks.nuke_solinium.get(), ModBombs2Blocks.nuke_fstbmb.get(),
+                ModExplosivesBlocks.crashed_bomb_nuke.get(), ModExplosivesBlocks.det_nuke.get(),
+                ModExplosivesBlocks.fissure_bomb.get(), ModExplosivesBlocks.mine_fat.get())) {
+            helper.assertTrue(block.asItem() instanceof ItemNukeBlock, "no blast tooltip on " + block);
+        }
         helper.succeed();
     }
 

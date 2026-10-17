@@ -2,6 +2,7 @@ package com.hbm.blocks.machine.dfc;
 
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
+import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
@@ -42,28 +43,28 @@ public final class ModDFCBlocks {
     public static final RegistryObject<CoreCore> dfc_core = REG.block(
             "dfc_core", CoreCore::new, ModDFCBlocks::machine)
             .transform(Presets.cubeAllCutout().noItem())
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<CoreComponent> dfc_emitter = REG.block(
             "dfc_emitter", p -> new CoreComponent(TileEntityCoreEmitter::new,
                     () -> ModBlockEntities.DFC_EMITTER.get(), TileEntityCoreEmitter::serverTick, p),
             ModDFCBlocks::machine)
-            .transform(AIMED);
+            .transform(AIMED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<CoreComponent> dfc_receiver = REG.block(
             "dfc_receiver", p -> new CoreComponent(TileEntityCoreReceiver::new,
                     () -> ModBlockEntities.DFC_RECEIVER.get(), TileEntityCoreReceiver::serverTick, p),
             ModDFCBlocks::machine)
-            .transform(AIMED);
+            .transform(AIMED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<CoreComponent> dfc_injector = REG.block(
             "dfc_injector", p -> new CoreComponent(TileEntityCoreInjector::new,
                     () -> ModBlockEntities.DFC_INJECTOR.get(), TileEntityCoreInjector::serverTick, p),
             ModDFCBlocks::machine)
-            .transform(AIMED);
+            .transform(AIMED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<CoreComponent> dfc_stabilizer = REG.block(
             "dfc_stabilizer", p -> new CoreComponent(TileEntityCoreStabilizer::new,
                     () -> ModBlockEntities.DFC_STABILIZER.get(), TileEntityCoreStabilizer::serverTick, p),
             ModDFCBlocks::machine)
-            .transform(AIMED);
+            .transform(AIMED).tag(BlockTag.PICKAXE);
 
     // The core is the one dark fusion block with no model of its own: it is RenderShape.INVISIBLE, as
     // 1.7's getRenderType() == -1, and 1.7 has no item renderer for it either, so the icon is the flat

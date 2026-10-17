@@ -6,12 +6,10 @@ import com.hbm.items.HbmArmorMaterials;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.gear.ArmorFSB;
 import dev.golem.core.world.ArmorSlot;
-import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
@@ -43,9 +41,8 @@ public abstract class JetpackBase extends ArmorFSB {
     }
 
     @Override
-    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         List<Component> tooltip, TooltipFlag flag) {
-        super.appendCompatHoverText(stack, context, tooltip, flag);
+    public void addInformation(ItemStack stack, List<Component> tooltip) {
+        super.addInformation(stack, tooltip);
         tooltip.add(Component.literal("Can be worn on its own!").withStyle(ChatFormatting.GOLD));
     }
 

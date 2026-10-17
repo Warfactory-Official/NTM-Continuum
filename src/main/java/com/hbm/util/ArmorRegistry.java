@@ -13,8 +13,11 @@ import java.util.Map;
 import com.hbm.api.data.ArmorDataMaps;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.api.item.IGasMask;
+import com.hbm.blocks.StandardInfo;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -75,6 +78,19 @@ public class ArmorRegistry {
 
     private static boolean hasClasses(Item item) {
         return ArmorDataMaps.PROTECTION_CLASSES.get(item) != null || hazardClasses.containsKey(item);
+    }
+
+    /** 1.7 {@code ModEventHandlerClient.drawTooltip}'s hazmat info: the item's own classes, behind left Shift. */
+    public static void addProtectionInfo(Item item, List<Component> list) {
+        if (!hasClasses(item)) return;
+        if (!StandardInfo.shiftHeld()) {
+            list.add(StandardInfo.holdShift("protection info"));
+            return;
+        }
+        list.add(Component.translatable("hazard.prot").withStyle(ChatFormatting.GOLD));
+        for (HazardClass clazz : classesOf(item)) {
+            list.add(Component.literal("  ").append(Component.translatable(clazz.lang)).withStyle(ChatFormatting.YELLOW));
+        }
     }
 
     public static List<HazardClass> getProtectionFromItem(ItemStack stack) {

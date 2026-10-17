@@ -4,12 +4,10 @@ import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.ModDataComponents;
-import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 
 /** Fixed-fuel jetpack base; fuel is stored as a component rather than legacy item NBT. */
 public abstract class JetpackFueledBase extends JetpackBase implements IFillableItem {
@@ -24,11 +22,11 @@ public abstract class JetpackFueledBase extends JetpackBase implements IFillable
     }
 
     @Override
-    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         List<Component> tooltip, TooltipFlag flag) {
+    public void addInformation(ItemStack stack, List<Component> tooltip) {
         tooltip.add(Component.literal(fuel.getDisplayNameString() + ": " + getFuel(stack) + "mB / "
                 + maxFuel + "mB").withStyle(ChatFormatting.LIGHT_PURPLE));
-        super.appendCompatHoverText(stack, context, tooltip, flag);
+        tooltip.add(Component.empty());
+        super.addInformation(stack, tooltip);
     }
 
     @Override

@@ -4,14 +4,12 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.ModDataComponents;
 import com.hbm.util.BobMathUtil;
 import dev.golem.core.world.ArmorSlot;
-import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.GolemArmorMaterial;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 /**
@@ -91,11 +89,10 @@ public class ArmorFSBFueled extends ArmorFSB {
     }
 
     @Override
-    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> tooltip,
-                                         TooltipFlag flag) {
+    public void addInformation(ItemStack stack, List<Component> tooltip) {
         tooltip.add(Component.empty().append(fuelType().getDisplayName()).append(": "
                 + BobMathUtil.getShortNumber(getFill(stack)) + " / " + BobMathUtil.getShortNumber(getMaxFill(stack))));
-        super.appendCompatHoverText(stack, context, tooltip, flag);
+        super.addInformation(stack, tooltip);
     }
 
     @Override

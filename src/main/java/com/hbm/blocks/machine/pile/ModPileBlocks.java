@@ -6,6 +6,7 @@ import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ItemFamily;
 import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
+import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
@@ -46,7 +47,7 @@ public final class ModPileBlocks {
                     .and("north", "hbm:blocks/pile_brick").and("south", "hbm:blocks/pile_brick")
                     .and("west", "hbm:blocks/pile_brick_side").and("east", "hbm:blocks/pile_brick_side")
                     .and("particle", "hbm:blocks/pile_brick"))).noItem())
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
     /**
      * The assembled cell dispatches its META (solid/channel/edge, core, fuel in/out, air in/out, control) onto
      * five bottom-top cubes. It has no item; its item definition (pointing at the block model) is kept as shipped.
@@ -63,14 +64,14 @@ public final class ModPileBlocks {
                     .states(Variants.select("meta", "0", "", "1", "_core", "2", "", "3", "_input", "4", "_output",
                             "5", "_input", "6", "_output", "7", "_control", "8", "")))
             .transform(Presets.shares("hbm:block/pile_block"))
-            .loot(Loot.nothing());
+            .loot(Loot.nothing()).tag(BlockTag.PICKAXE);
     /** The three docking devices: one invisible block (renderer-drawn) across twelve meta values; item is OBJ. */
     public static final RegistryObject<BlockPileDevice> pile_device = REG.block(
             "pile_device", BlockPileDevice::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(Presets.statesOnly(Variants.uniformRange("meta", 0, 11)))
             // the drop is the device's own item (pile_loader/_vent/_control, BlockPileDevice.getDrops)
-            .loot(Loot.nothing());
+            .loot(Loot.nothing()).tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<BlockItem> pile_brick_item =
             REG.blockItem(pile_brick)

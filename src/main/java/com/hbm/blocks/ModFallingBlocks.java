@@ -35,10 +35,10 @@ public final class ModFallingBlocks {
 
     /** Shredding obsidian / obsidian bricks yields this; blast-resistant like the obsidian it came from. */
     public static final RegistryObject<BlockFallingBase> gravel_obsidian =
-            falling("gravel_obsidian", 5.0F, 300.0F, () -> SoundType.GRAVEL)
+            falling("gravel_obsidian", 5.0F, 300.0F, () -> SoundType.GRAVEL, HbmTab.RESOURCES, true)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
-            .tag(BlockTag.SHOVEL);
+            .tag(BlockTag.PICKAXE);
 
     /** The shredded-diamond-ore drop (and the mod's long-running non-joke, see the class javadoc). */
     public static final RegistryObject<BlockFallingBase> gravel_diamond =
@@ -84,10 +84,10 @@ public final class ModFallingBlocks {
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockFallingBase> block_electrical_scrap =
-            falling("block_electrical_scrap", 2.5F, 5.0F, () -> SoundType.METAL, HbmTab.BLOCKS)
+            falling("block_electrical_scrap", 2.5F, 5.0F, () -> SoundType.METAL, HbmTab.BLOCKS, true)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
-            .tag(BlockTag.SHOVEL);
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFallingBase> moon_turf =
             falling("moon_turf", 0.5F, 0.5F, () -> SoundType.SAND, HbmTab.RESOURCES)
             .transform(Presets.cubeAll().viaItemModel())
@@ -126,8 +126,16 @@ public final class ModFallingBlocks {
 
     private static Reg.Handle<BlockFallingBase> falling(String id, float hardness, float resistance,
                                                              Supplier<SoundType> sound, HbmTab tab) {
-        Reg.Handle<BlockFallingBase> block = REG.block(id, BlockFallingBase::new,
-                p -> p.strength(hardness, resistance).sound(sound.get()));
+        return falling(id, hardness, resistance, sound, tab, false);
+    }
+
+    /** {@code iron}: 1.7 {@code Material.iron}, which drops only when mined with a pickaxe. */
+    private static Reg.Handle<BlockFallingBase> falling(String id, float hardness, float resistance,
+                                                             Supplier<SoundType> sound, HbmTab tab, boolean iron) {
+        Reg.Handle<BlockFallingBase> block = REG.block(id, BlockFallingBase::new, p -> {
+            p.strength(hardness, resistance).sound(sound.get());
+            return iron ? p.requiresCorrectToolForDrops() : p;
+        });
         Reg.Handle<BlockItem> item = REG.blockItem(block, p -> Compat.blockDescription(p));
         ModTabs.addTo(tab, item);
         return block;

@@ -199,19 +199,19 @@ public final class ModOreBlocks {
     public static final RegistryObject<BlockStalagmite> stalagmite_sulfur =
             spike("stalagmite_sulfur", Direction.DOWN, () -> ModItems.sulfur.get())
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cross("hbm:blocks/stalagmite.sulfur"))).states(Variants.simple()))
-            .transform(Presets.sprite("hbm:blocks/stalagmite.sulfur"));
+            .transform(Presets.sprite("hbm:blocks/stalagmite.sulfur")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockStalagmite> stalagmite_asbestos =
             spike("stalagmite_asbestos", Direction.DOWN, () -> ModItems.powder_asbestos.get())
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cross("hbm:blocks/stalagmite.asbestos"))).states(Variants.simple()))
-            .transform(Presets.sprite("hbm:blocks/stalagmite.asbestos"));
+            .transform(Presets.sprite("hbm:blocks/stalagmite.asbestos")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockStalagmite> stalactite_sulfur =
             spike("stalactite_sulfur", Direction.UP, () -> ModItems.sulfur.get())
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cross("hbm:blocks/stalactite.sulfur"))).states(Variants.simple()))
-            .transform(Presets.sprite("hbm:blocks/stalactite.sulfur"));
+            .transform(Presets.sprite("hbm:blocks/stalactite.sulfur")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockStalagmite> stalactite_asbestos =
             spike("stalactite_asbestos", Direction.UP, () -> ModItems.powder_asbestos.get())
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cross("hbm:blocks/stalactite.asbestos"))).states(Variants.simple()))
-            .transform(Presets.sprite("hbm:blocks/stalactite.asbestos"));
+            .transform(Presets.sprite("hbm:blocks/stalactite.asbestos")).tag(BlockTag.PICKAXE);
 
     // Gas pockets
 
@@ -265,7 +265,7 @@ public final class ModOreBlocks {
 
     private static Reg.Handle<BlockStalagmite> spike(String id, Direction anchor, Supplier<Item> drop) {
         return reg(id, p -> new BlockStalagmite(p, anchor, () -> new ItemStack(drop.get())),
-                p -> p.strength(0.5F, 2.0F).sound(SoundType.STONE).noOcclusion().noCollision().noLootTable());
+                p -> p.requiresCorrectToolForDrops().strength(0.5F, 2.0F).sound(SoundType.STONE).noOcclusion().noCollision().noLootTable());
     }
 
     /** Old {@code BlockGasBase}: hardness 0, no collision, no occlusion, replaceable, random-ticked. */

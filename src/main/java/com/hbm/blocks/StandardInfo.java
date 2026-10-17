@@ -49,9 +49,14 @@ public final class StandardInfo {
 
     /** {@code Hold <LSHIFT> to display more info}, dark grey italic with a yellow key name. */
     public static Component holdShift() {
+        return holdShift("more info");
+    }
+
+    /** {@code Hold <LSHIFT> to display <what>}. */
+    public static Component holdShift(String what) {
         return Component.literal("Hold <").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)
                 .append(Component.literal("LSHIFT").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
-                .append(Component.literal("> to display more info")
+                .append(Component.literal("> to display " + what)
                         .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
     }
 }

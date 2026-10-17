@@ -166,6 +166,31 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         return examples;
     }
 
+    /** One container: {@code empty} ({@link ItemStack#EMPTY} when used up) holding {@code amount} of {@code type} is {@code full}. */
+    public record Entry(FluidType type, int amount, ItemStack empty, ItemStack full) {}
+
+    /** 1.7 {@code allContainers}: the fixed rows and the water bottle, then each fluid's cell and container families. */
+    public List<Entry> allContainers() {
+        List<Entry> entries = new ArrayList<>();
+        for (Fixed fixed : fixed()) {
+            ItemStack full = item(fixed.full);
+            if (!full.isEmpty()) entries.add(new Entry(Fluids.fromName(fixed.fluid), fixed.amount, item(fixed.container), full));
+        }
+        entries.add(new Entry(Fluids.WATER, 250, new ItemStack(Items.GLASS_BOTTLE),
+                Ingredients.potionStack("minecraft:potion", "minecraft:water")));
+        for (FluidType type : Fluids.getAll()) {
+            if (type == Fluids.NONE) continue;
+            ItemStack cell = ItemCell.getFullCell(type);
+            if (!cell.isEmpty()) entries.add(new Entry(type, ItemCell.CAPACITY, new ItemStack(ModSingularityItems.cell.get()), cell));
+            for (Typed typed : typed()) {
+                ItemStack empty = typed.container.get();
+                ItemStack full = fullOf(empty, type);
+                if (!full.isEmpty()) entries.add(new Entry(type, ((ItemFluidTank) full.getItem()).capacity, empty, full));
+            }
+        }
+        return entries;
+    }
+
     // The same table as another mod's fluid handler sees it
 
     /** A fixed container: {@code full} holds {@code amount} of {@code fluid}; draining all of it leaves {@code empty}. */

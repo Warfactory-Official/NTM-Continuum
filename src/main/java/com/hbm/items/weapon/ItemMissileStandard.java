@@ -1,5 +1,6 @@
 package com.hbm.items.weapon;
 
+import com.hbm.explosion.BlastInfo;
 import com.hbm.items.special.ItemCustomLore;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import dev.golem.core.world.CompatTooltipContext;
@@ -33,6 +34,7 @@ public class ItemMissileStandard extends ItemCustomLore {
 
     public int fuelCap;
     public boolean launchable = true;
+    private BlastInfo blast;
 
     public ItemMissileStandard(Properties properties, MissileFormFactor form, MissileTier tier) {
         this(properties, form, tier, form.defaultFuel);
@@ -51,6 +53,11 @@ public class ItemMissileStandard extends ItemCustomLore {
         return this;
     }
 
+    public ItemMissileStandard blast(BlastInfo blast) {
+        this.blast = blast;
+        return this;
+    }
+
     public ItemMissileStandard setFuelCap(int fuelCap) {
         this.fuelCap = fuelCap;
         return this;
@@ -63,22 +70,18 @@ public class ItemMissileStandard extends ItemCustomLore {
 
         if (!this.launchable) {
             tooltip.add(Component.literal("Not launchable!").withStyle(ChatFormatting.RED));
-            return;
-        }
-
-        // Port-specific: a missile whose warhead needs an unported subsystem has no flying entity, so a
-        // launch pad refuses it at the slot. Without this line the refusal is silent and reads as a bug,
-        // and the first five missiles in the creative tab are all in that state.
-        if (!TileEntityLaunchPadBase.canBeInstantiated(this)) {
+        } else if (!TileEntityLaunchPadBase.canBeInstantiated(this)) {
+            // port: a missile whose warhead needs an unported subsystem has no flying entity, so a launch pad
+            // refuses it at the slot. Without this line the refusal is silent and reads as a bug.
             tooltip.add(Component.translatable("desc.missile.unimplemented").withStyle(ChatFormatting.RED));
-            return;
+        } else {
+            tooltip.add(Component.literal("Fuel: ").append(Component.literal(this.fuel.display).withStyle(this.fuel.colour)));
+            if (this.fuelCap > 0) {
+                tooltip.add(Component.literal("Fuel capacity: " + this.fuelCap + "mB"));
+            }
+            super.appendCompatHoverText(stack, context, tooltip, flag);
         }
-
-        tooltip.add(Component.literal("Fuel: ").append(Component.literal(this.fuel.display).withStyle(this.fuel.colour)));
-        if (this.fuelCap > 0) {
-            tooltip.add(Component.literal("Fuel capacity: " + this.fuelCap + "mB"));
-        }
-        super.appendCompatHoverText(stack, context, tooltip, flag);
+        if (blast != null) blast.addTo(tooltip);
     }
 
     /** Physical shape: decides which launch pad accepts it and at what scale the GUI draws it. */

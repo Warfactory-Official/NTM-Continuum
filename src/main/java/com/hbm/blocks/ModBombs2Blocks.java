@@ -21,11 +21,13 @@ import com.hbm.blocks.bomb.BlockFrozenGrass;
 import com.hbm.blocks.bomb.BombFlameWar;
 import com.hbm.blocks.bomb.BombFloat;
 import com.hbm.blocks.bomb.BombThermo;
+import com.hbm.blocks.bomb.ItemNukeBlock;
 import com.hbm.blocks.bomb.NukeBalefire;
 import com.hbm.blocks.bomb.NukeCustom;
 import com.hbm.blocks.bomb.NukeFleija;
 import com.hbm.blocks.bomb.NukePrototype;
 import com.hbm.blocks.bomb.NukeSolinium;
+import com.hbm.explosion.BlastInfo;
 import com.hbm.items.bomb.ItemPrototypeBlock;
 
 /**
@@ -97,17 +99,20 @@ public final class ModBombs2Blocks {
     public static final RegistryObject<RotatedPillarBlock> frozen_log = REG.block("frozen_log", RotatedPillarBlock::new,
                     p -> p.strength(0.5F, 2.5F).sound(SoundType.GLASS))
             .transform(Presets.column("hbm:blocks/frozen_log_top", "hbm:blocks/frozen_log").states(Variants.axis()))
-            .loot(Loot.oreNoFortune("minecraft:snowball", 2, 4));
+            .loot(Loot.oreNoFortune("minecraft:snowball", 2, 4)).tag(BlockTag.AXE);
     public static final RegistryObject<Block> frozen_planks = REG.<Block>block("frozen_planks", Block::new,
                     p -> p.strength(0.5F, 2.5F).sound(SoundType.GLASS))
-            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:snowball", 1, 1));
+            .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:snowball", 1, 1)).tag(BlockTag.AXE);
 
     static {
         REG.blockItem(nuke_custom).tab(HbmTab.BOMBS);
-        REG.blockItem(nuke_fleija).tab(HbmTab.BOMBS);
-        REG.blockItem(nuke_solinium).tab(HbmTab.BOMBS);
+        REG.blockItem(nuke_fleija, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.FLEIJA), Compat::blockDescription)
+                .tab(HbmTab.BOMBS);
+        REG.blockItem(nuke_solinium, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.SOLINIUM), Compat::blockDescription)
+                .tab(HbmTab.BOMBS);
         REG.blockItem(nuke_prototype, ItemPrototypeBlock::new, Compat::blockDescription).tab(HbmTab.BOMBS);
-        REG.blockItem(nuke_fstbmb).tab(HbmTab.BOMBS);
+        REG.blockItem(nuke_fstbmb, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.BALEFIRE), Compat::blockDescription)
+                .tab(HbmTab.BOMBS);
         REG.blockItem(therm_endo).tab(HbmTab.BOMBS);
         REG.blockItem(therm_exo).tab(HbmTab.BOMBS);
         REG.blockItem(emp_bomb).tab(HbmTab.BOMBS);

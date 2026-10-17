@@ -144,7 +144,7 @@ public final class ModDoorBlocks {
         }
         Models.Group doorModels = models;
         return REG.<DoorBlock>block(name, p -> BlockSets.door(Sets.MOD_DOOR_TYPE, p),
-                        p -> p.strength(hardness, resistance).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY))
+                        p -> p.requiresCorrectToolForDrops().strength(hardness, resistance).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.DESTROY))
                 .model(d -> d.models(doorModels).states(doorStates()).item(Models.generated("hbm:items/" + name)))
                 .loot(Loot.selfWhen("half", "lower"))
                 .tag(BlockTag.PICKAXE);
@@ -157,7 +157,7 @@ public final class ModDoorBlocks {
 
     public static final RegistryObject<TrapDoorBlock> TRAPDOOR_STEEL = REG.<TrapDoorBlock>block("trapdoor_steel",
                     p -> BlockSets.trapdoor(Sets.MOD_DOOR_TYPE, p),
-                    p -> p.strength(3.0F, 8.0F).sound(SoundType.METAL).noOcclusion())
+                    p -> p.requiresCorrectToolForDrops().strength(3.0F, 8.0F).sound(SoundType.METAL).noOcclusion())
             .model(d -> d.models(Models.group()
                             .and("_bottom", Models.renderType("minecraft:cutout", Models.parented("minecraft:block/template_trapdoor_bottom", Slots.of("texture", "hbm:blocks/trapdoor_steel"))))
                             .and("_top", Models.renderType("minecraft:cutout", Models.parented("minecraft:block/template_trapdoor_top", Slots.of("texture", "hbm:blocks/trapdoor_steel"))))

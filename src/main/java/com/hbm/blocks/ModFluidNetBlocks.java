@@ -144,25 +144,25 @@ public final class ModFluidNetBlocks {
     // --- storage barrels ---
 
     public static final RegistryObject<BlockFluidBarrel> barrel_plastic = REG.block("barrel_plastic",
-            p -> new BlockFluidBarrel(p, 12000, "barrel_plastic", false), p -> p.strength(2.0F, 5.0F).sound(SoundType.STONE).noOcclusion())
+            p -> new BlockFluidBarrel(p, 12000, "barrel_plastic", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.STONE).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
-            .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name"));
+            .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFluidBarrel> barrel_corroded = REG.block("barrel_corroded",
-            p -> new BlockFluidBarrel(p, 6000, "barrel_corroded", true), p -> p.strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new BlockFluidBarrel(p, 6000, "barrel_corroded", true), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFluidBarrel> barrel_steel = REG.block("barrel_steel",
-            p -> new BlockFluidBarrel(p, 16000, "barrel_steel", false), p -> p.strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new BlockFluidBarrel(p, 16000, "barrel_steel", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
-            .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name"));
+            .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFluidBarrel> barrel_tcalloy = REG.block("barrel_tcalloy",
-            p -> new BlockFluidBarrel(p, 24000, "barrel_tcalloy", false), p -> p.strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new BlockFluidBarrel(p, 24000, "barrel_tcalloy", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
-            .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name"));
+            .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFluidBarrel> barrel_antimatter = REG.block("barrel_antimatter",
-            p -> new BlockFluidBarrel(p, 16000, "barrel_antimatter", false), p -> p.strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new BlockFluidBarrel(p, 16000, "barrel_antimatter", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
-            .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name"));
+            .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
 
     // --- effect barrels (nukeTab); kind ids 20+ for EntityPrimedExplosive ---
 

@@ -28,7 +28,9 @@ import com.hbm.blocks.bomb.BombMulti;
 import com.hbm.blocks.bomb.DetCord;
 import com.hbm.blocks.bomb.DetMiner;
 import com.hbm.blocks.bomb.ExplosiveCharge;
+import com.hbm.blocks.bomb.ItemNukeBlock;
 import com.hbm.blocks.bomb.Landmine;
+import com.hbm.explosion.BlastInfo;
 import com.hbm.items.block.ExplosivesBlockItem;
 
 /**
@@ -53,15 +55,15 @@ public final class ModExplosivesBlocks {
 
     // --- landmines: Material.iron, hardness 1.0 (resistance 5), no drop ---
     public static final RegistryObject<Landmine> mine_ap = REG.block("mine_ap",
-            p -> new Landmine(p, Landmine.Type.AP, 1.5D, 1D), ModExplosivesBlocks::mine).transform(RENDERED_NO_DROP);
+            p -> new Landmine(p, Landmine.Type.AP, 1.5D, 1D), ModExplosivesBlocks::mine).transform(RENDERED_NO_DROP).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Landmine> mine_he = REG.block("mine_he",
-            p -> new Landmine(p, Landmine.Type.HE, 2D, 5D), ModExplosivesBlocks::mine).transform(RENDERED_NO_DROP);
+            p -> new Landmine(p, Landmine.Type.HE, 2D, 5D), ModExplosivesBlocks::mine).transform(RENDERED_NO_DROP).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Landmine> mine_shrap = REG.block("mine_shrap",
-            p -> new Landmine(p, Landmine.Type.SHRAP, 1.5D, 1D), ModExplosivesBlocks::mine).transform(RENDERED_NO_DROP);
+            p -> new Landmine(p, Landmine.Type.SHRAP, 1.5D, 1D), ModExplosivesBlocks::mine).transform(RENDERED_NO_DROP).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Landmine> mine_fat = REG.block("mine_fat",
-            p -> new Landmine(p, Landmine.Type.FAT, 2.5D, 1D), ModExplosivesBlocks::mine).transform(RENDERED_NO_DROP);
+            p -> new Landmine(p, Landmine.Type.FAT, 2.5D, 1D), ModExplosivesBlocks::mine).transform(RENDERED_NO_DROP).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Landmine> mine_naval = REG.block("mine_naval",
-            p -> new Landmine(p, Landmine.Type.NAVAL, 2.5D, 1D), ModExplosivesBlocks::mine).transform(RENDERED_NO_DROP);
+            p -> new Landmine(p, Landmine.Type.NAVAL, 2.5D, 1D), ModExplosivesBlocks::mine).transform(RENDERED_NO_DROP).tag(BlockTag.PICKAXE);
 
     // --- timed charges: Material.tnt, hardness 0, resistance 1, no drop ---
     public static final RegistryObject<BlockChargeDynamite> charge_dynamite = REG.block("charge_dynamite",
@@ -172,7 +174,8 @@ public final class ModExplosivesBlocks {
         REG.blockItem(mine_ap).tab(HbmTab.BOMBS);
         REG.blockItem(mine_he).tab(HbmTab.BOMBS);
         REG.blockItem(mine_shrap).tab(HbmTab.BOMBS);
-        REG.blockItem(mine_fat).tab(HbmTab.BOMBS);
+        REG.blockItem(mine_fat, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.FAT_MINE), Compat::blockDescription)
+                .tab(HbmTab.BOMBS);
         REG.blockItem(mine_naval).tab(HbmTab.BOMBS);
         chargeItem(charge_dynamite);
         chargeItem(charge_miner);
@@ -180,15 +183,20 @@ public final class ModExplosivesBlocks {
         chargeItem(charge_semtex);
         REG.blockItem(det_cord).tab(HbmTab.BOMBS);
         REG.blockItem(det_charge).tab(HbmTab.BOMBS);
-        REG.blockItem(det_nuke).tab(HbmTab.BOMBS);
+        REG.blockItem(det_nuke, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.NUCLEAR_CHARGE), Compat::blockDescription)
+                .tab(HbmTab.BOMBS);
         REG.blockItem(det_miner).tab(HbmTab.BOMBS);
         REG.blockItem(block_semtex).tab(HbmTab.BLOCKS);
         REG.blockItem(block_c4).tab(HbmTab.BLOCKS);
-        REG.blockItem(fissure_bomb).tab(HbmTab.BOMBS);
-        REG.blockItem(crashed_bomb_balefire).tab(HbmTab.BOMBS);
+        REG.blockItem(fissure_bomb, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.FISSURE), Compat::blockDescription)
+                .tab(HbmTab.BOMBS);
+        REG.blockItem(crashed_bomb_balefire, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.DUD_BALEFIRE), Compat::blockDescription)
+                .tab(HbmTab.BOMBS);
         REG.blockItem(crashed_bomb_conventional).tab(HbmTab.BOMBS);
-        REG.blockItem(crashed_bomb_nuke).tab(HbmTab.BOMBS);
-        REG.blockItem(crashed_bomb_salted).tab(HbmTab.BOMBS);
+        REG.blockItem(crashed_bomb_nuke, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.DUD_NUKE), Compat::blockDescription)
+                .tab(HbmTab.BOMBS);
+        REG.blockItem(crashed_bomb_salted, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.DUD_SALTED), Compat::blockDescription)
+                .tab(HbmTab.BOMBS);
         REG.blockItem(bomb_multi).tab(HbmTab.BOMBS);
     }
 

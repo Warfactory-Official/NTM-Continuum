@@ -145,9 +145,8 @@ public final class DamageResistanceHandler {
     }
 
     private static Component statLine(String key, Resistance resistance) {
-        return Component.literal("  ").append(Component.translatable(key)).append(Component.literal(": "
-                + resistance.threshold + "/" + (int) (resistance.resistance * 100) + "%"))
-                .withStyle(ChatFormatting.DARK_PURPLE);
+        return Component.translatable(key).append(": " + resistance.threshold + "/"
+                + (int) (resistance.resistance * 100) + "%").withStyle(ChatFormatting.GRAY);
     }
 
     public static void setup(float threshold, float resistance) {
@@ -378,7 +377,7 @@ public final class DamageResistanceHandler {
          * {@code {"category": {"PHYS": {"threshold": 2.0, "resistance": 0.1}}, "exact": {"fall": {...}}, "other": {...}}}:
          * {@code category} keys are the four 1.7 groupings ({@code EXPL}, {@code FIRE}, {@code PHYS}, {@code EN}),
          * {@code exact} keys a damage type's message id (an addon's own damage types need no new category), and
-         * {@code other} applies to anything else that armor can block. Map order is the tooltip's line order.
+         * {@code other} applies to anything else that armor can block.
          */
         public static final Codec<ResistanceStats> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.unboundedMap(Codec.STRING, Resistance.CODEC).optionalFieldOf("category", Map.of()).forGetter(s -> s.category),
@@ -392,8 +391,9 @@ public final class DamageResistanceHandler {
             return stats;
         }));
 
-        private final Map<String, Resistance> exact = new LinkedHashMap<>();
-        private final Map<String, Resistance> category = new LinkedHashMap<>();
+        // HashMaps as in 1.7: the tooltip lists the entries in their iteration order (Fire, Physical, Energy, Explosion).
+        private final Map<String, Resistance> exact = new HashMap<>();
+        private final Map<String, Resistance> category = new HashMap<>();
         private Resistance other;
 
         public ResistanceStats addExact(String type, float threshold, float resistance) {

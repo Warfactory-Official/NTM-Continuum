@@ -34,8 +34,14 @@ public abstract class HbmRecipeCategory<T> extends ViewerCategory<T> {
 
     protected HbmRecipeCategory(ViewerType<T> type, Component title, ItemStack icon,
                                 String texture, int width, int height, int textureX, int textureY) {
+        this(type, title, icon, tex(texture), width, height, textureX, textureY);
+    }
+
+    /** A background from any texture, cropped like the others. */
+    protected HbmRecipeCategory(ViewerType<T> type, Component title, ItemStack icon,
+                                Identifier texture, int width, int height, int textureX, int textureY) {
         super(type, title, icon, width, height);
-        this.background = Drawable.texture(tex(texture), textureX, textureY, width, height);
+        this.background = Drawable.texture(texture, textureX, textureY, width, height);
     }
 
     /** {@code <ns>:textures/gui/jei/<name>}; a bare name is HBM's, an addon category names its own as {@code "ns:name"}. */

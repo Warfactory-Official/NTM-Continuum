@@ -4,6 +4,8 @@ package com.hbm.platform.forge;
 
 /*import com.hbm.creativetabs.ModTabs;
 import com.hbm.hazard.HazardSystem;
+import com.hbm.gametest.RecipeViewerGameTests;
+import dev.golem.core.gametest.GameTests;
 import com.hbm.util.TooltipColours;
 import com.hbm.packet.AnvilCraftPayload;
 import com.hbm.packet.ControlEventPayload;
@@ -76,6 +78,7 @@ public final class ForgeInit {
         com.hbm.gametest.Fix7BossGameTests.init();
         com.hbm.gametest.Fix7MobGameTests.init();
         com.hbm.gametest.RecipeContentGameTests.init();
+        RecipeViewerGameTests.init();
         com.hbm.gametest.UtilityToolGameTests.init();
         com.hbm.gametest.AssemblyFactoryGameTests.init();
         com.hbm.gametest.ChemicalFactoryGameTests.init();
@@ -194,6 +197,7 @@ public final class ForgeInit {
                 com.hbm.gametest.Fix7MobGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.RecipeContentGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> GameTests.register(event, RecipeViewerGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.UtilityToolGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,

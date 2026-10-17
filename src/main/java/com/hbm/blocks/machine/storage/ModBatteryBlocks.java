@@ -41,10 +41,10 @@ public final class ModBatteryBlocks {
 
     public static final RegistryObject<MachineFENSU> machine_fensu = REG.<MachineFENSU>block(
             "machine_fensu", MachineFENSU::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE).noOcclusion()
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.STONE).noOcclusion()
                     .isSuffocating((state, world, pos) -> false)
                     .isViewBlocking((state, world, pos) -> false))
-            .transform(FOLDED);
+            .transform(FOLDED).tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineBatteryREDD> machine_battery_redd = REG.<MachineBatteryREDD>block(
             "machine_battery_redd", MachineBatteryREDD::new,

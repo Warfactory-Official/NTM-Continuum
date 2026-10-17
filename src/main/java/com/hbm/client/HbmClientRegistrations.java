@@ -572,6 +572,7 @@ public final class HbmClientRegistrations {
         GapsAHarnessQueries.register(); // harness query hbm_gapsa: held stack/attack damage/cells, hurt jolt, amat flashes
         GapsBHarnessQueries.register(); // harness query hbm_gapsb: boss spawns, reputation, machine damage, structure tiles, radar
         ForeignFluidHarnessQueries.register(); // harness query hbm_fluidcaps: HBM fluids through the loader fluid capability (19ek-fluids)
+        BlockInfoHarnessQueries.register(); // harness query hbm_block_info: the gauges and tanks Jade is sent
     }
 
     /** Connects the client-owned visuals to the common JetpackHandler without making it import client APIs. */

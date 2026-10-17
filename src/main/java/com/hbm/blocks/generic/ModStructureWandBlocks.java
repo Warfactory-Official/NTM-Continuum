@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
@@ -69,29 +70,29 @@ public final class ModStructureWandBlocks {
             .loot(Loot.self());
     // 1.7 Material.iron, no hardness
     public static final RegistryObject<BlockWandLoot> wand_loot = REG.block("wand_loot",
-            BlockWandLoot::new, p -> p.instabreak().sound(SoundType.METAL))
+            BlockWandLoot::new, p -> p.requiresCorrectToolForDrops().instabreak().sound(SoundType.METAL))
             .transform(topRotated())
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockWandJigsaw> wand_jigsaw = REG.block("wand_jigsaw",
-            BlockWandJigsaw::new, p -> p.instabreak().sound(SoundType.METAL))
+            BlockWandJigsaw::new, p -> p.requiresCorrectToolForDrops().instabreak().sound(SoundType.METAL))
             .transform(oriented())
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockWandLogic> wand_logic = REG.block("wand_logic",
-            BlockWandLogic::new, p -> p.instabreak().sound(SoundType.METAL))
+            BlockWandLogic::new, p -> p.requiresCorrectToolForDrops().instabreak().sound(SoundType.METAL))
             .transform(topRotated())
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockWandTandem> wand_tandem = REG.block("wand_tandem",
-            BlockWandTandem::new, p -> p.instabreak().sound(SoundType.METAL))
+            BlockWandTandem::new, p -> p.requiresCorrectToolForDrops().instabreak().sound(SoundType.METAL))
             .transform(oriented())
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockWandStructure> wand_structure = REG.block("wand_structure",
-            BlockWandStructure::new, p -> p.instabreak().sound(SoundType.METAL))
+            BlockWandStructure::new, p -> p.requiresCorrectToolForDrops().instabreak().sound(SoundType.METAL))
             .transform(Presets.shape(Models.group()
                             .and("", Models.cubeAll("hbm:blocks/wand_structure_save"))
                             .and("_load", Models.cubeAll("hbm:blocks/wand_structure_load")))
                     .states(Variants.select("mode", "save", "", "load", "_load"))
                     .noItem())
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     static {
         REG.blockItem(wand_air, Compat::blockDescription).transform(Presets.sprite("hbm:blocks/wand_air"));

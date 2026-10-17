@@ -1,6 +1,7 @@
 package com.hbm.handler.jei;
 
 import com.hbm.Constants;
+import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.inventory.recipes.ArcWelderRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes;
@@ -11,6 +12,7 @@ import com.hbm.inventory.recipes.FuelPoolRecipes;
 import com.hbm.inventory.recipes.GasCentrifugeRecipes;
 import com.hbm.inventory.recipes.ElectrolyserFluidRecipes;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
+import com.hbm.inventory.recipes.MagicRecipes;
 import com.hbm.inventory.recipes.MixerRecipes;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes;
 import com.hbm.inventory.recipes.PressRecipes;
@@ -90,6 +92,16 @@ public final class HbmJeiRecipeTypes {
     public static final ViewerType<SawmillRecipes.SawmillRecipe> SAWMILL =
             type("sawmill", SawmillRecipes.SawmillRecipe.class);
     public static final ViewerType<SILEXRecipes.SILEXRecipe> SILEX = type("silex", SILEXRecipes.SILEXRecipe.class);
+    public static final ViewerType<FluidContainerRegistry.Entry> FLUID_CONTAINERS =
+            type("fluid_containers", FluidContainerRegistry.Entry.class);
+    public static final ViewerType<ConstructionRecipeHandler.Row> CONSTRUCTION =
+            type("construction", ConstructionRecipeHandler.Row.class);
+    public static final ViewerType<ConstructionRecipeHandler.Row> TOOLING = type("tooling", ConstructionRecipeHandler.Row.class);
+    public static final ViewerType<CrucibleSmeltingHandler.Smelting> CRUCIBLE_SMELTING =
+            type("crucible_smelting", CrucibleSmeltingHandler.Smelting.class);
+    public static final ViewerType<CrucibleCastingHandler.Casting> CRUCIBLE_CASTING =
+            type("crucible_casting", CrucibleCastingHandler.Casting.class);
+    public static final ViewerType<MagicRecipes.MagicRecipe> BOOK = type("book_of_boxcars", MagicRecipes.MagicRecipe.class);
 
     public static final ViewerType<CrucibleRecipes.CrucibleRecipe> CRUCIBLE_ALLOY = type("crucible_alloy", CrucibleRecipes.CrucibleRecipe.class);
     public static final ViewerType<AnvilRecipes.AnvilConstructionRecipe> ANVIL_CON = type("anvil_construction", AnvilRecipes.AnvilConstructionRecipe.class);

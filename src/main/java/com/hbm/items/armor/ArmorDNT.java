@@ -6,20 +6,21 @@ import com.hbm.items.ModArmorItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.ArmorFSBPowered;
 import com.hbm.sound.ModSounds;
+import com.hbm.lib.Library;
 import com.hbm.util.TickPhase;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Attributes;
-import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.DamageEvents;
 import dev.golem.core.world.GolemArmorMaterial;
 import java.util.List;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -33,13 +34,23 @@ public class ArmorDNT extends ArmorFSBPowered {
         super(material, slot, properties, maxPower, chargeRate, consumption, drain);
     }
 
+    // 1.7 replaces the full-set lines here: always shown, one effect per line.
     @Override
-    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         List<Component> tooltip, TooltipFlag flag) {
-        super.appendCompatHoverText(stack, context, tooltip, flag);
-        tooltip.add(Component.literal("  + ").append(Component.translatable("armor.rocketBoots")));
-        tooltip.add(Component.literal("  + ").append(Component.translatable("armor.fastFall")));
-        tooltip.add(Component.literal("  + ").append(Component.translatable("armor.sprintBoost")));
+    public void addInformation(ItemStack stack, List<Component> tooltip) {
+        tooltip.add(Component.literal("Charge: " + Library.getShortNumber(getCharge(stack)) + " / "
+                + Library.getShortNumber(getMaxCharge(stack))));
+        tooltip.add(Component.translatable("armor.fullSetBonus").withStyle(ChatFormatting.GOLD));
+        for (MobEffectInstance effect : effects) tooltip.add(line(ChatFormatting.AQUA, effect.getDescriptionId()));
+        tooltip.add(line(ChatFormatting.RED, "armor.vats"));
+        tooltip.add(line(ChatFormatting.RED, "armor.thermal"));
+        tooltip.add(line(ChatFormatting.RED, "armor.hardLanding"));
+        tooltip.add(line(ChatFormatting.AQUA, "armor.rocketBoots"));
+        tooltip.add(line(ChatFormatting.AQUA, "armor.fastFall"));
+        tooltip.add(line(ChatFormatting.AQUA, "armor.sprintBoost"));
+    }
+
+    private static Component line(ChatFormatting colour, String key) {
+        return Component.literal("  ").append(Component.translatable(key)).withStyle(colour);
     }
 
     /** Called once per player tick so removing DNS cannot leave its transient speed modifier behind. */

@@ -1,5 +1,6 @@
 package com.hbm.items;
 
+import com.hbm.explosion.BlastInfo;
 import com.hbm.items.tool.ItemDetonator;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
@@ -63,11 +64,11 @@ public final class ModMissileItems {
     // Tier 0: the micro family, all solid-fuelled
 
     public static final RegistryObject<ItemMissileStandard> missile_micro =
-            missile("missile_micro", MissileFormFactor.MICRO, MissileTier.TIER0);
+            missile("missile_micro", MissileFormFactor.MICRO, MissileTier.TIER0, BlastInfo.MISSILE_MICRO);
     public static final RegistryObject<ItemMissileStandard> missile_bhole =
             missile("missile_bhole", MissileFormFactor.MICRO, MissileTier.TIER0);
     public static final RegistryObject<ItemMissileStandard> missile_schrabidium =
-            missile("missile_schrabidium", MissileFormFactor.MICRO, MissileTier.TIER0);
+            missile("missile_schrabidium", MissileFormFactor.MICRO, MissileTier.TIER0, BlastInfo.MISSILE_SCHRABIDIUM);
     public static final RegistryObject<ItemMissileStandard> missile_taint =
             missile("missile_taint", MissileFormFactor.MICRO, MissileTier.TIER0);
     public static final RegistryObject<ItemMissileStandard> missile_emp =
@@ -130,20 +131,26 @@ public final class ModMissileItems {
     // Tier 4: the atlas family
 
     public static final RegistryObject<ItemMissileStandard> missile_nuclear =
-            missile("missile_nuclear", MissileFormFactor.ATLAS, MissileTier.TIER4);
+            missile("missile_nuclear", MissileFormFactor.ATLAS, MissileTier.TIER4, BlastInfo.MISSILE_NUCLEAR);
     public static final RegistryObject<ItemMissileStandard> missile_nuclear_cluster =
-            missile("missile_nuclear_cluster", MissileFormFactor.ATLAS, MissileTier.TIER4);
+            missile("missile_nuclear_cluster", MissileFormFactor.ATLAS, MissileTier.TIER4, BlastInfo.MISSILE_MIRV);
     public static final RegistryObject<ItemMissileStandard> missile_volcano =
             missile("missile_volcano", MissileFormFactor.ATLAS, MissileTier.TIER4);
     public static final RegistryObject<ItemMissileStandard> missile_doomsday =
-            missile("missile_doomsday", MissileFormFactor.ATLAS, MissileTier.TIER4);
+            missile("missile_doomsday", MissileFormFactor.ATLAS, MissileTier.TIER4, BlastInfo.MISSILE_DOOMSDAY);
     /** Worldgen loot: a doomsday missile that must never fly. */
     public static final RegistryObject<ItemMissileStandard> missile_doomsday_rusted =
             REG.item("missile_doomsday_rusted", props -> new ItemMissileStandard(props,
-                    MissileFormFactor.ATLAS, MissileTier.TIER4).notLaunchable(), p -> p);
+                    MissileFormFactor.ATLAS, MissileTier.TIER4).notLaunchable()
+                    .blast(BlastInfo.MISSILE_DOOMSDAY_RUSTED), p -> p);
 
     private static RegistryObject<ItemMissileStandard> missile(String name, MissileFormFactor form, MissileTier tier) {
         return REG.item(name, props -> new ItemMissileStandard(props, form, tier), p -> p);
+    }
+
+    private static RegistryObject<ItemMissileStandard> missile(String name, MissileFormFactor form, MissileTier tier,
+                                                               BlastInfo blast) {
+        return REG.item(name, props -> new ItemMissileStandard(props, form, tier).blast(blast), p -> p);
     }
 
     private static RegistryObject<ItemMissileStandard> missile(String name, MissileFormFactor form, MissileTier tier,

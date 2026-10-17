@@ -5,6 +5,8 @@ import com.hbm.items.ModArmorModItems;
 import com.hbm.items.ModArmorSetBItems;
 import com.hbm.items.ModMeleeKitItems;
 import com.hbm.potion.ModEffects;
+import com.hbm.util.ArmorRegistry;
+import com.hbm.util.ArmorRegistry.HazardClass;
 import dev.golem.core.hook.Hook;
 import dev.golem.core.world.Durability;
 import dev.golem.core.world.Effects;
@@ -200,8 +202,8 @@ public class ArmorUtil {
     }
 
     /**
-     * 1.7 {@code ArmorUtil.addGasMaskTooltip}: the installed filter and its remaining life. The filter's
-     * own lore lines, which upstream appended in yellow, are not reproduced.
+     * 1.7 {@code ArmorUtil.addGasMaskTooltip}: the installed filter, its remaining life and, indented, the lines the
+     * tooltip event gives the filter (a 1.7 filter has only the protection info).
      */
     public static void addGasMaskTooltip(ItemStack mask, List<Component> list) {
         if (mask.isEmpty() || !(mask.getItem() instanceof IGasMask gasMask)) return;
@@ -217,6 +219,20 @@ public class ArmorUtil {
         int max = filter.getMaxDamage();
         String append = max > 0 ? " (" + ((max - meta) * 100 / max) + "%)" : "";
         list.add(Component.literal("  ").append(filter.getHoverName()).append(append));
+        List<Component> lore = new ArrayList<>();
+        ArmorRegistry.addProtectionInfo(filter.getItem(), lore);
+        for (Component line : lore) list.add(Component.literal("  ").append(line).withStyle(ChatFormatting.YELLOW));
+    }
+
+    /** 1.7 {@code ArmorGasMask.addInformation}: the filter, then the classes the mask never protects against. */
+    public static void addGasMaskInformation(ItemStack mask, List<Component> list) {
+        addGasMaskTooltip(mask, list);
+        List<HazardClass> haz = ((IGasMask) mask.getItem()).getBlacklist(mask);
+        if (haz.isEmpty()) return;
+        list.add(Component.translatable("hazard.neverProtects").withStyle(ChatFormatting.RED));
+        for (HazardClass clazz : haz) {
+            list.add(Component.literal(" -").append(Component.translatable(clazz.lang)).withStyle(ChatFormatting.DARK_RED));
+        }
     }
 
     /**

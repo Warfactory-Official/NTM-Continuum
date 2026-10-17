@@ -7,14 +7,11 @@ import com.hbm.items.machine.ItemSelfcharger;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.Library;
 import dev.golem.core.world.ArmorSlot;
-import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.GolemArmorMaterial;
 import java.util.List;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 /**
@@ -153,10 +150,9 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
     // which is what HbmArmorMaterials.T51 declares.
 
     @Override
-    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-            List<Component> tooltip, TooltipFlag flag) {
+    public void addInformation(ItemStack stack, List<Component> tooltip) {
         tooltip.add(Component.literal("Charge: " + Library.getShortNumber(getCharge(stack)) + " / "
-                + Library.getShortNumber(getMaxCharge(stack))).withStyle(ChatFormatting.GREEN));
-        super.appendCompatHoverText(stack, context, tooltip, flag);
+                + Library.getShortNumber(getMaxCharge(stack))));
+        super.addInformation(stack, tooltip);
     }
 }

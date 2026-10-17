@@ -5,13 +5,11 @@ import com.hbm.handler.JetpackHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.armor.JetpackFueledBase;
 import com.hbm.sound.ModSounds;
-import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
 /** Regular jetpack with the old automatic airborne hover assist. */
@@ -22,12 +20,11 @@ public class JetpackBreak extends JetpackFueledBase {
     }
 
     @Override
-    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
-                                         List<Component> tooltip, TooltipFlag flag) {
+    public void addInformation(ItemStack stack, List<Component> tooltip) {
         tooltip.add(Component.literal("Regular jetpack that will automatically hover mid-air."));
         tooltip.add(Component.literal("Sneaking will stop hover mode."));
         tooltip.add(Component.literal("Hover mode will consume less fuel and increase air-mobility."));
-        super.appendCompatHoverText(stack, context, tooltip, flag);
+        super.addInformation(stack, tooltip);
     }
 
     @Override

@@ -86,6 +86,10 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
     /** Klystron energy handed to us this tick; reset every tick after it is consumed. */
     public long klystronEnergy;
     private long klystronEnergySync;
+
+    /** Last tick's klystron energy, as the client sees it. */
+    public long klystronEnergySync() { return klystronEnergySync; }
+
     public long plasmaEnergy;
     public double fuelConsumption;
 

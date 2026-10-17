@@ -89,75 +89,75 @@ public final class ModEnergyNetBlocks {
     // --- pylons and wires ---
 
     public static final RegistryObject<PylonRedWire> red_pylon = REG.block("red_pylon", PylonRedWire::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.WOOD).noOcclusion()))
-            .transform(FOLDED);
+            p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.WOOD).noOcclusion()))
+            .transform(FOLDED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<PylonRedWire> red_pylon_steel = REG.block("red_pylon_steel", PylonRedWire::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
-            .transform(FOLDED);
+            p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
+            .transform(FOLDED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<PylonMedium> red_pylon_medium_wood = REG.block("red_pylon_medium_wood",
             p -> new PylonMedium(p, false, false), p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.WOOD).noOcclusion()))
-            .transform(FOLDED);
+            .transform(FOLDED).tag(BlockTag.AXE);
     public static final RegistryObject<PylonMedium> red_pylon_medium_wood_transformer = REG.block("red_pylon_medium_wood_transformer",
             p -> new PylonMedium(p, false, true), p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.WOOD).noOcclusion()))
-            .transform(FOLDED);
+            .transform(FOLDED).tag(BlockTag.AXE);
     public static final RegistryObject<PylonMedium> red_pylon_medium_steel = REG.block("red_pylon_medium_steel",
-            p -> new PylonMedium(p, true, false), p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
-            .transform(FOLDED);
+            p -> new PylonMedium(p, true, false), p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
+            .transform(FOLDED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<PylonMedium> red_pylon_medium_steel_transformer = REG.block("red_pylon_medium_steel_transformer",
-            p -> new PylonMedium(p, true, true), p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
-            .transform(FOLDED);
+            p -> new PylonMedium(p, true, true), p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
+            .transform(FOLDED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<PylonLarge> red_pylon_large = REG.block("red_pylon_large", PylonLarge::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
-            .transform(FOLDED);
+            p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
+            .transform(FOLDED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Substation> substation = REG.block("substation", Substation::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
-            .transform(FOLDED);
+            p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
+            .transform(FOLDED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<ConnectorRedWire> red_connector = REG.block("red_connector", ConnectorRedWire::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
-            .transform(CONNECTOR);
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            .transform(CONNECTOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<ConnectorRedWireSuper> red_connector_super = REG.block("red_connector_super", ConnectorRedWireSuper::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
-            .transform(CONNECTOR);
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            .transform(CONNECTOR).tag(BlockTag.PICKAXE);
 
     // --- cable variants ---
 
     public static final RegistryObject<BlockCableClassic> red_cable_classic = REG.block("red_cable_classic", BlockCableClassic::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .andThen(ModEnergyNetBlocks::classicCableStates)
             .icon(d -> d.shares("hbm:block/red_cable_classic_item"))
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockCableGauge> red_cable_gauge = REG.block("red_cable_gauge", BlockCableGauge::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
             .transform(Presets.statesOnly(Variants.facingAll()))
             .transform(Presets.shares("hbm:block/red_cable_gauge"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockCablePaintable> red_cable_paintable = REG.block("red_cable_paintable", BlockCablePaintable::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
             .andThen(ModEnergyNetBlocks::paintableCableStates)
             .icon(d -> d.shares("hbm:block/red_cable_paintable"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<CableSwitch> cable_switch = REG.block("cable_switch", CableSwitch::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
             .transform(onOff("hbm:blocks/cable_switch_off", "hbm:blocks/cable_switch_on"));
     public static final RegistryObject<CableDetector> cable_detector = REG.block("cable_detector", CableDetector::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
             .transform(onOff("hbm:blocks/cable_detector_off", "hbm:blocks/cable_detector_on"));
     public static final RegistryObject<CableDiode> cable_diode = REG.block("cable_diode", CableDiode::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.statesOnly(Variants.facingAll()))
             .transform(Presets.shares("hbm:block/cable_diode"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<PowerDetector> machine_detector = REG.block("machine_detector", PowerDetector::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
             .transform(onOff("hbm:blocks/machine_detector_off", "hbm:blocks/machine_detector"));
 
     // --- storage and conversion ---
 
     public static final RegistryObject<MachineCapacitorBus> capacitor_bus = REG.block("capacitor_bus", MachineCapacitorBus::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
             .transform(Presets.cubeBottomTop("hbm:blocks/capacitor_bus_side", "hbm:blocks/capacitor_bus_side", "hbm:blocks/capacitor_bus_out")
                     .states(Variants.facingUp()))
             .loot(Loot.self())
@@ -165,19 +165,19 @@ public final class ModEnergyNetBlocks {
     // 1.7 capacitor_copper/gold/niobium; the block ids carry a machine_ prefix because the bare names are the
     // battery-capacitor items in this port. Only copper sits on a tab, as upstream.
     public static final RegistryObject<MachineCapacitor> machine_capacitor_copper = REG.block("machine_capacitor_copper",
-            p -> new MachineCapacitor(p, 1_000_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
-            .transform(CAPACITOR);
+            p -> new MachineCapacitor(p, 1_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCapacitor> machine_capacitor_gold = REG.block("machine_capacitor_gold",
-            p -> new MachineCapacitor(p, 5_000_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
-            .transform(CAPACITOR);
+            p -> new MachineCapacitor(p, 5_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCapacitor> machine_capacitor_niobium = REG.block("machine_capacitor_niobium",
-            p -> new MachineCapacitor(p, 25_000_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
-            .transform(CAPACITOR);
+            p -> new MachineCapacitor(p, 25_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCapacitor> capacitor_tantalium = REG.block("capacitor_tantalium",
-            p -> new MachineCapacitor(p, 150_000_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new MachineCapacitor(p, 150_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCapacitor> capacitor_schrabidate = REG.block("capacitor_schrabidate",
-            p -> new MachineCapacitor(p, 50_000_000_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new MachineCapacitor(p, 50_000_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineBatteryTier> machine_battery_potato = REG.block("machine_battery_potato",
             p -> new MachineBatteryTier(p, 10_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
@@ -192,13 +192,13 @@ public final class ModEnergyNetBlocks {
             p -> new MachineBatteryTier(p, 1_000_000_000_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(battery("battery_dineutronium"));
     public static final RegistryObject<HEVBattery> hev_battery = REG.block("hev_battery", HEVBattery::new,
-            p -> p.strength(0.5F, 0.25F).sound(SoundType.METAL).lightLevel(s -> 10).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(0.5F, 0.25F).sound(SoundType.METAL).lightLevel(s -> 10).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
-            .loot(Loot.only("hbm:hev_battery_block"));
+            .loot(Loot.only("hbm:hev_battery_block")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineTesla> tesla = REG.block("tesla", MachineTesla::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<ItemWiring> wiring_red_copper = REG.item("wiring_red_copper",
             ItemWiring::new, p -> p.stacksTo(1)).transform(Presets.sprite());

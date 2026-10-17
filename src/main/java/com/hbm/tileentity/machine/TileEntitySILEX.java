@@ -381,8 +381,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         tank.writeToNBT(output, "tankNew"); // the 1.12.2 key
         if (current != null && !current.isEmpty()) {
             output.putString("item", BuiltInRegistries.ITEM.getKey(current.getItem()).toString());
-            output.putInt("meta", current.getItem() instanceof ItemFluidIcon
-                    ? Fluids.networkId(ItemFluidIcon.getFluid(current)) : -1);
+            if (current.getItem() instanceof ItemFluidIcon) Fluids.write(output, "fluid", ItemFluidIcon.getFluid(current));
         }
     }
 
@@ -394,6 +393,12 @@ public class TileEntitySILEX extends TileEntityMachineBase
         mode = EnumWavelengths.byName(input.getStringOr("mode", EnumWavelengths.NULL.name()));
         tank.readFromNBT(input, "tankNew");
         String item = input.getStringOr("item", "");
-        current = item.isEmpty() ? null : readSubstance(item, input.getIntOr("meta", -1));
+        if (item.isEmpty()) {
+            current = null;
+        } else if (input.getStringOr("fluid", null) != null) {
+            current = ItemFluidIcon.make(Fluids.read(input, "fluid"));
+        } else {
+            current = readSubstance(item, -1);
+        }
     }
 }

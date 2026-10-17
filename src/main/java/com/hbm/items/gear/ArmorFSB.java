@@ -636,10 +636,15 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
 
     // Tooltip
 
+    // 1.7 adds the resistances in its tooltip event, after the item's lines; here before the attribute lines 1.7 lacks.
     @Override
-    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+    protected final void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
             List<Component> tooltip, TooltipFlag flag) {
+        addInformation(stack, tooltip);
+        DamageResistanceHandler.addInfo(stack, tooltip);
+    }
 
+    public void addInformation(ItemStack stack, List<Component> tooltip) {
         List<Component> toAdd = new ArrayList<>();
 
         if (!effects.isEmpty()) {
@@ -662,8 +667,6 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
             tooltip.add(Component.translatable("armor.fullSetBonus").withStyle(ChatFormatting.GOLD));
             tooltip.addAll(toAdd);
         }
-
-        DamageResistanceHandler.addInfo(stack, tooltip);
     }
 
     private static Component bonus(String key, ChatFormatting color, Object... args) {

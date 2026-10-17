@@ -311,6 +311,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("dfc_cores", 20, () -> DFCGameTests::cores);
     public static final GameTests.Function DFC_ASSETS =
             TESTS.function("dfc_assets", 20, () -> DFCGameTests::assets);
+    public static final GameTests.Function BLOCK_INFO_MACHINES =
+            TESTS.function("block_info_machines", 20, () -> BlockInfoGameTests::machines);
     public static final GameTests.Function CHUNGUS_STRUCTURE =
             TESTS.function("chungus_structure", 100, 24, () -> ChungusGameTests::structure);
     public static final GameTests.Function CHUNGUS_PORTS =
@@ -928,6 +930,10 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_firing_routes", 20, () -> GunGameTests::gunFiringRoutes);
     public static final GameTests.Function GUN_MOB_HELD_KEYBINDS =
             TESTS.function("gun_mob_held_keybinds", 100, () -> GunGameTests::gunMobHeldKeybinds);
+    public static final GameTests.Function MINING_PICKAXE_EFFECTIVE =
+            TESTS.function("mining_pickaxe_effective", 20, () -> MiningToolGameTests::pickaxeEffective);
+    public static final GameTests.Function MINING_BREAK_SPEED =
+            TESTS.function("mining_break_speed", 20, () -> MiningToolGameTests::breakSpeed);
     public static final GameTests.Function GUN_DEBUG_SECONDARY_FIRE =
             TESTS.function("gun_debug_secondary_fire", 200, () -> GunGameTests::gunDebugSecondaryFire);
     public static final GameTests.Function GUN_MINIGUN_FIRING_ROUTES =
@@ -1496,6 +1502,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("fluid_trait_tooltip_order", 20, () -> FluidTraitGameTests::tooltipOrder);
     public static final GameTests.Function TOOLTIP_COLOURS =
             TESTS.function("tooltip_colours", 20, () -> TooltipColourGameTests::colours);
+    public static final GameTests.Function ARMOR_TOOLTIPS =
+            TESTS.function("armor_tooltips", 20, () -> ArmorTooltipGameTests::tooltips);
 
     // --- 1.7 chemical spray / mist: temperature, flamethrower, XP and ender juice, isDispersable (ChemicalSprayGameTests) ---
     public static final GameTests.Function CHEMICAL_SPRAY_TEMPERATURE =

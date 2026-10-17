@@ -6,6 +6,7 @@ import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ItemEnums.SoyuzSkinType;
 import com.hbm.items.ItemFamily;
 import com.hbm.items.special.ItemSoyuz;
+import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
@@ -43,13 +44,13 @@ public final class ModSoyuzBlocks {
             "soyuz_launcher", SoyuzLauncher::new,
             p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(Presets.shape(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/soyuz_launcher"))).noItem())
-            .loot(Loot.nothing());
+            .loot(Loot.nothing()).tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<SoyuzStruct> struct_soyuz_core = REG.block(
             "struct_soyuz_core", SoyuzStruct::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll().noItem())
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<BlockItem> struct_soyuz_core_item =
             REG.blockItem(struct_soyuz_core)

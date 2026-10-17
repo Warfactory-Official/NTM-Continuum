@@ -89,7 +89,7 @@ public final class ModAnvilBlocks {
 
     private static Reg.Handle<NTMAnvil> anvil(String id, int tier) {
         Reg.Handle<NTMAnvil> block = REG.block(id, p -> new NTMAnvil(p, tier),
-                p -> p.strength(5.0F, 100.0F).sound(SoundType.ANVIL).noOcclusion());
+                p -> p.requiresCorrectToolForDrops().strength(5.0F, 100.0F).sound(SoundType.ANVIL).noOcclusion());
         Reg.Handle<BlockItem> item = REG.item(id,
                 p -> new ItemBlockAnvil(block.get(), p), p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.MACHINES, item);

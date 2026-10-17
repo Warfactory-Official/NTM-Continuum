@@ -183,12 +183,12 @@ public final class ModDungeonBlocks {
     // Hidden structure blocks (no creative tab)
     /** 1.7 {@code BlockKeyhole extends BlockStone}, which set no hardness of its own. */
     public static final RegistryObject<BlockKeyhole> stone_keyhole = block("stone_keyhole", BlockKeyhole::new,
-            p -> p.strength(0.0F, 0.0F).sound(SoundType.STONE), null)
+            p -> p.requiresCorrectToolForDrops().strength(0.0F, 0.0F).sound(SoundType.STONE), null)
             .transform(column("minecraft:block/stone", "hbm:blocks/stone_keyhole"))
             // 1.7 BlockKeyhole extends BlockStone, which drops cobblestone
-            .loot(Loot.only("minecraft:cobblestone"));
+            .loot(Loot.only("minecraft:cobblestone")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockRedBrickKeyhole> stone_keyhole_meta = block("stone_keyhole_meta", BlockRedBrickKeyhole::new,
-            p -> p.strength(0.0F, 10_000.0F).sound(SoundType.STONE), null)
+            p -> p.requiresCorrectToolForDrops().strength(0.0F, 10_000.0F).sound(SoundType.STONE), null)
             .model(d -> d.models(Models.group()
                             .and("", Models.parented("minecraft:block/cube", Slots.of("particle", "hbm:blocks/brick_base")
                                     .and("down", "hbm:blocks/brick_base").and("up", "hbm:blocks/brick_base")
@@ -198,7 +198,7 @@ public final class ModDungeonBlocks {
                     .states(Variants.of(Set.of("facing"), keyholeStates()))
                     .blockItemDirect())
             // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
-            .loot(Loot.silkTouchOnly());
+            .loot(Loot.silkTouchOnly()).tag(BlockTag.PICKAXE);
     /** 1.7 RenderPedestal: foot 0..0.25, head 0.75..1, column 0.125..0.875 between. */
     public static final RegistryObject<BlockPedestal> pedestal = block("pedestal", BlockPedestal::new,
             p -> rock(2.0F, 10.0F).apply(p).noOcclusion(), null)
@@ -213,10 +213,10 @@ public final class ModDungeonBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockLoot> deco_loot = block("deco_loot", BlockLoot::new,
-            p -> p.strength(0.0F, 0.0F).sound(SoundType.METAL).noOcclusion(), null)
+            p -> p.requiresCorrectToolForDrops().strength(0.0F, 0.0F).sound(SoundType.METAL).noOcclusion(), null)
             .transform(Presets.rendered(DUMMY, Variants.simple()))
             .transform(Presets.sprite("hbm:blocks/block_steel"))
-            .loot(Loot.nothing());
+            .loot(Loot.nothing()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockLanternBehemoth> lantern_behemoth = block("lantern_behemoth", BlockLanternBehemoth::new,
             p -> p.strength(3.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops()
                     .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false), null)
@@ -230,15 +230,15 @@ public final class ModDungeonBlocks {
             .loot(Loot.nothing());
     // both drawn by RenderLogicBlock (the invisible one by nothing); the model is their particle and item
     public static final RegistryObject<LogicBlock> logic_block = block("logic_block", p -> new LogicBlock(p, false),
-            p -> p.strength(0.0F, 0.0F).sound(SoundType.STONE).noOcclusion(), null)
+            p -> p.requiresCorrectToolForDrops().strength(0.0F, 0.0F).sound(SoundType.STONE).noOcclusion(), null)
             .transform(Presets.rendered(DUMMY, Variants.simple()))
             .icon(d -> d.models(Models.cubeAll("hbm:blocks/logic_block")))
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<LogicBlock> logic_block_invis = block("logic_block_invis", p -> new LogicBlock(p, true),
-            p -> p.strength(0.0F, 0.0F).sound(SoundType.STONE).noOcclusion(), null)
+            p -> p.requiresCorrectToolForDrops().strength(0.0F, 0.0F).sound(SoundType.STONE).noOcclusion(), null)
             .transform(Presets.rendered(DUMMY, Variants.simple()))
             .transform(Presets.sprite("hbm:blocks/logic_block"))
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     // Rails (1.7 transport tab. The port has no vanilla-tab hook, so they sit on the machine tab like the large rails).
     public static final RegistryObject<RailGeneric> rail_wood = rail("rail_wood", p -> new RailGeneric(p).setMaxSpeed(0.2F),

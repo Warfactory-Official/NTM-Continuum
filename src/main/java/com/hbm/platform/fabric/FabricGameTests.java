@@ -69,6 +69,7 @@ import com.hbm.gametest.RadiationPersistenceGameTests;
 import com.hbm.gametest.RadioGameTests;
 import com.hbm.gametest.RadioProviderGameTests;
 import com.hbm.gametest.RecipeContentGameTests;
+import com.hbm.gametest.RecipeViewerGameTests;
 import com.hbm.gametest.RecipeTableGameTests;
 import com.hbm.gametest.RtgGameTests;
 import com.hbm.gametest.ScriptHookGameTests;
@@ -85,6 +86,7 @@ import com.hbm.gametest.UtilityToolGameTests;
 import com.hbm.gametest.ValueMapGameTests;
 import com.hbm.gametest.WeaponTableGameTests;
 import com.hbm.gametest.WorldgenImpactGameTests;
+import dev.golem.core.gametest.GameTests;
 
 
 /**
@@ -141,6 +143,7 @@ public final class FabricGameTests {
         Fix7BossGameTests.init();
         Fix7MobGameTests.init();
         RecipeContentGameTests.init();
+        RecipeViewerGameTests.init();
         UtilityToolGameTests.init();
         AssemblyFactoryGameTests.init();
         ChemicalFactoryGameTests.init();
@@ -232,6 +235,7 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix7BossGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix7MobGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.RecipeContentGameTests.TESTS);
+        GameTests.register(RecipeViewerGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.UtilityToolGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.AssemblyFactoryGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ChemicalFactoryGameTests.TESTS);

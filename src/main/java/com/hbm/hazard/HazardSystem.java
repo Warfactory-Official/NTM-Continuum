@@ -1,7 +1,10 @@
 package com.hbm.hazard;
 
 import com.hbm.handler.HazmatRegistry;
+import com.hbm.items.gear.ArmorFSB;
+import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ContaminationUtil;
+import com.hbm.util.DamageResistanceHandler;
 import dev.golem.core.Ids;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -308,8 +311,13 @@ public class HazardSystem {
         CARRIED.scanNow(player);
     }
 
-    /** Adds hazard tooltip info; wired from each loader's item-tooltip event. */
+    /**
+     * 1.7 {@code ModEventHandlerClient.drawTooltip}: damage resistance, protection classes, radiation resistance,
+     * hazards. Wired from each loader's item-tooltip event; {@link ArmorFSB} adds its resistances itself.
+     */
     public static void addHazardInfo(ItemStack stack, Player player, List<Component> list) {
+        if (!(stack.getItem() instanceof ArmorFSB)) DamageResistanceHandler.addInfo(stack, list);
+        ArmorRegistry.addProtectionInfo(stack.getItem(), list);
         double rad = HazmatRegistry.getResistance(stack);
         rad = ((int) (rad * 1000)) / 1000D;
         if (rad > 0) {

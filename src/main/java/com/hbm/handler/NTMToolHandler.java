@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -83,9 +83,21 @@ public final class NTMToolHandler {
     }
 
     public static @Nullable Conversion get(ToolType tool, Block from) {
+        return resolve().get(new Key(tool, from));
+    }
+
+    /** Every conversion, code rows first, as 1.7's {@code BlockToolConversion.getRecipes} listed them for NEI. */
+    public static List<Row> all() {
+        List<Row> rows = new ArrayList<>();
+        resolve().forEach((key, conversion) ->
+                rows.add(new Row(key.tool(), key.from(), conversion.result().get(), conversion.materials())));
+        return rows;
+    }
+
+    private static Map<Key, Conversion> resolve() {
         Map<Key, Conversion> map = resolved;
         if (map == null) {
-            map = new HashMap<>();
+            map = new LinkedHashMap<>();
             synchronized (NTMToolHandler.class) {
                 for (Entry e : ENTRIES) map.put(new Key(e.tool(), e.from().get()), e.conversion());
             }
@@ -95,7 +107,7 @@ public final class NTMToolHandler {
             }
             resolved = map;
         }
-        return map.get(new Key(tool, from));
+        return map;
     }
 
     /**

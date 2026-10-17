@@ -46,7 +46,7 @@ public final class ModOilBlocks {
      * plain opaque cube without a tile entity, so 1.7's default {@code canSilkHarvest} lets silk touch keep it.
      */
     public static final RegistryObject<Block> oil_pipe = REG.block("oil_pipe",
-            Block::new, p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL))
+            Block::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
             .transform(Presets.cubeAll())
             .loot(Loot.silkTouchOnly())
             .tag(BlockTag.PICKAXE);

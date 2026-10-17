@@ -4,6 +4,8 @@ package com.hbm.platform.neoforge;
 
 
 import com.hbm.Constants;
+import com.hbm.gametest.RecipeViewerGameTests;
+import dev.golem.core.gametest.GameTests;
 import java.util.List;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.RegistryObject;
@@ -69,6 +71,7 @@ public class NeoForgeInit {
         com.hbm.gametest.Fix7BossGameTests.init();
         com.hbm.gametest.Fix7MobGameTests.init();
         com.hbm.gametest.RecipeContentGameTests.init();
+        RecipeViewerGameTests.init();
         com.hbm.gametest.UtilityToolGameTests.init();
         com.hbm.gametest.AssemblyFactoryGameTests.init();
         com.hbm.gametest.ChemicalFactoryGameTests.init();
@@ -191,6 +194,7 @@ public class NeoForgeInit {
                 com.hbm.gametest.Fix7MobGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.RecipeContentGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> GameTests.register(event, RecipeViewerGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.UtilityToolGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,

@@ -70,10 +70,10 @@ public final class ModGearItems {
     public static final RegistryObject<Item> hazmat_boots_grey = armor("hazmat_boots_grey", () -> HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.BOOTS);
 
     // Gas masks and replaceable filters
-    public static final RegistryObject<ItemGasMask> gas_mask = gasMask("gas_mask", "hbm:items/gas_mask", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
-    public static final RegistryObject<ItemGasMask> gas_mask_m65 = gasMask("gas_mask_m65", "hbm:items/gas_mask_m65", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
-    public static final RegistryObject<ItemGasMask> gas_mask_mono = gasMask("gas_mask_mono", "hbm:items/gas_mask_mono", List.of(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT, HazardClass.BACTERIA));
-    public static final RegistryObject<ItemGasMask> gas_mask_olde = gasMask("gas_mask_olde", "hbm:items/gas_mask_olde", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
+    public static final RegistryObject<ItemGasMask> gas_mask = gasMask("gas_mask", "hbm:items/gas_mask", List.of(HazardClass.GAS_BLISTERING));
+    public static final RegistryObject<ItemGasMask> gas_mask_m65 = gasMask("gas_mask_m65", "hbm:items/gas_mask_m65", List.of(HazardClass.GAS_BLISTERING));
+    public static final RegistryObject<ItemGasMask> gas_mask_mono = gasMask("gas_mask_mono", "hbm:items/gas_mask_mono", List.of(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA));
+    public static final RegistryObject<ItemGasMask> gas_mask_olde = gasMask("gas_mask_olde", "hbm:items/gas_mask_olde", List.of(HazardClass.GAS_BLISTERING));
     public static final RegistryObject<Item> gas_mask_filter_rag = filter("gas_mask_filter_rag", "hbm:items/gas_mask_filter_rag", 4_000);
     public static final RegistryObject<Item> gas_mask_filter_piss = filter("gas_mask_filter_piss", "hbm:items/gas_mask_filter_piss", 4_000);
     public static final RegistryObject<Item> gas_mask_filter_mono = filter("gas_mask_filter_mono", "hbm:items/gas_mask_filter_mono", 12_000);

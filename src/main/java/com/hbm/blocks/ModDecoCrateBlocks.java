@@ -160,8 +160,8 @@ public final class ModDecoCrateBlocks {
     // Deco props
     /** 1.7: iron, hardness and resistance 0; drops itself to any tool (onBlockHarvested). */
     public static final RegistryObject<BlockBobble> bobblehead = REG.block("bobblehead", BlockBobble::new,
-                    rendered(p -> p.strength(0.0F, 0.0F).sound(SoundType.METAL)))
-            .transform(ROTATING_PROP);
+                    rendered(p -> p.requiresCorrectToolForDrops().strength(0.0F, 0.0F).sound(SoundType.METAL)))
+            .transform(ROTATING_PROP).tag(BlockTag.PICKAXE);
     /** 1.7: cloth sound, hardness 0 (the 500,000 resistance was overwritten by the later 0). */
     public static final RegistryObject<BlockPlushie> plushie = REG.block("plushie", BlockPlushie::new,
                     rendered(p -> p.strength(0.0F, 0.0F).sound(SoundType.WOOL)))

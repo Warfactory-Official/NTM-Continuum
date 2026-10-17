@@ -223,7 +223,7 @@ public final class ModDecoContent {
                     HbmTab.BLOCKS)
             .transform(Presets.rendered(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
                     Variants.uniform("cell", "false", "true"))))
-            .loot(Loot.self());
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     /** DemonLamp: BlockContainer(Material.iron), metal sound, light 1.0, hardness 3. */
     public static final RegistryObject<DemonLamp> lamp_demon = plain("lamp_demon", DemonLamp::new,
@@ -286,7 +286,7 @@ public final class ModDecoContent {
      * set only by the keyhole rooms.
      */
     public static final RegistryObject<BlockRedBrick> brick_red = REG.block("brick_red", BlockRedBrick::new,
-                    p -> p.strength(0.0F, 10_000.0F))
+                    p -> p.requiresCorrectToolForDrops().strength(0.0F, 10_000.0F))
             .model(d -> d.models(Models.group()
                             .and("", Models.parented("minecraft:block/cube", Slots.of("particle", "hbm:blocks/brick_base")
                                     .and("down", "hbm:blocks/brick_base").and("up", "hbm:blocks/brick_base")
@@ -297,7 +297,7 @@ public final class ModDecoContent {
                     .states(Variants.of(Set.of("facing", "plain"), redBrickStates()))
                     .blockItemDirect())
             // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
-            .loot(Loot.silkTouchOnly());
+            .loot(Loot.silkTouchOnly()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockWriting> brick_concrete_marked = plain("brick_concrete_marked", BlockWriting::new,
             p -> p.strength(15.0F, 160.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(Presets.cubeBottomTop("hbm:blocks/brick_concrete", "hbm:blocks/brick_concrete_marked", "hbm:blocks/brick_concrete"))
@@ -388,7 +388,7 @@ public final class ModDecoContent {
             .tag(BlockTag.PICKAXE);
     // panes: multipart blockstates and models are authored; only the flat item and the loot are declared
     public static final RegistryObject<BlockNTMGlassPane> reinforced_glass_pane = plain("reinforced_glass_pane", BlockNTMGlassPane::new,
-            p -> p.strength(2.0F, 25.0F).sound(SoundType.GLASS).noOcclusion(), HbmTab.BLOCKS)
+            p -> p.requiresCorrectToolForDrops().strength(2.0F, 25.0F).sound(SoundType.GLASS).noOcclusion(), HbmTab.BLOCKS)
             .transform(Presets.sprite("hbm:blocks/reinforced_glass_pane"))
             // 1.7 BlockNTMGlassPane passes "drops itself = false" to BlockPane, whose getItemDropped is then null
             // (doesDrop only fed quantityDropped); BlockPane.canSilkHarvest() is true. Same for the laminate pane.
@@ -440,7 +440,7 @@ public final class ModDecoContent {
     // Loot crates
     public static final RegistryObject<BlockCrate> crate_weapon = plain("crate_weapon", p -> new BlockCrate(p, BlockCrate.Kind.WEAPON),
             p -> p.strength(5.0F, 10.0F).sound(SoundType.WOOD), HbmTab.CONSUMABLES)
-            .transform(CUBE);
+            .transform(CUBE).tag(BlockTag.AXE);
     public static final RegistryObject<BlockCrate> crate_lead = plain("crate_lead", p -> new BlockCrate(p, BlockCrate.Kind.LEAD),
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES)
             .transform(CUBE).tag(BlockTag.PICKAXE);

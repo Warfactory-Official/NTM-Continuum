@@ -1,64 +1,73 @@
 package com.hbm.handler.jei;
 
 import com.hbm.inventory.recipes.SILEXRecipes;
+import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
+import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.viewer.Role;
+import dev.golem.core.viewer.SlotLayout;
 import dev.golem.core.viewer.ViewerType;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * JEI category for the SILEX, on the universal handler.
- *
- * <p>Upstream split this into <b>six</b> categories (a general one plus one per wavelength) so that
- * clicking a laser crystal showed exactly the recipes that crystal unlocks. That split existed because
- * 1.12.2 JEI had no way to filter within a category. Here it is a single category and each recipe
- * states its own requirement on the stat lines, which is both simpler and more honest: a recipe listed
- * under "IR" also runs on every stronger wavelength.
- *
- * <p>Stat lines mirror the old {@code JeiRecipes} wrapper: the required wavelength, and the
- * multiplier {@code fluidProduced / fluidConsumed}, how many output rolls one input item yields.
- * Per-output percentages come from the weights.
+ * 1.7 {@code SILEXRecipeHandler}: {@code gui_nei_silex.png}, the wavelength in the label box, the input at
+ * {@code (12,24)} with its output multiplier under the arrow, and the outputs in one or two columns, each with its share
+ * of the total weight.
  */
-public class SILEXRecipeHandler extends JEIUniversalHandler<SILEXRecipes.SILEXRecipe> {
+public class SILEXRecipeHandler extends HbmRecipeCategory<SILEXRecipes.SILEXRecipe> {
 
-    public SILEXRecipeHandler(ViewerType<SILEXRecipes.SILEXRecipe> type, Component title, ItemStack... machines) {
-        super(type, title, machines);
+    public SILEXRecipeHandler(ViewerType<SILEXRecipes.SILEXRecipe> type, Component title, ItemStack machine) {
+        super(type, title, machine, "gui_nei_silex.png");
+    }
+
+    public static List<SILEXRecipes.SILEXRecipe> buildRecipes() {
+        SILEXRecipes.register();
+        return SILEXRecipes.recipes;
+    }
+
+    /** 1.7 {@code RecipeSet}: output {@code i} of {@code count}, as an item position. */
+    static int[] outputPos(int i, int count) {
+        int sep = count > 4 ? 3 : 2;
+        if (i < sep) return new int[]{68, 24 + i * 18 - 9 * ((Math.min(count, sep) + 1) / 2)};
+        return new int[]{116, 24 + (i - sep) * 18 - 9 * ((Math.min(count - sep, sep) + 1) / 2)};
     }
 
     @Override
-    protected List<List<ItemStack>> inputs(SILEXRecipes.SILEXRecipe recipe) {
-        List<List<ItemStack>> list = new ArrayList<>();
-        List<ItemStack> input = recipe.input.getDisplayStacks();
-        if (!input.isEmpty()) list.add(input);
-        return list;
-    }
-
-    @Override
-    protected List<List<ItemStack>> outputs(SILEXRecipes.SILEXRecipe recipe) {
-        List<List<ItemStack>> list = new ArrayList<>();
-        for (SILEXRecipes.WeightedOutput out : recipe.outputs) {
-            list.add(List.of(out.stack()));
+    public void setRecipe(SlotLayout builder, SILEXRecipes.SILEXRecipe recipe) {
+        builder.addSlot(Role.INPUT, 12, 24).addItemStacks(recipe.input.getDisplayStacks());
+        for (int i = 0; i < recipe.outputs.size(); i++) {
+            int[] pos = outputPos(i, recipe.outputs.size());
+            builder.addSlot(Role.OUTPUT, pos[0], pos[1]).addItemStack(recipe.outputs.get(i).stack());
         }
-        return list;
     }
 
     @Override
     public void draw(SILEXRecipes.SILEXRecipe recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
         super.draw(recipe, g, mouseX, mouseY);
-        text(g, Component.translatable(recipe.laserStrength.name).getString() + " laser or stronger", 8, 44);
-        int rolls = recipe.fluidConsumed > 0 ? recipe.fluidProduced / recipe.fluidConsumed : 0;
-        if (rolls > 0) text(g, rolls + "x output per input", 8, 54);
+        Font font = Minecraft.getInstance().font;
 
-        int total = recipe.totalWeight();
-        if (total <= 0) return;
-        StringBuilder chances = new StringBuilder();
-        for (SILEXRecipes.WeightedOutput out : recipe.outputs) {
-            if (!chances.isEmpty()) chances.append(", ");
-            chances.append(Math.round(out.weight() * 100F / total)).append('%');
+        double weight = recipe.totalWeight();
+        for (int i = 0; i < recipe.outputs.size(); i++) {
+            double chance = 100 * recipe.outputs.get(i).weight() / weight;
+            int[] pos = outputPos(i, recipe.outputs.size());
+            text(g, ((int) (chance * 10D) / 10D) + "%", pos[0] + 18, pos[1] + 4);
         }
-        text(g, chances.toString(), 8, 64);
+
+        // 1.7 divides the ints before widening, so a 900/1000 recipe reads 0.0x
+        double produced = recipe.fluidProduced / recipe.fluidConsumed;
+        String am = ((int) (produced * 10D) / 10D) + "x";
+        text(g, am, 52 - font.width(am) / 2, 43);
+
+        EnumWavelengths laser = recipe.laserStrength;
+        Component wavelength = laser == EnumWavelengths.NULL
+                ? Component.literal("N/A").withStyle(ChatFormatting.WHITE)
+                : Component.translatable(laser.name).withStyle(laser.textColor);
+        GuiDraw.text(g, font, wavelength, 33 - font.width(wavelength) / 2, 8, 0xFF404040, false);
     }
 }

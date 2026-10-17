@@ -173,10 +173,10 @@ public final class ModTerrainBlocks {
     /** No creative tab upstream (the huge mushroom is grown, not placed). */
     public static final RegistryObject<BlockMushHuge> mush_block = block("mush_block", BlockMushHuge::new,
             p -> p.strength(0.2F).sound(SoundType.GRASS).lightLevel(s -> 15), null)
-            .transform(Presets.cubeAll("hbm:blocks/mush_block_skin"));
+            .transform(Presets.cubeAll("hbm:blocks/mush_block_skin")).tag(BlockTag.AXE);
     public static final RegistryObject<BlockMushHuge> mush_block_stem = block("mush_block_stem", BlockMushHuge::new,
             p -> p.strength(0.2F).sound(SoundType.GRASS).lightLevel(s -> 15), null)
-            .transform(Presets.column("hbm:blocks/mush_block_inside", "hbm:blocks/mush_block_stem"));
+            .transform(Presets.column("hbm:blocks/mush_block_inside", "hbm:blocks/mush_block_stem")).tag(BlockTag.AXE);
     /**
      * {@code BlockLayering(Material.leaves)}, texture {@code waste_leaves}, hardness 0.1: the snow-layer shape over
      * waste_leaves (as oil_spill / foam_layer).
@@ -422,9 +422,9 @@ public final class ModTerrainBlocks {
             String id = base + "_" + variant.toLowerCase(Locale.ROOT);
             Direction anchor = base.equals("stalagmite") ? Direction.DOWN : Direction.UP;
             SPIKES.put(id, block(id, p -> new BlockStalagmite(p, anchor, drop),
-                    p -> p.strength(0.5F, 2.0F).sound(SoundType.STONE).noOcclusion().noCollision(), HbmTab.BLOCKS)
+                    p -> p.requiresCorrectToolForDrops().strength(0.5F, 2.0F).sound(SoundType.STONE).noOcclusion().noCollision(), HbmTab.BLOCKS)
                     .transform(plant("hbm:blocks/" + base + "." + variant.toLowerCase(Locale.ROOT)))
-                    .loot(Loot.nothing())); // BlockStalagmite computes its own drops
+                    .loot(Loot.nothing()).tag(BlockTag.PICKAXE)); // BlockStalagmite computes its own drops
         }
     }
 

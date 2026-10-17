@@ -1,6 +1,7 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.entity.explosive.ModExplosiveEntities;
+import com.hbm.explosion.BlastInfo;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
@@ -45,11 +46,11 @@ public final class ModBombBlocks {
 
     /** Taint residue: a hard, spreading block with a shallow collision box. */
     public static final RegistryObject<BlockTaint> taint = REG.block("taint", BlockTaint::new,
-                    p -> p.mapColor(MapColor.COLOR_GRAY).strength(15.0F, 10.0F).sound(SoundType.METAL)
+                    p -> p.requiresCorrectToolForDrops().mapColor(MapColor.COLOR_GRAY).strength(15.0F, 10.0F).sound(SoundType.METAL)
                             .randomTicks())
             .transform(Presets.cubeAll().states(Variants.uniformRange("taintage", 0, 15)).viaItemModel())
             // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
-            .loot(Loot.silkTouchOnly());
+            .loot(Loot.silkTouchOnly()).tag(BlockTag.PICKAXE);
 
     // --- the DRX/GAMMA burn products. No creative tab upstream (setCreativeTab(null)) and no block
     // item: these exist only to be PLACED by a balefire detonation or an FEL beam. ---
@@ -125,10 +126,10 @@ public final class ModBombBlocks {
 
     /** The firework battery. 1.7 sets resistance only, leaving the default 1.0 hardness. */
     public static final RegistryObject<BlockFireworks> fireworks = REG.block(
-                    "fireworks", BlockFireworks::new, p -> p.strength(1.0F, 5.0F).sound(SoundType.METAL))
+                    "fireworks", BlockFireworks::new, p -> p.requiresCorrectToolForDrops().strength(1.0F, 5.0F).sound(SoundType.METAL))
             .transform(Presets.cubeBottomTop("hbm:blocks/fireworks_bottom", "hbm:blocks/fireworks_side",
                     "hbm:blocks/fireworks_top"))
-            .loot(Loot.selfAlways());
+            .loot(Loot.selfAlways()).tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<BlockTNT> tnt = REG.block(
                     "tnt_ntm", BlockTNT::new, p -> p.strength(0.0F).sound(SoundType.GRASS).ignitedByLava())
@@ -146,17 +147,18 @@ public final class ModBombBlocks {
     static {
         // BlockTaint's old constructor put its item in the control tab, unlike the missile item itself.
         REG.blockItem(taint, ItemBlockTaint::new, Compat::blockDescription).tab(HbmTab.CONTROL);
-        REG.blockItem(nuke_man, (b, p) -> new ItemNukeBlock(b, p, ItemNukeBlock.Type.FAT_MAN),
+        REG.blockItem(nuke_man, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.FAT_MAN),
                 Compat::blockDescription).tab(HbmTab.BOMBS);
-        REG.blockItem(nuke_n2, (b, p) -> new ItemNukeBlock(b, p, ItemNukeBlock.Type.N2),
+        REG.blockItem(nuke_n2, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.N2),
                 Compat::blockDescription).tab(HbmTab.BOMBS);
-        REG.blockItem(nuke_boy, (b, p) -> new ItemNukeBlock(b, p, ItemNukeBlock.Type.LITTLE_BOY),
+        REG.blockItem(nuke_boy, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.LITTLE_BOY),
                 Compat::blockDescription).tab(HbmTab.BOMBS);
-        REG.blockItem(nuke_gadget, (b, p) -> new ItemNukeBlock(b, p, ItemNukeBlock.Type.GADGET),
+        REG.blockItem(nuke_gadget, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.GADGET),
                 Compat::blockDescription).tab(HbmTab.BOMBS);
-        REG.blockItem(nuke_tsar, (b, p) -> new ItemNukeBlock(b, p, ItemNukeBlock.Type.TSAR),
+        REG.blockItem(nuke_tsar, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.TSAR),
                 Compat::blockDescription).tab(HbmTab.BOMBS);
-        REG.blockItem(nuke_mike, ItemNukeMikeBlock::new, Compat::blockDescription).tab(HbmTab.BOMBS);
+        REG.blockItem(nuke_mike, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.IVY_MIKE),
+                Compat::blockDescription).tab(HbmTab.BOMBS);
         REG.blockItem(fireworks).tab(HbmTab.BOMBS);
         REG.blockItem(tnt).tab(HbmTab.BOMBS);
         REG.blockItem(dynamite).tab(HbmTab.BOMBS);

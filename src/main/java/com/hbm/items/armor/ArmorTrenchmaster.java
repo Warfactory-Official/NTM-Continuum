@@ -4,7 +4,6 @@ import com.hbm.handler.ArmorModEvents;
 import com.hbm.items.ModArmorSetItems;
 import com.hbm.items.gear.ArmorFSB;
 import dev.golem.core.world.ArmorSlot;
-import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.DamageEvents;
 import dev.golem.core.world.GolemArmorMaterial;
 import dev.golem.core.world.Sounds;
@@ -15,7 +14,6 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 
 /**
  * 1.7 {@code ArmorTrenchmaster}: the red-room loot suit.
@@ -34,9 +32,8 @@ public class ArmorTrenchmaster extends ArmorFSB {
     }
 
     @Override
-    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> tooltip,
-                                         TooltipFlag flag) {
-        super.appendCompatHoverText(stack, context, tooltip, flag);
+    public void addInformation(ItemStack stack, List<Component> tooltip) {
+        super.addInformation(stack, tooltip);
         tooltip.add(Component.literal("  ").append(Component.translatable("armor.moreAmmo"))
                 .withStyle(ChatFormatting.RED));
     }
