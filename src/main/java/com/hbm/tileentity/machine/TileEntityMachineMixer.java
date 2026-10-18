@@ -130,17 +130,13 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         }
     }
 
+    /** 1.7 keeps {@code recipeIndex} across a new output fluid and wraps it onto that fluid's rows. */
     private void updateOutputType() {
-        ItemStack identifier = inventory.getStackInSlot(2);
-        if (!(identifier.getItem() instanceof IItemFluidId fluidId)) return;
-        FluidType type = fluidId.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), identifier);
-        if (type != null && type != tanks[2].getTankType()) {
-            tanks[2].setTankType(type);
-            recipeName = "";
-            progress = 0;
-            processTime = 0;
-            setChanged();
-        }
+        int index = recipeIndex();
+        if (!tanks[2].setType(inventory, 2, 2)) return;
+        MixerRecipe[] recipes = MixerRecipes.getOutput(tanks[2].getTankType());
+        recipeName = recipes == null || recipes.length == 0 ? "" : recipes[index % recipes.length].name;
+        setChanged();
     }
 
     public boolean canProcess() {

@@ -88,7 +88,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
 
         fan.output = 0;
         fan.consumption = 0;
-        fan.updateFuelType();
+        fan.tank.setType(fan.inventory, 4, 4);
         if (MachineFluidContainerIO.load(fan.tank, fan.inventory, 0, 1)) fan.setChanged();
         fan.blood.setTankType(Fluids.BLOOD);
         fan.wasOn = false;
@@ -144,13 +144,6 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
             fan.lastSpin -= 360F;
         }
         TurbofanSoundHandler.tickLoop(fan);
-    }
-
-    private void updateFuelType() {
-        ItemStack id = inventory.getStackInSlot(4);
-        if (!(id.getItem() instanceof IItemFluidId identifier)) return;
-        FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (type != tank.getTankType()) tank.setTankType(type);
     }
 
     private void applyExhaust(Level level, int amountToBurn) {

@@ -9,7 +9,6 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.MaterialShapes;
@@ -17,7 +16,6 @@ import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.inventory.recipes.RotaryFurnaceRecipes;
 import com.hbm.inventory.recipes.RotaryFurnaceRecipes.RotaryFurnaceRecipe;
-import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.module.ModuleBurnTime;
 import com.hbm.particle.helper.HbmEffectNT;
@@ -125,7 +123,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         ForgeDirection dir = MachineCore.facing(state);
         ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
 
-        te.setTankType(3);
+        te.tanks[0].setType(te.inventory, 3, 3);
 
         te.moduleSteamPorts.update(te.getSteamPorts());
         te.moduleFluidPorts.update(te.getFluidPorts());
@@ -239,17 +237,6 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         te.lastAnim = te.anim;
         if (te.isProgressing) {
             te.anim += (int) Math.max(burnModule.getHeatMod(te.inventory.getStackInSlot(4)), 1);
-        }
-    }
-
-    /** 1.7 {@code FluidTank.setType(slot, slots)}: a fluid identifier in the slot retypes the tank and empties it on change. */
-    private void setTankType(int slot) {
-        ItemStack stack = inventory.getStackInSlot(slot);
-        if (stack.isEmpty() || !(stack.getItem() instanceof IItemFluidId id)) return;
-        FluidType type = id.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
-        if (type != null && tanks[0].getTankType() != type) {
-            tanks[0].setTankType(type);
-            tanks[0].setFill(0);
         }
     }
 

@@ -93,7 +93,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         te.setupFluidPorts(te.getPorts());
         te.updatePortFIFO();
 
-        te.updateTankType();
+        if (te.tank.setType(te.inventory, 1, 1)) te.setChanged();
         if (MachineFluidContainerIO.load(te.tank, te.inventory, 2, 3)) te.setChanged();
 
         te.loadFluid();
@@ -251,18 +251,6 @@ public class TileEntitySILEX extends TileEntityMachineBase
     }
 
     // Fluid plumbing
-
-    /** Slot 1 holds a fluid identifier; the tank adopts its type (the 1.12.2 {@code setType(1, 1)}). */
-    private void updateTankType() {
-        ItemStack id = inventory.getStackInSlot(1);
-        if (id.getItem() instanceof IItemFluidId ident) {
-            FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-            if (t != tank.getTankType()) {
-                tank.setTankType(t);
-                setChanged();
-            }
-        }
-    }
 
     protected PortDef[] cachedPorts;
 

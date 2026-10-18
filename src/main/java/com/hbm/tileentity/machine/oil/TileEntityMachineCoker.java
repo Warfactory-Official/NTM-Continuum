@@ -9,7 +9,6 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.inventory.container.ContainerMachineCoker;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CokerRecipes;
@@ -74,7 +73,7 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
         te.updatePortFIFO();
 
         te.tryPullHeat();
-        te.setTypeFromFluidId();
+        if (te.tanks[0].setType(te.inventory, 0, 0)) te.setChanged();
 
         te.wasOn = false;
 
@@ -160,16 +159,6 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
             }
         }
         this.heat = Math.max(this.heat - Math.max(this.heat / 1000, 1), 0);
-    }
-
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(0);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tanks[0].getTankType()) {
-            tanks[0].setTankType(t);
-            setChanged();
-        }
     }
 
     public int getProgressScaled(int i) { return progress * i / processTime; }

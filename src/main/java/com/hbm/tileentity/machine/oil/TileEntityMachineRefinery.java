@@ -15,7 +15,6 @@ import com.hbm.util.TickPhase;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineRefinery;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.RefineryRecipes;
@@ -126,7 +125,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         }
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
-        te.setTypeFromFluidId();
+        if (te.tanks[0].setType(te.inventory, 12, 12)) te.setChanged();
         MachineFluidContainerIO.load(te.tanks[0], te.inventory, 1, 2);
 
         te.refine();
@@ -262,17 +261,6 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
 
         if (TickPhase.every(level, worldPosition, 20L)) PollutionHandler.incrementPollution(level, worldPosition, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 5);
         this.power -= 5;
-    }
-
-    /** Slot 12 fluid identifier types the input tank (old tanks[0].setType(12,...)). */
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(12);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tanks[0].getTankType()) {
-            tanks[0].setTankType(t);
-            setChanged();
-        }
     }
 
     public long getPowerScaled(long i) {

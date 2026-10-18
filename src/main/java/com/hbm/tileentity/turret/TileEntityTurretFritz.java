@@ -9,7 +9,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import com.hbm.items.ModAmmoItems;
-import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactoryFlamer;
@@ -151,10 +150,7 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
     protected void tickServer() {
         super.tickServer();
 
-        ItemStack id = getItem(SLOT_AMMO_LAST);
-        if (id.getItem() instanceof IItemFluidId ident) {
-            tank.setTankType(ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id));
-        }
+        tank.setType(inventory, SLOT_AMMO_LAST, SLOT_AMMO_LAST);
 
         for (int i = SLOT_AMMO_FIRST; i < SLOT_AMMO_LAST; i++) {
             MachineFluidContainerIO.load(tank, inventory, i, SLOT_AMMO_LAST);

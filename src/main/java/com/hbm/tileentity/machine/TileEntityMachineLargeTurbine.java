@@ -4,7 +4,6 @@ import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.client.sound.LargeTurbineSoundHandler;
 import com.hbm.inventory.container.ContainerMachineLargeTurbine;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CoolingRecipes;
@@ -65,7 +64,7 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
         turbine.age++;
         if (turbine.age >= 2) turbine.age = 0;
 
-        turbine.updateTypeFromFluidId();
+        turbine.tanks[0].setType(turbine.inventory, 0, 1);
         if (MachineFluidContainerIO.load(turbine.tanks[0], turbine.inventory, 2, 3)) turbine.setChanged();
         turbine.power = Library.chargeItemsFromTE(turbine.inventory, 4, turbine.power, MAX_POWER);
         turbine.convert();
@@ -89,20 +88,6 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
             turbine.fanAcceleration = Math.max(0F, Math.min(15F, turbine.fanAcceleration - 0.1F));
         }
         LargeTurbineSoundHandler.tickLoop(turbine);
-    }
-
-    private void updateTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(0);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        if (!inventory.getStackInSlot(1).isEmpty()) return;
-
-        FluidType type = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (type == tanks[0].getTankType()) return;
-        tanks[0].setTankType(type);
-        tanks[1].setTankType(Fluids.NONE);
-        inventory.insertItem(1, id.copy(), false);
-        inventory.extractItem(0, 1, false);
-        setChanged();
     }
 
     private void convert() {

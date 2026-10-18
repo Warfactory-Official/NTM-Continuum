@@ -52,7 +52,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         tank.setupFluidPorts(tank.getPorts());
         tank.updatePortFIFO();
 
-        tank.updateTypeFromIdentifier();
+        tank.tankNew.setType(tank.inventory, 0, 1);
         MachineFluidContainerIO.load(tank.tankNew, tank.inventory, 2, 3);
         MachineFluidContainerIO.unload(tank.tankNew, tank.inventory, 4, 5);
 
@@ -67,21 +67,6 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         if (tank.tankNew.getFill() > 0 && tank.checkFluidInteraction(level)) return;
         tank.networkPackNT();
         tank.setChanged();
-    }
-
-    /** 1.7 {@code tank.setType(0, 1, slots)}: an identifier in slot 0 sets the type and passes to slot 1. */
-    private void updateTypeFromIdentifier() {
-        ItemStack input = inventory.getStackInSlot(0);
-        if (input.isEmpty() || !(input.getItem() instanceof IItemFluidId identifier)
-                || !inventory.getStackInSlot(1).isEmpty()) return;
-
-        FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), input);
-        if (type == tankNew.getTankType()) return;
-
-        setTankType(type);
-        // 1.7 moves the whole identifier stack: slots[out] = slots[in].copy(); slots[in] = null.
-        inventory.setStackInSlot(1, input.copy());
-        inventory.setStackInSlot(0, ItemStack.EMPTY);
     }
 
     /** Retypes the tank; the ports follow the next tick. */

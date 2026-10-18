@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine.oil;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineHydrotreater;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HydrotreatingRecipes;
@@ -69,7 +68,7 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         te.updatePortPIFIFO();
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
-        te.setTypeFromFluidId();
+        if (te.tanks[0].setType(te.inventory, 9, 9)) te.setChanged();
         MachineFluidContainerIO.load(te.tanks[0], te.inventory, 1, 2);
         MachineFluidContainerIO.load(te.tanks[1], te.inventory, 3, 4);
 
@@ -107,18 +106,6 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         tanks[2].setFill(tanks[2].getFill() + out.out1().fill);
         tanks[3].setFill(tanks[3].getFill() + out.out2().fill);
         power -= 20_000;
-    }
-
-    /** 1.7 {@code tanks[0].setType(9, slots)}: a different identifier switches the type and empties the tank. */
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(9);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tanks[0].getTankType()) {
-            tanks[0].setTankType(t);
-            tanks[0].setFill(0);
-            setChanged();
-        }
     }
 
     public long getPowerScaled(long i) { return (power * i) / maxPower; }

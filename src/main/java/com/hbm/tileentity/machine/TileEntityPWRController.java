@@ -410,14 +410,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
 
     /** Slot 2 fluid identifier retypes the cold tank (1.7 {@code tanks[0].setType(2, slots)}), never while fuelled. */
     public void updateTypeFromFluidId() {
-        if (amountLoaded > 0) return;
-        ItemStack id = inventory.getStackInSlot(2);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType type = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (type != tanks[0].getTankType()) {
-            tanks[0].setTankType(type);
-            setChanged();
-        }
+        if (amountLoaded <= 0 && tanks[0].setType(inventory, 2, 2)) setChanged();
     }
 
     public void setupTanks() {

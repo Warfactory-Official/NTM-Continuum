@@ -8,7 +8,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
-import com.hbm.items.machine.IItemFluidId;
 import com.hbm.tileentity.ModRBMKBlockEntities;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -19,7 +18,6 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
@@ -62,14 +60,7 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
 
     /** A hot column with coolant in its input keeps its type, so it stays configurable until the input fills. */
     public void updateFeedType() {
-        if (heat > 50 && feed.getFill() > 0) return;
-        ItemStack identifier = inventory.getStackInSlot(0);
-        if (!(identifier.getItem() instanceof IItemFluidId item)) return;
-        FluidType target = item.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), identifier);
-        if (target != null && feed.getTankType() != target) {
-            feed.setTankType(target);
-            markChanged();
-        }
+        if ((heat <= 50 || feed.getFill() <= 0) && feed.setType(inventory, 0, 0)) markChanged();
     }
 
     private boolean feedHeatable() {

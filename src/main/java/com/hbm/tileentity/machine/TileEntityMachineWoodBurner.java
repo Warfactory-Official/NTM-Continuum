@@ -75,7 +75,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         te.updatePortPOFIFO();
 
         te.powerGen = 0;
-        te.setTypeFromFluidId();
+        if (te.tank.setType(te.inventory, 2, 2)) te.setChanged();
         if (MachineFluidContainerIO.load(te.tank, te.inventory, 3, 4)) te.setChanged();
         te.power = Library.chargeItemsFromTE(te.inventory, 5, te.power, maxPower);
 
@@ -147,16 +147,6 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
 
     private ForgeDirection facing(BlockState state) {
         return MachineCore.facing(state);
-    }
-
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(2);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType type = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (type != tank.getTankType()) {
-            tank.setTankType(type);
-            setChanged();
-        }
     }
 
     public static EnumAshType getAshFromFuel(ItemStack stack) {

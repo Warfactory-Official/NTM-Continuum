@@ -14,7 +14,6 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.container.ContainerCombustionEngine;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidCombustion.Combustible;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
@@ -81,7 +80,10 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
         te.updatePortPOFIFO();
 
         if (MachineFluidContainerIO.load(te.tank, te.inventory, 0, 1)) te.setChanged();
-        te.setTypeFromFluidId();
+        if (te.tank.setType(te.inventory, 4, 4)) {
+            te.tenth = 0;
+            te.setChanged();
+        }
 
         te.wasOn = false;
 
@@ -156,17 +158,6 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
             };
         }
         return cachedPorts;
-    }
-
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(4);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tank.getTankType()) {
-            tank.setTankType(t);
-            tenth = 0;
-            setChanged();
-        }
     }
 
     public long getPowerScaled(long i) { return (power * i) / maxPower; }

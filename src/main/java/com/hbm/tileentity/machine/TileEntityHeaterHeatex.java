@@ -9,7 +9,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
-import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
@@ -66,25 +65,13 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
         heater.setupFluidPorts(heater.getPorts());
         heater.updatePortFIFO();
 
-        heater.updateTypeFromFluidId();
+        if (heater.tanks[0].setType(heater.inventory, 0, 0)) heater.setChanged();
         heater.setupTanks();
 
         // The old machine decays its stored TU before adding the current cooling operation's heat.
         heater.heatEnergy *= 0.999;
         heater.tryConvert(level);
         heater.networkPackNT();
-    }
-
-    /** Slot 0 changes the input type in place; the identifier is not consumed or moved. */
-    private void updateTypeFromFluidId() {
-        var stack = inventory.getStackInSlot(0);
-        if (stack.isEmpty() || !(stack.getItem() instanceof IItemFluidId identifier)) return;
-
-        FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
-        if (type != tanks[0].getTankType()) {
-            tanks[0].setTankType(type);
-            setChanged();
-        }
     }
 
     /** Derives the output type from the input's heat-exchanger efficiency every tick. */

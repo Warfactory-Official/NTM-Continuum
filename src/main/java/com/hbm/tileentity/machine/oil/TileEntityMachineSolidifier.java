@@ -5,7 +5,6 @@ import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerSolidifier;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.SolidificationRecipes;
@@ -73,7 +72,7 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
         te.updatePortPIFIFO();
 
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
-        te.setTypeFromFluidId();
+        if (te.tank.setType(te.inventory, 4, 4)) te.setChanged();
 
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
         int speed = Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);
@@ -86,16 +85,6 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
         else te.progress = 0;
 
         te.networkPackNT();
-    }
-
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(4);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tank.getTankType()) {
-            tank.setTankType(t);
-            setChanged();
-        }
     }
 
     protected PortDef[] cachedPorts;

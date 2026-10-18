@@ -15,12 +15,10 @@ import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.inventory.container.ContainerMachineCustom;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CustomMachineRecipes;
 import com.hbm.inventory.recipes.CustomMachineRecipes.CustomMachineRecipe;
-import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -158,9 +156,9 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
 
         this.power = Library.chargeTEFromItems(inventory, 0, power, this.config.maxPower);
 
-        if (this.inputTanks.length > 0) setType(this.inputTanks[0], 1);
-        if (this.inputTanks.length > 1) setType(this.inputTanks[1], 2);
-        if (this.inputTanks.length > 2) setType(this.inputTanks[2], 3);
+        if (this.inputTanks.length > 0) this.inputTanks[0].setType(inventory, 1, 1);
+        if (this.inputTanks.length > 1) this.inputTanks[1].setType(inventory, 2, 2);
+        if (this.inputTanks.length > 2) this.inputTanks[2].setType(inventory, 3, 3);
 
         this.structureCheckDelay--;
         if (this.structureCheckDelay <= 0) this.checkStructure();
@@ -249,17 +247,6 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
             this.progress = 0;
         }
         this.networkPackNT();
-    }
-
-    /** 1.7 {@code FluidTank.setType(slot, slots)}: an identifier in the slot retypes the tank and empties it. */
-    private void setType(FluidTankNTM tank, int slot) {
-        ItemStack stack = inventory.getStackInSlot(slot);
-        if (stack.isEmpty() || !(stack.getItem() instanceof IItemFluidId id)) return;
-        FluidType newType = id.getType(null, 0, 0, 0, stack);
-        if (newType != null && tank.getTankType() != newType) {
-            tank.setTankType(newType);
-            tank.setFill(0);
-        }
     }
 
     @Override

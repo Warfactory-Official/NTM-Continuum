@@ -108,8 +108,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         tank.ensureClimbRegistered();
         FluidType type = tank.tank.getTankType();
         if (!tank.hasExploded) {
+            tank.tank.setType(tank.inventory, 0, 1);
             MachineFluidContainerIO.load(tank.tank, tank.inventory, 2, 3);
-            tank.updateTypeFromFluidId();
             type = tank.tank.getTankType();
         }
 
@@ -248,20 +248,6 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     public void cycleMode() {
         mode = (short) ((mode + 1) % MODES);
-        setChanged();
-    }
-
-    /** 1.7 {@code tank.setType(0, 1, slots)}: an identifier in slot 0 sets the type and passes to slot 1. */
-    private void updateTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(0);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        if (!inventory.getStackInSlot(1).isEmpty()) return;
-        FluidType t = ident.getType(level, getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(), id);
-        if (t == tank.getTankType()) return;
-        tank.setTankType(t);
-        // 1.7 moves the whole identifier stack: slots[out] = slots[in].copy(); slots[in] = null.
-        inventory.setStackInSlot(1, id.copy());
-        inventory.setStackInSlot(0, ItemStack.EMPTY);
         setChanged();
     }
 

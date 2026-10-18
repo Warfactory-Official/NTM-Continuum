@@ -94,7 +94,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         te.setupAllPorts(te.getPorts());
         te.updatePortPOFIFO();
 
-        te.setTypeFromFluidId();
+        if (te.tank.setType(te.inventory, 3, 3)) te.setChanged();
         MachineFluidContainerIO.load(te.tank, te.inventory, 1, 2);
 
         te.output = 0;
@@ -176,16 +176,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                     level.getRandom().nextGaussian() * 0.05, 0.1, level.getRandom().nextGaussian() * 0.05);
             level.addParticle(ParticleTypes.LARGE_SMOKE, pos.getX() + 0.5, pos.getY() + 12.5, pos.getZ() + 0.5,
                     0, 0.1, 0);
-        }
-    }
-
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(3);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tank.getTankType()) {
-            tank.setTankType(t);
-            setChanged();
         }
     }
 

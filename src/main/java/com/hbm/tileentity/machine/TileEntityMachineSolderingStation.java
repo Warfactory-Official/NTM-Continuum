@@ -86,7 +86,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         te.updatePortPIFIFO();
 
         te.power = Library.chargeTEFromItems(te.inventory, 7, te.getPower(), te.getMaxPower());
-        te.updateTankType();
+        te.tank.setType(te.inventory, 8, 8);
 
         te.recipe = SolderingRecipes.getRecipe(new ItemStack[]{
                 te.inventory.getStackInSlot(0), te.inventory.getStackInSlot(1), te.inventory.getStackInSlot(2),
@@ -169,15 +169,6 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
                     break;
                 }
             }
-        }
-    }
-
-    /** Slot 8 holds a fluid identifier; adopt its type (kept in-slot, matching the 1.12.2 {@code setType(8, ...)}). */
-    private void updateTankType() {
-        ItemStack id = inventory.getStackInSlot(8);
-        if (id.getItem() instanceof IItemFluidId ident) {
-            var t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-            if (t != tank.getTankType()) tank.setTankType(t);
         }
     }
 

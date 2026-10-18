@@ -7,7 +7,6 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerCompressor;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CompressorRecipes;
@@ -81,7 +80,7 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
         te.updatePortPIFIFO();
 
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
-        te.setTypeFromFluidId();
+        if (te.tanks[0].setType(te.inventory, 0, 0)) te.setChanged();
         te.setupTanks();
 
         te.upgradeManager.checkSlots(te.inventory, 1, 3);
@@ -152,17 +151,6 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
             tanks[1].withPressure(tanks[0].getPressure() + 1).setTankType(tanks[0].getTankType());
         } else {
             tanks[1].withPressure(recipe.output().pressure).setTankType(recipe.output().type);
-        }
-    }
-
-    /** Slot 0 fluid identifier types the input tank (old {@code tanks[0].setType(0, inventory)}). */
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(0);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tanks[0].getTankType()) {
-            tanks[0].setTankType(t);
-            setChanged();
         }
     }
 

@@ -138,6 +138,28 @@ public final class MixerGameTests {
         helper.succeed();
     }
 
+    /** A new output identifier keeps 1.7's recipe index, wrapped onto the new fluid's rows. */
+    public static void identifierKeepsIndex(GameTestHelper helper) {
+        TileEntityMachineMixer mixer = place(helper, new BlockPos(2, 1, 2));
+        mixer.inventory.setStackInSlot(2, ItemFluidId.make(Fluids.FRACKSOL));
+        tick(helper, mixer);
+        mixer.recipeName = MixerRecipes.getOutput(Fluids.FRACKSOL)[1].name;
+
+        mixer.inventory.setStackInSlot(2, ItemFluidId.make(Fluids.SOLVENT));
+        tick(helper, mixer);
+        helper.assertTrue(mixer.tanks[2].getTankType() == Fluids.SOLVENT, "the identifier retypes the output tank");
+        helper.assertTrue(mixer.recipeIndex() == 1, "the second row stays selected, got " + mixer.recipeIndex());
+
+        mixer.inventory.setStackInSlot(2, ItemFluidId.make(Fluids.SALIENT));
+        tick(helper, mixer);
+        helper.assertTrue(mixer.recipeIndex() == 0, "index 1 wraps onto Salient's single row");
+        helper.succeed();
+    }
+
+    private static void tick(GameTestHelper helper, TileEntityMachineMixer mixer) {
+        TileEntityMachineMixer.serverTick(helper.getLevel(), mixer.getBlockPos(), mixer.getBlockState(), mixer);
+    }
+
     /** The selection is the row's name in the save and in the sync, and an index-era save still reads (M2 R-93). */
     public static void selectionRoundTrip(GameTestHelper helper) {
         TileEntityMachineMixer mixer = place(helper, new BlockPos(2, 1, 2));

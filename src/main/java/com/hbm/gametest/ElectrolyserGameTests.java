@@ -6,8 +6,10 @@ import com.hbm.blocks.machine.MachineElectrolyser;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
@@ -37,6 +39,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Blocks;
 
@@ -373,6 +376,32 @@ public final class ElectrolyserGameTests {
         slopper.inventory.setStackInSlot(1, multi.copy());
         slopper.tanks[0].setType(slopper.inventory, 1, 1);
         helper.assertTrue(slopper.tanks[0].getTankType() == Fluids.HEAVYWATER, "the multi identifier retypes the slopper tank");
+        helper.succeed();
+    }
+
+    /** 1.7 moves the whole identifier stack, only into an empty out slot, and only on a new type. */
+    public static void identifierStackMove(GameTestHelper helper) {
+        NTMItemHandler slots = new NTMItemHandler(2);
+        FluidTankNTM tank = new FluidTankNTM(Fluids.WATER, 1000);
+        tank.setFill(500);
+        ItemStack ids = ItemFluidId.make(Fluids.OIL);
+        ids.setCount(3);
+        slots.setStackInSlot(0, ids);
+        slots.setStackInSlot(1, new ItemStack(Items.STICK));
+        helper.assertFalse(tank.setType(slots, 0, 1), "an occupied out slot blocks the retype");
+        helper.assertTrue(tank.getTankType() == Fluids.WATER && tank.getFill() == 500, "a blocked retype keeps the tank");
+
+        slots.setStackInSlot(1, ItemStack.EMPTY);
+        helper.assertTrue(tank.setType(slots, 0, 1), "a new identifier retypes the tank");
+        helper.assertTrue(tank.getTankType() == Fluids.OIL && tank.getFill() == 0, "the retype empties the tank");
+        helper.assertTrue(slots.getStackInSlot(0).isEmpty() && slots.getStackInSlot(1).getCount() == 3,
+                "all three identifiers move to the out slot");
+
+        slots.setStackInSlot(0, slots.getStackInSlot(1));
+        slots.setStackInSlot(1, ItemStack.EMPTY);
+        tank.setFill(200);
+        helper.assertFalse(tank.setType(slots, 0, 1), "the same type changes nothing");
+        helper.assertTrue(tank.getFill() == 200 && slots.getStackInSlot(1).isEmpty(), "the same type neither empties nor moves");
         helper.succeed();
     }
 

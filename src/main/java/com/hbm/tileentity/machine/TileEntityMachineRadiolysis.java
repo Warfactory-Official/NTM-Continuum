@@ -11,7 +11,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.RadiolysisRecipes;
 import com.hbm.inventory.recipes.RadiolysisRecipes.RadiolysisRecipe;
-import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.items.machine.ItemRTGPelletDepleted;
 import com.hbm.lib.ForgeDirection;
@@ -83,7 +82,7 @@ public class TileEntityMachineRadiolysis extends TileEntityMachineBase
 
         if (te.power > maxPower) te.power = maxPower;
 
-        te.setTypeFromFluidId();
+        te.tanks[0].setType(te.inventory, 10, 11);
         te.setupTanks();
 
         if (te.heat > 100) {
@@ -96,18 +95,6 @@ public class TileEntityMachineRadiolysis extends TileEntityMachineBase
 
         te.setChanged();
         te.networkPackNT();
-    }
-
-    /** 1.7 {@code tanks[0].setType(10, 11, slots)}: the identifier passes from slot 10 to slot 11 once used. */
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(10);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        if (!inventory.getStackInSlot(11).isEmpty()) return;
-        FluidType type = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (type == tanks[0].getTankType()) return;
-        tanks[0].setTankType(type);
-        inventory.setStackInSlot(11, id.copy());
-        inventory.setStackInSlot(10, ItemStack.EMPTY);
     }
 
     protected PortDef[] cachedPorts;

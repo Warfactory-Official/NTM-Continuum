@@ -713,6 +713,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("electrolyser_metal_processing", 700, 8, () -> ElectrolyserGameTests::metalProcessing);
     public static final GameTests.Function ELECTROLYSER_MULTI_IDENTIFIER =
             TESTS.function("electrolyser_multi_identifier", 20, () -> ElectrolyserGameTests::multiIdentifier);
+    public static final GameTests.Function FLUID_IDENTIFIER_STACK_MOVE =
+            TESTS.function("fluid_identifier_stack_move", 20, () -> ElectrolyserGameTests::identifierStackMove);
     public static final GameTests.Function ELECTROLYSER_PAUSES =
             TESTS.function("electrolyser_pauses", 40, 8, () -> ElectrolyserGameTests::pausesAndResumes);
     public static final GameTests.Function ELECTROLYSER_MOLTEN_POUR_RATE =
@@ -958,6 +960,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("mixer_recipe_index", 40, () -> MixerGameTests::recipeIndexNormalization);
     public static final GameTests.Function MIXER_SELECTION_ROUND_TRIP =
             TESTS.function("mixer_selection_round_trip", 40, () -> MixerGameTests::selectionRoundTrip);
+    public static final GameTests.Function MIXER_IDENTIFIER_KEEPS_INDEX =
+            TESTS.function("mixer_identifier_keeps_index", 40, () -> MixerGameTests::identifierKeepsIndex);
 
     // --- sawmill ---
     public static final GameTests.Function SAWMILL_RECIPES =

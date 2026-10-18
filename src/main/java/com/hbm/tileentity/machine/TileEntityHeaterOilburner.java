@@ -9,7 +9,6 @@ import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
@@ -65,7 +64,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         te.updatePortFIFO();
 
         if (MachineFluidContainerIO.load(te.tank, te.inventory, 0, 1)) te.setChanged();
-        te.setTypeFromFluidId();
+        if (te.tank.setType(te.inventory, 2, 2)) te.setChanged();
 
         boolean shouldCool = true;
 
@@ -96,17 +95,6 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         }
 
         te.networkPackNT();
-    }
-
-    /** Slot 2 fluid identifier retypes the tank (old tank.setType(2, inventory)). */
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(2);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tank.getTankType()) {
-            tank.setTankType(t);
-            setChanged();
-        }
     }
 
     protected PortDef[] cachedPorts;

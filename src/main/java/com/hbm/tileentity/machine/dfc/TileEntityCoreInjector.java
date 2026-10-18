@@ -65,8 +65,8 @@ public class TileEntityCoreInjector extends TileEntityMachineBase
         this.setupFluidPorts(getPorts());
         this.updatePortFIFO();
 
-        setTypeFromFluidId(0, 0);
-        setTypeFromFluidId(1, 2);
+        tanks[0].setType(inventory, 0, 1);
+        tanks[1].setType(inventory, 2, 3);
 
         beam = 0;
         ForgeDirection dir = facing();
@@ -97,25 +97,6 @@ public class TileEntityCoreInjector extends TileEntityMachineBase
         tanks[t].setFill(tanks[t].getFill() - moved);
         core.tanks[t].setFill(core.tanks[t].getFill() + moved);
         core.setChanged();
-    }
-
-    /**
-     * The identifier slot pair for a tank, upstream's {@code tanks[t].setType(in, out, inventory)}: the
-     * identifier retypes the tank and then passes from the in slot to the out slot, so the out slot has to
-     * be free before the swap can happen.
-     */
-    private void setTypeFromFluidId(int tank, int in) {
-        ItemStack id = inventory.getStackInSlot(in);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        if (!inventory.getStackInSlot(in + 1).isEmpty()) return;
-
-        FluidType type = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (type == tanks[tank].getTankType()) return;
-
-        tanks[tank].setTankType(type);
-        inventory.insertItem(in + 1, id.copy(), false);
-        inventory.extractItem(in, 1, false);
-        setChanged();
     }
 
     public ForgeDirection facing() {

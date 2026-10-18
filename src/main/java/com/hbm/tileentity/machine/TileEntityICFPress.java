@@ -3,14 +3,12 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.data.MachineDataMaps;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.inventory.container.ContainerICFPress;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemICFPellet;
 import com.hbm.items.machine.ItemICFPellet.EnumICFFuel;
 import com.hbm.tileentity.ModIcfBlockEntities;
@@ -78,8 +76,8 @@ public class TileEntityICFPress extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityICFPress press) {
         press.setupFluidInPorts(press.getReceivingTanks(), PortDef.combine(press.getPorts()));
         press.updatePortFIFO();
-        press.setTypeFromIdentifier(0, 6);
-        press.setTypeFromIdentifier(1, 7);
+        if (press.tanks[0].setType(press.inventory, 6, 6)) press.setChanged();
+        if (press.tanks[1].setType(press.inventory, 7, 7)) press.setChanged();
 
         // 1.7 subscribed both tanks to every neighbour once a second; the duct net finds the press itself.
 
@@ -151,17 +149,6 @@ public class TileEntityICFPress extends TileEntityMachineBase
         MaterialStack mat = mats.get(0);
         if (mat.amount != MaterialShapes.INGOT.quantity) return null;
         return MachineDataMaps.icfFuel(mat.material);
-    }
-
-    /** 1.7 {@code tank.setType(slot, slots)}: a new identifier retypes the tank and empties it. */
-    private void setTypeFromIdentifier(int tank, int slot) {
-        ItemStack id = inventory.getStackInSlot(slot);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType type = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (type != tanks[tank].getTankType()) {
-            tanks[tank].setTankType(type);
-            setChanged();
-        }
     }
 
     // --- sync ---

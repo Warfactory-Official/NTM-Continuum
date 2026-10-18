@@ -7,7 +7,6 @@ import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.IRelocatable;
@@ -92,15 +91,7 @@ public class TileEntityDroneCrate extends TileEntityMachineBase
     public void serverTick() {
         if (!(level instanceof ServerLevel server)) return;
 
-        // 1.7 tank.setType(18, slots): the identifier in the last slot names the tank's fluid
-        ItemStack id = inventory.getStackInSlot(SLOT_FLUID_ID);
-        if (id.getItem() instanceof IItemFluidId ident) {
-            FluidType type = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-            if (type != tank.getTankType()) {
-                tank.setTankType(type);
-                setChanged();
-            }
-        }
+        if (tank.setType(inventory, SLOT_FLUID_ID, SLOT_FLUID_ID)) setChanged();
 
         // 1.7 sets up input ports only: a crate unloading drones never offers its tank to the network
         this.setupFluidInPorts(this.getAllTanks(), getPorts()[0]);

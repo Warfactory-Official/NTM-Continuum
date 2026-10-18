@@ -106,7 +106,7 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
 
         te.wasOn = false;
 
-        te.setTypeFromFluidId();
+        if (te.tank.setType(te.inventory, 3, 3)) te.setChanged();
         if (MachineFluidContainerIO.load(te.tank, te.inventory, 0, 1)) te.setChanged();
 
         te.power = Library.chargeItemsFromTE(te.inventory, 2, te.power, te.powerCap);
@@ -150,18 +150,6 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
 
             long he = getHEFromFuel();
             power = Math.min(power + he, powerCap);
-        }
-    }
-
-    /** 1.7 {@code tank.setType(3, slots)}: a different identifier switches the type and empties the tank. */
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(3);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tank.getTankType()) {
-            tank.setTankType(t);
-            tank.setFill(0);
-            setChanged();
         }
     }
 

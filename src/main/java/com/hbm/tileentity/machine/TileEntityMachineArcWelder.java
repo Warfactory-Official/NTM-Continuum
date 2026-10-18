@@ -8,7 +8,6 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineArcWelder;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.ArcWelderRecipes;
@@ -77,7 +76,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
         te.updatePortPIFIFO();
 
         te.power = Library.chargeTEFromItems(te.inventory, 4, te.getPower(), te.getMaxPower());
-        te.updateTankType();
+        te.tank.setType(te.inventory, 5, 5);
 
         te.recipe = ArcWelderRecipes.getRecipe(
                 te.inventory.getStackInSlot(0), te.inventory.getStackInSlot(1), te.inventory.getStackInSlot(2));
@@ -121,14 +120,6 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
         te.display = te.recipe == null ? ItemStack.EMPTY : te.recipe.output;
         te.maxPower = Math.max(intendedMaxPower, te.power);
         te.networkPackNT();
-    }
-
-    private void updateTankType() {
-        ItemStack identifier = inventory.getStackInSlot(5);
-        if (identifier.getItem() instanceof IItemFluidId fluidId) {
-            FluidType type = fluidId.getType(null, 0, 0, 0, identifier);
-            if (tank.getTankType() != type) tank.setTankType(type);
-        }
     }
 
     public boolean canProcess(ArcWelderRecipe recipe) {

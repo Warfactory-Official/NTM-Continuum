@@ -4,7 +4,6 @@ import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.inventory.container.ContainerICF;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
@@ -12,7 +11,6 @@ import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingStep;
 import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingType;
 import com.hbm.items.ModIcfItems;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemICFPellet;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -107,7 +105,7 @@ public class TileEntityICF extends TileEntityMachineBase
         this.setupFluidPorts(getPorts());
         this.updatePortFIFO();
 
-        setTypeFromIdentifier();
+        if (tanks[0].setType(inventory, 11, 11)) setChanged();
 
         boolean markDirty = false;
 
@@ -196,17 +194,6 @@ public class TileEntityICF extends TileEntityMachineBase
         this.maxLaserSync = maxLaser;
         this.laser = 0;
         this.maxLaser = 0;
-    }
-
-    /** 1.7 {@code tanks[0].setType(11, slots)}: a new identifier retypes the coolant tank and empties it. */
-    private void setTypeFromIdentifier() {
-        ItemStack id = inventory.getStackInSlot(11);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType type = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (type != tanks[0].getTankType()) {
-            tanks[0].setTankType(type);
-            setChanged();
-        }
     }
 
     protected PortDef[] cachedPorts;

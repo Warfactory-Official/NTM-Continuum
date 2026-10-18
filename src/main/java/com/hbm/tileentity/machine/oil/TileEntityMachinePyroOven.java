@@ -7,7 +7,6 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.sound.PyroOvenSoundHandler;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerPyroOven;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.PyroOvenRecipes;
@@ -92,7 +91,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
         te.updatePortPIFIFO();
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
-        te.setTypeFromFluidId();
+        if (te.tanks[0].setType(te.inventory, 3, 3)) te.setChanged();
 
         te.upgradeManager.checkSlots(te.inventory, 4, 5);
         int speed = te.upgradeManager.getLevel(UpgradeType.SPEED);
@@ -275,16 +274,6 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
             };
         }
         return cachedSmokePorts;
-    }
-
-    private void setTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(3);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-        if (t != tanks[0].getTankType()) {
-            tanks[0].setTankType(t);
-            setChanged();
-        }
     }
 
     public long getPowerScaled(long i) { return (power * i) / maxPower; }

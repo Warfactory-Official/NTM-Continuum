@@ -6,7 +6,6 @@ import dev.golem.core.data.Tags;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerFusionBreeder;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.FluidBreederRecipes;
@@ -74,7 +73,7 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
         breeder.setupFluidPorts(breeder.getPorts());
         breeder.updatePortFIFO();
 
-        breeder.updateInputType();
+        breeder.tanks[0].setType(breeder.inventory, 0, 0);
 
         if (!breeder.canProcessSolid() && !breeder.canProcessLiquid()) breeder.progress = 0;
         breeder.neutronEnergySync = breeder.neutronEnergy;
@@ -84,14 +83,6 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
 
         breeder.networkPackNT();
         breeder.neutronEnergy = 0;
-    }
-
-    private void updateInputType() {
-        ItemStack stack = inventory.getStackInSlot(0);
-        if (stack.isEmpty() || !(stack.getItem() instanceof IItemFluidId identifier)) return;
-
-        FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
-        tanks[0].setTankType(type);
     }
 
     public boolean canProcessSolid() {

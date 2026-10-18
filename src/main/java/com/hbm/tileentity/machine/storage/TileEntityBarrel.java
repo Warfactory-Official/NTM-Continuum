@@ -119,26 +119,12 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         }
         barrel.lastRedstone = comp;
 
-        barrel.updateTypeFromFluidId();
+        barrel.tank.setType(barrel.inventory, 0, 1);
         MachineFluidContainerIO.load(barrel.tank, barrel.inventory, 2, 3);
         MachineFluidContainerIO.unload(barrel.tank, barrel.inventory, 4, 5);
 
         if (barrel.tank.getFill() > 0) barrel.checkFluidInteraction();
         barrel.networkPackNT(); // 1.7 packed every 50 ticks; unchanged payloads are skipped here
-    }
-
-    /** 1.7 {@code tank.setType(0, 1, slots)}: an identifier in slot 0 sets the type and passes to slot 1. */
-    private void updateTypeFromFluidId() {
-        ItemStack id = inventory.getStackInSlot(0);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
-        if (!inventory.getStackInSlot(1).isEmpty()) return;
-        FluidType t = ident.getType(level, getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(), id);
-        if (t == tank.getTankType()) return;
-        tank.setTankType(t);
-        // 1.7 moves the whole identifier stack: slots[out] = slots[in].copy(); slots[in] = null.
-        inventory.setStackInSlot(1, id.copy());
-        inventory.setStackInSlot(0, ItemStack.EMPTY);
-        setChanged();
     }
 
     public void cycleMode() {

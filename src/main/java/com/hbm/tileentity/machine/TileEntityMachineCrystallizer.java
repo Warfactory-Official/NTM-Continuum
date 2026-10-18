@@ -16,7 +16,6 @@ import dev.golem.core.world.ItemStacks;
 import java.util.HashMap;
 import java.util.List;
 import net.minecraft.ChatFormatting;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
@@ -98,7 +97,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         te.updatePortPIFIFO();
 
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.getPower(), te.getMaxPower());
-        te.updateTankType();
+        if (te.tank.setType(te.inventory, 7, 7)) te.setChanged();
         MachineFluidContainerIO.load(te.tank, te.inventory, 3, 4);
         te.upgradeManager.checkSlots(te.inventory, 5, 6);
         te.cycleCount = te.getCycleCount();
@@ -199,18 +198,6 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
     public int getCycleCount() {
         int speed = upgradeManager.getLevel(UpgradeType.OVERDRIVE);
         return Math.min(1 + speed * 2, 7);
-    }
-
-    /** Slot 7 holds a fluid identifier; adopt its type (kept in-slot, matching the 1.12.2 {@code setType(7, ...)}). */
-    private void updateTankType() {
-        ItemStack id = inventory.getStackInSlot(7);
-        if (id.getItem() instanceof IItemFluidId ident) {
-            FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
-            if (t != tank.getTankType()) {
-                tank.setTankType(t);
-                setChanged();
-            }
-        }
     }
 
     protected PortDef[] cachedPorts;
