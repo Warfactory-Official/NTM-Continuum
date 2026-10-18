@@ -648,7 +648,10 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
         pose.mulPose(Axis.ZP.rotationDegrees(5));
 
         Anim anim = relevant(InteractionHand.MAIN_HAND);
-        if (startPos != null && anim != null && (clicked || anim.animation != null)) {
+        // Only the cut and its own SWING bus take the tilt: startPos outlives the cut, so testing for any playing
+        // bus would also tilt the ordinary 1.7 swing (SWING_ROT/SWING_TRANS) to the last cut's angle.
+        boolean cutSwing = anim != null && anim.animation != null && anim.animation.getBus("SWING") != null;
+        if (startPos != null && anim != null && (clicked || cutSwing)) {
             double[] swingRot = transformation("SWING", InteractionHand.MAIN_HAND);
             V3 v = new V3(startPos.x, startPos.y, startPos.z)
                     .rotateYaw((float) Math.toRadians(player.getYRot() + 180))
@@ -658,7 +661,7 @@ public final class CrucibleClient implements ItemSwordCutter.Client {
             float oY = -1.55F;
             float oZ = 0;
             boolean flag = false;
-            if (anim.animation != null) {
+            if (cutSwing) {
                 angle = prevAngle;
                 long time = System.currentTimeMillis() - anim.startMillis;
                 if (anim.animation.getDuration() - time < 400) flag = true;

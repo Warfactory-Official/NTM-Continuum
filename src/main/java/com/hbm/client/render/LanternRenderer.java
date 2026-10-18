@@ -42,9 +42,11 @@ public class LanternRenderer extends GemBER<TileEntityLantern, LanternRenderer.S
     protected void setup(Gem.Model<State> declaration) {
         // 1.7 widened the tile's render box to x..x+1, y..y+6, z..z+1 because the post stands five
         // blocks above the core; the declaration states that as offScreen() instead of a tile override.
-        declaration.offScreen().viewDistance(256);
-        declaration.part(model.part(BODY), skin);
-        declaration.part(model.part(LAMP), lamp)
+        Gem.Part<State> post = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F);
+        post.child(model.part(BODY), skin);
+        post.child(model.part(LAMP), lamp)
                 .tint(state -> state.glowTint)
                 .light(state -> 0xF000F0);
     }
