@@ -155,7 +155,7 @@ public class ExplosionBalefire {
         int maxdepth = (int) (10 + radius * 0.25);
         int depth = (int) ((maxdepth * dist / (double) radius) + (Math.sin(dist * 0.15 + 2) * 2));
 
-        depth = Math.max(y - depth, 0);
+        depth = Math.max(y - depth, level.getMinY());
 
         boolean balefire = variant == null || variant.balefire();
 

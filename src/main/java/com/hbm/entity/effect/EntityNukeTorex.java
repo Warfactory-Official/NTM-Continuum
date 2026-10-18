@@ -90,7 +90,8 @@ public class EntityNukeTorex extends CompatEntity {
     public double torusWidth = 3;
     public double rollerSize = 1;
     public double heat = 1;
-    public double lastSpawnY = -1;
+    // NaN until the first client tick; -1 is a real height below y = 0
+    public double lastSpawnY = Double.NaN;
     public ArrayList<Cloudlet> cloudlets = new ArrayList<>();
     public int lastRenderSortTick = Integer.MIN_VALUE;
     public double lastRenderSortCameraX = Double.NaN;
@@ -203,7 +204,7 @@ public class EntityNukeTorex extends CompatEntity {
         double cs = 1.5;
         this.maxAge = getMaxAge();
 
-        if (lastSpawnY == -1) lastSpawnY = getY() - 3;
+        if (Double.isNaN(lastSpawnY)) lastSpawnY = getY() - 3;
 
         if (playEffects && this.tickCount < 100) TorexClientEffects.skyFlash(level());
 
@@ -357,7 +358,7 @@ public class EntityNukeTorex extends CompatEntity {
                 ? initial : this.entityData.get(FINAL_SPAWN_TARGET);
         if (clientHistoricalTimeline && target != Integer.MIN_VALUE) return target;
         return Math.max(level().getHeight(Heightmap.Types.MOTION_BLOCKING,
-                (int) Math.floor(getX()), (int) Math.floor(getZ())) - 3, 1);
+                (int) Math.floor(getX()), (int) Math.floor(getZ())) - 3, level().getMinY() + 1);
     }
 
     private int replaySurfaceHeight(int x, int z) {
@@ -403,7 +404,7 @@ public class EntityNukeTorex extends CompatEntity {
         this.torusWidth = 3D;
         this.rollerSize = 1D;
         this.heat = 1D;
-        this.lastSpawnY = -1D;
+        this.lastSpawnY = Double.NaN;
         this.maxAge = 1000;
         this.humidity = -1F;
         this.tickCount = 0;
@@ -545,7 +546,7 @@ public class EntityNukeTorex extends CompatEntity {
         int initial = this.entityData.get(INITIAL_SPAWN_TARGET);
         if (initial == Integer.MIN_VALUE) return;
         int current = Math.max(level().getHeight(Heightmap.Types.MOTION_BLOCKING,
-                (int) Math.floor(getX()), (int) Math.floor(getZ())) - 3, 1);
+                (int) Math.floor(getX()), (int) Math.floor(getZ())) - 3, level().getMinY() + 1);
         if (current != initial) {
             this.entityData.set(FINAL_SPAWN_TARGET, current);
             markTerrainChanged();
@@ -1112,7 +1113,7 @@ public class EntityNukeTorex extends CompatEntity {
 
     private void captureEnvironment(Level level, double x, double y, double z) {
         int target = Math.max(level.getHeight(Heightmap.Types.MOTION_BLOCKING,
-                (int) Math.floor(x), (int) Math.floor(z)) - 3, 1);
+                (int) Math.floor(x), (int) Math.floor(z)) - 3, level.getMinY() + 1);
         this.entityData.set(INITIAL_SPAWN_TARGET, target);
         this.entityData.set(FINAL_SPAWN_TARGET, target);
         boolean precipitation = level.getBiome(BlockPos.containing(x, y, z)).value().hasPrecipitation();
