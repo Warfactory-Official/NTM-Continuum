@@ -70,7 +70,7 @@ public class PneumoTubeRenderer extends GemBER<TileEntityPneumoTube, PneumoTubeR
 
         // the arms: lateral faces only, the end opens onto the neighbour
         for (Direction dir : Direction.values()) {
-            double[] b = armBounds(dir, LOWER, UPPER, 0, 1);
+            double[] b = armBounds(dir, LOWER, UPPER, UPPER, 1);
             model.part(TubeBoxes.box("pneumo_tube_arm_" + dir.getName(), b[0], b[1], b[2], b[3], b[4], b[5],
                             TubeBoxes.lateral(dir.getAxis()), 0), base)
                     .visibleIf(s -> !straight(s) && has(s.arms, dir));
@@ -100,8 +100,8 @@ public class PneumoTubeRenderer extends GemBER<TileEntityPneumoTube, PneumoTubeR
     }
 
     /**
-     * A box of cross-section {@code [lo, hi]} on the two axes across {@code dir}, spanning {@code [from, to]} along
-     * {@code dir} measured outwards from the block centre (0.5 = the centre, 1 = the block face).
+     * A box of cross-section {@code [lo, hi]} on the two axes across {@code dir}, spanning {@code [from, to]} on the
+     * positive side of the block along {@code dir}, mirrored to {@code [1 - to, 1 - from]} for a negative {@code dir}.
      */
     private static double[] armBounds(Direction dir, double lo, double hi, double from, double to) {
         double[] min = {lo, lo, lo};

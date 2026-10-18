@@ -9,7 +9,6 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.Mats;
@@ -17,7 +16,7 @@ import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.recipes.ElectrolyserFluidRecipes;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemFluidId;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.lib.DirPos;
@@ -109,7 +108,7 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         te.modulePowerPorts.update(te.getPorts());
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, MAX_POWER);
-        te.selectInputFluid();
+        te.tanks[0].setType(te.inventory, 3, 4);
         MachineFluidContainerIO.load(te.tanks[0], te.inventory, 5, 6);
         MachineFluidContainerIO.unload(te.tanks[1], te.inventory, 7, 8);
         MachineFluidContainerIO.unload(te.tanks[2], te.inventory, 9, 10);
@@ -149,15 +148,6 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineElectrolyser te) {
         // The legacy machine's visible animation is entirely represented by its progress bars.
-    }
-
-    private void selectInputFluid() {
-        for (int slot = 3; slot <= 4; slot++) {
-            ItemStack stack = inventory.getStackInSlot(slot);
-            if (!(stack.getItem() instanceof ItemFluidId)) continue;
-            FluidType type = ItemFluidId.getFluid(stack);
-            if (type != Fluids.NONE && tanks[0].getFill() == 0) tanks[0].setTankType(type);
-        }
     }
 
     private boolean canProcessFluid() {
@@ -329,7 +319,7 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
         if (slot == 1 || slot == 2) return Library.isMachineUpgrade(stack);
-        if (slot == 3 || slot == 4) return stack.getItem() instanceof ItemFluidId;
+        if (slot == 3 || slot == 4) return stack.getItem() instanceof IItemFluidId;
         // 1.7 ContainerElectrolyser: plain slots, anything a loader might take
         if (slot >= 5 && slot <= 10) return true;
         if (slot == 14) return ElectrolyserMetalRecipes.getRecipe(stack) != null;

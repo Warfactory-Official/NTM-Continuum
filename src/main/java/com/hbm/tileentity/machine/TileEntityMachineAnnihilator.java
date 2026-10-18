@@ -10,11 +10,9 @@ import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.particle.helper.EntityEffects;
 import com.hbm.sound.ModSounds;
@@ -92,7 +90,7 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase
 
         if (!(level instanceof ServerLevel serverLevel)) return;
 
-        te.setTankTypeFromSlot(1);
+        te.tank.setType(te.inventory, 1, 1);
 
         if (te.pool != null && !te.pool.isEmpty()) {
 
@@ -129,9 +127,8 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase
 
             ItemStack monitor = te.inventory.getStackInSlot(8);
             if (!monitor.isEmpty()) {
-                if (monitor.getItem() instanceof IItemFluidId) {
-                    FluidType type = ItemFluidId.getFluid(monitor);
-                    te.monitor(data, type);
+                if (monitor.getItem() instanceof IItemFluidId id) {
+                    te.monitor(data, id.getType(null, 0, 0, 0, monitor));
                 } else {
                     te.monitor(data, monitor.getItem());
                 }
@@ -157,15 +154,6 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase
         }
 
         te.networkPackNT();
-    }
-
-    /** 1.7 {@code FluidTank.setType(slot, slots)}: a fluid identifier in the slot retypes the tank. */
-    private void setTankTypeFromSlot(int slot) {
-        ItemStack stack = inventory.getStackInSlot(slot);
-        if (stack.getItem() instanceof ItemFluidId) {
-            FluidType type = ItemFluidId.getFluid(stack);
-            if (type != tank.getTankType()) tank.setTankType(type);
-        }
     }
 
     public void onDestroy(ItemStack stack) {

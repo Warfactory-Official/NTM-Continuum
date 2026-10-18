@@ -7,7 +7,6 @@ import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
 import com.hbm.inventory.recipes.loader.ItemSpec;
 import com.hbm.inventory.recipes.loader.TableCodecs;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidId;
 import com.hbm.saveddata.AnnihilatorSavedData;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -132,8 +131,8 @@ public final class AnnihilatorRecipes {
     }
 
     public static ItemStack getHighestPayoutFromStack(ItemStack stack, BigInteger prevAmount, BigInteger currentAmount) {
-        if (stack.getItem() instanceof IItemFluidId) {
-            return getHighestPayoutFromFluid(ItemFluidId.getFluid(stack), prevAmount, currentAmount);
+        if (stack.getItem() instanceof IItemFluidId id) {
+            return getHighestPayoutFromFluid(id.getType(null, 0, 0, 0, stack), prevAmount, currentAmount);
         }
 
         Map<Object, AnnihilatorRecipe> recipes = recipes();

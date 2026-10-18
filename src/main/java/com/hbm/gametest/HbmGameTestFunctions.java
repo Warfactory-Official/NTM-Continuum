@@ -711,6 +711,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("electrolyser_fluid_processing", 200, 8, () -> ElectrolyserGameTests::fluidProcessing);
     public static final GameTests.Function ELECTROLYSER_METAL_PROCESSING =
             TESTS.function("electrolyser_metal_processing", 700, 8, () -> ElectrolyserGameTests::metalProcessing);
+    public static final GameTests.Function ELECTROLYSER_MULTI_IDENTIFIER =
+            TESTS.function("electrolyser_multi_identifier", 20, () -> ElectrolyserGameTests::multiIdentifier);
     public static final GameTests.Function ELECTROLYSER_PAUSES =
             TESTS.function("electrolyser_pauses", 40, 8, () -> ElectrolyserGameTests::pausesAndResumes);
     public static final GameTests.Function ELECTROLYSER_MOLTEN_POUR_RATE =

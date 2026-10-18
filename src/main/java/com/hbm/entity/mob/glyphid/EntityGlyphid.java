@@ -98,6 +98,8 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
     public int homeY;
     public int homeZ;
     protected int currentTask = TASK_IDLE;
+    // 1.7 isSwingInProgress as the AI saw it, before MeleeAttackGoal swings ahead of doHurtTarget
+    private boolean swingBusy;
 
     protected int previousTask;
     protected @Nullable EntityWaypoint previousWaypoint;
@@ -516,6 +518,7 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
         }
 
         attackAnim = (float) swingTime / (float) duration;
+        swingBusy = swinging;
     }
 
     public int swingDuration() {
@@ -542,7 +545,8 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
     @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
         // 1.7:461 - the swing animation is the attack-rate governor; swingDuration() is 100 on the behemoth
-        if (swinging) return false;
+        if (swingBusy) return false;
+        swingBusy = true;
         swing(InteractionHand.MAIN_HAND);
 
         if (subtype() == TYPE_INFECTED && target instanceof LivingEntity livingTarget) {

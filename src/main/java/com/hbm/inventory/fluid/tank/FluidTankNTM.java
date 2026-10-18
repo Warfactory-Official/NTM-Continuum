@@ -5,6 +5,9 @@ import dev.golem.core.data.Tags;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.NTMItemHandler;
+import com.hbm.items.machine.IItemFluidId;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.Mth;
 import dev.golem.core.data.DataIn;
@@ -57,6 +60,22 @@ public class FluidTankNTM implements Cloneable {
         if (this.type == type) return;
         this.type = type;
         this.setFill(0);
+    }
+
+    /** 1.7 {@code setType(in, out, slots)}: an identifier in {@code in} retypes the tank, then moves to {@code out}. */
+    public boolean setType(NTMItemHandler slots, int in, int out) {
+        ItemStack stack = slots.getStackInSlot(in);
+        if (!(stack.getItem() instanceof IItemFluidId id)) return false;
+        if (in != out && !slots.getStackInSlot(out).isEmpty()) return false;
+        FluidType newType = id.getType(null, 0, 0, 0, stack);
+        if (type == newType) return false;
+        type = newType;
+        fluid = 0;
+        if (in != out) {
+            slots.setStackInSlot(out, stack.copy());
+            slots.setStackInSlot(in, ItemStack.EMPTY);
+        }
+        return true;
     }
 
     public void resetTank() {

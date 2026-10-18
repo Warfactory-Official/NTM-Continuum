@@ -11,6 +11,7 @@ import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /**
@@ -28,6 +29,8 @@ public final class Fix7GlyphidGameTests {
             TESTS.function("fix7_glyphid_attributes", 20, () -> Fix7GlyphidGameTests::attributes);
     public static final GameTests.Function MOVEMENT =
             TESTS.function("fix7_glyphid_legacy_movement", 20, () -> Fix7GlyphidGameTests::movement);
+    public static final GameTests.Function MELEE =
+            TESTS.function("fix7_glyphid_melee_hits", 200, () -> Fix7GlyphidGameTests::melee);
 
     public static void init() {}
 
@@ -94,5 +97,14 @@ public final class Fix7GlyphidGameTests {
             bug.discard();
         }
         helper.succeed();
+    }
+
+    /** MeleeAttackGoal swings before doHurtTarget; the 1.7 swing guard must still let that hit land. */
+    public static void melee(GameTestHelper helper) {
+        Mob pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 2, 3));
+        EntityGlyphid bug = helper.spawn(ModNtmEntities.GLYPHID.get(), new BlockPos(1, 2, 1));
+        bug.setTarget(pig);
+        helper.succeedWhen(() -> helper.assertTrue(pig.getLastHurtByMob() == bug,
+                "the grunt has not hurt its target, last hurt by " + pig.getLastHurtByMob()));
     }
 }

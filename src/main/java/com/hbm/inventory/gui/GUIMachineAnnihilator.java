@@ -1,7 +1,6 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidId;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.inventory.container.ContainerMachineAnnihilator;
 import com.hbm.tileentity.machine.TileEntityMachineAnnihilator;
@@ -73,8 +72,8 @@ public final class GUIMachineAnnihilator extends CompatContainerScreen<Container
         ItemStack monitored = annihilator.inventory.getStackInSlot(8);
         if (!monitored.isEmpty() && isHovering(151, 35, 18, 18, mouseX, mouseY)) {
             Component name = monitored.getHoverName();
-            if (monitored.getItem() instanceof IItemFluidId) {
-                name = ItemFluidId.getFluid(monitored).getDisplayName();
+            if (monitored.getItem() instanceof IItemFluidId id) {
+                name = id.getType(null, 0, 0, 0, monitored).getDisplayName();
             }
             GuiDraw.tooltip(graphics, font, List.of(name.copy().append(":"),
                     Component.literal(String.format(Locale.US, "%,d", annihilator.monitorBigInt))), Optional.empty(), mouseX, mouseY);

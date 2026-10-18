@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.ModProduction2Blocks;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineElectrolyser;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -18,11 +19,16 @@ import com.hbm.items.ItemEnums.EnumChunkType;
 import com.hbm.items.ModBatteryItems;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
+import com.hbm.items.ModUtilityToolItems;
+import com.hbm.items.machine.ItemFluidIDMulti;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.items.special.BedrockOreType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.machine.TileEntityMachineAnnihilator;
 import com.hbm.tileentity.machine.TileEntityMachineElectrolyser;
+import com.hbm.tileentity.machine.TileEntityMachineExcavator;
+import com.hbm.tileentity.machine.TileEntityMachineOreSlopper;
 import dev.golem.core.gametest.GameTestHelpers;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -334,6 +340,39 @@ public final class ElectrolyserGameTests {
                 "electrolyser assembly recipe is missing or has wrong processing parameters");
         helper.assertTrue(recipe.outputItem != null && recipe.outputItem[0].is(ModMachineBlocks.machine_electrolyser.get().asItem()),
                 "electrolyser assembly recipe has the wrong output");
+        helper.succeed();
+    }
+
+    /** 1.7 machines test {@code IItemFluidIdentifier}, so the multi identifier works wherever the single one does. */
+    public static void multiIdentifier(GameTestHelper helper) {
+        ItemStack multi = new ItemStack(ModUtilityToolItems.fluid_identifier_multi.get());
+        ItemFluidIDMulti.setType(multi, Fluids.HEAVYWATER, true);
+
+        TileEntityMachineElectrolyser electrolyser = place(helper);
+        electrolyser.tanks[0].setTankType(Fluids.WATER);
+        electrolyser.tanks[0].setFill(1000);
+        helper.assertTrue(electrolyser.canPlaceItem(3, multi), "electrolyser identifier slot must take the multi identifier");
+        electrolyser.inventory.setStackInSlot(3, multi.copy());
+        tick(helper, electrolyser);
+        helper.assertTrue(electrolyser.tanks[0].getTankType() == Fluids.HEAVYWATER && electrolyser.tanks[0].getFill() == 0,
+                "the multi identifier retypes and empties the input tank, have " + electrolyser.tanks[0].getTankType());
+        helper.assertTrue(electrolyser.inventory.getStackInSlot(3).isEmpty()
+                        && electrolyser.inventory.getStackInSlot(4).is(ModUtilityToolItems.fluid_identifier_multi.get()),
+                "setType(3, 4) moves the identifier to slot 4");
+
+        BlockPos origin = helper.absolutePos(new BlockPos(0, 1, 0));
+        TileEntityMachineExcavator excavator = new TileEntityMachineExcavator(origin,
+                ModProduction2Blocks.MACHINE_EXCAVATOR.get().defaultBlockState());
+        TileEntityMachineOreSlopper slopper = new TileEntityMachineOreSlopper(origin,
+                ModProduction2Blocks.MACHINE_ORE_SLOPPER.get().defaultBlockState());
+        TileEntityMachineAnnihilator annihilator = new TileEntityMachineAnnihilator(origin,
+                ModProduction2Blocks.MACHINE_ANNIHILATOR.get().defaultBlockState());
+        helper.assertTrue(excavator.isItemValidForSlot(1, multi), "excavator identifier slot must take the multi identifier");
+        helper.assertTrue(slopper.isItemValidForSlot(1, multi), "ore slopper identifier slot must take the multi identifier");
+        helper.assertTrue(annihilator.isItemValidForSlot(1, multi), "annihilator identifier slot must take the multi identifier");
+        slopper.inventory.setStackInSlot(1, multi.copy());
+        slopper.tanks[0].setType(slopper.inventory, 1, 1);
+        helper.assertTrue(slopper.tanks[0].getTankType() == Fluids.HEAVYWATER, "the multi identifier retypes the slopper tank");
         helper.succeed();
     }
 

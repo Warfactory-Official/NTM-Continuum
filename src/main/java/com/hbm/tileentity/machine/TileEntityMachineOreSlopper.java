@@ -7,7 +7,7 @@ import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.items.machine.ItemFluidId;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.items.special.BedrockOreType;
 import com.hbm.items.special.ItemBedrockOreBase;
@@ -116,7 +116,7 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
 
-        te.setTankTypeFromSlot(1);
+        te.tanks[0].setType(te.inventory, 1, 1);
         FluidType conversion = te.getFluidOutput(te.tanks[0].getTankType());
         if (conversion != null) te.tanks[1].setTankType(conversion);
 
@@ -276,15 +276,6 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase
         }
     }
 
-    /** 1.7 {@code FluidTank.setType(slot, slots)}: a fluid identifier in the slot retypes the tank. */
-    private void setTankTypeFromSlot(int slot) {
-        ItemStack stack = inventory.getStackInSlot(slot);
-        if (stack.getItem() instanceof ItemFluidId) {
-            FluidType type = ItemFluidId.getFluid(stack);
-            if (type != tanks[0].getTankType()) tanks[0].setTankType(type);
-        }
-    }
-
     protected PortDef[] cachedPorts;
 
     public PortDef[] getPorts() {
@@ -310,7 +301,7 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
-        if (slot == 1) return stack.getItem() instanceof ItemFluidId;
+        if (slot == 1) return stack.getItem() instanceof IItemFluidId;
         if (slot == 9 || slot == 10) return Library.isMachineUpgrade(stack);
         if (slot >= 3 && slot <= 8) return false;
         return slot == 2 && stack.is(ModOreBlocks.bedrock_ore_base.get());

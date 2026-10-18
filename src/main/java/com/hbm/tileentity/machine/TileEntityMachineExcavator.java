@@ -16,14 +16,13 @@ import com.hbm.entity.item.EntityMovingItem;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.DrillBitType;
 import com.hbm.items.machine.ItemDrillbit;
-import com.hbm.items.machine.ItemFluidId;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.items.special.ItemBedrockOreBase;
 import com.hbm.lib.ForgeDirection;
@@ -136,7 +135,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
         te.consumption = te.baseConsumption * (1 + speedLevel);
         te.consumption /= (1 + powerLevel);
 
-        te.setTankTypeFromSlot(1);
+        te.tank.setType(te.inventory, 1, 1);
 
         if (level.getGameTime() % 20 == 0) {
             te.tryEjectBuffer();
@@ -214,17 +213,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
         if (te.crusherRotation >= 360F) {
             te.crusherRotation -= 360F;
             te.prevCrusherRotation -= 360F;
-        }
-    }
-
-    /** 1.7 {@code FluidTank.setType(slot, slots)}: a fluid identifier in the slot retypes the tank. */
-    private void setTankTypeFromSlot(int slot) {
-        ItemStack stack = inventory.getStackInSlot(slot);
-        if (stack.getItem() instanceof ItemFluidId) {
-            FluidType type = ItemFluidId.getFluid(stack);
-            if (type != tank.getTankType()) {
-                tank.setTankType(type);
-            }
         }
     }
 
@@ -833,7 +821,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
-        if (slot == 1) return stack.getItem() instanceof ItemFluidId;
+        if (slot == 1) return stack.getItem() instanceof IItemFluidId;
         if (slot == 2 || slot == 3) return Library.isMachineUpgrade(stack);
         if (slot == 4) return stack.getItem() instanceof ItemDrillbit;
         return true;
