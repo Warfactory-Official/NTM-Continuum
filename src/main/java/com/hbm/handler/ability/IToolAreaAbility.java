@@ -6,6 +6,7 @@ import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
 import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.items.tool.ItemToolAbility;
+import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -121,7 +122,11 @@ public interface IToolAreaAbility extends IBaseAbility {
             // 1.7 compared block and metadata; lit and unlit redstone ore counted as one block. The modern
             // redstone ore is one block with a LIT property, so compare the block and every other property.
             if (b.getBlock() != refState.getBlock()) return;
-            if (!sameMeta(b, refState)) return;
+            if (world.getBlockEntity(ref) instanceof TileEntityFluidDuctNT refDuct
+                    && world.getBlockEntity(at) instanceof TileEntityFluidDuctNT duct) {
+                // ducts break only along their own fluid; their arms are state, not 1.7 metadata
+                if (refDuct.getFluidType() != duct.getFluidType()) return;
+            } else if (!sameMeta(b, refState)) return;
 
             if (player.getMainHandItem().isEmpty()) return;
 

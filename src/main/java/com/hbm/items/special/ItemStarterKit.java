@@ -117,11 +117,9 @@ public class ItemStarterKit extends CompatItem {
                 l.add(hbm("machine_press", 1));
                 l.add(hbm("machine_blast_furnace", 1));
                 l.add(hbm("machine_gascent", 1));
-                l.add(hbm("machine_reactor", 1));
                 l.add(hbm("machine_assembly_machine", 1));
                 l.add(hbm("machine_chemical_plant", 1));
-                l.add(hbm("machine_reactor_small", 1));
-                l.add(hbm("machine_turbine", 2));
+                l.add(hbm("machine_industrial_turbine", 2));
                 l.add(hbm("radaway", 8));
                 l.add(hbm("radx", 2));
                 l.add(hbm("stamp_titanium_flat", 1));
@@ -146,9 +144,9 @@ public class ItemStarterKit extends CompatItem {
                 l.add(hbm("machine_centrifuge", 2));
                 l.add(hbm("machine_uf6_tank", 2));
                 l.add(hbm("machine_puf6_tank", 2));
-                l.add(hbm("machine_reactor", 2));
-                l.add(hbm("machine_reactor_small", 4));
-                l.add(hbm("machine_turbine", 4));
+                l.add(hbm("pile_brick", 64));
+                l.add(hbm("pile_brick", 61));
+                l.add(hbm("machine_industrial_turbine", 4));
                 l.add(hbm("machine_radgen", 1));
                 l.add(hbm("machine_rtg_grey", 1));
                 l.add(hbm("machine_assembly_machine", 3));
@@ -167,8 +165,8 @@ public class ItemStarterKit extends CompatItem {
                 l.add(hbm("gas_mask_m65", 1));
             }
             case NUKE_COMMERCIALLY -> {
-                l.add(hbm("machine_reactor_small", 8));
-                l.add(hbm("machine_reactor", 8));
+                l.add(hbm("pile_brick", 64));
+                l.add(hbm("pile_brick", 61));
                 l.add(hbm("machine_fluidtank", 8));
                 l.add(hbm("billet_pu238be", 40));
                 l.add(hbm("ingot_u233", 40));

@@ -1,6 +1,18 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.entity.IRadarDetectableNT;
+import com.hbm.api.entity.IRadarDetectableNT.RadarScanParams;
+import com.hbm.api.entity.RadarEntry;
+import com.hbm.blocks.ModRadarUtilityBlocks;
+import com.hbm.config.ServerConfig;
+import com.hbm.entity.ModEntities;
+import com.hbm.entity.projectile.EntityMeteor;
+import com.hbm.items.ModRadarUtilityItems;
+import com.hbm.lib.ModDamageSources;
+import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
+import dev.golem.core.world.Compat;
+import net.minecraft.server.level.ServerLevel;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.turret.ModTurretBlocks;
@@ -131,10 +143,202 @@ public final class TurretGameTests {
             TESTS.function("turret_arty_designator", 60, 16, () -> TurretGameTests::artyDesignator);
     public static final GameTests.Function ASSETS =
             TESTS.function("turret_assets", 20, () -> TurretGameTests::assets);
+    public static final GameTests.Function CONFIG_DAMAGE =
+            TESTS.function("turret_config_damage", 60, 16, () -> TurretGameTests::configDamage);
+    public static final GameTests.Function CIWS_RADAR =
+            TESTS.function("turret_ciws_radar", 100, 64, () -> TurretGameTests::ciwsRadar);
+    public static final GameTests.Function PROJECTILE_HEALTH =
+            TESTS.function("turret_projectile_health", 60, 8, () -> TurretGameTests::projectileHealth);
+    public static final GameTests.Function ROCKET_GUIDANCE =
+            TESTS.function("turret_rocket_guidance", 60, 16, () -> TurretGameTests::rocketGuidance);
 
     private TurretGameTests() {}
 
     public static void init() {}
+
+    /**
+     * Turret damage comes from the server config: Chekhov 10, Mr. Friendly 5 (not Chekhov's 10), an edited key
+     * reaches the next bullet, and the Tauon deals 30 x (1 + r/3) subatomic damage, so 30 to 40.
+     */
+    public static void configDamage(GameTestHelper helper) {
+        BlockPos chekhovCore = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_chekhov.get());
+        BlockPos friendlyCore = place(helper, new BlockPos(2, 1, 8), ModTurretBlocks.turret_friendly.get());
+        TileEntityTurretChekhov chekhov = (TileEntityTurretChekhov) helper.getLevel().getBlockEntity(chekhovCore);
+        TileEntityTurretChekhov friendly = (TileEntityTurretChekhov) helper.getLevel().getBlockEntity(friendlyCore);
+
+        helper.assertTrue(firedDamage(helper, chekhov, XFactory50.bmg50_sp) == 10F, "Chekhov's bullets carry 10");
+        float friendlyDamage = firedDamage(helper, friendly, XFactory556mm.r556_sp);
+        helper.assertTrue(friendlyDamage == 5F, "Mr. Friendly's bullets carry its own 5, got " + friendlyDamage);
+
+        var key = ServerConfig.configMap.get("TURRET_FRIENDLY_DAMAGE");
+        helper.assertTrue(key == XFactoryTurret.TURRET_FRIENDLY_DAMAGE, "TURRET_FRIENDLY_DAMAGE is not in /ntmserver");
+        try {
+            key.update("7.5");
+            helper.assertTrue(firedDamage(helper, friendly, XFactory556mm.r556_sp) == 7.5F,
+                    "An edited TURRET_FRIENDLY_DAMAGE must reach the next bullet");
+        } finally {
+            XFactoryTurret.TURRET_FRIENDLY_DAMAGE.set(5F);
+        }
+
+        BlockPos tauonCore = place(helper, new BlockPos(8, 1, 2), ModTurretBlocks.turret_tauon.get());
+        TileEntityTurretTauon tauon = (TileEntityTurretTauon) helper.getLevel().getBlockEntity(tauonCore);
+        tauon.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST, new ItemStack(ModAmmoItems.tau_uranium.get(), 8));
+        var golem = helper.spawn(EntityType.IRON_GOLEM, new BlockPos(14, 2, 2));
+        golem.setNoAi(true);
+        float before = golem.getHealth();
+        tauon.target = golem;
+        for (int i = 0; i < 5; i++) tauon.updateFiringTick();
+        float dealt = before - golem.getHealth();
+        helper.assertTrue(dealt >= 30F && dealt < 40F, "The Tauon must deal 30 to 40, dealt " + dealt);
+        helper.succeed();
+    }
+
+    private static float firedDamage(GameTestHelper helper, TileEntityTurretBaseNT turret, BulletConfig config) {
+        AABB area = new AABB(turret.getBlockPos()).inflate(8D);
+        var before = helper.getLevel().getEntitiesOfClass(EntityBulletBaseMK4.class, area);
+        turret.spawnBullet(config);
+        float damage = -1F;
+        for (EntityBulletBaseMK4 bullet : helper.getLevel().getEntitiesOfClass(EntityBulletBaseMK4.class, area)) {
+            if (before.contains(bullet)) continue;
+            damage = bullet.damage;
+            bullet.discard();
+        }
+        return damage;
+    }
+
+    /**
+     * A linked radar hands the CIWS its nearest blip. In player mode the Howard sees 48 blocks and keeps a target up
+     * to 48 x 1.1 = 52.8; a zombie 58 blocks out is out of its sight until the radar designates it (within 4 x 48).
+     */
+    public static void ciwsRadar(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_howard.get());
+        TileEntityTurretHoward howard = (TileEntityTurretHoward) helper.getLevel().getBlockEntity(core);
+        BlockState state = helper.getLevel().getBlockState(core);
+        howard.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST, new ItemStack(ModItems.ammo_dgk.get(), 2));
+        howard.isOn = true;
+        howard.targetPlayers = true;
+        helper.assertTrue(howard.getDetectorRange() == 48D, "Player mode must use the 48-block range");
+        helper.assertTrue(new ItemStack(ModItems.ammo_dgk.get()).getMaxStackSize() == 4, "CIWS belts stack to 4");
+
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(60, 2, 2));
+        zombie.setNoGravity(true);
+        zombie.setNoAi(true);
+        double distance = howard.getTurretPos().distanceTo(howard.getEntityPos(zombie));
+        helper.assertTrue(distance > 52.8D && distance < 192D, "Fixture distance out of band: " + distance);
+        helper.assertTrue(!howard.entityInLOS(zombie), "Without a radar the zombie is beyond sight at " + distance);
+        for (int i = 0; i < 20; i++) {
+            howard.setPower(howard.getMaxPower());
+            TileEntityTurretHoward.serverTick(helper.getLevel(), core, state, howard);
+        }
+        helper.assertTrue(howard.target == null, "The CIWS acquired a target beyond its own range");
+
+        BlockPos radarPos = new BlockPos(2, 1, 10);
+        helper.setBlock(radarPos, ModRadarUtilityBlocks.machine_radar.get().defaultBlockState());
+        TileEntityMachineRadarNT radar = GameTestHelpers.blockEntity(helper, radarPos, TileEntityMachineRadarNT.class);
+        ItemStack linker = new ItemStack(ModRadarUtilityItems.radar_linker.get());
+        ModRadarUtilityItems.COORDINATE_POSITION.set(linker, core);
+        radar.setItem(0, linker);
+        radar.entries.add(new RadarEntry("radar.target.test", 0, (int) Math.floor(zombie.getX()),
+                (int) Math.floor(zombie.getY()), (int) Math.floor(zombie.getZ()), RadarEntry.dimOf(zombie),
+                zombie.getId(), false));
+        radar.commandLinkedTurrets(helper.getLevel());
+        helper.assertTrue(howard.target == zombie && howard.radarDesignatedTarget,
+                "The linked radar must designate the zombie as the CIWS target");
+
+        howard.setPower(howard.getMaxPower());
+        TileEntityTurretHoward.serverTick(helper.getLevel(), core, state, howard);
+        helper.assertTrue(howard.target == zombie, "A radar-designated target must stay locked beyond 52.8 blocks");
+
+        zombie.discard();
+        howard.setPower(howard.getMaxPower());
+        TileEntityTurretHoward.serverTick(helper.getLevel(), core, state, howard);
+        helper.assertTrue(howard.target == null && !howard.radarDesignatedTarget,
+                "Losing the target must clear the radar designation");
+        helper.succeed();
+    }
+
+    /**
+     * Artillery shells take 50 damage and rockets 100 before they break; a meteor only breaks to an energy hit of
+     * 250 or more. Both artillery projectiles are machine targets, and the meteor is a radar blip.
+     */
+    public static void projectileHealth(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var physical = ModDamageSources.bullet(level, ModDamageSources.DamageClass.PHYSICAL.type(), null, null);
+        var laser = ModDamageSources.bullet(level, ModDamageSources.DamageClass.LASER.type(), null, null);
+
+        EntityArtilleryShell shell = new EntityArtilleryShell(ModEntities.ARTILLERY_SHELL.get(), level);
+        Compat.hurt(shell, level, physical, 49.9F);
+        helper.assertTrue(!shell.isRemoved() && shell.health == 1,
+                "A shell at 50 takes 49 (cast to int), left " + shell.health);
+        Compat.hurt(shell, level, physical, 1F);
+        helper.assertTrue(shell.isRemoved(), "The 50th point of damage must destroy the shell");
+
+        EntityArtilleryRocket rocket = new EntityArtilleryRocket(ModEntities.HIMARS_ROCKET.get(), level);
+        Compat.hurt(rocket, level, physical, 60F);
+        helper.assertTrue(!rocket.isRemoved() && rocket.health == 40, "A rocket at 100 takes 60, left " + rocket.health);
+        Compat.hurt(rocket, level, physical, 40F);
+        helper.assertTrue(rocket.isRemoved(), "The 100th point of damage must destroy the rocket");
+
+        EntityMeteor meteor = new EntityMeteor(level);
+        Compat.hurt(meteor, level, physical, 1_000F);
+        helper.assertTrue(!meteor.isRemoved(), "A physical hit must not destroy a meteor");
+        Compat.hurt(meteor, level, laser, 249F);
+        helper.assertTrue(!meteor.isRemoved(), "A laser hit under 250 must not destroy a meteor");
+        Compat.hurt(meteor, level, laser, 250F);
+        helper.assertTrue(meteor.isRemoved(), "A laser hit of 250 must destroy a meteor");
+
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_howard.get());
+        TileEntityTurretHoward howard = (TileEntityTurretHoward) level.getBlockEntity(core);
+        helper.assertTrue(howard.entityAcceptableTarget(new EntityArtilleryShell(ModEntities.ARTILLERY_SHELL.get(), level))
+                        && howard.entityAcceptableTarget(new EntityArtilleryRocket(ModEntities.HIMARS_ROCKET.get(), level)),
+                "Artillery shells and rockets must be machine targets");
+
+        TileEntityMachineRadarNT.registerConverters();
+        EntityMeteor blip = new EntityMeteor(level);
+        RadarEntry entry = null;
+        for (var converter : TileEntityMachineRadarNT.converters) {
+            entry = converter.apply(new TileEntityMachineRadarNT.Scan(blip, null,
+                    new RadarScanParams(true, false, false, false)));
+            if (entry != null) break;
+        }
+        helper.assertTrue(entry != null && entry.blipLevel == IRadarDetectableNT.SPECIAL
+                && "radar.target.meteor".equals(entry.unlocalizedName), "A meteor must be a special radar blip");
+        helper.succeed();
+    }
+
+    /**
+     * Within one and a half ticks of travel a rocket drops guidance for good and flies straight at the target:
+     * momentum 2, target 2.5 blocks past the next step, so 2.5 <= 3 and the velocity becomes 2 along the line.
+     */
+    public static void rocketGuidance(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Vec3 start = Vec3.atCenterOf(helper.absolutePos(new BlockPos(4, 10, 4)));
+        EntityArtilleryRocket rocket = new EntityArtilleryRocket(ModEntities.HIMARS_ROCKET.get(), level);
+        rocket.setPos(start.x, start.y, start.z);
+        rocket.setTarget(start.x, start.y, start.z + 2D + 2.5D);
+        rocket.setDeltaMovement(0D, 0D, 2D);
+        level.addFreshEntity(rocket);
+
+        rocket.tick();
+        helper.assertTrue(rocket.steering == null && rocket.targeting == null,
+                "Guidance must drop once the target is within 1.5 ticks of travel");
+        Vec3 motion = rocket.getDeltaMovement();
+        helper.assertTrue(Math.abs(motion.length() - 2D) < 1E-6 && motion.z > 1.99D,
+                "The rocket must keep its speed, pointed at the target; got " + motion);
+        rocket.tick();
+        helper.assertTrue(rocket.steering == null, "Dropped guidance must never come back");
+        rocket.discard();
+
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_arty.get());
+        TileEntityTurretArty arty = (TileEntityTurretArty) level.getBlockEntity(core);
+        arty.runRORFunction("FUN:setmode", new String[]{"2"});
+        helper.assertTrue(arty.mode == TileEntityTurretArty.MODE_MANUAL, "RoR setmode 2 must select manual");
+        BlockPos himarsCore = place(helper, new BlockPos(2, 1, 10), ModTurretBlocks.turret_himars.get());
+        TileEntityTurretHIMARS himars = (TileEntityTurretHIMARS) level.getBlockEntity(himarsCore);
+        himars.runRORFunction("FUN:setmanual", new String[]{"1"});
+        helper.assertTrue(himars.mode == TileEntityTurretHIMARS.MODE_MANUAL, "RoR setmanual 1 must select manual");
+        helper.succeed();
+    }
 
     /** Places a turret the way a player does, and hands back the core position. */
     private static BlockPos place(GameTestHelper helper, BlockPos relative, BlockMultiblockCore block) {
@@ -183,8 +387,8 @@ public final class TurretGameTests {
         TileEntityTurretBaseNT turret = (TileEntityTurretBaseNT) helper.getLevel().getBlockEntity(core);
         DirPos[] ports = turret.getConPos();
 
-        helper.assertTrue(ports.length == 12,
-                "1.12.2 subscribes eight pad-edge cells and four underneath; got " + ports.length);
+        helper.assertTrue(ports.length == 8,
+                "1.7's turret pad has eight pad-edge connections and none underneath; got " + ports.length);
 
         boolean throughFoldedCell = false;
         for (DirPos port : ports) {

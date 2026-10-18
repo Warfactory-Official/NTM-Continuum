@@ -76,18 +76,18 @@ public final class Mats {
     public static final NTMMaterial MAT_IRON         = mat(2600, "iron")          // vanilla iron
             .colors(0xFFFFFF, 0x353535, 0xFFA259).setAutogen(FRAGMENT, DUST, PIPE, CASTPLATE, WELDEDPLATE, BLOCK);
     public static final NTMMaterial MAT_GOLD         = mat(7900, "gold")          // vanilla gold
-            .colors(0xFFFF8B, 0xC26E00, 0xE8D754).setAutogen(FRAGMENT, WIRE, NUGGET, DUST, DENSEWIRE, CASTPLATE, BLOCK);
+            .colors(0xFFFF8B, 0xC26E00, 0xE8D754).setAutogen(FRAGMENT, WIRE, DUST, DENSEWIRE, CASTPLATE, BLOCK);
     public static final NTMMaterial MAT_TITANIUM     = mat(2200, "titanium")
-            .colors(0xF7F3F2, 0x4F4C4B, 0xA99E79).setAutogen(FRAGMENT, DUST, PLATE, DENSEWIRE, CASTPLATE, WELDEDPLATE, SHELL, BLOCK);
+            .colors(0xF7F3F2, 0x4F4C4B, 0xA99E79).setAutogen(FRAGMENT, NUGGET, DUST, PLATE, DENSEWIRE, CASTPLATE, WELDEDPLATE, SHELL, BLOCK);
     public static final NTMMaterial MAT_ALUMINIUM    = mat(1300, "aluminium")
-            .colors(0xFFFFFF, 0x344550, 0xD0B8EB).setAutogen(FRAGMENT, WIRE, DUST, PLATE, CASTPLATE, WELDEDPLATE, SHELL, PIPE, BLOCK);
+            .colors(0xFFFFFF, 0x344550, 0xD0B8EB).setAutogen(FRAGMENT, NUGGET, WIRE, DUST, PLATE, CASTPLATE, WELDEDPLATE, SHELL, PIPE, BLOCK);
     public static final NTMMaterial MAT_STEEL        = mat(2605, "steel")
             .colors(0xAFAFAF, 0x0F0F0F, 0x4A4A4A).setAutogen(DUSTTINY, BOLT, WIRE, DUST, PLATE, CASTPLATE, WELDEDPLATE, SHELL, PIPE, BLOCK,
                     LIGHTBARREL, HEAVYBARREL, LIGHTRECEIVER, GRIP);
     public static final NTMMaterial MAT_LEAD         = mat(8200, "lead")
-            .colors(0xA6A6B2, 0x03030F, 0x646470).setAutogen(FRAGMENT, NUGGET, WIRE, BOLT, DUST, PLATE, CASTPLATE, PIPE, BLOCK);
+            .colors(0xA6A6B2, 0x03030F, 0x646470).setAutogen(FRAGMENT, WIRE, BOLT, DUST, PLATE, CASTPLATE, PIPE, BLOCK);
     public static final NTMMaterial MAT_COPPER       = mat(2900, "copper")
-            .colors(0xFDCA88, 0x601E0D, 0xC18336).setAutogen(FRAGMENT, WIRE, DUST, PLATE, DENSEWIRE, CASTPLATE, WELDEDPLATE, SHELL, PIPE, BLOCK);
+            .colors(0xFDCA88, 0x601E0D, 0xC18336).setAutogen(FRAGMENT, NUGGET, WIRE, DUST, PLATE, DENSEWIRE, CASTPLATE, WELDEDPLATE, SHELL, PIPE, BLOCK);
     public static final NTMMaterial MAT_GUNMETAL     = mat(2950, "gunmetal")
             .colors(0xFFEF3F, 0xAD3600, 0xF9C62C).setAutogen(LIGHTBARREL, HEAVYBARREL, LIGHTRECEIVER, HEAVYRECEIVER, MECHANISM, STOCK, GRIP);
     public static final NTMMaterial MAT_WEAPONSTEEL  = mat(2607, "weaponsteel")
@@ -102,7 +102,7 @@ public final class Mats {
             .colors(0x3AC4DA, 0x09282C, 0x30A4B7).setAutogen(PLATE, CASTPLATE, SHELL, BLOCK,
                     LIGHTBARREL, HEAVYBARREL, LIGHTRECEIVER, HEAVYRECEIVER, MECHANISM, STOCK, GRIP);
     public static final NTMMaterial MAT_SCHRABIDIUM  = mat(9300, "schrabidium")
-            .colors(0x32FFFF, 0x005C5C, 0x32FFFF).setAutogen(NUGGET, WIRE, BILLET, DUST, DENSEWIRE, PLATE, CASTPLATE, BLOCK);
+            .colors(0x32FFFF, 0x005C5C, 0x32FFFF).setAutogen(WIRE, BILLET, DUST, DENSEWIRE, PLATE, CASTPLATE, BLOCK);
 
     // --- batch 2: more metals/elements with ported shape-items (colours + autogen from the 1.12.2 Mats;
     //     every name verified against the ported item naming) ---
@@ -113,23 +113,23 @@ public final class Mats {
     public static final NTMMaterial MAT_MAGTUNG      = mat(2638, "magnetized_tungsten")
             .colors(0x22A2A2, 0x0F0F0F, 0x22A2A2).setAutogen(WIRE, DUST, DENSEWIRE, BLOCK);
     public static final NTMMaterial MAT_TUNGSTEN     = mat(7400, "tungsten")
-            .colors(0x868686, 0x000000, 0x977474).setAutogen(FRAGMENT, WIRE, BOLT, DUST, DENSEWIRE, CASTPLATE, WELDEDPLATE, BLOCK);
+            .colors(0x868686, 0x000000, 0x977474).setAutogen(FRAGMENT, NUGGET, WIRE, BOLT, DUST, DENSEWIRE, CASTPLATE, WELDEDPLATE, BLOCK);
     public static final NTMMaterial MAT_BERYLLIUM    = mat(400, "beryllium")
-            .colors(0xB2B2A6, 0x0F0F03, 0xAE9572).setAutogen(FRAGMENT, NUGGET, DUST, BLOCK);
+            .colors(0xB2B2A6, 0x0F0F03, 0xAE9572).setAutogen(FRAGMENT, DUST, BLOCK);
     public static final NTMMaterial MAT_COBALT       = mat(2700, "cobalt")
-            .colors(0xC2D1EE, 0x353554, 0x8F72AE).setAutogen(FRAGMENT, NUGGET, DUSTTINY, BILLET, DUST, BLOCK);
+            .colors(0xC2D1EE, 0x353554, 0x8F72AE).setAutogen(FRAGMENT, DUSTTINY, BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_NIOBIUM      = mat(4100, "niobium")
-            .colors(0xB76EC9, 0x2F2D42, 0xD576B1).setAutogen(FRAGMENT, NUGGET, DUSTTINY, DUST, DENSEWIRE, BLOCK);
+            .colors(0xB76EC9, 0x2F2D42, 0xD576B1).setAutogen(FRAGMENT, DUSTTINY, DUST, DENSEWIRE, BLOCK);
     public static final NTMMaterial MAT_ZIRCONIUM    = mat(4000, "zirconium")
-            .colors(0xE3DCBE, 0x3E3719, 0xADA688).setAutogen(FRAGMENT, NUGGET, WIRE, DUSTTINY, BILLET, DUST, CASTPLATE, WELDEDPLATE, BLOCK);
+            .colors(0xE3DCBE, 0x3E3719, 0xADA688).setAutogen(FRAGMENT, WIRE, DUSTTINY, BILLET, DUST, CASTPLATE, WELDEDPLATE, BLOCK);
     public static final NTMMaterial MAT_BISMUTH      = mat(8300, "bismuth")
-            .colors(0xB200FF, 0xB200FF, 0xB200FF).setAutogen(FRAGMENT, NUGGET, BILLET, DUST, BLOCK);
+            .colors(0xB200FF, 0xB200FF, 0xB200FF).setAutogen(FRAGMENT, BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_BORON        = mat(500, "boron")
-            .colors(0xBDC8D2, 0x29343E, 0xAD72AE).setAutogen(FRAGMENT, DUSTTINY, DUST, BLOCK);
+            .colors(0xBDC8D2, 0x29343E, 0xAD72AE).setAutogen(FRAGMENT, NUGGET, DUSTTINY, DUST, BLOCK);
     public static final NTMMaterial MAT_ARSENIC      = mat(3300, "arsenic")
-            .colors(0x6CBABA, 0x242525, 0x558080).setAutogen(NUGGET);
+            .colors(0x6CBABA, 0x242525, 0x558080).setAutogen();
     public static final NTMMaterial MAT_NEODYMIUM    = mat(6000, "neodymium")
-            .colors(0xE6E6B6, 0x1C1C00, 0x8F8F5F).setAutogen(FRAGMENT, NUGGET, DUSTTINY, INGOT, DUST, DENSEWIRE, BLOCK);
+            .colors(0xE6E6B6, 0x1C1C00, 0x8F8F5F).setAutogen(FRAGMENT, DUSTTINY, INGOT, DUST, DENSEWIRE, BLOCK);
     public static final NTMMaterial MAT_LANTHANIUM   = mat(5700, "lanthanium")
             .colors(0xC8E0E0, 0x3B5353, 0xA1B9B9).setAutogen(FRAGMENT, BLOCK);
     public static final NTMMaterial MAT_CADMIUM      = mat(4800, "cadmium")
@@ -137,73 +137,73 @@ public final class Mats {
     public static final NTMMaterial MAT_ASBESTOS     = mat(1401, "asbestos")
             .colors(0xD8D9CF, 0x616258, 0xB0B3A8).setAutogen(FRAGMENT, BLOCK);
     public static final NTMMaterial MAT_URANIUM      = mat(9200, "uranium")
-            .colors(0xC1C7BD, 0x2B3227, 0x9AA196).setAutogen(FRAGMENT, NUGGET, BILLET, DUST, BLOCK);
+            .colors(0xC1C7BD, 0x2B3227, 0x9AA196).setAutogen(FRAGMENT, BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_THORIUM      = mat(9032, "thorium")
-            .colors(0xBF825F, 0x1C0000, 0xBF825F).setAutogen(FRAGMENT, NUGGET, BILLET, DUST, BLOCK);
+            .colors(0xBF825F, 0x1C0000, 0xBF825F).setAutogen(FRAGMENT, BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_PLUTONIUM    = mat(9400, "plutonium")
-            .colors(0x9AA3A0, 0x111A17, 0x78817E).setAutogen(NUGGET, BILLET, DUST, BLOCK);
+            .colors(0x9AA3A0, 0x111A17, 0x78817E).setAutogen(BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_NEPTUNIUM    = mat(9337, "neptunium")
-            .colors(0xA6B2A6, 0x030F03, 0x647064).setAutogen(NUGGET, BILLET, DUST, BLOCK);
+            .colors(0xA6B2A6, 0x030F03, 0x647064).setAutogen(BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_POLONIUM     = mat(8410, "polonium")
-            .colors(0x968779, 0x3D1509, 0x715E4A).setAutogen(FRAGMENT, NUGGET, BILLET, DUST, BLOCK);
+            .colors(0x968779, 0x3D1509, 0x715E4A).setAutogen(FRAGMENT, BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_ACTINIUM     = mat(8927, "actinium")
-            .colors(0xECE0E0, 0x221616, 0x958989).setAutogen(NUGGET, BILLET);
+            .colors(0xECE0E0, 0x221616, 0x958989).setAutogen(BILLET);
 
     // --- batch 3: radioactive isotopes / synthetics (id + colours + autogen ported verbatim from the
     //     1.12.2 Mats; names verified against 1.12.2 ModItems) ---
     public static final NTMMaterial MAT_U233           = mat(9233, "u233")
-            .colors(0xC1C7BD, 0x2B3227, 0x9AA196).setAutogen(NUGGET, BILLET, DUST, BLOCK);
+            .colors(0xC1C7BD, 0x2B3227, 0x9AA196).setAutogen(BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_U235           = mat(9235, "u235")
-            .colors(0xC1C7BD, 0x2B3227, 0x9AA196).setAutogen(NUGGET, BILLET, DUST, BLOCK);
+            .colors(0xC1C7BD, 0x2B3227, 0x9AA196).setAutogen(BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_U238           = mat(9238, "u238")
-            .colors(0xC1C7BD, 0x2B3227, 0x9AA196).setAutogen(FRAGMENT, NUGGET, BILLET, DUST, BLOCK);
+            .colors(0xC1C7BD, 0x2B3227, 0x9AA196).setAutogen(FRAGMENT, BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_PU238          = mat(9438, "pu238")
-            .colors(0xFFBC59, 0xFF8E2B, 0x78817E).setAutogen(NUGGET, BILLET, BLOCK);
+            .colors(0xFFBC59, 0xFF8E2B, 0x78817E).setAutogen(BILLET, BLOCK);
     public static final NTMMaterial MAT_PU239          = mat(9439, "pu239")
-            .colors(0x9AA3A0, 0x111A17, 0x78817E).setAutogen(NUGGET, BILLET, BLOCK);
+            .colors(0x9AA3A0, 0x111A17, 0x78817E).setAutogen(BILLET, BLOCK);
     public static final NTMMaterial MAT_PU240          = mat(9440, "pu240")
-            .colors(0x9AA3A0, 0x111A17, 0x78817E).setAutogen(NUGGET, BILLET, BLOCK);
+            .colors(0x9AA3A0, 0x111A17, 0x78817E).setAutogen(BILLET, BLOCK);
     public static final NTMMaterial MAT_PU241          = mat(9441, "pu241")
-            .colors(0x9AA3A0, 0x111A17, 0x78817E).setAutogen(NUGGET, BILLET, BLOCK);
+            .colors(0x9AA3A0, 0x111A17, 0x78817E).setAutogen(BILLET, BLOCK);
     public static final NTMMaterial MAT_AM241          = mat(9541, "am241")
-            .colors(0xCEB3B9, 0x3A1C21, 0x93767B).setAutogen(NUGGET, BILLET, BLOCK);
+            .colors(0xCEB3B9, 0x3A1C21, 0x93767B).setAutogen(BILLET, BLOCK);
     public static final NTMMaterial MAT_AM242          = mat(9542, "am242")
-            .colors(0xCEB3B9, 0x3A1C21, 0x93767B).setAutogen(NUGGET, BILLET, BLOCK);
+            .colors(0xCEB3B9, 0x3A1C21, 0x93767B).setAutogen(BILLET, BLOCK);
     public static final NTMMaterial MAT_TECHNETIUM     = mat(4399, "technetium")
-            .colors(0xFAFFFF, 0x576C6C, 0xCADFDF).setAutogen(FRAGMENT, NUGGET, BILLET, BLOCK);
+            .colors(0xFAFFFF, 0x576C6C, 0xCADFDF).setAutogen(FRAGMENT, BILLET, BLOCK);
     public static final NTMMaterial MAT_RADIUM         = mat(8826, "ra226")
-            .colors(0xFCFCFC, 0xADBFBA, 0xE9FAF6).setAutogen(FRAGMENT, NUGGET, BILLET, DUST, BLOCK);
+            .colors(0xFCFCFC, 0xADBFBA, 0xE9FAF6).setAutogen(FRAGMENT, BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_CO60           = mat(2760, "co60")
-            .colors(0xC2D1EE, 0x353554, 0x8F72AE).setAutogen(NUGGET, BILLET, DUST);
+            .colors(0xC2D1EE, 0x353554, 0x8F72AE).setAutogen(BILLET, DUST);
     public static final NTMMaterial MAT_AU198          = mat(7998, "au198")
-            .colors(0xFFFF8B, 0xC26E00, 0xE8D754).setAutogen(NUGGET, BILLET, DUST);
+            .colors(0xFFFF8B, 0xC26E00, 0xE8D754).setAutogen(BILLET, DUST);
     public static final NTMMaterial MAT_PB209          = mat(8209, "pb209")
-            .colors(0xB38A94, 0x12020E, 0x7B535D).setAutogen(NUGGET, BILLET, DUST);
+            .colors(0xB38A94, 0x12020E, 0x7B535D).setAutogen(BILLET, DUST);
     public static final NTMMaterial MAT_SOLINIUM       = mat(12627, "solinium")
-            .colors(0xA2E6E0, 0x00433D, 0x72B6B0).setAutogen(NUGGET, BILLET, BLOCK);
+            .colors(0xA2E6E0, 0x00433D, 0x72B6B0).setAutogen(BILLET, BLOCK);
     public static final NTMMaterial MAT_SCHRABIDATE    = mat(12600, "schrabidate")
             .colors(0x77C0D7, 0x39005E, 0x6589B4).setAutogen(DUST, DENSEWIRE, CASTPLATE, BLOCK);
     public static final NTMMaterial MAT_SCHRARANIUM    = mat(12601, "schraranium")
             .colors(0x2B3227, 0x2B3227, 0x24AFAC).setAutogen(BLOCK);
     public static final NTMMaterial MAT_GHIORSIUM      = mat(12836, "gh336")
-            .colors(0xF4EFE1, 0x2A3306, 0xC6C6A1).setAutogen(NUGGET, BILLET, BLOCK);
+            .colors(0xF4EFE1, 0x2A3306, 0xC6C6A1).setAutogen(BILLET, BLOCK);
 
     // --- batch 3: base metals / nonmetals / minerals (id + colours + autogen ported verbatim from the
     //     1.12.2 Mats; names verified against 1.12.2 ModItems) ---
     public static final NTMMaterial MAT_TANTALIUM      = mat(7300, "tantalium")
-            .colors(0xFFFFFF, 0x1D1D36, 0xA89B74).setAutogen(FRAGMENT, NUGGET, DUST, BLOCK);
+            .colors(0xFFFFFF, 0x1D1D36, 0xA89B74).setAutogen(FRAGMENT, DUST, BLOCK);
     public static final NTMMaterial MAT_SILICON        = mat(1400, "silicon")
-            .colors(0xD1D7DF, 0x1A1A3D, 0x878B9E).setAutogen(FRAGMENT, NUGGET, BILLET);
+            .colors(0xD1D7DF, 0x1A1A3D, 0x878B9E).setAutogen(FRAGMENT, BILLET);
     public static final NTMMaterial MAT_OSMIRIDIUM     = mat(7699, "osmiridium")
-            .colors(0xDBE3EF, 0x7891BE, 0xACBDD9).setAutogen(NUGGET, CASTPLATE, WELDEDPLATE);
+            .colors(0xDBE3EF, 0x7891BE, 0xACBDD9).setAutogen(CASTPLATE, WELDEDPLATE);
     public static final NTMMaterial MAT_CALCIUM        = mat(2000, "calcium")
             .colors(0xCFCFA6, 0x747F6E, 0xB7B784).setAutogen(DUST);
     public static final NTMMaterial MAT_SODIUM         = mat(1100, "sodium")
-            .colors(0xD3BF9E, 0x3A5A6B, 0x7E9493).setAutogen(FRAGMENT, INGOT, DUST);
+            .colors(0xD3BF9E, 0x3A5A6B, 0x7E9493).setAutogen(FRAGMENT, NUGGET, INGOT, DUST);
     public static final NTMMaterial MAT_STRONTIUM      = mat(3800, "strontium")
-            .colors(0xF1E8BA, 0x271E00, 0xCAC193).setAutogen(FRAGMENT, INGOT, DUST);
+            .colors(0xF1E8BA, 0x271E00, 0xCAC193).setAutogen(FRAGMENT, NUGGET, INGOT, DUST);
     public static final NTMMaterial MAT_LITHIUM        = mat(300, "lithium")
-            .colors(0xFFFFFF, 0x818181, 0xD6D6D6).setAutogen(FRAGMENT, DUST, BLOCK);
+            .colors(0xFFFFFF, 0x818181, 0xD6D6D6).setAutogen(FRAGMENT, NUGGET, DUST, BLOCK);
     public static final NTMMaterial MAT_SULFUR         = mat(1600, "sulfur")
             .colors(0xFCEE80, 0xBDA022, 0xF1DF68).setAutogen(FRAGMENT, DUST, BLOCK);
     public static final NTMMaterial MAT_FLUORITE       = mat(900, "fluorite")
@@ -345,14 +345,17 @@ public final class Mats {
     public static final NTMMaterial MAT_CRYOLITE       = mat(2903, "cryolite")
             .colors(0xCBC2A4, 0x8B711F, 0x8B701A)
             .setAutogen(FRAGMENT);
+    public static final NTMMaterial MAT_ILMENITE       = mat(2201, "ilmenite")
+            .colors(0x868686, 0x1F1F1F, 0x666666)
+            .setAutogen(FRAGMENT);
     public static final NTMMaterial MAT_RGP            = mat(9401, "pu_mix")
             .smelting(SmeltingBehavior.SMELTABLE)
             .colors(0x9AA3A0, 0x111A17, 0x78817E)
-            .setAutogen(NUGGET, BILLET, BLOCK);
+            .setAutogen(BILLET, BLOCK);
     public static final NTMMaterial MAT_RGA            = mat(9501, "am_mix")
             .smelting(SmeltingBehavior.SMELTABLE)
             .colors(0xCEB3B9, 0x3A1C21, 0x93767B)
-            .setAutogen(NUGGET, BILLET, BLOCK);
+            .setAutogen(BILLET, BLOCK);
     public static final NTMMaterial MAT_EMERALD        = mat(401, "emerald")
             .colors(0xBAFFD4, 0x003900, 0x17DD62)
             .conv(MAT_BERYLLIUM, 4, 3)
@@ -472,6 +475,7 @@ public final class Mats {
         MAT_MALACHITE.displayName("Malachite");
         MAT_BAUXITE.displayName("Bauxite");
         MAT_CRYOLITE.displayName("Cryolite");
+        MAT_ILMENITE.displayName("Ilmenite");
         MAT_RGP.displayName("Reactor-Grade Plutonium");
         MAT_RGA.displayName("Reactor-Grade Americium");
         MAT_EMERALD.displayName("Emerald");

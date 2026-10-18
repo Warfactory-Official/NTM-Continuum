@@ -87,9 +87,9 @@ public final class ItemRecipeTableGameTests {
      * ammo_press, anvil_construction, arc_welder and lemegeton use 1.7 ore names as tags and KEY_SAND as c:sands.
      */
     static final Map<String, String> EXPECTED = Map.ofEntries(
-            Map.entry("ammo_press", "89 f7efa3235ed3fb4c5724ceb2a519ba8129292ffa52bdff1305d7df874c405eda"),
-            Map.entry("annihilator", "15 9d25f393b64bcdaec6288b8a1dbd4719d881e93a4492f021207da5d3d8c3b2c4"),
-            Map.entry("anvil_construction", "257 231308aab0dd8c70865e22dd9fe542fe3a2ad180328a79d3b4fadddb1459e419"),
+            Map.entry("ammo_press", "90 f3b1dc99e5c2d40f1a32b812ecbea4bc44e7075459ad59ddc2b77734e84c3f0f"),
+            Map.entry("annihilator", "16 a2044a6681862dd49d8faba5337d651bb5a51172410b85b2082c32f3daab89cf"),
+            Map.entry("anvil_construction", "257 4629454acca75d17791bdaf635bd0fa9027267b1007c6ed2c2bb82488523da6b"),
             Map.entry("anvil_smithing", "58 4857b00883d23717a58cf66396c5df282b5ee6874c383124f2386a74ae275a48"),
             Map.entry("arc_welder", "42 2f80a4b8cd70720cb08d1b0f07623a727ad6f944c17380a68fdf24df65ccda48"),
             Map.entry("breeder", "31 daa249b6c8178775c166e81ac9ef0726914016ea50786592d7e65ce0586ea789"),
@@ -214,7 +214,7 @@ public final class ItemRecipeTableGameTests {
         helper.assertTrue(solderDefault == 27 && solder528 == 14, "soldering rows default/528: " + solderDefault + "/" + solder528);
         helper.assertTrue(anvilDefault == 257 && anvil528 == 252 && analog, "anvil construction rows default/528+expensive: "
                 + anvilDefault + "/" + anvil528 + ", analog assembly machine " + analog);
-        helper.assertTrue(annihilatorDefault == 0 && annihilator528 == 15, "annihilator keys default/528: "
+        helper.assertTrue(annihilatorDefault == 0 && annihilator528 == 16, "annihilator keys default/528: "
                 + annihilatorDefault + "/" + annihilator528);
         helper.assertTrue(SolderingRecipes.recipes.size() == 27
                 && AnvilRecipes.getConstruction().size() == 257, "default rows not restored");

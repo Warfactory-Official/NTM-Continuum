@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Feature-local contracts for the smokestack-to-ashpit chain. */
 public final class SmokeChainGameTests {
@@ -64,12 +65,13 @@ public final class SmokeChainGameTests {
         BlockPos core = chimney.getBlockPos();
         helper.assertTrue(chimney.getPollutionMod() == 0.25D,
                 "Brick chimney pollution multiplier changed");
-        DirPos[] ports = chimney.getConPos();
+        DirPos[] ports = PortDef.connections(chimney.getPorts());
         helper.assertTrue(ports.length == 4, "Brick chimney must expose four smoke ports");
-        assertPort(helper, ports[0], core.east(2), ForgeDirection.EAST);
-        assertPort(helper, ports[1], core.west(2), ForgeDirection.WEST);
+        // 1.7 TilePortShapes.flare order
+        assertPort(helper, ports[0], core.north(2), ForgeDirection.NORTH);
+        assertPort(helper, ports[1], core.east(2), ForgeDirection.EAST);
         assertPort(helper, ports[2], core.south(2), ForgeDirection.SOUTH);
-        assertPort(helper, ports[3], core.north(2), ForgeDirection.NORTH);
+        assertPort(helper, ports[3], core.west(2), ForgeDirection.WEST);
 
         for (BlockPos cell : new BlockPos[]{core.east(), core.west(), core.south(), core.north()}) {
             ForgeDirection direction = directionFrom(core, cell);

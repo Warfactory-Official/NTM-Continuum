@@ -145,7 +145,7 @@ public final class CounterControllerGameTests {
         helper.assertTrue(RadioTargets.interactive(helper.getLevel(), corePos) == turret,
                 "The core must still resolve to itself");
 
-        resolved.runRORFunction("FUN:setActive", new String[]{"1"});
+        resolved.runRORFunction("FUN:setactive", new String[]{"1"});
         helper.assertTrue(turret.isOn, "An ROR command through a folded cell must reach the core");
         helper.succeed();
     }

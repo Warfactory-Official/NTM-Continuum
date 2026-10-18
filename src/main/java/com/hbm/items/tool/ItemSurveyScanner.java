@@ -2,6 +2,7 @@ package com.hbm.items.tool;
 
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.tileentity.BedrockOreBlockEntity;
+import com.hbm.util.OverheadMarkers;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.Teleports;
 import java.util.Collections;
@@ -12,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -26,9 +28,9 @@ import java.util.List;
  * 1.7 {@code ItemSurveyScanner}: an 11x11 grid of columns five blocks apart, sampled every second block from
  * 15 above the player down to y 2, reports oil, bedrock oil, coltan, depth rock, schist and australium in chat.
  *
- * <p>The bedrock ore line samples every second column of the bedrock floor (1.7's y 0 is the level's minimum
- * height here, where the deposits are generated) and names the last deposit found. The 1.7 easter egg is: use it on a beryllium block while carrying an entanglement
- * kit and the player is sent to the End.
+ * <p>Bedrock oil and the 5x5 bedrock floor around the chunk centre (1.7's y 0 is the level's minimum height here)
+ * also get a 15-second marker; the ore line names the last deposit found. The 1.7 easter egg: use it on a beryllium
+ * block while carrying an entanglement kit and the player is sent to the End.
  */
 public class ItemSurveyScanner extends CompatItem {
 
@@ -82,24 +84,33 @@ public class ItemSurveyScanner extends CompatItem {
             boolean[] found = new boolean[findings.size()];
             BedrockOreBlockEntity tile = null;
 
+            ServerPlayer marked = player instanceof ServerPlayer sp ? sp : null;
             for (int a = -5; a <= 5; a++) {
                 for (int b = -5; b <= 5; b++) {
                     for (int i = y + 15; i > 1; i -= 2) {
-                        Block block = world.getBlockState(new BlockPos(x + a * 5, i, z + b * 5)).getBlock();
+                        BlockPos at = new BlockPos(x + a * 5, i, z + b * 5);
+                        Block block = world.getBlockState(at).getBlock();
                         for (int f = 0; f < findings.size(); f++) {
                             if (findings.get(f).matches().test(block)) {
                                 found[f] = true;
                                 break;
                             }
                         }
-                    }
-
-                    BlockPos floor = new BlockPos(x + a * 2, world.getMinY(), z + b * 2);
-                    if (world.getBlockState(floor).is(ModOreBlocks.ore_bedrock_block.get())
-                            && world.getBlockEntity(floor) instanceof BedrockOreBlockEntity ore) {
-                        tile = ore;
+                        if (id(block).equals("ore_bedrock_oil")) {
+                            if (marked != null) OverheadMarkers.send(marked, at, 0x000000, "Bedrock Oil", 15_000, 300D);
+                            break;
+                        }
                     }
                 }
+            }
+
+            int cX = ((x >> 4) << 4) + 8;
+            int cZ = ((z >> 4) << 4) + 8;
+            for (int i = -2; i <= 2; i++) for (int j = -2; j <= 2; j++) {
+                BlockPos floor = new BlockPos(cX + i, world.getMinY(), cZ + j);
+                if (!world.getBlockState(floor).is(ModOreBlocks.ore_bedrock_block.get())) continue;
+                if (marked != null) OverheadMarkers.send(marked, floor, 0xff0000, "Bedrock Ore", 15_000, 300D);
+                if (world.getBlockEntity(floor) instanceof BedrockOreBlockEntity ore) tile = ore;
             }
 
             for (int f = 0; f < findings.size(); f++) {

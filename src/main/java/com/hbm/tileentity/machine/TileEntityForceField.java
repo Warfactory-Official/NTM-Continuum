@@ -28,6 +28,8 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * 1.7 {@code TileEntityForceField}: a sphere, 16 blocks across by default and 16 more per radius upgrade, that
@@ -39,8 +41,7 @@ import java.util.List;
  * server; only the server spends power, takes damage and changes the colour. The state the renderer and GUI
  * need travels in the tile's own sync, which is what 1.7's {@code TEFFPacket} carried every tick.
  *
- * <p>Two 1.7 quirks are kept: the fallback speed estimate subtracts {@code prevPosY} from {@code posX}
- * ({@link #getMotionWithFallback}), and only the inward bounce is muffle-aware.
+ * <p>Only the inward bounce is muffle-aware, as in 1.7.
  */
 public class TileEntityForceField extends TileEntityMachineBase implements IEnergyReceiverMK2, MenuProvider {
 
@@ -96,6 +97,9 @@ public class TileEntityForceField extends TileEntityMachineBase implements IEner
         return (power * i) / maxPower;
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void tick(Level level, BlockPos pos, BlockState state, TileEntityForceField field) {
         field.update(level);
     }
@@ -104,11 +108,9 @@ public class TileEntityForceField extends TileEntityMachineBase implements IEner
         boolean remote = level.isClientSide();
 
         if (!remote) {
-            // 1.7 updateConnections: five sides, all but the top
-            BlockPos at = getBlockPos();
-            for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-                if (dir != ForgeDirection.UP) trySubscribe(level, at.getX() + dir.offsetX, at.getY() + dir.offsetY, at.getZ() + dir.offsetZ, dir);
-            }
+            this.setupPowerPorts(getPorts());
+            this.updateAllPorts();
+            this.receivePower();
 
             int rStack = 0;
             int hStack = 0;
@@ -213,7 +215,6 @@ public class TileEntityForceField extends TileEntityMachineBase implements IEner
                 playSpark(level, entity);
                 inside.add(entity);
                 if (!level.isClientSide()) this.damage(this.impact(entity));
-
             } else {
                 if (out) outside.add(entity);
                 else inside.add(entity);
@@ -250,10 +251,9 @@ public class TileEntityForceField extends TileEntityMachineBase implements IEner
                 sounds[level.getRandom().nextInt(sounds.length)].get(), SoundSource.BLOCKS, 2.5F, 1.0F);
     }
 
-    /** 1.7 compares against {@code posX - prevPosY} for the fallback's X term; the typo is kept. */
     private double getMotionWithFallback(Entity e) {
         Vec3 v1 = e.getDeltaMovement();
-        Vec3 v2 = new Vec3(e.getX() - e.yo, e.getY() - e.yo, e.getZ() - e.zo);
+        Vec3 v2 = new Vec3(e.getX() - e.xo, e.getY() - e.yo, e.getZ() - e.zo);
 
         double s1 = v1.length();
         double s2 = v2.length();

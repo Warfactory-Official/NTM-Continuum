@@ -62,12 +62,15 @@ public abstract class DoorDecl {
     public static final Identifier PHEO_AIRLOCK_DOOR_GREEN_TEX = tex("pheodoors/airlock_door_green");
     public static final Identifier PHEO_AIRLOCK_DOOR_OBJ = obj("pheodoors/airlock_door");
     public static final Identifier PHEO_BLAST_DOOR_TEX = tex("pheodoors/blast_door");
+    public static final Identifier PHEO_BLAST_DOOR_INDUSTRIAL_TEX = tex("pheodoors/blast_door_industrial");
     public static final Identifier PHEO_BLAST_DOOR_OBJ = obj("pheodoors/blast_door");
     public static final Identifier PHEO_CONTAINMENT_DOOR_TEX = tex("pheodoors/containment_door");
     public static final Identifier PHEO_CONTAINMENT_DOOR_TREFOIL_TEX = tex("pheodoors/containment_door_trefoil");
     public static final Identifier PHEO_CONTAINMENT_DOOR_TREFOIL_YELLOW_TEX = tex("pheodoors/containment_door_trefoil_yellow");
     public static final Identifier PHEO_CONTAINMENT_DOOR_OBJ = obj("pheodoors/containment_door");
     public static final Identifier PHEO_SEAL_DOOR_TEX = tex("pheodoors/seal_door");
+    public static final Identifier PHEO_SEAL_DOOR_CLEAN_TEX = tex("pheodoors/seal_door_clean");
+    public static final Identifier PHEO_SEAL_DOOR_TREFOIL_TEX = tex("pheodoors/seal_door_trefoil");
     public static final Identifier PHEO_SEAL_DOOR_OBJ = obj("pheodoors/seal_door");
     public static final Identifier PHEO_SECURE_DOOR_TEX = tex("pheodoors/secure_door");
     public static final Identifier PHEO_SECURE_DOOR_GREY_TEX = tex("pheodoors/secure_door_grey");
@@ -75,8 +78,15 @@ public abstract class DoorDecl {
     public static final Identifier PHEO_SECURE_DOOR_YELLOW_TEX = tex("pheodoors/secure_door_yellow");
     public static final Identifier PHEO_SECURE_DOOR_OBJ = obj("pheodoors/secure_door");
     public static final Identifier PHEO_SLIDING_DOOR_TEX = tex("pheodoors/sliding_door");
+    public static final Identifier PHEO_SLIDING_DOOR_BLACK_TEX = tex("pheodoors/sliding_door_black");
+    public static final Identifier PHEO_SLIDING_DOOR_GRID_TEX = tex("pheodoors/sliding_door_grid");
+    public static final Identifier PHEO_SLIDING_DOOR_PLATE_TEX = tex("pheodoors/sliding_door_plate");
+    public static final Identifier PHEO_SLIDING_DOOR_WHITE_TEX = tex("pheodoors/sliding_door_white");
     public static final Identifier PHEO_SLIDING_DOOR_OBJ = obj("pheodoors/sliding_door");
     public static final Identifier PHEO_VEHICLE_DOOR_TEX = tex("pheodoors/vehicle_door");
+    public static final Identifier PHEO_VEHICLE_DOOR_BLACK_TEX = tex("pheodoors/vehicle_door_black");
+    public static final Identifier PHEO_VEHICLE_DOOR_BLUE_TEX = tex("pheodoors/vehicle_door_blue");
+    public static final Identifier PHEO_VEHICLE_DOOR_RED_TEX = tex("pheodoors/vehicle_door_red");
     public static final Identifier PHEO_VEHICLE_DOOR_OBJ = obj("pheodoors/vehicle_door");
     public static final Identifier PHEO_WATER_DOOR_TEX = tex("pheodoors/water_door");
     public static final Identifier PHEO_WATER_DOOR_CLEAN_TEX = tex("pheodoors/water_door_clean");
@@ -244,6 +254,11 @@ public abstract class DoorDecl {
             return null;
         }
 
+        private final Identifier[] skins = { PHEO_BLAST_DOOR_TEX, PHEO_BLAST_DOOR_INDUSTRIAL_TEX };
+
+        @Override public Identifier[] getSEDNASkins() { return skins; }
+        @Override public int getSkinCount() { return 2; }
+
         @Override public int timeToOpen() { return 24; }
         @Override public int[][] getDoorOpenRanges() { return new int[][] { { -2, 0, 0, 4, 5, 1 } }; }
         @Override public int[] getDimensions() { return new int[] { 3, 0, 0, 0, 3, 3 }; }
@@ -256,9 +271,6 @@ public abstract class DoorDecl {
             }
             return super.getBlockBound(x, y, z, open, forCollision);
         }
-
-        /** The original declares three skins but binds one texture; the count is kept for the screwdriver cycle. */
-        @Override public int getSkinCount() { return 3; }
     };
 
     public static final DoorDecl SLIDING_SEAL_DOOR = new DoorDecl() {
@@ -274,6 +286,11 @@ public abstract class DoorDecl {
             if (state == TileEntityDoorGeneric.STATE_CLOSING) return new BusAnimation().addBus("DOOR", new BusAnimationSequence().setPos(0, 1, 0).addPos(0, 0, 0, this.timeToOpen() * 50));
             return null;
         }
+
+        private final Identifier[] skins = { PHEO_SEAL_DOOR_TEX, PHEO_SEAL_DOOR_CLEAN_TEX, PHEO_SEAL_DOOR_TREFOIL_TEX };
+
+        @Override public Identifier[] getSEDNASkins() { return skins; }
+        @Override public int getSkinCount() { return 3; }
 
         @Override public int timeToOpen() { return 20; }
 
@@ -377,6 +394,12 @@ public abstract class DoorDecl {
             return null;
         }
 
+        private final Identifier[] skins = { PHEO_SLIDING_DOOR_TEX, PHEO_SLIDING_DOOR_BLACK_TEX, PHEO_SLIDING_DOOR_GRID_TEX,
+                PHEO_SLIDING_DOOR_PLATE_TEX, PHEO_SLIDING_DOOR_WHITE_TEX };
+
+        @Override public Identifier[] getSEDNASkins() { return skins; }
+        @Override public int getSkinCount() { return 5; }
+
         @Override
         public AABB getBlockBound(int x, int y, int z, boolean open, boolean forCollision) {
             if (forCollision && open) {
@@ -425,6 +448,7 @@ public abstract class DoorDecl {
 
     public static final DoorDecl WATER_DOOR = new DoorDecl() {
 
+        @Override public boolean neverDemandRedstone() { return true; }
         @Override public RegistryObject<SoundEvent> getOpenSoundEnd() { return ModDoorSounds.WGH_BIG_STOP; }
         @Override public RegistryObject<SoundEvent> getOpenSoundLoop() { return ModDoorSounds.WGH_BIG_START; }
         @Override public RegistryObject<SoundEvent> getOpenSoundStart() { return ModDoorSounds.LEVER; }
@@ -580,6 +604,12 @@ public abstract class DoorDecl {
             return super.getBlockBound(x, y, z, open, forCollision);
         }
 
+        private final Identifier[] skins = { PHEO_VEHICLE_DOOR_TEX, PHEO_VEHICLE_DOOR_BLACK_TEX, PHEO_VEHICLE_DOOR_BLUE_TEX,
+                PHEO_VEHICLE_DOOR_RED_TEX };
+
+        @Override public Identifier[] getSEDNASkins() { return skins; }
+        @Override public int getSkinCount() { return 4; }
+
         @Override public int timeToOpen() { return 60; }
         @Override public int[][] getDoorOpenRanges() { return new int[][] { { 0, 0, 0, -4, 6, 2 }, { 0, 0, 0, 4, 6, 2 } }; }
         @Override public int[] getDimensions() { return new int[] { 5, 0, 0, 0, 3, 3 }; }
@@ -678,6 +708,8 @@ public abstract class DoorDecl {
         return open ? EMPTY : FULL;
     }
 
+    /** Hand-operated even under {@code ULTRA_LARP_MODE}. */
+    public boolean neverDemandRedstone() { return false; }
     public boolean isLadder(boolean open) { return false; }
     public @Nullable RegistryObject<SoundEvent> getOpenSoundLoop() { return null; }
 

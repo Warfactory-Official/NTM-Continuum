@@ -9,7 +9,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HydrotreatingRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -29,6 +28,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Hydrotreater: port of 1.7.10's {@code TileEntityMachineHydrotreater}. 11 slots (0 battery, 1 to 2 input
@@ -64,13 +65,9 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
     @Override public String getDefaultName() { return "container.hydrotreater"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineHydrotreater te) {
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos dp : te.getConPos()) {
-                te.trySubscribe(level, dp);
-                te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-                te.trySubscribe(te.tanks[1].getTankType(), level, dp);
-            }
-        }
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
         MachineFluidContainerIO.load(te.tanks[0], te.inventory, 1, 2);
@@ -81,29 +78,11 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         MachineFluidContainerIO.unload(te.tanks[2], te.inventory, 5, 6);
         MachineFluidContainerIO.unload(te.tanks[3], te.inventory, 7, 8);
 
-        for (DirPos dp : te.getConPos()) {
-            for (int i = 2; i < 4; i++) {
-                if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp);
-            }
-        }
-
         te.networkPackNT();
     }
 
-
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z + 1, Library.POS_X),
-                new DirPos(x + 2, y, z - 1, Library.POS_X),
-                new DirPos(x - 2, y, z + 1, Library.NEG_X),
-                new DirPos(x - 2, y, z - 1, Library.NEG_X),
-                new DirPos(x + 1, y, z + 2, Library.POS_Z),
-                new DirPos(x - 1, y, z + 2, Library.POS_Z),
-                new DirPos(x + 1, y, z - 2, Library.NEG_Z),
-                new DirPos(x - 1, y, z - 2, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.refinery(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     private void reform() {
         HydrotreatingRecipes.HydrotreatingRecipe out = HydrotreatingRecipes.getOutput(tanks[0].getTankType());

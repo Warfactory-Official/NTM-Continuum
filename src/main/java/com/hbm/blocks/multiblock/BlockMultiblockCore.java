@@ -155,11 +155,57 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     }
 
     /**
-     * 1.7 {@code BlockDummyable#getAABBExtras}: extra boxes the placement highlight outlines in blue, each
-     * {up, down, forward, backward, left, right} from the core cell's bottom centre.
+     * 1.7 {@code BlockDummyable#getAABBExtras}: extra boxes the placement highlight outlines, each
+     * {up, down, forward, backward, left, right} from the core cell's bottom centre, in blue unless a seventh
+     * value gives the colour (1 is a heat port's orange, else an RGB hex).
      */
     public double[][] getAABBExtras() {
         return new double[0][0];
+    }
+
+    /**
+     * 1.7 {@code BlockDummyable#getAllPorts}: the port faces the placement highlight marks yellow, each
+     * {x, y, z, face ordinal} from the placed block, already turned by {@link #rotatePorts}.
+     */
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return new int[0][0];
+    }
+
+    /**
+     * 1.7 {@code rotatePorts}: turns ports written for a north-facing machine to {@code facing} and moves them from
+     * the core to the placed block. East and west entries are written mirrored, as in 1.7.
+     */
+    public int[][] rotatePorts(int[][] ports, ForgeDirection facing) {
+        ForgeDirection rot = facing.getRotation(ForgeDirection.UP);
+        int[][] result = new int[ports.length][4];
+        for (int i = 0; i < ports.length; i++) {
+            int nx = ports[i][0];
+            int ny = ports[i][1];
+            int nz = ports[i][2];
+            ForgeDirection face = ForgeDirection.getOrientation(ports[i][3]);
+
+            result[i][0] = nx * rot.offsetX + nz * facing.offsetX;
+            result[i][1] = ny;
+            result[i][2] = nx * rot.offsetZ + nz * facing.offsetZ;
+
+            int fx = face.offsetX * rot.offsetX + face.offsetZ * facing.offsetX;
+            int fz = face.offsetX * rot.offsetZ + face.offsetZ * facing.offsetZ;
+            int fy = face.offsetY;
+
+            ForgeDirection rotatedFace = ForgeDirection.UNKNOWN;
+            for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+                if (dir.offsetX == fx && dir.offsetY == fy && dir.offsetZ == fz) {
+                    rotatedFace = dir;
+                    break;
+                }
+            }
+            result[i][3] = rotatedFace.ordinal();
+        }
+        for (int[] port : result) {
+            port[0] += facing.offsetX * -getOffset();
+            port[2] += facing.offsetZ * -getOffset();
+        }
+        return result;
     }
 
     /**

@@ -13,7 +13,6 @@ import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.BlockGasBase;
 import com.hbm.blocks.machine.DemonLamp;
-import com.hbm.blocks.machine.MachineCapacitor;
 import com.hbm.blocks.machine.MachineElectrolyser;
 import com.hbm.blocks.machine.MachineExplosionDamage;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -71,8 +70,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
@@ -595,7 +592,6 @@ public final class AddonEnumGameTests {
             helper.assertTrue(!TileEntityPneumoTube.anyGas, "1.7 compressors take air only");
             helper.assertTrue(!MachineElectrolyser.sidePorts, "1.7's electrolyser has six ports");
             helper.assertTrue(ILookOverlay.PROVIDERS.isEmpty(), "HBM registers no extra look overlay");
-            helper.assertTrue(!MachineCapacitor.capacityFirst, "HBM lists the capacitor description first");
             helper.assertTrue(!EntityTntNtm.spin, "1.7 charges do not tumble");
             helper.assertTrue(!EntityGhost.watchPlayers, "1.7 ghosts do not watch players");
             helper.assertTrue(!TileEntityGeiger.probabilisticClicks, "1.7 geiger clicks every fifth tick");
@@ -656,24 +652,6 @@ public final class AddonEnumGameTests {
             TileEntityCranePartitioner.outputCount = savedOut;
         }
 
-        // capacitor tooltip order
-        var capacitor = ModEnergyNetBlocks.capacitor_tantalium.get();
-        boolean savedOrder = MachineCapacitor.capacityFirst;
-        try {
-            MachineCapacitor.capacityFirst = false;
-            var plain = capacitor.tooltip(new ItemStack(capacitor), List.of());
-            helper.assertTrue(plain.size() == 5 && plain.get(0).getContents() instanceof
-                    TranslatableContents t && t.getKey().equals("desc.capacitor.0"),
-                    "HBM: description first, got " + plain);
-            MachineCapacitor.capacityFirst = true;
-            var fork = capacitor.tooltip(new ItemStack(capacitor), List.of(Component.literal("lore")));
-            helper.assertTrue(fork.size() == 6 && fork.get(0).getString().startsWith("Stores up to")
-                            && fork.get(3).getContents() instanceof TranslatableContents
-                            && fork.get(5).getString().equals("lore"),
-                    "hbm-space: capacity, charge, discharge, description, lore; got " + fork);
-        } finally {
-            MachineCapacitor.capacityFirst = savedOrder;
-        }
         helper.succeed();
     }
 }

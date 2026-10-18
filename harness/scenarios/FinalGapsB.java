@@ -21,7 +21,7 @@ import java.util.List;
  *   <li>a napalm bomblet on a gasoline tank and on a refinery: blown open, burning, exploded models, inferno granted,
  *       no GUI while torn, blowtorch repair;</li>
  *   <li>/ntmserver keys: CRATE_OPEN_HELD (a crate opened from the hand, contents on the stack, sneak places it with them),
- *       CRATE_KEEP_CONTENTS off (contents spill), TAINT_TRAILS, ITEM_HAZARD_DROP_TICKRATE, ENABLE_MKU,
+ *       CRATE_KEEP_CONTENTS off (contents spill), ENTITY_TAINT_TRAILS, ITEM_HAZARD_DROP_TICKRATE, ENABLE_MKU,
  *       DAMAGE_COMPATIBILITY_MODE (1.7 knockback);</li>
  *   <li>1.7 tile data in generated structures: radio house (armed mines, bobblehead, potted plants), oil rig (torn tank),
  *       lighthouse (the logbook in the skeleton's hands); no "not migrated" line for those ids;</li>
@@ -148,10 +148,10 @@ public final class FinalGapsB implements Scenario {
                 "ENABLE_MKU off: no contagion");
         c.cmd("ntmserver set ENABLE_MKU true");
 
-        // TAINT_TRAILS: a tainted cow on stone leaves taint below it
+        // ENTITY_TAINT_TRAILS: a tainted cow on stone leaves taint below it
         int tx = X + 8, tz = Z - 8;
         c.cmd("fill " + (tx - 1) + " " + Y + " " + (tz - 1) + " " + (tx + 1) + " " + Y + " " + (tz + 1) + " minecraft:stone");
-        c.cmd("ntmserver set TAINT_TRAILS true");
+        c.cmd("ntmserver set ENTITY_TAINT_TRAILS true");
         c.cmd("summon minecraft:cow " + tx + ".5 " + (Y + 1) + " " + tz + ".5");
         c.waitTicks(4);
         c.cmd("effect give @e[type=minecraft:cow,distance=..40] hbm:taint 30 0");
@@ -163,8 +163,8 @@ public final class FinalGapsB implements Scenario {
             }
         }
         worldShot(c, "40-taint-trail", tx + 3.5, Y + 3, tz + 3.5, tx + 0.5, Y, tz + 0.5);
-        Expect.that(taint > 0, "TAINT_TRAILS: the tainted cow left taint on the stone");
-        c.cmd("ntmserver set TAINT_TRAILS false");
+        Expect.that(taint > 0, "ENTITY_TAINT_TRAILS: the tainted cow left taint on the stone");
+        c.cmd("ntmserver set ENTITY_TAINT_TRAILS false");
         c.cmd("kill @e[type=minecraft:cow]");
 
         // DAMAGE_COMPATIBILITY_MODE: 1.7's super-compatibility knockback (0.4 x multiplier)

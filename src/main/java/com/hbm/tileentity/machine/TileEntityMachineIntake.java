@@ -17,6 +17,8 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Server buffer and client motor state for the legacy air intake. */
 public class TileEntityMachineIntake extends TileEntityLoadedBase
@@ -40,14 +42,12 @@ public class TileEntityMachineIntake extends TileEntityLoadedBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineIntake intake) {
+        intake.setupAllPorts(intake.getPorts());
+        intake.updatePortPIFIFO();
+
         if (intake.isMotorRunning()) {
             if (intake.canCompress(level, pos)) intake.compair.setFill(intake.compair.getMaxFill());
             intake.power -= POWER_PER_TICK; // hbm-space: the motor draws power even when there is no air
-        }
-
-        for (DirPos connection : intake.getConPos()) {
-            if (intake.compair.getFill() > 0) intake.tryProvide(intake.compair, level, connection);
-            intake.trySubscribe(level, connection);
         }
 
         intake.setChanged();
@@ -84,28 +84,10 @@ public class TileEntityMachineIntake extends TileEntityLoadedBase
         return ForgeDirection.getOrientation(meta);
     }
 
-    /** The eight air/power anchors around the legacy two-by-two intake footprint. */
-    public DirPos[] getConPos() {
-        ForgeDirection direction = getFacing();
-        ForgeDirection rotation = direction.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX();
-        int y = worldPosition.getY();
-        int z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + direction.offsetX, y, z + direction.offsetZ, direction),
-                new DirPos(x + direction.offsetX + rotation.offsetX, y,
-                        z + direction.offsetZ + rotation.offsetZ, direction),
-                new DirPos(x - direction.offsetX * 2, y, z - direction.offsetZ * 2, direction.getOpposite()),
-                new DirPos(x - direction.offsetX * 2 + rotation.offsetX, y,
-                        z - direction.offsetZ * 2 + rotation.offsetZ, direction.getOpposite()),
-                new DirPos(x + rotation.offsetX * 2, y, z + rotation.offsetZ * 2, rotation),
-                new DirPos(x + rotation.offsetX * 2 - direction.offsetX, y,
-                        z + rotation.offsetZ * 2 - direction.offsetZ, rotation),
-                new DirPos(x - rotation.offsetX, y, z - rotation.offsetZ, rotation.getOpposite()),
-                new DirPos(x - rotation.offsetX - direction.offsetX, y,
-                        z - rotation.offsetZ - direction.offsetZ, rotation.getOpposite())
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.solderer(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), MachineCore.facing(getBlockState())); return cachedPorts; }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long value) { power = value; }

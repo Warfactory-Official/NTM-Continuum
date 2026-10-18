@@ -23,7 +23,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModMissileItems;
 import com.hbm.items.weapon.ItemMissileStandard;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.sound.ModSounds;
@@ -49,6 +48,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The shared half of every launch pad, 1.12.2's {@code TileEntityLaunchPadBase}.
@@ -203,8 +203,8 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         this.toRender = loaded.isEmpty() ? null : loaded.copy();
     }
 
-    /** Where this pad reaches out to for power and fluid. */
-    public abstract DirPos[] getConPos();
+    protected PortDef[] cachedPorts;
+    public abstract PortDef[] getPorts();
 
     /** Any extra condition beyond a valid, fuelled missile, the small pad's reload delay. */
     public abstract boolean isReadyForLaunch();
@@ -214,13 +214,8 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
 
     protected void serverTickBase(Level level) {
 
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos pos : getConPos()) {
-                this.trySubscribe(level, pos);
-                if (tanks[0].getTankType() != Fluids.NONE) this.trySubscribe(tanks[0].getTankType(), level, pos);
-                if (tanks[1].getTankType() != Fluids.NONE) this.trySubscribe(tanks[1].getTankType(), level, pos);
-            }
-        }
+        this.setupAllPorts(getPorts());
+        this.updatePortPIFIFO();
 
         // Rising edge only: a pad wired to a lever fires once when it is thrown, not every tick it is on.
         if (this.redstonePower > 0 && this.prevRedstonePower <= 0) {

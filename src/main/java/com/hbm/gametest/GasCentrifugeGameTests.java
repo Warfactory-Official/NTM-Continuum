@@ -27,6 +27,7 @@ import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.lib.DirPos;
 import com.hbm.inventory.gui.GasCentTooltips;
 import dev.golem.core.gametest.GameTestHelpers;
+import java.util.Arrays;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
@@ -149,10 +150,10 @@ public final class GasCentrifugeGameTests {
         TileEntityMachineUF6Tank source = (TileEntityMachineUF6Tank) level.getBlockEntity(sourcePos);
         source.tank.setFill(1_000);
 
-        DirPos gasPort = gasCent.getConPos()[2];
+        DirPos gasPort = gasCent.getConPos()[4];
         helper.assertTrue(gasPort.getPos().equals(ductPos) && gasPort.getDir() == ForgeDirection.WEST,
                 "UF6 network test must use the gas centrifuge's west fluid port");
-        helper.assertTrue(source.getConPos()[0].getPos().equals(ductPos),
+        helper.assertTrue(Arrays.stream(source.getConPos()).anyMatch(con -> con.getPos().equals(ductPos)),
                 "UF6 tank must face the same duct as the gas centrifuge");
 
         awaitUf6Network(helper, level, ductPos, gasCent, source);

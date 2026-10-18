@@ -10,7 +10,6 @@ import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HeatRecipes;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -27,6 +26,7 @@ import net.minecraft.sounds.SoundSource;
 import com.hbm.sound.ModSounds;
 import com.hbm.sound.MachineAudio;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Industrial boiler, ported from {@code TileEntityHeatBoilerIndustrial}. */
 public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider {
@@ -47,8 +47,10 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeatBoilerIndustrial te) {
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
+
         te.setupTanks();
-        for (DirPos connection : te.getConPos()) te.trySubscribe(te.tanks[0].getTankType(), level, connection);
         te.tryPullHeat(level);
         // 1.7 Tom-impact fire heating: +0.0005% of the remaining buffer per tick under sky light > 7.
         if (level instanceof ServerLevel server
@@ -59,9 +61,6 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         te.isOn = false;
         te.tryConvert(level);
 
-        if (te.tanks[1].getFill() > 0) {
-            for (DirPos connection : te.getConPos()) te.tryProvide(te.tanks[1], level, connection);
-        }
         te.networkPackNT();
     }
 
@@ -123,16 +122,19 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         heat = Math.max(heat - Math.max(heat / 1000, 1), 0);
     }
 
-
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z, Library.POS_X),
-                new DirPos(x - 2, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 2, Library.POS_Z),
-                new DirPos(x, y, z - 2, Library.NEG_Z),
-                new DirPos(x, y + 5, z, Library.POS_Y)
-        };
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + 1, y, z, Library.POS_X),
+                    PortDef.make(x - 1, y, z, Library.NEG_X),
+                    PortDef.make(x, y, z + 1, Library.POS_Z),
+                    PortDef.make(x, y, z - 1, Library.NEG_Z),
+                    PortDef.make(x, y + 4, z, Library.POS_Y),
+            };
+        }
+        return cachedPorts;
     }
 
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1]}; }

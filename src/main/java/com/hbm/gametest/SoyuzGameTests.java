@@ -2,7 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.entity.ModNtmEntities;
-import com.hbm.entity.missile.EntitySoyuz;
+import com.hbm.entity.missile.EntityRocketSoyuz;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ISatChip;
 import com.hbm.items.ItemEnums.SoyuzSkinType;
@@ -86,10 +86,10 @@ public final class SoyuzGameTests {
         helper.assertTrue(launcher.tanks[0].getFill() == 0 && launcher.tanks[1].getFill() == 0,
                 "The launch should have burnt the propellant");
 
-        var rockets = helper.getLevel().getEntitiesOfClass(EntitySoyuz.class,
+        var rockets = helper.getLevel().getEntitiesOfClass(EntityRocketSoyuz.class,
                 new AABB(helper.absolutePos(LAUNCHER)).inflate(16));
         helper.assertTrue(rockets.size() == 1, "Exactly one rocket should have left the pad");
-        EntitySoyuz rocket = rockets.get(0);
+        EntityRocketSoyuz rocket = rockets.get(0);
         helper.assertTrue(rocket.getSkin() == SoyuzSkinType.LUNAR.ordinal(),
                 "The rocket should be wearing the paint it was built in");
         helper.assertTrue(ISatChip.getFreqS(rocket.getSat()) == FREQ,
@@ -106,11 +106,11 @@ public final class SoyuzGameTests {
         ItemStack satellite = ModSatelliteItems.satellite.stack(EnumSatType.RAY_SCAN);
         ISatChip.setFreqS(satellite, FREQ);
 
-        EntitySoyuz rocket = new EntitySoyuz(
+        EntityRocketSoyuz rocket = new EntityRocketSoyuz(
                 ModNtmEntities.SOYUZ.get(), helper.getLevel());
         rocket.setSat(satellite);
         BlockPos pad = helper.absolutePos(LAUNCHER);
-        rocket.snapTo(pad.getX() + 0.5, EntitySoyuz.ORBIT_ALTITUDE + 1, pad.getZ() + 0.5, 0F, 0F);
+        rocket.snapTo(pad.getX() + 0.5, EntityRocketSoyuz.ORBIT_ALTITUDE + 1, pad.getZ() + 0.5, 0F, 0F);
         helper.getLevel().addFreshEntity(rocket);
 
         rocket.tick();
@@ -152,7 +152,7 @@ public final class SoyuzGameTests {
         launcher.handleButtonPacket(0, 1);
         helper.assertTrue(launcher.starting, "the launch button starts the countdown");
         for (int i = 0; i <= TileEntitySoyuzLauncher.maxCount; i++) tick(helper, launcher);
-        var rockets = helper.getLevel().getEntitiesOfClass(EntitySoyuz.class,
+        var rockets = helper.getLevel().getEntitiesOfClass(EntityRocketSoyuz.class,
                 new AABB(helper.absolutePos(LAUNCHER)).inflate(16));
         helper.assertTrue(rockets.size() == 1, "the countdown ends in a liftoff, rockets: " + rockets.size()
                 + " countdown " + launcher.countdown + " starting " + launcher.starting);

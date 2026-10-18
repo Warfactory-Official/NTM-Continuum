@@ -1,0 +1,28 @@
+{
+	"name": "Desulfurized Cracked Oil",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		"hbm:crackoil_ds"
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:crackoil_ds"
+		],
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:hotcrackoil_ds"
+		]
+	],
+	"title": {
+		"en_us": "Desulfurized Cracked Oil",
+		"ru_ru": "Обессеренная крекированная нефть"
+	},
+	"content": {
+		"en_us": "Desulfurized cracked oil can be produced by [[hydrotreating|Hydrotreater]] [[cracked oil|Cracked Oil]] with [[pressurized|Compressor]] [[liquid hydrogen|Liquid Hydrogen]]. After [[heating|Boiler]], it can be [[refined|Oil Refinery]] to produce products such as: <br>[[Desulfurized Naphtha]] <br>[[Desulfurized Light Oil]] <br>[[Aromatic Hydrocarbons]] <br>[[Unsaturated Hydrocarbons]] <br>[[Paraffin Wax]]<br><br>{{Template:Oil3.5}}",
+		"ru_ru": "Обессеренную крекированную нефть можно получить путем [[гидроочистки|Hydrotreater]] [[крекированной нефти|Cracked Oil]] [[сжатым|Compressor]] [[жидким водородом|Liquid Hydrogen]]. После [[нагрева|Boiler]] ее можно [[переработать|Oil Refinery]] для получения таких продуктов, как:<br>[[Обессеренная нафта|Desulfurized Naphtha]]<br>[[Обессеренная лёгкая нефть|Desulfurized Light Oil]]<br>[[Ароматические углеводороды|Aromatic Hydrocarbons]]<br>[[Непредельные углеводороды|Unsaturated Hydrocarbons]]<br>[[Парафиновый воск|Paraffin Wax]]<br><br>{{Template:Oil3.5}}"
+	}
+}

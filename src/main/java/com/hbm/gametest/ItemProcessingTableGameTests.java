@@ -150,19 +150,19 @@ public final class ItemProcessingTableGameTests {
     private static final String EXPECTED_MATERIAL_DISTRIBUTION =
             "43:8d8d6efeb499f2297406b4b922a29f241ac800c4e8fc250f51c1325f15ff7e1b";
     private static final String EXPECTED_ARC_FURNACE =
-            "79:be19d879fabc231449a78a8771ebf0a2ebbe33ab556d4a152e842990b7bd0a37";
+            "79:332f0f4148ae66004519055f4eced829907561525930a954de6f0a8cc0dffe51";
     private static final String EXPECTED_CENTRIFUGE =
-            "160:85789af01024284d868e94bb451b8185e69d907e5319dab6120071b923caee1b";
+            "160:44469901e1139890ce7fed11002cc24d422c0accd6e15a4ab5abaa6b69163f1d";
     private static final String EXPECTED_CRYSTALLIZER =
-            "332:183c0f94bbd1ad8568280b5100efe3ef7ad298e95e4a5dd34b50ce2979a8a423";
+            "332:f745e5b993ab246eb88b1c87b33333958f6531e2aec4f905f1cb46803d27f4ed";
     private static final String EXPECTED_CYCLOTRON =
             "42:5050b64e4c5dcf8c8e758f87ee0eb121119ce386210b824af548970cbfc5dbf3";
     private static final String EXPECTED_ELECTROLYSER_METAL =
             "36:461204e37a0b4dc36998a9af5b13a1016430c5c2b01c76010b2c0e116e856e5a";
     private static final String EXPECTED_ROTARY_FURNACE =
-            "12:d37aa199ec5e4b1ed89be2f7c30fa5d7d7193074fcd2181a8546f802584385aa";
+            "13:29813af06f9064fa562f3bea790abe8be409a2092bb1a9c68a6edd19dbf7cb9c";
     private static final String EXPECTED_SILEX =
             "301:634886440f7395c720d7d6eeff14121453885f1b6ad55841af19f1ac13c0b46f";
     private static final String EXPECTED_SHREDDER =
-            "330:629e83c8683eab1b9c9e4d9f247c619877d14634ccd5f84ddf11eaa7ddc6b407";
+            "332:9e3f172ce71624b33c1d49185a10988fcb5852464a7febe8f9960cd32e728431";
 }

@@ -94,10 +94,15 @@ public final class StructureManager {
     public static final NBTStructure crane = new NBTStructure(Constants.MOD_ID, "structures/crane_mod.nbt");
     public static final NBTStructure broadcasting_tower = new NBTStructure(Constants.MOD_ID, "structures/broadcasting_tower.nbt");
 
-    public static final NBTStructure excavator = new NBTStructure(Constants.MOD_ID, "structures/excavator.nbt");
+    //public static final NBTStructure excavator = new NBTStructure(Constants.MOD_ID, "structures/excavator.nbt");
     public static final NBTStructure repeater_radio = new NBTStructure(Constants.MOD_ID, "structures/repeater_radio.nbt");
 
     public static final NBTStructure spire = new NBTStructure(Constants.MOD_ID, "structures/spire.nbt");
+
+    public static final NBTStructure falloutshelter_house = new NBTStructure(Constants.MOD_ID, "structures/falloutshelter_house.nbt");
+    public static final NBTStructure abandoned_arcticstation = new NBTStructure(Constants.MOD_ID, "structures/abandoned_arcticstation.nbt");
+    public static final NBTStructure military_base = new NBTStructure(Constants.MOD_ID, "structures/military_base.nbt");
+    public static final NBTStructure submarine = new NBTStructure(Constants.MOD_ID, "structures/submarine.nbt");
 
     //public static final NBTStructure test_rot = new NBTStructure(Constants.MOD_ID, "structures/test-rot.nbt");
     //public static final NBTStructure test_jigsaw = new NBTStructure(Constants.MOD_ID, "structures/test-jigsaw.nbt");

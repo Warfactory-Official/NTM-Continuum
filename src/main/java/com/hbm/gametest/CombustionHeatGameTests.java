@@ -21,12 +21,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Focused contracts for the solid/liquid heaters and the industrial heat boiler. */
 public final class CombustionHeatGameTests {
 
     private CombustionHeatGameTests() {}
-
 
     public static void woodBurnerLayoutAndFuel(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
@@ -41,7 +41,7 @@ public final class CombustionHeatGameTests {
         FoldedTestSupport.assertPort(helper, relative, relative.south());
         FoldedTestSupport.assertPort(helper, relative, relative.east().south());
 
-        DirPos[] ports = burner.getConPos();
+        DirPos[] ports = PortDef.connections(burner.getPorts());
         helper.assertTrue(ports.length == 2, "Wood burner must expose two ports");
         helper.assertTrue(ports[0].getPos().equals(core.south(2)) && ports[0].getDir() == ForgeDirection.SOUTH,
                 "Wood burner first port does not match the legacy layout");

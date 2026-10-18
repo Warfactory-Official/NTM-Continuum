@@ -61,6 +61,7 @@ public final class AmmoPressTable extends RecipeSource<Row> {
         AStack wp = P_WHITE.ingot();
         AStack rp = P_RED.dust();
         AStack pipe = STEEL.pipe();
+        AStack gunmetal = GUNMETAL.plate();
         AStack smokeful = new ComparableStack(Items.GUNPOWDER);
         AStack rocket = new ComparableStack(ModFuelItems.rocket_fuel.get());
         AStack cSmall = casing(EnumCasingType.SMALL);
@@ -459,6 +460,11 @@ public final class AmmoPressTable extends RecipeSource<Row> {
                 null,    copy(he, 4),    null,
                 null,    pipe,        null,
                 null,    smokeless,    null));
+
+        add(new AmmoPressRecipe(new ItemStack(ModItems.ammo_dgk.get()),
+                null,    copy(steel, 5),        null,
+                null,    copy(smokeless, 5),    null,
+                null,    copy(gunmetal, 5),    null));
     }
 
     /** 1.7 {@code AmmoPressRecipe}: an output and the 3x3 press grid, {@code null} for an empty slot. */

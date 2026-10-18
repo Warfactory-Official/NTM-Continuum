@@ -39,7 +39,6 @@ public final class HbmEffectNT {
     /** Every effect by name, HBM's first (in declaration order), then each addon's in registration order. */
     private static final Map<String, HbmEffectNT> BY_NAME = new LinkedHashMap<>();
 
-
     /** The flamethrower's cone of burning fuel. */
     public static final HbmEffectNT Flamethrower = hbm("Flamethrower");
     /** A small blast: a few fireballs plus tumbling block debris. */
@@ -163,6 +162,8 @@ public final class HbmEffectNT {
      * {@code BlockGasBase.ashGlassesCloud}.
      */
     public static final HbmEffectNT VanillaExt_Cloud = hbm("VanillaExt_Cloud");
+    /** 1.7 {@code network}: a {@code ParticleDebug} port marker. Tag: {@code mode} power or fluid, {@code color}, {@code mX/mY/mZ}. */
+    public static final HbmEffectNT Network = hbm("network");
 
     private final String name;
 

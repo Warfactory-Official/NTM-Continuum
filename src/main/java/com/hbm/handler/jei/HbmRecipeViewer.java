@@ -49,7 +49,12 @@ import com.hbm.inventory.recipes.FluidBreederRecipes;
 import com.hbm.inventory.recipes.PressRecipes;
 import com.hbm.inventory.recipes.AmmoPressRecipes;
 import com.hbm.inventory.recipes.PrecAssRecipes;
+import com.hbm.items.ModSatelliteItems;
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
+import com.hbm.inventory.recipes.SpaceAssemblerRecipes;
 import com.hbm.inventory.recipes.PUREXRecipes;
+import com.hbm.inventory.recipes.RockMillRecipes;
+import com.hbm.inventory.recipes.SuperComputerRecipes;
 import com.hbm.inventory.recipes.PlasmaForgeRecipes;
 import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.inventory.fluid.FluidType;
@@ -88,9 +93,12 @@ public final class HbmRecipeViewer implements ViewerPlugin {
     private static JEIGenericRecipeHandler mixer;
     private static JEIGenericRecipeHandler exposure;
     private static JEIGenericRecipeHandler purex;
+    private static JEIGenericRecipeHandler rockMill;
+    private static JEIGenericRecipeHandler superComputer;
     private static JEIGenericRecipeHandler fusion;
     private static JEIGenericRecipeHandler fusionBreeder;
     private static JEIGenericRecipeHandler plasmaForge;
+    private static JEIGenericRecipeHandler spaceAssembler;
     private static PressRecipeHandler press;
     private static AmmoPressRecipeHandler ammoPress;
     private static SolderingStationRecipeHandler soldering;
@@ -130,6 +138,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
     private static FluidContainerRecipeHandler fluidContainers;
     private static ConstructionRecipeHandler construction;
     private static ToolingRecipeHandler tooling;
+    private static AshpitRecipeHandler ashpit;
     private static CrucibleSmeltingHandler crucibleSmelting;
     private static CrucibleCastingHandler crucibleCasting;
     private static BookRecipeHandler book;
@@ -163,12 +172,19 @@ public final class HbmRecipeViewer implements ViewerPlugin {
                 stack(ModMachineBlocks.machine_exposure_chamber.get()));
         purex = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.PUREX,
                 title("purex"), PUREXRecipes.INSTANCE, stack(ModMachineBlocks.machine_purex.get()));
+        rockMill = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.ROCK_MILL,
+                Component.translatable("block.hbm.machine_rockmill"), RockMillRecipes.INSTANCE, stack(ModMachineBlocks.machine_rockmill.get()));
+        superComputer = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.SUPERCOMPUTER,
+                Component.translatable("block.hbm.machine_supercomputer"), SuperComputerRecipes.INSTANCE, stack(ModMachineBlocks.machine_supercomputer.get()));
         fusion = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.FUSION,
                 title("fusion"), FusionRecipes.INSTANCE,
                 stack(ModMachineBlocks.fusion_torus.get()));
         fusionBreeder = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.FUSION_BREEDER,
                 title("fusionbreeder"), FluidBreederRecipes.INSTANCE,
                 stack(ModMachineBlocks.fusion_breeder.get()));
+        ItemStack zeroG = ModSatelliteItems.satellite.stack(EnumSatType.SCIENCE_ASSEMBLER);
+        spaceAssembler = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.SPACE_ASSEMBLER,
+                zeroG.getHoverName(), SpaceAssemblerRecipes.INSTANCE, zeroG);
         plasmaForge = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.PLASMA_FORGE,
                 title("plasma_forge"), PlasmaForgeRecipes.INSTANCE,
                 stack(ModMachineBlocks.fusion_plasma_forge.get()));
@@ -198,6 +214,8 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         construction = new ConstructionRecipeHandler(HbmJeiRecipeTypes.CONSTRUCTION, title("construction"),
                 ConstructionRecipeHandler.stations());
         tooling = new ToolingRecipeHandler(HbmJeiRecipeTypes.TOOLING, title("tooling"), ToolingRecipeHandler.stations());
+        ashpit = new AshpitRecipeHandler(HbmJeiRecipeTypes.ASHPIT, Component.translatable("block.hbm.machine_ashpit"),
+                stack(ModMachineBlocks.machine_ashpit.get()));
         crucibleSmelting = new CrucibleSmeltingHandler(HbmJeiRecipeTypes.CRUCIBLE_SMELTING, title("crucible_smelting"),
                 stack(ModMachineBlocks.machine_crucible.get()));
         crucibleCasting = new CrucibleCastingHandler(HbmJeiRecipeTypes.CRUCIBLE_CASTING, title("crucible_casting"),
@@ -225,7 +243,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         boiling = new BoilingRecipeHandler(HbmJeiRecipeTypes.BOILING,
                 title("boiling"), stack(ModMachineBlocks.machine_boiler.get()));
         cooling = new CoolingRecipeHandler(HbmJeiRecipeTypes.COOLING,
-                title("cooling"), stack(ModMachineBlocks.machine_turbine.get()));
+                title("cooling"), stack(ModMachineBlocks.machine_large_turbine.get()));
 
         vacuum = new VacuumRecipeHandler(HbmJeiRecipeTypes.VACUUM,
                 title("vacuum_distiller"), stack(ModMachineBlocks.machine_vacuum_distill.get()));
@@ -259,11 +277,11 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         rotaryFurnace = new RotaryFurnaceRecipeHandler(HbmJeiRecipeTypes.ROTARY_FURNACE,
                 title("rotary_furnace"), stack(ModProductionBlocks.MACHINE_ROTARY_FURNACE.get()));
 
-          reg.add(assembly, precisionAssembler, chemplant, mixer, exposure, purex, fusion, fusionBreeder, plasmaForge, press, ammoPress, soldering, crystallizer, centrifuge, cyclotron, particleAccelerator, gasCentrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
+          reg.add(assembly, precisionAssembler, chemplant, mixer, exposure, purex, rockMill, superComputer, fusion, fusionBreeder, plasmaForge, spaceAssembler, press, ammoPress, soldering, crystallizer, centrifuge, cyclotron, particleAccelerator, gasCentrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
                  electrolyserFluid, electrolyserMetal, refinery, fractioning, liquefaction, solidification, boiling, cooling,
                  vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor, storageDrum, fuelPool,
                  arcWelder, arcFurnaceSolid, arcFurnaceFluid, diFurnace, rotaryFurnace,
-                 fluidContainers, construction, tooling, crucibleSmelting, crucibleCasting, book);
+                 fluidContainers, construction, tooling, ashpit, crucibleSmelting, crucibleCasting, book);
         RTGJeiIntegration.registerCategory(reg);
         reg.add(new SatelliteRecipeHandler());
         NuclearMiscJeiIntegration.registerCategories(reg);
@@ -278,9 +296,12 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         MixerRecipes.INSTANCE.registerRecipes();
         ExposureChamberRecipes.INSTANCE.registerRecipes();
         PUREXRecipes.INSTANCE.registerRecipes();
+        RockMillRecipes.INSTANCE.registerRecipes();
+        SuperComputerRecipes.INSTANCE.registerRecipes();
         FusionRecipes.INSTANCE.registerRecipes();
         FluidBreederRecipes.INSTANCE.registerRecipes();
         PlasmaForgeRecipes.INSTANCE.registerRecipes();
+        SpaceAssemblerRecipes.INSTANCE.registerRecipes();
          PressRecipes.register();
          AmmoPressRecipes.register();
         SolderingRecipes.register();
@@ -297,9 +318,12 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         reg.add(HbmJeiRecipeTypes.MIXER, mixer.buildRecipes());
         reg.add(HbmJeiRecipeTypes.EXPOSURE_CHAMBER, exposure.buildRecipes());
         reg.add(HbmJeiRecipeTypes.PUREX, purex.buildRecipes());
+        reg.add(HbmJeiRecipeTypes.ROCK_MILL, rockMill.buildRecipes());
+        reg.add(HbmJeiRecipeTypes.SUPERCOMPUTER, superComputer.buildRecipes());
         reg.add(HbmJeiRecipeTypes.FUSION, fusion.buildRecipes());
         reg.add(HbmJeiRecipeTypes.FUSION_BREEDER, fusionBreeder.buildRecipes());
         reg.add(HbmJeiRecipeTypes.PLASMA_FORGE, plasmaForge.buildRecipes());
+        reg.add(HbmJeiRecipeTypes.SPACE_ASSEMBLER, spaceAssembler.buildRecipes());
          reg.add(HbmJeiRecipeTypes.PRESS, PressRecipes.getRecipes());
          reg.add(HbmJeiRecipeTypes.AMMO_PRESS, AmmoPressRecipes.getRecipes());
         reg.add(HbmJeiRecipeTypes.SOLDERING_STATION, SolderingRecipes.recipes);
@@ -315,6 +339,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         reg.add(HbmJeiRecipeTypes.FLUID_CONTAINERS, FluidContainerRecipeHandler.buildRecipes());
         reg.add(HbmJeiRecipeTypes.CONSTRUCTION, ConstructionRecipeHandler.buildRecipes());
         reg.add(HbmJeiRecipeTypes.TOOLING, ToolingRecipeHandler.buildRecipes());
+        reg.add(HbmJeiRecipeTypes.ASHPIT, AshpitRecipeHandler.buildRecipes());
         reg.add(HbmJeiRecipeTypes.CRUCIBLE_SMELTING, CrucibleSmeltingHandler.buildRecipes());
         reg.add(HbmJeiRecipeTypes.CRUCIBLE_CASTING, CrucibleCastingHandler.buildRecipes());
         reg.add(HbmJeiRecipeTypes.BOOK, BookRecipeHandler.buildRecipes());
@@ -444,6 +469,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
     public void stations(Stations reg) {
         RTGJeiIntegration.registerCatalyst(reg);
         reg.add(SatelliteRecipeHandler.TYPE, new ItemStack(ModSatelliteBlocks.sat_dock.get()));
+        reg.add(HbmJeiRecipeTypes.SPACE_ASSEMBLER, ModSatelliteItems.satellite.stack(EnumSatType.SCIENCE_ASSEMBLER));
         NuclearMiscJeiIntegration.registerCatalysts(reg);
         CustomMachineJeiIntegration.registerCatalysts(reg);
           reg.add(HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
@@ -455,6 +481,8 @@ public final class HbmRecipeViewer implements ViewerPlugin {
                  stack(ModMachineBlocks.machine_chemical_factory.get()));
         reg.add(HbmJeiRecipeTypes.MIXER, stack(ModMachineBlocks.machine_mixer.get()));
         reg.add(HbmJeiRecipeTypes.PUREX, stack(ModMachineBlocks.machine_purex.get()));
+        reg.add(HbmJeiRecipeTypes.ROCK_MILL, stack(ModMachineBlocks.machine_rockmill.get()));
+        reg.add(HbmJeiRecipeTypes.SUPERCOMPUTER, stack(ModMachineBlocks.machine_supercomputer.get()));
         reg.add(HbmJeiRecipeTypes.FUSION, stack(ModMachineBlocks.fusion_torus.get()));
         reg.add(HbmJeiRecipeTypes.FUSION_BREEDER,
                 stack(ModMachineBlocks.fusion_breeder.get()));
@@ -476,6 +504,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         reg.add(HbmJeiRecipeTypes.FLUID_CONTAINERS, FluidContainerRecipeHandler.machines().toArray(ItemStack[]::new));
         reg.add(HbmJeiRecipeTypes.CONSTRUCTION, ConstructionRecipeHandler.stations());
         reg.add(HbmJeiRecipeTypes.TOOLING, ToolingRecipeHandler.stations());
+        reg.add(HbmJeiRecipeTypes.ASHPIT, stack(ModMachineBlocks.machine_ashpit.get()));
         reg.add(HbmJeiRecipeTypes.CRUCIBLE_SMELTING, stack(ModMachineBlocks.machine_crucible.get()));
         reg.add(HbmJeiRecipeTypes.CRUCIBLE_CASTING, CrucibleCastingHandler.stations());
         reg.add(HbmJeiRecipeTypes.BOOK, BookRecipeHandler.book());
@@ -510,7 +539,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         reg.add(HbmJeiRecipeTypes.BOILING, stack(ModMachineBlocks.machine_boiler.get()),
                 stack(ModMachineBlocks.heater_firebox.get()), stack(ModMachineBlocks.heater_electric.get()),
                 stack(ModMachineBlocks.heater_oilburner.get()));
-         reg.add(HbmJeiRecipeTypes.COOLING, stack(ModMachineBlocks.machine_turbine.get()),
+         reg.add(HbmJeiRecipeTypes.COOLING, stack(ModMachineBlocks.machine_large_turbine.get()),
                   stack(ModMachineBlocks.machine_condenser.get()), stack(ModMachineBlocks.machine_condenser_powered.get()));
          reg.add(HbmJeiRecipeTypes.STORAGE_DRUM,
                  stack(ModMachineBlocks.machine_storage_drum.get()));

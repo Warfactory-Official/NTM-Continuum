@@ -4,6 +4,7 @@ import com.hbm.api.redstoneoverradio.IRORInfo;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.inventory.container.RadioControllerMenu;
 import com.hbm.tileentity.network.TileEntityRadioTorchController;
+import com.hbm.tileentity.network.RTTYSystem;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -40,7 +41,7 @@ public final class RadioControllerScreen extends CompatContainerScreen<RadioCont
         frequency.setBordered(false);
         frequency.setTextColor(0xFF00FF00);
         frequency.setTextColorUneditable(0xFF00FF00);
-        frequency.setMaxLength(10);
+        frequency.setMaxLength(RTTYSystem.MAX_CHAN_LENGTH);
         frequency.setValue(controller == null ? "" : controller.channel);
         addRenderableWidget(frequency);
     }

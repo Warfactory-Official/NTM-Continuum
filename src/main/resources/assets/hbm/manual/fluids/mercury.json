@@ -1,0 +1,23 @@
+{
+	"name": "Mercury",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		"hbm:mercury"
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:mercury"
+		]
+	],
+	"title": {
+		"en_us": "Mercury",
+		"ru_ru": "Ртуть"
+	},
+	"content": {
+		"en_us": "Mercury can first be obtained by [[centrifuging|Centrifuge]] redstone ore. It is primarily used in the production of [[desh|Desh]]. It is also used in [[NITAN© 100 octane super fuel|NITAN© 100 Octane Super Fuel]]. Additionally, it is commonly made by inserting cinnabar into a [[combination over|Combination Oven]] or through [[red mud|Red Mud]] processing.",
+		"ru_ru": "Ртуть изначально можно получить путем [[центрифугирования|Centrifuge]] редстоуновой руды. В основном она используется в производстве [[деша|Desh]]. Она также используется в [[100-октановом сверхтопливе NITAN©|NITAN© 100 Octane Super Fuel]]. Кроме того, ее обычно получают путем обработки киновари в [[коксовой печи|Combination Oven]] или через переработки [[красного шлама|Red Mud]]."
+	}
+}

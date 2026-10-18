@@ -101,4 +101,26 @@ public class BlockPASource extends BlockMultiblockMachine
         return core != null && level.getBlockEntity(core) instanceof TileEntityPASource source ? source : null;
     }
 
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {4, 0, 0, ForgeDirection.EAST.ordinal()},
+                {0, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {2, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {-2, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {2, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-2, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {0, -1, 0, ForgeDirection.DOWN.ordinal()},
+                {2, -1, 0, ForgeDirection.DOWN.ordinal()},
+                {-2, -1, 0, ForgeDirection.DOWN.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {0.9, 0.1, -0.4, 0.4, -4.5, -4.5},
+        };
+    }
 }

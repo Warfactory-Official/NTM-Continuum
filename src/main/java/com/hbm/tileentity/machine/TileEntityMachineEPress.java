@@ -1,6 +1,5 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -10,7 +9,6 @@ import com.hbm.inventory.container.ContainerMachineEPress;
 import com.hbm.inventory.recipes.PressRecipes;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.items.machine.ItemStamp;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -36,6 +34,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Electric Press: a functional powered press. It draws HE from adjacent power networks (and from a
@@ -80,10 +80,13 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         te.lastProgress = te.progress;
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineEPress te) {
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
+        te.setupPowerPorts(te.getPorts());
+        te.updateAllPorts();
+        te.receivePower();
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.upgradeManager.checkSlots(te.inventory, 4, 4);
 
@@ -183,18 +186,6 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return slot == 3;
-    }
-
-    /** Power connection points: the 4 horizontal faces + the bottom of the core block. */
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 1, y, z, Library.POS_X),
-                new DirPos(x - 1, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 1, Library.POS_Z),
-                new DirPos(x, y, z - 1, Library.NEG_Z),
-                new DirPos(x, y - 1, z, Library.NEG_Y),
-        };
     }
 
     // IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo)

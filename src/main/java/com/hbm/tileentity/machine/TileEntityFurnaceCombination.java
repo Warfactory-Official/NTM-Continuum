@@ -10,9 +10,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CombinationRecipes;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
@@ -39,6 +36,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Combination furnace, ported from 1.12.2 {@code TileEntityFurnaceCombination}.
@@ -73,12 +72,8 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceCombination furnace) {
         furnace.tryPullHeat();
 
-        if (TickPhase.every(level, pos, 20L)) {
-            for (DirPos connection : furnace.getConPos()) {
-                if (furnace.tank.getFill() > 0) furnace.tryProvide(furnace.tank, level, connection);
-                furnace.sendSmoke(connection);
-            }
-        }
+        furnace.setupFluidPorts(furnace.getPorts());
+        furnace.updatePortFIFO();
 
         furnace.wasOn = false;
         if (MachineFluidContainerIO.unload(furnace.tank, furnace.inventory, 2, 3)) furnace.setChanged();
@@ -180,23 +175,8 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tank, smoke, smoke_leaded, smoke_poison}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        DirPos[] result = new DirPos[33];
-        int index = 0;
-        for (int i = 2; i < 6; i++) {
-            ForgeDirection direction = ForgeDirection.getOrientation(i);
-            ForgeDirection rotation = direction.getRotation(ForgeDirection.UP);
-            for (int yy = y; yy <= y + 1; yy++) for (int j = -1; j <= 1; j++) {
-                result[index++] = new DirPos(x + direction.offsetX * 2 + rotation.offsetX * j, yy,
-                        z + direction.offsetZ * 2 + rotation.offsetZ * j, direction);
-            }
-        }
-        for (int xx = x - 1; xx <= x + 1; xx++) for (int zz = z - 1; zz <= z + 1; zz++) {
-            result[index++] = new DirPos(xx, y + 2, zz, ForgeDirection.UP);
-        }
-        return result;
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.comboven(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     @Override public Component getDisplayName() { return Component.translatable("container.furnaceCombination"); }
 

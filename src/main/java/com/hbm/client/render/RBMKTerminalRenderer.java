@@ -60,9 +60,9 @@ public final class RBMKTerminalRenderer extends GemBER<BlockEntityRBMKTerminal, 
         state.yaw = yaw(terminal.getBlockState().getValue(RBMKMiniPanelBase.FACING));
         state.color = terminal.doesRepeat ? 0xFFFF8000 : 0xFF00FF00;
 
-        boolean open = Minecraft.getInstance().screen instanceof ScreenRBMKTerminal;
+        boolean open = ScreenRBMKTerminal.editing(terminal);
         for (int i = 0; i < LINES; i++) {
-            String label = i == 0 ? ScreenRBMKTerminal.workingLine() : terminal.history[i - 1];
+            String label = i == 0 ? ScreenRBMKTerminal.workingLine(terminal) : terminal.history[i - 1];
             if (label == null) label = "";
             state.line[i] = clip(i == 0 || !label.isEmpty(), label, i == 0 && open);
         }

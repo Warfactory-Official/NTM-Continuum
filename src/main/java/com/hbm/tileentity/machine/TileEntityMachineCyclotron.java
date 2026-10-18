@@ -40,6 +40,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Standard cyclotron, ported from 1.12.2 {@code TileEntityMachineCyclotron}. */
 public class TileEntityMachineCyclotron extends TileEntityMachineBase
@@ -74,11 +75,9 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCyclotron te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
 
-        for (DirPos connection : te.getConPos()) {
-            te.trySubscribe(level, connection);
-            te.trySubscribe(te.tanks[0].getTankType(), level, connection);
-        }
         te.power = Library.chargeTEFromItems(te.inventory, 9, te.power, MAX_POWER);
         te.upgradeManager.checkSlots(te.inventory, 10, 11);
 
@@ -100,10 +99,6 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
             te.progress = 0;
         }
 
-        for (DirPos connection : te.getConPos()) {
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, connection);
-            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, connection);
-        }
         te.networkPackNT();
     }
 
@@ -171,20 +166,29 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
         return progress * scale / PROCESSING_TIME;
     }
 
-    /** The eight external positions around the 5×1×5 footprint, exactly as in the old machine. */
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 3, y, z + 1, Library.POS_X),
-                new DirPos(x + 3, y, z - 1, Library.POS_X),
-                new DirPos(x - 3, y, z + 1, Library.NEG_X),
-                new DirPos(x - 3, y, z - 1, Library.NEG_X),
-                new DirPos(x + 1, y, z + 3, Library.POS_Z),
-                new DirPos(x - 1, y, z + 3, Library.POS_Z),
-                new DirPos(x + 1, y, z - 3, Library.NEG_Z),
-                new DirPos(x - 1, y, z - 3, Library.NEG_Z)
-        };
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + 2, y, z - 1, Library.POS_X),
+                    PortDef.make(x + 2, y, z, Library.POS_X),
+                    PortDef.make(x + 2, y, z + 1, Library.POS_X),
+                    PortDef.make(x - 2, y, z - 1, Library.NEG_X),
+                    PortDef.make(x - 2, y, z, Library.NEG_X),
+                    PortDef.make(x - 2, y, z + 1, Library.NEG_X),
+                    PortDef.make(x - 1, y, z + 2, Library.POS_Z),
+                    PortDef.make(x, y, z + 2, Library.POS_Z),
+                    PortDef.make(x + 1, y, z + 2, Library.POS_Z),
+                    PortDef.make(x - 1, y, z - 2, Library.NEG_Z),
+                    PortDef.make(x, y, z - 2, Library.NEG_Z),
+                    PortDef.make(x + 1, y, z - 2, Library.NEG_Z),
+            };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     /** Recreates the old proxy-relative hopper rows for the modern WorldlyContainerHolder adapter. */
     public int[] getAccessibleSlotsFromSide(BlockPos accessor) {
@@ -253,11 +257,6 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
     }
 
     private static final String[] PLUG_IDS = {"powder_balefire", "book_of_", "diamond_gavel", "coin_maskman"};
-
-    public void fillFluidInit(FluidTankNTM tank) {
-        if (level == null) return;
-        for (DirPos connection : getConPos()) tryProvide(tank, level, connection);
-    }
 
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1], tanks[2]}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }

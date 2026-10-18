@@ -16,7 +16,6 @@ import com.hbm.items.machine.ItemArcElectrode;
 import com.hbm.items.machine.ItemArcElectrodeBurnt;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemScraps;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.particle.helper.HbmEffectNT;
@@ -56,6 +55,7 @@ import net.minecraft.sounds.SoundSource;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ModMachineItems;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Large Arc Furnace core: the old 20-cell grid, five-cell queue, three electrodes and liquid store. */
 public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
@@ -118,11 +118,13 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state,
                                   TileEntityMachineArcFurnaceLarge furnace) {
+        furnace.setupPowerPorts(furnace.getPorts());
+        furnace.updateAllPorts();
+        furnace.receivePower();
+
         furnace.upgradeManager.checkSlots(furnace.inventory, 4, 4);
         furnace.upgrade = furnace.upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED);
         furnace.power = Library.chargeTEFromItems(furnace.inventory, 3, furnace.power, MAX_POWER);
-
-        for (DirPos con : furnace.getConPos()) furnace.trySubscribe(level, con);
 
         if (furnace.lid > 0F) furnace.loadIngredients();
 
@@ -360,18 +362,23 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         return amount;
     }
 
-    public DirPos[] getConPos() {
-        ForgeDirection dir = facing();
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + dir.offsetX * 3 + rot.offsetX, y, z + dir.offsetZ * 3 + rot.offsetZ, dir),
-                new DirPos(x + dir.offsetX * 3 - rot.offsetX, y, z + dir.offsetZ * 3 - rot.offsetZ, dir),
-                new DirPos(x + rot.offsetX * 3 + dir.offsetX, y, z + rot.offsetZ * 3 + dir.offsetZ, rot),
-                new DirPos(x + rot.offsetX * 3 - dir.offsetX, y, z + rot.offsetZ * 3 - dir.offsetZ, rot),
-                new DirPos(x - rot.offsetX * 3 + dir.offsetX, y, z - rot.offsetZ * 3 + dir.offsetZ, rot.getOpposite()),
-                new DirPos(x - rot.offsetX * 3 - dir.offsetX, y, z - rot.offsetZ * 3 - dir.offsetZ, rot.getOpposite())
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = facing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 2 + rot.offsetX, y, z + dir.offsetZ * 2 + rot.offsetZ, dir),
+                    PortDef.make(x + dir.offsetX * 2 - rot.offsetX, y, z + dir.offsetZ * 2 - rot.offsetZ, dir),
+                    PortDef.make(x + rot.offsetX * 2 + dir.offsetX, y, z + rot.offsetZ * 2 + dir.offsetZ, rot),
+                    PortDef.make(x + rot.offsetX * 2 - dir.offsetX, y, z + rot.offsetZ * 2 - dir.offsetZ, rot),
+                    PortDef.make(x - rot.offsetX * 2 + dir.offsetX, y, z - rot.offsetZ * 2 + dir.offsetZ, rot.getOpposite()),
+                    PortDef.make(x - rot.offsetX * 2 - dir.offsetX, y, z - rot.offsetZ * 2 - dir.offsetZ, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 
     private ForgeDirection facing() {

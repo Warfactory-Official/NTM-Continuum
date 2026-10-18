@@ -24,21 +24,11 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * A stacking freight lift, ported from 1.12.2's {@code TileEntityCargoElevator}.
- *
- * <p>It grows a block at a time: right-clicking the structure with another elevator adds a 3×3 course
- * on top and raises {@link #height}. Placing a whole elevator directly beneath an existing one splices
- * the two together: the lower core absorbs the upper's height and the upper's cells are rewritten as
- * dummies, which is why the tick begins by looking down before it does anything else.
- *
- * <p>Riders are carried rather than pushed: anything whose feet lie in the slab the platform swept this
- * tick is snapped onto the platform's new height, so a rider never falls through a fast lift the way a
- * pure collision box would let it.
- *
- * <p><b>Deviation from the fork.</b> There the tile advertises a {@code VAL:extension} value while
- * implementing only the function half of the interface, so nothing can read it. This port implements
- * the value half too rather than dropping the advertised name.
+ * 1.7's stacking freight lift. Placing a whole elevator directly beneath an existing one splices the two
+ * together, which is why the tick begins by looking down. Riders whose feet lie in the slab the platform swept
+ * this tick are snapped onto its new height, so a fast lift never drops them.
  */
+// port: 1.7 lists VAL:extension but implements only the function half; this provides the value too.
 public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRORValueProvider, IRORInteractive {
 
     public static final double SPEED = 2D / 20D;
@@ -173,7 +163,7 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
     public String[] getFunctionInfo() {
         return new String[]{
                 PREFIX_VALUE + "extension",
-                PREFIX_FUNCTION + "setextension" + NAME_SEPARATOR + "extension"};
+                PREFIX_FUNCTION + "setextension" + NAME_SEPARATOR + "amount"};
     }
 
     @Override

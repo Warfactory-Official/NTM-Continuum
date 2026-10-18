@@ -5,7 +5,6 @@ import com.hbm.api.environment.Environment;
 import com.hbm.config.ServerConfig;
 import com.hbm.config.WorldConfig;
 import com.hbm.entity.ModNtmEntities;
-import com.hbm.explosion.ExplosionNukeSmall;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.handler.radiation.ChunkRadiationManager;
@@ -112,15 +111,6 @@ public class EntityEffectHandler {
                 HbmLivingProps.setRadEnv(entity, 0);
             }
 
-            // 1.7 onUpdate: the time bomb (HbmLivingProps timer) goes off as a medium mini-nuke when it runs out.
-            int timer = HbmLivingProps.getTimer(entity);
-            if (timer > 0) {
-                HbmLivingProps.setTimer(entity, timer - 1);
-                if (timer == 1) {
-                    ExplosionNukeSmall.explode(entity.level(), entity.getX(), entity.getY(), entity.getZ(),
-                            ExplosionNukeSmall.PARAMS_MEDIUM);
-                }
-            }
             // 1.7 X528_enable528NetherBurn (forced off without 528 mode): players burn in the nether, 1.7 setFire(5)
             if (GeneralConfig.enable528NetherBurn && entity instanceof Player
                     && !entity.fireImmune() && entity.level().dimension() == Level.NETHER) {
@@ -479,12 +469,15 @@ public class EntityEffectHandler {
         if (eRad >= 1000) {
             Compat.hurt(entity, serverLevel, radiation, 1000F);
             HbmLivingProps.setRadiation(entity, 0);
-            if (entity.getHealth() > 0) {
+            // a player survives this only through a death-preventing item (a totem), which must keep working
+            if (entity.getHealth() > 0 && !(entity instanceof Player)) {
                 entity.setHealth(0);
                 entity.die(radiation);
             }
             // 1.7 achRadDeath
-            if (entity instanceof ServerPlayer player) HbmCriteria.RADIATION.fire(player, "death");
+            if (entity instanceof ServerPlayer player && entity.getHealth() <= 0) {
+                HbmCriteria.RADIATION.fire(player, "death");
+            }
         } else if (eRad >= 800) {
             if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
             if (rand.nextInt(300) == 0) Effects.add(entity, MobEffects.SLOWNESS, 10 * 20, 2);

@@ -33,9 +33,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The gear a broken Stirling engine throws: it bounces and blasts while fast, then LANDS - the orientation
- * gains 6, which is what stops the renderer spinning it and what {@code onUpdate} takes back off if it is ever
- * airborne again.
+ * The gear a broken Stirling engine throws: it bounces and blasts while fast, then lands. Landing adds 6 to the
+ * orientation, which stops the renderer spinning it; a landed cog stuck in a block keeps it.
  */
 public class EntityCog extends EntityThrowableInterp {
 
@@ -151,15 +150,6 @@ public class EntityCog extends EntityThrowableInterp {
                 inGround = true;
             }
         }
-    }
-
-    @Override
-    public void tick() {
-        if (!level().isClientSide()) {
-            int orientation = entityData.get(ORIENTATION);
-            if (orientation >= LANDED && !inGround) entityData.set(ORIENTATION, orientation - LANDED);
-        }
-        super.tick();
     }
 
     @Override

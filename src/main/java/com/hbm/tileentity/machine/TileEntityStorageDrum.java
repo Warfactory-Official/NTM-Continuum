@@ -7,8 +7,6 @@ import com.hbm.inventory.container.ContainerStorageDrum;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.StorageDrumRecipes;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.ContaminationUtil;
@@ -28,6 +26,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Exact 24-slot waste transformer with separate liquid and gas waste tanks. */
 public class TileEntityStorageDrum extends TileEntityMachineBase implements IFluidStandardSenderMK2,
@@ -64,7 +64,13 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
     /** Plain HBM registers none (H-81); NTM: Space decays hbm-space's neutron activation here. */
     public static final Hook<SlotTick> SLOT_TICK = Hook.notifying();
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityStorageDrum drum) {
+        drum.setupFluidPorts(drum.getPorts());
+        drum.updatePortFIFO();
+
         double rad = 0D;
         int liquid = 0;
         int gas = 0;
@@ -108,24 +114,12 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
 
         drum.age++;
         if (drum.age >= 20) drum.age -= 20;
-        if (drum.age == 9 || drum.age == 19) drum.sendTank(drum.liquid);
-        if (drum.age == 8 || drum.age == 18) drum.sendTank(drum.gas);
         drum.networkPackNT();
 
         if (rad > 0) {
             // Preserve the legacy call's X/Z argument order; old storage drums emitted at (z,y,x).
             ContaminationUtil.radiate(level, pos.getZ(), pos.getY(), pos.getX(), 32, (float) rad);
         }
-    }
-
-    private void sendTank(FluidTankNTM tank) {
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            sendTank(tank, new DirPos(worldPosition.relative(direction.toDirection()), direction));
-        }
-    }
-
-    private void sendTank(FluidTankNTM tank, DirPos connection) {
-        tryProvide(tank, level, connection);
     }
 
     @Override

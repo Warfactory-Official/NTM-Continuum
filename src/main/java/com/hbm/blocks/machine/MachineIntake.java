@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -82,5 +83,19 @@ public class MachineIntake extends BlockMultiblockMachine implements IEnergyConn
     @Override
     public boolean acceptsFluid(FluidType type) {
         return type == Fluids.AIR;
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {1, 0, -1, ForgeDirection.EAST.ordinal()},
+                {0, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, -1, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

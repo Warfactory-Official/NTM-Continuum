@@ -4,6 +4,7 @@ import com.hbm.packet.ControlEventPayload;
 import com.hbm.inventory.container.RadioTorchMenu;
 import com.hbm.tileentity.network.TileEntityRadioTorchBase;
 import com.hbm.tileentity.network.TileEntityRadioTorchSender;
+import com.hbm.tileentity.network.RTTYSystem;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -41,7 +42,7 @@ public final class RadioTorchScreen extends CompatContainerScreen<RadioTorchMenu
         sender = radio instanceof TileEntityRadioTorchSender;
         customMap = radio != null && radio.customMap;
         polling = radio != null && radio.polling;
-        frequency = field(29, 22, 82, radio == null ? "" : radio.channel, 10);
+        frequency = field(29, 22, 82, radio == null ? "" : radio.channel, RTTYSystem.MAX_CHAN_LENGTH);
         int senderOffset = sender ? 18 : 0;
         for (int i = 0; i < mapping.length; i++) {
             mapping[i] = field(11 + 130 * (i / 8) + senderOffset, 57 + 18 * (i % 8), 82,

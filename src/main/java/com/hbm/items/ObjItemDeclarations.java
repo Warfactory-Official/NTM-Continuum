@@ -468,7 +468,7 @@ public final class ObjItemDeclarations {
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "fire_door")
                 .definition(MachineObjModel.of("hbm:models/pheodoors/fire_door.obj", "hbm:textures/models/pheodoors/fire_door.png")
-                        .scale(1.0).ty(0.0).yaw(90.0).guiScale(3.5).rawLegacyTransform().noCull()
+                        .scale(1.0).ty(0.0).yaw(90.0).guiScale(3.5).rawLegacyTransform().noCull().animation("door_skins/fire_door")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "floodlight")
@@ -484,6 +484,11 @@ public final class ObjItemDeclarations {
         // 1.7 RenderTestPipe.renderInventoryBlock (and 1.12 DuctNeoBakedModel.buildItemQuads) in the 3D block-item
         // frame: rotate 180, scale 1.25, the flat pX/nX/pZ/nZ cross, then the _overlay sprite in Fluids.NONE's 0x888888. The overlay's 1.02 is
         // NeoDuctRenderer's anti-z-fight scale; the colored skin is almost all overlay (its base is only the bolt).
+        Dejson.item(NS, "flow_control_pump")
+                // 1.7 RenderFlowControlPump (ItemRenderBase): renderInventory S(5); common Pump, Rotor, RailBottom
+                .definition(MachineObjModel.of("hbm:models/network/flow_control_pump.obj", "hbm:textures/models/network/flow_control_pump.png")
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().parts("Pump", "Rotor", "RailBottom"))
+                .oversizedInGui().register();
         Dejson.item(NS, "fluid_duct_neo")
                 .definition(MachineObjModel.of("hbm:models/blocks/pipe_neo.obj", "hbm:textures/blocks/pipe_neo.png")
                         .scale(1.25).ty(0.0).yaw(180.0).frame("block").rawLegacyTransform()
@@ -652,7 +657,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "large_vehicle_door")
                 .definition(MachineObjModel.of("hbm:models/pheodoors/vehicle_door.obj", "hbm:textures/models/pheodoors/vehicle_door.png")
-                        .scale(1.0).ty(0.0).yaw(90.0).guiScale(1.8).rawLegacyTransform().noCull()
+                        .scale(1.0).ty(0.0).yaw(90.0).guiScale(1.8).rawLegacyTransform().noCull().animation("door_skins/large_vehicle_door")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "launch_pad")
@@ -996,6 +1001,22 @@ public final class ObjItemDeclarations {
                 .definition(MachineObjModel.of("hbm:models/machines/purex.obj", "hbm:textures/models/machines/purex.png").scale(0.75)
                         .ty(0.0).yaw(0.0).guiScale(2.5).rawLegacyTransform().itemTranslate(0.0, 0.0, 0.0)
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
+        Dejson.item(NS, "machine_rockmill")
+                // 1.7 RenderRockMill: inv translate(0, -1.5, 0) scale(3); common scale(0.75)
+                .definition(MachineObjModel.of("hbm:models/machines/rockmill.obj", "hbm:textures/models/machines/rockmill.png").scale(0.75)
+                        .ty(0.0).yaw(0.0).guiScale(3.0).rawLegacyTransform().itemTranslate(0.0, 0.0, 0.0)
+                        .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -1.5, 0.0)).oversizedInGui().register();
+        Dejson.item(NS, "machine_supercomputer")
+                // 1.7 RenderSuperComputer: inv translate(0, -2.5, 0) scale(2.5); common scale(0.5) translate(-2, 0, 0) rotate(90, Y)
+                .definition(MachineObjModel.of("hbm:models/machines/supercomputer.obj", "hbm:textures/models/machines/supercomputer.png").scale(0.5)
+                        .ty(0.0).yaw(90.0).guiScale(2.5).rawLegacyTransform().itemTranslate(-1.0, 0.0, 0.0)
+                        .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.5, 0.0)
+                        .partTextures("Lights", "hbm:textures/models/machines/supercomputer_scan.png")).oversizedInGui().register();
+        Dejson.item(NS, "machine_tape_drive")
+                // 1.7 RenderTapeDrive: inv translate(0, -3, 0) scale(5); common scale(2), the frame only
+                .definition(MachineObjModel.of("hbm:models/machines/tape_drive.obj", "hbm:textures/models/machines/tape_drive.png").scale(2.0)
+                        .ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().itemTranslate(0.0, 0.0, 0.0)
+                        .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0).parts("Frame")).oversizedInGui().register();
         Dejson.item(NS, "machine_pyrooven")
                 .definition(MachineObjModel.of("hbm:models/machines/pyrooven.obj", "hbm:textures/models/machines/pyrooven.png").scale(0.5)
                         .ty(0.0).yaw(90.0).guiScale(3.5).rawLegacyTransform().itemTranslate(0.0, 0.0, 0.0)
@@ -1341,6 +1362,11 @@ public final class ObjItemDeclarations {
                         .scale(1.0).ty(0.0).yaw(0.0).guiSpinSpeed(0.06666667).rawLegacyTransform().noCull()
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).frame("missile")
                         .guiContext(MachineObjModel.xyz(0.0, 0.0, 135.0), MachineObjModel.xyz(0.0, -19.9375, 0.0), 1.375)).oversizedInGui().register();
+        Dejson.item(NS, "network_separator")
+                // 1.7 RenderNetworkSeparator (ItemRenderBase): renderInventory T(0,-3,0) S(5)
+                .definition(MachineObjModel.of("hbm:models/network/network_separator.obj", "hbm:textures/models/network/network_separator.png")
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().guiTranslate(0.0, -3.0, 0.0))
+                .oversizedInGui().register();
         Dejson.item(NS, "nuke_boy")
                 // 1.7 ItemRenderLibrary: inv scale(5); common translate(-1, 0, 0) bomb_boy.renderAll
                 .definition(MachineObjModel.of("hbm:models/bombs/lilboy.obj", "hbm:textures/models/bombs/lilboy.png")
@@ -1438,6 +1464,21 @@ public final class ObjItemDeclarations {
                 .definition(MachineObjModel.of("hbm:models/blocks/barrel.obj", "hbm:textures/blocks/barrel_pink.png")
                         .scale(1.0).ty(0.0).yaw(0.0).frame("block").rawLegacyTransform().exclude("Connector")
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
+        Dejson.item(NS, "pipe_anchor")
+                // 1.7 RenderPipeAnchor (ItemRenderBase): renderInventory T(0,-3.5,0) S(10); common Anchor
+                .definition(MachineObjModel.of("hbm:models/network/pipe_anchor.obj", "hbm:textures/models/network/pipe_anchor.png")
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(10.0).rawLegacyTransform().guiTranslate(0.0, -3.5, 0.0).parts("Anchor"))
+                .oversizedInGui().register();
+        Dejson.item(NS, "pipe_anchor_exhaust")
+                // 1.7 RenderPipeAnchor (ItemRenderBase): renderInventory T(0,-3.5,0) S(10); common Anchor
+                .definition(MachineObjModel.of("hbm:models/network/pipe_anchor.obj", "hbm:textures/models/network/pipe_anchor_exhaust.png")
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(10.0).rawLegacyTransform().guiTranslate(0.0, -3.5, 0.0).parts("Anchor"))
+                .oversizedInGui().register();
+        Dejson.item(NS, "pipe_anchor_pneumatic")
+                // 1.7 RenderPipeAnchor (ItemRenderBase): renderInventory T(0,-3.5,0) S(10); common Anchor
+                .definition(MachineObjModel.of("hbm:models/network/pipe_anchor.obj", "hbm:textures/models/network/pipe_anchor_pneumatic.png")
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(10.0).rawLegacyTransform().guiTranslate(0.0, -3.5, 0.0).parts("Anchor"))
+                .oversizedInGui().register();
         Dejson.item(NS, "piston_inserter")
                 // 1.7 RenderPistonInserter item: renderInventory T(0,-2.5,0) S(5); renderCommon S(2)
                 .definition(MachineObjModel.of("hbm:models/machines/piston_inserter.obj", "hbm:textures/models/machines/piston_inserter.png")
@@ -1453,12 +1494,12 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "qe_containment")
                 .definition(MachineObjModel.of("hbm:models/pheodoors/containment_door.obj", "hbm:textures/models/pheodoors/containment_door.png")
-                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.8).rawLegacyTransform().noCull()
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.8).rawLegacyTransform().noCull().animation("door_skins/qe_containment")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -3.5, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "qe_sliding_door")
                 .definition(MachineObjModel.of("hbm:models/pheodoors/sliding_door.obj", "hbm:textures/models/pheodoors/sliding_door.png")
-                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().noCull()
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform().noCull().animation("door_skins/qe_sliding_door")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "radio_autocal")
@@ -2070,7 +2111,7 @@ public final class ObjItemDeclarations {
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -3.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "round_airlock_door")
                 .definition(MachineObjModel.of("hbm:models/pheodoors/airlock_door.obj", "hbm:textures/models/pheodoors/airlock_door.png")
-                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.0).rawLegacyTransform().noCull()
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(3.0).rawLegacyTransform().noCull().animation("door_skins/round_airlock_door")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -3.75, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "rtg_polonium")
@@ -2079,7 +2120,7 @@ public final class ObjItemDeclarations {
                                 .ty(0.0).yaw(0).noCull())).register();
         Dejson.item(NS, "secure_access_door")
                 .definition(MachineObjModel.of("hbm:models/pheodoors/secure_door.obj", "hbm:textures/models/pheodoors/secure_door.png")
-                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(2.4).rawLegacyTransform().noCull()
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(2.4).rawLegacyTransform().noCull().animation("door_skins/secure_access_door")
                         .itemTranslate(0.0, 1.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -3.75, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "silo_hatch")
@@ -2104,12 +2145,12 @@ public final class ObjItemDeclarations {
                                 .translateStep(0.0, -0.875, 2.875).translateStep(0.0, 0.25, 0.0))).oversizedInGui().register();
         Dejson.item(NS, "sliding_blast_door")
                 .definition(MachineObjModel.of("hbm:models/pheodoors/blast_door.obj", "hbm:textures/models/pheodoors/blast_door.png")
-                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(2.5).rawLegacyTransform().noCull()
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(2.5).rawLegacyTransform().noCull().animation("door_skins/sliding_blast_door")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -2.75, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "sliding_seal_door")
                 .definition(MachineObjModel.of("hbm:models/pheodoors/seal_door.obj", "hbm:textures/models/pheodoors/seal_door.png")
-                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(7.0).rawLegacyTransform().noCull()
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(7.0).rawLegacyTransform().noCull().animation("door_skins/sliding_seal_door")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -5.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "solar_mirror")
@@ -2300,7 +2341,7 @@ public final class ObjItemDeclarations {
                         .itemTranslate(0.0, -0.5, 0.0).itemPreTranslate(0.0, 0.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "water_door")
                 .definition(MachineObjModel.of("hbm:models/pheodoors/water_door.obj", "hbm:textures/models/pheodoors/water_door.png")
-                        .scale(1.0).ty(0.0).yaw(90.0).guiScale(4.0).rawLegacyTransform().noCull()
+                        .scale(1.0).ty(0.0).yaw(90.0).guiScale(4.0).rawLegacyTransform().noCull().animation("door_skins/water_door")
                         .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
                         .guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "watz")

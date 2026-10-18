@@ -55,7 +55,7 @@ public final class HbmCriteria {
     /** Forces class initialisation, which registers every trigger; called from {@code MainRegistry}. */
     public static void init() {}
 
-    /** 1.7 {@code EntitySoyuz.deployPayload}, {@code SatelliteRelay}, {@code SatelliteHorizons.onOrbit}. */
+    /** 1.7 {@code EntityRocketSoyuz.deployPayload} and {@code SatelliteHorizons.onOrbit}. */
     public static void orbit(ServerPlayer player, ItemStack stack) {
         if (!stack.isEmpty()) ORBIT.fire(player, stack);
     }

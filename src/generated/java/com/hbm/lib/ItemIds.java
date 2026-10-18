@@ -359,6 +359,7 @@ public final class ItemIds {
     public static final String bedrock_ore_fragment_emerald = "hbm:bedrock_ore_fragment_emerald";
     public static final String bedrock_ore_fragment_fluorite = "hbm:bedrock_ore_fragment_fluorite";
     public static final String bedrock_ore_fragment_gold = "hbm:bedrock_ore_fragment_gold";
+    public static final String bedrock_ore_fragment_ilmenite = "hbm:bedrock_ore_fragment_ilmenite";
     public static final String bedrock_ore_fragment_iron = "hbm:bedrock_ore_fragment_iron";
     public static final String bedrock_ore_fragment_lanthanium = "hbm:bedrock_ore_fragment_lanthanium";
     public static final String bedrock_ore_fragment_lead = "hbm:bedrock_ore_fragment_lead";
@@ -1019,6 +1020,7 @@ public final class ItemIds {
     public static final String chopper_torso = "hbm:chopper_torso";
     public static final String chopper_wing = "hbm:chopper_wing";
     public static final String chunk_ore_cryolite = "hbm:chunk_ore_cryolite";
+    public static final String chunk_ore_ilmenite = "hbm:chunk_ore_ilmenite";
     public static final String chunk_ore_malachite = "hbm:chunk_ore_malachite";
     public static final String chunk_ore_moonstone = "hbm:chunk_ore_moonstone";
     public static final String chunk_ore_rare = "hbm:chunk_ore_rare";
@@ -1039,6 +1041,7 @@ public final class ItemIds {
     public static final String circuit_controller_advanced = "hbm:circuit_controller_advanced";
     public static final String circuit_controller_chassis = "hbm:circuit_controller_chassis";
     public static final String circuit_controller_quantum = "hbm:circuit_controller_quantum";
+    public static final String circuit_crystal = "hbm:circuit_crystal";
     public static final String circuit_numitron = "hbm:circuit_numitron";
     public static final String circuit_pcb = "hbm:circuit_pcb";
     public static final String circuit_quantum = "hbm:circuit_quantum";
@@ -1479,6 +1482,17 @@ public final class ItemIds {
     public static final String drillbit_steel_diamond = "hbm:drillbit_steel_diamond";
     public static final String drillbit_tcalloy = "hbm:drillbit_tcalloy";
     public static final String drillbit_tcalloy_diamond = "hbm:drillbit_tcalloy_diamond";
+    public static final String drive_disk_broken = "hbm:drive_disk_broken";
+    public static final String drive_disk_empty = "hbm:drive_disk_empty";
+    public static final String drive_disk_flightdata = "hbm:drive_disk_flightdata";
+    public static final String drive_disk_flightdata_processed = "hbm:drive_disk_flightdata_processed";
+    public static final String drive_disk_orbitdata = "hbm:drive_disk_orbitdata";
+    public static final String drive_disk_orbitdata_processed = "hbm:drive_disk_orbitdata_processed";
+    public static final String drive_flash_broken = "hbm:drive_flash_broken";
+    public static final String drive_flash_empty = "hbm:drive_flash_empty";
+    public static final String drive_flash_flightsim = "hbm:drive_flash_flightsim";
+    public static final String drive_flash_particlesim = "hbm:drive_flash_particlesim";
+    public static final String drive_klaus = "hbm:drive_klaus";
     public static final String drone_crate = "hbm:drone_crate";
     public static final String drone_crate_provider = "hbm:drone_crate_provider";
     public static final String drone_crate_requester = "hbm:drone_crate_requester";
@@ -1592,6 +1606,7 @@ public final class ItemIds {
     public static final String fleija_propellant = "hbm:fleija_propellant";
     public static final String float_bomb = "hbm:float_bomb";
     public static final String floodlight = "hbm:floodlight";
+    public static final String flow_control_pump = "hbm:flow_control_pump";
     public static final String fluid_barrel = "hbm:fluid_barrel";
     public static final String fluid_barrel_infinite = "hbm:fluid_barrel_infinite";
     public static final String fluid_bucket = "hbm:fluid_bucket";
@@ -2068,6 +2083,7 @@ public final class ItemIds {
     public static final String insert_yharonite = "hbm:insert_yharonite";
     public static final String item_expensive_bronze_tubes = "hbm:item_expensive_bronze_tubes";
     public static final String item_expensive_circuit = "hbm:item_expensive_circuit";
+    public static final String item_expensive_cmb_tubes = "hbm:item_expensive_cmb_tubes";
     public static final String item_expensive_computer = "hbm:item_expensive_computer";
     public static final String item_expensive_degenerate_matter = "hbm:item_expensive_degenerate_matter";
     public static final String item_expensive_ferro_plating = "hbm:item_expensive_ferro_plating";
@@ -2135,6 +2151,8 @@ public final class ItemIds {
     public static final String launch_pad_large = "hbm:launch_pad_large";
     public static final String launch_pad_rusted = "hbm:launch_pad_rusted";
     public static final String launch_table = "hbm:launch_table";
+    public static final String launchpad_lambda = "hbm:launchpad_lambda";
+    public static final String launchpad_soyuz = "hbm:launchpad_soyuz";
     public static final String lead_gavel = "hbm:lead_gavel";
     public static final String leaves_layer = "hbm:leaves_layer";
     public static final String lemon = "hbm:lemon";
@@ -2263,6 +2281,7 @@ public final class ItemIds {
     public static final String machine_reactor = "hbm:machine_reactor";
     public static final String machine_reactor_small = "hbm:machine_reactor_small";
     public static final String machine_refinery = "hbm:machine_refinery";
+    public static final String machine_rockmill = "hbm:machine_rockmill";
     public static final String machine_rotary_furnace = "hbm:machine_rotary_furnace";
     public static final String machine_rtg_furnace_off = "hbm:machine_rtg_furnace_off";
     public static final String machine_rtg_grey = "hbm:machine_rtg_grey";
@@ -2282,6 +2301,8 @@ public final class ItemIds {
     public static final String machine_stirling_steel = "hbm:machine_stirling_steel";
     public static final String machine_storage_drum = "hbm:machine_storage_drum";
     public static final String machine_strand_caster = "hbm:machine_strand_caster";
+    public static final String machine_supercomputer = "hbm:machine_supercomputer";
+    public static final String machine_tape_drive = "hbm:machine_tape_drive";
     public static final String machine_teleporter = "hbm:machine_teleporter";
     public static final String machine_thresher = "hbm:machine_thresher";
     public static final String machine_tower_large = "hbm:machine_tower_large";
@@ -2290,7 +2311,6 @@ public final class ItemIds {
     public static final String machine_transformer_20 = "hbm:machine_transformer_20";
     public static final String machine_transformer_dnt = "hbm:machine_transformer_dnt";
     public static final String machine_transformer_dnt_20 = "hbm:machine_transformer_dnt_20";
-    public static final String machine_turbine = "hbm:machine_turbine";
     public static final String machine_turbine_gas = "hbm:machine_turbine_gas";
     public static final String machine_turbofan = "hbm:machine_turbofan";
     public static final String machine_uf6_tank = "hbm:machine_uf6_tank";
@@ -2387,6 +2407,7 @@ public final class ItemIds {
     public static final String missile_incendiary_strong = "hbm:missile_incendiary_strong";
     public static final String missile_inferno = "hbm:missile_inferno";
     public static final String missile_kit = "hbm:missile_kit";
+    public static final String missile_lambda = "hbm:missile_lambda";
     public static final String missile_micro = "hbm:missile_micro";
     public static final String missile_n2 = "hbm:missile_n2";
     public static final String missile_nuclear = "hbm:missile_nuclear";
@@ -2579,6 +2600,7 @@ public final class ItemIds {
     public static final String ncrpa_helmet = "hbm:ncrpa_helmet";
     public static final String ncrpa_legs = "hbm:ncrpa_legs";
     public static final String ncrpa_plate = "hbm:ncrpa_plate";
+    public static final String network_separator = "hbm:network_separator";
     public static final String neutrino_lens = "hbm:neutrino_lens";
     public static final String neutron_reflector = "hbm:neutron_reflector";
     public static final String night_vision = "hbm:night_vision";
@@ -2686,6 +2708,14 @@ public final class ItemIds {
     public static final String nugget_pu241 = "hbm:nugget_pu241";
     public static final String nugget_pu_mix = "hbm:nugget_pu_mix";
     public static final String nugget_ra226 = "hbm:nugget_ra226";
+    public static final String nugget_raw_aluminium = "hbm:nugget_raw_aluminium";
+    public static final String nugget_raw_boron = "hbm:nugget_raw_boron";
+    public static final String nugget_raw_copper = "hbm:nugget_raw_copper";
+    public static final String nugget_raw_lithium = "hbm:nugget_raw_lithium";
+    public static final String nugget_raw_sodium = "hbm:nugget_raw_sodium";
+    public static final String nugget_raw_strontium = "hbm:nugget_raw_strontium";
+    public static final String nugget_raw_titanium = "hbm:nugget_raw_titanium";
+    public static final String nugget_raw_tungsten = "hbm:nugget_raw_tungsten";
     public static final String nugget_reiium = "hbm:nugget_reiium";
     public static final String nugget_schrabidium = "hbm:nugget_schrabidium";
     public static final String nugget_schrabidium_fuel = "hbm:nugget_schrabidium_fuel";
@@ -2732,6 +2762,7 @@ public final class ItemIds {
     public static final String oil_tar_paraffin = "hbm:oil_tar_paraffin";
     public static final String oil_tar_wax = "hbm:oil_tar_wax";
     public static final String oil_tar_wood = "hbm:oil_tar_wood";
+    public static final String orbital_assembly_crystal_circuit = "hbm:orbital_assembly_crystal_circuit";
     public static final String ore_alexandrite = "hbm:ore_alexandrite";
     public static final String ore_aluminium = "hbm:ore_aluminium";
     public static final String ore_asbestos = "hbm:ore_asbestos";
@@ -2855,6 +2886,7 @@ public final class ItemIds {
     public static final String part_carbon = "hbm:part_carbon";
     public static final String part_copper = "hbm:part_copper";
     public static final String part_emitter = "hbm:part_emitter";
+    public static final String part_generic_alclad = "hbm:part_generic_alclad";
     public static final String part_generic_glass_polarized = "hbm:part_generic_glass_polarized";
     public static final String part_generic_hde = "hbm:part_generic_hde";
     public static final String part_generic_lde = "hbm:part_generic_lde";
@@ -2990,6 +3022,8 @@ public final class ItemIds {
     public static final String pink_stairs = "hbm:pink_stairs";
     public static final String pipe_aluminium = "hbm:pipe_aluminium";
     public static final String pipe_anchor = "hbm:pipe_anchor";
+    public static final String pipe_anchor_exhaust = "hbm:pipe_anchor_exhaust";
+    public static final String pipe_anchor_pneumatic = "hbm:pipe_anchor_pneumatic";
     public static final String pipe_copper = "hbm:pipe_copper";
     public static final String pipe_dura_steel = "hbm:pipe_dura_steel";
     public static final String pipe_iron = "hbm:pipe_iron";
@@ -3610,6 +3644,7 @@ public final class ItemIds {
     public static final String rpa_plate = "hbm:rpa_plate";
     public static final String rtg_polonium = "hbm:rtg_polonium";
     public static final String rtg_unit = "hbm:rtg_unit";
+    public static final String rtty_designator = "hbm:rtty_designator";
     public static final String rtty_pager = "hbm:rtty_pager";
     public static final String rune_blank = "hbm:rune_blank";
     public static final String rune_dagaz = "hbm:rune_dagaz";
@@ -3658,6 +3693,9 @@ public final class ItemIds {
     public static final String satellite_ray_scan = "hbm:satellite_ray_scan";
     public static final String satellite_relay = "hbm:satellite_relay";
     public static final String satellite_scanner = "hbm:satellite_scanner";
+    public static final String satellite_science = "hbm:satellite_science";
+    public static final String satellite_science_assembler = "hbm:satellite_science_assembler";
+    public static final String satellite_science_sensor = "hbm:satellite_science_sensor";
     public static final String satellite_spy = "hbm:satellite_spy";
     public static final String satellite_xenium_resonator = "hbm:satellite_xenium_resonator";
     public static final String sawblade = "hbm:sawblade";

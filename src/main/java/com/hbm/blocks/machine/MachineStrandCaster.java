@@ -197,4 +197,14 @@ public class MachineStrandCaster extends BlockMultiblockMachine
             new int[] { 2, 0, 1, 0, 1, 0 }
         };
     }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, -1, ForgeDirection.EAST.ordinal()},
+                {0, 0, -1, ForgeDirection.WEST.ordinal()},
+                {0, 0, -5, ForgeDirection.WEST.ordinal()},
+                {1, 0, -5, ForgeDirection.EAST.ordinal()},
+        }, dir);
+    }
 }

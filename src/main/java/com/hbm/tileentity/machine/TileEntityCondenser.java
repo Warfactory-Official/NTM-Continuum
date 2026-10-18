@@ -5,7 +5,6 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.core.BlockPos;
@@ -17,6 +16,8 @@ import dev.golem.core.data.DataOut;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.nbt.CompoundTag;
 import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Passive 100 mB/t spent-steam condenser that closes the ZIRNOX water loop. */
 public class TileEntityCondenser extends TileEntityMachineBase implements IFluidStandardTransceiverMK2 {
@@ -74,7 +75,8 @@ public class TileEntityCondenser extends TileEntityMachineBase implements IFluid
             postConvert(amount);
         }
 
-        updateConnections(level);
+        this.setupAllPorts(getPorts());
+        this.updatePortPIFIFO();
         networkPackNT();
     }
 
@@ -103,21 +105,10 @@ public class TileEntityCondenser extends TileEntityMachineBase implements IFluid
                 pos.getZ() + 0.5D, data);
     }
 
-    protected void updateConnections(Level level) {
-        for (DirPos connection : getConPos()) {
-            trySubscribe(input.getTankType(), level, connection);
-            tryProvide(output, level, connection);
-        }
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
-    public DirPos[] getConPos() {
-        DirPos[] connections = new DirPos[ForgeDirection.VALID_DIRECTIONS.length];
-        for (int i = 0; i < connections.length; i++) {
-            ForgeDirection direction = ForgeDirection.VALID_DIRECTIONS[i];
-            connections[i] = new DirPos(worldPosition.relative(direction.toDirection()), direction);
-        }
-        return connections;
-    }
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{input}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{output}; }

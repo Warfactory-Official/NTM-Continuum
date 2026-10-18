@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.items.tool.ItemRTTYPager;
 import com.hbm.packet.ItemControlPayload;
+import com.hbm.tileentity.network.RTTYSystem;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -24,7 +25,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public class GUIScreenPager extends CompatScreen {
 
-    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_rtty_pager.png");
+    private final Identifier texture;
     public final String startingChannel;
     protected int xSize = 184;
     protected int ySize = 42;
@@ -34,7 +35,13 @@ public class GUIScreenPager extends CompatScreen {
     protected EditBox chan;
 
     public GUIScreenPager(ItemStack pager) {
-        super(Component.translatable("container.rttyPager"));
+        this(pager, Component.translatable("container.rttyPager"), Ids.of("hbm", "textures/gui/machine/gui_rtty_pager.png"));
+    }
+
+    /** 1.7 {@code GUIRTTYDesignator} is this screen with its own title and texture. */
+    public GUIScreenPager(ItemStack pager, Component title, Identifier texture) {
+        super(title);
+        this.texture = texture;
         String start = pager == null ? null : ItemRTTYPager.channel(pager);
         this.startingChannel = start == null ? "" : start;
     }
@@ -52,7 +59,7 @@ public class GUIScreenPager extends CompatScreen {
         chan.setBordered(false);
         chan.setTextColor(0xFF00FF00);
         chan.setTextColorUneditable(0xFF00FF00);
-        chan.setMaxLength(10);
+        chan.setMaxLength(RTTYSystem.MAX_CHAN_LENGTH);
         chan.setValue(startingChannel);
         addRenderableWidget(chan);
         focusedEditBoxForInput = chan;
@@ -60,7 +67,7 @@ public class GUIScreenPager extends CompatScreen {
 
     @Override
     protected void extractBackgroundCompat(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        GuiDraw.blit(graphics, TEXTURE, guiLeft, guiTop, 0F, 0F, xSize, ySize, 256, 256);
+        GuiDraw.blit(graphics, texture, guiLeft, guiTop, 0F, 0F, xSize, ySize, 256, 256);
     }
 
     @Override

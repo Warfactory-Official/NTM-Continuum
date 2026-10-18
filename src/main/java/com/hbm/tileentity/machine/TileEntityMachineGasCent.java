@@ -43,6 +43,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Gas centrifuge, including the legacy pseudo-fluid cascade between aligned machines. */
 public class TileEntityMachineGasCent extends TileEntityMachineBase
@@ -77,13 +79,8 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasCent te) {
         GasCentrifugeRecipes.register();
 
-        // 1.7 updateConnections: power always, the fluid only while the pseudo-fluid is one a fluid converts to
-        for (DirPos port : te.getConPos()) {
-            te.trySubscribe(level, port);
-            if (GasCentrifugeRecipes.FLUID_CONVERSIONS.containsValue(te.inputTank.getTankType())) {
-                te.trySubscribe(te.tank.getTankType(), level, port);
-            }
-        }
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
 
         te.power = Library.chargeTEFromItems(te.inventory, 4, te.power, MAX_POWER);
         te.setTankTypeFromIdentifier();
@@ -209,16 +206,10 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
         setChanged();
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x, y - 1, z, Library.NEG_Y),
-                new DirPos(x + 1, y, z, Library.POS_X),
-                new DirPos(x - 1, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 1, Library.POS_Z),
-                new DirPos(x, y, z - 1, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }

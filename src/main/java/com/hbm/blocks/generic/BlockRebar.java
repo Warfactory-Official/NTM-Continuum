@@ -15,8 +15,13 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.tool.ItemRebarPlacer;
+import com.hbm.lib.DirPos;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.ModDungeonBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.tileentity.TilePort;
+import com.hbm.uninos.networkproviders.FluidNetProvider;
 import com.hbm.uninos.networkproviders.RebarNetwork;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -158,7 +163,24 @@ public class BlockRebar extends CompatBlock implements TickingBlock, SimpleWater
             RebarNetwork.invalidate();
         }
 
+        @Override
+        public boolean canConnect(FluidType type, ForgeDirection dir) {
+            return dir == ForgeDirection.UP && type == Fluids.CONCRETE;
+        }
+
         public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityRebar rebar) {
+            if (rebar.hasConnection) {
+                if (rebar.fluidInPorts == null) {
+                    rebar.fluidInPorts = new TilePort[] {new TilePort().setupOwner(rebar).setupType(FluidNetProvider.of(Fluids.CONCRETE))
+                            .setupPositions(pos.immutable()).setupConnections(new DirPos(pos.getX(), pos.getY() + 1, pos.getZ(), Library.POS_Y))};
+                }
+                rebar.fluidInPorts[0].update(level);
+                rebar.fluidInPorts[0].checkSubscribe(level);
+            } else if (rebar.fluidInPorts != null) {
+                rebar.fluidInPorts[0].disableIfPresent(level);
+                rebar.fluidInPorts = null;
+            }
+
             if (rebar.prevProgress != rebar.progress) {
                 rebar.setChanged();
                 rebar.prevProgress = rebar.progress;

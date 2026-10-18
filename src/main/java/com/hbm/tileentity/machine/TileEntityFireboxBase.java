@@ -23,6 +23,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import dev.golem.core.world.Compat;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.Level;
@@ -30,6 +31,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Base for solid-fuel heaters (1.12.2 {@code TileEntityFireboxBase}): two fuel slots burn furnace fuels
@@ -59,16 +62,11 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
         super(type, pos, state, 2, 50);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFireboxBase te) {
-        for (int i = 2; i < 6; i++) {
-            ForgeDirection dir = ForgeDirection.getOrientation(i);
-            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.assembler(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
-            for (int j = -1; j <= 1; j++) {
-                te.sendSmoke(pos.getX() + dir.offsetX * 2 + rot.offsetX * j, pos.getY(),
-                        pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * j, dir);
-            }
-        }
+    public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFireboxBase te) {
+        te.moduleSmokePorts.update(te.getPorts());
 
         te.wasOn = false;
         // hbm-space's canOperate: whether the fire got air this tick (com.hbm.api.environment.Environment). Plain HBM
@@ -159,6 +157,8 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
     /** Classifies fuel for the ash stream used by the firebox and brick furnace. */
     public static ItemEnums.EnumAshType getAshFromFuel(ItemStack stack) {
         if (stack.isEmpty()) return ItemEnums.EnumAshType.MISC;
+        // 1.7 checks charcoal by item since it has no ore name; checked first here because its path reads as coal
+        if (stack.is(Items.CHARCOAL)) return ItemEnums.EnumAshType.WOOD;
         String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
         if (stack.is(ItemTags.LOGS) || stack.is(ItemTags.PLANKS) || stack.is(ItemTags.SAPLINGS)
                 || path.contains("wood")) {

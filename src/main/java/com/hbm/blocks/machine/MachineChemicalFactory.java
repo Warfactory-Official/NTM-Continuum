@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -119,5 +120,41 @@ public class MachineChemicalFactory extends BlockMultiblockMachine
             visitor.passiveCell(core.relative(facing, along).relative(rot, 2).above(2), MASK_ALL, domains);
             visitor.passiveCell(core.relative(facing, along).relative(rot, -2).above(2), MASK_ALL, domains);
         }
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {-2, 0, -2, ForgeDirection.WEST.ordinal()},
+                {-2, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {0, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {1, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {2, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {2, 0, -2, ForgeDirection.EAST.ordinal()},
+                {-2, 0, -1, ForgeDirection.WEST.ordinal()},
+                {2, 0, -1, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 0, ForgeDirection.WEST.ordinal()},
+                {2, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 1, ForgeDirection.WEST.ordinal()},
+                {2, 0, 1, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 2, ForgeDirection.WEST.ordinal()},
+                {-2, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {2, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {2, 0, 2, ForgeDirection.EAST.ordinal()},
+                {-2, 2, -2, ForgeDirection.UP.ordinal()},
+                {-2, 2, -1, ForgeDirection.UP.ordinal()},
+                {-2, 2, 0, ForgeDirection.UP.ordinal()},
+                {-2, 2, 1, ForgeDirection.UP.ordinal()},
+                {-2, 2, 2, ForgeDirection.UP.ordinal()},
+                {2, 2, -2, ForgeDirection.UP.ordinal()},
+                {2, 2, -1, ForgeDirection.UP.ordinal()},
+                {2, 2, 0, ForgeDirection.UP.ordinal()},
+                {2, 2, 1, ForgeDirection.UP.ordinal()},
+                {2, 2, 2, ForgeDirection.UP.ordinal()},
+        }, dir);
     }
 }

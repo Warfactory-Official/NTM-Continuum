@@ -35,6 +35,8 @@ import org.jspecify.annotations.Nullable;
 import com.hbm.inventory.container.ContainerDroneCrate;
 import com.hbm.packet.DroneLinePayload;
 import com.hbm.tileentity.ModDroneBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * 1.7 {@code TileEntityDroneCrate}: the transport drones' loading bay. Sending, it fills the drone parked above it
@@ -51,7 +53,6 @@ public class TileEntityDroneCrate extends TileEntityMachineBase
         next = IRelocatable.followNullable(move, next);
         setChanged();
     }
-
 
     public static final int CARGO_SLOTS = 18;
     public static final int SLOT_FLUID_ID = 18;
@@ -85,6 +86,9 @@ public class TileEntityDroneCrate extends TileEntityMachineBase
         return worldPosition.above();
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public void serverTick() {
         if (!(level instanceof ServerLevel server)) return;
 
@@ -98,9 +102,9 @@ public class TileEntityDroneCrate extends TileEntityMachineBase
             }
         }
 
-        // 1.7: a fluid crate subscribes on all sides while sending (it loads drones) and provides while receiving
-        if (sendingMode && !itemType && level.getGameTime() % 20 == 0) subscribeToAllAround(tank.getTankType(), this);
-        if (!sendingMode && !itemType && level.getGameTime() % 20 == 0) sendFluidToAll(tank, this);
+        // 1.7 sets up input ports only: a crate unloading drones never offers its tank to the network
+        this.setupFluidInPorts(this.getAllTanks(), getPorts()[0]);
+        this.updatePortPIFIFO();
 
         if (next != null) {
             BlockPos pos = getCoord();

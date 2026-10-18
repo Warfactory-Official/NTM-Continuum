@@ -35,6 +35,7 @@ import dev.golem.core.data.DataOut;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Shared base of the compressor: 1:1 port of the 1.12.2 {@code TileEntityMachineCompressorBase}. Raises
@@ -76,13 +77,9 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
     @Override public String getDefaultName() { return "container.machineCompressor"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCompressorBase te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
 
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos dp : te.getConPos()) {
-                te.trySubscribe(level, dp);
-                te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-            }
-        }
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
         te.setTypeFromFluidId();
         te.setupTanks();
@@ -120,13 +117,12 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
             te.isOn = false;
         }
 
-        for (DirPos dp : te.getConPos()) te.tryProvide(te.tanks[1], level, dp);
-
         te.networkPackNT();
     }
 
+    public abstract PortDef[] getPorts();
 
-    public abstract DirPos[] getConPos();
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     public boolean canProcess() {
         if (this.power <= powerRequirement) return false;

@@ -60,6 +60,8 @@ import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Recipes;
 import dev.golem.core.world.CompatEnchantments;
 import net.minecraft.world.phys.AABB;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Mining Laser (1.12.2 {@code TileEntityMachineMiningLaser}): a ceiling-mounted quarry. While on, it
@@ -112,15 +114,15 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         return "container.miningLaser";
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineMiningLaser te) {
-        // Power from the TOP arm; crude oil out the 4 side arms (the old sendFluid coords are kept,
-        // including the odd y±2 Z-direction pair).
+    protected PortDef[] cachedSidePorts;
+    protected PortDef[] cachedTopPorts;
+    public PortDef[] getSidePorts() { if (cachedSidePorts == null) cachedSidePorts = TilePortShapes.flare(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedSidePorts; }
+    public PortDef[] getTopPorts() { if (cachedTopPorts == null) cachedTopPorts = new PortDef[] { PortDef.make(worldPosition.getX(), worldPosition.getY() + 1, worldPosition.getZ(), Library.POS_Y) }; return cachedTopPorts; }
 
-        te.trySubscribe(level, pos.getX(), pos.getY() + 2, pos.getZ(), ForgeDirection.UP); // 1.7 updateConnections
-        te.tryProvide(te.tank, level, pos.getX() + 2, pos.getY(), pos.getZ(), Library.POS_X);
-        te.tryProvide(te.tank, level, pos.getX() - 2, pos.getY(), pos.getZ(), Library.NEG_X);
-        te.tryProvide(te.tank, level, pos.getX(), pos.getY() + 2, pos.getZ(), Library.POS_Z);
-        te.tryProvide(te.tank, level, pos.getX(), pos.getY() - 2, pos.getZ(), Library.NEG_Z);
+    public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineMiningLaser te) {
+        te.setupPowerPorts(te.getTopPorts());
+        te.setupFluidPorts(te.getSidePorts());
+        te.updatePortPIFIFO();
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
 
@@ -271,7 +273,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                     spawnDrop(result.output.copy());
                     normal = false;
                 }
-
             } else if (hasUpgrade(ModUpgradeItems.upgrade_centrifuge.get())) {
 
                 ItemStack[] result = CentrifugeRecipes.getOutput(stack);
@@ -281,7 +282,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                     }
                     normal = false;
                 }
-
             } else if (hasUpgrade(ModUpgradeItems.upgrade_shredder.get())) {
 
                 ItemStack result = ShredderRecipes.getShredderResult(stack);
@@ -289,7 +289,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                     spawnDrop(result.copy());
                     normal = false;
                 }
-
             } else if (hasUpgrade(ModUpgradeItems.upgrade_smelter.get())) {
 
                 if (level instanceof ServerLevel serverLevel) {
@@ -371,7 +370,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                     item.discard();
                     continue;
                 }
-
             }
 
             ItemStack rest = InventoryUtil.tryAddItemToInventory(inventory, 9, 29, item.getItem().copy());

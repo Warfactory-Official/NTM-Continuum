@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
-import com.hbm.tileentity.network.TileEntityFluidPump;
+import com.hbm.tileentity.network.TileEntityFlowControlPump;
 import com.hbm.packet.ControlEventPayload;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -23,13 +23,13 @@ import net.minecraft.sounds.SoundEvents;
  */
 public final class GUIPump extends CompatScreen {
 
-    private final TileEntityFluidPump pump;
+    private final TileEntityFlowControlPump pump;
     private EditBox throughput;
     private int pressure;
     private int priority;
 
-    public GUIPump(TileEntityFluidPump pump) {
-        super(Component.translatable("block.hbm.fluid_pump"));
+    public GUIPump(TileEntityFlowControlPump pump) {
+        super(Component.translatable("block.hbm.flow_control_pump"));
         this.pump = pump;
         this.pressure = pump.tank[0].getPressure();
         this.priority = pump.priority.ordinal();

@@ -2,7 +2,7 @@ package com.hbm.items.tool;
 
 import com.hbm.blocks.ModEnergyNetContent;
 import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.tileentity.network.TileEntityPipeAnchor;
+import com.hbm.tileentity.network.TileEntityPipelineBase;
 import dev.golem.core.world.CompatSwordItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.ToolTier;
@@ -30,7 +30,7 @@ import java.util.List;
  *
  * <p>Right-click (not sneaking) on a pipe anchor links it: the first click stores the anchor ("Pipe start", the 1.7
  * NBT {@code x/y/z} as the shared start-position component the wiring spool uses), the second connects the two
- * ({@link TileEntityPipeAnchor#canConnect}: same type, not the same anchor, within 10 m, same fluid - a fluid-less
+ * ({@link TileEntityPipelineBase#canConnect}: same network, not the same anchor, within 10 m, same fluid - a fluid-less
  * anchor takes the other's) and clears it. While a start is stored the HUD shows the distance to it
  * ({@code WrenchClientDisplay}, 1.7's client {@code onUpdate}).
  */
@@ -53,15 +53,15 @@ public class ItemWrench extends CompatSwordItem {
         if (core != null) pos = core;
 
         BlockEntity te = level.getBlockEntity(pos);
-        if (!(te instanceof TileEntityPipeAnchor second)) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(te instanceof TileEntityPipelineBase second)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         BlockPos start = ModEnergyNetContent.WIRE_START.get(stack).orElse(null);
         if (start == null) {
             ModEnergyNetContent.WIRE_START.set(stack, pos.immutable());
             if (!level.isClientSide()) player.sendSystemMessage(Component.literal("Pipe start"));
         } else if (!level.isClientSide()) {
-            if (level.getBlockEntity(start) instanceof TileEntityPipeAnchor first) {
-                switch (TileEntityPipeAnchor.canConnect(first, second)) {
+            if (level.getBlockEntity(start) instanceof TileEntityPipelineBase first) {
+                switch (TileEntityPipelineBase.canConnect(first, second)) {
                     case 0 -> {
                         first.addConnection(pos);
                         second.addConnection(start);

@@ -2,9 +2,11 @@ package com.hbm.saveddata.satellites;
 
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.logic.EntityDeathBlast;
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -42,6 +44,16 @@ public class SatelliteDeathRay extends Satellite {
     @Override public String getType() { return "ORBITAL_FUN_PLATFORM_:)"; }
 
     @Override
+    public Component[] getInfo(Level level) {
+        boolean canFire = lastShot + CHARGE_TIME < level.getGameTime();
+        int cooldown = (int) ((lastShot + CHARGE_TIME) - level.getGameTime());
+        return new Component[] {
+                nameOf(EnumSatType.DEATH_RAY),
+                canFire ? Component.translatable("satellite.ready") : Component.translatable("satellite.cooldown", cooldown / 20 + "s")
+        };
+    }
+
+    @Override
     public void onCommandImpl(Level level, String... cmd) {
         if (cmd.length <= 0) return;
 
@@ -64,6 +76,7 @@ public class SatelliteDeathRay extends Satellite {
     public void deathBlast(ServerLevel level, int x, int z) {
         if (lastShot + CHARGE_TIME < level.getGameTime()) {
             lastShot = level.getGameTime();
+            this.markDirty();
 
             int y = Heights.heightValue(level, x, z);
 

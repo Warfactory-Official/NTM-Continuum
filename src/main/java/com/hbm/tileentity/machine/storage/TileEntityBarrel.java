@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine.storage;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
-import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -14,15 +13,14 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
+import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
 import com.hbm.saveddata.TomSaveData;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.machine.MachineFluidContainerIO;
-import com.hbm.uninos.graph.EndpointRegistry;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -46,6 +44,8 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The 1.7 {@code TileEntityBarrel}: a one-block fluid store with the fluid tank's four modes
@@ -53,8 +53,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * rules that eat a barrel filled with the wrong thing ({@link #checkFluidInteraction}). Its item form
  * keeps the tank ({@link #collectCarriedData}), the 1.7 {@code IPersistentNBT}.
  *
- * <p>Networking follows the machine fluid tank: buffer mode holds the barrel's own cell so runs on two
- * sides are one net; the other modes let the ducts find it by probing.
+ * <p>Its six faces are one passthrough port, so ducts on two sides are one net in every mode; the mode only sets
+ * the speeds and buffer mode's LOW priority.
  */
 public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive {
 
@@ -62,7 +62,6 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
     public short mode = 0;
     public static final short MODES = 4;
     public byte lastRedstone = 0;
-    private long[] cells = FluidGraph.NONE;
 
     public TileEntityBarrel(BlockPos pos, BlockState state) {
         super(ModFluidNetBlockEntities.BARREL.get(), pos, state, 6);
@@ -99,7 +98,20 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         return type == tank.getTankType() ? tank.getMaxFill() - tank.getFill() : 0;
     }
 
+    @Override
+    public long getFluidAvailable(FluidType type, int pressure) {
+        if (this.mode == 0 || this.mode == 3) return 0;
+        if (tank.getPressure() != pressure) return 0;
+        return type == tank.getTankType() ? tank.getFill() : 0;
+    }
+
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityBarrel barrel) {
+        barrel.setupFluidPorts(barrel.getPorts());
+        barrel.updatePortFIFO();
+
         byte comp = barrel.getComparatorPower(); // do comparator shenanigans
         if (comp != barrel.lastRedstone) {
             barrel.setChanged();
@@ -110,21 +122,6 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         barrel.updateTypeFromFluidId();
         MachineFluidContainerIO.load(barrel.tank, barrel.inventory, 2, 3);
         MachineFluidContainerIO.unload(barrel.tank, barrel.inventory, 4, 5);
-
-        // In buffer mode, acts like a pipe block, providing fluid to its own node
-        // otherwise, it is a regular providing/receiving machine, blocking further propagation
-        if (level instanceof ServerLevel server) barrel.updateCells(server);
-        if (barrel.mode != 1) {
-            // 1.7: send mode provides at each port, receive mode subscribes there; any other mode leaves the role now
-            FluidType type = barrel.tank.getTankType();
-            for (DirPos dp : barrel.getConPos()) {
-                BlockPos at = dp.getPos();
-                if (barrel.mode == 2) barrel.tryProvide(barrel.tank, level, at, dp.getDir());
-                else barrel.tryUnprovide(type, level, at.getX(), at.getY(), at.getZ());
-                if (barrel.mode == 0) barrel.trySubscribe(type, level, at, dp.getDir());
-                else barrel.tryUnsubscribe(type, level, at.getX(), at.getY(), at.getZ());
-            }
-        }
 
         if (barrel.tank.getFill() > 0) barrel.checkFluidInteraction();
         barrel.networkPackNT(); // 1.7 packed every 50 ticks; unchanged payloads are skipped here
@@ -147,32 +144,6 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
     public void cycleMode() {
         mode = (short) ((mode + 1) % MODES);
         setChanged();
-    }
-
-    public DirPos[] getConPos() {
-        int x = getBlockPos().getX(), y = getBlockPos().getY(), z = getBlockPos().getZ();
-        return new DirPos[]{
-                new DirPos(x + 1, y, z, Library.POS_X),
-                new DirPos(x - 1, y, z, Library.NEG_X),
-                new DirPos(x, y + 1, z, Library.POS_Y),
-                new DirPos(x, y - 1, z, Library.NEG_Y),
-                new DirPos(x, y, z + 1, Library.POS_Z),
-                new DirPos(x, y, z - 1, Library.NEG_Z)
-        };
-    }
-
-    private void updateCells(ServerLevel level) {
-        cells = mode == 1 && tank.getTankType() != Fluids.NONE
-                ? FluidGraph.hold(level, this, tank.getTankType(), getConPos())
-                : FluidGraph.release(level, cells);
-    }
-
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-        if (cells.length > 0 && FluidGraph.dropCells(this, cells) && level instanceof ServerLevel server) {
-            EndpointRegistry.of(server).withdraw(getBlockPos());
-        }
     }
 
     /**
@@ -240,8 +211,21 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
             level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 1.0F);
             return;
         }
-        // 1.7 also had a barrel_corroded branch here (leaks, random collapse); that barrel never gets a
-        // tile in 1.7 (createNewTileEntity returns null for it), so the branch is dead and is not ported.
+        if (b == ModFluidNetBlocks.barrel_corroded.get()) {
+            if (level.getRandom().nextInt(3) == 0) {
+                tank.setFill(tank.getFill() - 1);
+                FluidTrait.onRelease(level, pos, type, FluidReleaseType.SPILL, 1);
+            }
+            if (level.getRandom().nextInt(3 * 60 * 20) == 0) level.destroyBlock(pos, false);
+        }
+        if (b == ModFluidNetBlocks.barrel_steel.get() && isHighlyCorrosive(type)) {
+            int fill = tank.getFill();
+            level.setBlock(pos, ModFluidNetBlocks.barrel_corroded.get().defaultBlockState(), 3);
+            if (level.getBlockEntity(pos) instanceof TileEntityBarrel barrel) {
+                barrel.tank.setTankType(type);
+                barrel.tank.setFill(fill);
+            }
+        }
         // For when Tom's firestorm hits a barrel full of water
         if (type == Fluids.WATER && level instanceof ServerLevel server) {
             TomSaveData tom = TomSaveData.getExisting(server);
@@ -251,14 +235,29 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         }
     }
 
+    private static boolean isHighlyCorrosive(FluidType type) {
+        FT_Corrosive corrosive = type.getTrait(FT_Corrosive.class);
+        return corrosive != null && corrosive.isHighlyCorrosive();
+    }
+
     @Override
     public boolean canConnect(FluidType fluid, ForgeDirection dir) {
         return fluid == tank.getTankType();
     }
 
-    @Override public FluidTankNTM[] getSendingTanks() { return (mode == 1 || mode == 2) ? new FluidTankNTM[]{tank} : new FluidTankNTM[0]; }
-    @Override public FluidTankNTM[] getReceivingTanks() { return (mode == 0 || mode == 1) ? new FluidTankNTM[]{tank} : new FluidTankNTM[0]; }
+    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tank}; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
+
+    @Override
+    public long getProviderSpeed(FluidType type, int pressure) {
+        return (mode == 1 || mode == 2) ? 1_000_000_000 : 0;
+    }
+
+    @Override
+    public long getReceiverSpeed(FluidType type, int pressure) {
+        return (mode == 0 || mode == 1) ? 1_000_000_000 : 0;
+    }
 
     @Override
     public ConnectionPriority getFluidPriority() {

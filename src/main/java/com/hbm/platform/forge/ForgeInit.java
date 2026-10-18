@@ -67,7 +67,7 @@ public final class ForgeInit {
         com.hbm.gametest.Fix1AGameTests.init();
         com.hbm.gametest.IdsGameTests.init();
         com.hbm.gametest.ForeignFluidGameTests.init();
-        com.hbm.gametest.PortClaimGameTests.init();
+        com.hbm.gametest.TilePortGameTests.init();
         com.hbm.gametest.Fix4GameTests.init();
         com.hbm.gametest.Fix5GameTests.init();
         com.hbm.gametest.Fix1BGameTests.init();
@@ -176,7 +176,7 @@ public final class ForgeInit {
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.ForeignFluidGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
-                com.hbm.gametest.PortClaimGameTests.TESTS));
+                com.hbm.gametest.TilePortGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Fix4GameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
@@ -314,7 +314,6 @@ public final class ForgeInit {
         // Forge 1.20.1 has no furnace-fuel data map: the burn times answer FurnaceFuelBurnTimeEvent (lazily
         // resolved, so registering before the registries flush is fine).
         dev.golem.core.registry.Fuels.register(com.hbm.items.ModFuelItems.BURN_TIMES);
-
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ForgeClientInit.init(modBus);

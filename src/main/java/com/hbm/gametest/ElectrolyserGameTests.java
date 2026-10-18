@@ -304,18 +304,13 @@ public final class ElectrolyserGameTests {
                                     TileEntityMachineElectrolyser electrolyser, BlockPos core,
                                     ForgeDirection facing) {
         ForgeDirection rot = facing.getRotation(ForgeDirection.UP);
-        assertPort(helper, block, electrolyser, core.offset(-facing.offsetX * 6, 0, -facing.offsetZ * 6),
-                facing.getOpposite(), 0);
-        assertPort(helper, block, electrolyser, core.offset(-facing.offsetX * 6 + rot.offsetX, 0,
-                -facing.offsetZ * 6 + rot.offsetZ), facing.getOpposite(), 1);
-        assertPort(helper, block, electrolyser, core.offset(-facing.offsetX * 6 - rot.offsetX, 0,
-                -facing.offsetZ * 6 - rot.offsetZ), facing.getOpposite(), 2);
-        assertPort(helper, block, electrolyser, core.offset(facing.offsetX * 6, 0, facing.offsetZ * 6),
-                facing, 3);
-        assertPort(helper, block, electrolyser, core.offset(facing.offsetX * 6 + rot.offsetX, 0,
-                facing.offsetZ * 6 + rot.offsetZ), facing, 4);
-        assertPort(helper, block, electrolyser, core.offset(facing.offsetX * 6 - rot.offsetX, 0,
-                facing.offsetZ * 6 - rot.offsetZ), facing, 5);
+        // 1.7: three ports on each end, in the order -rot, centre, +rot; the ten side ports come between them
+        for (int k = -1; k <= 1; k++) {
+            assertPort(helper, block, electrolyser, core.offset(-facing.offsetX * 6 + rot.offsetX * k, 0,
+                    -facing.offsetZ * 6 + rot.offsetZ * k), facing.getOpposite(), 1 + k);
+            assertPort(helper, block, electrolyser, core.offset(facing.offsetX * 6 + rot.offsetX * k, 0,
+                    facing.offsetZ * 6 + rot.offsetZ * k), facing, 14 + k);
+        }
     }
 
     private static void assertPort(GameTestHelper helper, MachineElectrolyser block,

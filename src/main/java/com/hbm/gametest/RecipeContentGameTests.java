@@ -72,6 +72,7 @@ public final class RecipeContentGameTests {
     static final String[][] NAMED = {
             {"ass.analogAlt", "Simple Analog Circuit"}, {"ass.factorioChip", "Minimalist Circuits"},
             {"ass.atomicClockAlt", "Caesium Atomic Clock"}, {"ass.nitra", "Nitra to Ammunition"},
+            {"ass.alclad", "Aviation Grade Alclad"}, {"ass.titaniumconstruction", "Aviation Grade Titanium Construction"},
             {"chem.hydrogen", "Hydrogen"}, {"chem.hydrogencoke", "Hydrogen from Coke"}, {"chem.oxygen", "Oxygen"},
             {"chem.xenon", "Xenon Gas"}, {"chem.xenonoxy", "Xenon Gas (Cooled)"}, {"chem.helium3", "Helium-3"},
             {"chem.ethanol", "Ethanol"}, {"chem.biogas", "Biogas"}, {"chem.biofuel", "Biofuel Transesterification"},
@@ -82,13 +83,14 @@ public final class RecipeContentGameTests {
             {"chem.biosolidfuel", "Solid Fuel from Biomass"}, {"chem.biooilsolidfuel", "Solid Fuel from Oil and Biomass"},
             {"chem.oilelectrodes", "Instant Electrodes (Heating Oil)"},
             {"chem.lubeelectrodes", "Instant Electrodes (Lubricant)"}, {"chem.birkeland", "Nitric Acid from Air"},
+            {"chem.lightconstruction", "Aviation Grade Light Construction"}, {"chem.carboncarbon", "Aviation Grade Carbon-Carbon Sheets"},
             {"fus.dd", "Deuterium Plasma"}, {"fus.do", "Deuterium-Oxygen Plasma"}, {"fus.dt", "Deuterium-Tritium Plasma"},
             {"fus.tcl", "Tritium-Chlorine Plasma"}, {"fus.h3", "Helium-3 Plasma"}, {"fus.th4", "Tritium-Helium-4 Plasma"},
             {"fus.cl", "Chlorine Plasma"}, {"fus.dhc", "DHC Plasma"}, {"fus.bf", "Balefire Plasma"},
             {"fus.stellar", "Stellar Plasma"}};
 
     /**
-     * Exactly 1.7's 36 named recipes are named, each shows the translation of its id (not its icon's name), the
+     * Exactly 1.7's 40 named recipes are named, each shows the translation of its id (not its icon's name), the
      * English file carries 1.7's strings, and the restored alt-pool circuits and the cyclotron group are 1.7's.
      */
     private static void namedRecipes(GameTestHelper helper) {

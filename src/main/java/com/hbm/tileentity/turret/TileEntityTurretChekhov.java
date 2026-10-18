@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory50;
 import com.hbm.sound.ModSounds;
@@ -87,7 +88,7 @@ public class TileEntityTurretChekhov extends TileEntityTurretBaseNT {
             BulletConfig conf = getFirstConfigLoaded();
 
             if (conf != null) {
-                spawnBullet(conf, 10F);
+                spawnBullet(conf);
                 consumeAmmo(conf);
                 level.playSound(null, worldPosition, ModSounds.TURRET_CHEKHOV_FIRE.get(), SoundSource.BLOCKS,
                         2.0F, 1.0F);
@@ -130,4 +131,7 @@ public class TileEntityTurretChekhov extends TileEntityTurretBaseNT {
     public void manualSetup() {
         manual = true;
     }
+
+    @Override
+    public float getBaseDamage() { return XFactoryTurret.TURRET_CHEKHOV_DAMAGE.get(); }
 }

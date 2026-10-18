@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Focused contracts for the RTGs, radiation sensor, and supported RadGen fuels. */
 public final class RadiationMachineGameTests {
@@ -67,7 +68,7 @@ public final class RadiationMachineGameTests {
         FoldedTestSupport.assertPort(helper, core, core.offset(0, 0, 3));
         FoldedTestSupport.assertCell(helper, core, core.offset(1, 0, 0));
         FoldedTestSupport.assertCell(helper, core, core.offset(-1, 0, 0));
-        DirPos port = generator.getConPos()[0];
+        DirPos port = PortDef.connections(generator.getPorts())[0];
         helper.assertTrue(port.getPos().equals(absoluteCore.offset(0, 0, 4))
                         && port.getDir() == ForgeDirection.SOUTH,
                 "RadGen rear port must be four blocks behind the core and face outward");
@@ -105,5 +106,4 @@ public final class RadiationMachineGameTests {
         TileEntityMachineMiniRTG.serverTick(helper.getLevel(), helper.absolutePos(pos),
                 generator.getBlockState(), generator);
     }
-
 }

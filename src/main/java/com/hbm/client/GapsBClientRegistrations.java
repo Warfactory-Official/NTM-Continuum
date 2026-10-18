@@ -40,7 +40,8 @@ public final class GapsBClientRegistrations {
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {
-        HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.ANCHOR.get(), RenderPipeAnchor::new);
+        HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.ANCHOR.get(), () -> new RenderPipeAnchor<>("pipe_anchor"));
+        HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.ANCHOR_EXHAUST.get(), () -> new RenderPipeAnchor<>("pipe_anchor_exhaust"));
     }
 
     /** 1.7 {@code ItemWrench.onUpdate} (client): every wrench with a stored start shows "name: Nm". */

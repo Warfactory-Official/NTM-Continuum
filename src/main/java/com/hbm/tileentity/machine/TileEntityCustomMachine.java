@@ -25,6 +25,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.module.ModulePatternMatcher;
+import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
 import com.hbm.tileentity.ModCustomMachineBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -51,16 +52,14 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * 1.7 {@code TileEntityCustomMachine}: the controller of a player-configured machine. Everything it does comes
  * from its {@link MachineConfiguration}: tank counts and sizes, item slot counts, generator or consumer mode, the
  * recipe set, and the component blocks that have to stand around it, checked every 300 ticks.
  *
- * <p>The {@code TileEntityMachinePolluting} base is inlined as the three smoke tanks. The port's energy and fluid
- * graphs find the controller at the {@code cm_port} proxies ({@link TileEntityCMPort}); its 1.7 {@code trySubscribe}
- * and {@code tryProvide} calls at the connection positions say which role each port carries
- * ({@link com.hbm.uninos.graph.PortClaims}).
+ * <p>The {@code TileEntityMachinePolluting} base is inlined as the three smoke tanks and their ports.
  */
 public class TileEntityCustomMachine extends TileEntityMachineBase
         implements IFluidStandardTransceiverMK2, IEnergyProviderMK2, IEnergyReceiverMK2, MenuProvider, WorldlyContainer {
@@ -88,7 +87,8 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
     public final FluidTankNTM smoke_leaded = new FluidTankNTM(Fluids.SMOKE_LEADED, 100);
     public final FluidTankNTM smoke_poison = new FluidTankNTM(Fluids.SMOKE_POISON, 100);
 
-    public List<DirPos> connectionPos = new ArrayList<>();
+    public PortDef[] ports = new PortDef[0];
+    protected final ModulePortManFluidAdaptive moduleSmokePorts = new ModulePortManFluidAdaptive(this).setOutputTanks(smoke, smoke_leaded, smoke_poison);
     public List<DirPos> fluxPos = new ArrayList<>();
     public List<DirPos> heatPos = new ArrayList<>();
 
@@ -118,7 +118,6 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
             smoke.changeTankSize(config.maxPollutionCap);
             smoke_leaded.changeTankSize(config.maxPollutionCap);
             smoke_poison.changeTankSize(config.maxPollutionCap);
-
         } else if (level != null && !level.isClientSide()) {
             // 1.7 func_147480_a(x, y, z, false): a controller naming no configured machine removes itself
             level.destroyBlock(worldPosition, false);
@@ -146,6 +145,17 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
             return;
         }
 
+        if (this.structureOK) {
+            this.setupAllPorts(ports);
+            this.moduleSmokePorts.update(ports);
+            // port: 1.7 swaps PIFIFO and POFIFO here, so its custom machines move no power
+            if (config.generatorMode) {
+                this.updatePortPOFIFO();
+            } else {
+                this.updatePortPIFIFO();
+            }
+        }
+
         this.power = Library.chargeTEFromItems(inventory, 0, power, this.config.maxPower);
 
         if (this.inputTanks.length > 0) setType(this.inputTanks[0], 1);
@@ -156,10 +166,6 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
         if (this.structureCheckDelay <= 0) this.checkStructure();
 
         if (level.getGameTime() % 20 == 0) {
-            for (DirPos pos : this.connectionPos) {
-                for (FluidTankNTM tank : this.inputTanks) this.trySubscribe(tank.getTankType(), level, pos);
-                if (!config.generatorMode) this.trySubscribe(level, pos);
-            }
             for (byte d = 2; d < 6; d++) {
                 ForgeDirection dir = ForgeDirection.getOrientation(d);
                 for (DirPos pos : this.fluxPos) {
@@ -183,14 +189,6 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
                     }
                 }
             }
-        }
-
-        for (DirPos pos : this.connectionPos) {
-            if (config.generatorMode && power > 0)
-                this.tryProvide(level, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir());
-            for (FluidTankNTM tank : this.outputTanks)
-                if (tank.getFill() > 0) this.tryProvide(tank, level, pos.getPos(), pos.getDir());
-            this.sendSmoke(level, pos);
         }
 
         if (this.structureOK) {
@@ -222,7 +220,6 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
                         this.cachedRecipe = null;
                     }
                 }
-
             } else {
                 CustomMachineRecipe recipe = this.getMatchingRecipe();
 
@@ -356,11 +353,10 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
         }
     }
 
-    /** 1.7 {@code TileEntityMachinePolluting.sendSmoke}. */
-    public void sendSmoke(Level level, DirPos pos) {
-        if (this.smoke.getFill() > 0) this.tryProvide(smoke, level, pos.getPos(), pos.getDir());
-        if (this.smoke_leaded.getFill() > 0) this.tryProvide(smoke_leaded, level, pos.getPos(), pos.getDir());
-        if (this.smoke_poison.getFill() > 0) this.tryProvide(smoke_poison, level, pos.getPos(), pos.getDir());
+    @Override
+    public void setRemoved() {
+        if (level != null) moduleSmokePorts.destroy();
+        super.setRemoved();
     }
 
     public FluidTankNTM[] getSmokeTanks() {
@@ -479,7 +475,6 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
 
     public boolean checkStructure() {
 
-        this.connectionPos.clear();
         // 1.7 never cleared these two, so they grew by six entries per receiver on every check; the
         // duplicates changed nothing (a repeated heat pull finds no difference left), so they are reset here.
         this.fluxPos.clear();
@@ -487,6 +482,8 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
         this.structureCheckDelay = 300;
         this.structureOK = false;
         if (this.config == null || level == null) return false;
+
+        List<PortDef> portList = new ArrayList<>();
 
         ForgeDirection dir = facing();
         for (ComponentDefinition comp : config.components) {
@@ -499,9 +496,7 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
             if (tile instanceof TileEntityCMPort proxy) {
                 proxy.setCore(worldPosition);
 
-                for (ForgeDirection facing : ForgeDirection.VALID_DIRECTIONS) {
-                    this.connectionPos.add(new DirPos(pos.getX() + facing.offsetX, pos.getY() + facing.offsetY, pos.getZ() + facing.offsetZ, facing));
-                }
+                portList.add(PortDef.make(pos, ForgeDirection.VALID_DIRECTIONS));
             }
             if (b == ModCustomMachineBlocks.cm_flux.get()) {
                 for (ForgeDirection facing : ForgeDirection.VALID_DIRECTIONS) {
@@ -512,11 +507,9 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
                     this.heatPos.add(new DirPos(pos.getX() + facing.offsetX, pos.getY() + facing.offsetY, pos.getZ() + facing.offsetZ, facing));
                 }
             }
-
         }
-        for (ForgeDirection facing : ForgeDirection.VALID_DIRECTIONS) {
-            this.connectionPos.add(new DirPos(worldPosition.getX() + facing.offsetX, worldPosition.getY() + facing.offsetY, worldPosition.getZ() + facing.offsetZ, facing));
-        }
+        portList.add(PortDef.make(worldPosition, ForgeDirection.VALID_DIRECTIONS));
+        this.ports = portList.toArray(new PortDef[0]);
 
         this.structureOK = true;
         return true;

@@ -51,7 +51,7 @@ public class DieselGenRenderer extends GemBER<TileEntityMachineDiesel, DieselGen
             case WEST -> 270F;
             default -> 0F;
         };
-        state.running = be.wasOn;
+        state.running = be.showsRunning();
         state.swingFront = state.running ? (float) (Math.sin(GameTime.now() / 25D) * 0.005D) : 0F;
         state.swingSide = state.running ? (float) (Math.sin(GameTime.now() / 50D) * 0.005D) : 0F;
     }

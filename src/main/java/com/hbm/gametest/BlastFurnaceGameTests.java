@@ -62,7 +62,8 @@ public final class BlastFurnaceGameTests {
         helper.assertBlockProperty(core, BlockMultiblockCore.FACING, Direction.NORTH);
         FoldedTestSupport.assertPort(helper, core, core.above(6));
         FoldedTestSupport.assertPort(helper, core, core.offset(1, 0, 0));
-        helper.assertTrue(furnace.getConPos().length == 6, "Blast furnace must expose six fluid/power ports");
+        helper.assertTrue(furnace.getConPos().length == 7, "Blast furnace must expose seven fluid/power ports");
+        FoldedTestSupport.assertPort(helper, core, core.offset(0, 0, -1));
         var eastCell = helper.absolutePos(core.offset(1, 0, 0));
         helper.assertTrue(block.canConnect(Fluids.AIRBLAST, helper.getLevel(), eastCell.getX(), eastCell.getY(), eastCell.getZ(), ForgeDirection.EAST),
                 "The east airblast port must connect");
@@ -127,8 +128,9 @@ public final class BlastFurnaceGameTests {
                 "Blast furnace did not produce its slag ingot byproduct");
         helper.assertTrue(furnace.fuel == TileEntityMachineBlastFurnace.FUEL_RATE,
                 "One coal must leave exactly half a coal's fuel after one operation");
-        helper.assertTrue(furnace.tanks[1].getFill() == TileEntityMachineBlastFurnace.FLUE_GAS,
-                "Blast furnace must emit 100 mB flue gas per completed operation");
+        // a full air blast runs at speed 5: 800 / 5 = 160 ticks at 8 mB, 1,280 mB into the 1,000 mB tank
+        helper.assertTrue(furnace.tanks[1].getFill() == 1_000,
+                "Blast furnace must fill its flue tank to 1,000 mB, spilling the other 280");
         helper.succeed();
     }
 

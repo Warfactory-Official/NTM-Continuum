@@ -718,7 +718,7 @@ public final class ModItems {
     public static final RegistryObject<ItemCustomLore> upgrade_template = lore("upgrade_template", HbmTab.MATERIALS, p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> circuit_star = lore("circuit_star", HbmTab.CONTROL, p -> p.rarity(Rarity.UNCOMMON)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> coil_magnetized_tungsten = lore("coil_magnetized_tungsten", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<ItemCustomLore> ammo_dgk = lore("ammo_dgk", HbmTab.WEAPONS).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> ammo_dgk = lore("ammo_dgk", HbmTab.WEAPONS, p -> p.stacksTo(4)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> charge_railgun = lore("charge_railgun", HbmTab.WEAPONS, p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> rune_blank = lore("rune_blank", HbmTab.MATERIALS, p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> rune_isa = lore("rune_isa", HbmTab.MATERIALS, p -> p.stacksTo(1)).transform(Presets.sprite());

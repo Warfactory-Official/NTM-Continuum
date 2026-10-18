@@ -79,19 +79,19 @@ public class TileEntityBlastDoor extends TileEntityLockableBase {
                 }
             } else {
                 if (timer >= 20) {
-                    placeDummy(p.above(5));
+                    placeDummy(p.above(5), true);
                 }
                 if (timer >= 40) {
-                    placeDummy(p.above(4));
+                    placeDummy(p.above(4), true);
                 }
                 if (timer >= 60) {
-                    placeDummy(p.above(3));
+                    placeDummy(p.above(3), true);
                 }
                 if (timer >= 80) {
-                    placeDummy(p.above(2));
+                    placeDummy(p.above(2), true);
                 }
                 if (timer >= 100) {
-                    placeDummy(p.above(1));
+                    placeDummy(p.above(1), true);
                 }
             }
 
@@ -225,10 +225,14 @@ public class TileEntityBlastDoor extends TileEntityLockableBase {
         }
     }
 
-    public boolean placeDummy(BlockPos pos) {
+    /** Without {@code force} an occupied cell refuses the leaf instead of being broken (placement). */
+    public boolean placeDummy(BlockPos pos, boolean force) {
         if (level == null) return false;
         BlockState present = level.getBlockState(pos);
-        if (!present.canBeReplaced() && present.getBlock() != ModDoorBlocks.DUMMY_BLOCK_BLAST.get()) level.destroyBlock(pos, false);
+        if (!present.canBeReplaced()) {
+            if (!force) return false;
+            if (present.getBlock() != ModDoorBlocks.DUMMY_BLOCK_BLAST.get()) level.destroyBlock(pos, false);
+        }
 
         level.setBlock(pos, ModDoorBlocks.DUMMY_BLOCK_BLAST.get().defaultBlockState(), 3);
 

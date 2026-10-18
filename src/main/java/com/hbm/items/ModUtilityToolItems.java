@@ -23,6 +23,7 @@ import com.hbm.items.tool.ItemOreDensityScanner;
 import com.hbm.items.tool.ItemPipette;
 import com.hbm.items.tool.ItemPollutionDetector;
 import com.hbm.items.tool.ItemPowerNetTool;
+import com.hbm.items.tool.ItemRTTYDesignator;
 import com.hbm.items.tool.ItemRTTYPager;
 import com.hbm.items.tool.ItemSettingsTool;
 import com.hbm.items.tool.ItemSurveyScanner;
@@ -152,6 +153,9 @@ public final class ModUtilityToolItems {
             ItemSettingsTool::new, single(), Presets.sprite());
     public static final RegistryObject<ItemRTTYPager> rtty_pager = reg("rtty_pager", HbmTab.CONSUMABLES,
             ItemRTTYPager::new, single(), Presets.sprite());
+    /** Shares the pager's channel component; 1.7 used the same {@code chan} tag. */
+    public static final RegistryObject<ItemRTTYDesignator> rtty_designator = reg("rtty_designator", HbmTab.CONSUMABLES,
+            ItemRTTYDesignator::new, single(), Presets.sprite());
     /** 1.7 templateTab, one identifier per fluid ({@link ItemFluidIDMulti#creativeStacks}); pass 1 tinted with the primary fluid. */
     public static final RegistryObject<ItemFluidIDMulti> fluid_identifier_multi = reg("fluid_identifier_multi", null,
             ItemFluidIDMulti::new, single(),

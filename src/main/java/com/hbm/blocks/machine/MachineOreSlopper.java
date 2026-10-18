@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockMaskTable;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -59,10 +61,30 @@ public final class MachineOreSlopper extends BlockMultiblockMachine
 
         visitor.cell(core.relative(facing, 3), MASK_SOUTH);
         visitor.cell(core.relative(facing, -3), MASK_NORTH);
-        for (int along = -2; along <= 2; along += 2) {
-            visitor.cell(core.relative(facing, along).relative(rot), MASK_WEST);
-            visitor.cell(core.relative(facing, along).relative(rot, -1), MASK_EAST);
+        visitor.cell(core.relative(rot), MASK_WEST);
+        visitor.cell(core.relative(rot, -1), MASK_EAST);
+        visitor.cell(core.relative(facing, -2).relative(rot), MASK_WEST);
+        visitor.cell(core.relative(facing, -2).relative(rot, -1), MASK_EAST);
+    }
+
+    /**
+     * 1.7 writes the front pair as {@code 2 * dir + rot} in x but {@code dir + 2 * rot} in z. Facing north or south
+     * that lands one step in on the machine; facing east or west it lands outside and connects nothing.
+     */
+    @Override
+    public int maskAt(int lx, int ly, int lz, Direction facing) {
+        int baked = maskAt(lx, ly, lz);
+        if (baked == MultiblockMaskTable.NOT_A_CELL || ly != 0) return baked;
+        int x = MultiblockMaskTable.worldX(lx, ly, lz, facing);
+        int z = MultiblockMaskTable.worldZ(lx, ly, lz, facing);
+        Direction rot = facing.getClockWise();
+        for (int side = -1; side <= 1; side += 2) {
+            if (x == 2 * facing.getStepX() + side * rot.getStepX() && z == facing.getStepZ() + side * 2 * rot.getStepZ()) {
+                Direction out = side > 0 ? rot : rot.getOpposite();
+                return baked | 1 << MultiblockMaskTable.toLocal(out, facing).ordinal();
+            }
         }
+        return baked;
     }
 
     /** 1.7 stamps {@code inventory().power().fluid()} on the eight. */
@@ -76,5 +98,19 @@ public final class MachineOreSlopper extends BlockMultiblockMachine
             visitor.passiveCell(core.relative(facing, along).relative(rot), MASK_ALL, domains);
             visitor.passiveCell(core.relative(facing, along).relative(rot, -1), MASK_ALL, domains);
         }
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, 3, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -3, ForgeDirection.NORTH.ordinal()},
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+                {1, 0, 2, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 2, ForgeDirection.WEST.ordinal()},
+                {1, 0, -2, ForgeDirection.EAST.ordinal()},
+                {-1, 0, -2, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

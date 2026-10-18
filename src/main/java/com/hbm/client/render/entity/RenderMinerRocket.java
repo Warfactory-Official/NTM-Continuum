@@ -13,10 +13,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.Entity;
 
-/**
- * 1.7 RenderMinerRocket, shared by the miner lander and the Bobmazon delivery pod - same mesh, different skin, and
- * the pod hangs nose-down.
- */
+/** 1.7 RenderMinerRocket: the Bobmazon delivery pod, hanging nose-down. */
 public class RenderMinerRocket<T extends Entity> extends CompatEntityRenderer<T, CompatEntityRenderState> {
 
     private final RenderType type;
@@ -33,10 +30,6 @@ public class RenderMinerRocket<T extends Entity> extends CompatEntityRenderer<T,
     @Override
     public boolean culled(T entity) {
         return false;
-    }
-
-    public static <T extends Entity> RenderMinerRocket<T> lander(EntityRendererProvider.Context context) {
-        return new RenderMinerRocket<>(context, CompatRenderTypes.entityCutoutNoCull(ResourceManager.miner_rocket_tex), false);
     }
 
     public static <T extends Entity> RenderMinerRocket<T> bobmazon(EntityRendererProvider.Context context) {

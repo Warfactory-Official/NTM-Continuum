@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public final class UtilityToolScreens {
 
-    public enum Kind { PAGER, FLUID_MULTI, GUIDE, BOOK_LORE, HOLOTAPE, CLAY_TABLET }
+    public enum Kind { PAGER, RTTY_DESIGNATOR, FLUID_MULTI, GUIDE, BOOK_LORE, HOLOTAPE, CLAY_TABLET }
 
     private static BiConsumer<Kind, ItemStack> opener = (kind, stack) -> { };
 

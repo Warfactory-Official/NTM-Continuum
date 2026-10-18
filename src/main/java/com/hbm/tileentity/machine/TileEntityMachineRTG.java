@@ -7,7 +7,6 @@ import com.hbm.api.energymk2.IEnergyConnectorMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.inventory.container.ContainerMachineRTG;
 import com.hbm.items.machine.ItemRTGPellet;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModRtgBlockEntities;
 import com.hbm.tileentity.TileEntityInventoryBase;
 import com.hbm.util.RTGUtil;
@@ -23,6 +22,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The legacy grey RTG's 15 fuel cells. 1.7.10 spec (1.7 TileEntityMachineRTG): heatMax is
@@ -49,10 +50,13 @@ public class TileEntityMachineRTG extends TileEntityInventoryBase
         super(ModRtgBlockEntities.MACHINE_RTG.get(), pos, state, SLOT_COUNT);
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineRTG rtg) {
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            rtg.tryProvide(level, pos.offset(direction.offsetX, direction.offsetY, direction.offsetZ), direction);
-        }
+        rtg.setupPowerPorts(rtg.getPorts());
+        rtg.updateAllPorts();
+        rtg.providePower();
         rtg.heat = Math.min(RTGUtil.updateRTGs(rtg.inventory, FUEL_SLOTS), heatMax());
         rtg.power = Math.min(rtg.power + rtg.heat * 5L, MAX_POWER);
         rtg.setChanged();

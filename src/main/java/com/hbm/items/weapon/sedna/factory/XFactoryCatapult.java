@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.explosion.vanillant.ExplosionVNT;
@@ -38,6 +40,13 @@ import net.minecraft.world.phys.Vec3;
 
 /** Nuclear and cluster warheads from the original catapult factory. */
 public final class XFactoryCatapult {
+
+    public static final ConfigWrapper<Float> GUN_FATMAN_DAMAGE = new ConfigWrapper<>(100F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_FATMAN_DAMAGE", GUN_FATMAN_DAMAGE);
+    }
+
     public static BulletConfig nuke_standard;
     public static BulletConfig nuke_demo;
     public static BulletConfig nuke_high;
@@ -177,7 +186,7 @@ public final class XFactoryCatapult {
     public static GunConfig gunConfig() {
         return new GunConfig().dura(300).draw(20).inspect(30).reloadChangeType(true).crosshair(Crosshair.L_CIRCUMFLEX)
                 .hideCrosshair(false)
-                .rec(new Receiver(0).dmg(100F).spreadHipfire(0F).delay(10).reload(57).jam(40)
+                .rec(new Receiver(0).dmg(GUN_FATMAN_DAMAGE).spreadHipfire(0F).delay(10).reload(57).jam(40)
                         .sound(ModGunSounds.FIRE_FATMAN::get, 1F, 1F)
                         .mag(new MagazineSingleReload(0, 1).addConfigs(nuke_standard, nuke_demo, nuke_high,
                                 nuke_tots, nuke_hive, nuke_balefire))

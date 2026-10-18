@@ -10,7 +10,6 @@ import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HeatRecipes;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.MachineCore;
@@ -27,6 +26,7 @@ import net.minecraft.sounds.SoundSource;
 import com.hbm.sound.ModSounds;
 import com.hbm.sound.MachineAudio;
 import com.hbm.sound.AudioWrapper;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Heat Boiler: 1:1 port of the 1.12.2 {@code TileEntityHeatBoiler} ({@code heat_boiler}): the
@@ -64,19 +64,15 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeatBoiler te) {
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
+
         if (!te.hasExploded) {
             te.setupTanks();
-            for (DirPos dp : te.getConPos()) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
             te.tryPullHeat();
 
             te.isOn = false;
             te.tryConvert();
-
-            if (te.tanks[1].getFill() > 0) {
-                for (DirPos dp : te.getConPos()) {
-                    te.tryProvide(te.tanks[1], level, dp);
-                }
-            }
         }
         te.networkPackNT();
     }
@@ -88,15 +84,20 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
                 SoundSource.BLOCKS, pos, te.getVolume(0.125F), 10F, 1.0F, 20);
     }
 
-    public DirPos[] getConPos() {
-        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
-        ForgeDirection dir = ForgeDirection.getOrientation(meta).getRotation(ForgeDirection.UP);
-        BlockPos pos = worldPosition;
-        return new DirPos[]{
-                new DirPos(pos.getX() + dir.offsetX * 2, pos.getY(), pos.getZ() + dir.offsetZ * 2, dir),
-                new DirPos(pos.getX() - dir.offsetX * 2, pos.getY(), pos.getZ() - dir.offsetZ * 2, dir.getOpposite()),
-                new DirPos(pos.getX(), pos.getY() + 4, pos.getZ(), Library.POS_Y)
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+            ForgeDirection dir = ForgeDirection.getOrientation(meta).getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX, y, z + dir.offsetZ, dir),
+                    PortDef.make(x - dir.offsetX, y, z - dir.offsetZ, dir.getOpposite()),
+                    PortDef.make(x, y + 3, z, Library.POS_Y),
+            };
+        }
+        return cachedPorts;
     }
 
     protected void setupTanks() {

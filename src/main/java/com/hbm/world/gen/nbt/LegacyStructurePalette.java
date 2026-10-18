@@ -1,6 +1,7 @@
 package com.hbm.world.gen.nbt;
 
 import com.hbm.Constants;
+import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
@@ -274,6 +275,11 @@ public final class LegacyStructurePalette {
         rule("fluid_duct_neo", Rot.NONE, variants("fluid_duct_neo", "", "_silver", "_colored"), (base, meta) -> base);
         rule("plant_dead", Rot.NONE, variants("plant_dead_", "generic", "grass", "flower", "bigflower", "fern"), (base, meta) -> base);
         rule("wood_structure", Rot.NONE, variants("wood_structure_", "roof", "scaffold", "ceiling"), (base, meta) -> base);
+        rule("platemetal", Rot.NONE, variants("platemetal_", ModDecoContent.PLATEMETAL_COLORS), (base, meta) -> base);
+        for (String spike : new String[]{"stalagmite", "stalactite"}) {
+            rule(spike, Rot.NONE, variants(spike + "_", "sulfur", "asbestos", "ice", "snow", "glyphid1", "glyphid2", "glyphid3"), (base, meta) -> base);
+        }
+        rule("crashed_bomb", Rot.NONE, variants("crashed_bomb_", "balefire", "conventional", "nuke", "salted"), (base, meta) -> base);
         // BlockMultiSlab: variant in bits 0..2, top half in bit 3; the doubles use the same variants
         String[] concrete = {"concrete_smooth", "concrete", "concrete_asbestos", "ducrete_smooth", "ducrete", "asphalt"};
         String[] concreteBrick = {"brick_concrete", "brick_concrete_mossy", "brick_concrete_cracked", "brick_concrete_broken", "brick_ducrete"};

@@ -253,15 +253,6 @@ public class HbmLivingProps {
         // TODO(hud): the old red "info.coaldust" inform toast
     }
 
-    /// TIME BOMB ///
-    public static int getTimer(LivingEntity entity) {
-        return getData(entity).getBombTimer();
-    }
-
-    public static void setTimer(LivingEntity entity, int bombTimer) {
-        getData(entity).setBombTimer(bombTimer);
-    }
-
     /// CONTAGION ///
     public static int getContagion(LivingEntity entity) {
         if (!ServerConfig.ENABLE_MKU.get()) return 0; // 1.7: no MKU, no infection

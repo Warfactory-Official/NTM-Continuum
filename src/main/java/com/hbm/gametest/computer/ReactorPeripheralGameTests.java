@@ -16,13 +16,24 @@ import com.hbm.compat.computercraft.machine.GeigerPeripheral;
 import com.hbm.compat.computercraft.machine.ICFPeripheral;
 import com.hbm.compat.computercraft.machine.MicrowavePeripheral;
 import com.hbm.compat.computercraft.machine.PWRControllerPeripheral;
+import com.hbm.compat.computercraft.machine.PileControlPeripheral;
+import com.hbm.compat.computercraft.machine.PileLoaderPeripheral;
 import com.hbm.compat.computercraft.machine.RadarPeripheral;
 import com.hbm.compat.computercraft.machine.ReactorControlPeripheral;
 import com.hbm.compat.computercraft.machine.ResearchReactorPeripheral;
+import com.hbm.compat.computercraft.machine.SatLinkPeripheral;
 import com.hbm.compat.computercraft.machine.WatzPeripheral;
 import com.hbm.compat.computercraft.machine.ZirnoxPeripheral;
 import com.hbm.items.machine.ItemICFPellet;
 import com.hbm.items.machine.ItemICFPellet.EnumICFFuel;
+import com.hbm.items.machine.ItemPileRodMK2.EnumPileRod;
+import com.hbm.items.machine.ZirnoxFuel;
+import com.hbm.items.ModZirnoxItems;
+import com.hbm.blocks.machine.pile.BlockPileDevice;
+import com.hbm.blocks.machine.pile.ModPileBlocks;
+import com.hbm.tileentity.machine.TileEntityMachineSatLink;
+import com.hbm.tileentity.machine.pile.TileEntityPileControl;
+import com.hbm.tileentity.machine.pile.TileEntityPileLoader;
 import com.hbm.tileentity.machine.TileEntityICF;
 import com.hbm.tileentity.machine.TileEntityMachineRadarLarge;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
@@ -38,8 +49,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,6 +87,12 @@ public final class ReactorPeripheralGameTests {
             "cc_radar", 40, () -> ReactorPeripheralGameTests::radar);
     public static final GameTests.Function RADAR_LARGE = TESTS.function(
             "cc_radar_large", 40, PADDING, () -> ReactorPeripheralGameTests::radarLarge);
+    public static final GameTests.Function PILE_LOADER = TESTS.function(
+            "cc_pile_loader", 40, () -> ReactorPeripheralGameTests::pileLoader);
+    public static final GameTests.Function PILE_CONTROL = TESTS.function(
+            "cc_pile_control", 40, () -> ReactorPeripheralGameTests::pileControl);
+    public static final GameTests.Function SAT_LINK = TESTS.function(
+            "cc_satlink", 40, PADDING, () -> ReactorPeripheralGameTests::satLink);
 
     private static void geiger(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
@@ -120,7 +139,7 @@ public final class ReactorPeripheralGameTests {
             helper.assertTrue(PeripheralTestSupport.number(helper, zirnox.getPressure(), 0) == 3, "getPressure");
             helper.assertTrue(PeripheralTestSupport.number(helper, zirnox.getTemp(), 0) == 20, "getTemp at zero heat");
             Object[] info = zirnox.getInfo();
-            helper.assertTrue(info.length == 6 && Boolean.FALSE.equals(info[5]), "getInfo " + java.util.Arrays.toString(info));
+            helper.assertTrue(info.length == 6 && Boolean.FALSE.equals(info[5]), "getInfo " + Arrays.toString(info));
 
             zirnox.setActive(true);
             helper.assertTrue(be.isOn, "setActive(true)");
@@ -133,7 +152,71 @@ public final class ReactorPeripheralGameTests {
             zirnox.ventCarbonDioxide(Optional.of(99_999D));
             helper.assertTrue(be.carbonDioxide.getFill() == 0, "ventCarbonDioxide clamps to the tank");
 
+            Object[] empty = zirnox.getFuel(0);
+            helper.assertTrue(empty.length == 3 && "".equals(empty[0]), "getFuel on an empty slot");
+            be.inventory.setStackInSlot(1, new ItemStack(ModZirnoxItems.active(ZirnoxFuel.URANIUM)));
+            Object[] fuel = zirnox.getFuel(1.9D);
+            helper.assertTrue("URANIUM_FUEL".equals(fuel[0]) && PeripheralTestSupport.number(helper, fuel, 1) == 0
+                    && PeripheralTestSupport.number(helper, fuel, 2) == 200_000, "getFuel(1.9) reads slot 1: "
+                    + Arrays.toString(fuel));
             expectCells(helper, core, zirnox, 5);
+            helper.succeed();
+        });
+    }
+
+    /** An empty channel answers -1 for the rod type; the loading slot's NU rod is 1.7 metadata 3. */
+    private static void pileLoader(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModPileBlocks.pile_device.get().defaultBlockState()
+                .setValue(BlockPileDevice.META, BlockPileDevice.BLOCK_META_LOADER));
+        TileEntityPileLoader be = GameTestHelpers.blockEntity(helper, pos, TileEntityPileLoader.class);
+        be.stack = ModPileBlocks.pile_rod.stack(EnumPileRod.NU);
+        PileLoaderPeripheral loader = PeripheralTestSupport.expect(helper, pos, Direction.NORTH,
+                PileLoaderPeripheral.class, "ntm_pile_loader");
+        loader.load();
+        helper.assertTrue(be.loading, "load() starts loading while the arm is home");
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(PeripheralTestSupport.number(helper, loader.getRodType(), 0) == -1, "getType of an empty channel");
+            helper.assertTrue(PeripheralTestSupport.number(helper, loader.getLoadingType(), 0) == EnumPileRod.NU.ordinal(),
+                    "getLoadingType");
+            helper.assertTrue(PeripheralTestSupport.number(helper, loader.getDepletion(), 0) == 0
+                    && PeripheralTestSupport.number(helper, loader.getLifetime(), 0) == 0, "an empty channel has no depletion");
+            helper.succeed();
+        });
+    }
+
+    private static void pileControl(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModPileBlocks.pile_device.get().defaultBlockState()
+                .setValue(BlockPileDevice.META, BlockPileDevice.BLOCK_META_CONTROL));
+        TileEntityPileControl be = GameTestHelpers.blockEntity(helper, pos, TileEntityPileControl.class);
+        PileControlPeripheral control = PeripheralTestSupport.expect(helper, pos, Direction.NORTH,
+                PileControlPeripheral.class, "ntm_pile_control");
+        control.setLevel(250);
+        helper.assertTrue(be.targetExtraction == 1D, "setLevel(250) clamps to 1.0, got " + be.targetExtraction);
+        control.setLevel(25);
+        helper.assertTrue(be.targetExtraction == 0.25D, "setLevel(25) targets 0.25, got " + be.targetExtraction);
+        be.extraction = 0.25D;
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(PeripheralTestSupport.number(helper, control.getLevel(), 0) == 0.25D, "getLevel is 0..1, as in 1.7");
+            helper.succeed();
+        });
+    }
+
+    /** A ground station tuned to an empty frequency: not connected, no satellite type, nothing received. */
+    private static void satLink(GameTestHelper helper) {
+        BlockPos core = GameTests.paddedCentre(PADDING, 1);
+        placeFolded(helper, ModMachineBlocks.machine_satlink.get(), core);
+        TileEntityMachineSatLink be = GameTestHelpers.blockEntity(helper, core, TileEntityMachineSatLink.class);
+        SatLinkPeripheral link = PeripheralTestSupport.expect(helper, core, Direction.UP,
+                SatLinkPeripheral.class, "ntm_satlink");
+        link.setFreq(4242.9D);
+        helper.assertTrue(be.freq == 4242, "setFreq(4242.9) truncates to 4242, got " + be.freq);
+        helper.assertTrue("".equals(link.satelliteType()[0]) && "".equals(link.read()[0]), "no satellite answers empty");
+        link.send("noop");
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(PeripheralTestSupport.number(helper, link.getFreq(), 0) == 4242, "getFreq");
+            helper.assertTrue(Boolean.FALSE.equals(link.isConnected()[0]), "isConnected without a satellite");
             helper.succeed();
         });
     }
@@ -155,7 +238,7 @@ public final class ReactorPeripheralGameTests {
             helper.assertTrue(level >= 0 && level <= 50, "getLevel is a percent moving toward 50, got " + level);
             Object[] info = reactor.getInfo();
             helper.assertTrue(info.length == 4 && PeripheralTestSupport.number(helper, info, 2) == 0.5D,
-                    "getInfo " + java.util.Arrays.toString(info));
+                    "getInfo " + Arrays.toString(info));
             helper.assertTrue(PeripheralTestSupport.number(helper, reactor.getTemp(), 0) == 0, "getTemp of a cold reactor");
             helper.succeed();
         });

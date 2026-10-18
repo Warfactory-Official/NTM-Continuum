@@ -1,6 +1,7 @@
 package com.hbm.items.armor;
 
 import com.hbm.items.weapon.sedna.GunAnimation;
+import com.hbm.items.weapon.sedna.factory.XFactoryPA;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.render.anim.BusAnimation;
 import dev.golem.core.render.anim.BusAnimationKeyframe.IType;
@@ -9,6 +10,9 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.ItemStack;
 
 public final class ArmorNCRPAMelee extends ArmorPAMeleeBase {
+    @Override protected float lightDamage() { return XFactoryPA.MELEE_NCRPA_SWINGS_DAMAGE.get(); }
+    @Override protected float heavyDamage() { return XFactoryPA.MELEE_NCRPA_SWEEP_DAMAGE.get(); }
+    @Override protected float largeMult() { return XFactoryPA.MELEE_NCRPA_LARGE_MULT.get(); }
     @Override protected int lightCooldown() { return 25; }
     @Override protected int heavyCooldown() { return 30; }
     @Override protected boolean isLightHit(int timer) { return timer == 5 || timer == 15; }

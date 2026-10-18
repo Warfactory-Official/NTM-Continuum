@@ -227,8 +227,8 @@ public final class MaterialCompletionGameTests {
     }
 
     public static void materialCatalogueComplete(GameTestHelper helper) {
-        helper.assertTrue(Mats.orderedList.size() == 108 && Mats.matById.size() == 108,
-                "Material catalogue must contain 108 unique ordered/id entries");
+        helper.assertTrue(Mats.orderedList.size() == 109 && Mats.matById.size() == 109,
+                "Material catalogue must contain 109 unique ordered/id entries");
         Set<String> names = new HashSet<>();
         for (NTMMaterial material : Mats.orderedList) {
             helper.assertTrue(names.add(material.name), "Duplicate material name " + material.name);
@@ -236,7 +236,7 @@ public final class MaterialCompletionGameTests {
                             && Mats.matByName.get(material.name) == material,
                     "Material lookup lost " + material.name);
         }
-        helper.assertTrue(names.size() == 108 && Mats.matByName.size() == 110,
+        helper.assertTrue(names.size() == 109 && Mats.matByName.size() == 111,
                 "Canonical material names or compatibility aliases changed");
         helper.assertTrue(Mats.byName("phosphorus") == Mats.MAT_PHOSPHORUS
                         && Mats.byName("th232") == Mats.MAT_THORIUM,
@@ -305,10 +305,10 @@ public final class MaterialCompletionGameTests {
     }
 
     public static void materialAutogenShapesComplete(GameTestHelper helper) {
-        helper.assertTrue(ModAutogenItems.registeredCount() == 188,
-                "Expected 188 autogen items, found " + ModAutogenItems.registeredCount());
+        helper.assertTrue(ModAutogenItems.registeredCount() == 197,
+                "Expected 197 autogen items, found " + ModAutogenItems.registeredCount());
         helper.assertTrue(ModAutogenItems.shapeOrder().equals(List.of(
-                        MaterialShapes.SHELL, MaterialShapes.PIPE, MaterialShapes.INGOT,
+                        MaterialShapes.SHELL, MaterialShapes.PIPE, MaterialShapes.INGOT, MaterialShapes.NUGGET,
                         MaterialShapes.CASTPLATE, MaterialShapes.WELDEDPLATE, MaterialShapes.HEAVY_COMPONENT,
                         MaterialShapes.WIRE, MaterialShapes.DENSEWIRE, MaterialShapes.BOLT,
                         MaterialShapes.LIGHTBARREL, MaterialShapes.HEAVYBARREL,
@@ -339,7 +339,7 @@ public final class MaterialCompletionGameTests {
                 count++;
             }
         }
-        helper.assertTrue(count == 188 && ids.size() == 188,
+        helper.assertTrue(count == 197 && ids.size() == 197,
                 "Autogen catalogue identity count changed: " + count);
         helper.succeed();
     }
@@ -576,6 +576,7 @@ public final class MaterialCompletionGameTests {
     private static String autogenBase(MaterialShapes shape) {
         switch (shape) {
             case INGOT: return "ingot_raw";
+            case NUGGET: return "nugget_raw";
             case FRAGMENT: return "bedrock_ore_fragment";
             case CASTPLATE: return "plate_cast";
             case WELDEDPLATE: return "plate_welded";

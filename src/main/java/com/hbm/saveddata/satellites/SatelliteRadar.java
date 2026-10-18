@@ -1,5 +1,8 @@
 package com.hbm.saveddata.satellites;
 
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
+import net.minecraft.network.chat.Component;
+
 import com.hbm.api.entity.IRadarDetectableNT.RadarScanParams;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
@@ -41,6 +44,11 @@ public class SatelliteRadar extends Satellite {
     }
 
     @Override public String getType() { return "LEO_RADAR"; }
+
+    @Override
+    public Component[] getInfo(Level level) {
+        return new Component[] { nameOf(EnumSatType.RADAR) };
+    }
 
     @Override
     public void onCommandImpl(Level level, String... cmd) {

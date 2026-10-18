@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.data.MachineDataMaps;
 import com.hbm.items.ModStorageDrumItems;
 import com.hbm.items.special.ItemWasteStorage;
@@ -9,9 +10,7 @@ import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.inventory.container.ContainerMachineRadGen;
 import com.hbm.items.ModItems;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -35,10 +34,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Map;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Twelve independent radiation-fuel generators, preserving the legacy channel timings and output slots. */
 public class TileEntityMachineRadGen extends TileEntityMachineBase
-        implements MenuProvider, IEnergyProviderMK2, WorldlyContainer {
+        implements MenuProvider, IEnergyProviderMK2, WorldlyContainer, IRORValueProvider {
 
     public static final int CHANNELS = 12;
     public static final long MAX_POWER = 1_000_000L;
@@ -49,9 +49,10 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
     public final ItemStack[] processing = new ItemStack[CHANNELS];
     public long power;
     public boolean isOn;
+    /** HE produced this tick by every channel together. */
+    public int output;
 
     private record Fuel(int production, int duration, ItemStack output) {}
-
 
     public TileEntityMachineRadGen(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_RAD_GEN.get(), pos, state, 24);
@@ -114,10 +115,11 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineRadGen generator) {
         generator.isOn = false;
+        generator.output = 0;
 
-        for (DirPos connection : generator.getConPos()) {
-            generator.tryProvide(level, connection.getPos(), connection.getDir());
-        }
+        generator.setupPowerPorts(generator.getPorts());
+        generator.updateAllPorts();
+        generator.providePower();
 
         for (int i = 0; i < CHANNELS; i++) {
             if (!generator.processing[i].isEmpty()) continue;
@@ -138,6 +140,7 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
 
             generator.isOn = true;
             generator.power = Math.min(MAX_POWER, generator.power + generator.production[i]);
+            generator.output += generator.production[i];
             generator.progress[i]++;
             if (generator.progress[i] < generator.maxProgress[i]) continue;
 
@@ -159,14 +162,16 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
         generator.networkPackNT();
     }
 
-    /** The rear port is four blocks behind the core, adjacent to the extra dummy cell. */
-    public DirPos[] getConPos() {
-        ForgeDirection facing = MachineCore.facing(getBlockState());
-        return new DirPos[]{new DirPos(
-                worldPosition.getX() - facing.offsetX * 4,
-                worldPosition.getY(),
-                worldPosition.getZ() - facing.offsetZ * 4,
-                facing.getOpposite())};
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            cachedPorts = new PortDef[] {
+                    PortDef.make(worldPosition.getX() - dir.offsetX * 3, worldPosition.getY(), worldPosition.getZ() - dir.offsetZ * 3, dir.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 
     @Override
@@ -278,5 +283,30 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
 
     private static void copyArray(int[] source, int[] target) {
         if (source.length == target.length) System.arraycopy(source, 0, target, 0, target.length);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        String[] info = new String[3 + CHANNELS * 2];
+        info[0] = PREFIX_VALUE + "state";
+        info[1] = PREFIX_VALUE + "power";
+        info[2] = PREFIX_VALUE + "output";
+        for (int i = 0; i < CHANNELS; i++) {
+            info[3 + i] = PREFIX_VALUE + "output" + (i + 1);
+            info[3 + CHANNELS + i] = PREFIX_VALUE + "progress" + (i + 1);
+        }
+        return info;
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "state").equals(name)) return isOn ? "1" : "0";
+        if ((PREFIX_VALUE + "power").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "output").equals(name)) return "" + output;
+        for (int i = 0; i < CHANNELS; i++) {
+            if ((PREFIX_VALUE + "output" + (i + 1)).equals(name)) return "" + production[i];
+            if ((PREFIX_VALUE + "progress" + (i + 1)).equals(name)) return "" + (progress[i] * 100 / Math.max(maxProgress[i], 1));
+        }
+        return null;
     }
 }

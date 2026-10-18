@@ -43,6 +43,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.AABB;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Ore Acidizer (1.12.2 {@code TileEntityMachineCrystallizer}): dissolves one input item in the acid
@@ -92,10 +94,8 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         te.ensureClimbRegistered();
         te.isOn = false;
 
-        for (DirPos con : te.getConPos()) {
-            te.trySubscribe(level, con);
-            te.trySubscribe(te.tank.getTankType(), level, con);
-        }
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
 
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.getPower(), te.getMaxPower());
         te.updateTankType();
@@ -213,15 +213,10 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         }
     }
 
-    /** The 8 network-connection positions on the tower's four sides at ±2 (ported unchanged). */
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z + 1, Library.POS_X), new DirPos(x + 2, y, z - 1, Library.POS_X),
-                new DirPos(x - 2, y, z + 1, Library.NEG_X), new DirPos(x - 2, y, z - 1, Library.NEG_X),
-                new DirPos(x + 1, y, z + 2, Library.POS_Z), new DirPos(x - 1, y, z + 2, Library.POS_Z),
-                new DirPos(x + 1, y, z - 2, Library.NEG_Z), new DirPos(x - 1, y, z - 2, Library.NEG_Z)};
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.refinery(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     /**
      * Slot roles: 0 input (any recipe input, regardless of the loaded acid; the player may load the

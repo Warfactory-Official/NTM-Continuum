@@ -1,0 +1,23 @@
+{
+	"name": "Oxyhydrogen",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		"hbm:oxyhydrogen"
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:oxyhydrogen"
+		]
+	],
+	"title": {
+		"en_us": "Oxyhydrogen",
+		"ru_ru": "Гремучий газ"
+	},
+	"content": {
+		"en_us": "Oxyhydrogen can be made by mixing [[liquid hydrogen|Liquid Hydrogen]] with [[liquid oxygen|Liquid Oxygen]] or [[compressed air|Compressed Air]]. It may be used as a [[fuel|Fuels]] source for supplemental power, although minimal.",
+		"ru_ru": "Гремучий газ можно получить путем смешивания [[жидкого водорода|Liquid Hydrogen]] с [[жидким кислородом|Liquid Oxygen]] или [[сжатым воздухом|Compressed Air]]. Он может использоваться в качестве источника [[топлива|Fuels]] для дополнительного питания, хотя и минимального."
+	}
+}

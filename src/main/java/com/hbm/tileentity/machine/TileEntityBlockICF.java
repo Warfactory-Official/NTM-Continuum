@@ -6,7 +6,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.IRelocatable;
 import com.hbm.tileentity.ModIcfBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
-import com.hbm.uninos.graph.PortClaims;
+import com.hbm.uninos.PortNodes;
 import dev.golem.core.Ids;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -30,11 +30,11 @@ import org.jspecify.annotations.Nullable;
  * energy graph asks every receiver.
  */
 public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyReceiverMK2, IRelocatable,
-        PortClaims.Delegate {
+        PortNodes.Delegate {
 
-    /** 1.7: the controller subscribes at each port's neighbours; the port cell only fronts it. */
+    /** The controller owns the ports here; this block only fronts it. */
     @Override
-    public @Nullable Object portClaimOwner() {
+    public @Nullable Object portOwner() {
         return getCore();
     }
 
@@ -46,7 +46,6 @@ public class TileEntityBlockICF extends TileEntityLoadedBase implements IEnergyR
         cachedCore = null;
         setChanged();
     }
-
 
     public @Nullable Block block;
     public int coreX;

@@ -11,14 +11,13 @@ import com.hbm.entity.projectile.rocketbehavior.IRocketTargetingBehavior;
 import com.hbm.entity.projectile.rocketbehavior.RocketSteeringBallisticArc;
 import com.hbm.entity.projectile.rocketbehavior.RocketTargetingPredictive;
 import com.hbm.items.weapon.ItemAmmoHIMARS;
-import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.SynchedData;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
@@ -28,11 +27,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The HIMARS rocket: predictive targeting onto a live entity or a fixed column, flown along a ballistic
- * arc, with guidance dropped once a fixed target is within fifteen blocks.
- *
- * <p>A fixed target drops guidance once the rocket is within fifteen blocks, which is also what makes
- * gravity switch on (see {@link #getGravityVelocity}). Upstream leaves a {@code TODO} about entities that
- * unload and reload mid-flight; the chunk loader under the rocket is what keeps that from mattering here.
+ * arc. Guidance is dropped for good once the target is within one and a half ticks of travel, which is also
+ * what makes gravity switch on (see {@link #getGravityVelocity}).
  */
 public class EntityArtilleryRocket extends EntityThrowableNT implements IChunkLoader, IRadarDetectableNT {
 
@@ -51,6 +47,13 @@ public class EntityArtilleryRocket extends EntityThrowableNT implements IChunkLo
 
     public @Nullable IRocketTargetingBehavior targeting = new RocketTargetingPredictive();
     public @Nullable IRocketSteeringBehavior steering = new RocketSteeringBallisticArc();
+    public int health = 100;
+
+    /** The client contrail's state, advanced by the renderer every frame. */
+    public double lastRenderX;
+    public double lastRenderY;
+    public double lastRenderZ;
+    public double trailPath;
 
     public EntityArtilleryRocket(EntityType<? extends EntityArtilleryRocket> type, Level level) {
         super(type, level);
@@ -102,52 +105,38 @@ public class EntityArtilleryRocket extends EntityThrowableNT implements IChunkLo
 
         if (isRemoved()) return;
 
-        if (level().isClientSide()) {
-            spawnContrail();
-            return;
-        }
+        if (level().isClientSide() || this.lastTargetPos == null) return;
 
-        if (this.targeting == null) this.targeting = new RocketTargetingPredictive();
-        if (this.steering == null) this.steering = new RocketSteeringBallisticArc();
-
-        if (this.lastTargetPos != null && this.targetEntity == null) {
-            Vec3 aim = this.lastTargetPos;
-            Vec3 delta = new Vec3(aim.x - getX(), aim.y - getY(), aim.z - getZ());
-            if (delta.length() <= 15D) {
-                this.targeting = null;
-                this.steering = null;
+        Vec3 delta = this.lastTargetPos.subtract(position());
+        double momentum = getDeltaMovement().length() * motionMult();
+        if (delta.length() <= momentum * 1.5D) {
+            disableSteering(delta, momentum);
+        } else {
+            if (this.targeting != null && this.targetEntity != null) {
+                this.targeting.recalculateTargetPosition(this, this.targetEntity);
             }
+            if (this.steering != null) this.steering.adjustCourse(this, 10D, 15D);
         }
-
-        if (this.targeting != null && this.targetEntity != null) {
-            this.targeting.recalculateTargetPosition(this, this.targetEntity);
-        }
-        if (this.steering != null) this.steering.adjustCourse(this, 25D, 15D);
 
         getRocket().onUpdate(this);
     }
 
-    /**
-     * The exhaust trail, drawn along the step just taken. Upstream puts the puffs <em>behind</em> the
-     * nose, six blocks back and further, and emits nothing at all for a step of one block or less,
-     * which is what keeps a rocket at rest from smoking.
-     */
-    private void spawnContrail() {
-        Vec3 back = new Vec3(this.xOld - getX(), this.yOld - getY(), this.zOld - getZ());
-        double velocity = back.length();
-        if (velocity <= 1D) return;
+    /** Drops guidance once and points the rocket straight at the target, keeping its speed. */
+    public void disableSteering(Vec3 delta, double momentum) {
+        if (this.steering == null && this.targeting == null) return;
+        this.steering = null;
+        this.targeting = null;
+        setDeltaMovement(delta.normalize().scale(momentum / motionMult()));
+    }
 
-        Vec3 unit = back.normalize();
-        for (int i = 6; i < velocity + 6; i++) {
-            CompoundTag data = new CompoundTag();
-            data.putFloat("scale", 0.5F);
-            data.putDouble("moX", unit.x);
-            data.putDouble("moY", unit.y);
-            data.putDouble("moZ", unit.z);
-            data.putInt("maxAge", 60 + this.random.nextInt(20));
-            HbmEffectNT.MissileContrail.summonParticle(level(), getX() + unit.x * i, getY() + unit.y * i,
-                    getZ() + unit.z * i, data);
+    @Override
+    protected boolean onHurt(DamageSource source, float amount) {
+        if (isInvulnerable()) return false;
+        if (this.health > 0 && !level().isClientSide()) {
+            this.health -= (int) amount;
+            if (this.health <= 0) discard();
         }
+        return true;
     }
 
     @Override

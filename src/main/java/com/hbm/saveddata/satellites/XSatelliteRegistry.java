@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * 1.7 {@code XSatelliteRegistry}: which item launches which satellite, and the orbit entry point.
  *
- * <p>1.7 registers the eleven {@code satellite} variants, then {@code sat_gerald} for Horizons, then "all the
+ * <p>1.7 registers twelve of the {@code satellite} variants, then {@code sat_gerald} for Horizons, then "all the
  * legacy crap" ({@code sat_mapper}, {@code sat_scanner}, {@code sat_radar}, {@code sat_laser},
  * {@code sat_resonator}, {@code sat_miner}, {@code sat_lunar_miner}). {@code registerSatellite} refuses any class
  * that is already a value in the map, and every legacy chip names a class a variant already claimed, so none of

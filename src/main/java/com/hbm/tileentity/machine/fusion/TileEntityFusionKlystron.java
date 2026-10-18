@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.interfaces.IControlReceiver;
@@ -30,6 +32,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Fusion klystron: the microwave emitter that ignites a torus.
@@ -44,12 +47,12 @@ import java.util.List;
  * klystron cannot dribble out just enough to keep an expensive fuel cycle half-lit.
  */
 public class TileEntityFusionKlystron extends TileEntityMachineBase
-        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver {
+        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver, IRORValueProvider,
+        IRORInteractive {
 
     public static final long MAX_OUTPUT = 1_000_000;
     public static final int AIR_CONSUMPTION = 2_500;
     public static final float FAN_ACCELERATION = 0.125F;
-
 
     /** What the player asked for. */
     public long outputTarget;
@@ -83,14 +86,12 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionKlystron te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         // The buffer scales with the target so a big klystron can actually hold a tick's worth.
         te.maxPower = Math.max(1_000_000L, te.outputTarget * 100L);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
-
-        for (DirPos port : te.getConPos()) {
-            te.trySubscribe(level, port);
-            te.trySubscribe(te.compair.getTankType(), level, port);
-        }
 
         te.output = 0;
         double powerFactor = TileEntityFusionTorus.getSpeedScaled(te.maxPower, te.power);
@@ -135,15 +136,22 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
         }
     }
 
-    public List<DirPos> getConPos() {
-        ForgeDirection dir = FusionNodes.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return List.of(
-                new DirPos(x + dir.offsetX * 4, y + 2, z + dir.offsetZ * 4, dir),
-                new DirPos(x + rot.offsetX * 3, y, z + rot.offsetZ * 3, rot),
-                new DirPos(x - rot.offsetX * 3, y, z - rot.offsetZ * 3, rot.getOpposite()));
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = FusionNodes.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 3, y + 2, z + dir.offsetZ * 3, dir),
+                    PortDef.make(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot),
+                    PortDef.make(x - rot.offsetX * 2, y, z - rot.offsetZ * 2, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
+
+    public List<DirPos> getConPos() { return List.of(PortDef.connections(getPorts())); }
 
     @Override
     public void setRemoved() {
@@ -218,4 +226,25 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
     }
 
     @Override protected boolean syncFullTagOnChunkLoad() { return true; }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "output", PREFIX_VALUE + "target",
+                PREFIX_FUNCTION + "settarget" + NAME_SEPARATOR + "target"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "output").equals(name)) return "" + output;
+        if ((PREFIX_VALUE + "target").equals(name)) return "" + outputTarget;
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "settarget").equals(name) && params.length == 1) {
+            outputTarget = IRORInteractive.parseInt(params[0], 0, (int) MAX_OUTPUT);
+        }
+        return null;
+    }
 }

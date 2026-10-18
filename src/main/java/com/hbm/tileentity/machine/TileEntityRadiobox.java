@@ -5,7 +5,6 @@ import com.hbm.blocks.machine.Radiobox;
 import com.hbm.entity.mob.EntityFBI;
 import com.hbm.entity.mob.EntityFBIDrone;
 import com.hbm.items.ModItems;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.tileentity.ModDecoCrateBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -19,6 +18,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * 1.7 {@code TileEntityRadiobox}: a 500,000 HE receiver. While switched on and holding 25,000 HE (or fitted with a
@@ -35,10 +36,13 @@ public class TileEntityRadiobox extends TileEntityLoadedBase implements IEnergyR
         super(ModDecoCrateBlockEntities.RADIOBOX.get(), pos, state);
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityRadiobox box) {
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            box.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
+        box.setupPowerPorts(box.getPorts());
+        box.updateAllPorts();
+        box.receivePower();
         if (state.getValue(Radiobox.ON) && (box.power >= 25000 || box.infinite)) {
 
             if (!box.infinite) {

@@ -3,6 +3,7 @@ package com.hbm.items.food;
 import java.util.List;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,13 +27,10 @@ public class ItemLemon extends CompatItem {
                                          List<Component> tooltip, TooltipFlag flag) {
         switch (id) {
             case "lemon" -> tooltip.add(Component.literal("Eh, good enough."));
-            case "med_ipecac" -> {
-                tooltip.add(Component.literal("Bitter juice that will cause your stomach"));
-                tooltip.add(Component.literal("to forcefully eject it's contents."));
-            }
-            case "med_ptsd" -> {
-                tooltip.add(Component.literal("This isn't even PTSD mediaction, it's just"));
-                tooltip.add(Component.literal("Ipecac in a different bottle!"));
+            case "med_ipecac", "med_ptsd" -> {
+                Language language = Language.getInstance();
+                String base = getDescriptionId() + ".desc.";
+                for (int i = 0; language.has(base + i); i++) tooltip.add(Component.translatable(base + i));
             }
             case "med_schizophrenia" -> {
                 tooltip.add(Component.literal("Makes the voices go away. Just for a while."));

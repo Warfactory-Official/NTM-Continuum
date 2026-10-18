@@ -35,7 +35,7 @@ public final class VisualScreens implements Scenario {
             "machine_crystallizer", "machine_liquefactor", "machine_solidifier", "machine_arc_furnace",
             "machine_arc_welder", "machine_soldering_station", "machine_assembly_factory", "machine_chemical_factory",
             "machine_exposure_chamber", "machine_mixer", "machine_purex", "machine_precass", "machine_electrolyser",
-            "machine_flare", "machine_large_turbine", "machine_turbine", "machine_turbine_gas", "machine_turbofan",
+            "machine_flare", "machine_large_turbine", "machine_turbine_gas", "machine_turbofan",
             "machine_wood_burner", "heater_oilburner", "heater_firebox", "heater_oven", "machine_battery_redd",
             "machine_battery_socket", "radio_autocal",
             // batch 4: labels

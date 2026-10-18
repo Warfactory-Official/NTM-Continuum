@@ -18,6 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /** One-tick-delayed, dimension-scoped radio bus. */
 public final class RTTYSystem {
+    /** The longest channel name the GUIs and torches accept. */
+    public static final int MAX_CHAN_LENGTH = 15;
+
     public static final ConcurrentHashMap<ChannelKey, RTTYChannel> broadcast = new ConcurrentHashMap<>();
     public static final ConcurrentHashMap<ChannelKey, Object> newMessages = new ConcurrentHashMap<>();
     private RTTYSystem() {}
@@ -103,8 +106,7 @@ public final class RTTYSystem {
         TEST_SENDER_MELODY[tempo * 48] = NoteBuilder.start().add(accordion, Note.C, Octave.LOW).add(flute, Note.D, Octave.LOW).end();
         TEST_SENDER_MELODY[tempo * 50] = NoteBuilder.start().add(flute, Note.F, Octave.LOW).end();
         TEST_SENDER_MELODY[tempo * 52] = NoteBuilder.start().add(accordion, Note.D, Octave.LOW).add(accordion, Note.F, Octave.LOW).add(accordion, Note.A, Octave.LOW).add(flute, Note.D, Octave.MID).end();
-        // Upstream stores the unterminated builder itself at tick 216; consumers see a non-String no-op.
-        TEST_SENDER_MELODY[tempo * 54] = NoteBuilder.start().add(accordion, Note.D, Octave.LOW).add(accordion, Note.F, Octave.LOW).add(accordion, Note.A, Octave.LOW);
+        TEST_SENDER_MELODY[tempo * 54] = NoteBuilder.start().add(accordion, Note.D, Octave.LOW).add(accordion, Note.F, Octave.LOW).add(accordion, Note.A, Octave.LOW).end();
         TEST_SENDER_MELODY[tempo * 56] = NoteBuilder.start().add(accordion, Note.C, Octave.LOW).add(flute, Note.D, Octave.LOW).end();
         TEST_SENDER_MELODY[tempo * 58] = NoteBuilder.start().add(flute, Note.F, Octave.LOW).end();
         TEST_SENDER_MELODY[tempo * 60] = NoteBuilder.start().add(accordion, Note.E, Octave.LOW).add(accordion, Note.G, Octave.LOW).add(accordion, Note.B, Octave.LOW).add(flute, Note.D, Octave.MID).end();

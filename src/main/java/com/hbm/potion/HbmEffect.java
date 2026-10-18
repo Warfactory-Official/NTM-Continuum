@@ -53,8 +53,8 @@ public final class HbmEffect extends CompatMobEffect {
                         && level.getRandom().nextInt(40) == 0) {
                     Compat.hurt(entity, level, ModDamageSources.taint(level), amplifier + 1);
                 }
-                // 1.7 ServerConfig.TAINT_TRAILS: the tainted leave young taint (age 14) in the full block below them
-                if (ServerConfig.TAINT_TRAILS.get()) {
+                // 1.7 ServerConfig.ENTITY_TAINT_TRAILS: the tainted leave young taint (age 14) in the full block below them
+                if (ServerConfig.ENTITY_TAINT_TRAILS.get()) {
                     BlockPos below = BlockPos.containing(
                             Math.floor(entity.getX()), Math.floor(entity.getY()) - 1, Math.floor(entity.getZ()));
                     BlockState b = level.getBlockState(below);

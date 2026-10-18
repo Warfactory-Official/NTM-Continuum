@@ -1,6 +1,7 @@
 package com.hbm.api.block;
 
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
 
 /** 1.7 {@code api.hbm.ntl.IPneumaticConnector}: a block a pneumatic tube may connect to. */
 public interface IPneumaticConnector {
@@ -12,5 +13,10 @@ public interface IPneumaticConnector {
      */
     default boolean canConnectPneumatic(Direction dir) {
         return true;
+    }
+
+    /** As {@link #canConnectPneumatic(Direction)}, for a block whose open sides are in its state. */
+    default boolean canConnectPneumatic(BlockState state, Direction dir) {
+        return canConnectPneumatic(dir);
     }
 }

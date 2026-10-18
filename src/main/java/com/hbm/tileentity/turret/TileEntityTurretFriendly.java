@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory556mm;
 import com.hbm.tileentity.ModBlockEntities;
@@ -41,4 +42,7 @@ public class TileEntityTurretFriendly extends TileEntityTurretChekhov {
     public int getDelay() {
         return 5;
     }
+
+    @Override
+    public float getBaseDamage() { return XFactoryTurret.TURRET_FRIENDLY_DAMAGE.get(); }
 }

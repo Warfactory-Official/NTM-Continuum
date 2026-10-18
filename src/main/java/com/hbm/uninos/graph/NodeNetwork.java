@@ -1,5 +1,6 @@
 package com.hbm.uninos.graph;
 
+import com.hbm.uninos.PortNet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.jspecify.annotations.Nullable;
 
@@ -27,8 +28,10 @@ public final class NodeNetwork<D> {
      * The other half of the drain's work list; same null-when-settled rule as pendingProbe.
      */
     public @Nullable ReferenceOpenHashSet<GraphSegment<D>> pendingSegments;
-    // 1.7: PowerNetMK2.energyTracker - net throughput
+    // 1.7: PowerNetMK2.energyTracker / FluidNetMK2.fluidTracker, what the providers lost last round
     public long tracker;
+    /** The port net this net was part of last round (a net of several fluids keeps the last one's). */
+    public @Nullable PortNet<D> portNet;
     public int[] providerCursors;
     /**
      * Reusable gather scratch for the ENERGY net, so a steady-state tick allocates nothing; does NOT cache MEMBERSHIP - a missed invalidation bump would be silent staleness.

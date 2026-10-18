@@ -1,14 +1,14 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.config.ClientConfig;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Auxiliary 5x5x19 cooling tower; exact old 1,000 mB condenser tanks and four side ports. */
+/** Auxiliary 5x5x19 cooling tower; 1,000 mB condenser tanks and four side ports. */
 public class TileEntityTowerSmall extends TileEntityCondenser {
     public static final int INPUT_TANK_SIZE = 1_000;
     public static final int OUTPUT_TANK_SIZE = 1_000;
@@ -28,12 +28,7 @@ public class TileEntityTowerSmall extends TileEntityCondenser {
 
     @Override public String getDefaultName() { return "block.hbm.machine_tower_small"; }
 
-    @Override public DirPos[] getConPos() {
-        BlockPos p = getBlockPos();
-        return new DirPos[]{new DirPos(p.offset(3, 0, 0), ForgeDirection.EAST),
-                new DirPos(p.offset(-3, 0, 0), ForgeDirection.WEST),
-                new DirPos(p.offset(0, 0, 3), ForgeDirection.SOUTH),
-                new DirPos(p.offset(0, 0, -3), ForgeDirection.NORTH)};
-    }
+    @Override
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.auxTower(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
 }

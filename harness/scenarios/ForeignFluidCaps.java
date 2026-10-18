@@ -4,17 +4,13 @@ import dev.golem.harness.api.Expect;
 import dev.golem.harness.api.Fixtures;
 import dev.golem.harness.api.Scenario;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * HBM fluids on the loaders' standard fluid capability (History section 19ek-fluids), in a real world, through the same
  * lookup another mod's pipe uses ({@code hbm_fluidcaps} query, Core {@code FluidCompat}):
  * <ol>
- *   <li>the 153 HBM token fluids are in the vanilla fluid registry ({@code hbm:diesel}; water is vanilla water);</li>
+ *   <li>the 154 HBM token fluids are in the vanilla fluid registry ({@code hbm:diesel}; water is vanilla water);</li>
  *   <li>a vanilla water bucket's own handler empties into a water barrel (1000 mB, the bucket becomes a bucket);</li>
  *   <li>1500 mB diesel moves between two barrels through the capability alone, exact on both sides;</li>
- *   <li>the flow-control pump opens exactly its intake and outlet, takes water only through the intake and refuses lava;</li>
  *   <li>JEI lists every HBM fluid as a fluid ingredient;</li>
  *   <li>the saved NBT still names fluids by registry name.</li>
  * </ol>
@@ -30,8 +26,8 @@ public class ForeignFluidCaps implements Scenario {
         c.waitTicks(5);
 
         JsonObject registry = q(c, "registry");
-        Expect.that(registry.get("tokens").getAsInt() == 153 && registry.get("fluidTypes").getAsInt() == 156,
-                "153 HBM token fluids registered for 156 fluid types: " + registry);
+        Expect.that(registry.get("tokens").getAsInt() == 154 && registry.get("fluidTypes").getAsInt() == 157,
+                "154 HBM token fluids registered for 157 fluid types: " + registry);
         Expect.that(registry.get("diesel").getAsString().equals("hbm:diesel")
                 && registry.get("water").getAsString().equals("minecraft:water"), "fluid ids: " + registry);
 
@@ -40,8 +36,6 @@ public class ForeignFluidCaps implements Scenario {
         // two diesel barrels: an output one and an input one
         c.cmd("setblock -4 " + (Y + 1) + " 3 hbm:barrel_steel{tank:5000,tank_type:\"hbm:diesel\",mode:2s}");
         c.cmd("setblock -2 " + (Y + 1) + " 3 hbm:barrel_steel{tank:0,tank_type:\"hbm:diesel\",mode:0s}");
-        // a water pump facing north
-        c.cmd("setblock 4 " + (Y + 1) + " 0 hbm:fluid_pump[facing=north]{t:0,t_type:\"hbm:water\",buffer:100}");
         c.teleport(0.5, Y + 1, -4.5);
         c.waitTicks(10);
         c.screenshot("placed");
@@ -58,24 +52,7 @@ public class ForeignFluidCaps implements Scenario {
                 "tx", -2, "ty", Y + 1, "tz", 3, "tside", "west", "fluid", "hbm:diesel", "mb", 1500);
         Expect.that(move.get("moved").getAsInt() == 1500 && move.get("taken").getAsInt() == 1500, "1500 mB diesel moved: " + move);
 
-        // the pump: exactly two faces, water in through one of them only
-        List<String> faces = new ArrayList<>();
-        for (String side : new String[]{"north", "south", "east", "west", "up", "down"}) {
-            if (q(c, "find", "x", 4, "y", Y + 1, "z", 0, "side", side).get("present").getAsBoolean()) faces.add(side);
-        }
-        Expect.that(faces.size() == 2, "the pump opens its intake and outlet only: " + faces);
-        int accepted = 0;
-        String intake = null;
-        for (String side : faces) {
-            JsonObject in = q(c, "insert", "x", 4, "y", Y + 1, "z", 0, "side", side, "fluid", "hbm:water", "mb", 1000);
-            if (in.get("moved").getAsInt() > 0) {
-                accepted += in.get("moved").getAsInt();
-                intake = side;
-            }
-        }
-        Expect.that(accepted == 100 && intake != null, "only the intake took water, 100 mB (the buffer): " + accepted + " via " + intake);
-        JsonObject pumpLava = q(c, "insert", "x", 4, "y", Y + 1, "z", 0, "side", intake, "fluid", "hbm:lava", "mb", 1000);
-        Expect.that(pumpLava.get("moved").getAsInt() == 0, "the water pump refused lava: " + pumpLava);
+        // the flow control pump's intake and outlet: GameTest foreign_fluids_pump_typed_sides
 
         // the saved form is unchanged
         c.waitTicks(10);
@@ -92,8 +69,8 @@ public class ForeignFluidCaps implements Scenario {
             if (jei.has("ready") && jei.get("ready").getAsBoolean()) break;
             c.waitTicks(20);
         }
-        Expect.that(jei.get("ready").getAsBoolean() && jei.get("count").getAsInt() == 153,
-                "JEI lists the 153 HBM fluids: " + (jei.has("count") ? jei.get("count") : jei));
+        Expect.that(jei.get("ready").getAsBoolean() && jei.get("count").getAsInt() == 154,
+                "JEI lists the 154 HBM fluids: " + (jei.has("count") ? jei.get("count") : jei));
         Expect.that(jei.toString().contains("Diesel"), "JEI names diesel by its lang name");
         c.key("e");
         c.waitScreen("Inventory", 5000);

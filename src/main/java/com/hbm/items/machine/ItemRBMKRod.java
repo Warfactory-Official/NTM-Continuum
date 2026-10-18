@@ -26,6 +26,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
+import java.util.Locale;
 
 /** Component-backed RBMK fuel state and the upstream fuel reaction equations. */
 public class ItemRBMKRod extends CompatItem {
@@ -146,16 +147,15 @@ public class ItemRBMKRod extends CompatItem {
         double selfRate = f.selfRate();
         String function = f.function().description(selfRate);
         double enrichment = getEnrichment(stack);
+        String flux = selfRate > 0D ? "(x" + ChatFormatting.RED + " + " + selfRate + ChatFormatting.WHITE + ")" : "x";
         if (enrichment < 1D) {
             enrichment = reactivityModByEnrichment(enrichment);
-            String reactivity = ChatFormatting.YELLOW + "" + ((int) (f.reactivity() * enrichment * 1000D) / 1000D)
-                    + ChatFormatting.WHITE;
+            String enrichmentMod = ChatFormatting.YELLOW + "" + ((int) (enrichment * 1000D) / 1000D) + ChatFormatting.WHITE;
             String enrichmentPercent = ChatFormatting.GOLD + " (" + ((int) (enrichment * 1000D) / 10D) + "%)";
-            return String.format(function, selfRate > 0D ? "(x" + ChatFormatting.RED + " + " + selfRate
-                    + ChatFormatting.WHITE + ")" : "x", reactivity).concat(enrichmentPercent);
+            flux = "(" + flux + " * " + enrichmentMod + ")";
+            return String.format(Locale.US, function, flux, f.reactivity()).concat(enrichmentPercent);
         }
-        return String.format(function, selfRate > 0D ? "(x" + ChatFormatting.RED + " + " + selfRate
-                + ChatFormatting.WHITE + ")" : "x", f.reactivity());
+        return String.format(Locale.US, function, flux, f.reactivity());
     }
 
     @Override

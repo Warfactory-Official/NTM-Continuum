@@ -82,6 +82,11 @@ public final class PurexTable extends GenericTableSource<GenericRecipe> {
                 .inputFluids(new FluidStack(Fluids.SULFURIC_ACID, 100))
                 .outputItems(new ItemStack(ModItems.billet_pu_mix.get(), 2),
                         new ItemStack(ModItems.billet_nuclear_waste.get(), 1))));
+        this.register(setIconToFirstIngredient(new GenericRecipe("purex.pilethorium").setup(40, pilePower).setNameWrapper("purex.recycle").setGroup(autoPile, this)
+                .inputItems(new ComparableStack(ModPileBlocks.pile_rod.get(EnumPileRod.THORIUM_FUEL), 1))
+                .inputFluids(new FluidStack(Fluids.SULFURIC_ACID, 100))
+                .outputItems(new ItemStack(ModItems.billet_thorium_fuel.get(), 2),
+                        new ItemStack(ModItems.billet_nuclear_waste.get(), 1))));
         this.register(setIconToFirstIngredient(new GenericRecipe("purex.pilewaste").setup(40, pilePower).setNameWrapper("purex.recycle").setGroup(autoPile, this)
                 .inputItems(new ComparableStack(ModPileBlocks.pile_rod.get(EnumPileRod.WASTE), 1))
                 .inputFluids(new FluidStack(Fluids.SULFURIC_ACID, 100))

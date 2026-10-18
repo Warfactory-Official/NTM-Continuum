@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -38,5 +39,15 @@ public class MachineTowerSmall extends BlockMultiblockMachine implements IFluidC
         text.add("§a-> §r" + tower.input.getTankType().getDisplayNameString() + ": " + tower.input.getFill() + "/" + tower.input.getMaxFill() + "mB");
         text.add("§c<- §r" + tower.output.getTankType().getDisplayNameString() + ": " + tower.output.getFill() + "/" + tower.output.getMaxFill() + "mB");
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {2, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {0, 0, 2, ForgeDirection.SOUTH.ordinal()},
+        }, dir);
     }
 }

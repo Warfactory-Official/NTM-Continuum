@@ -1,9 +1,11 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.network.FluidPipeAnchor;
+import com.hbm.blocks.network.BasePipeAnchor;
 import com.hbm.client.model.WavefrontObj;
-import com.hbm.tileentity.network.TileEntityPipeAnchor;
+import com.hbm.tileentity.network.TileEntityFluidPipeAnchor;
+import com.hbm.tileentity.network.TileEntityPipelineBase;
+import com.hbm.tileentity.network.TileEntityPipelineBase.NetworkType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
@@ -27,11 +29,11 @@ import java.util.List;
 
 /**
  * 1.7 {@code RenderPipeAnchor}: the {@code Anchor} part of {@code pipe_anchor.obj} turned to the face it is mounted on,
- * and for every linked anchor of the same fluid a {@code Pipe} stretched from this anchor's mount to the other's,
- * tinted with the fluid colour lightened by a quarter, and a {@code Ring} at half its length less 1.5.
- * Only the "dominant" anchor of a pair (the smaller mount point, x then y then z) draws the pipe.
+ * and for every linked anchor a {@code Pipe} stretched from this anchor's mount to the other's and a {@code Ring} at
+ * half its length less 1.5. A fluid anchor tints the pipe with its fluid colour lightened by a quarter. Only the
+ * "dominant" anchor of a pair (the smaller mount point, x then y then z) draws the pipe.
  */
-public class RenderPipeAnchor extends GemBER<TileEntityPipeAnchor, RenderPipeAnchor.State> {
+public class RenderPipeAnchor<T extends BlockEntity & TileEntityPipelineBase> extends GemBER<T, RenderPipeAnchor.State> {
 
     public static class State extends CompatRenderState {
         public float rotX, rotZ;
@@ -40,13 +42,18 @@ public class RenderPipeAnchor extends GemBER<TileEntityPipeAnchor, RenderPipeAnc
         public final List<Integer> colors = new ArrayList<>();
     }
 
-    private static final Identifier TEX = Ids.of(Constants.MOD_ID, "textures/models/network/pipe_anchor.png");
+    private final Identifier tex;
     private final WavefrontObj model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/network/pipe_anchor.obj"));
+
+    /** {@code texture} is the name under {@code textures/models/network/}: pipe_anchor, _exhaust or _pneumatic. */
+    public RenderPipeAnchor(String texture) {
+        this.tex = Ids.of(Constants.MOD_ID, "textures/models/network/" + texture + ".png");
+    }
 
     @Override
     protected void setup(Gem.Model<State> declaration) {
         declaration.offScreen().viewDistance(256);
-        declaration.part(model.part("Anchor"), Surface.cutout(TEX.toString()))
+        declaration.part(model.part("Anchor"), Surface.cutout(tex.toString()))
                 .translate(0.5F, 0.5F, 0.5F)
                 .angle(Gem.Axes.X, s -> s.rotX)
                 .angle(Gem.Axes.Z, s -> s.rotZ)
@@ -59,9 +66,9 @@ public class RenderPipeAnchor extends GemBER<TileEntityPipeAnchor, RenderPipeAnc
     }
 
     @Override
-    public void extract(TileEntityPipeAnchor anchor, State state, float partialTicks, Vec3 cameraPosition) {
-        Direction facing = anchor.getBlockState().hasProperty(FluidPipeAnchor.FACING)
-                ? anchor.getBlockState().getValue(FluidPipeAnchor.FACING) : Direction.UP;
+    public void extract(T anchor, State state, float partialTicks, Vec3 cameraPosition) {
+        Direction facing = anchor.getBlockState().hasProperty(BasePipeAnchor.FACING)
+                ? anchor.getBlockState().getValue(BasePipeAnchor.FACING) : Direction.UP;
         switch (facing) {
             case DOWN -> { state.rotX = 180; state.rotZ = 0; }
             case NORTH -> { state.rotX = 90; state.rotZ = 180; }
@@ -77,14 +84,15 @@ public class RenderPipeAnchor extends GemBER<TileEntityPipeAnchor, RenderPipeAnc
         if (level == null) return;
         for (BlockPos pos : anchor.getConnected()) {
             BlockEntity tile = level.getBlockEntity(pos);
-            if (!(tile instanceof TileEntityPipeAnchor other)) continue;
-            if (anchor.getFluidType() != other.getFluidType()) continue;
+            if (!(tile instanceof TileEntityPipelineBase other)) continue;
             Vec3 anchorPoint = anchor.getConnectionPoint();
             Vec3 connectionPoint = other.getConnectionPoint();
             if (!isDominant(anchorPoint, connectionPoint)) continue;
             state.pipes.add(new double[]{connectionPoint.x - anchorPoint.x, connectionPoint.y - anchorPoint.y,
                     connectionPoint.z - anchorPoint.z});
-            state.colors.add(0xFF000000 | lighten(anchor.getFluidType().getColor(), 0.25D));
+            int color = anchor.getNetworkType() == NetworkType.FLUID && anchor instanceof TileEntityFluidPipeAnchor fluid
+                    ? lighten(fluid.getFluidType().getColor(), 0.25D) : 0xFFFFFF;
+            state.colors.add(0xFF000000 | color);
         }
     }
 
@@ -108,13 +116,13 @@ public class RenderPipeAnchor extends GemBER<TileEntityPipeAnchor, RenderPipeAnc
             poseStack.pushPose();
             poseStack.scale(1F, (float) length, 1F);
             poseStack.translate(0F, -0.5F, 0F);
-            sink.submitCustomGeometry(poseStack, CompatRenderTypes.entityCutout(TEX),
+            sink.submitCustomGeometry(poseStack, CompatRenderTypes.entityCutout(tex),
                     (pose, buffer) -> model.renderPart("Pipe", pose, buffer, light, OverlayTexture.NO_OVERLAY, color));
             poseStack.popPose();
 
             poseStack.pushPose();
             poseStack.translate(0F, (float) (length / 2D - 1.5D), 0F);
-            sink.submitCustomGeometry(poseStack, CompatRenderTypes.entityCutout(TEX),
+            sink.submitCustomGeometry(poseStack, CompatRenderTypes.entityCutout(tex),
                     (pose, buffer) -> model.renderPart("Ring", pose, buffer, light, OverlayTexture.NO_OVERLAY));
             poseStack.popPose();
 

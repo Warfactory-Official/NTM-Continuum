@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFluidMultiUserMK2;
-import com.hbm.uninos.graph.PortClaims;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -47,6 +46,10 @@ import java.util.List;
 import java.util.Random;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePort;
+import com.hbm.tileentity.TilePortShapes;
+import com.hbm.uninos.networkproviders.FluidNetProvider;
 
 /** The four-lane Assembly Factory controller, ported from the 1.12.2 tile entity. */
 public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase implements MenuProvider,
@@ -182,6 +185,16 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAssemblyFactory factory) {
+        factory.setupPowerPorts(factory.getPowerPorts());
+        factory.setupFluidPorts(factory.getFluidPorts());
+        if (factory.coolantInPort == null) factory.coolantInPort = new TilePort().setupOwner(factory.coolantDelegate).setupPort(factory.getCoolantPort()).setupType(FluidNetProvider.of(factory.water.getTankType()));
+        if (factory.coolantOutPort == null) factory.coolantOutPort = new TilePort().setupOwner(factory.coolantDelegate).setupPort(factory.getCoolantPort()).setupType(FluidNetProvider.of(factory.lps.getTankType()));
+        factory.updatePortPIFIFO();
+        factory.coolantInPort.update(level);
+        factory.coolantInPort.checkSubscribe(level);
+        factory.coolantOutPort.update(level);
+        factory.coolantOutPort.checkProvide(level);
+
         if (factory.maxPower <= 0L) factory.maxPower = 10_000_000L;
 
         long nextMaxPower = 0L;
@@ -192,21 +205,6 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
         factory.maxPower = Math.max(Math.max(factory.power, nextMaxPower), 1_000_000L);
         factory.power = Library.chargeTEFromItems(factory.inventory, 0, factory.power, factory.maxPower);
         factory.upgradeManager.checkSlots(factory.inventory, 1, 3);
-
-        for (DirPos connection : factory.getConPos()) {
-            factory.trySubscribe(level, connection);
-            for (FluidTankNTM tank : factory.inputTanks) {
-                if (tank.getTankType() != Fluids.NONE) factory.trySubscribe(tank.getTankType(), level, connection);
-            }
-            for (FluidTankNTM tank : factory.outputTanks) {
-                if (tank.getFill() > 0) factory.tryProvide(tank, level, connection);
-            }
-        }
-        for (DirPos connection : factory.getCoolPos()) {
-            factory.coolantDelegate.trySubscribe(level, connection);
-            factory.coolantDelegate.trySubscribe(factory.water.getTankType(), level, connection);
-            factory.coolantDelegate.tryProvide(factory.lps, level, connection);
-        }
 
         int speedLevel = Math.min(factory.upgradeManager.getLevel(UpgradeType.SPEED), 3);
         int powerLevel = Math.min(factory.upgradeManager.getLevel(UpgradeType.POWER), 3);
@@ -245,6 +243,52 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
 
     public boolean canCool() {
         return water.getFill() >= 100 && lps.getFill() <= lps.getMaxFill() - 100;
+    }
+
+    public TilePort coolantInPort;
+    public TilePort coolantOutPort;
+
+    protected PortDef[] cachedPowerPorts;
+    public PortDef[] getPowerPorts() { if (cachedPowerPorts == null) cachedPowerPorts = TilePortShapes.purex(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPowerPorts; }
+
+    protected PortDef[] cachedFluidPorts;
+    public PortDef[] getFluidPorts() {
+        if (cachedFluidPorts == null) {
+            ForgeDirection dir = facing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedFluidPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX + rot.offsetX * 2, y, z + dir.offsetZ + rot.offsetZ * 2, rot),
+                    PortDef.make(x - dir.offsetX + rot.offsetX * 2, y, z - dir.offsetZ + rot.offsetZ * 2, rot),
+                    PortDef.make(x + dir.offsetX - rot.offsetX * 2, y, z + dir.offsetZ - rot.offsetZ * 2, rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX - rot.offsetX * 2, y, z - dir.offsetZ - rot.offsetZ * 2, rot.getOpposite()),
+                    PortDef.make(x + 2, y, z + 0, Library.POS_X),
+                    PortDef.make(x + 2, y, z + 2, Library.POS_X, Library.POS_Z),
+                    PortDef.make(x + 0, y, z + 2, Library.POS_Z),
+                    PortDef.make(x - 2, y, z + 2, Library.NEG_X, Library.POS_Z),
+                    PortDef.make(x - 2, y, z + 0, Library.NEG_X),
+                    PortDef.make(x - 2, y, z - 2, Library.NEG_X, Library.NEG_Z),
+                    PortDef.make(x + 0, y, z - 2, Library.NEG_Z),
+                    PortDef.make(x + 2, y, z - 2, Library.POS_X, Library.NEG_Z),
+            };
+        }
+        return cachedFluidPorts;
+    }
+
+    protected PortDef coolantPort;
+    public PortDef getCoolantPort() {
+        if (coolantPort == null) {
+            ForgeDirection dir = facing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            coolantPort = PortDef.combine(
+                    PortDef.make(x + rot.offsetX + dir.offsetX * 2, y, z + rot.offsetZ + dir.offsetZ * 2, dir),
+                    PortDef.make(x - rot.offsetX + dir.offsetX * 2, y, z - rot.offsetZ + dir.offsetZ * 2, dir),
+                    PortDef.make(x + rot.offsetX - dir.offsetX * 2, y, z + rot.offsetZ - dir.offsetZ * 2, dir.getOpposite()),
+                    PortDef.make(x - rot.offsetX - dir.offsetX * 2, y, z - rot.offsetZ - dir.offsetZ * 2, dir.getOpposite())
+            );
+        }
+        return coolantPort;
     }
 
     public DirPos[] getConPos() {
@@ -294,6 +338,15 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
                 new DirPos(x + rot.offsetX - dir.offsetX * 3, y, z + rot.offsetZ - dir.offsetZ * 3, dir.getOpposite()),
                 new DirPos(x - rot.offsetX - dir.offsetX * 3, y, z - rot.offsetZ - dir.offsetZ * 3, dir.getOpposite())
         };
+    }
+
+    @Override
+    public void setRemoved() {
+        if (level != null) {
+            if (coolantInPort != null) coolantInPort.disableIfPresent(level);
+            if (coolantOutPort != null) coolantOutPort.disableIfPresent(level);
+        }
+        super.setRemoved();
     }
 
     private ForgeDirection facing() {
@@ -432,10 +485,7 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     }
 
     /** The coolant proxy capability from the old extra-dummy cells. */
-    private final class CoolantDelegate implements IEnergyReceiverMK2, IFluidStandardTransceiverMK2,
-            PortClaims.Delegate {
-        /** 1.7's {@code delegate} subscribes at the coolant positions on the factory's behalf. */
-        @Override public Object portClaimOwner() { return TileEntityMachineAssemblyFactory.this; }
+    private final class CoolantDelegate implements IEnergyReceiverMK2, IFluidStandardTransceiverMK2 {
         @Override public long getPower() { return TileEntityMachineAssemblyFactory.this.power; }
         @Override public void setPower(long power) { TileEntityMachineAssemblyFactory.this.power = power; }
         @Override public long getMaxPower() { return TileEntityMachineAssemblyFactory.this.maxPower; }

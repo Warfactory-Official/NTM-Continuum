@@ -46,6 +46,7 @@ import dev.golem.core.data.DataOut;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Pyro Oven, 1:1 port of the 1.12.2 {@code TileEntityMachinePyroOven}.
@@ -86,16 +87,12 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
     @Override public String getDefaultName() { return "container.machinePyroOven"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePyroOven te) {
+        te.moduleSmokePorts.update(te.getSmokePorts());
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
-
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
-            if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp);
-        }
-
-        if (te.smoke.getFill() > 0) te.tryProvide(te.smoke, level, te.getSmokePos());
 
         te.upgradeManager.checkSlots(te.inventory, 4, 5);
         int speed = te.upgradeManager.getLevel(UpgradeType.SPEED);
@@ -248,35 +245,36 @@ public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
         if (recipe.inputFluid != null) tanks[0].setFill(tanks[0].getFill() - recipe.inputFluid.fill);
     }
 
-    public DirPos[] getConPos() {
-        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
-        ForgeDirection dir = ForgeDirection.getOrientation(meta);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+    protected PortDef[] cachedPorts;
 
-        return new DirPos[]{
-                new DirPos(x + dir.offsetX * 2 + rot.offsetX * 3, y, z + dir.offsetZ * 2 + rot.offsetZ * 3, rot),
-                new DirPos(x + dir.offsetX + rot.offsetX * 3, y, z + dir.offsetZ + rot.offsetZ * 3, rot),
-                new DirPos(x + rot.offsetX * 3, y, z + rot.offsetZ * 3, rot),
-                new DirPos(x - dir.offsetX + rot.offsetX * 3, y, z - dir.offsetZ + rot.offsetZ * 3, rot),
-                new DirPos(x - dir.offsetX * 2 + rot.offsetX * 3, y, z - dir.offsetZ * 2 + rot.offsetZ * 3, rot)
-        };
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+            ForgeDirection dir = ForgeDirection.getOrientation(meta);
+            ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 2 + rot.offsetX * 2, y, z + dir.offsetZ * 2 + rot.offsetZ * 2, rot),
+                    PortDef.make(x + dir.offsetX * 1 + rot.offsetX * 2, y, z + dir.offsetZ * 1 + rot.offsetZ * 2, rot),
+                    PortDef.make(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot),
+                    PortDef.make(x - dir.offsetX * 1 + rot.offsetX * 2, y, z - dir.offsetZ * 1 + rot.offsetZ * 2, rot),
+                    PortDef.make(x - dir.offsetX * 2 + rot.offsetX * 2, y, z - dir.offsetZ * 2 + rot.offsetZ * 2, rot),
+            };
+        }
+        return cachedPorts;
     }
 
-    /**
-     * 1.7's smoke target, {@code sendFluid(smoke, x - rot.x, y + 3, z - rot.z, POS_Y)}: the vent on top of the
-     * cell at {@code (-rot, 2)}. Declared as a port getter so the folded face table is checked against it.
-     */
-    public DirPos getSmokePos() {
-        ForgeDirection rot = ForgeDirection.getOrientation(MachineCore.facingOrdinal(getBlockState(), 2))
-                .getRotation(ForgeDirection.DOWN);
-        return new DirPos(worldPosition.getX() - rot.offsetX, worldPosition.getY() + 3,
-                worldPosition.getZ() - rot.offsetZ, ForgeDirection.UP);
-    }
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
-    /** {@link #getSmokePos()} as a port list, for the folded-port check. */
-    public DirPos[] getSmokePorts() {
-        return new DirPos[]{getSmokePos()};
+    protected PortDef[] cachedSmokePorts;
+    public PortDef[] getSmokePorts() {
+        if (cachedSmokePorts == null) {
+            ForgeDirection rot = ForgeDirection.getOrientation(MachineCore.facingOrdinal(getBlockState(), 2)).getRotation(ForgeDirection.DOWN);
+            cachedSmokePorts = new PortDef[] {
+                    PortDef.make(worldPosition.getX() - rot.offsetX, worldPosition.getY() + 2, worldPosition.getZ() - rot.offsetZ, Library.POS_Y),
+            };
+        }
+        return cachedSmokePorts;
     }
 
     private void setTypeFromFluidId() {

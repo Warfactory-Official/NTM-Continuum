@@ -58,16 +58,16 @@ public final class GunObtainmentDataAuditGameTests {
 
     private GunObtainmentDataAuditGameTests() {}
 
-    /** The source table is 89 rows; the live list may be smaller only while dependency items are absent. */
+    /** Every dependency-complete 1.7 row is live; the CIWS belt is the one output outside ammo_standard. */
     public static void ammoPressCatalogue(GameTestHelper helper) {
         List<AmmoPressRecipe> recipes = AmmoPressRecipes.getRecipes();
         helper.assertTrue(recipes.size() == AmmoPressRecipes.SOURCE_RECIPE_COUNT,
-                "Ammo Press must expose all 89 dependency-complete 1.7 rows: " + recipes.size());
+                "Ammo Press must expose all dependency-complete 1.7 rows: " + recipes.size());
         Set<String> outputs = new HashSet<>();
         for (AmmoPressRecipe recipe : recipes) {
             String path = BuiltInRegistries.ITEM.getKey(recipe.output.getItem()).getPath();
             outputs.add(path);
-            helper.assertTrue(path.startsWith("ammo_standard_"),
+            helper.assertTrue(path.startsWith("ammo_standard_") || path.equals("ammo_dgk"),
                     "Ammo Press output must use the flattened ammo_standard_<enum lower> convention: " + path);
             helper.assertTrue(recipe.input.length == 9, "Ammo Press row lost its nine positional slots: " + path);
             boolean hasIngredient = false;

@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModFallingBlocks;
@@ -12,6 +13,7 @@ import com.hbm.explosion.ExplosionLarge;
 import com.hbm.sound.AudioSystem;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.ModSounds;
+import com.hbm.util.DamageResistanceHandler;
 import com.hbm.util.DropHeight;
 import com.hbm.world.feature.Meteorite;
 import net.minecraft.core.BlockPos;
@@ -33,7 +35,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 1.7 entity/projectile/EntityMeteor - the falling meteor of the meteor-strike/shower event: carves a 5-radius channel below y=260, then explodes and buries a Meteorite crater. safe = the diverted meteor, no terrain damage.
  */
-public class EntityMeteor extends CompatEntity {
+public class EntityMeteor extends CompatEntity implements IRadarDetectableNT {
 
     public boolean safe = false;
     private AudioWrapper audioFly;
@@ -199,10 +201,21 @@ public class EntityMeteor extends CompatEntity {
         }
     }
 
+    /** Only an energy hit of at least 250 (a laser, the orbital precision laser) destroys a meteor. */
     @Override
     protected boolean onHurt(DamageSource source, float amount) {
+        if (!level().isClientSide() && amount >= 250
+                && DamageResistanceHandler.CATEGORY_ENERGY.equals(DamageResistanceHandler.typeToCategory(source))) {
+            discard();
+        }
         return false;
     }
+
+    @Override public String getRadarName() { return "radar.target.meteor"; }
+    @Override public int getBlipLevel() { return IRadarDetectableNT.SPECIAL; }
+    @Override public boolean canBeSeenBy(Object radar) { return true; }
+    @Override public boolean paramsApplicable(RadarScanParams params) { return params.scanMissiles; }
+    @Override public boolean suppliesRedstone(RadarScanParams params) { return params.scanMissiles; }
 
     // 1.7: isInRangeToRenderDist always true - 4x4 box would cull
     @Override

@@ -3,7 +3,6 @@ package com.hbm.tileentity.bomb;
 import com.hbm.inventory.container.ContainerLaunchPad;
 import com.hbm.items.weapon.ItemMissileStandard;
 import com.hbm.items.weapon.ItemMissileStandard.MissileFormFactor;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.MachineAudio;
@@ -25,6 +24,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * 1.7 {@code TileEntityLaunchPadLarge}: the 9x9 erector pad for every standard missile. The missile is lifted
@@ -195,19 +195,21 @@ public class TileEntityLaunchPadLarge extends TileEntityLaunchPadBase implements
         return (byte) MachineCore.facingOrdinal(getBlockState(), 5);
     }
 
-    @Override
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 5, y, z - 2, Library.POS_X),
-                new DirPos(x + 5, y, z + 2, Library.POS_X),
-                new DirPos(x - 5, y, z - 2, Library.NEG_X),
-                new DirPos(x - 5, y, z + 2, Library.NEG_X),
-                new DirPos(x - 2, y, z + 5, Library.POS_Z),
-                new DirPos(x + 2, y, z + 5, Library.POS_Z),
-                new DirPos(x - 2, y, z - 5, Library.NEG_Z),
-                new DirPos(x + 2, y, z - 5, Library.NEG_Z)
-        };
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + 4, y, z - 2, Library.POS_X),
+                    PortDef.make(x + 4, y, z + 2, Library.POS_X),
+                    PortDef.make(x - 4, y, z - 2, Library.NEG_X),
+                    PortDef.make(x - 4, y, z + 2, Library.NEG_X),
+                    PortDef.make(x - 2, y, z + 4, Library.POS_Z),
+                    PortDef.make(x + 2, y, z + 4, Library.POS_Z),
+                    PortDef.make(x - 2, y, z - 4, Library.NEG_Z),
+                    PortDef.make(x + 2, y, z - 4, Library.NEG_Z),
+            };
+        }
+        return cachedPorts;
     }
 
     @Override

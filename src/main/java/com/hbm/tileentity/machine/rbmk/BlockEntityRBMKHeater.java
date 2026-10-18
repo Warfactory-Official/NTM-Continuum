@@ -22,6 +22,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
 
 /** Heat-exchanger column: a fluid identifier selects the first FT_Heatable conversion step. */
 public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluidProviderMK2, IFluidReceiverMK2, MenuProvider, IRORValueProvider {
@@ -30,9 +31,11 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
 
     public BlockEntityRBMKHeater(BlockPos pos, BlockState state) {
         super(ModRBMKBlockEntities.RBMK_HEATER.get(), pos, state, 1);
+        ports = new ModulePortManFluidAdaptive(this).setInputTanks(feed).setOutputTanks(steam);
     }
 
     @Override public void tickServer() {
+        ports.update(getLoaderPorts());
         updateFeedType();
         FT_Heatable trait = feed.getTankType().getTrait(FT_Heatable.class);
         if (trait != null) {
@@ -57,11 +60,13 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
         super.tickServer();
     }
 
-    private void updateFeedType() {
+    /** A hot column with coolant in its input keeps its type, so it stays configurable until the input fills. */
+    public void updateFeedType() {
+        if (heat > 50 && feed.getFill() > 0) return;
         ItemStack identifier = inventory.getStackInSlot(0);
         if (!(identifier.getItem() instanceof IItemFluidId item)) return;
         FluidType target = item.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), identifier);
-        if (target != null && feed.getFill() == 0 && feed.getTankType() != target) {
+        if (target != null && feed.getTankType() != target) {
             feed.setTankType(target);
             markChanged();
         }

@@ -60,8 +60,9 @@ public class MachineOrbus extends BlockMultiblockMachine implements IFluidConnec
     }
 
     /**
-     * 1.7 {@code fillSpace}: the core column, the one behind it ({@code dir.getOpposite()}) and the two beside
-     * those ({@code dir.getRotation(UP)}), each marked extra at the bottom and at {@code y + 4}.
+     * 1.7 {@code fillSpace} marks the core column, the one behind it ({@code dir.getOpposite()}) and the two beside
+     * those ({@code dir.getRotation(UP)}) extra at the bottom and at {@code y + 4}. Only the bottom four are ports:
+     * 1.7's top ports sit at {@code y + 3} and reach into the orbus itself.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
@@ -69,13 +70,9 @@ public class MachineOrbus extends BlockMultiblockMachine implements IFluidConnec
         ForgeDirection dir = ForgeDirection.getOrientation(facing);
         ForgeDirection d2 = dir.getRotation(ForgeDirection.UP);
         ForgeDirection back = dir.getOpposite();
-        for (int i = 0; i < 5; i += 4) {
-            int mask = i == 0 ? MASK_DOWN : MASK_UP;
-            if (i != 0) visitor.cell(core.above(i), mask, ROLE_FLUID);
-            visitor.cell(core.offset(back.offsetX, i, back.offsetZ), mask, ROLE_FLUID);
-            visitor.cell(core.offset(d2.offsetX, i, d2.offsetZ), mask, ROLE_FLUID);
-            visitor.cell(core.offset(back.offsetX + d2.offsetX, i, back.offsetZ + d2.offsetZ), mask, ROLE_FLUID);
-        }
+        visitor.cell(core.offset(back.offsetX, 0, back.offsetZ), MASK_DOWN, ROLE_FLUID);
+        visitor.cell(core.offset(d2.offsetX, 0, d2.offsetZ), MASK_DOWN, ROLE_FLUID);
+        visitor.cell(core.offset(back.offsetX + d2.offsetX, 0, back.offsetZ + d2.offsetZ), MASK_DOWN, ROLE_FLUID);
     }
 
     /**
@@ -112,5 +109,19 @@ public class MachineOrbus extends BlockMultiblockMachine implements IFluidConnec
                     .append(type.getDisplayName()).append(Component.literal("!")));
         }
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, -1, ForgeDirection.DOWN.ordinal()},
+                {0, 0, 0, ForgeDirection.DOWN.ordinal()},
+                {1, 0, -1, ForgeDirection.DOWN.ordinal()},
+                {1, 0, 0, ForgeDirection.DOWN.ordinal()},
+                {0, 4, -1, ForgeDirection.UP.ordinal()},
+                {0, 4, 0, ForgeDirection.UP.ordinal()},
+                {1, 4, -1, ForgeDirection.UP.ordinal()},
+                {1, 4, 0, ForgeDirection.UP.ordinal()},
+        }, dir);
     }
 }

@@ -53,6 +53,7 @@ public final class RotaryFurnaceTable extends RecipeSource<Row> {
         add(new RotaryFurnaceRecipe(new MaterialStack(MAT_SATURNITE, INGOT.quantity * 4), 200, 300, new FluidStack(Fluids.REFORMGAS, 250), DURA.dust().count(4), CU.dust(), BORAX.dust()));
         add(new RotaryFurnaceRecipe(new MaterialStack(MAT_ALUMINIUM, INGOT.quantity * 2), 100, 400, new FluidStack(Fluids.SODIUM_ALUMINATE, 150)));
         add(new RotaryFurnaceRecipe(new MaterialStack(MAT_ALUMINIUM, INGOT.quantity * 3), 40, 200, new FluidStack(Fluids.SODIUM_ALUMINATE, 150), new ComparableStack(ModItems.powder_flux.get(), 2)));
+        add(new RotaryFurnaceRecipe(new MaterialStack(MAT_TITANIUM, INGOT.quantity * 4), 40, 100, new FluidStack(Fluids.TITANIUM_TETRACHLORIDE, 1_000), new ComparableStack(ModItems.powder_flux.get(), 1)));
     }
 
     /** 1.7 {@code recipes.add(recipe)}; the id is the output material, {@code _2}, {@code _3}… for its later rows. */

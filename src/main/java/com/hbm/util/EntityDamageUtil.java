@@ -13,6 +13,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.ClipContext;
+import dev.golem.core.platform.Platform;
 import dev.golem.core.world.Compat;
 
 /** Damage helpers that bypass rules vanilla applies but 1.12.2's weapons do not. */
@@ -132,5 +133,9 @@ public final class EntityDamageUtil {
             return new EntityHitResult(pointedEntity, hitVec);
         }
         return block;
+    }
+
+    public static boolean isRealPlayer(Entity entity) {
+        return entity instanceof Player player && !Platform.isFakePlayer(player);
     }
 }

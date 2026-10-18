@@ -304,6 +304,7 @@ public final class TracerRegistry {
         return MODELS.computeIfAbsent(id, WavefrontObj::load);
     }
 
+    /** 1.7 {@code LegoClient.renderFlare}: two additive sprites drawn with fog off. */
     public static BulletTracer flare(float red, float green, float blue) {
         return (state, pose, sink) -> {
             if (state.age < 2F || state.cameraOrientation == null) return;
@@ -311,7 +312,7 @@ public final class TracerRegistry {
             Quaternionf camera = state.cameraOrientation;
             pose.pushPose();
             pose.mulPose(camera);
-            sink.submitCustomGeometry(pose, CompatRenderTypes.entityTranslucentEmissive(FLARE), (p, buffer) -> {
+            sink.submitCustomGeometry(pose, CompatRenderTypes.flare(FLARE), (p, buffer) -> {
                 flareQuad(p, buffer, scale, red, green, blue, 0.5F);
                 flareQuad(p, buffer, scale * 0.5F, 1F, 1F, 1F, 0.75F);
             });

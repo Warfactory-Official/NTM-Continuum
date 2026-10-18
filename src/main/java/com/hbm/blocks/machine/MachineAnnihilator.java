@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
@@ -78,5 +79,14 @@ public final class MachineAnnihilator extends BlockMultiblockMachine
             new int[] {2, 0, 4, 4, 1, 1},
             new int[] {8, -2, 1, 1, 1, 1, -3, 0, 0}
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 3, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 3, ForgeDirection.WEST.ordinal()},
+                {0, 0, 4, ForgeDirection.SOUTH.ordinal()},
+        }, dir);
     }
 }

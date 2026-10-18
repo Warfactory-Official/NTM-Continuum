@@ -1,5 +1,7 @@
 package com.hbm.client;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.hbm.Constants;
 import com.hbm.qmaw.GuiQMAW;
 import com.hbm.qmaw.QMAWLoader;
@@ -8,6 +10,7 @@ import dev.golem.core.client.ClientResourceReloads;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.KeyMappings;
 import dev.golem.core.client.Tooltips;
+import dev.golem.core.harness.HarnessQueryRegistry;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -36,6 +39,32 @@ public final class QMAWClient {
                 });
         Tooltips.onItemTooltip(QMAWClient::addTooltip);
         ClientTicks.onEndTick(QMAWClient::openPending);
+        HarnessQueryRegistry.register("hbm_qmaw", QMAWClient::query);
+    }
+
+    /** Harness: loader counts, and the open manual's id and elements; {@code open=<page>} opens a page first. */
+    private static JsonObject query(Minecraft mc, JsonObject params) {
+        JsonObject json = new JsonObject();
+        if (params.has("open")) {
+            QuickManualAndWiki page = QMAWLoader.qmaw.get(params.get("open").getAsString());
+            json.addProperty("opened", page != null);
+            if (page != null) mc.setScreen(new GuiQMAW(page));
+        }
+        json.addProperty("pages", QMAWLoader.qmaw.size());
+        json.addProperty("files", QMAWLoader.sourceFiles);
+        json.addProperty("triggers", QMAWLoader.indexedTriggers);
+        json.addProperty("unresolved", QMAWLoader.unresolvedTriggers.size());
+        if (mc.screen instanceof GuiQMAW gui) {
+            json.addProperty("page", gui.pageId());
+            JsonArray lines = new JsonArray();
+            for (List<String> line : gui.describeLines()) {
+                JsonArray row = new JsonArray();
+                line.forEach(row::add);
+                lines.add(row);
+            }
+            json.add("lines", lines);
+        }
+        return json;
     }
 
     private static void addTooltip(ItemStack stack, List<Component> lines) {

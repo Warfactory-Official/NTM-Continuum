@@ -1,7 +1,6 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModEnergyBedrockBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
@@ -10,6 +9,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The 1.7 {@code TileEntityConverterRfHe} ("RF to HE Converter"): foreign machines push RF (the platform energy
@@ -38,6 +39,9 @@ public class TileEntityConverterRfHe extends TileEntityLoadedBase implements IEn
         super(ModEnergyBedrockBlockEntities.CONVERTER_RF_HE.get(), pos, state);
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityConverterRfHe converter) {
         long rfCreated = Math.min(converter.stored, (converter.maxPower - converter.power) * rfInput / heOutput);
         converter.stored = (int) (converter.stored - rfCreated);
@@ -48,9 +52,9 @@ public class TileEntityConverterRfHe extends TileEntityLoadedBase implements IEn
         }
         if (rfCreated > 0) converter.setChanged();
 
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            converter.tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
+        converter.setupPowerPorts(converter.getPorts());
+        converter.updateAllPorts();
+        converter.providePower();
 
         converter.networkPackNT();
     }

@@ -18,7 +18,6 @@ import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.inventory.recipes.RotaryFurnaceRecipes;
 import com.hbm.inventory.recipes.RotaryFurnaceRecipes.RotaryFurnaceRecipe;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.module.ModuleBurnTime;
 import com.hbm.particle.helper.HbmEffectNT;
@@ -46,6 +45,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import com.hbm.inventory.container.ContainerMachineRotaryFurnace;
 import com.hbm.tileentity.ModProductionBlockEntities;
+import com.hbm.lib.Library;
+import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The rotary furnace core: three unordered item inputs, a fluid-identifier slot, a solid-fuel slot,
@@ -105,7 +107,14 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         tanks[1] = new FluidTankNTM(Fluids.STEAM, 12_000);
         tanks[2] = new FluidTankNTM(Fluids.SPENTSTEAM, 120);
         RotaryFurnaceRecipes.register();
+        moduleSteamPorts = new ModulePortManFluidAdaptive(this).setInputTanks(tanks[1]).setOutputTanks(tanks[2]);
+        moduleFluidPorts = new ModulePortManFluidAdaptive(this).setInputTanks(tanks[0]);
+        moduleSmokePorts = new ModulePortManFluidAdaptive(this).setOutputTanks(smoke, smokeLeaded, smokePoison);
     }
+
+    protected final ModulePortManFluidAdaptive moduleSteamPorts;
+    protected final ModulePortManFluidAdaptive moduleFluidPorts;
+    protected final ModulePortManFluidAdaptive moduleSmokePorts;
 
     @Override
     public String getDefaultName() {
@@ -118,17 +127,9 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
 
         te.setTankType(3);
 
-        for (DirPos con : te.getSteamPos()) {
-            te.trySubscribe(te.tanks[1].getTankType(), level, con);
-            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, con);
-        }
-        if (te.tanks[0].getTankType() != Fluids.NONE) {
-            for (DirPos con : te.getFluidPos()) te.trySubscribe(te.tanks[0].getTankType(), level, con);
-        }
-
-        if (te.smoke.getFill() > 0) {
-            for (DirPos con : te.getSmokePos()) te.tryProvide(te.smoke, level, con);
-        }
+        te.moduleSteamPorts.update(te.getSteamPorts());
+        te.moduleFluidPorts.update(te.getFluidPorts());
+        te.moduleSmokePorts.update(te.getSmokePorts());
 
         if (te.pourTimer > 0) te.pourTimer--; else te.pourColor = -1;
 
@@ -151,7 +152,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
             if (te.output.amount <= 0) te.output = null;
         }
 
-        RotaryFurnaceRecipe recipe = RotaryFurnaceRecipes.getRecipe(
+        RotaryFurnaceRecipe recipe = RotaryFurnaceRecipes.getRecipe(te.tanks[0].getTankType(),
                 te.inventory.getStackInSlot(0), te.inventory.getStackInSlot(1), te.inventory.getStackInSlot(2));
         te.isProgressing = false;
 
@@ -190,7 +191,6 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
                     te.pollute(PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND / 10F);
                     te.burnTime--;
                 }
-
             } else {
                 te.progress = 0;
             }
@@ -202,7 +202,6 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
                 te.steamUsed -= doesReturn * 100;
                 te.tanks[2].setFill(te.tanks[2].getFill() + doesReturn);
             }
-
         } else {
             te.progress = 0;
         }
@@ -254,37 +253,53 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         }
     }
 
-    public DirPos[] getSteamPos() {
-        ForgeDirection dir = MachineCore.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-
-        return new DirPos[]{
-                new DirPos(x - dir.offsetX * 2 - rot.offsetX * 2, y, z - dir.offsetZ * 2 - rot.offsetZ * 2, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 2 - rot.offsetX, y, z - dir.offsetZ * 2 - rot.offsetZ, dir.getOpposite())
-        };
+    protected PortDef[] steamPortDef;
+    public PortDef[] getSteamPorts() {
+        if (steamPortDef == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            steamPortDef = new PortDef[] {
+                    PortDef.make(x - dir.offsetX * 1 - rot.offsetX * 2, y, z - dir.offsetZ * 1 - rot.offsetZ * 2, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 1 - rot.offsetX, y, z - dir.offsetZ * 1 - rot.offsetZ, dir.getOpposite())
+            };
+        }
+        return steamPortDef;
     }
 
-    public DirPos[] getFluidPos() {
-        ForgeDirection dir = MachineCore.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-
-        return new DirPos[]{
-                new DirPos(x + dir.offsetX + rot.offsetX * 3, y, z + dir.offsetZ + rot.offsetZ * 3, rot),
-                new DirPos(x - dir.offsetX + rot.offsetX * 3, y, z - dir.offsetZ + rot.offsetZ * 3, rot)
-        };
+    protected PortDef[] fluidPortDef;
+    public PortDef[] getFluidPorts() {
+        if (fluidPortDef == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            fluidPortDef = new PortDef[] {
+                    PortDef.make(x + dir.offsetX + rot.offsetX * 2, y, z + dir.offsetZ + rot.offsetZ * 2, rot),
+                    PortDef.make(x - dir.offsetX + rot.offsetX * 2, y, z - dir.offsetZ + rot.offsetZ * 2, rot)
+            };
+        }
+        return fluidPortDef;
     }
 
-    /** 1.7 writes this one inline: {@code tryProvide(smoke, x + rot, y + 5, z + rot, POS_Y)} above the exhaust cell. */
-    public DirPos[] getSmokePos() {
-        ForgeDirection dir = MachineCore.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+    protected PortDef[] smokePortDef;
+    public PortDef[] getSmokePorts() {
+        if (smokePortDef == null) {
+            ForgeDirection rot = MachineCore.facing(getBlockState()).getRotation(ForgeDirection.DOWN);
+            smokePortDef = new PortDef[] {
+                    PortDef.make(worldPosition.getX() + rot.offsetX, worldPosition.getY() + 4, worldPosition.getZ() + rot.offsetZ, Library.POS_Y),
+            };
+        }
+        return smokePortDef;
+    }
 
-        return new DirPos[]{
-                new DirPos(x + rot.offsetX, y + 5, z + rot.offsetZ, ForgeDirection.UP)
-        };
+    @Override
+    public void setRemoved() {
+        if (level != null) {
+            moduleSteamPorts.destroy();
+            moduleFluidPorts.destroy();
+            moduleSmokePorts.destroy();
+        }
+        super.setRemoved();
     }
 
     public boolean canProcess(RotaryFurnaceRecipe recipe, float steamUseMult) {

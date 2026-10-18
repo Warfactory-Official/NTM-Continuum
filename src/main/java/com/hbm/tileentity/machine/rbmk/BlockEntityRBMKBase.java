@@ -9,6 +9,9 @@ import com.hbm.advancement.AwardRegions;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
+import com.hbm.blocks.machine.rbmk.RBMKLoader;
+import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
+import org.jspecify.annotations.Nullable;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -43,6 +46,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Shared RBMK heat, ReaSim boiler, sync, and connected-core meltdown implementation. */
 public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implements IRBMKTicking {
@@ -115,7 +121,55 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
         heat = Math.max(20D, heat - passiveCooling(members - 1));
     }
 
-    @Override public void setRemoved() { super.setRemoved(); if (level != null) NeutronNodeWorld.removeNode(level, worldPosition); }
+    // port: 1.7 never destroys these ports when a column goes, which leaves a passthrough node behind
+    @Override public void setRemoved() { super.setRemoved(); if (level != null) { NeutronNodeWorld.removeNode(level, worldPosition); if (ports != null) ports.destroy(); } }
+
+    /** The fluid ports of a column with tanks; null for the rest. */
+    protected @Nullable ModulePortManFluidAdaptive ports;
+
+    protected PortDef[] portShapeNoLoader;
+    public PortDef[] getPortsNoLoader() {
+        if (portShapeNoLoader == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            portShapeNoLoader = new PortDef[] {
+                    PortDef.make(x, y + RBMKDials.getColumnHeight(level), z, Library.POS_Y),
+                    PortDef.make(x, y, z, Library.NEG_Y),
+            };
+        }
+        return portShapeNoLoader;
+    }
+
+    protected PortDef[] portShapeCloseLoader;
+    public PortDef[] getPortsCloseLoader() {
+        if (portShapeCloseLoader == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            portShapeCloseLoader = new PortDef[] {
+                    PortDef.make(x, y + RBMKDials.getColumnHeight(level), z, Library.POS_Y),
+                    PortDef.make(x, y - 1, z, ForgeDirection.VALID_DIRECTIONS),
+            };
+        }
+        return portShapeCloseLoader;
+    }
+
+    protected PortDef[] portShapeClassicLoader;
+    public PortDef[] getPortsClassicLoader() {
+        if (portShapeClassicLoader == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            portShapeClassicLoader = new PortDef[] {
+                    PortDef.make(x, y + RBMKDials.getColumnHeight(level), z, Library.POS_Y),
+                    PortDef.make(x, y, z, Library.NEG_Y),
+                    PortDef.make(x, y - 2, z, ForgeDirection.VALID_DIRECTIONS),
+            };
+        }
+        return portShapeClassicLoader;
+    }
+
+    /** 1.7 checks for a loader two below first, then one below. */
+    public PortDef[] getLoaderPorts() {
+        if (level.getBlockState(worldPosition.below(2)).getBlock() instanceof RBMKLoader) return getPortsClassicLoader();
+        if (level.getBlockState(worldPosition.below()).getBlock() instanceof RBMKLoader) return getPortsCloseLoader();
+        return getPortsNoLoader();
+    }
     public RBMKType getRBMKType() { return RBMKType.OTHER; }
     public boolean isModerated() { return false; }
     public abstract RBMKColumnType getConsoleType();

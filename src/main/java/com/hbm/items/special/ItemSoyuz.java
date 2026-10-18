@@ -11,8 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-/** The satellite launch vehicle, as the item the launcher consumes; one item per paint
- * ({@code missile_soyuz_0/1/2}). */
+/** 1.7 {@code ItemSoyuz}: the satellite launch vehicle, one item per paint ({@code missile_soyuz_0/1/2}). */
 public class ItemSoyuz extends ItemEnumMulti {
 
     public ItemSoyuz(Properties properties, SoyuzSkinType type) {
@@ -27,6 +26,13 @@ public class ItemSoyuz extends ItemEnumMulti {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("desc.soyuz").withStyle(ChatFormatting.GRAY));
+        SoyuzSkinType type = typeOf(stack);
+        if (type == null) return;
+        Component skin = switch (type) {
+            case NORMAL -> Component.translatable("item.missile_soyuz.orig.desc").withStyle(ChatFormatting.GOLD);
+            case LUNAR -> Component.translatable("item.missile_soyuz.luna.desc").withStyle(ChatFormatting.BLUE);
+            case POST_WAR -> Component.translatable("item.missile_soyuz.war.desc").withStyle(ChatFormatting.GREEN);
+        };
+        tooltip.add(Component.translatable("item.missile_soyuz.desc").append(" ").append(skin));
     }
 }

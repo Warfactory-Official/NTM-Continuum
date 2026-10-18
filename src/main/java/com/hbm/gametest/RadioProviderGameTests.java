@@ -136,12 +136,14 @@ public final class RadioProviderGameTests {
         assertInfo(helper, new TileEntityMachinePUREX(pos(10), state(ModMachineBlocks.machine_purex.get())), "VAL:progress", "VAL:recipe", "VAL:active");
         assertInfo(helper, new TileEntityWatz(pos(11), state(ModMachineBlocks.watz.get())),
                 "VAL:heat", "VAL:flux", "VAL:mud", "VAL:coolant_hot", "VAL:coolant_cold");
-        assertInfo(helper, new TileEntityFusionTorus(pos(12), state(ModMachineBlocks.fusion_torus.get())), "VAL:plasma", "VAL:consumption");
+        assertInfo(helper, new TileEntityFusionTorus(pos(12), state(ModMachineBlocks.fusion_torus.get())), "VAL:plasma", "VAL:consumption",
+                "VAL:progress", "VAL:recipe", "VAL:active", "VAL:temp", "FUN:setrecipe!name");
         assertInfo(helper, new TileEntityFusionPlasmaForge(pos(13), state(ModMachineBlocks.fusion_plasma_forge.get())),
                 "VAL:progress", "VAL:recipe", "VAL:active", "VAL:booster", "VAL:plasma");
         assertInfo(helper, new TileEntityReactorZirnox(pos(14), state(ModMachineBlocks.machine_zirnox.get())),
                 "VAL:heat", "VAL:pressure", "VAL:water", "VAL:steam", "VAL:co2", "VAL:state",
-                "FUN:setState!active (0 or 1)", "FUN:ventCO2");
+                "VAL:slottype", "VAL:slotdep", "VAL:slotmaxdep", "FUN:setslot!id (0 to 23)",
+                "FUN:setstate!active (0 or 1)", "FUN:ventco2");
         assertInfo(helper, new TileEntityHeatBoiler(pos(15), state(ModMachineBlocks.machine_boiler.get())), "VAL:input", "VAL:output");
         assertInfo(helper, new TileEntityHeatBoilerIndustrial(pos(16), state(ModMachineBlocks.machine_industrial_boiler.get())), "VAL:input", "VAL:output");
         assertInfo(helper, new TileEntityHeaterHeatex(pos(17), state(ModMachineBlocks.heater_heatex.get())), "VAL:hotfluid", "VAL:coldfluid", "VAL:heat");
@@ -158,20 +160,20 @@ public final class RadioProviderGameTests {
         assertInfo(helper, new BlockEntityRBMKBoiler(pos(24), state(ModRBMKBlocks.rbmk_boiler.get())), "VAL:feed", "VAL:steam", "VAL:consumption");
         assertInfo(helper, new TileEntityGeiger(pos(25), state(ModMachineBlocks.geiger.get())), "VAL:rad");
         assertInfo(helper, new TileEntityCargoElevator(pos(31), state(ModMachineBlocks.cargo_elevator.get())),
-                "VAL:extension", "FUN:setextension!extension");
+                "VAL:extension", "FUN:setextension!amount");
         assertInteractive(helper, new BlockEntityRBMKTerminal(pos(30), state(ModRBMKBlocks.rbmk_terminal.get())),
                 "FUN:clear", "FUN:write!text", "FUN:set<line#>!text", "FUN:submit!command");
         assertInteractive(helper, new TileEntityTurretSentry(pos(25), state(ModTurretBlocks.turret_sentry.get())),
-                "FUN:setActive!active (0 or 1)", "FUN:targetPlayers!enabled (0 or 1)",
-                "FUN:targetAnimals!enabled (0 or 1)", "FUN:targetMobs!enabled (0 or 1)",
-                "FUN:targetMachines!enabled (0 or 1)", "FUN:addWhitelist!name", "FUN:removeWhitelist!name");
+                "FUN:setactive!active (0 or 1)", "FUN:targetplayers!enabled (0 or 1)",
+                "FUN:targetanimals!enabled (0 or 1)", "FUN:targetmobs!enabled (0 or 1)",
+                "FUN:targetmachines!enabled (0 or 1)", "FUN:addwhitelist!name", "FUN:removewhitelist!name");
         assertInteractive(helper, new TileEntityPileControl(pos(35), state(ModPileBlocks.pile_device.get())),
                 "FUN:setrods!percent", "FUN:extendrods!percent");
         assertInteractive(helper, new TileEntityTurretArty(pos(26), state(ModTurretBlocks.turret_arty.get())),
-                "FUN:setActive!active (0 or 1)", "FUN:targetPlayers!enabled (0 or 1)",
-                "FUN:targetAnimals!enabled (0 or 1)", "FUN:targetMobs!enabled (0 or 1)",
-                "FUN:targetMachines!enabled (0 or 1)", "FUN:addWhitelist!name", "FUN:removeWhitelist!name",
-                "FUN:enqueue!x:y:z");
+                "FUN:setactive!active (0 or 1)", "FUN:targetplayers!enabled (0 or 1)",
+                "FUN:targetanimals!enabled (0 or 1)", "FUN:targetmobs!enabled (0 or 1)",
+                "FUN:targetmachines!enabled (0 or 1)", "FUN:addwhitelist!name", "FUN:removewhitelist!name",
+                "FUN:setmode!mode", "FUN:enqueue!x:y:z");
         helper.succeed();
     }
 
@@ -249,11 +251,11 @@ public final class RadioProviderGameTests {
 
         TileEntityReactorZirnox zirnox = new TileEntityReactorZirnox(pos(5), state(ModMachineBlocks.machine_zirnox.get()));
         zirnox.carbonDioxide.setFill(2_000);
-        zirnox.runRORFunction("FUN:ventCO2", new String[0]);
+        zirnox.runRORFunction("FUN:ventco2", new String[0]);
         helper.assertTrue(zirnox.carbonDioxide.getFill() == 1_000, "ZIRNOX vent command changed");
         zirnox.redstonePowered = true;
         zirnox.isOn = false;
-        zirnox.runRORFunction("FUN:setState", new String[]{"1"});
+        zirnox.runRORFunction("FUN:setstate", new String[]{"1"});
         helper.assertTrue(!zirnox.isOn, "ZIRNOX ROR ignored redstone lockout");
 
         TileEntityMassStorage storage = new TileEntityMassStorage(MassStorageType.IRON, pos(6), state(ModStorageBlocks.mass_storage_iron.get()));
@@ -293,26 +295,27 @@ public final class RadioProviderGameTests {
                 "Geiger rounds its reading up, so 3.2 must read as 4");
 
         TileEntityTurretSentry sentry = new TileEntityTurretSentry(pos(7), state(ModTurretBlocks.turret_sentry.get()));
-        sentry.runRORFunction("FUN:setActive", new String[]{"1"});
-        sentry.runRORFunction("FUN:targetPlayers", new String[]{"1"});
-        sentry.runRORFunction("FUN:targetMobs", new String[]{"0"});
-        sentry.runRORFunction("FUN:targetMachines", new String[]{"0"});
+        sentry.runRORFunction("FUN:setactive", new String[]{"1"});
+        sentry.runRORFunction("FUN:targetplayers", new String[]{"1"});
+        sentry.runRORFunction("FUN:targetmobs", new String[]{"0"});
+        sentry.runRORFunction("FUN:targetmachines", new String[]{"0"});
         helper.assertTrue(sentry.isOn && sentry.targetPlayers && !sentry.targetMobs && !sentry.targetMachines,
                 "Turret ROR toggle command changed");
-        expectException(helper, () -> sentry.runRORFunction("FUN:setActive", new String[]{"2"}),
+        expectException(helper, () -> sentry.runRORFunction("FUN:setactive", new String[]{"2"}),
                 IRORInteractive.EX_FORMAT);
 
-        sentry.runRORFunction("FUN:addWhitelist", new String[]{"Steve"});
+        sentry.runRORFunction("FUN:addwhitelist", new String[]{"Steve"});
         helper.assertTrue(sentry.getWhitelist() == null, "Turret ROR wrote a whitelist with no chip installed");
         sentry.setItem(TileEntityTurretBaseNT.SLOT_CHIP, new ItemStack(ModMachineItems.turret_chip.get()));
-        sentry.runRORFunction("FUN:addWhitelist", new String[]{"Steve"});
+        sentry.runRORFunction("FUN:addwhitelist", new String[]{"Steve"});
         helper.assertTrue(sentry.getWhitelist() != null && sentry.getWhitelist().contains("Steve"),
                 "Turret ROR whitelist addition changed");
-        sentry.runRORFunction("FUN:removeWhitelist", new String[]{"Steve"});
-        helper.assertTrue(sentry.getWhitelist() == null, "Turret ROR whitelist removal changed");
+        sentry.runRORFunction("FUN:removewhitelist", new String[]{"Steve"});
+        helper.assertTrue(sentry.getWhitelist() != null && sentry.getWhitelist().isEmpty(),
+                "Turret ROR whitelist removal changed");
 
         TileEntityTurretArty arty = new TileEntityTurretArty(pos(8), state(ModTurretBlocks.turret_arty.get()));
-        arty.runRORFunction("FUN:setActive", new String[]{"1"});
+        arty.runRORFunction("FUN:setactive", new String[]{"1"});
         helper.assertTrue(arty.isOn, "Artillery ROR lost the inherited turret commands");
         arty.runRORFunction("FUN:enqueue", new String[]{"" + (pos(8).getX() + 20), "1"});
         helper.assertTrue(arty.queuedTargets() == 0, "Artillery ROR enqueued a fire mission without a Z");

@@ -8,6 +8,8 @@ import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ItemEnums.EnumChunkType;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ItemEnums.EnumExpensiveType;
+import com.hbm.items.machine.ItemDrive;
+import com.hbm.items.machine.ItemDrive.EnumDriveType;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.Item;
@@ -36,11 +38,18 @@ public final class ModIntermediateItems {
     private static final Map<EnumChunkType, RegistryObject<Item>> CHUNKS = new EnumMap<>(EnumChunkType.class);
     private static final Map<EnumCircuitType, RegistryObject<Item>> CIRCUITS = new EnumMap<>(EnumCircuitType.class);
     private static final Map<EnumExpensiveType, RegistryObject<Item>> EXPENSIVE = new EnumMap<>(EnumExpensiveType.class);
+    private static final Map<EnumDriveType, RegistryObject<ItemDrive>> DRIVES = new EnumMap<>(EnumDriveType.class);
 
     static {
         for (EnumChunkType v : EnumChunkType.VALUES) CHUNKS.put(v, reg("chunk_ore", v.name()));
         for (EnumCircuitType v : EnumCircuitType.VALUES) CIRCUITS.put(v, reg("circuit", v.name()));
         for (EnumExpensiveType v : EnumExpensiveType.VALUES) EXPENSIVE.put(v, reg("item_expensive", v.name()));
+        for (EnumDriveType v : EnumDriveType.values()) {
+            String name = v.name().toLowerCase(Locale.US);
+            DRIVES.put(v, REG.item("drive_" + name, p -> new ItemDrive(p, v))
+                    .transform(Presets.sprite("hbm:items/drive." + name))
+                    .tab(HbmTab.MATERIALS));
+        }
     }
 
     /** {@code <base>_<variant>}, drawn with the 1.7 metadata sprite {@code <base>.<variant>}. */
@@ -54,6 +63,7 @@ public final class ModIntermediateItems {
     public static Item chunk(EnumChunkType v)         { return CHUNKS.get(v).get(); }
     public static Item circuit(EnumCircuitType v)     { return CIRCUITS.get(v).get(); }
     public static Item expensive(EnumExpensiveType v) { return EXPENSIVE.get(v).get(); }
+    public static ItemDrive drive(EnumDriveType v)    { return DRIVES.get(v).get(); }
 
     public static ItemStack chunk(EnumChunkType v, int count)         { return new ItemStack(chunk(v), count); }
     public static ItemStack circuit(EnumCircuitType v, int count)     { return new ItemStack(circuit(v), count); }

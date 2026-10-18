@@ -11,7 +11,10 @@ import com.hbm.uninos.graph.EndpointRegistry;
 import com.hbm.uninos.graph.GraphNode;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
-import com.hbm.uninos.graph.PortClaims;
+import com.hbm.uninos.PortNet;
+import com.hbm.uninos.PortNode;
+import com.hbm.uninos.PortNodes;
+import com.hbm.uninos.networkproviders.PowerNetProvider;
 import dev.golem.core.platform.Lifecycle;
 import dev.golem.core.world.ChunkPromotions;
 import dev.golem.core.world.EnergyCompat;
@@ -42,9 +45,8 @@ import java.util.List;
  * {@code instanceof IEnergyHandlerMK2} answers the question. A capability lookup is only needed for
  * machines that are somebody else's.
  *
- * <p>Discovery is pull: a conductor probes the faces of its own cells and asks what is on the other side.
- * The role a machine found there plays is 1.7's per-port answer, claimed by its own {@code tryProvide} /
- * {@code trySubscribe} calls ({@link PortClaims}). The three things that can make a parked face live again are a
+ * <p>Discovery is pull: a conductor probes the faces of its own cells and asks what is on the other side. A machine
+ * with power ports is left to them ({@link PortNodes}). The three things that can make a parked face live again are a
  * neighbour notification on the conductor, a block entity announcing itself through
  * {@link com.hbm.tileentity.GraphResident} as its chunk loads, and a chunk reaching FULL.
  */
@@ -86,7 +88,7 @@ public final class PowerNetwork {
         Lifecycle.onLevelUnload((server, level) -> {
             LevelNodeGraph.clearLevel(level);
             EndpointRegistry.clearLevel(level);
-            PortClaims.clearLevel(level);
+            PortNodes.clearLevel(level);
         });
         Lifecycle.onServerTick(PowerNetwork::onServerTick);
     }
@@ -109,23 +111,35 @@ public final class PowerNetwork {
     }
 
     private static void onServerTick(MinecraftServer server) {
-        for (ServerLevel level : server.getAllLevels()) {
-            LevelNodeGraph<CableData> graph = PowerGraph.get(level);
-            if (graph.nodeCount() == 0) continue;
-            graph.applyCompiledSwaps();
-            for (NodeNetwork<CableData> net : graph.networks()) distribute(level, graph, net);
-        }
+        for (ServerLevel level : server.getAllLevels()) distributeAll(level);
         // A net emptied by the last cable coming out takes its bridge with it. A merge does not come
         // through here: the graph tells the provider, which folds the drained pool into the survivor.
         if (!BRIDGES.isEmpty()) BRIDGES.keySet().removeIf(net -> net.size() == 0);
+    }
+
+    /** Every net in one level once: the cable nets joined with the machine ports that reach them. */
+    public static void distributeAll(ServerLevel level) {
+        LevelNodeGraph<CableData> graph = PowerGraph.get(level);
+        if (graph.nodeCount() == 0 && PortNodes.nodes(level, PowerNetProvider.THE_PROVIDER).isEmpty()) return;
+        graph.applyCompiledSwaps();
+        for (PortNet<CableData> net : PortNodes.roundNets(level, graph, graph::networks, PowerNetProvider.THE_PROVIDER, data -> true)) {
+            distribute(level, graph, net);
+        }
+    }
+
+    /** The round of the net holding this cable net and the ports it touches. For tests that drive a single net. */
+    public static void distribute(ServerLevel level, LevelNodeGraph<CableData> graph, NodeNetwork<CableData> net) {
+        for (PortNet<CableData> portNet : PortNodes.nets(level, graph, List.of(net), PowerNetProvider.THE_PROVIDER, data -> true)) {
+            if (portNet.nets.contains(net)) distribute(level, graph, portNet);
+        }
     }
 
     /**
      * One net's round, under a re-entrancy brake whenever it has a foreign face: a push can reach a peer
      * whose own handler calls straight back into the capability we expose.
      */
-    public static void distribute(ServerLevel level, LevelNodeGraph<CableData> graph, NodeNetwork<CableData> net) {
-        ForeignEnergyBridge bridge = BRIDGES.isEmpty() ? null : BRIDGES.get(net);
+    public static void distribute(ServerLevel level, LevelNodeGraph<CableData> graph, PortNet<CableData> net) {
+        ForeignEnergyBridge bridge = BRIDGES.isEmpty() || net.nets.isEmpty() ? null : BRIDGES.get(net.nets.get(0));
         if (bridge == null) {
             round(level, graph, net, null);
             return;
@@ -138,57 +152,67 @@ public final class PowerNetwork {
         }
     }
 
-    private static void round(ServerLevel level, LevelNodeGraph<CableData> graph, NodeNetwork<CableData> net,
+    private static void round(ServerLevel level, LevelNodeGraph<CableData> graph, PortNet<CableData> net,
                               @Nullable ForeignEnergyBridge bridge) {
-        net.tracker = 0L;
         long gameTime = level.getGameTime();
-        ReferenceOpenHashSet<GraphNode<CableData>> faces = graph.drainProbes(net, level, FACE_PROBE);
-
         Gather gather = new Gather();
-        for (GraphNode<CableData> node : faces) {
-            EdgeFaces ef = node.ef;
-            if (ef == null) continue;
-            for (int d = 0; d <= EdgeFaces.SELF; d++) {
-                if ((ef.activeMask & (1 << d)) == 0) continue;
-                BlockPos at = neighbourOf(node.posKey, d);
-                if (!resident(level, at)) continue;
-                BlockEntity be = handlerAt(level, at, d);
-                if (be instanceof IEnergyHandlerMK2 handler) {
-                    if (handler.isLoaded()) {
-                        // 1.7: a role only through a port the machine claimed it at (tryProvide / trySubscribe),
-                        // each role once per round whichever of its faces carries it; see PortClaims.
-                        ForgeDirection side = d == EdgeFaces.SELF ? ForgeDirection.UNKNOWN
-                                : ForgeDirection.getOrientation(DIRS[d].getOpposite());
-                        // asked only with something to move: PortClaims learns a class from what it does then
-                        boolean provide = handler instanceof IEnergyProviderMK2
-                                && !gather.seenProviding.contains(handler)
-                                && Math.min(handler.getPower(), handler.getProviderSpeed()) > 0L
-                                && PortClaims.allows(level, node.posKey, side, handler, PortClaims.POWER, PortClaims.PROVIDE)
-                                && gather.seenProviding.add(handler);
-                        boolean receive = handler instanceof IEnergyReceiverMK2
-                                && !gather.seenReceiving.contains(handler)
-                                && Math.min(handler.getMaxPower() - handler.getPower(), handler.getReceiverSpeed()) > 0L
-                                && PortClaims.allows(level, node.posKey, side, handler, PortClaims.POWER, PortClaims.SUBSCRIBE)
-                                && gather.seenReceiving.add(handler);
-                        if (provide || receive) gather.offer(handler, provide, receive);
+
+        for (NodeNetwork<CableData> cables : net.nets) {
+            ReferenceOpenHashSet<GraphNode<CableData>> faces = graph.drainProbes(cables, level, FACE_PROBE);
+            for (GraphNode<CableData> node : faces) {
+                EdgeFaces ef = node.ef;
+                if (ef == null) continue;
+                for (int d = 0; d <= EdgeFaces.SELF; d++) {
+                    if ((ef.activeMask & (1 << d)) == 0) continue;
+                    BlockPos at = neighbourOf(node.posKey, d);
+                    if (!resident(level, at)) continue;
+                    BlockEntity be = handlerAt(level, at, d);
+                    if (be instanceof IEnergyHandlerMK2 handler) {
+                        // a machine with power ports is connected by them alone
+                        if (handler.isLoaded() && !PortNodes.isPorted(level, handler, true)) {
+                            // each role once per round, whichever of its faces carries it
+                            boolean provide = handler instanceof IEnergyProviderMK2
+                                    && !gather.seenProviding.contains(handler)
+                                    && Math.min(handler.getPower(), handler.getProviderSpeed()) > 0L
+                                    && gather.seenProviding.add(handler);
+                            boolean receive = handler instanceof IEnergyReceiverMK2
+                                    && !gather.seenReceiving.contains(handler)
+                                    && Math.min(handler.getMaxPower() - handler.getPower(), handler.getReceiverSpeed()) > 0L
+                                    && gather.seenReceiving.add(handler);
+                            if (provide) net.providerEntries.add(handler);
+                            if (receive) net.receiverEntries.add(handler);
+                            if (provide || receive) gather.offer(handler, provide, receive);
+                        }
+                        continue;
                     }
-                    continue;
+                    EnergyView view = foreignAt(level, at, d);
+                    if (view == null) {
+                        graph.markFaceStale(cables, node, ef, d);
+                        continue;
+                    }
+                    if (!gather.seenForeign.add(view.handlerIdentity())) continue;
+                    ForeignEnergyEndpoint peer = peerAt(ef, d, view);
+                    peer.refresh();
+                    gather.offerForeign(peer, bridge != null && bridge.latched(at.asLong(), gameTime));
                 }
-                EnergyView view = foreignAt(level, at, d);
-                if (view == null) {
-                    graph.markFaceStale(net, node, ef, d);
-                    continue;
-                }
-                if (!gather.seenForeign.add(view.handlerIdentity())) continue;
-                ForeignEnergyEndpoint peer = peerAt(ef, d, view);
-                peer.refresh();
-                gather.offerForeign(peer, bridge != null && bridge.latched(at.asLong(), gameTime));
             }
+        }
+
+        for (PortNode port : net.ports) {
+            offerPort(gather, net, port.providers, true);
+            offerPort(gather, net, port.receivers, false);
         }
 
         long injected = bridge == null ? 0L : bridge.injected();
         if (injected > 0L) gather.offer(bridge.injectedSource(), true, false);
         gather.fileForeignDemand();
+
+        // 1.7 PowerNetMK2: the tracker is the providers' charge before the round less their charge after it
+        long before = 0L;
+        for (Object entry : net.providerEntries) {
+            IEnergyHandlerMK2 provider = (IEnergyHandlerMK2) entry;
+            if (Math.min(provider.getPower(), provider.getProviderSpeed()) > 0L) before += provider.getPower();
+        }
 
         long supply = gather.totalSupply();
         long delivered = 0L;
@@ -197,7 +221,6 @@ public final class PowerNetwork {
             delivered = toTransfer >= gather.totalDemand
                     ? EnergyBus.serveInFull(gather.receivers, toTransfer, PowerNetwork::deliver)
                     : EnergyBus.serveShortage(gather.receivers, gather.demand, toTransfer, PowerNetwork::deliver);
-            net.tracker += delivered;
         }
 
         // The pool is the round's residual: it takes what the real providers still hold, or covers
@@ -205,10 +228,8 @@ public final class PowerNetwork {
         long owed = delivered;
         long untaken = gather.powerAvailable - Math.min(owed, gather.powerAvailable);
         if (untaken > 0L && gather.bufferDemand > 0L) {
-            long absorbed = EnergyBus.serveShortage(gather.bufferReceivers, gather.bufferHeadroom,
+            owed += EnergyBus.serveShortage(gather.bufferReceivers, gather.bufferHeadroom,
                     untaken, PowerNetwork::deliver);
-            net.tracker += absorbed;
-            owed += absorbed;
         }
         long spent = owed;
         if (bridge != null) owed += bridge.drainOwed();
@@ -222,6 +243,34 @@ public final class PowerNetwork {
             bridge.publish(Math.max(0L, gather.totalSupply() - spent),
                     Math.max(0L, gather.nativeDemand - toNative), gameTime);
         }
+
+        // 1.7 sums every provider afterwards, also one whose speed is zero (a battery set to input)
+        long after = 0L;
+        for (Object entry : net.providerEntries) after += Math.max(((IEnergyHandlerMK2) entry).getPower(), 0L);
+        net.tracker = net.providerEntries.isEmpty() || net.receiverEntries.isEmpty() ? 0L : before - after;
+        for (NodeNetwork<CableData> cables : net.nets) {
+            cables.tracker = net.tracker;
+            cables.portNet = net;
+        }
+    }
+
+    /** A port's role holders, each counted once per round, as 1.7's {@code NodeNet} entry sets were. */
+    private static void offerPort(Gather gather, PortNet<?> net, Iterable<Object> owners, boolean provide) {
+        for (Object owner : owners) {
+            if (!(owner instanceof IEnergyHandlerMK2 handler) || !handler.isLoaded()) continue;
+            if (provide) {
+                if (!(handler instanceof IEnergyProviderMK2) || !net.providerEntries.add(handler)) continue;
+                if (Math.min(handler.getPower(), handler.getProviderSpeed()) > 0L && gather.seenProviding.add(handler)) {
+                    gather.offer(handler, true, false);
+                }
+            } else {
+                if (!(handler instanceof IEnergyReceiverMK2) || !net.receiverEntries.add(handler)) continue;
+                if (Math.min(handler.getMaxPower() - handler.getPower(), handler.getReceiverSpeed()) > 0L
+                        && gather.seenReceiving.add(handler)) {
+                    gather.offer(handler, false, true);
+                }
+            }
+        }
     }
 
     /**
@@ -231,7 +280,7 @@ public final class PowerNetwork {
      *
      * @return what no provider could cover, which a foreign debt must keep rather than write off.
      */
-    private static long settle(Gather gather, long owed, NodeNetwork<CableData> net) {
+    private static long settle(Gather gather, long owed, PortNet<CableData> net) {
         if (owed <= 0L) return 0L;
         long[] charged = {0L};
         Distribution.Apply<IEnergyHandlerMK2> apply = (provider, amount) -> {
@@ -239,11 +288,11 @@ public final class PowerNetwork {
             charged[0] += amount;
             return amount;
         };
-        if (net.providerCursors == null) net.providerCursors = new int[1 + PRIORITIES];
+        int[] cursors = net.providerCursors(1 + PRIORITIES);
 
         long fromReal = Math.min(owed, gather.powerAvailable);
         if (fromReal > 0L) {
-            Distribution.debit(gather.providers, fromReal, gather.powerAvailable, net.providerCursors, 0, apply);
+            Distribution.debit(gather.providers, fromReal, gather.powerAvailable, cursors, 0, apply);
         }
         long remaining = owed - charged[0];
         for (int tier = 0; tier < PRIORITIES && remaining > 0L; tier++) {
@@ -251,7 +300,7 @@ public final class PowerNetwork {
             if (tierSupply <= 0L) continue;
             long before = charged[0];
             Distribution.debit(gather.bufferProviders[tier], Math.min(remaining, tierSupply), tierSupply,
-                    net.providerCursors, 1 + tier, apply);
+                    cursors, 1 + tier, apply);
             remaining -= charged[0] - before;
         }
         return Math.max(0L, remaining);

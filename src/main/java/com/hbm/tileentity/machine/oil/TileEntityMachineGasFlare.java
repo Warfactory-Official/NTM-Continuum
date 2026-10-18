@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.oil;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.environment.Environment;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
@@ -11,6 +13,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import com.hbm.items.machine.IItemFluidId;
@@ -44,6 +47,8 @@ import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Gas Flare (Flare Stack), a 1:1 port of the 1.12.2 {@code TileEntityMachineGasFlare}: a 12-tall 3×3
@@ -59,7 +64,8 @@ import java.util.List;
  * table is applied to {@code eject * 5} mB, as in 1.7.
  */
 public class TileEntityMachineGasFlare extends TileEntityMachineBase
-        implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2, IUpgradeInfoProvider {
+        implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2, IUpgradeInfoProvider, IRORInteractive,
+        IRORValueProvider {
 
     public static final long maxPower = 100000;
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
@@ -67,6 +73,8 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     public FluidTankNTM tank;
     public boolean isOn = false;
     public boolean doesBurn = false;
+    /** HE burned into power this tick. */
+    public int output;
 
     public TileEntityMachineGasFlare(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_GAS_FLARE.get(), pos, state, 6);
@@ -83,14 +91,13 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasFlare te) {
-        for (DirPos dp : te.getConPos()) {
-            te.tryProvide(level, dp.getPos(), dp.getDir());
-            te.trySubscribe(te.tank.getTankType(), level, dp);
-        }
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPOFIFO();
 
         te.setTypeFromFluidId();
         MachineFluidContainerIO.load(te.tank, te.inventory, 1, 2);
 
+        te.output = 0;
         int maxVent = 50;
         int maxBurn = 10;
 
@@ -118,7 +125,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                     }
 
                     if (TickPhase.every(level, pos, 5) && eject > 0) {
-                        FT_Polluting.pollute(level, pos, type, FluidReleaseType.SPILL, eject * 5);
+                        FluidTrait.onRelease(level, pos, type, FluidReleaseType.SPILL, eject * 5);
                     }
 
                     // hbm-space CelestialBody.emitGas: the vented gas goes into the planet's air
@@ -135,6 +142,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                 powerProd /= penalty;
                 powerProd += powerProd * yield / 3;
 
+                te.output = (int) powerProd;
                 te.power = Math.min(te.power + powerProd, maxPower);
 
                 AABB flameBox = new AABB(pos.getX() - 1, pos.getY() + 12, pos.getZ() - 2, pos.getX() + 2, pos.getY() + 17, pos.getZ() + 2);
@@ -145,7 +153,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                 }
 
                 if (TickPhase.every(level, pos, 5) && eject > 0) {
-                    FT_Polluting.pollute(level, pos, type, FluidReleaseType.BURN, eject * 5);
+                    FluidTrait.onRelease(level, pos, type, FluidReleaseType.BURN, eject * 5);
                 }
             }
         }
@@ -181,15 +189,10 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         }
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z, Library.POS_X),
-                new DirPos(x - 2, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 2, Library.POS_Z),
-                new DirPos(x, y, z - 2, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.flare(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     /** GUI buttons: 0 = valve (isOn), 1 = ignition (doesBurn). */
     @Override
@@ -291,5 +294,35 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         isOn = input.getBooleanOr("isOn", false);
         doesBurn = input.getBooleanOr("doesBurn", false);
         tank.readFromNBT(input, "gas");
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "flowstate", PREFIX_VALUE + "ignitionstate", PREFIX_VALUE + "output",
+                PREFIX_VALUE + "power", PREFIX_VALUE + "fluid",
+                PREFIX_FUNCTION + "setflowstate" + NAME_SEPARATOR + "state",
+                PREFIX_FUNCTION + "setignitionstate" + NAME_SEPARATOR + "state"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "flowstate").equals(name)) return isOn ? "1" : "0";
+        if ((PREFIX_VALUE + "ignitionstate").equals(name)) return doesBurn ? "1" : "0";
+        if ((PREFIX_VALUE + "output").equals(name)) return "" + output;
+        if ((PREFIX_VALUE + "power").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "fluid").equals(name)) return "" + tank.getFill();
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setflowstate").equals(name) && params.length == 1) {
+            isOn = params[0].equals("1");
+            markChanged();
+        } else if ((PREFIX_FUNCTION + "setignitionstate").equals(name) && params.length == 1) {
+            doesBurn = params[0].equals("1");
+            markChanged();
+        }
+        return null;
     }
 }

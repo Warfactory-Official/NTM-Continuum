@@ -149,4 +149,18 @@ public abstract class TurretBaseNT extends BlockMultiblockCore implements IEnerg
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {1, 0, -1, ForgeDirection.EAST.ordinal()},
+                {0, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, -1, ForgeDirection.WEST.ordinal()},
+        }, dir);
+    }
 }

@@ -1,11 +1,10 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.lib.DirPos;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.hazard.HazardRegistry;
@@ -45,6 +44,7 @@ import java.math.BigInteger;
 import com.hbm.inventory.container.ContainerMachineAnnihilator;
 import com.hbm.saveddata.AnnihilatorSavedData;
 import com.hbm.tileentity.ModProduction2BlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * 1.7 {@code TileEntityMachineAnnihilator}: destroys everything fed into it and credits the named pool.
@@ -70,28 +70,31 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase
         return "container.annihilator";
     }
 
-    /** 1.7 {@code TileEntityMachineAnnihilator.getConPos}: the fluid ports. */
-    public DirPos[] getConPos() {
-        ForgeDirection dir = MachineCore.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + dir.offsetX * 5, y, z + dir.offsetZ * 5, dir),
-                new DirPos(x + dir.offsetX * 3 + rot.offsetX * 2, y, z + dir.offsetZ * 3 + rot.offsetZ * 2, rot),
-                new DirPos(x + dir.offsetX * 3 - rot.offsetX * 2, y, z + dir.offsetZ * 3 - rot.offsetZ * 2, rot.getOpposite())
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 4, y, z + dir.offsetZ * 4, dir),
+                    PortDef.make(x + dir.offsetX * 3 + rot.offsetX, y, z + dir.offsetZ * 3 + rot.offsetZ, rot),
+                    PortDef.make(x + dir.offsetX * 3 - rot.offsetX, y, z + dir.offsetZ * 3 - rot.offsetZ, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAnnihilator te) {
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
+
         if (!(level instanceof ServerLevel serverLevel)) return;
 
         te.setTankTypeFromSlot(1);
 
         if (te.pool != null && !te.pool.isEmpty()) {
-
-            for (DirPos con : te.getConPos()) {
-                if (te.tank.getTankType() != Fluids.NONE) te.trySubscribe(te.tank.getTankType(), level, con);
-            }
 
             AnnihilatorSavedData data = AnnihilatorSavedData.getData(serverLevel);
             boolean didSomething = false;
@@ -105,7 +108,7 @@ public class TileEntityMachineAnnihilator extends TileEntityMachineBase
                 didSomething = true;
             }
             if (te.tank.getFill() > 0) {
-                FT_Polluting.pollute(level, pos, te.tank.getTankType(), FluidReleaseType.BURN, te.tank.getFill() * 2);
+                FluidTrait.onRelease(level, pos, te.tank.getTankType(), FluidReleaseType.BURN, te.tank.getFill() * 2);
                 te.tryAddPayout(data.pushToPool(te.pool, te.tank.getTankType(), te.tank.getFill(), false));
                 te.tank.setFill(0);
                 te.markChanged();

@@ -81,6 +81,14 @@ public final class HbmParticleHandlers {
             if (level instanceof ClientLevel clientLevel) Particles.add(new ParticleHadron(clientLevel, x, y, z));
         });
         HbmEffectNT.Bnuuy.setHandler((level, x, y, z, data) -> spawnBnuuy(level, data));
+        HbmEffectNT.Network.setHandler((level, x, y, z, data) -> {
+            if (!(level instanceof ClientLevel clientLevel)) return;
+            String mode = Tags.getStringOr(data, "mode", "");
+            if (!mode.equals("power") && !mode.equals("fluid")) return;
+            int color = mode.equals("fluid") ? Tags.getIntOr(data, "color", 0) : -1;
+            Particles.add(new ParticleDebug(clientLevel, x, y, z, Tags.getDoubleOr(data, "mX", 0D),
+                    Tags.getDoubleOr(data, "mY", 0D), Tags.getDoubleOr(data, "mZ", 0D), color));
+        });
         AmatFlashParticles.register();
         HbmEffectNT.AmatFlash.setHandler((level, x, y, z, data) -> AmatFlashParticles.spawn(level, x, y, z,
                 Tags.getFloatOr(data, "scale", 1F)));

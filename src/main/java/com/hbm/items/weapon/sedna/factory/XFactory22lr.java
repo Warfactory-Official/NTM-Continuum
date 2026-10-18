@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
@@ -11,6 +13,18 @@ import net.minecraft.world.item.ItemStack;
 
 /** The Gen-3 .22 LR rounds, ported from upstream's {@code XFactory22lr}. */
 public final class XFactory22lr {
+
+    public static final ConfigWrapper<Float> GUN_AM180_DAMAGE = new ConfigWrapper<>(2F);
+    public static final ConfigWrapper<Float> GUN_STARF_DAMAGE = new ConfigWrapper<>(12.5F);
+    public static final ConfigWrapper<Float> GUN_STARF_AKIMBO_LEFT_DAMAGE = new ConfigWrapper<>(12.5F);
+    public static final ConfigWrapper<Float> GUN_STARF_AKIMBO_RIGHT_DAMAGE = new ConfigWrapper<>(12.5F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_AM180_DAMAGE", GUN_AM180_DAMAGE);
+        ServerConfig.configMap.put("GUN_STARF_DAMAGE", GUN_STARF_DAMAGE);
+        ServerConfig.configMap.put("GUN_STARF_AKIMBO_LEFT_DAMAGE", GUN_STARF_AKIMBO_LEFT_DAMAGE);
+        ServerConfig.configMap.put("GUN_STARF_AKIMBO_RIGHT_DAMAGE", GUN_STARF_AKIMBO_RIGHT_DAMAGE);
+    }
 
     private XFactory22lr() {}
 

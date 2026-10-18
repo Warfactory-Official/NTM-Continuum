@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -96,5 +97,15 @@ public class MachinePumpjack extends BlockMultiblockMachine implements IEnergyCo
             new int[] {0, 0, -1, 1, 1, 1, 0, 0, -3},
             new int[] {0, 0, 1, -1, 2, 2, 0, 0, -3},
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {-2, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {-4, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {-2, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-4, 0, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

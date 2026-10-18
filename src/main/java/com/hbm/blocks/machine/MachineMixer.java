@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -7,6 +8,7 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.level.Level;
@@ -44,5 +46,22 @@ public class MachineMixer extends BlockMultiblockMachine implements IEnergyConne
     @Override
     public int coreMask() {
         return MASK_HORIZONTAL | MASK_DOWN;
+    }
+
+    /** 1.7's mixer port shape puts its upward port on the top cell. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        visitor.cell(core.above(2), MASK_UP);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, 0, ForgeDirection.EAST.ordinal()},
+                {0, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 0, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

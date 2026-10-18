@@ -41,10 +41,10 @@ public final class StirlingGameTests {
         BlockPos core = helper.absolutePos(new BlockPos(3, 1, 3));
 
         helper.assertTrue(ports.length == 4, "Stirling must expose four ports");
-        assertPort(helper, ports[0], core.east(2), ForgeDirection.EAST);
-        assertPort(helper, ports[1], core.west(2), ForgeDirection.WEST);
-        assertPort(helper, ports[2], core.south(2), ForgeDirection.SOUTH);
-        assertPort(helper, ports[3], core.north(2), ForgeDirection.NORTH);
+        assertPort(helper, ports[0], core.west(2), ForgeDirection.WEST);
+        assertPort(helper, ports[1], core.east(2), ForgeDirection.EAST);
+        assertPort(helper, ports[2], core.north(2), ForgeDirection.NORTH);
+        assertPort(helper, ports[3], core.south(2), ForgeDirection.SOUTH);
         helper.assertTrue(ModMachineBlocks.machine_stirling.get().canConnect(helper.getLevel(), core.east(), ForgeDirection.EAST),
                 "Stirling must expose its east cable port");
         helper.succeed();

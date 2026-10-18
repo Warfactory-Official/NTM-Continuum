@@ -314,7 +314,8 @@ final class FluidPropertyTable {
         fluid(CONCRETE, 0xA2A2A2, 0, 0, 0, Symbol.NONE).addTraits(LIQUID);
         fluid(DHC, 0xD2AFFF, 0, 0, 0, Symbol.NONE).addTraits(GASEOUS);
         fluid(AIRBLAST, 0xFFDADA, 0, 3, 0, Symbol.NONE).setTemp(1_200).addTraits(GASEOUS);
-        fluid(FLUE, 0x131313, 1, 4, 1, Symbol.NONE).addTraits(new FT_Flammable(25_000), GASEOUS, new FT_Polluting().burn(PollutionType.SOOT, SOOT_GAS).release(PollutionType.SOOT, SOOT_GAS * 25));
+        fluid(FLUE, 0x131313, 1, 4, 1, Symbol.NONE).addTraits(new FT_Flammable(25_000), GASEOUS, new FT_Polluting().burn(PollutionType.SOOT, SOOT_GAS).release(PollutionType.SOOT, SOOT_GAS * 5));
+        fluid(TITANIUM_TETRACHLORIDE, 0xDBF796, 3, 0, 2, Symbol.NOWATER).addTraits(LIQUID);
 
         // 1.7: the trait calls after metaOrder
 

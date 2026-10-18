@@ -91,7 +91,7 @@ public final class LegacyBlocks {
         public static final LegacyBlock machine_microwave = LegacyBlock.hbm("machine_microwave");
         public static final LegacyBlock machine_shredder = LegacyBlock.hbm("machine_shredder");
         public static final LegacyBlock machine_transformer = LegacyBlock.hbm("machine_transformer");
-        public static final LegacyBlock machine_turbine = LegacyBlock.hbm("machine_turbine");
+        public static final LegacyBlock machine_condenser = LegacyBlock.hbm("machine_condenser");
         public static final LegacyBlock meteor_brick = LegacyBlock.hbm("meteor_brick");
         public static final LegacyBlock meteor_brick_cracked = LegacyBlock.hbm("meteor_brick_cracked");
         public static final LegacyBlock meteor_brick_mossy = LegacyBlock.hbm("meteor_brick_mossy");

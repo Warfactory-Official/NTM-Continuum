@@ -272,6 +272,15 @@ public class GenericRecipe {
         return this;
     }
 
+    /** 1.7 {@code setIconToFirstIngredient}: the first stack the first item input shows. */
+    public GenericRecipe setIconToFirstIngredient() {
+        if (inputItem != null && inputItem.length > 0) {
+            List<ItemStack> stacks = inputItem[0].getDisplayStacks();
+            if (!stacks.isEmpty()) this.icon = stacks.get(0).copy();
+        }
+        return this;
+    }
+
     public GenericRecipe setNameWrapper(String key) {
         this.nameWrapper = key;
         return this;

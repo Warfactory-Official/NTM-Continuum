@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -10,6 +9,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.blocks.machine.PowerDetector;
 import com.hbm.tileentity.ModEnergyNetBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** 1.7's {@code TileEntityMachineDetector}: a 5 HE receiver that lights while it is being fed. */
 public class TileEntityMachineDetector extends TileEntityLoadedBase implements IEnergyReceiverMK2 {
@@ -20,10 +21,13 @@ public class TileEntityMachineDetector extends TileEntityLoadedBase implements I
         super(ModEnergyNetBlockEntities.MACHINE_DETECTOR.get(), pos, state);
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineDetector detector) {
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            detector.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
+        detector.setupPowerPorts(detector.getPorts());
+        detector.updateAllPorts();
+        detector.receivePower();
         boolean on = false;
         if (detector.power > 0) {
             on = true;

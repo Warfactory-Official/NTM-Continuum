@@ -19,6 +19,7 @@ import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -30,7 +31,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 
-/** The satellite launch vehicle, its launch complex, and the seed block that raises one. */
+/** The launch vehicles, the old Soyuz launch complex, and the seed block that raises one. */
 public final class ModSoyuzBlocks {
 
     private ModSoyuzBlocks() {}
@@ -74,8 +75,13 @@ public final class ModSoyuzBlocks {
                         case POST_WAR -> "post_war";
                     })));
 
+    /** 1.7 {@code missile_lambda}, the Lambda-98 the Lambda launch pad erects. */
+    public static final RegistryObject<Item> missile_lambda = REG.item("missile_lambda", Item::new, p -> p.stacksTo(1))
+            .transform(Presets.sprite("hbm:items/lambda_rocket"));
+
     static {
         ModTabs.addStacksTo(HbmTab.MISSILES, missile_soyuz::stacks);
+        ModTabs.addTo(HbmTab.MISSILES, missile_lambda);
     }
 
     /** The seed block: an ordinary block whose entity watches for the complex to be finished around it. */

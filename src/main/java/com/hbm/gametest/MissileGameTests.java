@@ -70,6 +70,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * GameTests for the chunk-loading layer and the missile system.
@@ -512,9 +513,9 @@ public final class MissileGameTests {
             }
         }
 
-        // Every declared port must answer on the cell that faces it. getConPos is in absolute
+        // Every declared port must answer on the cell that faces it. The connections are in absolute
         // coordinates, so the cell is the port position stepped back along its own direction.
-        for (DirPos dp : pad.getConPos()) {
+        for (DirPos dp : PortDef.connections(pad.getPorts())) {
             BlockPos cell = dp.getPos().offset(-dp.getDir().offsetX, -dp.getDir().offsetY, -dp.getDir().offsetZ);
             helper.assertTrue(block.canConnect(helper.getLevel(), cell, dp.getDir()),
                     "no power port at " + dp.getPos() + " facing " + dp.getDir());

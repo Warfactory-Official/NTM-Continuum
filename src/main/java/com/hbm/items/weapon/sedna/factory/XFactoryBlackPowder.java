@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
@@ -9,6 +11,12 @@ import net.minecraft.world.item.ItemStack;
 
 /** The four ordinary black-powder loads used by the Pepperbox. */
 public final class XFactoryBlackPowder {
+
+    public static final ConfigWrapper<Float> GUN_PEPPERBOX_DAMAGE = new ConfigWrapper<>(5F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_PEPPERBOX_DAMAGE", GUN_PEPPERBOX_DAMAGE);
+    }
 
     public static BulletConfig stone;
     public static BulletConfig flint;

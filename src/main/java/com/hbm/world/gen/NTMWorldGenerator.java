@@ -104,6 +104,10 @@ public final class NTMWorldGenerator {
         ruin("ruinI", "NTMRuinsI", StructureManager.ntmruinsI);
         ruin("ruinJ", "NTMRuinsJ", StructureManager.ntmruinsJ);
         single("tower_base", new JigsawPiece("tower_base", StructureManager.tower_base, -6));
+        single("falloutshelter_house", new JigsawPiece("falloutshelter_house", StructureManager.falloutshelter_house, -8));
+        single("abandoned_arcticstation", new JigsawPiece("abandoned_arcticstation", StructureManager.abandoned_arcticstation, 0));
+        single("military_base", new JigsawPiece("military_base", StructureManager.military_base, -5));
+        single("submarine", new JigsawPiece("submarine", StructureManager.submarine, -10));
 
         // 1.7 registerNullWeight: a pick that spawns nothing, so plains and oceans stay emptier
         NBTStructure.registerStructure(new SpawnCondition(NTMStructureDeclarations.NULL_PLAINS));

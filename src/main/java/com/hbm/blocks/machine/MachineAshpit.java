@@ -52,4 +52,11 @@ public final class MachineAshpit extends BlockMultiblockMachine implements World
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         passiveEverywhere(core, facing, visitor, PASSIVE_ITEMS);
     }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {1, 1, 0.5, -0.3, 0.4, -0.4, 1},
+        };
+    }
 }

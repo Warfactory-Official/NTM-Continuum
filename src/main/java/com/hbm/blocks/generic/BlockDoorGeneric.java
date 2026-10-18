@@ -4,6 +4,7 @@ import com.hbm.api.block.IToolable;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.config.ServerConfig;
 import com.hbm.interfaces.IBomb;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
@@ -129,11 +130,17 @@ public class BlockDoorGeneric extends BlockMultiblockMachine implements IBomb, I
         return BombReturnCode.ERROR_INCOMPATIBLE;
     }
 
+    /** {@code ULTRA_LARP_MODE} leaves only the doors with hand cranks openable by hand. */
+    public static boolean manuallyOperable(DoorDecl decl) {
+        return !ServerConfig.ULTRA_LARP_MODE.get() || decl.neverDemandRedstone();
+    }
+
     @Override
     protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core, Player player, BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (level.getBlockEntity(core) instanceof TileEntityDoorGeneric door) {
+        if (level.getBlockEntity(core) instanceof TileEntityDoorGeneric door && door.getDoorType() != null) {
+            if (!manuallyOperable(door.getDoorType())) return InteractionResult.CONSUME;
             return door.tryToggle(player) ? InteractionResult.CONSUME : InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         return InteractionResult.TRY_WITH_EMPTY_HAND;

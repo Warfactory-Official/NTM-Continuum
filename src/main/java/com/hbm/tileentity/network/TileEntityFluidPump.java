@@ -1,7 +1,6 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
-import com.hbm.api.fluidmk2.IFluidDirectionalMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import com.hbm.interfaces.IControlReceiver;
@@ -10,6 +9,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.util.SavedIds;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -25,12 +25,11 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import com.hbm.blocks.network.FluidPump;
 
 /**
- * The 1.7 {@code FluidPump.TileEntityFluidPump}: a one-block flow limiter. It receives from the net on
- * its left side (looking along the facing) into a buffer of {@link #bufferSize} mB and provides that
- * buffer to the net on its right side, so at most {@code bufferSize} mB/t passes. Redstone stops the
- * outlet. The buffer size, output pressure and priority are set in its screen ({@link #receiveControl}).
+ * The 1.7 {@code FluidPump.TileEntityFluidPump}, deprecated: both sides are one passthrough port, so the nets on
+ * either side are one net and the pump is a buffer on it. Pumps from older saves keep their settings, which no screen
+ * edits.
  */
-public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IFluidDirectionalMK2, IControlReceiver {
+public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IControlReceiver {
 
     public int bufferSize = 100;
     public final FluidTankNTM[] tank;
@@ -57,10 +56,21 @@ public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidS
         return inSide().getOpposite();
     }
 
+    protected PortDef cachedPort;
+
+    public PortDef getPorts() {
+        if (cachedPort == null) cachedPort = PortDef.make(worldPosition, inSide(), outSide());
+        return cachedPort;
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFluidPump pump) {
+        pump.setupFluidOutPorts(pump.getSendingTanks(), pump.getPorts());
+        pump.setupFluidInPorts(pump.getReceivingTanks(), pump.getPorts());
+        pump.updatePortFIFO();
+
         // if the capacity were changed directly, any excess buffered fluid would be destroyed
         // when running a closed loop or handling hard to get fluids, that's quite bad
-        if (pump.bufferSize != pump.tank[0].getMaxFill()) {
+        if (pump.bufferMismatch()) {
             int nextBuffer = Math.max(pump.tank[0].getFill(), pump.bufferSize);
             pump.tank[0].changeTankSize(nextBuffer);
         }
@@ -69,26 +79,20 @@ public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidS
             pump.redstone = powered;
             pump.setChanged();
         }
-        // 1.7: subscribe at the intake, provide at the outlet unless powered (PortClaims)
-        ForgeDirection in = pump.inSide();
-        ForgeDirection out = pump.outSide();
-        pump.trySubscribe(pump.tank[0].getTankType(), level, pos.getX() + in.offsetX, pos.getY(), pos.getZ() + in.offsetZ, in);
-        if (!pump.redstone) pump.tryProvide(pump.tank[0], level, pos.getX() + out.offsetX, pos.getY(), pos.getZ() + out.offsetZ, out);
         pump.networkPackNT(); // 1.7 packed every 15 ticks; the port's pack skips unchanged payloads
     }
 
-    @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return (dir == inSide() || dir == outSide()) && type == tank[0].getTankType();
+    public boolean bufferMismatch() {
+        return this.bufferSize != this.tank[0].getMaxFill();
     }
 
-    @Override public boolean providesOn(ForgeDirection side) { return side == outSide(); }
-    @Override public boolean receivesOn(ForgeDirection side) { return side == inSide(); }
-
     @Override public ConnectionPriority getFluidPriority() { return priority; }
-    @Override public FluidTankNTM[] getSendingTanks() { return redstone ? new FluidTankNTM[0] : tank; }
-    @Override public FluidTankNTM[] getReceivingTanks() { return this.bufferSize < this.tank[0].getFill() ? new FluidTankNTM[0] : tank; }
+    @Override public FluidTankNTM[] getSendingTanks() { return tank; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return tank; }
     @Override public FluidTankNTM[] getAllTanks() { return tank; }
+
+    @Override public long getReceiverSpeed(FluidType type, int pressure) { return redstone || bufferMismatch() ? 0 : 1_000_000_000; }
+    @Override public long getProviderSpeed(FluidType type, int pressure) { return redstone ? 0 : 1_000_000_000; }
 
     @Override
     public boolean hasPermission(Player player) {

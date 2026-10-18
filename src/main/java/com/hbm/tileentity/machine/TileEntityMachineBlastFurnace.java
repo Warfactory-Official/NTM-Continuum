@@ -10,7 +10,7 @@ import com.hbm.inventory.container.ContainerBlastFurnace;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.inventory.recipes.BlastFurnaceRecipesNT;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
@@ -41,6 +41,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Coal/airblast furnace, ported from HBM's {@code TileEntityMachineBlastFurnace}. The old airblast
@@ -52,7 +53,8 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
     public static final int FUEL_COAL = 200 * 8;
     public static final int FUEL_RATE = 200 * 4;
     public static final int MAX_FUEL = FUEL_COAL * 16;
-    public static final int FLUE_GAS = 100;
+    /** mB of flue gas per tick of operation, about a coal firebox's worth of heat in a fluid heater. */
+    public static final int FLUE_GAS = 8;
 
     public final FluidTankNTM[] tanks = {
             new FluidTankNTM(Fluids.AIRBLAST, 4_000),
@@ -76,10 +78,8 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBlastFurnace furnace) {
-        for (DirPos connection : furnace.getConPos()) {
-            furnace.trySubscribe(furnace.tanks[0].getTankType(), level, connection);
-            if (furnace.tanks[1].getFill() > 0) furnace.tryProvide(furnace.tanks[1], level, connection);
-        }
+        furnace.setupFluidPorts(furnace.getPorts());
+        furnace.updatePortFIFO();
 
         ItemStack fuelStack = furnace.inventory.getStackInSlot(0);
         int capacity = MAX_FUEL - furnace.fuel;
@@ -97,7 +97,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
                 && furnace.canOutput(recipe)
                 // hbm-space breatheAir(1): the blast needs air (com.hbm.api.environment.Environment)
                 && Environment.breatheAir(level, pos, 1)) {
-            furnace.speed = MthClamp.clamp(0.5F + furnace.tanks[0].getFill() * 8F / furnace.tanks[0].getMaxFill(), 0.5F, 5F);
+            furnace.speed = MthClamp.clamp(1F + furnace.tanks[0].getFill() * 8F / furnace.tanks[0].getMaxFill(), 1F, 5F);
             furnace.isProgressing = true;
             furnace.progress += furnace.speed / recipe.duration;
 
@@ -105,11 +105,11 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
                 furnace.process(recipe);
                 furnace.progress = 0F;
                 furnace.fuel -= FUEL_RATE;
-                furnace.tanks[1].setFill(furnace.tanks[1].getFill() + FLUE_GAS);
+                furnace.tanks[1].setFill((int) (furnace.tanks[1].getFill() + FLUE_GAS * (recipe.duration / furnace.speed)));
                 if (furnace.tanks[1].getFill() > furnace.tanks[1].getMaxFill()) {
                     // 1.7 also calls FluidType.onFluidRelease here, which is an empty method.
                     int spill = furnace.tanks[1].getFill() - furnace.tanks[1].getMaxFill();
-                    FT_Polluting.pollute(level, pos, furnace.tanks[1].getTankType(), FluidReleaseType.SPILL, spill);
+                    FluidTrait.onRelease(level, pos, furnace.tanks[1].getTankType(), FluidReleaseType.SPILL, spill);
                     furnace.tanks[1].setFill(furnace.tanks[1].getMaxFill());
                 }
             }
@@ -134,18 +134,26 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
                 pos.getZ() + 0.25D + level.getRandom().nextDouble() * 0.5D, 0D, 0D, 0D);
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        ForgeDirection facing = ForgeDirection.getOrientation(MachineCore.facingOrdinal(getBlockState(), 2));
-        return new DirPos[]{
-                new DirPos(x + 2, y, z, Library.POS_X),
-                new DirPos(x - 2, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 2, Library.POS_Z),
-                new DirPos(x + facing.offsetX * 2, y + 3, z + facing.offsetZ * 2, facing),
-                new DirPos(x + facing.offsetX * 2, y + 5, z + facing.offsetZ * 2, facing),
-                new DirPos(x, y + 7, z, Library.POS_Y)
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            ForgeDirection dir = ForgeDirection.getOrientation(MachineCore.facingOrdinal(getBlockState(), 2));
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + 1, y, z, Library.POS_X),
+                    PortDef.make(x - 1, y, z, Library.NEG_X),
+                    PortDef.make(x, y, z + 1, Library.POS_Z),
+                    PortDef.make(x, y, z - 1, Library.NEG_Z),
+                    PortDef.make(x + dir.offsetX, y + 3, z + dir.offsetZ, dir),
+                    PortDef.make(x + dir.offsetX, y + 5, z + dir.offsetZ, dir),
+                    PortDef.make(x, y + 6, z, Library.POS_Y),
+            };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     public boolean hasQuantities(GenericRecipe recipe) {
         if (recipe.inputItem == null || recipe.inputItem.length != 2) return false;
@@ -231,7 +239,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1]}; }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
     @Override public long getProviderSpeed(FluidType type, int pressure) {
-        return Math.max(tanks[1].getFill() * 50L / tanks[1].getMaxFill(), 1L);
+        return Math.max(tanks[1].getFill() * 50L / tanks[1].getMaxFill(), 8L);
     }
 
     @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_blast_furnace"); }

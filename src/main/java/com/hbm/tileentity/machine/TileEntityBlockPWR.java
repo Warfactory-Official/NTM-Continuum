@@ -1,7 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.tileentity.IRelocatable;
-import com.hbm.uninos.graph.PortClaims;
+import com.hbm.uninos.PortNodes;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
@@ -38,11 +38,11 @@ import com.hbm.tileentity.ModPwrBlockEntities;
  */
 public class TileEntityBlockPWR extends TileEntityLoadedBase
         implements IFluidReceiverMK2, IFluidProviderMK2, IRORValueProvider, IRORInteractive, IRelocatable,
-        PortClaims.Delegate {
+        PortNodes.Delegate {
 
-    /** 1.7: the controller subscribes and provides at the port positions; the port block only fronts it. */
+    /** The controller owns the ports here; this block only fronts it. */
     @Override
-    public @org.jspecify.annotations.Nullable Object portClaimOwner() {
+    public @Nullable Object portOwner() {
         return portCore();
     }
 
@@ -54,7 +54,6 @@ public class TileEntityBlockPWR extends TileEntityLoadedBase
         cachedCore = null;
         setChanged();
     }
-
 
     private static final FluidTankNTM[] NO_TANKS = new FluidTankNTM[0];
 

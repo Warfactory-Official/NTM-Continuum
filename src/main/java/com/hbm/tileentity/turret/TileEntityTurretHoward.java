@@ -21,11 +21,11 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The Goalkeeper CIWS. It does not fire projectiles at all: a belt round loads two hundred bursts and
+ * The Goalkeeper CIWS. It does not fire projectiles at all: a belt round loads one hundred bursts and
  * each burst rolls a flat hit chance against whatever it is tracking, which is 1.12.2's way of making a
  * point-defence gun that can actually catch a missile.
  */
-public class TileEntityTurretHoward extends TileEntityTurretBaseNT {
+public class TileEntityTurretHoward extends TileEntityTurretRadarCommandBase {
 
     private static final Identifier GUI = turretGui("howard");
     private static @Nullable List<BulletConfig> configs;
@@ -123,7 +123,7 @@ public class TileEntityTurretHoward extends TileEntityTurretBaseNT {
                 consumeAmmo(conf);
                 level.playSound(null, worldPosition, ModSounds.TURRET_HOWARD_RELOAD.get(), SoundSource.BLOCKS,
                         4.0F, 1F);
-                loaded = 200;
+                loaded = 100;
             }
         }
 
@@ -160,7 +160,7 @@ public class TileEntityTurretHoward extends TileEntityTurretBaseNT {
 
         if (level.getRandom().nextInt(100) + 1 <= WeaponConfig.ciwsHitrate && target != null) {
             EntityDamageUtil.attackEntityFromIgnoreIFrame(target, ModDamageSources.shrapnel(level),
-                    2F + level.getRandom().nextInt(2));
+                    getBaseDamage() + level.getRandom().nextInt(2));
         }
 
         Vec3 tip = barrelTip();
@@ -180,4 +180,7 @@ public class TileEntityTurretHoward extends TileEntityTurretBaseNT {
         super.loadData(input);
         loaded = input.getIntOr("loaded", 0);
     }
+
+    @Override
+    public float getBaseDamage() { return XFactoryTurret.TURRET_HOWARD_DAMAGE.get(); }
 }

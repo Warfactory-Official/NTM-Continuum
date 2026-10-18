@@ -416,6 +416,7 @@ public final class TagIds {
     public static final String fragments_emerald = "#c:fragments/emerald";
     public static final String fragments_fluorite = "#c:fragments/fluorite";
     public static final String fragments_gold = "#c:fragments/gold";
+    public static final String fragments_ilmenite = "#c:fragments/ilmenite";
     public static final String fragments_iron = "#c:fragments/iron";
     public static final String fragments_lanthanium = "#c:fragments/lanthanium";
     public static final String fragments_lead = "#c:fragments/lead";
@@ -592,6 +593,7 @@ public final class TagIds {
     public static final String ingots_gunmetal = "#c:ingots/gunmetal";
     public static final String ingots_hes = "#c:ingots/hes";
     public static final String ingots_i131 = "#c:ingots/i131";
+    public static final String ingots_ilmenite = "#c:ingots/ilmenite";
     public static final String ingots_iodine = "#c:ingots/iodine";
     public static final String ingots_iron = "#c:ingots/iron";
     public static final String ingots_lanthanium = "#c:ingots/lanthanium";
@@ -883,6 +885,7 @@ public final class TagIds {
     public static final String netherracks = "#c:netherracks";
     public static final String nuggets = "#c:nuggets";
     public static final String nuggets_actinium = "#c:nuggets/actinium";
+    public static final String nuggets_aluminium = "#c:nuggets/aluminium";
     public static final String nuggets_am241 = "#c:nuggets/am241";
     public static final String nuggets_am242 = "#c:nuggets/am242";
     public static final String nuggets_am_mix = "#c:nuggets/am_mix";
@@ -912,6 +915,7 @@ public final class TagIds {
     public static final String nuggets_lanthanium = "#c:nuggets/lanthanium";
     public static final String nuggets_lead = "#c:nuggets/lead";
     public static final String nuggets_les = "#c:nuggets/les";
+    public static final String nuggets_lithium = "#c:nuggets/lithium";
     public static final String nuggets_mercury = "#c:nuggets/mercury";
     public static final String nuggets_mercury_tiny = "#c:nuggets/mercury_tiny";
     public static final String nuggets_mox_fuel = "#c:nuggets/mox_fuel";
@@ -934,6 +938,7 @@ public final class TagIds {
     public static final String nuggets_schrabidium = "#c:nuggets/schrabidium";
     public static final String nuggets_schrabidium_fuel = "#c:nuggets/schrabidium_fuel";
     public static final String nuggets_silicon = "#c:nuggets/silicon";
+    public static final String nuggets_sodium = "#c:nuggets/sodium";
     public static final String nuggets_solinium = "#c:nuggets/solinium";
     public static final String nuggets_sr90 = "#c:nuggets/sr90";
     public static final String nuggets_strontium = "#c:nuggets/strontium";
@@ -942,6 +947,8 @@ public final class TagIds {
     public static final String nuggets_th232 = "#c:nuggets/th232";
     public static final String nuggets_thorium = "#c:nuggets/thorium";
     public static final String nuggets_thorium_fuel = "#c:nuggets/thorium_fuel";
+    public static final String nuggets_titanium = "#c:nuggets/titanium";
+    public static final String nuggets_tungsten = "#c:nuggets/tungsten";
     public static final String nuggets_u233 = "#c:nuggets/u233";
     public static final String nuggets_u235 = "#c:nuggets/u235";
     public static final String nuggets_u238 = "#c:nuggets/u238";
@@ -966,6 +973,7 @@ public final class TagIds {
     public static final String ores_aluminium = "#c:ores/aluminium";
     public static final String ores_asbestos = "#c:ores/asbestos";
     public static final String ores_australium = "#c:ores/australium";
+    public static final String ores_bauxite = "#c:ores/bauxite";
     public static final String ores_beryllium = "#c:ores/beryllium";
     public static final String ores_borax = "#c:ores/borax";
     public static final String ores_cinnabar = "#c:ores/cinnabar";

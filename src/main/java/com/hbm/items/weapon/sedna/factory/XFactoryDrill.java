@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -42,6 +44,13 @@ import net.minecraft.world.phys.HitResult;
 
 public class XFactoryDrill {
 
+    public static final ConfigWrapper<Float> GUN_DRILL_DAMAGE = new ConfigWrapper<>(10F);
+
+    public static void initConfig() {
+        // 1.7 files the drill under the double barrel's key, so that key edits the drill.
+        ServerConfig.configMap.put("GUN_DOUBLE_BARREL_DAMAGE", GUN_DRILL_DAMAGE);
+    }
+
     public static final String D_REACH = "D_REACH";
     public static final String F_DTNEG = "F_DTNEG";
     public static final String F_PIERCE = "F_PIERCE";
@@ -57,7 +66,7 @@ public class XFactoryDrill {
         NtmToolGunCatalog.gun_drill = NtmToolGunCatalog.weapon("gun_drill",
                 props -> new ItemGunDrill(props, WeaponQuality.UTILITY, new GunConfig()
                         .dura(3_000).draw(10).inspect(55).hideCrosshair(false).crosshair(Crosshair.L_CIRCUMFLEX)
-                        .rec(new Receiver(0).dmg(10F).delay(20).dry(30).auto(true).jam(0)
+                        .rec(new Receiver(0).dmg(GUN_DRILL_DAMAGE).delay(20).dry(30).auto(true).jam(0)
                                 .mag(new MagazineLiquidEngine(0, 4_000,
                                         () -> new FluidType[]{Fluids.GASOLINE, Fluids.GASOLINE_LEADED,
                                                 Fluids.COALGAS, Fluids.COALGAS_LEADED}))
@@ -102,9 +111,13 @@ public class XFactoryDrill {
             if (player != null && mop instanceof BlockHitResult blockHit) {
                 BlockPos hitPos = blockHit.getBlockPos();
                 int aoe = player.isShiftKeyDown() ? 0 : getModdableAoE(stack, 1);
-                for (int i = -aoe; i <= aoe; i++) for (int j = -aoe; j <= aoe; j++) for (int k = -aoe; k <= aoe; k++)
+                breakExtraBlock(player.level(), hitPos.getX(), hitPos.getY(), hitPos.getZ(),
+                        player, stack, ctx.hand, hitPos.getX(), hitPos.getY(), hitPos.getZ());
+                for (int i = -aoe; i <= aoe; i++) for (int j = -aoe; j <= aoe; j++) for (int k = -aoe; k <= aoe; k++) {
+                    if (i == 0 && j == 0 && k == 0) continue;
                     breakExtraBlock(player.level(), hitPos.getX() + i, hitPos.getY() + j, hitPos.getZ() + k,
                             player, stack, ctx.hand, hitPos.getX(), hitPos.getY(), hitPos.getZ());
+                }
                 didPlink = false;
             }
         }

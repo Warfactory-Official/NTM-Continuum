@@ -19,7 +19,7 @@ public final class ItemEnums {
     }
 
     public enum EnumChunkType {
-        RARE, MALACHITE, CRYOLITE, MOONSTONE;
+        RARE, MALACHITE, CRYOLITE, MOONSTONE, ILMENITE;
         public static final EnumChunkType[] VALUES = values();
     }
 
@@ -27,7 +27,7 @@ public final class ItemEnums {
     public enum EnumCircuitType {
         VACUUM_TUBE, CAPACITOR, CAPACITOR_TANTALIUM, PCB, SILICON, CHIP, CHIP_BISMOID, ANALOG, BASIC,
         ADVANCED, CAPACITOR_BOARD, BISMOID, CONTROLLER_CHASSIS, CONTROLLER, CONTROLLER_ADVANCED, QUANTUM,
-        CHIP_QUANTUM, CONTROLLER_QUANTUM, ATOMIC_CLOCK, NUMITRON;
+        CHIP_QUANTUM, CONTROLLER_QUANTUM, ATOMIC_CLOCK, NUMITRON, CRYSTAL;
         public static final EnumCircuitType[] VALUES = values();
     }
 
@@ -46,7 +46,7 @@ public final class ItemEnums {
     /** "Expensive mode" structural parts (assembly-machine intermediates). */
     public enum EnumExpensiveType {
         STEEL_PLATING, HEAVY_FRAME, CIRCUIT, LEAD_PLATING, FERRO_PLATING, COMPUTER, BRONZE_TUBES, PLASTIC,
-        GOLD_DUST, DEGENERATE_MATTER;
+        GOLD_DUST, DEGENERATE_MATTER, CMB_TUBES;
         public static final EnumExpensiveType[] VALUES = values();
     }
 
@@ -69,7 +69,8 @@ public final class ItemEnums {
         PISTON_ELECTRIC("piston_electric"),
         LDE("low_density_element"),
         HDE("heavy_duty_element"),
-        GLASS_POLARIZED("glass_polarized");
+        GLASS_POLARIZED("glass_polarized"),
+        ALCLAD("plate_alclad_generic");
 
         public static final EnumPartType[] VALUES = values();
         public final String textureName;

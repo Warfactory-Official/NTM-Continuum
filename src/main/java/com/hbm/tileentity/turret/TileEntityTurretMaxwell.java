@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.items.ModFinalConsumableItems;
@@ -199,7 +200,7 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
                     ModEffects.DEATH.get(), 30 * 60 * 20, 0, true, true));
         } else {
             EntityDamageUtil.attackEntityFromIgnoreIFrame(target, ModDamageSources.microwave(level),
-                    (overdrive * 10 + speed + 1F) * 0.25F);
+                    (overdrive * 10 + speed + 1F) * getBaseDamage());
         }
 
         if (afterburn > 0) Effects.ignite(target, afterburn * 3);
@@ -274,4 +275,7 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
         upgrades.put(UpgradeType.OVERDRIVE, 27);
         return upgrades;
     }
+
+    @Override
+    public float getBaseDamage() { return XFactoryTurret.TURRET_MAXWELL_DAMAGE.get(); }
 }

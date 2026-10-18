@@ -121,9 +121,10 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
     /** 1.7 canConnectTo: a neighbouring tube, or a block that accepts a pneumatic connection on the facing side. */
     public static boolean canConnectTo(BlockGetter level, BlockPos pos, Direction dir) {
         BlockPos npos = pos.relative(dir);
-        Block block = level.getBlockState(npos).getBlock();
+        BlockState neighbour = level.getBlockState(npos);
+        Block block = neighbour.getBlock();
         if (block instanceof PneumoTube || block instanceof PneumoTubePaintableBlock) return true;
-        return block instanceof IPneumaticConnector connector && connector.canConnectPneumatic(dir.getOpposite());
+        return block instanceof IPneumaticConnector connector && connector.canConnectPneumatic(neighbour, dir.getOpposite());
     }
 
     /** The mask of every face this tube touches: arms from the state, nozzles from the block entity. */

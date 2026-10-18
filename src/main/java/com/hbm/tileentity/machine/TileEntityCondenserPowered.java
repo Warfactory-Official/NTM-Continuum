@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
@@ -13,6 +12,8 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** The powered condenser; conversion is gated by its stored HE buffer. Defaults mirror hbmMachines.json. */
 public class TileEntityCondenserPowered extends TileEntityCondenser implements IEnergyReceiverMK2 {
@@ -61,7 +62,8 @@ public class TileEntityCondenserPowered extends TileEntityCondenser implements I
 
     @Override
     protected boolean extraCondition(int amount) {
-        return power >= (long) amount * 10L;
+        // 5% tolerance, so a grid that can never top the buffer up exactly still runs it
+        return power >= (amount * powerConsumption) * 0.95;
     }
 
     @Override
@@ -70,40 +72,12 @@ public class TileEntityCondenserPowered extends TileEntityCondenser implements I
         if (power < 0L) power = 0L;
     }
 
-    @Override
-    protected void updateConnections(Level level) {
-        for (DirPos connection : getConPos()) {
-            trySubscribe(input.getTankType(), level, connection);
-            trySubscribe(level, connection);
-            tryProvide(output, level, connection);
-        }
-    }
-
     public ForgeDirection getFacing() {
         int meta = MachineCore.facingOrdinal(getBlockState(), 2);
         return ForgeDirection.getOrientation(meta);
     }
 
-    @Override
-    public DirPos[] getConPos() {
-        ForgeDirection direction = getFacing();
-        ForgeDirection rotation = direction.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX();
-        int y = worldPosition.getY() + 1;
-        int z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + rotation.offsetX * 4, y, z + rotation.offsetZ * 4, rotation),
-                new DirPos(x - rotation.offsetX * 4, y, z - rotation.offsetZ * 4, rotation.getOpposite()),
-                new DirPos(x + direction.offsetX * 2 - rotation.offsetX, y,
-                        z + direction.offsetZ * 2 - rotation.offsetZ, direction),
-                new DirPos(x + direction.offsetX * 2 + rotation.offsetX, y,
-                        z + direction.offsetZ * 2 + rotation.offsetZ, direction),
-                new DirPos(x - direction.offsetX * 2 - rotation.offsetX, y,
-                        z - direction.offsetZ * 2 - rotation.offsetZ, direction.getOpposite()),
-                new DirPos(x - direction.offsetX * 2 + rotation.offsetX, y,
-                        z - direction.offsetZ * 2 + rotation.offsetZ, direction.getOpposite())
-        };
-    }
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.condenser(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), getFacing()); return cachedPorts; }
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long value) { power = Math.max(0L, Math.min(maxPower, value)); }

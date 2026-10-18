@@ -43,7 +43,7 @@ public class GUISatDock extends CompatContainerScreen<ContainerSatDock> {
         if (isHovering(-7, 36, 16, 16, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
             for (String line : I18n.get("desc.gui.satdock.desc").split("\\$")) lines.add(Component.literal(line));
-            GuiDraw.tooltip(graphics, font, lines, Optional.empty(), leftPos - 7, topPos + 36 + 16);
+            GuiDraw.tooltip(graphics, font, lines, Optional.empty(), leftPos + 1, topPos + 36 + 16);
         }
     }
 }

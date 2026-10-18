@@ -20,6 +20,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Heat-to-energy core for the legacy Stirling engine family. */
 public class TileEntityStirling extends TileEntityMachineBase implements IEnergyProviderMK2 {
@@ -46,6 +47,10 @@ public class TileEntityStirling extends TileEntityMachineBase implements IEnergy
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityStirling stirling) {
+        stirling.setupPowerPorts(stirling.getPorts());
+        stirling.updateAllPorts();
+        stirling.providePower();
+
         if (stirling.hasCog) {
             stirling.powerBuffer = 0;
             stirling.tryPullHeat(level, pos);
@@ -88,12 +93,7 @@ public class TileEntityStirling extends TileEntityMachineBase implements IEnergy
 
         stirling.syncHeat = stirling.heat;
         stirling.networkPackNT();
-        if (stirling.hasCog) {
-            for (DirPos connection : stirling.getConPos()) {
-                stirling.tryProvide(level, connection.getPos().getX(), connection.getPos().getY(),
-                        connection.getPos().getZ(), connection.getDir());
-            }
-        } else if (stirling.powerBuffer > 0) {
+        if (!stirling.hasCog && stirling.powerBuffer > 0) {
             stirling.powerBuffer--;
         }
         stirling.heat = 0;
@@ -123,14 +123,25 @@ public class TileEntityStirling extends TileEntityMachineBase implements IEnergy
         return getBlockState().getBlock() == ModMachineBlocks.machine_stirling_creative.get();
     }
 
-    public DirPos[] getConPos() {
-        BlockPos pos = getBlockPos();
-        return new DirPos[]{
-                new DirPos(pos.east(2), Library.POS_X),
-                new DirPos(pos.west(2), Library.NEG_X),
-                new DirPos(pos.south(2), Library.POS_Z),
-                new DirPos(pos.north(2), Library.NEG_Z)
-        };
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x - 1, y, z, Library.NEG_X),
+                    PortDef.make(x + 1, y, z, Library.POS_X),
+                    PortDef.make(x, y, z - 1, Library.NEG_Z),
+                    PortDef.make(x, y, z + 1, Library.POS_Z),
+            };
+        }
+        return cachedPorts;
+    }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
+
+    @Override
+    public long getProviderSpeed() {
+        return this.hasCog ? this.getMaxPower() : 0;
     }
 
     private void tryPullHeat(Level level, BlockPos pos) {

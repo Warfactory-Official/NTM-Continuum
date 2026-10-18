@@ -1,6 +1,5 @@
 package com.hbm.tileentity.bomb;
 
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.inventory.container.ContainerLaunchTable;
 import com.hbm.items.weapon.ItemCustomMissilePart.PartSize;
@@ -17,6 +16,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * 1.7 {@code TileEntityLaunchTable}: the 9x9 launch table. 100,000 l tanks, 100,000 solid, and a pad size the
@@ -42,19 +42,45 @@ public class TileEntityLaunchTable extends TileEntityCustomMissileLauncher imple
     @Override protected int footprintRadius() { return 4; }
     @Override protected boolean requiresDesignatorToLaunch() { return false; }
 
-    /** 1.7 {@code TileEntityLaunchTable.updateConnections}: nine positions along each side, five out. */
-    @Override
-    public DirPos[] connectionPositions() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        DirPos[] ports = new DirPos[36];
-        int n = 0;
-        for (int i = -4; i <= 4; i++) {
-            ports[n++] = new DirPos(x + i, y, z + 5, Library.POS_Z);
-            ports[n++] = new DirPos(x + i, y, z - 5, Library.NEG_Z);
-            ports[n++] = new DirPos(x + 5, y, z + i, Library.POS_X);
-            ports[n++] = new DirPos(x - 5, y, z + i, Library.NEG_X);
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + 4, y, z + 4, Library.POS_X, Library.POS_Z),
+                    PortDef.make(x + 4, y, z + 3, Library.POS_X),
+                    PortDef.make(x + 4, y, z + 2, Library.POS_X),
+                    PortDef.make(x + 4, y, z + 1, Library.POS_X),
+                    PortDef.make(x + 4, y, z + 0, Library.POS_X),
+                    PortDef.make(x + 4, y, z - 1, Library.POS_X),
+                    PortDef.make(x + 4, y, z - 2, Library.POS_X),
+                    PortDef.make(x + 4, y, z - 3, Library.POS_X),
+                    PortDef.make(x + 4, y, z - 4, Library.POS_X, Library.NEG_Z),
+                    PortDef.make(x + 3, y, z - 4, Library.NEG_Z),
+                    PortDef.make(x + 2, y, z - 4, Library.NEG_Z),
+                    PortDef.make(x + 1, y, z - 4, Library.NEG_Z),
+                    PortDef.make(x + 0, y, z - 4, Library.NEG_Z),
+                    PortDef.make(x - 1, y, z - 4, Library.NEG_Z),
+                    PortDef.make(x - 2, y, z - 4, Library.NEG_Z),
+                    PortDef.make(x - 3, y, z - 4, Library.NEG_Z),
+                    PortDef.make(x - 4, y, z - 4, Library.NEG_X, Library.NEG_Z),
+                    PortDef.make(x - 4, y, z - 3, Library.NEG_X),
+                    PortDef.make(x - 4, y, z - 2, Library.NEG_X),
+                    PortDef.make(x - 4, y, z - 1, Library.NEG_X),
+                    PortDef.make(x - 4, y, z + 0, Library.NEG_X),
+                    PortDef.make(x - 4, y, z + 1, Library.NEG_X),
+                    PortDef.make(x - 4, y, z + 2, Library.NEG_X),
+                    PortDef.make(x - 4, y, z + 3, Library.NEG_X),
+                    PortDef.make(x - 4, y, z + 4, Library.NEG_X, Library.POS_Z),
+                    PortDef.make(x - 3, y, z + 4, Library.POS_Z),
+                    PortDef.make(x - 2, y, z + 4, Library.POS_Z),
+                    PortDef.make(x - 1, y, z + 4, Library.POS_Z),
+                    PortDef.make(x + 0, y, z + 4, Library.POS_Z),
+                    PortDef.make(x + 1, y, z + 4, Library.POS_Z),
+                    PortDef.make(x + 2, y, z + 4, Library.POS_Z),
+                    PortDef.make(x + 3, y, z + 4, Library.POS_Z),
+            };
         }
-        return ports;
+        return cachedPorts;
     }
 
     @Override

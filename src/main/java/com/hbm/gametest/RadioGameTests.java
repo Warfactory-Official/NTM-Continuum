@@ -9,7 +9,6 @@ import com.hbm.tileentity.network.TileEntityRadioTorchReceiver;
 import com.hbm.tileentity.network.TileEntityRadioTorchReader;
 import com.hbm.tileentity.network.TileEntityRadioTorchLogic;
 import com.hbm.tileentity.network.TileEntityRadioTorchSender;
-import com.hbm.util.NoteBuilder;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Compat;
@@ -201,7 +200,7 @@ public final class RadioGameTests {
                 Map.entry(160, "4:8:0-4:11:0-4:3:0"), Map.entry(168, "4:6:0"),
                 Map.entry(176, "4:10:0-4:1:0-4:5:0"), Map.entry(192, "4:6:0-0:8:0"),
                 Map.entry(200, "0:11:0"), Map.entry(208, "4:8:0-4:11:0-4:3:0-0:8:1"),
-                Map.entry(224, "4:6:0-0:8:0"), Map.entry(232, "0:11:0"),
+                Map.entry(216, "4:8:0-4:11:0-4:3:0"), Map.entry(224, "4:6:0-0:8:0"), Map.entry(232, "0:11:0"),
                 Map.entry(240, "4:10:0-4:1:0-4:5:0-0:8:1"), Map.entry(256, "4:8:0-0:10:1"),
                 Map.entry(264, "4:11:0-4:3:0-4:6:1"), Map.entry(268, "0:11:1"),
                 Map.entry(272, "4:11:0-4:3:0-4:6:1-0:10:1"), Map.entry(276, "0:11:1"),
@@ -228,14 +227,8 @@ public final class RadioGameTests {
         );
         for (int tick = 0; tick < 640; tick++) {
             Object actual = RTTYSystem.getTestSender(tick);
-            if (tick == 216) {
-                helper.assertTrue(actual instanceof NoteBuilder builder
-                                && "4:8:0-4:11:0-4:3:0".equals(builder.end()),
-                        "Tick 216 must retain upstream's unterminated NoteBuilder no-op");
-            } else {
-                helper.assertTrue(expected.getOrDefault(tick, "").equals(actual),
-                        "RTTY test melody differs from the old 640-tick table at tick " + tick);
-            }
+            helper.assertTrue(expected.getOrDefault(tick, "").equals(actual),
+                    "RTTY test melody differs from the old 640-tick table at tick " + tick);
         }
         helper.succeed();
     }

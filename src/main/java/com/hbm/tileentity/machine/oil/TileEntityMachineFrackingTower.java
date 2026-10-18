@@ -8,8 +8,6 @@ import com.hbm.inventory.container.ContainerMachineOilWell;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.world.feature.OilSpot;
@@ -27,6 +25,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Fracking Tower: 1:1 port of the 1.12.2 {@code TileEntityMachineFrackingTower}. Extends the shared
@@ -116,27 +116,11 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[0], tanks[1]}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[2]}; }
 
-    /** 1.7 {@code TileEntityMachineFrackingTower.updateConnections}: power and the fracking solution. */
-    @Override
-    protected void updateConnections(Level level) {
-        for (DirPos port : getConPos()) {
-            this.trySubscribe(level, port);
-            this.trySubscribe(tanks[2].getTankType(), level, port);
-        }
-    }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
 
+    protected PortDef[] cachedPorts;
     @Override
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 1, y, z, Library.POS_X),
-                new DirPos(x - 1, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 1, Library.POS_Z),
-                new DirPos(x, y, z - 1, Library.NEG_Z)
-        };
-    }
-
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.horizontal(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     @Override
     public Component getDisplayName() {

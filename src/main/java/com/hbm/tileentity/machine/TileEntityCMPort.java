@@ -9,7 +9,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModCustomMachineBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
-import com.hbm.uninos.graph.PortClaims;
+import com.hbm.uninos.PortNodes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,11 +27,11 @@ import org.jspecify.annotations.Nullable;
  */
 public class TileEntityCMPort extends TileEntityLoadedBase
         implements IEnergyReceiverMK2, IEnergyProviderMK2, IFluidReceiverMK2, IFluidProviderMK2,
-        PortClaims.Delegate {
+        PortNodes.Delegate {
 
-    /** 1.7: the controller subscribes and provides at its connection positions; the port only fronts it. */
+    /** The controller owns the ports here; this block only fronts it. */
     @Override
-    public @Nullable Object portClaimOwner() {
+    public @Nullable Object portOwner() {
         return getCore();
     }
 

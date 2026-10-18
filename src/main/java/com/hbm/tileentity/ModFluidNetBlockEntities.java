@@ -10,7 +10,9 @@ import com.hbm.tileentity.network.TileEntityFluidDuctVariant;
 import com.hbm.tileentity.network.TileEntityFluidPump;
 import com.hbm.tileentity.network.TileEntityFluidSwitch;
 import com.hbm.tileentity.machine.TileEntityFoundryTank;
-import com.hbm.tileentity.network.TileEntityPipeAnchor;
+import com.hbm.tileentity.network.TileEntityFlowControlPump;
+import com.hbm.tileentity.network.TileEntityFluidPipeAnchor;
+import com.hbm.tileentity.network.TileEntityPipeExhaustAnchor;
 import com.hbm.tileentity.network.TileEntityPipeExhaust;
 import com.hbm.tileentity.network.TileEntityPipeGauge;
 import dev.golem.core.registry.BlockEntities;
@@ -60,8 +62,11 @@ public final class ModFluidNetBlockEntities {
             REG.blockEntity("fluid_duct_gauge", () -> BlockEntities.serverTicking(TileEntityPipeGauge::new,
                     TileEntityPipeGauge::serverTick, ModFluidNetBlocks.fluid_duct_gauge.get()));
 
-    public static final RegistryObject<BlockEntityType<TileEntityPipeAnchor>> ANCHOR =
-            REG.blockEntity("pipe_anchor", () -> BlockEntities.type(TileEntityPipeAnchor::new, ModFluidNetBlocks.pipe_anchor.get()));
+    public static final RegistryObject<BlockEntityType<TileEntityFluidPipeAnchor>> ANCHOR =
+            REG.blockEntity("pipe_anchor", () -> BlockEntities.type(TileEntityFluidPipeAnchor::new, ModFluidNetBlocks.pipe_anchor.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPipeExhaustAnchor>> ANCHOR_EXHAUST =
+            REG.blockEntity("pipe_anchor_exhaust", () -> BlockEntities.type(TileEntityPipeExhaustAnchor::new, ModFluidNetBlocks.pipe_anchor_exhaust.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityFluidSwitch>> SWITCH =
             REG.blockEntity("fluid_switch", () -> BlockEntities.type(TileEntityFluidSwitch::new, ModFluidNetBlocks.fluid_switch.get()));
@@ -74,14 +79,18 @@ public final class ModFluidNetBlockEntities {
             REG.blockEntity("fluid_pump", () -> BlockEntities.serverTicking(TileEntityFluidPump::new,
                     TileEntityFluidPump::serverTick, ModFluidNetBlocks.fluid_pump.get()));
 
+    public static final RegistryObject<BlockEntityType<TileEntityFlowControlPump>> FLOW_CONTROL_PUMP =
+            REG.blockEntity("flow_control_pump", () -> BlockEntities.ticking(TileEntityFlowControlPump::new,
+                    TileEntityFlowControlPump::clientTick, TileEntityFlowControlPump::serverTick, ModFluidNetBlocks.flow_control_pump.get()));
+
     public static final RegistryObject<BlockEntityType<TileEntityBarrel>> BARREL =
             REG.blockEntity("barrel", () -> BlockEntities.serverTicking(TileEntityBarrel::new, TileEntityBarrel::serverTick,
-                    ModFluidNetBlocks.barrel_plastic.get(), ModFluidNetBlocks.barrel_steel.get(),
+                    ModFluidNetBlocks.barrel_plastic.get(), ModFluidNetBlocks.barrel_corroded.get(), ModFluidNetBlocks.barrel_steel.get(),
                     ModFluidNetBlocks.barrel_tcalloy.get(), ModFluidNetBlocks.barrel_antimatter.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityBarrelDeco>> BARREL_DECO =
             REG.blockEntity("barrel_deco", () -> BlockEntities.type(TileEntityBarrelDeco::new,
-                    ModFluidNetBlocks.barrel_corroded.get(), ModFluidNetBlocks.red_barrel.get(), ModFluidNetBlocks.pink_barrel.get(),
+                    ModFluidNetBlocks.red_barrel.get(), ModFluidNetBlocks.pink_barrel.get(),
                     ModFluidNetBlocks.yellow_barrel.get(), ModFluidNetBlocks.vitrified_barrel.get(),
                     ModFluidNetBlocks.lox_barrel.get(), ModFluidNetBlocks.taint_barrel.get()));
 

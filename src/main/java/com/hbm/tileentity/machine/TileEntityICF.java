@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.inventory.container.ContainerICF;
@@ -33,6 +34,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.lib.Library;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The ICF reactor's block entity (1.7 {@code TileEntityICF}). Slots: 0-4 fresh pellets in, 5 the pellet in the
@@ -49,7 +52,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * {@code com.hbm.compat.computercraft.machine.ICFPeripheral}; its Energy Control readout has no target here.
  */
 public class TileEntityICF extends TileEntityMachineBase
-        implements MenuProvider, IFluidStandardTransceiverMK2, WorldlyContainer {
+        implements MenuProvider, IFluidStandardTransceiverMK2, WorldlyContainer, IRORValueProvider {
 
     public static final int SLOTS = 12;
 
@@ -101,9 +104,10 @@ public class TileEntityICF extends TileEntityMachineBase
 
     /** One reactor tick, split out so a test can drive it with a chosen laser power. */
     public void tick(Level level, BlockPos pos) {
-        setTypeFromIdentifier();
+        this.setupFluidPorts(getPorts());
+        this.updatePortFIFO();
 
-        for (DirPos con : getConPos()) this.trySubscribe(tanks[0].getTankType(), level, con);
+        setTypeFromIdentifier();
 
         boolean markDirty = false;
 
@@ -183,11 +187,6 @@ public class TileEntityICF extends TileEntityMachineBase
             this.output = step.amountProduced * cycles;
         }
 
-        for (DirPos con : getConPos()) {
-            if (tanks[1].getFill() > 0) this.tryProvide(tanks[1], level, con);
-            if (tanks[2].getFill() > 0) this.tryProvide(tanks[2], level, con);
-        }
-
         this.heat *= 0.999D;
         if (this.heat > maxHeat) this.heat = maxHeat;
         if (markDirty) this.setChanged();
@@ -210,19 +209,26 @@ public class TileEntityICF extends TileEntityMachineBase
         }
     }
 
-    public DirPos[] getConPos() {
-        ForgeDirection dir = facing();
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x, y + 6, z, ForgeDirection.UP),
-                new DirPos(x, y - 1, z, ForgeDirection.DOWN),
-                new DirPos(x + dir.offsetX * 3 + rot.offsetX * 6, y + 3, z + dir.offsetZ * 3 + rot.offsetZ * 6, dir),
-                new DirPos(x + dir.offsetX * 3 - rot.offsetX * 6, y + 3, z + dir.offsetZ * 3 - rot.offsetZ * 6, dir),
-                new DirPos(x - dir.offsetX * 3 + rot.offsetX * 6, y + 3, z - dir.offsetZ * 3 + rot.offsetZ * 6, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 3 - rot.offsetX * 6, y + 3, z - dir.offsetZ * 3 - rot.offsetZ * 6, dir.getOpposite())
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = facing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x, y + 5, z, Library.POS_Y),
+                    PortDef.make(x, y, z, Library.NEG_Y),
+                    PortDef.make(x + dir.offsetX * 2 + rot.offsetX * 6, y + 3, z + dir.offsetZ * 2 + rot.offsetZ * 6, dir),
+                    PortDef.make(x + dir.offsetX * 2 - rot.offsetX * 6, y + 3, z + dir.offsetZ * 2 - rot.offsetZ * 6, dir),
+                    PortDef.make(x - dir.offsetX * 2 + rot.offsetX * 6, y + 3, z - dir.offsetZ * 2 + rot.offsetZ * 6, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 2 - rot.offsetX * 6, y + 3, z - dir.offsetZ * 2 - rot.offsetZ * 6, dir.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     // --- sync ---
 
@@ -307,4 +313,20 @@ public class TileEntityICF extends TileEntityMachineBase
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1], tanks[2]}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "laser", PREFIX_VALUE + "heat", PREFIX_VALUE + "coldfluid",
+                PREFIX_VALUE + "hotfluid", PREFIX_VALUE + "stellarflux"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "laser").equals(name)) return "" + laser;
+        if ((PREFIX_VALUE + "heat").equals(name)) return "" + heat;
+        if ((PREFIX_VALUE + "coldfluid").equals(name)) return "" + tanks[0].getFill();
+        if ((PREFIX_VALUE + "hotfluid").equals(name)) return "" + tanks[1].getFill();
+        if ((PREFIX_VALUE + "stellarflux").equals(name)) return "" + tanks[2].getFill();
+        return null;
+    }
 }

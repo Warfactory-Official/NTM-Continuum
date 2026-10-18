@@ -16,6 +16,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The blower that forces compressed air down a ventilation channel. It only ever pushes air inward; the
@@ -42,9 +43,13 @@ public class TileEntityPileVent extends TileEntityPileDeviceBase implements IFlu
         return type == compair.getTankType() && dir == getOrientation();
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = new PortDef[] { PortDef.make(worldPosition, getOrientation()) }; return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityPileVent vent) {
+        vent.setupAllPorts(vent.getPorts());
+        vent.updatePortFIFO();
         ForgeDirection dir = vent.getOrientation();
-        vent.trySubscribe(vent.compair.getTankType(), level, pos.getX() + dir.offsetX, pos.getY(), pos.getZ() + dir.offsetZ, dir);
         vent.isActive = false;
 
         BlockPos inlet = pos.offset(-dir.offsetX, 0, -dir.offsetZ);

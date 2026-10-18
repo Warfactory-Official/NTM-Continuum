@@ -87,6 +87,11 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
     public void receiveControl(Player player, ItemStack stack, CompoundTag data) {
         if (Tags.contains(data, "primary")) setType(stack, Fluids.read(data, "primary"), true);
         if (Tags.contains(data, "secondary")) setType(stack, Fluids.read(data, "secondary"), false);
+        if (Tags.contains(data, "bookmarks")) {
+            CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, new CompoundTag()).copy();
+            Fluids.writeList(tag, "bookmarks", Fluids.readList(data, "bookmarks"));
+            ModUtilityToolItems.FLUID_MULTI.set(stack, tag);
+        }
     }
 
     @Override
@@ -109,6 +114,12 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
         ModUtilityToolItems.FLUID_MULTI.set(stack, tag);
         // 1.7 updateMeta + getColorFromItemStack: the overlay follows the primary fluid.
         if (primary) ModelData.setColor(stack, type.getColor() < 0 ? 0xFFFFFF : type.getColor());
+    }
+
+    /** The picker's bookmarks, oldest first, saved by fluid name. */
+    public static FluidType[] getBookmarks(ItemStack stack) {
+        CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, null);
+        return tag == null ? new FluidType[0] : Fluids.readList(tag, "bookmarks");
     }
 
     public static FluidType getType(ItemStack stack, boolean primary) {

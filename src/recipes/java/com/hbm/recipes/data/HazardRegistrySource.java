@@ -283,6 +283,8 @@ public final class HazardRegistrySource {
         register("pile_rod_mk2_pu239", makeData(RADIATION_, pu239 * billet * 3));
         register("pile_rod_mk2_rgp", makeData(RADIATION_, purg * billet * 3));
         register("pile_rod_mk2_waste", makeData(RADIATION_, wst * billet * 3));
+        register("pile_rod_mk2_thorium", makeData(RADIATION_, th232 * billet * 3));
+        register("pile_rod_mk2_thorium_fuel", makeData(RADIATION_, thf * billet * 3));
 
         register("pile_rod_uranium", makeData(RADIATION_, u * billet * 3));
         // 1.7: !GeneralConfig.enable528 (the default)
@@ -493,15 +495,15 @@ public final class HazardRegistrySource {
                 .ore("ore_asbestos", "ore_gneiss_asbestos", "ore_basalt_asbestos", "stone_resource_asbestos");
 
         // HAZARDS, MISC
-        frame("lithium").hydro(1F).ingot("lithium").dustSmall("powder_lithium_tiny").dust("powder_lithium").block("block_lithium").ore("ore_gneiss_lithium");
-        frame("sodium").hydro(1F).hazIngot().dust("powder_sodium");
+        frame("lithium").hydro(1F).hazNugget().ingot("lithium").dustSmall("powder_lithium_tiny").dust("powder_lithium").block("block_lithium").ore("ore_gneiss_lithium");
+        frame("sodium").hydro(1F).hazNugget().hazIngot().dust("powder_sodium");
 
         // PHOSPHORUS: 1.7 P_WHITE = new DictFrame("WhitePhosphorus"), "ingotWhitePhosphorus" / "blockWhitePhosphorus"
         // (the port's "phosphorus" material is the red one, so the white keys are c:*/white_phosphorus)
         frame("white_phosphorus").hot(5F).ingot("ingot_phosphorus").block("block_white_phosphorus");
 
         // FISSION FRAGMENTS
-        frame("strontium").hot(1F).hydro(1F).hazIngot().dust("powder_strontium");
+        frame("strontium").hot(1F).hydro(1F).hazIngot().dust("powder_strontium").hazNugget();
         frame("sr90").rad(sr90).hot(1F).hydro(1F).dustSmall("powder_sr90_tiny").dust("powder_sr90").ingot("ingot_sr90").billet("billet_sr90").nugget("nugget_sr90");
         frame("i131").rad(i131).hot(1F).dustSmall("powder_i131_tiny").dust("powder_i131");
         frame("xe135").rad(xe135).hot(10F).dustSmall("powder_xe135_tiny").dust("powder_xe135");
@@ -544,6 +546,8 @@ public final class HazardRegistrySource {
         Frame plateCast(String... ids) { return shape("plates_cast", plateCast, ids); }
         Frame block(String... ids) { return shape("storage_blocks", block, ids); }
         Frame ore(String... ids) { return shape("ores", ore, ids); }
+        /** 1.7 {@code hazNugget()}: the nugget key at nugget strength, no item of HBM's own. */
+        Frame hazNugget() { return shape("nuggets", nugget); }
         /** 1.7 {@code hazIngot()}: the ingot key at ingot strength, no item of HBM's own. */
         Frame hazIngot() { return shape("ingots", ingot); }
 

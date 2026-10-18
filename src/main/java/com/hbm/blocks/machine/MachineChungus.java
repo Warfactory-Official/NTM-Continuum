@@ -189,4 +189,14 @@ public class MachineChungus extends BlockMultiblockMachine
             new int[] { 2, 0, 10, -7, 1, 1 },
         };
     }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 2, 4, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -10, ForgeDirection.NORTH.ordinal()},
+                {2, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 0, ForgeDirection.WEST.ordinal()},
+        }, dir);
+    }
 }

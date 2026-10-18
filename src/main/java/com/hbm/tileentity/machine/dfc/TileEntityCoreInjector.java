@@ -25,6 +25,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Feeds the core its two fuels down the same line the beams travel. The two identifier slots per tank
@@ -51,14 +53,17 @@ public class TileEntityCoreInjector extends TileEntityMachineBase
         return "container.dfcInjector";
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCoreInjector injector) {
         injector.tickServer(level);
     }
 
     protected void tickServer(Level level) {
         BlockPos pos = getBlockPos();
-        subscribeToAllAround(tanks[0].getTankType(), this);
-        subscribeToAllAround(tanks[1].getTankType(), this);
+        this.setupFluidPorts(getPorts());
+        this.updatePortFIFO();
 
         setTypeFromFluidId(0, 0);
         setTypeFromFluidId(1, 2);

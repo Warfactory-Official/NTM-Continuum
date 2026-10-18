@@ -37,9 +37,12 @@ public final class HbmDataSources implements DataSources {
                 new CrucibleTable(),
                 new PlasmaForgeTable(),
                 new PrecAssTable(),
+                new SpaceAssemblerTable(),
                 new PurexTable(),
                 new ChemicalPlantTable(),
                 new AssemblyMachineTable(),
+                new RockMillTable(),
+                new SuperComputerTable(),
                 // item-processing tables
                 new ToolConversionTable(),
                 new RotaryFurnaceTable(),

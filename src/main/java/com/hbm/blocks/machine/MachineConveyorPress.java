@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.conveyor.IConveyorBelt;
@@ -52,7 +53,7 @@ public final class MachineConveyorPress extends BlockMultiblockMachine
     @Override public int getOffset() { return 0; }
 
     /** 1.7 {@code canConnect(dir) != DOWN} on the core; the cable ports are the core's four flanks. */
-    @Override public int coreMask() { return MASK_HORIZONTAL; }
+    @Override public int coreMask() { return MASK_HORIZONTAL | MASK_DOWN; }
 
     private static @Nullable TileEntityConveyorPress pressAt(Level level, BlockPos pos) {
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
@@ -154,5 +155,16 @@ public final class MachineConveyorPress extends BlockMultiblockMachine
 
         return new ILookOverlay.Data(Component.translatable("block.hbm.machine_conveyor_press").getString(),
                 0xffff00, 0x404000, text);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, 0, ForgeDirection.EAST.ordinal()},
+                {0, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 0, ForgeDirection.NORTH.ordinal()},
+                {0, 0, 0, ForgeDirection.DOWN.ordinal()},
+        }, dir);
     }
 }

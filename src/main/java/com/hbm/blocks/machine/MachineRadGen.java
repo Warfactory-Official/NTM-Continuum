@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -66,5 +67,14 @@ public class MachineRadGen extends BlockMultiblockMachine implements IEnergyConn
         visitor.passiveCell(core.relative(facing, -3), MASK_ALL, PASSIVE_ITEMS);
         visitor.passiveCell(core.relative(rot), MASK_ALL, PASSIVE_ITEMS);
         visitor.passiveCell(core.relative(rot, -1), MASK_ALL, PASSIVE_ITEMS);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, -3, ForgeDirection.NORTH.ordinal()},
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

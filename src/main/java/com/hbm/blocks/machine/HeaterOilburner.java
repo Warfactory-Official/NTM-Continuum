@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -78,5 +79,22 @@ public class HeaterOilburner extends BlockMultiblockMachine implements IFluidCon
         visitor.passiveCell(core.offset(-1, 0, 0), MASK_ALL, PASSIVE_FLUID_IN);
         visitor.passiveCell(core.offset(0, 0, 1), MASK_ALL, PASSIVE_FLUID_IN);
         visitor.passiveCell(core.offset(0, 0, -1), MASK_ALL, PASSIVE_FLUID_IN);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {2, 2, 0.5, -0.3, 0.4, -0.4, 1},
+        };
     }
 }

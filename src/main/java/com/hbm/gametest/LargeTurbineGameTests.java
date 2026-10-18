@@ -28,7 +28,6 @@ public final class LargeTurbineGameTests {
         block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
         helper.assertTrue(turbine != null, "Large turbine core BlockEntity was not created");
-        FoldedTestSupport.assertPort(helper, core, core.offset(0, 0, 3));
         FoldedTestSupport.assertPort(helper, core, core.offset(0, 0, -1));
         FoldedTestSupport.assertPort(helper, core, core.offset(1, 0, 0));
         FoldedTestSupport.assertPort(helper, core, core.offset(-1, 0, 0));
@@ -44,11 +43,11 @@ public final class LargeTurbineGameTests {
         assertPort(helper, fluids[0], 5, 1, 3, ForgeDirection.EAST);
         assertPort(helper, fluids[1], 1, 1, 3, ForgeDirection.WEST);
         assertPort(helper, fluids[2], 3, 1, 1, ForgeDirection.NORTH);
-        assertPort(helper, turbine.getPowerPos()[0], 3, 1, 7, ForgeDirection.SOUTH);
 
+        // 1.7 sends the power out of the three steam ports
         BlockPos eastPortCell = helper.absolutePos(core.offset(1, 0, 0));
-        helper.assertFalse(block.canConnect(helper.getLevel(), eastPortCell, ForgeDirection.EAST),
-                "Large turbine fluid cells must not expose false cable ports");
+        helper.assertTrue(block.canConnect(helper.getLevel(), eastPortCell, ForgeDirection.EAST),
+                "Large turbine must give power at its steam ports");
         helper.assertFalse(block.canConnect(helper.getLevel(), helper.absolutePos(core), ForgeDirection.EAST),
                 "Large turbine core must not expose a false cable port");
         helper.assertTrue(block.canConnect(Fluids.STEAM, helper.getLevel(), eastPortCell.getX(),
@@ -57,9 +56,9 @@ public final class LargeTurbineGameTests {
         helper.assertFalse(block.canConnect(Fluids.WATER, helper.getLevel(), eastPortCell.getX(),
                         eastPortCell.getY(), eastPortCell.getZ(), ForgeDirection.EAST),
                 "Large turbine must reject non-turbine fluids at its fluid port");
-        BlockPos powerPortCell = helper.absolutePos(core.offset(0, 0, 3));
-        helper.assertTrue(block.canConnect(helper.getLevel(), powerPortCell, ForgeDirection.SOUTH),
-                "Large turbine must expose its rear power port");
+        BlockPos rearCell = helper.absolutePos(core.offset(0, 0, 3));
+        helper.assertFalse(block.canConnect(helper.getLevel(), rearCell, ForgeDirection.SOUTH),
+                "Large turbine's rear anchor has no port in 1.7");
         helper.succeed();
     }
 

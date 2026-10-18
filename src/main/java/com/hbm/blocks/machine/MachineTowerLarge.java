@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -40,5 +41,25 @@ public class MachineTowerLarge extends BlockMultiblockMachine implements IFluidC
         text.add("§a-> §r" + tower.input.getTankType().getDisplayNameString() + ": " + tower.input.getFill() + "/" + tower.input.getMaxFill() + "mB");
         text.add("§c<- §r" + tower.output.getTankType().getDisplayNameString() + ": " + tower.output.getFill() + "/" + tower.output.getMaxFill() + "mB");
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {4, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-4, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, -4, ForgeDirection.NORTH.ordinal()},
+                {0, 0, 4, ForgeDirection.SOUTH.ordinal()},
+                {3, 0, -4, ForgeDirection.NORTH.ordinal()},
+                {-3, 0, -4, ForgeDirection.NORTH.ordinal()},
+                {3, 0, 4, ForgeDirection.SOUTH.ordinal()},
+                {-3, 0, 4, ForgeDirection.SOUTH.ordinal()},
+                {4, 0, 3, ForgeDirection.EAST.ordinal()},
+                {4, 0, -3, ForgeDirection.EAST.ordinal()},
+                {-4, 0, 3, ForgeDirection.WEST.ordinal()},
+                {-4, 0, -3, ForgeDirection.WEST.ordinal()},
+                {0, 0, -4, ForgeDirection.NORTH.ordinal()},
+                {0, 0, 4, ForgeDirection.SOUTH.ordinal()},
+        }, dir);
     }
 }

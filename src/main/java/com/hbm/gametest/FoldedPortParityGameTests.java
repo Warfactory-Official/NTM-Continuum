@@ -6,6 +6,7 @@ import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockMaskTable;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.TilePort.PortDef;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A migrated machine's baked face masks must answer exactly what its own {@code getConPos} answers.
+ * A migrated machine's baked face masks must answer exactly what its own {@code getConPos} and port connections answer.
  *
  * <p>Both {@code canConnect} overloads on a {@code BlockDummyable} answer from the baked table, while
  * {@link IEnergyConnectorBlock#isPort} works over the core tile's {@code DirPos[]}. They must agree cell for cell
@@ -60,6 +61,7 @@ public final class FoldedPortParityGameTests {
             }
             if (any) covered++;
         }
+        for (String failure : failures) Constants.LOG.warn("[port parity] {}", failure);
         helper.assertTrue(failures.isEmpty(), failures.size() + " divergence(s): "
                 + String.join("; ", failures.subList(0, Math.min(40, failures.size())))
                 + (failures.size() > 40 ? " (and " + (failures.size() - 40) + " more)" : ""));
@@ -101,6 +103,8 @@ public final class FoldedPortParityGameTests {
             declared = true;
             if (value instanceof DirPos[] array) {
                 ports.addAll(Arrays.asList(array));
+            } else if (value instanceof PortDef[] defs) {
+                ports.addAll(Arrays.asList(PortDef.connections(defs)));
             } else if (value instanceof List<?> list) {
                 for (Object entry : list) ports.add((DirPos) entry);
             }
@@ -108,9 +112,9 @@ public final class FoldedPortParityGameTests {
         return declared ? ports.toArray(DirPos[]::new) : null;
     }
 
-    /** {@code DirPos[]} or {@code List<DirPos>}; the generic argument keeps a same-shaped getter out. */
+    /** {@code DirPos[]}, {@code PortDef[]} or {@code List<DirPos>}; the generic argument keeps a same-shaped getter out. */
     private static boolean declaresPorts(Method method) {
-        if (DirPos[].class.equals(method.getReturnType())) return true;
+        if (DirPos[].class.equals(method.getReturnType()) || PortDef[].class.equals(method.getReturnType())) return true;
         if (!List.class.equals(method.getReturnType())) return false;
         return method.getGenericReturnType() instanceof ParameterizedType parameterized
                 && parameterized.getActualTypeArguments().length == 1

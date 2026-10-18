@@ -1,0 +1,23 @@
+{
+	"name": "Jet Fuel",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		"hbm:kerosene_reform"
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:kerosene_reform"
+		]
+	],
+	"title": {
+		"en_us": "Jet Fuel",
+		"ru_ru": "Авиационное топливо"
+	},
+	"content": {
+		"en_us": "Jet fuel is primarily obtained by mixing [[reformate|Reformate]] and [[kerosene|Kerosene]]. Jet fuel is primarily used as a combustible [[fuel|Fuels]] for additional power. It may also be obtained by [[fractioning|Fractioning Tower]] [[desulfurized light oil|Desulfurized Light Oil]].<br><br>{{Template:Oil3}}",
+		"ru_ru": "Авиационное топливо в основном получают путем смешивания [[реформированного топлива|Reformate]] и [[керосина|Kerosene]]. Авиационное топливо в основном используется в качестве горючего источника [[топлива|Fuels]] для дополнительной энергии. Его также можно получить путем [[ректификации|Fractioning Tower]] [[обессеренной лёгкой нефти|Desulfurized Light Oil]]."
+	}
+}

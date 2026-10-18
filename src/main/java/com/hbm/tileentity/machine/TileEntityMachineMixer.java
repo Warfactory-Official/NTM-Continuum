@@ -16,7 +16,6 @@ import com.hbm.inventory.recipes.MixerRecipes;
 import com.hbm.inventory.recipes.MixerRecipes.MixerRecipe;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
@@ -41,6 +40,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Mixer machine, ported from the 1.12.2 output-fluid-selected implementation. */
 public class TileEntityMachineMixer extends TileEntityMachineBase implements MenuProvider,
@@ -82,14 +83,11 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineMixer te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, MAX_POWER);
         te.updateOutputType();
-
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
-            if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-            if (te.tanks[1].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[1].getTankType(), level, dp);
-        }
 
         te.upgradeManager.checkSlots(te.inventory, 3, 4);
         int speedLevel = te.upgradeManager.getLevel(UpgradeType.SPEED);
@@ -120,9 +118,6 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
             te.progress = 0;
         }
 
-        for (DirPos dp : te.getConPos()) {
-            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, dp);
-        }
         te.networkPackNT();
     }
 
@@ -187,16 +182,8 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         return power * scale / MAX_POWER;
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x, y - 1, z, Library.NEG_Y),
-                new DirPos(x + 1, y, z, Library.POS_X),
-                new DirPos(x - 1, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 1, Library.POS_Z),
-                new DirPos(x, y, z - 1, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.mixer(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {

@@ -4,6 +4,7 @@ import com.hbm.items.ISatChip;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModSatelliteItems;
 import dev.golem.core.world.CompatTooltipContext;
+import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -34,7 +35,10 @@ public class ItemSatellite extends ItemEnumMulti implements ISatChip {
         XENIUM_RESONATOR,
         RELAY,
         DETECTOR,
-        RAY_SCAN;
+        RAY_SCAN,
+        SCIENCE,
+        SCIENCE_ASSEMBLER,
+        SCIENCE_SENSOR;
 
         public static final EnumSatType[] VALUES = values();
     }
@@ -52,6 +56,7 @@ public class ItemSatellite extends ItemEnumMulti implements ISatChip {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal(Language.getInstance().getOrDefault("satchip.frequency") + ": " + getFreq(stack)));
+        tooltip.add(Component.literal(Language.getInstance().getOrDefault("satchip.frequency") + ": " + getFreq(stack))
+                .withStyle(ChatFormatting.AQUA));
     }
 }

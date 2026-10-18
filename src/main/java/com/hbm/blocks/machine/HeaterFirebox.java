@@ -80,4 +80,11 @@ public class HeaterFirebox extends BlockMultiblockMachine implements ILookOverla
         if (lz == -1) mask |= MASK_NORTH;
         return mask;
     }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {1, 1, 0.5, -0.3, 0.4, -0.4, 1},
+        };
+    }
 }

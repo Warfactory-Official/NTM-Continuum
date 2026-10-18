@@ -1,7 +1,12 @@
 package com.hbm.client;
 
 import com.hbm.client.render.HbmBlockEntityRenderers;
-import com.hbm.blocks.network.CableDiode;
+import com.hbm.Constants;
+import com.hbm.blocks.network.BlockNetworkSeparator;
+import com.hbm.client.render.MachineObjRenderer;
+import com.hbm.client.render.MachineObjRenderer.ModelDef;
+import com.hbm.tileentity.network.TileEntityNetworkSeparator;
+import dev.golem.core.Ids;
 import com.hbm.tileentity.ModEnergyNetBlockEntities;
 import net.minecraft.client.Minecraft;
 import com.hbm.client.render.RenderCableDiode;
@@ -16,13 +21,13 @@ import com.hbm.client.render.RenderTesla;
 import com.hbm.client.render.WiringHudOverlay;
 import com.hbm.inventory.gui.GUIDiode;
 
-/** Client hooks for the energy-network family: the diode screen, the pylon/wire renderers, the drum readout. */
+/** Client hooks for the energy-network family: the separator screen, the pylon/wire renderers, the drum readout. */
 public final class EnergyNetClientRegistrations {
 
     private EnergyNetClientRegistrations() {}
 
     public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
-        CableDiode.OPEN_SCREEN = diode -> Minecraft.getInstance().setScreen(new GUIDiode(diode));
+        BlockNetworkSeparator.OPEN_SCREEN = separator -> Minecraft.getInstance().setScreen(new GUIDiode(separator));
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {
@@ -36,6 +41,11 @@ public final class EnergyNetClientRegistrations {
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.RED_CABLE_PAINTABLE.get(), RenderCablePaintable::new);
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.HEV_BATTERY.get(), RenderHEVBattery::new);
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.TESLA.get(), RenderTesla::new);
+        // 1.7 turns N=90, W=180, S=270, E=0: the standard map + 90
+        HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.NETWORK_SEPARATOR.get(),
+                () -> new MachineObjRenderer<TileEntityNetworkSeparator>(90F, 1F,
+                        new ModelDef(Ids.of(Constants.MOD_ID, "models/network/network_separator.obj"),
+                                Ids.of(Constants.MOD_ID, "textures/models/network/network_separator.png"))));
     }
 
     public static void registerHud(HbmClientRegistrations.HudSink sink) {

@@ -33,9 +33,9 @@ public final class ModFallingBlocks {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
-    /** Shredding obsidian / obsidian bricks yields this; blast-resistant like the obsidian it came from. */
+    /** Shredding obsidian / obsidian bricks yields this. */
     public static final RegistryObject<BlockFallingBase> gravel_obsidian =
-            falling("gravel_obsidian", 5.0F, 300.0F, () -> SoundType.GRAVEL, HbmTab.RESOURCES, true)
+            falling("gravel_obsidian", 5.0F, 20.0F, () -> SoundType.GRAVEL, HbmTab.RESOURCES, true)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);

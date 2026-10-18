@@ -19,6 +19,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Server logic and client animation state for the legacy steam engine. */
 public class TileEntityMachineSteamEngine extends TileEntityMachineBase
@@ -45,6 +46,9 @@ public class TileEntityMachineSteamEngine extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineSteamEngine engine) {
+        engine.setupAllPorts(engine.getPorts());
+        engine.updatePortPOFIFO();
+
         engine.powerBuffer = 0;
         engine.tanks[0].setTankType(Fluids.STEAM);
         engine.tanks[1].setTankType(Fluids.SPENTSTEAM);
@@ -73,11 +77,6 @@ public class TileEntityMachineSteamEngine extends TileEntityMachineBase
                     SoundSource.BLOCKS, 1F, 0.5F + engine.acceleration / 80F);
         }
 
-        for (DirPos connection : engine.getConPos()) {
-            if (engine.powerBuffer > 0) engine.tryProvide(level, connection.getPos(), connection.getDir());
-            engine.trySubscribe(engine.tanks[0].getTankType(), level, connection);
-            engine.tryProvide(engine.tanks[1], level, connection);
-        }
         engine.setChanged();
         engine.networkPackNT();
     }
@@ -97,18 +96,23 @@ public class TileEntityMachineSteamEngine extends TileEntityMachineBase
         return MachineCore.facing(getBlockState());
     }
 
-    public DirPos[] getConPos() {
-        ForgeDirection dir = getFacing();
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        BlockPos p = getBlockPos();
-        return new DirPos[]{
-                new DirPos(p.getX() + rot.offsetX * 2, p.getY() + 1, p.getZ() + rot.offsetZ * 2, rot),
-                new DirPos(p.getX() + rot.offsetX * 2 + dir.offsetX, p.getY() + 1,
-                        p.getZ() + rot.offsetZ * 2 + dir.offsetZ, rot),
-                new DirPos(p.getX() + rot.offsetX * 2 - dir.offsetX, p.getY() + 1,
-                        p.getZ() + rot.offsetZ * 2 - dir.offsetZ, rot)
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = getFacing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + rot.offsetX * 1, y + 1, z + rot.offsetZ * 1, rot),
+                    PortDef.make(x + rot.offsetX * 1 + dir.offsetX, y + 1, z + rot.offsetZ * 1 + dir.offsetZ, rot),
+                    PortDef.make(x + rot.offsetX * 1 - dir.offsetX, y + 1, z + rot.offsetZ * 1 - dir.offsetZ, rot),
+            };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     @Override public long getPower() { return powerBuffer; }
     @Override public void setPower(long power) { powerBuffer = power; }

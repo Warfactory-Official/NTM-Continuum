@@ -1,6 +1,6 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineGiantTank;
 import com.hbm.inventory.fluid.FluidType;
@@ -11,7 +11,6 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.graph.EndpointRegistry;
 import net.minecraft.server.level.ServerLevel;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -28,7 +27,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Shared port of the old {@code TileEntityBarrel} behavior used by both giant storage machines. */
 public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
@@ -44,53 +43,30 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
     public boolean tilted;
     public final FluidTankNTM tankNew;
 
-    private long[] cells = FluidGraph.NONE;
-
     protected TileEntityMachineGiantTank(BlockEntityType<?> type, BlockPos pos, BlockState state, int capacity) {
         super(type, pos, state, 6);
         this.tankNew = new FluidTankNTM(Fluids.NONE, capacity);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGiantTank tank) {
+        tank.setupFluidPorts(tank.getPorts());
+        tank.updatePortFIFO();
+
         tank.updateTypeFromIdentifier();
         MachineFluidContainerIO.load(tank.tankNew, tank.inventory, 2, 3);
         MachineFluidContainerIO.unload(tank.tankNew, tank.inventory, 4, 5);
 
         byte comparator = tank.tankNew.getRedstoneComparatorPower();
         if (comparator != tank.lastRedstone) {
-            for (DirPos connection : tank.getConPos()) {
+            for (PortDef port : tank.getPorts()) for (DirPos connection : port.portConnections) {
                 level.updateNeighborsAt(connection.getPos(), state.getBlock());
             }
             tank.lastRedstone = comparator;
         }
 
-        tank.updateNetwork(level);
         if (tank.tankNew.getFill() > 0 && tank.checkFluidInteraction(level)) return;
         tank.networkPackNT();
         tank.setChanged();
-    }
-
-    /**
-     * Buffer mode makes the tank a length of duct: it holds its own footprint as cells, so runs touching
-     * two different ports are one network. Every other mode gives them back and lets the ducts find it by
-     * probing. A tilted tank stops external work, but a buffer's cells stay, and it is still plumbing.
-     */
-    private void updateNetwork(Level level) {
-        if (!(level instanceof ServerLevel server)) return;
-        FluidType type = tankNew.getTankType();
-        cells = mode == 1 && type != Fluids.NONE
-                ? FluidGraph.hold(server, this, type, getConPos())
-                : FluidGraph.release(server, cells);
-        if (mode == 1 || isTilted()) return;
-        // 1.7 (TileEntityMachineFluidTank, which these extend there): send provides at each port, receive
-        // subscribes there, and any other mode leaves the role at once
-        for (DirPos connection : getConPos()) {
-            BlockPos at = connection.getPos();
-            if (mode == 2) tryProvide(tankNew, level, connection);
-            else tryUnprovide(type, level, at.getX(), at.getY(), at.getZ());
-            if (mode == 0) trySubscribe(type, level, connection);
-            else tryUnsubscribe(type, level, at.getX(), at.getY(), at.getZ());
-        }
     }
 
     /** 1.7 {@code tank.setType(0, 1, slots)}: an identifier in slot 0 sets the type and passes to slot 1. */
@@ -108,7 +84,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         inventory.setStackInSlot(0, ItemStack.EMPTY);
     }
 
-    /** Retypes the tank; the next tick retypes the cells a buffer holds with it. */
+    /** Retypes the tank; the ports follow the next tick. */
     public void setTankType(FluidType type) {
         if (type == null) type = Fluids.NONE;
         if (type == tankNew.getTankType()) return;
@@ -154,6 +130,27 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
     }
 
     @Override
+    public long getFluidAvailable(FluidType type, int pressure) {
+        if (isTilted() || mode == 0 || mode == 3 || tankNew.getPressure() != pressure) return 0;
+        return type == tankNew.getTankType() ? tankNew.getFill() : 0;
+    }
+
+    @Override
+    public long getProviderSpeed(FluidType type, int pressure) {
+        return (mode == 1 || mode == 2) ? 1_000_000_000 : 0;
+    }
+
+    @Override
+    public long getReceiverSpeed(FluidType type, int pressure) {
+        return (mode == 0 || mode == 1) ? 1_000_000_000 : 0;
+    }
+
+    @Override
+    public ConnectionPriority getFluidPriority() {
+        return mode == 1 ? ConnectionPriority.LOW : ConnectionPriority.NORMAL;
+    }
+
+    @Override
     public long transferFluid(FluidType type, int pressure, long amount) {
         long moved = Math.min(getDemand(type, pressure), amount);
         tankNew.setFill(tankNew.getFill() + (int) moved);
@@ -169,25 +166,22 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         return false;
     }
 
-    public abstract DirPos[] getConPos();
+    public abstract PortDef[] getPorts();
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     public ForgeDirection getFacing() {
         return MachineCore.facing(getBlockState());
     }
 
     @Override
-    /**
-     * A tilted tank supplies nothing, the same way {@link #getDemand} already refuses to take anything.
-     * Under the old network that held because a tilted tank never subscribed as a provider; the graph
-     * finds it either way, so the tilt has to be in what it offers rather than in whether it is asked.
-     */
     public FluidTankNTM[] getSendingTanks() {
-        return !isTilted() && (mode == 1 || mode == 2) ? new FluidTankNTM[]{tankNew} : new FluidTankNTM[0];
+        return new FluidTankNTM[]{tankNew};
     }
 
     @Override
     public FluidTankNTM[] getReceivingTanks() {
-        return mode == 0 || mode == 1 ? new FluidTankNTM[]{tankNew} : new FluidTankNTM[0];
+        return new FluidTankNTM[]{tankNew};
     }
 
     @Override
@@ -235,13 +229,5 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         mode = (short) input.getShortOr("mode", (short) 0);
         tilted = input.getBooleanOr("tilted", false);
         tankNew.readFromNBT(input, "tank");
-    }
-
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-        if (cells.length > 0 && FluidGraph.dropCells(this, cells) && level instanceof ServerLevel server) {
-            EndpointRegistry.of(server).withdraw(getBlockPos());
-        }
     }
 }

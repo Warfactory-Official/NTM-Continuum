@@ -6,7 +6,6 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.entity.item.EntityMovingItem;
 import com.hbm.inventory.recipes.PressRecipes;
 import com.hbm.items.machine.ItemStamp;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -23,6 +22,8 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 import com.hbm.tileentity.ModProductionBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The conveyor press core, ported from the original {@code TileEntityConveyorPress}: while a stamp is
@@ -57,7 +58,9 @@ public class TileEntityConveyorPress extends TileEntityMachineBase implements IE
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityConveyorPress te) {
-        for (DirPos port : te.getConPos()) te.trySubscribe(level, port);
+        te.setupPowerPorts(te.getPorts());
+        te.updateAllPorts();
+        te.receivePower();
 
         if (te.delay <= 0) {
 
@@ -73,7 +76,6 @@ public class TileEntityConveyorPress extends TileEntityMachineBase implements IE
                         te.delay = 0;
                     }
                 }
-
             } else {
 
                 if (te.canExtend(level)) {
@@ -88,7 +90,6 @@ public class TileEntityConveyorPress extends TileEntityMachineBase implements IE
                     }
                 }
             }
-
         } else {
             te.delay--;
         }
@@ -108,15 +109,8 @@ public class TileEntityConveyorPress extends TileEntityMachineBase implements IE
         }
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 1, y, z, ForgeDirection.EAST),
-                new DirPos(x - 1, y, z, ForgeDirection.WEST),
-                new DirPos(x, y, z + 1, ForgeDirection.SOUTH),
-                new DirPos(x, y, z - 1, ForgeDirection.NORTH),
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     private AABB beltBox() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();

@@ -12,26 +12,21 @@ import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/** Compact compressor renderer, preserving old yaw and opposing fan animation. */
 public final class CompressorCompactRenderer
         extends GemBER<TileEntityMachineCompressorCompact, CompressorCompactRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
-            Ids.of(Constants.MOD_ID, "models/machines/condenser.obj"));
-    private final Surface surface = Surface.cutoutNoCull(
+            Ids.of(Constants.MOD_ID, "models/machines/compressor_compact.obj"));
+    private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/compressor_compact.png");
 
     @Override
     protected void setup(Gem.Model<CompressorCompactRenderState> declaration) {
-        Gem.Part<CompressorCompactRenderState> machine = declaration.offScreen().viewDistance(256)
+        declaration.offScreen().viewDistance(256)
                 .joint()
                 .translate(0.5F, 0F, 0.5F)
-                .angle(Gem.Axes.Y, state -> state.yaw);
-        machine.child(model.part("Condenser"), surface);
-        machine.child(model.part("Fan1"), surface)
-                .spin(Gem.Axes.X, 0F, 1.5F, 0F, state -> state.spin);
-        machine.child(model.part("Fan2"), surface)
-                .spin(Gem.Axes.X, 0F, 1.5F, 0F, state -> -state.spin);
+                .angle(Gem.Axes.Y, state -> state.yaw)
+                .child(model.all(), surface);
     }
 
     @Override public CompressorCompactRenderState createRenderState() {
@@ -45,6 +40,5 @@ public final class CompressorCompactRenderer
         int meta = MachineCore.facingOrdinal(blockState, 2);
         ForgeDirection facing = ForgeDirection.getOrientation(meta);
         state.yaw = 90F + facing.getRotationDegrees();
-        state.spin = be.prevFanSpin + (be.fanSpin - be.prevFanSpin) * partialTicks;
     }
 }

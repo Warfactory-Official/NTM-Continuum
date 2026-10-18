@@ -33,11 +33,14 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AttachedStemBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.AABB;
@@ -50,6 +53,7 @@ import com.hbm.blocks.generic.BlockTallPlant;
 import com.hbm.blocks.machine.MachineThresher;
 import com.hbm.sound.ModProductionSounds;
 import com.hbm.tileentity.ModProductionBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The automatic thresher, ported from the original {@code TileEntityMachineThresher}: a fuelled arm that
@@ -88,8 +92,20 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
         return ForgeDirection.getOrientation(facing);
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection rot = facing(getBlockState()).getOpposite().getRotation(ForgeDirection.UP);
+            cachedPorts = new PortDef[] { PortDef.make(worldPosition, rot, rot.getOpposite()) };
+        }
+        return cachedPorts;
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState blockState, TileEntityMachineThresher te) {
         if (!(level instanceof ServerLevel server)) return;
+
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
 
         ForgeDirection dir = facing(blockState).getOpposite();
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
@@ -101,9 +117,6 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
             } else {
                 te.isOn = false;
             }
-            te.trySubscribe(te.tank.getTankType(), level, pos.getX() + rot.offsetX, pos.getY(), pos.getZ() + rot.offsetZ, rot);
-            te.trySubscribe(te.tank.getTankType(), level, pos.getX() - rot.offsetX, pos.getY(), pos.getZ() - rot.offsetZ, rot.getOpposite());
-            te.trySubscribe(te.tank.getTankType(), level, pos.getX(), pos.getY() - 1, pos.getZ(), ForgeDirection.DOWN);
         }
 
         if (te.isOn && !te.isSuspended) {
@@ -155,7 +168,7 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
 
                     BlockState b = level.getBlockState(hit);
 
-                    if (b.isCollisionShapeFullBlock(level, hit)) {
+                    if (b.isCollisionShapeFullBlock(level, hit) && !canCut(b)) {
                         te.state = 2;
                         break;
                     }
@@ -182,7 +195,7 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
                     }
                     // IGrowable also covers anything that accepts bone
                     // meal, so we have to handle actual crops last
-                    if (b.getBlock() instanceof BonemealableBlock && !shouldIgnore(level, hit, b)) te.cutCrop(server, b, hit);
+                    if (canCut(b) && !shouldIgnore(level, hit, b)) te.cutCrop(server, b, hit);
                 }
 
                 AABB box = new AABB(endX, pos.getY() + 0.5, endZ, endX, pos.getY() + 0.5, endZ)
@@ -275,8 +288,15 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
         return wrapped;
     }
 
+    public static boolean canCut(BlockState state) {
+        if (state.getBlock() instanceof BonemealableBlock) return true;
+        return state.is(Blocks.NETHER_WART) || state.is(Blocks.MELON) || state.is(Blocks.PUMPKIN);
+    }
+
     /** 1.7 {@code IGrowable.func_149851_a}: a plant that still accepts bone meal is left to grow. */
     public static boolean shouldIgnore(Level level, BlockPos pos, BlockState state) {
+        if (state.getBlock() instanceof StemBlock || state.getBlock() instanceof AttachedStemBlock) return true;
+        if (state.is(Blocks.NETHER_WART)) return state.getValue(NetherWartBlock.AGE) < NetherWartBlock.MAX_AGE;
         if (state.getBlock() instanceof BonemealableBlock growable) {
             return Plants.isValidBonemealTarget(growable, level, pos, state);
         }
@@ -333,7 +353,8 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
     private static @Nullable BlockState plantStateFromDrop(ServerLevel level, BlockPos pos, ItemStack drop) {
         if (!(drop.getItem() instanceof BlockItem blockItem)) return null;
         BlockState candidate = blockItem.getBlock().defaultBlockState();
-        if (!(candidate.getBlock() instanceof CropBlock || candidate.getBlock() instanceof BonemealableBlock)) return null;
+        if (!(candidate.getBlock() instanceof CropBlock || candidate.getBlock() instanceof BonemealableBlock
+                || candidate.getBlock() instanceof NetherWartBlock)) return null;
         if (!candidate.canSurvive(level, pos)) return null;
         return candidate;
     }

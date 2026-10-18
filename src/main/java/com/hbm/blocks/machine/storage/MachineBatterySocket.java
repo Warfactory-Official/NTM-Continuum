@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.storage;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -104,5 +105,19 @@ public class MachineBatterySocket extends BlockMultiblockMachine implements IEne
         visitor.passiveCell(core.relative(back), MASK_ALL, domains);
         visitor.passiveCell(core.relative(rot), MASK_ALL, domains);
         visitor.passiveCell(core.relative(back).relative(rot), MASK_ALL, domains);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {1, 0, -1, ForgeDirection.EAST.ordinal()},
+                {0, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, -1, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

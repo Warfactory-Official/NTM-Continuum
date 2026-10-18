@@ -95,8 +95,21 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
      */
     private int floodGeneration;
 
+    /** Bumped by every edit that can change a cell's net, data or open faces. */
+    private long version;
+
     public LevelNodeGraph(IGraphProvider<D> provider) {
         this.provider = provider;
+    }
+
+    /** Changes whenever a join derived from this graph's nets, data or open faces may be stale. */
+    public long version() {
+        return version;
+    }
+
+    private void edited() {
+        version++;
+        setDirty();
     }
 
     /**
@@ -582,7 +595,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
             target.edgeFaces.add(node);
             queue(target, node);
         }
-        setDirty();
+        edited();
 
         List<GraphNode<D>> foldCandidates = new ArrayList<>(6);
         for (Direction dir : DIRS) {
@@ -678,7 +691,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
             if (net.pendingProbe != null) net.pendingProbe.remove(v);
         }
         if (net.activeFaces != null && keep.hasUnprobed()) queue(net, keep);
-        setDirty();
+        edited();
     }
 
     private GraphSegment<D> resolveChain(GraphSegment<D> s, long posKey) {
@@ -815,7 +828,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
             if (s.hasUnprobed()) queue(net, s);
             if (minted.hasUnprobed()) queue(net, minted);
         }
-        setDirty();
+        edited();
         return v;
     }
 
@@ -832,7 +845,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
         removeFromChunkIndex(posKey);
         NodeNetwork<D> net = node.net;
         node.net = null;
-        setDirty();
+        edited();
         if (node.hasRemoteLinks()) {
             for (LongIterator it = node.remoteLinks.iterator(); it.hasNext(); ) {
                 GraphNode<D> peer = nodesByPos.get(it.nextLong());
@@ -1221,7 +1234,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
         int opened = newMask & ~old;
         int closed = old & ~newMask;
         node.openConnections = newMask;
-        setDirty();
+        edited();
 
         NodeNetwork<D> net = node.net;
         if (net == null) return;
@@ -1325,7 +1338,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
         if (nb.remoteLinks == null) nb.remoteLinks = new LongOpenHashSet(2);
         na.remoteLinks.add(b);
         nb.remoteLinks.add(a);
-        setDirty();
+        edited();
         if (!remoteCompatible(na, nb)) return;
         if (na.net != null && nb.net != null && na.net != nb.net) unite(na.net, nb.net);
     }
@@ -1335,7 +1348,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
         GraphNode<D> nb = nodesByPos.get(b);
         if (na != null && na.remoteLinks != null) na.remoteLinks.remove(b);
         if (nb != null && nb.remoteLinks != null) nb.remoteLinks.remove(a);
-        setDirty();
+        edited();
         if (na == null || nb == null || na.net == null || na.net != nb.net) return;
         List<Object> seeds = new ArrayList<>(2);
         seeds.add(na);
@@ -1380,6 +1393,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
     }
 
     public void rebuildAllNetworks() {
+        version++;
         networks.clear();
         for (GraphNode<D> node : nodesByPos.values()) node.net = null;
         for (GraphSegment<D> s : allSegments()) s.net = null;
@@ -1748,7 +1762,7 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
             if (net.pendingProbe != null) net.pendingProbe.remove(v);
         }
         if (net.activeFaces != null && merged.hasUnprobed()) queue(net, merged);
-        setDirty();
+        edited();
     }
 
     /**

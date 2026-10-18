@@ -1,9 +1,11 @@
 package com.hbm.saveddata.satellites;
 
 import com.hbm.entity.logic.EntityOrbitalLaser;
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -51,6 +53,16 @@ public class SatellitePrecisionLaser extends Satellite {
     @Override public String getType() { return "ORBITAL_TATOO_REMOVER"; }
 
     @Override
+    public Component[] getInfo(Level level) {
+        boolean canFire = lastShot + CHARGE_TIME < level.getGameTime();
+        int cooldown = (int) ((lastShot + CHARGE_TIME) - level.getGameTime());
+        return new Component[] {
+                nameOf(EnumSatType.PRECISION_LASER),
+                canFire ? Component.translatable("satellite.ready") : Component.translatable("satellite.cooldown", cooldown / 20 + "s")
+        };
+    }
+
+    @Override
     public void onCommandImpl(Level level, String... cmd) {
         if (cmd.length <= 0) return;
 
@@ -70,7 +82,11 @@ public class SatellitePrecisionLaser extends Satellite {
                 double dZ = z - targetZ;
 
                 if (dX * dX + dZ * dZ <= MAX_TARGET_RANGE * MAX_TARGET_RANGE) {
-                    this.deathBlast(server, e.getX(), e.getY(), e.getZ());
+                    // 1.7: a small random offset varies the damage and skirts an ExVNT issue
+                    double offX = level.getRandom().nextDouble() * 0.05 - 0.025;
+                    double offY = level.getRandom().nextDouble() * 0.05 - 0.025;
+                    double offZ = level.getRandom().nextDouble() * 0.05 - 0.025;
+                    this.deathBlast(server, e.getX() + offX, e.getY() + offY, e.getZ() + offZ);
                     return;
                 }
             }
@@ -84,8 +100,7 @@ public class SatellitePrecisionLaser extends Satellite {
             return;
         }
 
-        if (cmd[0].equals(CMD_SETENTITYTARGET)) {
-            // 1.7 reads cmd[1] unchecked; a bare "setentitytarget" fails the call there and here
+        if (cmd[0].equals(CMD_SETENTITYTARGET) && cmd.length == 2) {
             this.targetedEntity = parse(cmd[1]);
         }
     }
@@ -104,6 +119,7 @@ public class SatellitePrecisionLaser extends Satellite {
     public void deathBlast(ServerLevel level, double x, double y, double z) {
         if (lastShot + CHARGE_TIME < level.getGameTime()) {
             lastShot = level.getGameTime();
+            this.markDirty();
 
             EntityOrbitalLaser blast = new EntityOrbitalLaser(level);
             blast.setPos(x, y, z);

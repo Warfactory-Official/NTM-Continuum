@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.effect.EntityFireLingering;
@@ -34,6 +36,16 @@ import net.minecraft.world.phys.HitResult;
 
 /** The 26 mm flare and 40 mm grenade families from 1.7's XFactory40mm. */
 public final class XFactory40mm {
+
+    public static final ConfigWrapper<Float> GUN_FLARE_DAMAGE = new ConfigWrapper<>(15F);
+    public static final ConfigWrapper<Float> GUN_CONGO_LAKE_DAMAGE = new ConfigWrapper<>(20F);
+    public static final ConfigWrapper<Float> GUN_MK108_DAMAGE = new ConfigWrapper<>(25F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_FLARE_DAMAGE", GUN_FLARE_DAMAGE);
+        ServerConfig.configMap.put("GUN_CONGO_LAKE_DAMAGE", GUN_CONGO_LAKE_DAMAGE);
+        ServerConfig.configMap.put("GUN_MK108_DAMAGE", GUN_MK108_DAMAGE);
+    }
 
     public static BulletConfig g26_flare;
     public static BulletConfig g26_flare_supply;

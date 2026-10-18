@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.ModAmmoItems;
@@ -16,6 +18,16 @@ import net.minecraft.world.phys.HitResult;
 
 /** The ordinary 5.56 mm family. */
 public final class XFactory556mm {
+
+    public static final ConfigWrapper<Float> GUN_ASSAULT_RIFLE_DAMAGE = new ConfigWrapper<>(5F);
+    public static final ConfigWrapper<Float> GUN_ZEBRA_DAMAGE = new ConfigWrapper<>(7.5F);
+    public static final ConfigWrapper<Float> GUN_STG77_DAMAGE = new ConfigWrapper<>(10F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_ASSAULT_RIFLE_DAMAGE", GUN_ASSAULT_RIFLE_DAMAGE);
+        ServerConfig.configMap.put("GUN_ZEBRA_DAMAGE", GUN_ZEBRA_DAMAGE);
+        ServerConfig.configMap.put("GUN_STG77_DAMAGE", GUN_STG77_DAMAGE);
+    }
 
     public static BulletConfig r556_sp;
     public static BulletConfig r556_fmj;

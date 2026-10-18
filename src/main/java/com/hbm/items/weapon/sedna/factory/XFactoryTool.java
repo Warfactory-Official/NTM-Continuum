@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.Crosshair;
@@ -59,6 +61,15 @@ import net.minecraft.world.phys.Vec3;
 
 /** Fire-extinguisher, hook and mortar round declarations. */
 public final class XFactoryTool {
+
+    public static final ConfigWrapper<Float> GUN_EXTINGUISHER_DAMAGE = new ConfigWrapper<>(0F);
+    public static final ConfigWrapper<Float> GUN_CHARGE_THROWER_DAMAGE = new ConfigWrapper<>(10F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_EXTINGUISHER_DAMAGE", GUN_EXTINGUISHER_DAMAGE);
+        ServerConfig.configMap.put("GUN_CHARGE_THROWER_DAMAGE", GUN_CHARGE_THROWER_DAMAGE);
+    }
+
     public static BulletConfig fext_water;
     public static BulletConfig fext_foam;
     public static BulletConfig fext_sand;
@@ -286,7 +297,7 @@ public final class XFactoryTool {
                 props -> new ItemGunBaseNT(props, WeaponQuality.UTILITY,
                         new GunConfig().dura(5_000).draw(10).inspect(55).reloadChangeType(true)
                                 .hideCrosshair(false).crosshair(Crosshair.L_CIRCLE)
-                                .rec(new Receiver(0).dmg(0F).delay(1).dry(0).auto(true).spread(0F)
+                                .rec(new Receiver(0).dmg(GUN_EXTINGUISHER_DAMAGE).delay(1).dry(0).auto(true).spread(0F)
                                         .spreadHipfire(0F).reload(20).jam(0)
                                         .mag(new MagazineFullReload(0, 300).addConfigs(fext_water, fext_foam, fext_sand))
                                         .offset(1, -0.0625 * 2.5, -0.25D)
@@ -298,7 +309,7 @@ public final class XFactoryTool {
                 props -> (ItemGunChargeThrower) new ItemGunChargeThrower(props, WeaponQuality.UTILITY,
                         new GunConfig().dura(3_000).draw(10).inspect(55).reloadChangeType(true)
                                 .hideCrosshair(false).crosshair(Crosshair.L_CIRCUMFLEX)
-                                .rec(new Receiver(0).dmg(10F).delay(4).dry(10).auto(true).spread(0F).spreadHipfire(0F).reload(60).jam(0)
+                                .rec(new Receiver(0).dmg(GUN_CHARGE_THROWER_DAMAGE).delay(4).dry(10).auto(true).spread(0F).spreadHipfire(0F).reload(60).jam(0)
                                         .sound(ModGunSounds.FIRE_CHARGE::get, 1F, 1F)
                                         .mag(new MagazineFullReload(0, 1).addConfigs(ct_hook, ct_mortar, ct_mortar_charge))
                                         .offset(1, -0.0625 * 2.5, -0.25D).setupStandardFire()
@@ -310,7 +321,7 @@ public final class XFactoryTool {
 
     public static GunConfig chargeThrowerConfig() {
         return new GunConfig().dura(3000).draw(10).inspect(55).crosshair(Crosshair.L_CIRCUMFLEX)
-                .rec(new Receiver(0).dmg(10F).delay(4).dry(10).auto(true).reload(60).jam(0)
+                .rec(new Receiver(0).dmg(GUN_CHARGE_THROWER_DAMAGE).delay(4).dry(10).auto(true).reload(60).jam(0)
                         .sound(ModGunSounds.FIRE_CHARGE::get, 1F, 1F)
                         .mag(new MagazineFullReload(0, 1).addConfigs(ct_hook, ct_mortar, ct_mortar_charge))
                         .offset(1, -0.0625 * 2.5, -0.25D).setupStandardFire())

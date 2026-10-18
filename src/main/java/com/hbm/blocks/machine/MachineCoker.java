@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -98,6 +99,27 @@ public class MachineCoker extends BlockMultiblockMachine implements IFluidConnec
             new int[] {0, 1, 0, 0, 0, 0, 2, 1, -2},
             new int[] {0, 1, 0, 0, 0, 0, -2, 1, 2},
             new int[] {0, 1, 0, 0, 0, 0, -2, 1, -2},
+        };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 1, ForgeDirection.EAST.ordinal()},
+                {1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, -1, ForgeDirection.EAST.ordinal()},
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, 1, ForgeDirection.WEST.ordinal()},
+                {-1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, -1, ForgeDirection.WEST.ordinal()},
+                {-1, 0, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {0, 0, 0.5, -0.3, 0.4, -0.4, 1},
         };
     }
 }

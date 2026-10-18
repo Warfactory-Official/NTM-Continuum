@@ -11,7 +11,6 @@ import com.hbm.items.machine.ItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.items.special.BedrockOreType;
 import com.hbm.items.special.ItemBedrockOreBase;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSources;
@@ -52,6 +51,7 @@ import java.util.List;
 import com.hbm.blocks.ModProduction2Blocks;
 import com.hbm.inventory.container.ContainerOreSlopper;
 import com.hbm.tileentity.ModProduction2BlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * 1.7 {@code TileEntityMachineOreSlopper}: the bedrock ore processor. Slots: 0 battery, 1 fluid identifier,
@@ -109,6 +109,9 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineOreSlopper te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         ForgeDirection dir = MachineCore.facing(state);
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
@@ -116,12 +119,6 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase
         te.setTankTypeFromSlot(1);
         FluidType conversion = te.getFluidOutput(te.tanks[0].getTankType());
         if (conversion != null) te.tanks[1].setTankType(conversion);
-
-        for (DirPos con : te.getConPos()) {
-            te.trySubscribe(level, con);
-            te.trySubscribe(te.tanks[0].getTankType(), level, con);
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, con);
-        }
 
         te.processing = false;
 
@@ -171,7 +168,6 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase
                     }
                 }
             }
-
         } else {
             te.progress = 0;
         }
@@ -289,21 +285,26 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase
         }
     }
 
-    public DirPos[] getConPos() {
-        ForgeDirection dir = MachineCore.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+    protected PortDef[] cachedPorts;
 
-        return new DirPos[] {
-                new DirPos(x + dir.offsetX * 4, y, z + dir.offsetZ * 4, dir),
-                new DirPos(x - dir.offsetX * 4, y, z - dir.offsetZ * 4, dir.getOpposite()),
-                new DirPos(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot),
-                new DirPos(x - rot.offsetX * 2, y, z - rot.offsetZ * 2, rot.getOpposite()),
-                new DirPos(x + dir.offsetX * 2 + rot.offsetX * 2, y, z + dir.offsetZ * 2 + rot.offsetZ * 2, rot),
-                new DirPos(x + dir.offsetX * 2 - rot.offsetX * 2, y, z + dir.offsetZ * 2 - rot.offsetZ * 2, rot.getOpposite()),
-                new DirPos(x - dir.offsetX * 2 + rot.offsetX * 2, y, z - dir.offsetZ * 2 + rot.offsetZ * 2, rot),
-                new DirPos(x - dir.offsetX * 2 - rot.offsetX * 2, y, z - dir.offsetZ * 2 - rot.offsetZ * 2, rot.getOpposite())
-        };
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 3, y, z + dir.offsetZ * 3, dir),
+                    PortDef.make(x - dir.offsetX * 3, y, z - dir.offsetZ * 3, dir.getOpposite()),
+                    PortDef.make(x + rot.offsetX, y, z + rot.offsetZ, rot),
+                    PortDef.make(x - rot.offsetX, y, z - rot.offsetZ, rot.getOpposite()),
+                    // 1.7 mixes up the Z terms of these two, so they sit elsewhere for each facing
+                    PortDef.make(x + dir.offsetX * 2 + rot.offsetX, y, z + dir.offsetZ + rot.offsetZ * 2, rot),
+                    PortDef.make(x + dir.offsetX * 2 - rot.offsetX, y, z + dir.offsetZ - rot.offsetZ * 2, rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 2 + rot.offsetX, y, z - dir.offsetZ * 2 + rot.offsetZ, rot),
+                    PortDef.make(x - dir.offsetX * 2 - rot.offsetX, y, z - dir.offsetZ * 2 - rot.offsetZ, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 
     @Override

@@ -22,6 +22,7 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The 1.7 {@code TileEntityCharger}. Every tick it looks for players standing in its own column (the half-block
@@ -60,12 +61,22 @@ public class TileEntityCharger extends TileEntityLoadedBase implements IEnergyRe
         return ForgeDirection.getOrientation(facing.getOpposite());
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) cachedPorts = new PortDef[] { PortDef.make(worldPosition, back()) };
+        return cachedPorts;
+    }
+
     @Override
     public boolean canConnect(ForgeDirection dir) {
         return dir == back();
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCharger charger) {
+        charger.setupPowerPorts(charger.getPorts());
+        charger.updateAllPorts();
+        charger.receivePower();
+
         charger.players = level.getEntitiesOfClass(Player.class,
                 new AABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5)
                         .inflate(0.5, 0.0, 0.5));

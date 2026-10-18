@@ -19,6 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Contracts for the UF6/PuF6 storage and heavy-water processing machines. */
 public final class IsotopeProcessingGameTests {
@@ -87,7 +88,7 @@ public final class IsotopeProcessingGameTests {
 
         helper.assertTrue(tower.tanks[0].getMaxFill() == 50_000 && tower.tanks[1].getMaxFill() == 5_000,
                 "heavy-water tower capacities must be 50,000 and 5,000 mB");
-        DirPos[] ports = tower.getConPos();
+        DirPos[] ports = PortDef.connections(tower.getPorts());
         helper.assertTrue(ports.length == 8, "heavy-water tower must expose eight network ports");
         for (DirPos port : ports) {
             BlockPos cell = port.getPos().offset(-port.getDir().offsetX, -port.getDir().offsetY, -port.getDir().offsetZ);

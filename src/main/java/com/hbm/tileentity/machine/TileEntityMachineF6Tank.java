@@ -7,7 +7,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.ContainerMachineF6Tank;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -24,6 +23,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Common fixed-fluid tank implementation used by the UF6 and PuF6 variants. port: 1.7's UF6/PuF6 tiles are empty, so
@@ -45,9 +46,8 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineF6Tank tank) {
-        for (DirPos connection : tank.getConPos()) {
-            if (tank.tank.getFill() > 0) tank.tryProvide(tank.tank, level, connection);
-        }
+        tank.setupFluidPorts(tank.getPorts());
+        tank.updatePortFIFO();
 
         MachineFluidContainerIO.load(tank.tank, tank.inventory, 0, 1);
         MachineFluidContainerIO.unload(tank.tank, tank.inventory, 2, 3);
@@ -62,17 +62,10 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
         tank.networkPackNT();
     }
 
-    public DirPos[] getConPos() {
-        BlockPos pos = getBlockPos();
-        return new DirPos[]{
-                new DirPos(pos.east(), Library.POS_X),
-                new DirPos(pos.west(), Library.NEG_X),
-                new DirPos(pos.south(), Library.POS_Z),
-                new DirPos(pos.north(), Library.NEG_Z),
-                new DirPos(pos.above(), Library.POS_Y),
-                new DirPos(pos.below(), Library.NEG_Y)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     @Override
     public boolean canConnect(FluidType type, ForgeDirection dir) {

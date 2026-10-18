@@ -20,12 +20,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Focused contracts for the electric and steam groundwater pumps. */
 public final class PumpGameTests {
 
     private PumpGameTests() {}
-
 
     public static void layout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
@@ -43,13 +43,14 @@ public final class PumpGameTests {
     public static void ports(GameTestHelper helper) {
         TileEntityMachinePumpElectric pump = place(helper, new BlockPos(3, 1, 3));
         BlockPos core = pump.getBlockPos();
-        DirPos[] ports = pump.getConPos();
+        DirPos[] ports = PortDef.connections(pump.getPorts());
 
         helper.assertTrue(ports.length == 4, "Pump must expose four ports");
-        assertPort(helper, ports[0], core.east(2), ForgeDirection.EAST);
-        assertPort(helper, ports[1], core.west(2), ForgeDirection.WEST);
+        // 1.7 TilePortShapes.flare order
+        assertPort(helper, ports[0], core.north(2), ForgeDirection.NORTH);
+        assertPort(helper, ports[1], core.east(2), ForgeDirection.EAST);
         assertPort(helper, ports[2], core.south(2), ForgeDirection.SOUTH);
-        assertPort(helper, ports[3], core.north(2), ForgeDirection.NORTH);
+        assertPort(helper, ports[3], core.west(2), ForgeDirection.WEST);
         helper.assertTrue(ModMachineBlocks.machine_pump_electric.get().canConnect(helper.getLevel(), core.east(), ForgeDirection.EAST),
                 "Pump must expose its east cable port");
         helper.succeed();

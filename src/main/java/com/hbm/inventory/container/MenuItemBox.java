@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.inventory.ItemStackContainer;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.tool.ItemAmmoBag;
 import com.hbm.items.tool.ItemCasingBag;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.data.ItemContents;
@@ -78,6 +79,7 @@ public final class MenuItemBox extends CompatContainerMenu {
     private boolean accepts(ItemStack stack) {
         // The casing bag is filled by spent-casing recovery, never by player insertion.
         if (layout.equals(ItemCasingBag.LAYOUT)) return false;
+        if (layout.equals(ItemAmmoBag.LAYOUT) && !ItemAmmoBag.holds(stack)) return false;
         // 1.7 refused stacks with NBT; metadata and damage were fine. The metadata families are items of their own,
         // and the few 1.7 metadata values kept on one item are these typed components.
         return ItemStacks.hasOnlyVariantAndDamage(stack, ModDataComponents.RBMK_PELLET,

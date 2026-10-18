@@ -60,23 +60,18 @@ public class MachineTurbineGas extends BlockMultiblockMachine
         ForgeDirection facing = turbine.getFacing();
         List<String> text = new ArrayList<>();
 
-        if (hitCheck(facing, turbine.getBlockPos(), -1, -1, 0, pos)
-                || hitCheck(facing, turbine.getBlockPos(), 1, -1, 0, pos)) {
-            text.add("§2-> §r" + turbine.tanks[0].getTankType().getDisplayNameString());
-            text.add("§2-> §r" + turbine.tanks[1].getTankType().getDisplayNameString());
+        BlockPos core = turbine.getBlockPos();
+        if (hitCheck(facing, core, -1, -1, 0, pos) || hitCheck(facing, core, 1, -1, 0, pos)
+                || hitCheck(facing, core, -1, 4, 0, pos) || hitCheck(facing, core, 1, 4, 0, pos)
+                || hitCheck(facing, core, 0, 5, 1, pos)) {
+            text.add("§a-> §r" + turbine.tanks[0].getTankType().getDisplayNameString());
+            text.add("§a-> §r" + turbine.tanks[1].getTankType().getDisplayNameString());
+            text.add("§a-> §r" + turbine.tanks[2].getTankType().getDisplayNameString());
+            text.add("§c<- §r" + turbine.tanks[3].getTankType().getDisplayNameString());
         }
 
-        if (hitCheck(facing, turbine.getBlockPos(), -1, 4, 0, pos)
-                || hitCheck(facing, turbine.getBlockPos(), 1, 4, 0, pos)) {
-            text.add("§2-> §r" + turbine.tanks[2].getTankType().getDisplayNameString());
-        }
-
-        if (hitCheck(facing, turbine.getBlockPos(), 0, 5, 1, pos)) {
-            text.add("§4-> §r" + turbine.tanks[3].getTankType().getDisplayNameString());
-        }
-
-        if (hitCheck(facing, turbine.getBlockPos(), 0, -4, 1, pos)) {
-            text.add("§4-> §rPower");
+        if (hitCheck(facing, core, 0, -4, 1, pos)) {
+            text.add("§c<- §rPower");
         }
 
         if (!text.isEmpty()) {
@@ -123,5 +118,17 @@ public class MachineTurbineGas extends BlockMultiblockMachine
         visitor.passiveCell(core.offset(dx + rx * -4, 0, dz + rz * -4), MASK_ALL, domains);
         visitor.passiveCell(core.offset(rx * 4, 1, rz * 4), MASK_ALL, domains);
         visitor.passiveCell(core.offset(rx * -5, 1, rz * -5), MASK_ALL, domains);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {-4, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-4, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {4, 1, 0, ForgeDirection.EAST.ordinal()},
+                {-5, 1, 0, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

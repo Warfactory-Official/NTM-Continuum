@@ -1,0 +1,23 @@
+{
+	"name": "Coker Oil",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		"hbm:oil_coker"
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:oil_coker"
+		]
+	],
+	"title": {
+		"en_us": "Coker Oil",
+		"ru_ru": "Коксовая нефть"
+	},
+	"content": {
+		"en_us": "Coker oil can be obtained by [[coking|Coker Unit]] various oils. It can be used to produce additional [[cracked oil|Cracked Oil]] and [[heating oil|Heating Oil]].",
+		"ru_ru": "Коксовая нефть образуется путем [[коксования|Coker Unit]] различных масел. Его можно использовать для производства дополнительной [[крекированной нефти|Cracked Oil]] и [[мазута|Heating Oil]]."
+	}
+}

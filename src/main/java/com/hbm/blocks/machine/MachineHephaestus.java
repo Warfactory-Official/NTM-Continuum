@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -124,5 +125,19 @@ public class MachineHephaestus extends BlockMultiblockMachine implements IFluidC
     @Override
     public boolean acceptsFluid(FluidType type) {
         return true;
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 11, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 11, 0, ForgeDirection.WEST.ordinal()},
+                {0, 11, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 11, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

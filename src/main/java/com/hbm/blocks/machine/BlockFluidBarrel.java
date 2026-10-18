@@ -1,7 +1,6 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
-import com.hbm.tileentity.network.TileEntityBarrelDeco;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.uninos.graph.LevelNodeGraph;
@@ -31,9 +30,10 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The 1.7 {@code BlockFluidBarrel}: the five storage drums ({@code barrel_plastic} 12,000 mB,
- * {@code barrel_corroded} 6,000, {@code barrel_steel} 16,000, {@code barrel_tcalloy} 24,000,
+ * {@code barrel_corroded} 16,000, {@code barrel_steel} 16,000, {@code barrel_tcalloy} 24,000,
  * {@code barrel_antimatter} 16,000). A click opens the barrel's menu; a sneak-click with a fluid
- * identifier sets the fluid. The corroded barrel is decoration in 1.7 (no tile, no menu) and stays so.
+ * identifier sets the fluid. The corroded barrel, what a steel barrel becomes when it holds a highly corrosive
+ * fluid, has no menu and leaks.
  * A non-empty barrel keeps its fluid when picked up (see {@link TileEntityBarrel#collectCarriedData}).
  * Drawn by the {@code barrel.obj} renderer, with a connector on every side a duct of its fluid touches.
  */
@@ -64,7 +64,7 @@ public class BlockFluidBarrel extends CompatBlock implements TickingBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return corroded ? new TileEntityBarrelDeco(pos, state) : new TileEntityBarrel(pos, state);
+        return new TileEntityBarrel(pos, state);
     }
 
     @Override

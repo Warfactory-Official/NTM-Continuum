@@ -1,7 +1,7 @@
 {
   "model": {
     "type": "hbm:machine_obj",
-    "obj": "hbm:models/machines/condenser.obj",
+    "obj": "hbm:models/machines/compressor_compact.obj",
     "texture": "hbm:textures/models/machines/compressor_compact.png",
     "scale": 0.75,
     "ty": 0.0,

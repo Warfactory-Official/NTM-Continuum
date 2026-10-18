@@ -11,12 +11,12 @@ import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
 import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
 import com.hbm.tileentity.machine.storage.TileEntityMachineOrbus;
-import com.hbm.tileentity.network.TileEntityCapacitor;
+import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
-/** Batteries, tanks, barrels and capacitors: 1.7's OpenComputers components on CC: Tweaked. */
+/** Batteries, tanks and barrels: 1.7's OpenComputers components on CC: Tweaked. */
 public final class StorageRows {
 
     private StorageRows() {}
@@ -35,7 +35,7 @@ public final class StorageRows {
             // 1.7 socket and REDD: makeExtra power proxies
             Peripherals.row(TileEntityBatterySocket.class, BatterySocketPeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityBatteryREDD.class, BatteryREDDPeripheral::new, Reach.CELLS),
-            Peripherals.row(TileEntityCapacitor.class, CapacitorPeripheral::new, Reach.BLOCK)
+            Peripherals.row(TileEntityMassStorage.class, MassStoragePeripheral::new, Reach.BLOCK)
     );
 
     public static GameTests.Suite tests() {

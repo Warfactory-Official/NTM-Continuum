@@ -2,16 +2,15 @@ package com.hbm.compat.computercraft.machine;
 
 //? if computercraft {
 import com.hbm.compat.computercraft.SnapshotPeripheral;
+import com.hbm.items.machine.ItemZirnoxRod;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import dan200.computercraft.api.lua.LuaFunction;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
 
-/**
- * 1.7 {@code TileEntityReactorZirnox}'s component {@code zirnox_reactor}. ntm-next's {@code getFuel} is not in
- * 1.7's component and is not ported.
- */
+/** 1.7 {@code TileEntityReactorZirnox}'s component {@code zirnox_reactor}. */
 public final class ZirnoxPeripheral extends SnapshotPeripheral<TileEntityReactorZirnox> {
 
     private static final int HEAT = 0;
@@ -66,6 +65,17 @@ public final class ZirnoxPeripheral extends SnapshotPeripheral<TileEntityReactor
     @LuaFunction
     public final Object[] getCarbonDioxide() {
         return read(s -> new Object[]{s.intAt(CO2)});
+    }
+
+    // 1.7 checkInteger: a fraction truncates
+    @LuaFunction(mainThread = true)
+    public final Object[] getFuel(double index) {
+        int slot = (int) index;
+        TileEntityReactorZirnox machine = machine();
+        ItemStack rod = slot >= 0 && slot < 24 ? machine.fuelRod(slot) : ItemStack.EMPTY;
+        if (rod.isEmpty()) return new Object[]{"", 0, 0};
+        ItemZirnoxRod item = (ItemZirnoxRod) rod.getItem();
+        return new Object[]{item.fuel().legacyName(), item.getLife(rod), item.stats().maxLife()};
     }
 
     @LuaFunction

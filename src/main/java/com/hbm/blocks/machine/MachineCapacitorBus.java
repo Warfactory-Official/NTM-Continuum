@@ -17,10 +17,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.Nullable;
 
-/**
- * {@code capacitor_bus}: the capacitor's output block. Not a conductor -- a capacitor walks a straight
- * run of these and pushes into whatever ends it; the cable only draws its arm on the bus's output face.
- */
+/** 1.7's deprecated {@code capacitor_bus}: carries nothing; a cable still draws its arm on the output face. */
 public class MachineCapacitorBus extends CompatBlock implements IEnergyConnectorBlock, ITooltipProvider {
 
     /** 1.7's piston metadata: the output face, turned towards the placer. */

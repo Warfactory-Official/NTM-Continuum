@@ -14,7 +14,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FT_Polluting;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
-import com.hbm.tileentity.machine.TileEntityDiFurnace;
+import com.hbm.tileentity.machine.TileEntityHeaterFirebox;
 import com.hbm.tileentity.machine.TileEntityMachineDrain;
 import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
 import com.hbm.util.TickPhase;
@@ -291,21 +291,21 @@ public final class PollutionGameTests {
 
     /**
      * The {@code TileEntityMachinePolluting} buffer: 100 mB of smoke per pollution unit, and what does not
-     * fit vents into the region. One soot into the DiFurnace's 50 mB tank: 50 mB kept, 50 mB = 0.5 soot out.
+     * fit vents into the region. One soot into the firebox's 50 mB tank: 50 mB kept, 50 mB = 0.5 soot out.
      * Burning a fluid through the base ignores its amount (1.7 passes each table entry as-is), so one
      * burn of leaded fuel adds {@code ceil(0.0005 * 100) = 1} mB whatever the caller asked for.
      */
     public static void smokeOverflow(GameTestHelper helper) {
         Fluids.init();
         BlockPos relative = new BlockPos(1, 1, 1);
-        helper.setBlock(relative, ModMachineBlocks.machine_difurnace_off.get().defaultBlockState());
-        TileEntityDiFurnace furnace = GameTestHelpers
-                .blockEntity(helper, relative, TileEntityDiFurnace.class);
-        helper.assertTrue(furnace != null, "DiFurnace BlockEntity was not created");
+        helper.setBlock(relative, ModMachineBlocks.heater_firebox.get().defaultBlockState());
+        TileEntityHeaterFirebox furnace = GameTestHelpers
+                .blockEntity(helper, relative, TileEntityHeaterFirebox.class);
+        helper.assertTrue(furnace != null, "Firebox BlockEntity was not created");
         BlockPos pos = helper.absolutePos(relative);
 
         helper.assertTrue(furnace.smoke.getMaxFill() == 50 && furnace.smoke.getTankType() == Fluids.SMOKE,
-                "the DiFurnace smoke buffer must be 1.7's 50 mB of SMOKE");
+                "the firebox smoke buffer must be 1.7's 50 mB of SMOKE");
         furnace.smoke.setFill(0);
         float[] before = snapshot(helper.getLevel(), pos);
         try {
@@ -346,8 +346,8 @@ public final class PollutionGameTests {
         helper.assertTrue(oil.releaseMap.get(PollutionType.POISON) == (1F / 50F) * 0.0025F,
                 "oil must spill POISON_PER_SECOND * 0.0025 poison per mB");
         helper.assertTrue(Fluids.FLUE.getTrait(FT_Polluting.class)
-                        .releaseMap.get(PollutionType.SOOT) == (1F / 25F) * 0.005F * 25,
-                "flue gas must spill SOOT_GAS * 25 soot per mB");
+                        .releaseMap.get(PollutionType.SOOT) == (1F / 25F) * 0.005F * 5,
+                "flue gas must spill SOOT_GAS * 5 soot per mB");
         helper.assertTrue(Fluids.WATER.getTrait(FT_Polluting.class) == null,
                 "water must not pollute");
 

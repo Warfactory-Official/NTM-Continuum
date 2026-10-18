@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.config.WeaponConfig;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.sound.ModSounds;
@@ -74,9 +75,12 @@ public class TileEntityTurretHowardDamaged extends TileEntityTurretHoward {
 
         if (level.getRandom().nextInt(100) + 1 <= WeaponConfig.ciwsHitrate * 0.5D && target != null) {
             EntityDamageUtil.attackEntityFromIgnoreIFrame(target, ModDamageSources.shrapnel(level),
-                    2F + level.getRandom().nextInt(2));
+                    getBaseDamage() + level.getRandom().nextInt(2));
         }
 
         muzzleFlash(barrelTip().add(alongBarrel(0, 0.25, 0)), 1.5F, 1);
     }
+
+    @Override
+    public float getBaseDamage() { return XFactoryTurret.TURRET_METHUSALEM_DAMAGE.get(); }
 }

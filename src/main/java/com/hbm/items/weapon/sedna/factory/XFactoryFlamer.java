@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.client.FlamerTrailClientEffects;
 import com.hbm.entity.effect.EntityFireLingering;
@@ -46,6 +48,16 @@ import net.minecraft.world.phys.Vec3;
  * where it lands it leaves a patch of {@link EntityFireLingering} that keeps burning after the burst.
  */
 public final class XFactoryFlamer {
+
+    public static final ConfigWrapper<Float> GUN_FLAMER_DAMAGE = new ConfigWrapper<>(1F);
+    public static final ConfigWrapper<Float> GUN_TOPAZ_DAMAGE = new ConfigWrapper<>(1.5F);
+    public static final ConfigWrapper<Float> GUN_DAYBREAKER_DAMAGE = new ConfigWrapper<>(25F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_FLAMER_DAMAGE", GUN_FLAMER_DAMAGE);
+        ServerConfig.configMap.put("GUN_TOPAZ_DAMAGE", GUN_TOPAZ_DAMAGE);
+        ServerConfig.configMap.put("GUN_DAYBREAKER_DAMAGE", GUN_DAYBREAKER_DAMAGE);
+    }
 
     public static BulletConfig flame_nograv;
     public static BulletConfig flame_nograv_bf;
@@ -211,7 +223,7 @@ public final class XFactoryFlamer {
         BulletConfig[] rounds = variant == 0 ? new BulletConfig[]{flame_diesel, flame_gas, flame_napalm, flame_balefire}
                 : variant == 1 ? new BulletConfig[]{flame_topaz_diesel, flame_topaz_gas, flame_topaz_napalm, flame_topaz_balefire}
                 : new BulletConfig[]{flame_daybreaker_diesel, flame_daybreaker_gas, flame_daybreaker_napalm, flame_daybreaker_balefire};
-        Receiver receiver = new Receiver(0).dmg(variant == 2 ? 25F : variant == 1 ? 1.5F : 1F).spreadHipfire(0F)
+        Receiver receiver = new Receiver(0).dmg(variant == 2 ? GUN_DAYBREAKER_DAMAGE : variant == 1 ? GUN_TOPAZ_DAMAGE : GUN_FLAMER_DAMAGE).spreadHipfire(0F)
                 .delay(variant == 2 ? 10 : 1).auto(true).reload(90).jam(17)
                 .mag(new MagazineFullReload(0, variant == 1 ? 500 : variant == 2 ? 50 : 300)
                         .addConfigs(rounds)).offset(0.75, -0.0625, -0.25D).setupStandardFire();

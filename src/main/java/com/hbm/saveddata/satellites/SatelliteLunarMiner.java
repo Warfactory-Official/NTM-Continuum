@@ -1,5 +1,6 @@
 package com.hbm.saveddata.satellites;
 
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,15 +9,15 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 public class SatelliteLunarMiner extends SatelliteMiner {
 
     public static final MapCodec<SatelliteLunarMiner> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            Codec.LONG.optionalFieldOf("lastOp", 0L).forGetter(sat -> sat.lastOp)
+            Codec.DOUBLE.optionalFieldOf("progress", 0D).forGetter(sat -> sat.progress)
     ).apply(i, SatelliteLunarMiner::new));
 
     public SatelliteLunarMiner() {
-        this(0L);
+        this(0D);
     }
 
-    private SatelliteLunarMiner(long lastOp) {
-        super(lastOp);
+    private SatelliteLunarMiner(double progress) {
+        super(progress);
     }
 
     @Override
@@ -25,4 +26,9 @@ public class SatelliteLunarMiner extends SatelliteMiner {
     }
 
     @Override public String getType() { return "LUNAR_MINER"; }
+
+    @Override
+    protected EnumSatType chip() {
+        return EnumSatType.MINER_LUNAR;
+    }
 }

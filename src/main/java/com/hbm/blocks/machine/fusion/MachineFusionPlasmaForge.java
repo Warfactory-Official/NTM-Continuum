@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -110,5 +111,21 @@ public class MachineFusionPlasmaForge extends BlockMultiblockMachine
             {1.5, 3.5, 1, -1, 5.5, 5.5},
             {1.5, 3.5, 1, -1, -5.5, -5.5}
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {-2, 0, 5, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, 5, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 5, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, 5, ForgeDirection.SOUTH.ordinal()},
+                {2, 0, 5, ForgeDirection.SOUTH.ordinal()},
+                {-2, 0, -5, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, -5, ForgeDirection.NORTH.ordinal()},
+                {0, 0, -5, ForgeDirection.NORTH.ordinal()},
+                {1, 0, -5, ForgeDirection.NORTH.ordinal()},
+                {2, 0, -5, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

@@ -180,8 +180,11 @@ public class ItemBedrockOreBase extends CompatItem {
     }
 
     /** Exact old fixed-seed, four-octave product field, including abs, 0.05 scale and [0,2] clamp. */
+    /** Sampled at the chunk centre, so a whole chunk has one level. */
     public static double getOreLevel(int x, int z, BedrockOreType type) {
         double scale = 0.01D;
+        x = ((x >> 4) << 4) + 8;
+        z = ((z >> 4) << 4) + 8;
         return Mth.clamp(Math.abs(LEVEL.value(x * scale, z * scale)
                 * ORES[type.ordinal()].value(x * scale, z * scale)) * 0.05D, 0D, 2D);
     }

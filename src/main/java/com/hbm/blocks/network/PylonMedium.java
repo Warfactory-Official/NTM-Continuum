@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -31,4 +32,11 @@ public class PylonMedium extends PylonMultiblockBase implements IEnergyConnector
 
     /** The mask table is baked facing south, so "behind" is north there and turns with the facing. */
     @Override public int coreMask() { return transformer ? MASK_NORTH : MASK_NONE; }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, 0, ForgeDirection.NORTH.ordinal()},
+        }, dir);
+    }
 }

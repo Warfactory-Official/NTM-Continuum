@@ -10,6 +10,7 @@ import dev.golem.core.dejson.Slots;
 import dev.golem.core.dejson.States;
 import dev.golem.core.dejson.Variant;
 import dev.golem.core.dejson.Variants;
+import dev.golem.core.dejson.When;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import dev.golem.core.registry.DeferredRegister;
@@ -23,6 +24,7 @@ import com.hbm.blocks.network.PneumoStorageClutter;
 import com.hbm.blocks.network.PneumoStorageExporter;
 import com.hbm.blocks.network.PneumoStorageImporter;
 import com.hbm.blocks.network.PneumoStorageMono;
+import com.hbm.blocks.network.PneumoPipeAnchor;
 import com.hbm.blocks.network.PneumoTube;
 import com.hbm.blocks.network.PneumoTubePaintableBlock;
 import com.hbm.items.block.DescBlockItem;
@@ -87,6 +89,19 @@ public final class ModPneumaticBlocks {
             .transform(STORAGE_CUBE)
             .loot(Loot.self());
 
+    public static final RegistryObject<PneumoPipeAnchor> PIPE_ANCHOR_PNEUMATIC = REG.block(
+            "pipe_anchor_pneumatic", PneumoPipeAnchor::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            .andThen(handle -> {
+                States.MultipartFile file = States.multipart(handle.namespace(), handle.path());
+                for (String facing : new String[]{"down", "up", "north", "south", "west", "east"}) {
+                    file.part(When.of("facing", facing), new Variant("hbm:block/pipe_anchor_" + facing));
+                }
+                file.register();
+            })
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+
     static {
         // hand-built element geometry: the model is authored (assets/hbm/models/item/pneumatic_tube.json)
         descItem("pneumatic_tube", PNEUMATIC_TUBE).transform(Presets.shares("hbm:item/pneumatic_tube"));
@@ -97,6 +112,7 @@ public final class ModPneumaticBlocks {
         tabItem("pneumatic_storage_mono", PNEUMATIC_STORAGE_MONO);
         tabItem("pneumatic_storage_importer", PNEUMATIC_STORAGE_IMPORTER);
         tabItem("pneumatic_storage_exporter", PNEUMATIC_STORAGE_EXPORTER);
+        tabItem("pipe_anchor_pneumatic", PIPE_ANCHOR_PNEUMATIC);
     }
 
     /** 1.7 ITooltipProvider blocks: the item shows {@code addStandardInfo}. */

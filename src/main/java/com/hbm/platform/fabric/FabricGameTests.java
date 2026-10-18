@@ -63,7 +63,7 @@ import com.hbm.gametest.NetworkSyncGameTests;
 import com.hbm.gametest.NtmEntityPortGameTests;
 import com.hbm.gametest.OutgasGameTests;
 import com.hbm.gametest.PollutionGameTests;
-import com.hbm.gametest.PortClaimGameTests;
+import com.hbm.gametest.TilePortGameTests;
 import com.hbm.gametest.PowerNetworkGameTests;
 import com.hbm.gametest.RadiationPersistenceGameTests;
 import com.hbm.gametest.RadioGameTests;
@@ -87,7 +87,6 @@ import com.hbm.gametest.ValueMapGameTests;
 import com.hbm.gametest.WeaponTableGameTests;
 import com.hbm.gametest.WorldgenImpactGameTests;
 import dev.golem.core.gametest.GameTests;
-
 
 /**
  * The {@code fabric-gametest} entrypoint. Fabric API registers this class by reflection and runs its
@@ -132,7 +131,7 @@ public final class FabricGameTests {
         Fix1AGameTests.init();
         IdsGameTests.init();
         ForeignFluidGameTests.init();
-        PortClaimGameTests.init();
+        TilePortGameTests.init();
         Fix4GameTests.init();
         Fix5GameTests.init();
         Fix1BGameTests.init();
@@ -224,7 +223,7 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix1AGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.IdsGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ForeignFluidGameTests.TESTS);
-        dev.golem.core.gametest.GameTests.register(com.hbm.gametest.PortClaimGameTests.TESTS);
+        GameTests.register(TilePortGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix4GameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix5GameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.Fix1BGameTests.TESTS);

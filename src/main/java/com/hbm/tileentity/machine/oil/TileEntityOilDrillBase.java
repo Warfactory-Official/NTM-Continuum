@@ -10,7 +10,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -35,6 +34,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Shared base of the oil derrick / pumpjack, a 1:1 port of the 1.12.2 {@code TileEntityOilDrillBase}.
@@ -70,13 +70,9 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         tanks[1] = new FluidTankNTM(Fluids.GAS, 64_000);
     }
 
-    /** 1.7 {@code updateConnections}: power at every connection position (the fracking tower adds its solution). */
-    protected void updateConnections(Level level) {
-        for (DirPos port : getConPos()) this.trySubscribe(level, port);
-    }
-
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityOilDrillBase te) {
-        te.updateConnections(level);
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
 
         MachineFluidContainerIO.unload(te.tanks[0], te.inventory, 1, 2);
         MachineFluidContainerIO.unload(te.tanks[1], te.inventory, 3, 4);
@@ -95,11 +91,6 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         }
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.getMaxPower());
-
-        for (DirPos dp : te.getConPos()) {
-            if (te.tanks[0].getFill() > 0) te.tryProvide(te.tanks[0], level, dp);
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp);
-        }
 
         if (te.power >= te.getPowerReqEff()
                 && te.tanks[0].getFill() < te.tanks[0].getMaxFill()
@@ -259,8 +250,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         }
     }
 
-    public abstract DirPos[] getConPos();
-
+    public abstract PortDef[] getPorts();
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {

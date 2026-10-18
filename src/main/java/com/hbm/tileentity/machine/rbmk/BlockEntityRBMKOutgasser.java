@@ -28,6 +28,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
 
 /** Flux-fed irradiation channel. Progress is flux, rather than elapsed ticks. */
 public class BlockEntityRBMKOutgasser extends BlockEntityRBMKBase implements IRBMKFluxReceiver, IFluidProviderMK2, MenuProvider {
@@ -36,8 +37,8 @@ public class BlockEntityRBMKOutgasser extends BlockEntityRBMKBase implements IRB
     public double progress, lastUsedFlux;
     public int duration = OutgasserRecipes.DURATION;
 
-    public BlockEntityRBMKOutgasser(BlockPos pos, BlockState state) { super(ModRBMKBlockEntities.RBMK_OUTGASSER.get(), pos, state, 2); }
-    @Override public void tickServer() { if (!canProcess()) { progress = 0D; lastUsedFlux = 0D; } super.tickServer(); }
+    public BlockEntityRBMKOutgasser(BlockPos pos, BlockState state) { super(ModRBMKBlockEntities.RBMK_OUTGASSER.get(), pos, state, 2); ports = new ModulePortManFluidAdaptive(this).setOutputTanks(gas); }
+    @Override public void tickServer() { ports.update(getLoaderPorts()); if (!canProcess()) { progress = 0D; lastUsedFlux = 0D; } super.tickServer(); }
     @Override public void receiveFlux(NeutronStream stream) {
         if (!canProcess()) return;
         lastUsedFlux = stream.fluxQuantity * Math.min(1D - stream.fluxRatio * .8D, 1D) * RBMKDials.getOutgasserMod(level);

@@ -193,7 +193,7 @@ public final class GuiQMAW extends CompatScreen {
             GuiDraw.blit(graphics, THE_MAN, left + 60, top + HEIGHT - 84, 0, 0, 80, 80, 256, 256);
             GuiDraw.blit(graphics, THE_MAN, left + 140, top + HEIGHT - 60, 0, 80, 77, 39, 256, 256);
         } else {
-            visitVisible((element, x, y) -> element.draw(graphics, font, x, y, over(x, y, element.width(font), element.height(font), mouseX, mouseY)));
+            visitVisible((element, x, y) -> element.draw(graphics, font, x, y, over(x, y, element.width(font), element.height(font), mouseX, mouseY), qmawId));
         }
 
         int x = 43;
@@ -205,6 +205,24 @@ public final class GuiQMAW extends CompatScreen {
         }
         y += 1;
         GuiDraw.text(graphics, font, pageTitle, left + x, top + y, 0xFFFFFF, false);
+    }
+
+    public String pageId() {
+        return qmawId;
+    }
+
+    /** Every parsed element as {@code text|link|ARGB} in its unhovered colour, line by line (harness). */
+    public List<List<String>> describeLines() {
+        List<List<String>> out = new ArrayList<>();
+        for (List<Element> line : lines) {
+            List<String> row = new ArrayList<>();
+            for (Element element : line) {
+                row.add(element.text + "|" + (element.link == null ? "" : element.link) + "|"
+                        + Integer.toHexString(element.drawColor(false, qmawId)));
+            }
+            out.add(row);
+        }
+        return out;
     }
 
     private void updateDragging(int mouseY) {
@@ -319,6 +337,7 @@ public final class GuiQMAW extends CompatScreen {
     }
 
     private void openLink(String target) {
+        if (qmawId.equals(target)) return;
         QuickManualAndWiki page = QMAWLoader.qmaw.get(target);
         if (page == null) return;
         clickSound();
@@ -387,6 +406,8 @@ public final class GuiQMAW extends CompatScreen {
         private final ItemStack icon;
         private final int color;
         private final int hoverColor;
+        /** 1.7 {@code occupiedColor}: a link to the page already open. */
+        private static final int OCCUPIED_COLOR = 0xFFA0A0A0;
 
         private Element(String text, String link, ItemStack icon, int color, int hoverColor) {
             this.text = text;
@@ -407,6 +428,11 @@ public final class GuiQMAW extends CompatScreen {
                     missing ? 0xFFFF7F7F : 0xFF0094FF, missing ? 0xFFFF7F7F : 0xFFFFD800);
         }
 
+        private int drawColor(boolean mouseOver, String currentPage) {
+            if (currentPage.equals(link)) return OCCUPIED_COLOR;
+            return mouseOver ? hoverColor : color;
+        }
+
         private int width(Font font) {
             return font.width(text) + (icon != null && !icon.isEmpty() ? 18 : 0);
         }
@@ -416,13 +442,13 @@ public final class GuiQMAW extends CompatScreen {
         }
 
         private void draw(GuiGraphicsExtractor graphics, Font font,
-                          int x, int y, boolean mouseOver) {
+                          int x, int y, boolean mouseOver, String currentPage) {
             if (icon != null && !icon.isEmpty()) {
                 GuiDraw.item(graphics, icon, x, y - 1);
                 x += 18;
                 y += (16 - font.lineHeight) / 2;
             }
-            GuiDraw.text(graphics, font, text, x, y, mouseOver ? hoverColor : color, false);
+            GuiDraw.text(graphics, font, text, x, y, drawColor(mouseOver, currentPage), false);
         }
     }
 }

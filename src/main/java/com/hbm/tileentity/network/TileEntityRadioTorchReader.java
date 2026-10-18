@@ -32,12 +32,15 @@ public class TileEntityRadioTorchReader extends TileEntityLoadedBase
     public final String[] names = new String[MAPPING_SIZE];
     public final String[] prev = new String[MAPPING_SIZE];
     public boolean polling;
+    /** Broadcasts once after loading or reconfiguring even if the value is unchanged. */
+    private final boolean[] forceUpdate = new boolean[MAPPING_SIZE];
 
     public TileEntityRadioTorchReader(BlockPos pos, BlockState state) {
         super(ModBlockEntities.RADIO_TORCH_READER.get(), pos, state);
         Arrays.fill(channels, "");
         Arrays.fill(names, "");
         Arrays.fill(prev, "");
+        Arrays.fill(forceUpdate, true);
     }
 
     @Override
@@ -50,9 +53,10 @@ public class TileEntityRadioTorchReader extends TileEntityLoadedBase
                 if (channels[i] == null || channels[i].isEmpty() || names[i] == null || names[i].isEmpty()) continue;
                 String value = provider.provideRORValue(IRORValueProvider.PREFIX_VALUE
                         + names[i].toLowerCase(Locale.US));
-                if (value != null && (polling || !value.equals(prev[i]))) {
+                if (value != null && (polling || forceUpdate[i] || !value.equals(prev[i]))) {
                     RTTYSystem.broadcast(level, channels[i], value);
                     prev[i] = value;
+                    forceUpdate[i] = false;
                 }
             }
         }
@@ -83,11 +87,23 @@ public class TileEntityRadioTorchReader extends TileEntityLoadedBase
     @Override public void receiveControl(CompoundTag data) {
         if (data.contains("polling")) polling = Tags.getBooleanOr(data, "polling", polling);
         for (int i = 0; i < MAPPING_SIZE; i++) {
-            if (data.contains("channels" + i)) channels[i] = limit(Tags.getStringOr(data, "channels" + i, ""), 15);
-            if (data.contains("names" + i)) names[i] = limit(Tags.getStringOr(data, "names" + i, ""), 25);
+            if (data.contains("channels" + i)) setChannel(i, limit(Tags.getStringOr(data, "channels" + i, ""), RTTYSystem.MAX_CHAN_LENGTH));
+            if (data.contains("names" + i)) setName(i, limit(Tags.getStringOr(data, "names" + i, ""), 25));
         }
         dataChanged();
         setChanged();
+    }
+
+    public void setChannel(int index, String channel) {
+        if (channel.equals(channels[index])) return;
+        channels[index] = channel;
+        forceUpdate[index] = true;
+    }
+
+    public void setName(int index, String name) {
+        if (name.equals(names[index])) return;
+        names[index] = name;
+        forceUpdate[index] = true;
     }
 
     private static String limit(String value, int max) { return value.length() <= max ? value : value.substring(0, max); }

@@ -137,9 +137,10 @@ public final class NtmEntityRenderers {
         sink.register(ModNtmEntities.TORPEDO.get(), ctx -> new RenderBoxcar<>(ctx, RenderBoxcar.Kind.TORPEDO));
         sink.register(ModNtmEntities.DUCHESS_GAMBIT.get(), ctx -> new RenderBoxcar<>(ctx, RenderBoxcar.Kind.DUCHESS_GAMBIT));
         sink.register(ModNtmEntities.FALLING_BUILDING.get(), ctx -> new RenderBoxcar<>(ctx, RenderBoxcar.Kind.BUILDING));
-        sink.register(ModNtmEntities.MINER_LANDER.get(), RenderMinerRocket::lander);
+        sink.register(ModNtmEntities.MINER_LANDER.get(), RenderDropship::new);
         sink.register(ModNtmEntities.BOBMAZON_DELIVERY.get(), RenderMinerRocket::bobmazon);
         sink.register(ModNtmEntities.SOYUZ.get(), RenderSoyuz::new);
+        sink.register(ModNtmEntities.LAMBDA_ROCKET.get(), RenderLambdaRocket::new);
         sink.register(ModNtmEntities.SOYUZ_CAPSULE.get(), RenderSoyuzCapsule::new);
         sink.register(ModNtmEntities.BURNING_FOEQ.get(), RenderFOEQ::new);
         sink.register(ModNtmEntities.FALLING_BOMB.get(), RenderFallingNuke::new);

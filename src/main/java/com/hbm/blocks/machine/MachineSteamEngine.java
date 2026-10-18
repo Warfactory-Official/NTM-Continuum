@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -86,5 +87,14 @@ public class MachineSteamEngine extends BlockMultiblockMachine
     @Override
     public boolean acceptsFluid(FluidType type) {
         return type == Fluids.STEAM || type == Fluids.SPENTSTEAM;
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 1, 0, ForgeDirection.EAST.ordinal()},
+                {1, 1, 1, ForgeDirection.EAST.ordinal()},
+                {1, 1, -1, ForgeDirection.EAST.ordinal()},
+        }, dir);
     }
 }

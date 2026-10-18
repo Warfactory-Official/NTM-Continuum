@@ -41,7 +41,7 @@ public class RenderSoyuzCapsule extends CompatEntityRenderer<EntitySoyuzCapsule,
 
     @Override
     public void extract(EntitySoyuzCapsule entity, State state, float partialTicks) {
-        state.time = entity.level().getGameTime();
+        state.time = (entity.level().getGameTime() * 0.05D) % (Math.PI * 2D) + partialTicks * 0.05D;
     }
 
     @Override
@@ -49,8 +49,8 @@ public class RenderSoyuzCapsule extends CompatEntityRenderer<EntitySoyuzCapsule,
         int light = state.lightCoords;
         poseStack.pushPose();
         poseStack.translate(0D, PIVOT, 0D);
-        poseStack.mulPose(Axis.ZP.rotationDegrees((float) (Math.sin(state.time * 0.05D) * 5D)));
-        poseStack.mulPose(Axis.XP.rotationDegrees((float) (Math.sin(state.time * 0.05D + Math.PI * 0.5D) * 5D)));
+        poseStack.mulPose(Axis.ZP.rotationDegrees((float) (Math.sin(state.time) * 5D)));
+        poseStack.mulPose(Axis.XP.rotationDegrees((float) (Math.sin(state.time + Math.PI * 0.5D) * 5D)));
         poseStack.translate(0D, -PIVOT, 0D);
         sink.submitCustomGeometry(poseStack, LANDER, (pose, buffer) ->
                 NtmEntityModels.SOYUZ_LANDER.renderPart("Capsule", pose, buffer, light, OverlayTexture.NO_OVERLAY));
@@ -60,6 +60,6 @@ public class RenderSoyuzCapsule extends CompatEntityRenderer<EntitySoyuzCapsule,
     }
 
     public static final class State extends CompatEntityRenderState {
-        long time;
+        double time;
     }
 }

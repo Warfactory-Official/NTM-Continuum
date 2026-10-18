@@ -5,6 +5,7 @@ import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.LambdaContext;
+import com.hbm.items.weapon.sedna.factory.XFactoryPA;
 import com.hbm.items.weapon.sedna.factory.XFactoryRocket;
 import com.hbm.items.weapon.sedna.mags.MagazineBelt;
 import com.hbm.sound.ModGunSounds;
@@ -33,7 +34,7 @@ public final class ArmorNCRPARanged implements IPARanged {
         }
         magazine.useUpAmmo(stack, player.getInventory(), 1);
         float side = player.getRandom().nextBoolean() ? -0.25F : 0.25F;
-        player.level().addFreshEntity(new EntityBulletBaseMK4(player, config, 25F, 0F, side, 0D, 0D));
+        player.level().addFreshEntity(new EntityBulletBaseMK4(player, config, XFactoryPA.RANGED_NCRPA_DAMAGE.get(), 0F, side, 0D, 0D));
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModGunSounds.FIRE_ROCKET.get(), SoundSource.PLAYERS, 0.5F, 0.9F + player.getRandom().nextFloat() * 0.2F);
     }
 }

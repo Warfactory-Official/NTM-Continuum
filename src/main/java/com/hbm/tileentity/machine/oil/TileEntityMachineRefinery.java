@@ -20,7 +20,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.RefineryRecipes;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -53,6 +52,8 @@ import com.hbm.sound.MachineAudio;
 import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.AABB;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Refinery: 1:1 port of the 1.12.2 {@code TileEntityMachineRefinery}: a 3×3×9 tower that fractionates
@@ -113,17 +114,15 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineRefinery te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         te.isOn = false;
 
         if (te.hasExploded) {
             if (te.onFire) te.burn(level, pos);
             te.networkPackNT();
             return;
-        }
-
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
-            te.trySubscribe(te.tanks[0].getTankType(), level, dp);
         }
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
@@ -137,15 +136,8 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         MachineFluidContainerIO.unload(te.tanks[3], te.inventory, 7, 8);
         MachineFluidContainerIO.unload(te.tanks[4], te.inventory, 9, 10);
 
-        for (DirPos dp : te.getConPos()) {
-            for (int i = 1; i < 5; i++) {
-                if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp);
-            }
-        }
-
         te.networkPackNT();
     }
-
 
     /**
      * 1.7's burning refinery: 10 mB a tick off every tank that still holds something; while there is fuel,
@@ -227,19 +219,8 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         this.setChanged();
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z + 1, Library.POS_X),
-                new DirPos(x + 2, y, z - 1, Library.POS_X),
-                new DirPos(x - 2, y, z + 1, Library.NEG_X),
-                new DirPos(x - 2, y, z - 1, Library.NEG_X),
-                new DirPos(x + 1, y, z + 2, Library.POS_Z),
-                new DirPos(x - 1, y, z + 2, Library.POS_Z),
-                new DirPos(x + 1, y, z - 2, Library.NEG_Z),
-                new DirPos(x - 1, y, z - 2, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.refinery(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     private void refine() {
         RefineryRecipes.RefineryRecipe recipe = RefineryRecipes.getRefinery(tanks[0].getTankType());
@@ -322,8 +303,8 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     @Override public void setPower(long i) { power = i; }
     @Override public long getMaxPower() { return maxPower; }
 
-    @Override public FluidTankNTM[] getSendingTanks() { return hasExploded ? new FluidTankNTM[0] : new FluidTankNTM[]{tanks[1], tanks[2], tanks[3], tanks[4]}; }
-    @Override public FluidTankNTM[] getReceivingTanks() { return hasExploded ? new FluidTankNTM[0] : new FluidTankNTM[]{tanks[0]}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1], tanks[2], tanks[3], tanks[4]}; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
 
     @Override

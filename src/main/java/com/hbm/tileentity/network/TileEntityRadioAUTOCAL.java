@@ -1,7 +1,6 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.Constants;
-import com.hbm.config.AutocalConfig;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.module.IParse;
 import com.hbm.module.IParse.EnumStatementReturn;
@@ -13,7 +12,6 @@ import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -28,6 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import com.hbm.tileentity.ModBlockEntities;
 
 /** Server-side MS-ES1 execution state and client display state for AUTOCAL. */
@@ -54,54 +53,52 @@ public class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
         if (!isOn && autoReboot) isOn = true;
 
         if (isOn) {
-            int emergencyBrake = AutocalConfig.AUTOCAL_MAX_CLOCK * 5;
+            int emergencyBrake = 100;
             for (int i = 0; i < ctx.clockSpeed && emergencyBrake > 0; i++) {
                 emergencyBrake--;
 
-                if (ctx.current == script.length) {
-                    stop(ChatFormatting.YELLOW + "Program has terminated");
-                    break;
-                }
-                if (ctx.current < 0 || ctx.current >= script.length) {
-                    stop(ChatFormatting.RED + "Program index out of bounds");
-                    break;
-                }
+                if (ctx.current == script.length) { stop("Program has terminated"); break; }
+                if (ctx.current < 0 || ctx.current >= script.length) { stop("Program index is out of bounds"); break; }
 
                 try {
                     int index = ctx.current;
                     ctx.current++;
                     String line = script[index];
-                    IParse.ReturnInfo ret = msesv1ext.eval(ctx, line, index);
-                    if (ret.type() != EnumStatementReturn.SKIP) pushMsg((index + 1) + ": " + line);
-                    history[0] = ChatFormatting.WHITE + "Buffer: " + ctx.readBuffer();
-                    if (ret.type() == EnumStatementReturn.END_TICK) break;
-                    if (ret.type() == EnumStatementReturn.SHUTDOWN) stop(ChatFormatting.YELLOW + "Program requested shutdown");
-
+                    EnumStatementReturn ret = msesv1ext.eval(ctx, line);
+                    if (ret != EnumStatementReturn.SKIP) pushMsg(index + ": " + line);
+                    history[0] = "Buffer: " + ctx.readBuffer();
+                    if (ret == EnumStatementReturn.END_TICK) break;
+                    if (ret == EnumStatementReturn.SHUTDOWN) stop("Program requested shutdown");
                     if (!ignoreError) {
-                        String extraInfo = ret.extraInfo().isEmpty() ? "" : ": " + ret.extraInfo();
-                        if (ret.type() == EnumStatementReturn.UNRECOGNIZED_COMMAND) {
-                            stop(ChatFormatting.RED + "Unrecognized command at line " + (ret.line() + 1) + extraInfo);
-                        }
-                        if (ret.type() == EnumStatementReturn.PARAMETER_ERROR) {
-                            stop(ChatFormatting.RED + "Parameter error at line " + (ret.line() + 1) + extraInfo);
-                        }
-                        if (ret.type() == EnumStatementReturn.UNDEFINED) {
-                            stop(ChatFormatting.RED + "Undefined behavior at line " + (ret.line() + 1) + extraInfo);
-                        }
-                        if (ret.type() == EnumStatementReturn.STACK_EXCEEDED) {
-                            stop(ChatFormatting.RED + "Stack exceeded capacity at line " + (ret.line() + 1) + extraInfo);
-                        }
+                        String reason = errorMessage(ret);
+                        if (reason != null) stop(reason);
+                    } else if (ret.error) {
+                        ctx.setVariable("last_error", ret.name().toLowerCase(Locale.US));
                     }
-
-                    if (ret.type() == EnumStatementReturn.SKIP) i--;
-                } catch (Exception exception) {
-                    stop(ChatFormatting.RED + "Evaluation unsuccessful");
+                    if (ret == EnumStatementReturn.SKIP) i--;
+                } catch (RuntimeException exception) {
+                    stop("Evaluation unsuccessful");
                     Constants.LOG.warn("AUTOCAL evaluation unsuccessful", exception);
                 }
             }
         }
 
         networkPackNT();
+    }
+
+    private static @Nullable String errorMessage(EnumStatementReturn ret) {
+        return switch (ret) {
+            case UNRECOGNIZED_COMMAND -> "Unrecognized command";
+            case PARAMETER_MISSING -> "Parameter missing";
+            case PARAMETER_OOB -> "Parameter out of bounds";
+            case PARAMETER_PARSE_ERROR -> "Error parsing parameter";
+            case NO_DESTINATION -> "Missing JMP destination";
+            case ARITHMETIC_EXCEPTION -> "Arithmetic error";
+            case BUFFER_EMPTY -> "Buffer empty";
+            case UNDEFINED -> "Undefined behavior";
+            case STACK_EXCEEDED -> "Stack exceeded capacity";
+            default -> null;
+        };
     }
 
     private void ensureContext() {
@@ -182,7 +179,7 @@ public class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
     public void receiveControl(CompoundTag data) {
         ensureContext();
         if (data.contains("on")) {
-            if (isOn) stop(ChatFormatting.YELLOW + "User requested shutdown");
+            if (isOn) stop("User requested shutdown");
             else isOn = true;
         }
         if (data.contains("ignore")) ignoreError = !ignoreError;
@@ -199,6 +196,6 @@ public class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
             script[i] = script[i].trim();
             msesv1ext.generateJumpPoints(ctx, script[i], i);
         }
-        if (isOn) stop(ChatFormatting.YELLOW + "Script has changed");
+        if (isOn) stop("Script has changed");
     }
 }

@@ -72,7 +72,7 @@ public class BlockLanternBehemoth extends BlockMultiblockMachine implements IToo
         List<AStack> list = lantern.getRepairMaterials();
         if (list.isEmpty() || InventoryUtil.doesPlayerHaveAStacks(player, list, true)) {
             if (!level.isClientSide()) {
-                lantern.repair();
+                lantern.repair(player);
                 // 1.7 onScrew: a repair earns reputation, up to 25
                 if (HbmPlayerProps.getReputation(player) < HbmPlayerProps.REPUTATION_MAX) {
                     HbmPlayerProps.setReputation(player, HbmPlayerProps.getReputation(player) + 1);

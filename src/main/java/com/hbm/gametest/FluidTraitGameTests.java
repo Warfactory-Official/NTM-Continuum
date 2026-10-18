@@ -195,7 +195,7 @@ public final class FluidTraitGameTests {
      * keep private copies of these lists read the traits.
      */
     public static void simpleTraitCounts(GameTestHelper helper) {
-        count(helper, FluidTraitSimple.FT_Liquid.class, 113);
+        count(helper, FluidTraitSimple.FT_Liquid.class, 114);
         count(helper, FluidTraitSimple.FT_Viscous.class, 53);
         count(helper, FluidTraitSimple.FT_Gaseous.class, 36);
         count(helper, FluidTraitSimple.FT_Gaseous_ART.class, 2);

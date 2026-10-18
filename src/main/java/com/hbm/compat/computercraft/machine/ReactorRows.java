@@ -8,21 +8,20 @@ import com.hbm.tileentity.machine.TileEntityICF;
 import com.hbm.tileentity.machine.TileEntityMachineRadarLarge;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import com.hbm.tileentity.machine.TileEntityMachineReactorBreeding;
+import com.hbm.tileentity.machine.TileEntityMachineSatLink;
 import com.hbm.tileentity.machine.TileEntityMicrowave;
 import com.hbm.tileentity.machine.TileEntityPWRController;
 import com.hbm.tileentity.machine.TileEntityReactorControl;
 import com.hbm.tileentity.machine.TileEntityReactorResearch;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import com.hbm.tileentity.machine.TileEntityWatz;
+import com.hbm.tileentity.machine.pile.TileEntityPileControl;
+import com.hbm.tileentity.machine.pile.TileEntityPileLoader;
 import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
-/**
- * Reactors, radar, Geiger counter and microwave: 1.7's OpenComputers components on CC: Tweaked. 1.7's pile loader,
- * pile control rod and satellite link had no OpenComputers component (redstone-over-radio only), so they have no
- * row.
- */
+/** Reactors, radar, ground station, Geiger counter and microwave: 1.7's OpenComputers components on CC: Tweaked. */
 public final class ReactorRows {
 
     private ReactorRows() {}
@@ -38,12 +37,16 @@ public final class ReactorRows {
             Peripherals.row(TileEntityMachineReactorBreeding.class, BreedingReactorPeripheral::new, Reach.BLOCK),
             Peripherals.row(TileEntityReactorControl.class, ReactorControlPeripheral::new, Reach.BLOCK),
             Peripherals.row(TileEntityPWRController.class, PWRControllerPeripheral::new, Reach.BLOCK),
+            Peripherals.row(TileEntityPileLoader.class, PileLoaderPeripheral::new, Reach.BLOCK),
+            Peripherals.row(TileEntityPileControl.class, PileControlPeripheral::new, Reach.BLOCK),
             // 1.7 makeExtra cells: TileEntityProxyCombo().inventory().fluid()
             Peripherals.row(TileEntityWatz.class, WatzPeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityICF.class, ICFPeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityMachineRadarNT.class, RadarPeripheral::new, Reach.BLOCK),
             // 1.7 makeExtra cells: TileEntityProxyCombo().power()
-            Peripherals.row(TileEntityMachineRadarLarge.class, RadarPeripheral::new, Reach.CELLS)
+            Peripherals.row(TileEntityMachineRadarLarge.class, RadarPeripheral::new, Reach.CELLS),
+            // 1.7 MachineSatLink's cells are a flagless TileEntityProxyCombo, never a component
+            Peripherals.row(TileEntityMachineSatLink.class, SatLinkPeripheral::new, Reach.BLOCK)
     );
 
     public static GameTests.Suite tests() {

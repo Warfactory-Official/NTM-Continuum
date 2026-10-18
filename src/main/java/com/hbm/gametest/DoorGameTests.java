@@ -85,7 +85,7 @@ public final class DoorGameTests {
         helper.getLevel().setBlock(core, ModDoorBlocks.BLAST_DOOR.get().defaultBlockState(), 3);
         TileEntityBlastDoor door = (TileEntityBlastDoor) helper.getLevel().getBlockEntity(core);
         helper.assertTrue(door != null, "blast door has no block entity");
-        for (int i = 1; i <= 6; i++) door.placeDummy(core.above(i));
+        for (int i = 1; i <= 6; i++) door.placeDummy(core.above(i), false);
         for (int i = 1; i <= 6; i++) {
             helper.assertTrue(helper.getLevel().getBlockState(core.above(i)).getBlock() == ModDoorBlocks.DUMMY_BLOCK_BLAST.get(),
                     "leaf block " + i + " was not placed");

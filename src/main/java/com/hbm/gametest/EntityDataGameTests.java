@@ -113,7 +113,6 @@ public final class EntityDataGameTests {
         p.setDigamma(0.625D);
         p.setAsbestos(111);
         p.setBlacklung(222);
-        p.setBombTimer(333);
         p.setContagion(444);
         p.setOil(555);
         p.setFire(666);
@@ -188,7 +187,6 @@ public final class EntityDataGameTests {
         check(helper, p.getDigamma() == 0.625D, label, "digamma", p.getDigamma());
         check(helper, p.getAsbestos() == 111, label, "asbestos", p.getAsbestos());
         check(helper, p.getBlacklung() == 222, label, "blacklung", p.getBlacklung());
-        check(helper, p.getBombTimer() == 333, label, "bombtimer", p.getBombTimer());
         check(helper, p.getContagion() == 444, label, "contagion", p.getContagion());
         check(helper, p.getOil() == 555, label, "oil", p.getOil());
         check(helper, p.getFire() == 666, label, "fire", p.getFire());

@@ -81,8 +81,9 @@ public final class CyclotronGameTests {
                             connection.getDir()),
                     "cyclotron fluid port did not connect at " + connection.getPos());
         }
-        helper.assertFalse(block.canConnect(helper.getLevel(), core.offset(2, 0, 0), ForgeDirection.EAST),
-                "cyclotron connected a non-port perimeter face");
+        helper.assertTrue(cyclotron.getConPos().length == 12, "1.7's cyclotron has twelve ports, face centres included");
+        helper.assertFalse(block.canConnect(helper.getLevel(), core.offset(2, 0, 0), ForgeDirection.NORTH),
+                "cyclotron connected an inward-facing perimeter face");
 
         WorldlyContainer corner = block.getContainer(helper.getLevel().getBlockState(core.offset(2, 0, 1)),
                 helper.getLevel(), core.offset(2, 0, 1));

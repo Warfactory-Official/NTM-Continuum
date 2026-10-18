@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.entity.effect.EntityFireLingering;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.explosion.vanillant.ExplosionVNT;
@@ -52,6 +54,18 @@ import net.minecraft.world.phys.Vec3;
  * Richard turret is its only consumer.
  */
 public final class XFactoryRocket {
+
+    public static final ConfigWrapper<Float> GUN_PANZERSCHRECK_DAMAGE = new ConfigWrapper<>(25F);
+    public static final ConfigWrapper<Float> GUN_STINGER_DAMAGE = new ConfigWrapper<>(35F);
+    public static final ConfigWrapper<Float> GUN_QUADRO_DAMAGE = new ConfigWrapper<>(40F);
+    public static final ConfigWrapper<Float> GUN_MISSILE_LAUNCHER_DAMAGE = new ConfigWrapper<>(50F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_PANZERSCHRECK_DAMAGE", GUN_PANZERSCHRECK_DAMAGE);
+        ServerConfig.configMap.put("GUN_STINGER_DAMAGE", GUN_STINGER_DAMAGE);
+        ServerConfig.configMap.put("GUN_QUADRO_DAMAGE", GUN_QUADRO_DAMAGE);
+        ServerConfig.configMap.put("GUN_MISSILE_LAUNCHER_DAMAGE", GUN_MISSILE_LAUNCHER_DAMAGE);
+    }
 
     public static BulletConfig[] rocket_template;
     public static BulletConfig[] rocket_rpzb;
@@ -253,7 +267,7 @@ public final class XFactoryRocket {
     /** 1.7 {@code LAMBDA_RECOIL_ROCKET}: empty in the source. */
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_ROCKET = (stack, ctx) -> { };
 
-    private static Receiver rocketReceiver(float damage, int delay, int reload, int jam,
+    private static Receiver rocketReceiver(ConfigWrapper<Float> damage, int delay, int reload, int jam,
             IMagazine<?> mag) {
         return new Receiver(0).dmg(damage).delay(delay).reload(reload).jam(jam)
                 .sound(ModGunSounds.FIRE_ROCKET::get, 1F, 1F)
@@ -263,7 +277,7 @@ public final class XFactoryRocket {
     /** 1.7 {@code XFactoryRocket} gun_panzerschreck. */
     public static GunConfig panzerschreckConfig() {
         return new GunConfig().dura(300).draw(7).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX)
-                .rec(rocketReceiver(25F, 5, 50, 40, new MagazineSingleReload(0, 1).addConfigs(rocket_rpzb))
+                .rec(rocketReceiver(GUN_PANZERSCHRECK_DAMAGE, 5, 50, 40, new MagazineSingleReload(0, 1).addConfigs(rocket_rpzb))
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration();
     }
@@ -271,7 +285,7 @@ public final class XFactoryRocket {
     /** 1.7 gun_stinger: lock-on fire and the box-outline crosshair. */
     public static GunConfig stingerConfig() {
         return new GunConfig().dura(300).draw(7).inspect(40).crosshair(Crosshair.L_BOX_OUTLINE)
-                .rec(rocketReceiver(35F, 5, 50, 40, new MagazineSingleReload(0, 1).addConfigs(rocket_rpzb))
+                .rec(rocketReceiver(GUN_STINGER_DAMAGE, 5, 50, 40, new MagazineSingleReload(0, 1).addConfigs(rocket_rpzb))
                         .setupLockonFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration()
                 .ps(LAMBDA_STINGER_SECONDARY_PRESS).rs(LAMBDA_STINGER_SECONDARY_RELEASE);
@@ -280,7 +294,7 @@ public final class XFactoryRocket {
     /** 1.7 gun_quadro: durability 400, all four tubes reloaded at once, visible crosshair, no hipfire spread. */
     public static GunConfig quadroConfig() {
         return new GunConfig().dura(400).draw(7).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
-                .rec(rocketReceiver(40F, 10, 55, 40, new MagazineFullReload(0, 4).addConfigs(rocket_qd))
+                .rec(rocketReceiver(GUN_QUADRO_DAMAGE, 10, 55, 40, new MagazineFullReload(0, 4).addConfigs(rocket_qd))
                         .spreadHipfire(0F).setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration();
     }
@@ -288,7 +302,7 @@ public final class XFactoryRocket {
     /** 1.7 gun_missile_launcher: durability 500, draw 20, visible crosshair, no hipfire spread. */
     public static GunConfig missileLauncherConfig() {
         return new GunConfig().dura(500).draw(20).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX).hideCrosshair(false)
-                .rec(rocketReceiver(50F, 5, 48, 33, new MagazineSingleReload(0, 1).addConfigs(rocket_ml))
+                .rec(rocketReceiver(GUN_MISSILE_LAUNCHER_DAMAGE, 5, 48, 33, new MagazineSingleReload(0, 1).addConfigs(rocket_ml))
                         .spreadHipfire(0F).setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration().pp(LAMBDA_MISSILE_LAUNCHER_PRIMARY_PRESS);
     }

@@ -16,7 +16,6 @@ import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.module.machine.ModuleMachinePrecAss;
 import com.hbm.tileentity.ModBlockEntities;
@@ -40,6 +39,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Precision assembler tile entity, ported from the old four-striker machine. */
 public class TileEntityMachinePrecAss extends TileEntityMachineBase implements MenuProvider,
@@ -92,6 +93,9 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements M
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePrecAss te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         GenericRecipe recipe = PrecAssRecipes.INSTANCE.getRecipe(te.assemblerModule.recipe);
         if (te.maxPower <= 0L) te.maxPower = 1_000_000L;
         if (recipe != null) te.maxPower = recipe.power * 100L;
@@ -99,11 +103,6 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements M
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
 
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
-        for (DirPos connection : te.getConPos()) {
-            te.trySubscribe(level, connection);
-            if (te.inputTank.getTankType() != Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, connection);
-            if (te.outputTank.getFill() > 0) te.tryProvide(te.outputTank, level, connection);
-        }
 
         int speedLevel = Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);
         int powerLevel = Math.min(te.upgradeManager.getLevel(UpgradeType.POWER), 3);
@@ -180,15 +179,8 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements M
         }
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z - 1, Library.POS_X), new DirPos(x + 2, y, z, Library.POS_X), new DirPos(x + 2, y, z + 1, Library.POS_X),
-                new DirPos(x - 2, y, z - 1, Library.NEG_X), new DirPos(x - 2, y, z, Library.NEG_X), new DirPos(x - 2, y, z + 1, Library.NEG_X),
-                new DirPos(x - 1, y, z + 2, Library.POS_Z), new DirPos(x, y, z + 2, Library.POS_Z), new DirPos(x + 1, y, z + 2, Library.POS_Z),
-                new DirPos(x - 1, y, z - 2, Library.NEG_Z), new DirPos(x, y, z - 2, Library.NEG_Z), new DirPos(x + 1, y, z - 2, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.assembler(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     private boolean canArmsMove() {
         for (double striker : strikers) if (striker != 0) return false;

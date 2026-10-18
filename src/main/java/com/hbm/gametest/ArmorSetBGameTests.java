@@ -132,12 +132,12 @@ public final class ArmorSetBGameTests {
     /** The kit entries resolve to the port's ids and the component cells, none skipped. */
     public static void kits(GameTestHelper helper) {
         List<ItemStack> starter = ItemStarterKit.contents(ItemStarterKit.Kind.NUKE_STARTER);
-        helper.assertTrue(starter.size() == 20, "starter kit has " + starter.size() + " stacks, expected 20");
-        helper.assertTrue(count(starter, "hbm:machine_reactor") == 1 && count(starter, "hbm:machine_reactor_small") == 1,
-                "starter kit reactors missing");
+        helper.assertTrue(starter.size() == 18, "starter kit has " + starter.size() + " stacks, expected 18");
+        helper.assertTrue(count(starter, "hbm:machine_industrial_turbine") == 2 && count(starter, "hbm:machine_reactor") == 0,
+                "starter kit has the industrial turbine and no reactors");
         List<ItemStack> advanced = ItemStarterKit.contents(ItemStarterKit.Kind.NUKE_ADVANCED);
-        helper.assertTrue(count(advanced, "hbm:machine_rtg_grey") == 1 && count(advanced, "hbm:machine_reactor") == 2
-                && count(advanced, "hbm:machine_reactor_small") == 4, "advanced kit machines missing");
+        helper.assertTrue(count(advanced, "hbm:machine_rtg_grey") == 1 && count(advanced, "hbm:pile_brick") == 125
+                && count(advanced, "hbm:machine_industrial_turbine") == 4, "advanced kit machines missing");
         int emptyCells = 0;
         for (ItemStack stack : advanced) if (ItemCell.isEmptyCell(stack)) emptyCells += stack.getCount();
         helper.assertTrue(emptyCells == 32, "advanced kit has " + emptyCells + " empty cells, expected 32");

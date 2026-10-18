@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
@@ -113,5 +114,16 @@ public class MachineExposureChamber extends BlockMultiblockMachine implements IE
             new int[] {3, 0, 1, -1, 0, 1, 0, 0, -7},
             new int[] {3, 0, -1, 1, 0, 1, 0, 0, -7},
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {-7, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {-7, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-8, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {-8, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-8, 0, 0, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

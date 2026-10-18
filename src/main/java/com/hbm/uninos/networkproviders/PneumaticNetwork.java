@@ -208,6 +208,12 @@ public final class PneumaticNetwork {
 
             Destination candidate = receiverList.get(index);
 
+            // skip sending to self
+            if (candidate.container() == source) {
+                attempts++;
+                continue;
+            }
+
             if (isBadLink(candidate.container())) {
                 attempts++;
                 continue;

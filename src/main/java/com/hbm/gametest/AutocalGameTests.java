@@ -40,18 +40,18 @@ public final class AutocalGameTests {
         ParseMSES1Ext1 parser = new ParseMSES1Ext1();
 
         context.writeBuffer("4");
-        IParse.ReturnInfo eval = parser.eval(context, "eval 2 + $buffer$", 0);
-        helper.assertTrue(eval.type() == IParse.EnumStatementReturn.OK && "6.0".equals(context.readBuffer()),
+        IParse.EnumStatementReturn eval = parser.eval(context, "eval 2 + $buffer$");
+        helper.assertTrue(eval == IParse.EnumStatementReturn.OK && "6.0".equals(context.readBuffer()),
                 "AUTOCAL eval and buffer substitution drifted");
-        parser.eval(context, "splitter ,", 1);
-        parser.eval(context, "buffer a,b,c", 2);
-        parser.eval(context, "split 2", 3);
+        parser.eval(context, "splitter ,");
+        parser.eval(context, "buffer a,b,c");
+        parser.eval(context, "split 2");
         helper.assertTrue("b".equals(context.readBuffer()), "AUTOCAL split command selected the wrong fragment");
-        parser.eval(context, "push saved", 4);
-        parser.eval(context, "buffer changed", 5);
-        parser.eval(context, "pop", 6);
+        parser.eval(context, "push saved");
+        parser.eval(context, "buffer changed");
+        parser.eval(context, "pop");
         helper.assertTrue("saved".equals(context.readBuffer()), "AUTOCAL argument stack did not round-trip");
-        parser.eval(context, "length", 7);
+        parser.eval(context, "length");
         helper.assertTrue("5".equals(context.readBuffer()), "AUTOCAL length command changed semantics");
 
         String[] script = {"dest start", "jmp start"};
@@ -111,7 +111,7 @@ public final class AutocalGameTests {
                 "AUTOCAL comments consumed a clock cycle");
         autocal.serverTick();
         helper.assertTrue(!autocal.isOn && autocal.ctx.current == 0 && autocal.ctx.readBuffer().isEmpty()
-                        && autocal.history[5].contains("Unrecognized command at line 4"),
+                        && "Unrecognized command".equals(autocal.history[5]),
                 "AUTOCAL errors did not stop and reset the interpreter");
 
         autocal.autoReboot = true;

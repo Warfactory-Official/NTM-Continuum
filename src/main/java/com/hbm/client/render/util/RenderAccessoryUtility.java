@@ -29,8 +29,6 @@ public final class RenderAccessoryUtility {
     private static final Identifier dafnik = cape("capedafnik");
     private static final Identifier lpkukin = cape("capeshield");
     private static final Identifier vertice = cape("capevertice_2");
-    private static final Identifier red = cape("capered");
-    private static final Identifier ayy = cape("capeayy");
     private static final Identifier nostalgia2 = cape("capenostalgia2");
     private static final Identifier sam = cape("capesam");
     private static final Identifier hoboy = cape("capehoboy_mk3");
@@ -65,8 +63,6 @@ public final class RenderAccessoryUtility {
         if (uuid.equals(ShadyUtil.Dafnik)) return dafnik;
         if (uuid.equals(ShadyUtil.LPkukin)) return lpkukin;
         if (uuid.equals(ShadyUtil.LordVertice)) return vertice;
-        if (uuid.equals(ShadyUtil.CodeRed_)) return red;
-        if (uuid.equals(ShadyUtil.dxmaster769)) return ayy;
         if (uuid.equals(ShadyUtil.Dr_Nostalgia)) return nostalgia2;
         if (uuid.equals(ShadyUtil.Samino2)) return sam;
         if (uuid.equals(ShadyUtil.Hoboy03new)) return hoboy;

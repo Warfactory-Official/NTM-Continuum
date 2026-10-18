@@ -27,6 +27,7 @@ import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Refueler: 1:1 port of the 1.12.2 {@code TileEntityRefueler}: a single-block fuel pad with a
@@ -55,9 +56,21 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
         return ForgeDirection.getOrientation(facing.get3DDataValue()).getOpposite();
     }
 
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = portDir();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(worldPosition.getX() + dir.offsetX, worldPosition.getY(), worldPosition.getZ() + dir.offsetZ, dir),
+            };
+        }
+        return cachedPorts;
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityRefueler te) {
-        ForgeDirection dir = te.portDir();
-        te.trySubscribe(te.tank.getTankType(), level, pos.getX() + dir.offsetX, pos.getY(), pos.getZ() + dir.offsetZ, dir);
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
 
         te.isOperating = false;
 

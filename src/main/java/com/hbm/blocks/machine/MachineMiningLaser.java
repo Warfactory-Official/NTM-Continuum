@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -86,5 +87,16 @@ public class MachineMiningLaser extends BlockMultiblockMachine implements IEnerg
         visitor.passiveCell(core.south(), MASK_ALL, sides);
         visitor.passiveCell(core.north(), MASK_ALL, sides);
         visitor.passiveCell(core.above(), MASK_ALL, PASSIVE_POWER_IN);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {0, 1, 0, ForgeDirection.UP.ordinal()},
+        }, dir);
     }
 }

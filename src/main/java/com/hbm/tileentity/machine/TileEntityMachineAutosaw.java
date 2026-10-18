@@ -8,7 +8,6 @@ import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -52,6 +51,8 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.MachineAudio;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** The old autosaw machine logic, with modern block tags and API boundaries made explicit. */
 public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IFluidStandardReceiverMK2 {
@@ -122,9 +123,15 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
         super(ModBlockEntities.MACHINE_AUTOSAW.get(), pos, state);
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state,
                                    TileEntityMachineAutosaw saw) {
         if (!(level instanceof ServerLevel server)) return;
+
+        saw.setupFluidPorts(saw.getPorts());
+        saw.updatePortFIFO();
 
         if (!saw.isSuspended && TickPhase.every(level, pos, 20L)) {
             if (saw.tank.getFill() > 0) {
@@ -133,7 +140,6 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
             } else {
                 saw.isOn = false;
             }
-            saw.subscribeToFuelNetwork(server);
             saw.setChanged();
         }
 
@@ -236,14 +242,6 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
         if (wrapped >= 180D) wrapped -= 360D;
         if (wrapped < -180D) wrapped += 360D;
         return wrapped;
-    }
-
-    private void subscribeToFuelNetwork(ServerLevel level) {
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            BlockPos neighbour = getBlockPos().offset(direction.offsetX, direction.offsetY, direction.offsetZ);
-            // 1.7: every side but the top
-            if (direction != ForgeDirection.UP) trySubscribe(tank.getTankType(), level, neighbour, direction);
-        }
     }
 
     private boolean detectTarget(ServerLevel level) {

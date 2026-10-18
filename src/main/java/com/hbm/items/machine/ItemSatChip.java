@@ -4,6 +4,7 @@ import com.hbm.items.ISatChip;
 import com.hbm.items.ModSatelliteItems;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -25,7 +26,8 @@ public class ItemSatChip extends CompatItem implements ISatChip {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> list,
                                          TooltipFlag flag) {
-        list.add(Component.literal(Language.getInstance().getOrDefault("satchip.frequency") + ": " + getFreq(stack)));
+        list.add(Component.literal(Language.getInstance().getOrDefault("satchip.frequency") + ": " + getFreq(stack))
+                .withStyle(ChatFormatting.AQUA));
 
         Item item = stack.getItem();
         if (item == ModSatelliteItems.sat_foeq.get()) list.add(Component.translatable("satchip.foeq"));

@@ -36,7 +36,6 @@ public class EntityHbmProps {
     private double digamma = 0D;
     private int asbestos = 0;
     private int blacklung = 0;
-    private int bombTimer = 0;
     private int contagion = 0;
     private int oil = 0;
     public int phosphorus = 0;
@@ -106,9 +105,6 @@ public class EntityHbmProps {
     public int getBlacklung() { return blacklung; }
     public void setBlacklung(int blacklung) { this.blacklung = blacklung; }
 
-    public int getBombTimer() { return bombTimer; }
-    public void setBombTimer(int bombTimer) { this.bombTimer = bombTimer; }
-
     public int getContagion() { return contagion; }
     public void setContagion(int cont) { this.contagion = cont; }
 
@@ -149,7 +145,6 @@ public class EntityHbmProps {
         out.putDouble("digamma", digamma);
         out.putInt("asbestos", asbestos);
         out.putInt("blacklung", blacklung);
-        out.putInt("bombtimer", bombTimer);
         out.putInt("contagion", contagion);
         out.putInt("oil", oil);
         out.putInt("fire", fire);
@@ -177,7 +172,6 @@ public class EntityHbmProps {
         this.digamma = in.getDoubleOr("digamma", 0D);
         this.asbestos = in.getIntOr("asbestos", 0);
         this.blacklung = in.getIntOr("blacklung", 0);
-        this.bombTimer = in.getIntOr("bombtimer", 0);
         this.contagion = in.getIntOr("contagion", 0);
         this.oil = in.getIntOr("oil", 0);
         this.fire = in.getIntOr("fire", 0);
@@ -210,7 +204,6 @@ public class EntityHbmProps {
         buf.writeDouble(digamma);
         buf.writeInt(asbestos);
         buf.writeInt(blacklung);
-        buf.writeInt(bombTimer);
         buf.writeInt(contagion);
         buf.writeInt(oil);
         buf.writeInt(phosphorus);
@@ -236,7 +229,6 @@ public class EntityHbmProps {
         this.digamma = buf.readDouble();
         this.asbestos = buf.readInt();
         this.blacklung = buf.readInt();
-        this.bombTimer = buf.readInt();
         this.contagion = buf.readInt();
         this.oil = buf.readInt();
         this.phosphorus = buf.readInt();

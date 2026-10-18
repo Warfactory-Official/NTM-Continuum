@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
@@ -8,6 +10,12 @@ import net.minecraft.world.phys.EntityHitResult;
 
 /** The .75 bolt family from 1.7's XFactory75Bolt. */
 public final class XFactory75Bolt {
+
+    public static final ConfigWrapper<Float> GUN_BOLTER_DAMAGE = new ConfigWrapper<>(15F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_BOLTER_DAMAGE", GUN_BOLTER_DAMAGE);
+    }
 
     public static BulletConfig b75;
     public static BulletConfig b75_inc;

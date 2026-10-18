@@ -1,6 +1,6 @@
 package com.hbm.blocks.network;
 
-import com.hbm.tileentity.network.TileEntityPipeAnchor;
+import com.hbm.tileentity.network.TileEntityFluidPipeAnchor;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
@@ -24,25 +24,17 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The 1.7 {@code FluidPipeAnchor}: a steel stub mounted on a block face, conducting through that face
- * only. {@link #FACING} is the face it was placed against (1.7 metadata = clicked side); the open side is
- * its opposite. The block itself is a plain cube-model block (1.7 render type -1, {@code block_steel}).
- *
- * <p>Linked with the pipe wrench to other anchors up to 10 m away ({@link TileEntityPipeAnchor}), drawn by
+ * The 1.7 {@code FluidPipeAnchor}: a steel stub mounted on a block face, conducting through that face only. Linked
+ * with the pipe wrench to other anchors up to 10 m away ({@link TileEntityFluidPipeAnchor}), drawn by
  * {@code RenderPipeAnchor}.
  */
-public class FluidPipeAnchor extends BlockFluidDuct {
-
-    public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
+public class FluidPipeAnchor extends BlockFluidDuct implements BasePipeAnchor {
 
     public FluidPipeAnchor(Properties properties) {
         super(properties);
@@ -70,21 +62,12 @@ public class FluidPipeAnchor extends BlockFluidDuct {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityPipeAnchor(pos, state);
+        return new TileEntityFluidPipeAnchor(pos, state);
     }
 
-    /** The 1.7 bounds: a 8×8×8 core stretched to the mounted face. */
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        float min = 0.25F, max = 0.75F;
-        ForgeDirection dir = ForgeDirection.getOrientation(state.getValue(FACING)).getOpposite();
-        float minX = dir == ForgeDirection.WEST ? 0F : min;
-        float maxX = dir == ForgeDirection.EAST ? 1F : max;
-        float minY = dir == ForgeDirection.DOWN ? 0F : min;
-        float maxY = dir == ForgeDirection.UP ? 1F : max;
-        float minZ = dir == ForgeDirection.NORTH ? 0F : min;
-        float maxZ = dir == ForgeDirection.SOUTH ? 1F : max;
-        return Shapes.box(minX, minY, minZ, maxX, maxY, maxZ);
+        return BasePipeAnchor.shape(state);
     }
 
     /**
@@ -94,7 +77,7 @@ public class FluidPipeAnchor extends BlockFluidDuct {
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.TRY_WITH_EMPTY_HAND;
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityPipeAnchor anchor) {
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFluidPipeAnchor anchor) {
             FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             if (type != anchor.getFluidType()) {
                 FluidType prev = anchor.getFluidType();
@@ -108,7 +91,7 @@ public class FluidPipeAnchor extends BlockFluidDuct {
                     }
                     // 1.7 changeTypeRecursively also followed every linked pipeline
                     for (BlockPos linked : List.copyOf(anchor.getConnected())) {
-                        if (level.getBlockEntity(linked) instanceof TileEntityPipeAnchor other && other.getFluidType() == prev) {
+                        if (level.getBlockEntity(linked) instanceof TileEntityFluidPipeAnchor other && other.getFluidType() == prev) {
                             BlockFluidDuct.spreadType(level, linked, type, prev, 63);
                         }
                     }

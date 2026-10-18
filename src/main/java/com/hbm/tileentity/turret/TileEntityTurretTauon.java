@@ -1,5 +1,7 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.lib.ModDamageSources.DamageClass;
+import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactoryAccelerator;
 import com.hbm.lib.ModDamageSources;
@@ -128,8 +130,8 @@ public class TileEntityTurretTauon extends TileEntityTurretBaseNT {
         BulletConfig conf = getFirstConfigLoaded();
         if (conf == null || target == null || !(level instanceof ServerLevel server)) return;
 
-        Compat.hurt(target, server, ModDamageSources.electricity(level),
-                30F + level.getRandom().nextInt(11));
+        Compat.hurt(target, server, ModDamageSources.bullet(level, DamageClass.SUBATOMIC.type(), null, null),
+                getBaseDamage() * (1 + level.getRandom().nextFloat() / 3F));
         consumeAmmo(conf);
         level.playSound(null, worldPosition, ModSounds.WEAPON_TAU_SHOOT.get(), SoundSource.BLOCKS, 4.0F,
                 0.9F + level.getRandom().nextFloat() * 0.3F);
@@ -154,4 +156,7 @@ public class TileEntityTurretTauon extends TileEntityTurretBaseNT {
         if (buf.readBoolean()) beam = 3;
         else super.deserialize(buf);
     }
+
+    @Override
+    public float getBaseDamage() { return XFactoryTurret.TURRET_TAUON_DAMAGE.get(); }
 }

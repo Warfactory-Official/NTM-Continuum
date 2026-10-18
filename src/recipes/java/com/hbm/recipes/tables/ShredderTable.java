@@ -14,6 +14,7 @@ import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.inventory.recipes.ShredderRecipes.Row;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec.ItemOut;
+import com.hbm.items.machine.ItemDrive.EnumDriveType;
 import com.hbm.items.ItemEnums.EnumChunkType;
 import com.hbm.items.ModBedrockOreItems;
 import com.hbm.items.ModFuelItems;
@@ -126,6 +127,9 @@ public final class ShredderTable extends RecipeSource<Row> {
         setRecipe(Items.SAND, new ItemStack(ModItems.dust.get(), 2));
         setRecipe(ModBlocks.block_slag.get(), new ItemStack(ModFuelItems.powder_cement.get(), 4));
         setRecipe(ModBlocks.ore_aluminium.get(), ModIntermediateItems.chunk(EnumChunkType.CRYOLITE, 2));
+
+        setRecipe(ModIntermediateItems.drive(EnumDriveType.FLASH_BROKEN), new ItemStack(ModItems.powder_polymer.get(), 2));
+        setRecipe(ModIntermediateItems.drive(EnumDriveType.DISK_BROKEN), new ItemStack(ModItems.powder_polymer.get(), 4));
 
         // (the logWood, plankWood, treeSapling and dustLapis loops are tag sweeps in ShredderRecipes)
 

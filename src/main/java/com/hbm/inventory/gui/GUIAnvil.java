@@ -9,6 +9,7 @@ import com.hbm.inventory.container.ContainerAnvil;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
+import com.hbm.inventory.recipes.anvil.AnvilRecipes.OverlayType;
 import com.hbm.packet.AnvilCraftPayload;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
@@ -28,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Client screen for the {@link ContainerAnvil}, a port of 1.7 {@code GUIAnvil} ({@code processing/gui_anvil.png}, 176x222).
@@ -48,6 +50,7 @@ public class GUIAnvil extends CompatContainerScreen<ContainerAnvil> {
     private int selection = -1;
     private int lastSize = 0;
     private EditBox search;
+    private OverlayType state = OverlayType.NONE;
 
     public GUIAnvil(ContainerAnvil menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 222);
@@ -57,8 +60,7 @@ public class GUIAnvil extends CompatContainerScreen<ContainerAnvil> {
         for (AnvilConstructionRecipe recipe : AnvilRecipes.getConstruction()) {
             if (recipe.isTierValid(this.tier)) this.originList.add(recipe);
         }
-        this.recipes.addAll(this.originList);
-        resetPaging();
+        regenerateRecipes();
     }
 
     @Override
@@ -74,12 +76,27 @@ public class GUIAnvil extends CompatContainerScreen<ContainerAnvil> {
         addRenderableWidget(this.search);
     }
 
+    private boolean matchState(AnvilConstructionRecipe recipe) {
+        return this.state == OverlayType.NONE || recipe.getOverlay() == this.state;
+    }
+
+    private void regenerateRecipes() {
+        this.recipes.clear();
+        for (AnvilConstructionRecipe recipe : this.originList) {
+            if (matchState(recipe)) this.recipes.add(recipe);
+        }
+        resetPaging();
+    }
+
+    /** 1.7 filters by the overlay button only while the search box is empty. */
     private void search(String term) {
         term = term.toLowerCase(Locale.ROOT);
         this.recipes.clear();
 
         if (term.isEmpty()) {
-            this.recipes.addAll(this.originList);
+            for (AnvilConstructionRecipe recipe : this.originList) {
+                if (matchState(recipe)) this.recipes.add(recipe);
+            }
         } else {
             for (AnvilConstructionRecipe recipe : this.originList) {
                 for (String s : recipeToSearchList(recipe)) {
@@ -120,6 +137,18 @@ public class GUIAnvil extends CompatContainerScreen<ContainerAnvil> {
         if (isOver(mouseX, mouseY, 7, 71, 9, 36)) GuiDraw.blit(graphics, TEXTURE, leftPos + 7, topPos + 71, 176.0F, 186.0F, 9, 36, 256, 256);
         if (isOver(mouseX, mouseY, 106, 71, 9, 36)) GuiDraw.blit(graphics, TEXTURE, leftPos + 106, topPos + 71, 185.0F, 186.0F, 9, 36, 256, 256);
         if (isOver(mouseX, mouseY, 52, 53, 18, 18)) GuiDraw.blit(graphics, TEXTURE, leftPos + 52, topPos + 53, 176.0F, 150.0F, 18, 18, 256, 256);
+
+        // Overlay filter button: smithing, construction and recycling icons at u 200/218/236, hovered one row down
+        int filterU = switch (this.state) {
+            case SMITHING -> 200;
+            case CONSTRUCTION -> 218;
+            case RECYCLING -> 236;
+            case NONE -> -1;
+        };
+        if (filterU >= 0) {
+            GuiDraw.blit(graphics, TEXTURE, leftPos + 88, topPos + 53, filterU, 0.0F, 18, 18, 256, 256);
+            if (isOver(mouseX, mouseY, 88, 53, 18, 18)) GuiDraw.blit(graphics, TEXTURE, leftPos + 88, topPos + 53, filterU, 18.0F, 18, 18, 256, 256);
+        }
 
         // Recipe grid icons (5 columns × 2 rows, paged by column).
         for (int i = index * 2; i < index * 2 + 10 && i < recipes.size(); i++) {
@@ -240,6 +269,13 @@ public class GUIAnvil extends CompatContainerScreen<ContainerAnvil> {
             }
             return true;
         }
+        if (isOver(x, y, 88, 53, 18, 18)) { // cycle the overlay filter
+            click();
+            OverlayType[] values = OverlayType.values();
+            this.state = values[(this.state.ordinal() + 1) % values.length];
+            regenerateRecipes();
+            return true;
+        }
         for (int i = index * 2; i < index * 2 + 10 && i < recipes.size(); i++) {
             int ind = i - index * 2;
             if (isOver(x, y, 16 + 18 * (ind / 2), 71 + 18 * (ind % 2), 18, 18)) {
@@ -250,6 +286,18 @@ public class GUIAnvil extends CompatContainerScreen<ContainerAnvil> {
         }
 
         return false;
+    }
+
+    @Override
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (!isOver(mouseX, mouseY, 88, 53, 18, 18)) return;
+        String label = switch (this.state) {
+            case NONE -> "All recipes";
+            case SMITHING -> "Smithing";
+            case CONSTRUCTION -> "Construction";
+            case RECYCLING -> "Recycling";
+        };
+        GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(label)), Optional.empty(), mouseX, mouseY);
     }
 
     @Override

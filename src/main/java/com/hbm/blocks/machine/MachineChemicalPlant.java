@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -71,5 +72,23 @@ public class MachineChemicalPlant extends BlockMultiblockMachine implements IEne
                 if (i != 0 || j != 0) visitor.passiveCell(core.offset(i, 0, j), MASK_ALL, domains);
             }
         }
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {-1, 0, -1, ForgeDirection.WEST.ordinal()},
+                {-1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+                {-1, 0, 1, ForgeDirection.WEST.ordinal()},
+                {-1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {0, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, -1, ForgeDirection.EAST.ordinal()},
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {1, 0, 1, ForgeDirection.EAST.ordinal()},
+                {1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+        }, dir);
     }
 }

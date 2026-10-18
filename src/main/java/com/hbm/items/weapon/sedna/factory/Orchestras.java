@@ -11,12 +11,22 @@ import com.hbm.particle.SpentCasing;
 import com.hbm.particle.helper.CasingCreator;
 import com.hbm.sound.ModGunSounds;
 import com.hbm.sound.ModSounds;
+import com.hbm.util.EntityDamageUtil;
+import dev.golem.core.world.Compat;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * 1.7's tick-indexed Sedna sound timelines.
@@ -923,7 +933,7 @@ public final class Orchestras {
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_COILGUN = timeline(Muzzle.NI4NI_CYCLE,
             null,
             cue(GunAnimation.RELOAD, 0, ModGunSounds.COIL_RELOAD, 1F, 1F));
-    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_HANGMAN = timeline(Muzzle.CYCLE,
+    private static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> HANGMAN_TIMELINE = timeline(Muzzle.CYCLE,
             HANGMAN_CASINGS,
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 1F),
             cue(GunAnimation.RELOAD, 0, ModGunSounds.REVOLVER_COCK, 1F, 0.8F),
@@ -934,6 +944,29 @@ public final class Orchestras {
             cue(GunAnimation.JAMMED, 15, ModGunSounds.MAG_SMALL_REMOVE, 1F, 0.8F),
             cue(GunAnimation.JAMMED, 20, ModGunSounds.REVOLVER_CLOSE, 1F, 1F),
             cue(GunAnimation.JAMMED, 25, ModGunSounds.REVOLVER_COCK, 1F, 0.75F));
+    /** The timeline plus the inspection smack 16 ticks into INSPECT. */
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_HANGMAN = (stack, ctx) -> {
+        HANGMAN_TIMELINE.accept(stack, ctx);
+        if (ctx.entity.level().isClientSide() || ctx.getPlayer() == null) return;
+        if (ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) != GunAnimation.INSPECT) return;
+        if (ItemGunBaseNT.getAnimTimer(stack, ctx.configIndex) != 16) return;
+
+        Player player = ctx.getPlayer();
+        HitResult hit = EntityDamageUtil.getMouseOver(player, 3D, 0.3D);
+        if (hit instanceof EntityHitResult entityHit) {
+            Entity victim = entityHit.getEntity();
+            Compat.hurt(victim, (ServerLevel) player.level(), player.damageSources().playerAttack(player),
+                    XFactory44.GUN_HANGMAN_SMACK_DAMAGE.get());
+            victim.setDeltaMovement(victim.getDeltaMovement().multiply(2D, 1D, 2D));
+            player.level().playSound(null, victim.getX(), victim.getY(), victim.getZ(), ModSounds.GUN_SMACK.get(),
+                    SoundSource.PLAYERS, 1F, 0.9F + player.getRandom().nextFloat() * 0.2F);
+        } else if (hit instanceof BlockHitResult blockHit) {
+            BlockState state = player.level().getBlockState(blockHit.getBlockPos());
+            Vec3 at = blockHit.getLocation();
+            player.level().playSound(null, at.x, at.y, at.z, state.getSoundType().getStepSound(), SoundSource.BLOCKS,
+                    2F, 0.9F + player.getRandom().nextFloat() * 0.2F);
+        }
+    };
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_BOLTER = timeline(Muzzle.NONE,
             BOLTER_CASINGS,
             cue(GunAnimation.RELOAD, 5, ModGunSounds.MAG_REMOVE, 1F, 1F),

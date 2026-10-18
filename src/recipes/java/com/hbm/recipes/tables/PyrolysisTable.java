@@ -124,6 +124,10 @@ public final class PyrolysisTable extends RecipeSource<Row> {
         add(new PyroOvenRecipe(60)
                 .in(new FluidStack(Fluids.GAS, 12_000))
                 .out(new FluidStack(Fluids.HYDROGEN, 8_000)).out(new ItemStack(ModFuelItems.ingot_graphite.get(), 1)));
+        //ilmenite/TiCl4 processing
+        add(new PyroOvenRecipe(60)
+                .in(new FluidStack(Fluids.TITANIUM_TETRACHLORIDE, 1_000))
+                .out(new FluidStack(Fluids.CHLORINE, 125)).out(new ItemStack(ModItems.ingot_titanium.get(), 5)));
     }
 
     private void registerSFAuto(FluidType fluid) {

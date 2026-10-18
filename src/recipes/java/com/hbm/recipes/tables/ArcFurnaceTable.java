@@ -62,6 +62,7 @@ public final class ArcFurnaceTable extends RecipeSource<Row> {
         register(ASBESTOS.ingot(),                      new ArcFurnaceRecipe().solid(new ItemStack(ModItems.nugget_silicon.get(), 4))    .fluid(new MaterialStack(Mats.MAT_SILICON, q(MaterialShapes.INGOT, 1, 2))));
         register(ASBESTOS.dust(),                       new ArcFurnaceRecipe().solid(new ItemStack(ModItems.nugget_silicon.get(), 4))    .fluid(new MaterialStack(Mats.MAT_SILICON, q(MaterialShapes.INGOT, 1, 2))));
         register(ASBESTOS.block(),                      new ArcFurnaceRecipe().solid(new ItemStack(ModItems.nugget_silicon.get(), 40))   .fluid(new MaterialStack(Mats.MAT_SILICON, q(MaterialShapes.INGOT, 9, 2))));
+        register(ILMENITE.ingot(),                      new ArcFurnaceRecipe().solid(new ItemStack(ModItems.ingot_titanium.get(), 3))    .fluid(new MaterialStack(Mats.MAT_TITANIUM, q(MaterialShapes.INGOT, 3)), new MaterialStack(Mats.MAT_IRON, q(MaterialShapes.INGOT, 2))));
 
         register(new ComparableStack(ModFallingBlocks.sand_quartz.get().asItem()), new ArcFurnaceRecipe().solid(new ItemStack(ModGlassBlocks.glass_quartz.get().asItem())));
         register(BORAX.dust(), new ArcFurnaceRecipe().solid(new ItemStack(ModItems.powder_boron_tiny.get(), 3)).fluid(new MaterialStack(Mats.MAT_BORON, q(MaterialShapes.NUGGET, 3))));

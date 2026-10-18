@@ -40,10 +40,7 @@ public final class FluidNetBlockItem extends CompatBlockItem {
                 tooltip.add(Component.literal("Cannot store corrosive fluids").withStyle(ChatFormatting.YELLOW));
                 tooltip.add(Component.literal("Cannot store antimatter").withStyle(ChatFormatting.YELLOW));
             } else if (barrel == ModFluidNetBlocks.barrel_corroded.get()) {
-                tooltip.add(Component.literal("Capacity: 6,000mB").withStyle(ChatFormatting.AQUA));
-                tooltip.add(Component.literal("Can store hot fluids").withStyle(ChatFormatting.GREEN));
-                tooltip.add(Component.literal("Can store highly corrosive fluids").withStyle(ChatFormatting.GREEN));
-                tooltip.add(Component.literal("Cannot store antimatter").withStyle(ChatFormatting.YELLOW));
+                tooltip.add(Component.literal("Capacity: 16,000mB").withStyle(ChatFormatting.AQUA));
                 tooltip.add(Component.literal("Leaky").withStyle(ChatFormatting.RED));
             } else if (barrel == ModFluidNetBlocks.barrel_steel.get()) {
                 tooltip.add(Component.literal("Capacity: 16,000mB").withStyle(ChatFormatting.AQUA));
@@ -66,10 +63,6 @@ public final class FluidNetBlockItem extends CompatBlockItem {
         // 1.7 ItemBlockLore: the red/pink/lox/taint barrels carry this one line.
         if (getBlock() instanceof RedBarrel) {
             tooltip.add(Component.literal("Static fluid barrel"));
-        }
-        if (getBlock() == ModFluidNetBlocks.pipe_anchor.get()) {
-            tooltip.add(Component.literal("Connection Type: ").withStyle(ChatFormatting.GOLD).append(Component.literal("Single").withStyle(ChatFormatting.YELLOW)));
-            tooltip.add(Component.literal("Connection Range: ").withStyle(ChatFormatting.GOLD).append(Component.literal("10m").withStyle(ChatFormatting.YELLOW)));
         }
     }
 }

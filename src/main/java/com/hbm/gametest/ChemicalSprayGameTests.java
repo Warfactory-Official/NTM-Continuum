@@ -247,9 +247,9 @@ public final class ChemicalSprayGameTests {
     }
 
     /**
-     * 1.7 {@code FluidType.isDispersable}: not antimatter, not container-less, not viscous. Of the 155 fluids after
-     * NONE (1.7 has 156 in all), 53 are viscous, 18 have no container and 3 are antimatter, with WASTEFLUID both
-     * viscous and container-less: {@code 155 - (53 + 18 + 3 - 1) = 82} are dispersable (1.12.2's dispersable
+     * 1.7 {@code FluidType.isDispersable}: not antimatter, not container-less, not viscous. Of the 156 fluids after
+     * NONE (1.7 has 157 in all), 53 are viscous, 18 have no container and 3 are antimatter, with WASTEFLUID both
+     * viscous and container-less: {@code 156 - (53 + 18 + 3 - 1) = 83} are dispersable (1.12.2's dispersable
      * HYDRAZINE is not ported). 1.7 offers exactly those as creative disperser canisters,
      * only pheromone and sulfuric acid as creative glands, and registers both items as containers for dispersable
      * fluids alone (2,000 mB canister, 4,000 mB gland), ahead of its lead-container cut-off.
@@ -263,15 +263,15 @@ public final class ChemicalSprayGameTests {
             if (all[i].isDispersable()) dispersable++;
         }
         for (FluidType type : all) if (FluidRecipeTableGameTests.ours(type)) ours++;
-        helper.assertTrue(ours == 156 && all[0] == Fluids.NONE, "156 (1.7) fluids with NONE first, have " + ours);
-        helper.assertTrue(dispersable == 82, "82 fluids must be dispersable, counted " + dispersable);
+        helper.assertTrue(ours == 157 && all[0] == Fluids.NONE, "157 (1.7) fluids with NONE first, have " + ours);
+        helper.assertTrue(dispersable == 83, "83 fluids must be dispersable, counted " + dispersable);
 
         ItemDisperser canister = ModEntityItems.disperser_canister.get();
         ItemDisperser gland = ModEntityItems.glyphid_gland.get();
         List<ItemStack> canisters = canister.creativeVariants().stream()
                 .filter(s -> FluidRecipeTableGameTests.ours(canister.getContent(s))).toList();
         List<ItemStack> glands = gland.creativeVariants();
-        helper.assertTrue(canisters.size() == 82, "82 creative disperser canisters, have " + canisters.size());
+        helper.assertTrue(canisters.size() == 83, "83 creative disperser canisters, have " + canisters.size());
         helper.assertTrue(glands.size() == 2 && glands.stream().anyMatch(s -> gland.getContent(s) == Fluids.PHEROMONE)
                         && glands.stream().anyMatch(s -> gland.getContent(s) == Fluids.SULFURIC_ACID),
                 "the creative glands are pheromone and sulfuric acid, have " + glands.size());

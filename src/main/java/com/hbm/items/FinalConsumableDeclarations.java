@@ -47,7 +47,7 @@ public final class FinalConsumableDeclarations {
     }
 
     private static void recipes() {
-        // --- 1.7 ConsumableRecipes ---
+        // 1.7 ConsumableRecipes
         shaped(NS, "bomb_waffle", "hbm:bomb_waffle", rows("WEW", "MPM", "WEW"),
                 "W", "minecraft:wheat", "E", "minecraft:egg", "M", "minecraft:milk_bucket", "P", "hbm:man_core");
         shaped(NS, "schnitzel_vegan", "hbm:schnitzel_vegan", 3, rows("RWR", "WPW", "RWR"),
@@ -82,7 +82,7 @@ public final class FinalConsumableDeclarations {
                 "hbm:plant_item_tobacco");
         shapeless(NS, "crackpipe", "hbm:crackpipe", "hbm:catalytic_converter");
 
-        // --- 1.7 PowderRecipes / SmeltingRecipes / MineralRecipes ---
+        // 1.7 PowderRecipes / SmeltingRecipes / MineralRecipes
         shapeless(NS, "powder_fertilizer", "hbm:powder_fertilizer", 4,
                 "#c:dusts/calcium", "#c:dusts/red_phosphorus", "#c:dusts/niter", "#c:dusts/sulfur");
         shapeless(NS, "powder_fertilizer_1", "hbm:powder_fertilizer", 4,
@@ -95,7 +95,7 @@ public final class FinalConsumableDeclarations {
         compress(NS, "block_smore", "hbm:ingot_smore", "hbm:block_smore");
         decompress(NS, "ingot_smore_from_block", "hbm:block_smore", "hbm:ingot_smore");
 
-        // --- 1.7 ToolRecipes ---
+        // 1.7 ToolRecipes
         shaped(NS, "matchstick", "hbm:matchstick", 16, rows("I", "S"), "I", "#c:dusts/sulfur", "S", "minecraft:stick");
         shaped(NS, "matchstick_1", "hbm:matchstick", 24, rows("I", "S"), "I", "#c:dusts/red_phosphorus",
                 "S", "minecraft:stick");
@@ -104,26 +104,17 @@ public final class FinalConsumableDeclarations {
         shaped(NS, "chemistry_set_boron", "hbm:chemistry_set_boron", rows("GIG", "GCG"),
                 "G", "hbm:glass_boron", "I", "#c:ingots/steel", "C", "#c:ingots/cobalt");
 
-        // --- 1.7 ArmorRecipes (the rag robes; the RPA set on tier-2 legendary parts) ---
+        // 1.7 ArmorRecipes (the rag robes)
         shaped(NS, "robes_helmet", "hbm:robes_helmet", rows("EEE", "E E"), "E", "hbm:rag");
         shaped(NS, "robes_plate", "hbm:robes_plate", rows("E E", "EEE", "EEE"), "E", "hbm:rag");
         shaped(NS, "robes_legs", "hbm:robes_legs", rows("EEE", "E E", "E E"), "E", "hbm:rag");
         shaped(NS, "robes_boots", "hbm:robes_boots", rows("R R", "P P"), "R", "hbm:rag", "P", "#c:ingots/any_rubber");
-        String l = "hbm:parts_legendary_tier2";
-        shaped(NS, "rpa_helmet", "hbm:rpa_helmet", rows("KPK", "PLP", " F "),
-                "L", l, "K", "hbm:plate_kevlar", "P", "hbm:plate_armor_ajr", "F", "hbm:gas_mask_filter_combo");
-        shaped(NS, "rpa_plate", "hbm:rpa_plate", rows("P P", "MLM", "PKP"),
-                "L", l, "K", "hbm:plate_kevlar", "P", "hbm:plate_armor_ajr", "M", "hbm:motor_desh");
-        shaped(NS, "rpa_legs", "hbm:rpa_legs", rows("MPM", "KLK", "P P"),
-                "L", l, "K", "hbm:plate_kevlar", "P", "hbm:plate_armor_ajr", "M", "hbm:motor_desh");
-        shaped(NS, "rpa_boots", "hbm:rpa_boots", rows("KLK", "P P"),
-                "L", l, "K", "hbm:plate_kevlar", "P", "hbm:plate_armor_ajr");
 
-        // --- 1.7 WeaponRecipes ---
+        // 1.7 WeaponRecipes
         shapeless(NS, "gun_double_barrel_sacred_dragon", "hbm:gun_double_barrel_sacred_dragon",
                 "hbm:gun_double_barrel", "hbm:item_secret_selenium_steel");
 
-        // --- 1.7 CraftingManager ---
+        // 1.7 CraftingManager
         shaped(NS, "upgrade_muffler", "hbm:upgrade_muffler", 16, rows("III", "IWI", "III"),
                 "I", "#c:ingots/any_rubber", "W", "#minecraft:wool");
         shaped(NS, "laser_crystal_dnt", "hbm:laser_crystal_dnt", rows("QDQ", "SBS", "QDQ"),

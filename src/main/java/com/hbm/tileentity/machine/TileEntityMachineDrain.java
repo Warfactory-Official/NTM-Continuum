@@ -7,7 +7,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Drainage-pipe core: receives a fluid network and spills half its contents each server tick. */
 public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFluidStandardReceiverMK2 {
@@ -38,10 +39,8 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineDrain drain) {
-
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos port : drain.getConPos()) drain.trySubscribe(drain.tank.getTankType(), level, port);
-        }
+        drain.setupFluidPorts(drain.getPorts());
+        drain.updatePortFIFO();
 
         // Upstream synchronizes the pre-spill tank state, then performs the destructive/release branch.
         drain.networkPackNT();
@@ -54,7 +53,7 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
             } else {
                 int toSpill = Math.max(drain.tank.getFill() / 2, 1);
                 drain.tank.setFill(drain.tank.getFill() - toSpill);
-                FT_Polluting.pollute(level, pos, drain.tank.getTankType(), FluidReleaseType.SPILL, toSpill);
+                FluidTrait.onRelease(level, pos, drain.tank.getTankType(), FluidReleaseType.SPILL, toSpill);
                 // hbm-space FT_Gaseous.release: a drained gas goes into the planet's air (com.hbm.api.environment)
                 Environment.releaseGas(level, pos, drain.tank.getTankType(), toSpill);
 
@@ -90,17 +89,22 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
         setChanged();
     }
 
-    public DirPos[] getConPos() {
-        ForgeDirection dir0 = MachineCore.facing(getBlockState());
-        ForgeDirection dir1 = dir0.getRotation(ForgeDirection.UP);
-        ForgeDirection dir2 = dir0.getRotation(ForgeDirection.DOWN);
-        BlockPos pos = getBlockPos();
-        return new DirPos[]{
-                new DirPos(pos.getX() + dir0.offsetX, pos.getY(), pos.getZ() + dir0.offsetZ, dir0),
-                new DirPos(pos.getX() + dir1.offsetX, pos.getY(), pos.getZ() + dir1.offsetZ, dir1),
-                new DirPos(pos.getX() + dir2.offsetX, pos.getY(), pos.getZ() + dir2.offsetZ, dir2)
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir0 = MachineCore.facing(getBlockState());
+            ForgeDirection dir1 = dir0.getRotation(ForgeDirection.UP);
+            ForgeDirection dir2 = dir0.getRotation(ForgeDirection.DOWN);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x, y, z, dir0, dir1, dir2),
+            };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     @Override
     public boolean canConnect(FluidType type, ForgeDirection dir) {

@@ -12,6 +12,7 @@ import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.inventory.container.RadioControllerMenu;
 import com.hbm.tileentity.network.RadioTargets;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.mojang.serialization.Codec;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -35,6 +36,9 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
     public String channel = "";
     public String prev;
     public boolean polling = true;
+    /** Whether the channel carried a signal last tick; a new burst runs its first command even if unchanged. */
+    private boolean receiving;
+    private boolean firstTick = true;
 
     public TileEntityRadioTorchController(BlockPos pos, BlockState state) {
         super(ModBlockEntities.RADIO_TORCH_CONTROLLER.get(), pos, state);
@@ -42,36 +46,46 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
 
     @Override
     public void serverTick() {
-        if (level == null || channel == null || channel.isEmpty()) {
-            networkPackNT();
-            return;
-        }
+        if (level == null) return;
+        boolean receivingNow = false;
 
-        Direction direction = attachedDirection();
-        BlockPos attachedPos = worldPosition.relative(direction);
-        IRORInteractive interactive = RadioTargets.interactive(level, attachedPos);
-        if (interactive != null) {
-            RTTYSystem.RTTYChannel received = RTTYSystem.listen(level, channel);
+        if (channel != null && !channel.isEmpty()) {
+            IRORInteractive interactive = RadioTargets.interactive(level, worldPosition.relative(attachedDirection()));
+            RTTYSystem.RTTYChannel received = interactive == null ? null : RTTYSystem.listen(level, channel);
             if (received != null) {
                 String command = String.valueOf(received.signal);
                 if ("selfdestruct".equals(command)) {
                     selfDestruct();
                     return;
                 }
-                if ((polling && received.timeStamp >= level.getGameTime() - 1)
-                        || !command.equals(prev)) {
-                    try {
-                        if (!command.isEmpty()) {
-                            interactive.runRORFunction(IRORInteractive.PREFIX_FUNCTION
-                                    + IRORInteractive.getCommand(command), IRORInteractive.getParams(command));
+                if (received.timeStamp >= level.getGameTime() - 1 && received.timeStamp != -1) {
+                    receivingNow = true;
+                    boolean changed = !command.equals(prev);
+                    if (polling || !receiving || changed) {
+                        try {
+                            if (!command.isEmpty()) {
+                                interactive.runRORFunction(IRORInteractive.PREFIX_FUNCTION
+                                        + IRORInteractive.getCommand(command), IRORInteractive.getParams(command));
+                            }
+                        } catch (RORFunctionException ignored) {
+                            // 1.7 discards malformed remote commands
                         }
-                    } catch (RORFunctionException ignored) {
-                        // The old controller discarded malformed remote commands.
                     }
-                    prev = command;
+                    if (changed) {
+                        prev = command;
+                        setChanged();
+                    }
                 }
             }
         }
+
+        // the broadcast queue starts empty after loading, so the saved burst state survives the first tick
+        if ((!firstTick || receivingNow) && receiving != receivingNow) {
+            receiving = receivingNow;
+            setChanged();
+        }
+        firstTick = false;
+
         networkPackNT();
     }
 
@@ -91,6 +105,7 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
         polling = input.getBooleanOr("polling", true);
         channel = input.getStringOr("channel", "");
         prev = input.getStringOr("prev", null);
+        receiving = input.read("receiving", Codec.BOOL).orElse(prev != null && !prev.isEmpty());
     }
 
     @Override
@@ -99,14 +114,24 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
         output.putBoolean("polling", polling);
         output.putString("channel", channel == null ? "" : channel);
         if (prev != null) output.putString("prev", prev);
+        output.putBoolean("receiving", receiving);
     }
 
     @Override
     public void receiveControl(CompoundTag data) {
         if (data.contains("polling")) polling = Tags.getBooleanOr(data, "polling", polling);
-        if (data.contains("channel")) channel = limited(Tags.getStringOr(data, "channel", ""), 10);
+        if (data.contains("channel")) setChannelName(limited(Tags.getStringOr(data, "channel", ""), RTTYSystem.MAX_CHAN_LENGTH));
         setChanged();
         dataChanged();
+    }
+
+    /** A new channel forgets the last command and burst, so its first command runs. */
+    public void setChannelName(String channel) {
+        if (channel.equals(this.channel)) return;
+        this.channel = channel;
+        prev = null;
+        receiving = false;
+        setChanged();
     }
 
     public boolean hasPermission(Player player) {
@@ -117,14 +142,14 @@ public class TileEntityRadioTorchController extends TileEntityLoadedBase impleme
     public void serialize(RegistryFriendlyByteBuf buffer) {
         super.serialize(buffer);
         buffer.writeBoolean(polling);
-        buffer.writeUtf(channel == null ? "" : channel, 10);
+        buffer.writeUtf(channel == null ? "" : channel, RTTYSystem.MAX_CHAN_LENGTH);
     }
 
     @Override
     public void deserialize(RegistryFriendlyByteBuf buffer) {
         super.deserialize(buffer);
         polling = buffer.readBoolean();
-        channel = buffer.readUtf(10);
+        channel = buffer.readUtf(RTTYSystem.MAX_CHAN_LENGTH);
     }
 
     @Override

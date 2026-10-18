@@ -14,7 +14,6 @@ import com.hbm.inventory.recipes.RadiolysisRecipes.RadiolysisRecipe;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.items.machine.ItemRTGPelletDepleted;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -38,6 +37,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.inventory.container.ContainerRadiolysis;
 import com.hbm.tileentity.ModNuclearMiscBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The RTG that also cracks fluids and sterilises items: 10 pellet slots, fluid identifier in/out (10/11),
@@ -72,6 +73,9 @@ public class TileEntityMachineRadiolysis extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineRadiolysis te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPOFIFO();
+
         te.power = Library.chargeItemsFromTE(te.inventory, 14, te.power, maxPower);
 
         te.heat = RTGUtil.updateRTGs(te.inventory, slot_rtg);
@@ -90,13 +94,6 @@ public class TileEntityMachineRadiolysis extends TileEntityMachineBase
             if (te.heat >= 200 && level.getGameTime() % 100 == 0) te.sterilize();
         }
 
-        for (DirPos con : te.getConPos()) {
-            te.tryProvide(level, con.getPos(), con.getDir());
-            te.trySubscribe(te.tanks[0].getTankType(), level, con);
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, con);
-            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, con);
-        }
-
         te.setChanged();
         te.networkPackNT();
     }
@@ -113,15 +110,8 @@ public class TileEntityMachineRadiolysis extends TileEntityMachineBase
         inventory.setStackInSlot(10, ItemStack.EMPTY);
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z, Library.POS_X),
-                new DirPos(x - 2, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 2, Library.POS_Z),
-                new DirPos(x, y, z - 2, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.flare(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     /* Processing Methods */
     private void crack() {

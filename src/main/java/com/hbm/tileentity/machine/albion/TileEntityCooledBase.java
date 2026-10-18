@@ -15,6 +15,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Base for the cryogenically cooled machines: the particle accelerator's magnets and the fusion
@@ -69,13 +71,14 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase
         this.temperature -= temp_change_per_mb * cycles;
     }
 
-    /** Subscribes to power and cold coolant, and offers the warmed coolant back out. */
+    protected PortDef[] cachedPorts;
+    /** Each 1.7 PortDef sits one block in from the connection the machine lists, so they are built from that list. */
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.fromConnections(getConPos().toArray(new DirPos[0])); return cachedPorts; }
+
+    /** Power and cold coolant in, warmed coolant out. */
     protected void exchangeCoolant(Level level) {
-        for (DirPos pos : getConPos()) {
-            this.trySubscribe(level, pos);
-            this.trySubscribe(coolantTanks[0].getTankType(), level, pos);
-            if (coolantTanks[1].getFill() > 0) this.tryProvide(coolantTanks[1], level, pos);
-        }
+        this.setupAllPorts(getPorts());
+        this.updatePortPIFIFO();
     }
 
     public boolean isCool() {

@@ -6,12 +6,13 @@ import com.hbm.blocks.machine.MachineSatDock;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.entity.logic.EntityDeathBlast;
 import com.hbm.entity.logic.EntityOrbitalLaser;
-import com.hbm.entity.missile.EntityMinerRocket;
+import com.hbm.entity.missile.EntitySatellitePod;
 import com.hbm.entity.projectile.EntityTom;
 import com.hbm.items.ISatChip;
 import com.hbm.items.ModSatelliteItems;
 import com.hbm.items.machine.ItemSatellite;
 import com.hbm.items.machine.ItemSatellite.EnumSatType;
+import com.hbm.items.machine.ItemDrive.EnumDriveType;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteDeathRay;
@@ -24,6 +25,7 @@ import com.hbm.saveddata.satellites.SatelliteRadar;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.saveddata.satellites.SatelliteRelay;
 import com.hbm.saveddata.satellites.SatelliteType;
+import com.hbm.saveddata.satellites.SatelliteScience;
 import com.hbm.saveddata.satellites.XSatelliteRegistry;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import com.hbm.tileentity.machine.TileEntityMachineSatDock;
@@ -37,6 +39,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -56,11 +59,11 @@ public final class SatelliteGameTests {
     public static void registry(GameTestHelper helper) {
         String[] names = {"SatelliteMapper", "SatelliteScanner", "SatelliteRadar", "SatelliteDeathRay",
                 "SatelliteResonator", "SatelliteRelay", "SatelliteMiner", "SatelliteLunarMiner", "SatelliteHorizons",
-                "SatellitePrecisionLaser", "SatelliteDetector", "SatelliteRayScan"};
+                "SatellitePrecisionLaser", "SatelliteDetector", "SatelliteRayScan", "SatelliteScience"};
         // 1.7 idToClass order and the names saves carry; the registry keeps both (numeric ids are gone, X-22)
         String[] saved = {"mapper", "scanner", "radar", "laser", "resonator", "relay", "miner", "lunar_miner",
-                "horizons", "precision_laser", "detector", "ray_scan"};
-        helper.assertTrue(SatelliteType.values().size() >= names.length, "1.7 registers twelve satellite types");
+                "horizons", "precision_laser", "detector", "ray_scan", "science"};
+        helper.assertTrue(SatelliteType.values().size() >= names.length, "1.7 registers thirteen satellite types");
         for (int id = 0; id < names.length; id++) {
             SatelliteType type = SatelliteType.values().get(id);
             Satellite sat = type.create();
@@ -71,13 +74,14 @@ public final class SatelliteGameTests {
         // the hbm:satellite item data map must equal 1.7's registerSatellite table (EnumSatType -> class)
         SatelliteType[] chips = {SatelliteType.MAPPER, SatelliteType.SCANNER, SatelliteType.RADAR, SatelliteType.MINER,
                 SatelliteType.LUNAR_MINER, SatelliteType.PRECISION_LASER, SatelliteType.DEATH_RAY,
-                SatelliteType.RESONATOR, SatelliteType.RELAY, SatelliteType.DETECTOR, SatelliteType.RAY_SCAN};
+                SatelliteType.RESONATOR, SatelliteType.RELAY, SatelliteType.DETECTOR, SatelliteType.RAY_SCAN,
+                SatelliteType.SCIENCE, null, null};
         for (EnumSatType chip : EnumSatType.VALUES) {
             helper.assertTrue(XSatelliteRegistry.typeFor(ItemSatellite.make(chip)) == chips[chip.ordinal()],
                     chip + " must launch " + chips[chip.ordinal()]);
         }
-        helper.assertTrue(SatelliteDataMaps.SATELLITE.byId().size() == 12,
-                "the satellite data map has 1.7's twelve registerSatellite entries");
+        helper.assertTrue(SatelliteDataMaps.SATELLITE.byId().size() == 13,
+                "the satellite data map has 1.7's thirteen registerSatellite entries");
         helper.assertTrue(XSatelliteRegistry.stackFor(SatelliteType.HORIZONS).is(ModSatelliteItems.sat_gerald.get()),
                 "Horizons' chip is sat_gerald");
 
@@ -93,7 +97,7 @@ public final class SatelliteGameTests {
                 new ItemStack(ModSatelliteItems.sat_chip.get())}) {
             helper.assertTrue(XSatelliteRegistry.typeFor(legacy) == null, legacy + " must launch nothing (1.7)");
         }
-        helper.assertTrue(EnumSatType.values().length == 11, "1.7 EnumSatType has eleven variants (no science)");
+        helper.assertTrue(EnumSatType.values().length == 14, "1.7 EnumSatType has fourteen variants");
         helper.succeed();
     }
 
@@ -117,8 +121,8 @@ public final class SatelliteGameTests {
 
         Satellite.orbit(level, ItemSatellite.make(EnumSatType.RELAY), FREQ, 55, 700, 66);
         Satellite relay = data.getSatFromFreq(FREQ);
-        helper.assertTrue(relay instanceof SatelliteRelay && relay.targetX == 0 && relay.targetZ == 0,
-                "The relay's onOrbit skips super: no target is taken");
+        helper.assertTrue(relay instanceof SatelliteRelay && relay.targetX == 55 && relay.targetZ == 66,
+                "The relay takes the launch site as its target like any satellite");
         data.descend(FREQ);
         helper.succeed();
     }
@@ -132,7 +136,15 @@ public final class SatelliteGameTests {
         ray.tx = "HELLO";
         SatelliteMiner miner = new SatelliteMiner();
         miner.setTarget(7, 8);
-        miner.lastOp = 99L;
+        miner.progress = 0.25D;
+        miner.requestableSlots = new ItemStack[] {new ItemStack(Items.IRON_INGOT, 3), ItemStack.EMPTY};
+        SatelliteScience lab = new SatelliteScience();
+        lab.lastScience = 1234L;
+        lab.sensorCount = 2;
+        lab.sensorProgress = 77;
+        lab.assemblerCount = 1;
+        lab.produceData(EnumDriveType.DISK_EMPTY, EnumDriveType.DISK_ORBITDATA);
+        data.sats.put(4, lab);
         SatelliteHorizons horizons = new SatelliteHorizons();
         horizons.used = true;
         horizons.setTarget(1, 2);
@@ -147,8 +159,14 @@ public final class SatelliteGameTests {
         helper.assertTrue(ray2 instanceof SatelliteDeathRay d && d.lastShot == 5555L && d.targetX == 12
                 && d.targetZ == -34 && "HELLO".equals(d.tx), "The death ray round-trips its shot and base data");
         Satellite miner2 = back.getSatFromFreq(2);
-        helper.assertTrue(miner2 instanceof SatelliteMiner m && m.lastOp == 99L && m.targetX == 0 && m.targetZ == 0,
-                "1.7 SatelliteMiner.writeToNBT skips super: lastOp survives, the target does not");
+        helper.assertTrue(miner2 instanceof SatelliteMiner m && m.progress == 0.25D && m.targetX == 7 && m.targetZ == 8
+                        && m.requestableSlots.length == 2 && m.requestableSlots[0].getCount() == 3 && m.requestableSlots[1].isEmpty(),
+                "the miner keeps its progress, target and hold");
+        Satellite lab2 = back.getSatFromFreq(4);
+        helper.assertTrue(lab2 instanceof SatelliteScience l && l.lastScience == 1234L && l.sensorCount == 2
+                        && l.sensorProgress == 77 && l.assemblerCount == 1 && l.driveOutput == EnumDriveType.DISK_ORBITDATA
+                        && l.getOutputData(EnumDriveType.DISK_EMPTY) == EnumDriveType.DISK_ORBITDATA,
+                "the space laboratory keeps its counters and the data waiting for a drive");
         Satellite hz = back.getSatFromFreq(3);
         helper.assertTrue(hz instanceof SatelliteHorizons h && h.used && h.targetX == 0,
                 "1.7 SatelliteHorizons.writeToNBT keeps only 'used'");
@@ -164,16 +182,15 @@ public final class SatelliteGameTests {
 
         tick(helper, link);
         helper.assertTrue(!link.connected, "An empty frequency is not a connection");
-        // 1.7 compares against PREFIX_VALUE + connected (the boolean): VAL:connected never answers
-        helper.assertTrue(link.provideRORValue("VAL:connected") == null, "VAL:connected answers nothing in 1.7");
-        helper.assertTrue("FALSE".equals(link.provideRORValue("VAL:false")), "the quirk key VAL:false answers FALSE");
+        helper.assertTrue("FALSE".equals(link.provideRORValue("VAL:connected")), "VAL:connected answers FALSE");
 
         Satellite.orbit(helper.getLevel(), ItemSatellite.make(EnumSatType.RAY_SCAN), FREQ, 40, 700, 60);
         tick(helper, link);
         helper.assertTrue(link.connected, "A taken frequency under open sky is a connection");
-        helper.assertTrue("TRUE".equals(link.provideRORValue("VAL:true")), "the quirk key VAL:true answers TRUE");
+        helper.assertTrue("TRUE".equals(link.provideRORValue("VAL:connected")), "VAL:connected answers TRUE");
+        helper.assertTrue(link.info.length == 1, "the ground station shows the ray scanner's name");
         helper.assertTrue(("" + FREQ).equals(link.provideRORValue("VAL:freq")), "VAL:freq reports the frequency");
-        helper.assertTrue(link.provideRORValue("VAL:type") == null, "1.7 has no VAL:type");
+        helper.assertTrue("NB_RAY_SCANNER".equals(link.provideRORValue("VAL:type")), "VAL:type names the satellite");
 
         link.runRORFunction("FUN:tx", new String[]{"gettarget"});
         helper.assertTrue("40;60".equals(link.provideRORValue("VAL:rx")),
@@ -182,6 +199,9 @@ public final class SatelliteGameTests {
         link.runRORFunction("FUN:tx", new String[]{"settarget 7 9"});
         link.runRORFunction("FUN:tx", new String[]{"gettargetx"});
         helper.assertTrue("7".equals(link.provideRORValue("VAL:rx")), "settarget moves the target");
+
+        link.runRORFunction("FUN:txrx", new String[]{"p4reply", "gettargetz"});
+        helper.assertTrue("9".equals(link.provideRORValue("VAL:rx")), "txrx runs the command");
 
         link.runRORFunction("FUN:setfreq", new String[]{"17"});
         helper.assertTrue(link.freq == 17, "setfreq retunes the dish");
@@ -278,19 +298,18 @@ public final class SatelliteGameTests {
         mapper.onCommand(level, SatelliteMapper.CMD_SPOT_PLAYER);
         helper.assertTrue("NONE".equals(mapper.tx), "nobody stands 100 km out, got " + mapper.tx);
 
-        EntityMinerRocket pig = new EntityMinerRocket(level);
+        EntitySatellitePod pig = new EntitySatellitePod(level);
         pig.setPos(here.getX() + 0.5, here.getY() + 5, here.getZ() + 0.5);
-        pig.setMode(1);
         TileEntityMachineRadarNT.matchingEntities.add(pig);
         try {
             SatelliteRadar radar = new SatelliteRadar();
             radar.setTarget(here.getX(), here.getZ());
             radar.onCommand(level, SatelliteRadar.CMD_SURVEY);
-            radar.onCommand(level, SatelliteRadar.CMD_FILTER, "minerrocket");
+            radar.onCommand(level, SatelliteRadar.CMD_FILTER, "satellitepod");
             radar.onCommand(level, SatelliteRadar.CMD_COUNT);
             helper.assertTrue(Integer.parseInt(radar.tx) >= 1, "the radar indexes the pig, got " + radar.tx);
             radar.onCommand(level, SatelliteRadar.CMD_GETNAME, "1");
-            helper.assertTrue("entityminerrocket".equals(radar.tx), "getname is the lower-case class name, got " + radar.tx);
+            helper.assertTrue("entitysatellitepod".equals(radar.tx), "getname is the lower-case class name, got " + radar.tx);
             radar.onCommand(level, SatelliteRadar.CMD_GETTARGETID, "1");
             helper.assertTrue(("" + pig.getId()).equals(radar.tx), "gettargetid answers the entity id, got " + radar.tx);
         } finally {
@@ -334,7 +353,7 @@ public final class SatelliteGameTests {
         TileEntityMachineSatLinker.serverTick(helper.getLevel(), abs, helper.getLevel().getBlockState(abs), linker);
         helper.assertTrue(ISatChip.getFreqS(linker.inventory.getStackInSlot(1)) == 777, "slot 1 copies slot 0's frequency");
         int r = ISatChip.getFreqS(linker.inventory.getStackInSlot(2));
-        helper.assertTrue(r >= 0 && r < 100_000, "slot 2 is randomised below 100,000, got " + r);
+        helper.assertTrue(r >= 0 && r < TileEntityMachineSatLinker.SAT_ID_RANGE, "slot 2 is randomised below 10,000,000, got " + r);
         helper.succeed();
     }
 
@@ -354,27 +373,33 @@ public final class SatelliteGameTests {
         SatelliteSavedData data = SatelliteSavedData.get(level);
         data.descend(FREQ);
         Satellite.orbit(level, ItemSatellite.make(EnumSatType.MINER_ASTRO), FREQ, 0, 700, 0);
-        ItemStack chip = new ItemStack(ModSatelliteItems.sat_chip.get());
-        ISatChip.setFreqS(chip, FREQ);
-        dock.inventory.setStackInSlot(15, chip);
+        SatelliteMiner miner = (SatelliteMiner) data.getSatFromFreq(FREQ);
+        helper.assertTrue(!miner.tryRequestItems(level, abs.getX(), abs.getY(), abs.getZ()),
+                "a miner with an empty hold sends nothing");
 
-        TileEntityMachineSatDock.serverTick(level, abs, state, dock);
-        var rockets = level.getEntitiesOfClass(EntityMinerRocket.class, new AABB(abs).inflate(1, 400, 1));
-        helper.assertTrue(rockets.size() == 1 && rockets.get(0).getSatellite() == FREQ
-                        && Math.abs(rockets.get(0).getY() - 300) < 1, "a miner rocket is dropped from y=300");
-        EntityMinerRocket rocket = rockets.get(0);
-        TileEntityMachineSatDock.serverTick(level, abs, state, dock);
-        helper.assertTrue(level.getEntitiesOfClass(EntityMinerRocket.class, new AABB(abs).inflate(1, 400, 1)).size() == 1,
-                "the ten-minute delay holds the next rocket");
+        // 1.7 SPEED = 1 / 18,000: the hold fills on the 18,000th tick
+        miner.progress = 1D - SatelliteMiner.SPEED / 2;
+        miner.onUpdateTick(level);
+        helper.assertTrue(miner.requestableSlots.length >= 10 && miner.requestableSlots.length <= 15 && miner.progress == 0D,
+                "a full hold is 10..15 draws, got " + miner.requestableSlots.length);
+        double before = miner.progress;
+        miner.onUpdateTick(level);
+        helper.assertTrue(miner.progress == before, "mining waits while the hold is full");
 
-        rocket.setPos(abs.getX() + 0.5, abs.getY() + 1, abs.getZ() + 0.5);
-        rocket.setMode(1);
-        rocket.timer = 50;
-        TileEntityMachineSatDock.serverTick(level, abs, state, dock);
+        int loaded = miner.requestableSlots.length;
+        helper.assertTrue(miner.tryRequestItems(level, abs.getX(), abs.getY(), abs.getZ()) && miner.requestableSlots.length == 0,
+                "the pad calls the cargo down");
+        var pods = level.getEntitiesOfClass(EntitySatellitePod.class, new AABB(abs).inflate(1, 400, 1));
+        helper.assertTrue(pods.size() == 1 && Math.abs(pods.get(0).getY() - 300) < 1 && pods.get(0).slots.length == loaded,
+                "a drop pod carrying the hold falls from y=300");
+
+        EntitySatellitePod pod = pods.get(0);
+        pod.setPos(abs.getX() + 0.5, abs.getY() + 1, abs.getZ() + 0.5);
+        pod.unloadItems();
         int items = 0;
         for (int i = 0; i < 15; i++) items += dock.inventory.getStackInSlot(i).isEmpty() ? 0 : 1;
-        helper.assertTrue(items > 0, "the landed rocket unloaded cargo into the pad");
-        rocket.discard();
+        helper.assertTrue(items > 0 && !pod.isLanding(), "the landed pod unloads its cargo into the pad");
+        pod.discard();
         data.descend(FREQ);
         helper.succeed();
     }
@@ -398,7 +423,6 @@ public final class SatelliteGameTests {
                 "assets/hbm/textures/items/sat_gerald.png.mcmeta",
                 "data/hbm/loot_table/blocks/machine_satlinker.json",
                 "data/hbm/loot_table/blocks/sat_dock.json",
-                "data/hbm/recipe/sat_dock.json",
                 "data/hbm/recipe/machine_satlinker.json",
                 "data/hbm/recipe/sat_coord.json",
                 "data/hbm/recipe/sat_designator.json",

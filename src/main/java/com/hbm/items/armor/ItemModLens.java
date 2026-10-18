@@ -39,14 +39,16 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(coloured(ChatFormatting.AQUA, "Satellite Frequency: " + getFreq(stack)));
+        tooltip.add(Component.translatable("satchip.frequency").append(": " + getFreq(stack)).withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.empty());
         super.appendCompatHoverText(stack, context, tooltip, flag);
     }
 
     @Override
     public void addArmorModDescription(List<Component> tooltip, ItemStack stack, ItemStack armor) {
-        tooltip.add(modLine(ChatFormatting.AQUA, stack, " (Freq: " + getFreq(stack) + ")"));
+        tooltip.add(Component.literal("  ").append(stack.getHoverName()).append(" (")
+                .append(Component.translatable("item.neutrino_lens.description.frequency"))
+                .append(": " + getFreq(stack) + ")").withStyle(ChatFormatting.AQUA));
     }
 
     /** 1.7 {@code modUpdate}'s table: block id, 1-in-N chance, label (null: unlabelled), colour. */

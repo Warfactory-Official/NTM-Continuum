@@ -14,9 +14,7 @@ import java.util.List;
  * contaminates a living thing inside it by {@code radPerMB * 5}; {@code EntityChemical} contaminates by
  * {@code radPerMB * 5} and adds the same to the chunk at the hit entity or block.
  *
- * <p>1.7's {@code onFluidRelease} override is not carried, for the reason {@link FT_Polluting} gives: nothing in
- * 1.7 dispatches to a trait's {@code onFluidRelease} (the {@code FluidType} delegate machines call is an empty
- * method), so a tank or drum overflowing UF6 never irradiated its chunk in 1.7 either.
+ * <p>A machine releasing the fluid adds {@code radPerMB} per millibucket to its chunk ({@link FluidTrait#onRelease}).
  */
 public final class FT_VentRadiation {
 

@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** The eight-slot Arc Welder core, ported from the 1.12.2 machine without particle substitutions. */
 public class TileEntityMachineArcWelder extends TileEntityMachineBase
@@ -72,15 +73,11 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineArcWelder te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         te.power = Library.chargeTEFromItems(te.inventory, 4, te.getPower(), te.getMaxPower());
         te.updateTankType();
-
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos con : te.getConPos()) {
-                te.trySubscribe(level, con);
-                if (te.tank.getTankType() != Fluids.NONE) te.trySubscribe(te.tank.getTankType(), level, con);
-            }
-        }
 
         te.recipe = ArcWelderRecipes.getRecipe(
                 te.inventory.getStackInSlot(0), te.inventory.getStackInSlot(1), te.inventory.getStackInSlot(2));
@@ -163,30 +160,26 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
         if (recipe.fluid != null) tank.setFill(tank.getFill() - recipe.fluid.fill);
     }
 
-    /** The ten old proxy positions, in their original order and facing. */
-    public DirPos[] getConPos() {
-        ForgeDirection direction = MachineCore.facing(getBlockState());
-        ForgeDirection rotation = direction.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + direction.offsetX, y, z + direction.offsetZ, direction),
-                new DirPos(x + direction.offsetX + rotation.offsetX, y,
-                        z + direction.offsetZ + rotation.offsetZ, direction),
-                new DirPos(x + direction.offsetX - rotation.offsetX, y,
-                        z + direction.offsetZ - rotation.offsetZ, direction),
-                new DirPos(x - direction.offsetX * 2, y, z - direction.offsetZ * 2, direction.getOpposite()),
-                new DirPos(x - direction.offsetX * 2 + rotation.offsetX, y,
-                        z - direction.offsetZ * 2 + rotation.offsetZ, direction.getOpposite()),
-                new DirPos(x - direction.offsetX * 2 - rotation.offsetX, y,
-                        z - direction.offsetZ * 2 - rotation.offsetZ, direction.getOpposite()),
-                new DirPos(x + rotation.offsetX * 2, y, z + rotation.offsetZ * 2, rotation),
-                new DirPos(x - direction.offsetX + rotation.offsetX * 2, y,
-                        z - direction.offsetZ + rotation.offsetZ * 2, rotation),
-                new DirPos(x - rotation.offsetX * 2, y, z - rotation.offsetZ * 2, rotation.getOpposite()),
-                new DirPos(x - direction.offsetX - rotation.offsetX * 2, y,
-                        z - direction.offsetZ - rotation.offsetZ * 2, rotation.getOpposite())
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x, y, z, dir),
+                    PortDef.make(x + rot.offsetX, y, z + rot.offsetZ, dir, rot),
+                    PortDef.make(x - rot.offsetX, y, z - rot.offsetZ, dir, rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX, y, z - dir.offsetZ, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ, dir.getOpposite(), rot),
+                    PortDef.make(x - dir.offsetX - rot.offsetX, y, z - dir.offsetZ - rot.offsetZ, dir.getOpposite(), rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     /** Recreates the old red/yellow/green proxy-relative inventory access. */
     public int[] getAccessibleSlotsFromSide(BlockPos accessor) {

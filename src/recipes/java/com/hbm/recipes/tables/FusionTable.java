@@ -110,7 +110,7 @@ public final class FusionTable extends GenericTableSource<FusionRecipe> {
                 .setRGB(1F, 0.4F, 0.1F) // brilliant orange, like looking into a furnace
                 .setNamed().setIcon(ItemFluidIcon.make(Fluids.STELLAR_FLUX))
                 .setPower(solenoid).setDuration(100)
-                .inputFluids(new FluidStack(Fluids.STELLAR_FLUX, 10))
+                .inputFluids(new FluidStack(Fluids.STELLAR_FLUX, 5))
                 .outputItems(new ItemStack(ModItems.powder_gold.get()))); // eough
     }
 

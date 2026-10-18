@@ -2,14 +2,12 @@ package com.hbm.blocks.network;
 
 import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.FluidGraph;
-import com.hbm.api.fluidmk2.IFluidProviderMK2;
-import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.blocks.IAnalyzable;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.tileentity.network.TileEntityFluidDuctVariant;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
-import com.hbm.util.NetworkDiagnostics;
+import com.hbm.uninos.PortNet;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Rotation;
@@ -146,12 +144,10 @@ public class BlockFluidDuct extends CompatBlock implements TickingBlock, SimpleW
     }
 
     /**
-     * A machine made a new claim at the port whose duct stands at {@code pos}. In 1.7 that call joined the net on the
-     * next tick and the renderer asked {@code canConnect} every frame, so a barrel typed through its GUI next to a duct
-     * was picked up at once. Here the net probes a face only when told to and the arms are block state, so both look
-     * again now.
+     * A fluid port reaching {@code pos} was built or retyped. 1.7's renderer asked {@code canConnect} every frame; the
+     * arms here are block state, so they look again now.
      */
-    public static void portClaimed(Level level, BlockPos pos) {
+    public static void portChanged(Level level, BlockPos pos) {
         if (!(level instanceof ServerLevel server)) return;
         LevelNodeGraph.invalidateEndpointsAt(server, pos);
         BlockState state = level.getBlockState(pos);
@@ -337,10 +333,9 @@ public class BlockFluidDuct extends CompatBlock implements TickingBlock, SimpleW
         if (net == null) return null;
         List<String> debug = new ArrayList<>();
         debug.add("Links: " + net.size());
-        debug.add("Subscribers: " + NetworkDiagnostics.countEndpoints(level, net,
-                be -> be instanceof IFluidReceiverMK2));
-        debug.add("Providers: " + NetworkDiagnostics.countEndpoints(level, net,
-                be -> be instanceof IFluidProviderMK2));
+        PortNet<DuctData> last = net.portNet;
+        debug.add("Subscribers: " + (last == null ? 0 : last.receiverEntries.size()));
+        debug.add("Providers: " + (last == null ? 0 : last.providerEntries.size()));
         debug.add("Transfer: " + net.tracker);
         return debug;
     }

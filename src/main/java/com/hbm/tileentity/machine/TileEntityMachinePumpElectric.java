@@ -10,9 +10,6 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -25,6 +22,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Electric groundwater pump logic ported from the legacy pump base and electric implementation. */
 public class TileEntityMachinePumpElectric extends TileEntityMachineBase
@@ -55,12 +54,8 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePumpElectric pump) {
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos connection : pump.getConPos()) pump.trySubscribe(level, connection);
-        }
-        for (DirPos connection : pump.getConPos()) {
-            if (pump.water.getFill() > 0) pump.tryProvide(pump.water, level, connection);
-        }
+        pump.setupAllPorts(pump.getPorts());
+        pump.updatePortPIFIFO();
 
         if (pump.groundCheckDelay > 0) pump.groundCheckDelay--;
         else pump.onGround = pump.checkGround(level, pos);
@@ -125,15 +120,8 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
         return validBlocks >= invalidBlocks;
     }
 
-    public DirPos[] getConPos() {
-        BlockPos pos = getBlockPos();
-        return new DirPos[]{
-                new DirPos(pos.east(2), Library.POS_X),
-                new DirPos(pos.west(2), Library.NEG_X),
-                new DirPos(pos.south(2), Library.POS_Z),
-                new DirPos(pos.north(2), Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.flare(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     @Override public float getRotor() { return rotor; }
     @Override public float getLastRotor() { return lastRotor; }

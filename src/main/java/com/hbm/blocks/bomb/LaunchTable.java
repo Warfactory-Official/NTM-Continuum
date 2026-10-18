@@ -48,7 +48,6 @@ public class LaunchTable extends BlockMultiblockMachine implements IBomb, IEnerg
         for (int dx = -4; dx <= 4; dx++) {
             for (int dz = -4; dz <= 4; dz++) {
                 if (Math.abs(dx) != 4 && Math.abs(dz) != 4) continue;
-                if (isPlate(facing, dx, dz)) continue;
                 visitor.cell(core.offset(dx, 0, dz), outwardMask(dx, dz, 4));
             }
         }

@@ -1,6 +1,5 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -12,11 +11,12 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineElectricFurnace;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 import dev.golem.core.world.ItemStacks;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +67,9 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
         super(ModBlockEntities.MACHINE_ELECTRIC_FURNACE.get(), pos, state, 4);
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     @Override
     public String getDefaultName() {
         return "container.electricFurnace";
@@ -85,15 +88,13 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineElectricFurnace te) {
         if (!(level instanceof ServerLevel serverLevel)) return;
 
+        te.setupPowerPorts(te.getPorts());
+        te.updateAllPorts();
+        te.receivePower();
+
         if (te.cooldown > 0) te.cooldown--;
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
-
-        if (level.getGameTime() % 40 == 0) { // 1.7 updateConnections every 40 ticks (the net keeps a subscriber 3 s)
-            for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-                te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-            }
-        }
 
         te.consumption = 50;
         te.maxProgress = 100;
@@ -181,19 +182,6 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return slot == 2 || (slot == 0 && Library.isEmptyBattery(stack));
-    }
-
-    /** Power connection points: all six faces of the furnace block. */
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 1, y, z, Library.POS_X),
-                new DirPos(x - 1, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 1, Library.POS_Z),
-                new DirPos(x, y, z - 1, Library.NEG_Z),
-                new DirPos(x, y + 1, z, Library.POS_Y),
-                new DirPos(x, y - 1, z, Library.NEG_Y),
-        };
     }
 
     // IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo)

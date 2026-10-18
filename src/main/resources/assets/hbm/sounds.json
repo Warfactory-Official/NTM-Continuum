@@ -1065,12 +1065,6 @@
       "hbm:weapon/grenadebounce3"
     ]
   },
-  "weapon.grenadebounnce2": {
-    "category": "player",
-    "sounds": [
-      "hbm:weapon/grenadebounnce2"
-    ]
-  },
   "weapon.hicalshot": {
     "category": "player",
     "sounds": [

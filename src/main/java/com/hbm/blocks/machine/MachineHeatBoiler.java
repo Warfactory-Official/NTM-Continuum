@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
@@ -139,5 +140,21 @@ public class MachineHeatBoiler extends BlockMultiblockMachine implements IFluidC
         visitor.passiveCell(core.relative(rot), MASK_ALL, PASSIVE_FLUID_IN);
         visitor.passiveCell(core.relative(rot.getOpposite()), MASK_ALL, PASSIVE_FLUID_IN);
         visitor.passiveCell(core.above(3), MASK_ALL, PASSIVE_FLUID_IN);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 3, 0, ForgeDirection.UP.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {0, 0, 0.5, -0.3, 0.4, -0.4, 1},
+        };
     }
 }

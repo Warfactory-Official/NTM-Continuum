@@ -2,6 +2,7 @@ package com.hbm.blocks;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.items.MachineObjModel;
 import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
@@ -12,10 +13,10 @@ import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.shapeless;
 
 /**
- * The satellite family's typed OBJ item data (the cargo landing pad's item, the 1.7 {@code ItemRenderLibrary}
- * entry) and the 1.7 crafting-table recipes; the blocks' models, blockstates and loot and the chip sprites are
+ * The satellite family's typed OBJ item data (the cargo landing pad and both launch pads, the 1.7
+ * {@code ItemRenderLibrary} and {@code IItemRendererProvider} entries) and the 1.7 crafting-table recipes; the blocks' models, blockstates and loot and the chip sprites are
  * stated on their registrations ({@code ModSatelliteBlocks}, {@code ModSatelliteItems}). Recipes
- * ({@code CraftingManager} sat_dock / machine_satlinker / sat_coord, {@code ToolRecipes} sat_designator /
+ * ({@code CraftingManager} machine_satlinker / sat_coord, {@code ToolRecipes} sat_designator /
  * sat_relay). Touches no Minecraft class: it runs in a plain JVM from {@code dejson.gradle.kts}.
  */
 public final class SatelliteDeclarations {
@@ -38,8 +39,8 @@ public final class SatelliteDeclarations {
         {
             JsonObject model = new JsonObject();
             model.addProperty("type", "hbm:machine_obj");
-            model.addProperty("obj", "hbm:models/sat_dock.obj");
-            model.addProperty("texture", "hbm:textures/models/sat_dock.png");
+            model.addProperty("obj", "hbm:models/machines/cargo_pad.obj");
+            model.addProperty("texture", "hbm:textures/models/machines/cargo_pad.png");
             model.addProperty("scale", 1.0);
             model.addProperty("yaw", -90.0);
             model.addProperty("rawLegacyTransform", true);
@@ -49,12 +50,32 @@ public final class SatelliteDeclarations {
             Dejson.itemDefinition("hbm:item/sat_dock").add("model", model);
             Dejson.itemDefinition("hbm:item/sat_dock").addProperty("oversized_in_gui", true);
         }
+        // RenderLaunchpadSoyuz item: inventory T(6,-1.5,0) S(1.125) Ry(90); common S(0.25), the pad, then the struts at z 3.25
+        {
+            String texture = "hbm:textures/models/machines/launchpad_soyuz.png";
+            Dejson.item(NS, "launchpad_soyuz")
+                    .definition(MachineObjModel.of("hbm:models/machines/launchpad_soyuz.obj", texture)
+                            .scale(0.25).ty(0.0).yaw(0.0).guiScale(1.125).guiYaw(90.0).rawLegacyTransform()
+                            .guiTranslate(6.0, -1.5, 0.0).parts("Launchpad")
+                            .passes(MachineObjModel.pass(texture).parts("Strut1", "Strut2", "Strut3", "Strut4", "Strut5")
+                                    .translate(0.0, 0.0, 3.25)))
+                    .oversizedInGui().register();
+        }
+        // RenderLaunchpadLambda item: inventory T(0,-3.5,0) S(1.75); common S(0.25), silo and doors, then T(0,2,0) the erector
+        {
+            String texture = "hbm:textures/models/machines/launchpad_lambda.png";
+            Dejson.item(NS, "launchpad_lambda")
+                    .definition(MachineObjModel.of("hbm:models/machines/launchpad_lambda.obj", texture)
+                            .scale(0.25).ty(0.0).yaw(0.0).guiScale(1.75).rawLegacyTransform()
+                            .guiTranslate(0.0, -3.5, 0.0).parts("Silo", "DoorLeft", "DoorRight")
+                            .passes(MachineObjModel.pass(texture).parts("Erector", "Rotor", "PivotLower1", "ClampLower1",
+                                    "PivotLower2", "ClampLower2", "PivotUpper1", "ClampUpper1", "PivotUpper2", "ClampUpper2")
+                                    .translate(0.0, 2.0, 0.0)))
+                    .oversizedInGui().register();
+        }
     }
 
     private static void recipes() {
-        // 1.7 CraftingManager:485
-        shaped(NS, "sat_dock", "hbm:sat_dock", rows("SSS", "PCP"),
-                "S", TagIds.ingots_steel, "P", TagIds.ingots_any_plastic, "C", ItemIds.crate_iron);
         // 1.7 CraftingManager:605
         shaped(NS, "machine_satlinker", "hbm:machine_satlinker", rows("PSP", "SCS", "PSP"),
                 "P", TagIds.ingots_any_resistant_alloy, "S", TagIds.ingots_any_plastic, "C", "hbm:sat_chip");

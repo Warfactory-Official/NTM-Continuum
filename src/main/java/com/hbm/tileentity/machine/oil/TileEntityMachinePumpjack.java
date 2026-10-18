@@ -5,9 +5,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerMachineOilWell;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
@@ -24,6 +22,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Pumpjack, 1:1 port of the 1.12.2 {@code TileEntityMachinePumpjack} (config name "pumpjack"):
@@ -90,33 +89,21 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
         suckDeposit(pos, deposit, oilPerDeposit, gasPerDepositMin, gasPerDepositMax, drainChance);
     }
 
+    protected PortDef[] cachedPorts;
     @Override
-    public DirPos[] getConPos() {
-        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
-        ForgeDirection dir = ForgeDirection.getOrientation(meta);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
-        BlockPos pos = worldPosition;
-
-        // The 4 fluid/power ports sit on the 4 `makeExtra` corner cells of the pump base, at
-        // {@code core + rot*3 ± 1} on both world axes (see MachinePumpjack.fillSpace), each exposing
-        // its face along the machine's facing axis. (The 1.12.2 getConPos derived these with a
-        // ±2/±4 offset formula that only lands all 4 for N/S‑facing pumpjacks; for E/W facings its
-        // ×4 term aims 2 ports at non‑existent cells. Recomputed from the
-        // corner cells so all 4 ports work at every facing; N/S behaviour is unchanged.)
-        int bx = pos.getX() + rot.offsetX * 3;
-        int bz = pos.getZ() + rot.offsetZ * 3;
-        DirPos[] ports = new DirPos[4];
-        int i = 0;
-        for (int dx = -1; dx <= 1; dx += 2) {
-            for (int dz = -1; dz <= 1; dz += 2) {
-                int cx = bx + dx, cz = bz + dz;             // corner cell
-                // Exposed face = the machine's facing axis; sign = which side the corner sits on.
-                int comp = (cx - pos.getX()) * dir.offsetX + (cz - pos.getZ()) * dir.offsetZ;
-                ForgeDirection pd = comp >= 0 ? dir : dir.getOpposite();
-                ports[i++] = new DirPos(cx + pd.offsetX, pos.getY(), cz + pd.offsetZ, pd);
-            }
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = ForgeDirection.getOrientation(MachineCore.facingOrdinal(getBlockState(), 2));
+            ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + rot.offsetX * 2 + dir.offsetX * 1, y, z + rot.offsetZ * 2 + dir.offsetZ * 1, dir),
+                    PortDef.make(x + rot.offsetX * 2 - dir.offsetX * 1, y, z + rot.offsetZ * 2 - dir.offsetZ * 1, dir.getOpposite()),
+                    PortDef.make(x + rot.offsetX * 4 + dir.offsetX * 1, y, z + rot.offsetZ * 4 + dir.offsetZ * 1, dir),
+                    PortDef.make(x + rot.offsetX * 4 - dir.offsetX * 1, y, z + rot.offsetZ * 4 - dir.offsetZ * 1, dir.getOpposite()),
+            };
         }
-        return ports;
+        return cachedPorts;
     }
 
     @Override

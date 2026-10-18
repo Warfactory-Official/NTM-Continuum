@@ -67,6 +67,9 @@ public final class HbmRecipeTables {
         PUREXRecipes.declare();
         PlasmaForgeRecipes.declare();
         PrecAssRecipes.declare();
+        SpaceAssemblerRecipes.declare();
+        RockMillRecipes.declare();
+        SuperComputerRecipes.declare();
         // script fields of the record-shaped tables (the generic ones state theirs in DataGenericRecipes)
         HbmRecipeFields.declare();
     }

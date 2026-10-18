@@ -438,17 +438,15 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         int recipeContent = recipe.getInputAmount();
         int recipeInputRequired = getQuantaFromType(recipe.input, stack.material);
         int matMaximum = recipeInputRequired * recipeZCapacity / recipeContent;
+        int amount = getQuantaFromType(this.recipeStack, stack.material);
+        int amountTotal = getQuantaFromType(this.recipeStack, null);
 
-        // (1.12.2 as written, including its quirks)
-        if (recipeInputRequired + stack.amount <= matMaximum) {
-            this.addToStack(this.recipeStack, stack.copy());
-            return null;
-        }
+        int toAdd = Math.min(matMaximum - amount, recipeZCapacity - amountTotal);
+        toAdd = Math.min(toAdd, stack.amount);
+        if (toAdd <= 0) return stack;
 
-        int toAdd = matMaximum - stack.amount;
-        toAdd = Math.min(toAdd, recipeZCapacity - getQuantaFromType(this.recipeStack, null));
         this.addToStack(this.recipeStack, new Mats.MaterialStack(stack.material, toAdd));
-        return new Mats.MaterialStack(stack.material, stack.amount - toAdd);
+        return toAdd < stack.amount ? new Mats.MaterialStack(stack.material, stack.amount - toAdd) : null;
     }
 
     @Override

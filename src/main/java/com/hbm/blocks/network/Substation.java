@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,5 +34,15 @@ public class Substation extends PylonMultiblockBase implements IEnergyConnectorB
         visitor.cell(core.offset(1, 0, -1), TileEntitySubstation.cornerMask(2));
         visitor.cell(core.offset(-1, 0, 1), TileEntitySubstation.cornerMask(3));
         visitor.cell(core.offset(-1, 0, -1), TileEntitySubstation.cornerMask(4));
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

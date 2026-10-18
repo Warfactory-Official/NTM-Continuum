@@ -34,6 +34,8 @@ public class TileEntityRadioTorchCounter extends TileEntityInventoryBase impleme
     public final int[] lastCount = new int[MAPPING_SIZE];
     public final ModulePatternMatcher matcher = new ModulePatternMatcher(MAPPING_SIZE);
     public boolean polling;
+    /** A changed filter, mode or channel broadcasts once even if the count is unchanged. */
+    private final boolean[] forceUpdate = new boolean[MAPPING_SIZE];
 
     public TileEntityRadioTorchCounter(BlockPos pos, BlockState state) {
         super(ModBlockEntities.RADIO_TORCH_COUNTER.get(), pos, state, MAPPING_SIZE);
@@ -58,7 +60,10 @@ public class TileEntityRadioTorchCounter extends TileEntityInventoryBase impleme
                     if (!input.isEmpty() && matcher.isValidForFilter(filter, i, input)) count += input.getCount();
                 }
 
-                if (polling || lastCount[i] != count) RTTYSystem.broadcast(level, channel[i], count);
+                if (polling || forceUpdate[i] || lastCount[i] != count) {
+                    RTTYSystem.broadcast(level, channel[i], count);
+                    forceUpdate[i] = false;
+                }
                 lastCount[i] = count;
             }
         }
@@ -67,7 +72,14 @@ public class TileEntityRadioTorchCounter extends TileEntityInventoryBase impleme
 
     public void nextMode(int index) {
         if (level != null) matcher.nextMode(level, inventory.getStackInSlot(index), index);
+        forceUpdate[index] = true;
         dataChanged();
+    }
+
+    @Override
+    protected void onSlotContentsChanged(int slot, ItemStack stack) {
+        super.onSlotContentsChanged(slot, stack);
+        forceUpdate[slot] = true;
     }
 
     public int[] getFilterSlots() {
@@ -102,7 +114,12 @@ public class TileEntityRadioTorchCounter extends TileEntityInventoryBase impleme
         if (data.contains("polling")) polling = !polling;
         for (int i = 0; i < MAPPING_SIZE; i++) {
             String key = "channel" + i;
-            if (data.contains(key)) channel[i] = limited(Tags.getStringOr(data, key, ""), 10);
+            if (!data.contains(key)) continue;
+            String name = limited(Tags.getStringOr(data, key, ""), RTTYSystem.MAX_CHAN_LENGTH);
+            if (!name.equals(channel[i])) {
+                channel[i] = name;
+                forceUpdate[i] = true;
+            }
         }
         setChanged();
         dataChanged();
@@ -118,7 +135,7 @@ public class TileEntityRadioTorchCounter extends TileEntityInventoryBase impleme
         buffer.writeBoolean(polling);
         for (int count : lastCount) buffer.writeInt(count);
         matcher.serialize(buffer);
-        for (String value : channel) buffer.writeUtf(value == null ? "" : value, 10);
+        for (String value : channel) buffer.writeUtf(value == null ? "" : value, RTTYSystem.MAX_CHAN_LENGTH);
     }
 
     @Override
@@ -127,7 +144,7 @@ public class TileEntityRadioTorchCounter extends TileEntityInventoryBase impleme
         polling = buffer.readBoolean();
         for (int i = 0; i < MAPPING_SIZE; i++) lastCount[i] = buffer.readInt();
         matcher.deserialize(buffer);
-        for (int i = 0; i < MAPPING_SIZE; i++) channel[i] = buffer.readUtf(10);
+        for (int i = 0; i < MAPPING_SIZE; i++) channel[i] = buffer.readUtf(RTTYSystem.MAX_CHAN_LENGTH);
     }
 
     @Override

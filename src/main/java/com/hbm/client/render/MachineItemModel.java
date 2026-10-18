@@ -1,6 +1,7 @@
 package com.hbm.client.render;
 
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.DoorDecl;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.SubmitSink;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -44,6 +46,14 @@ public final class MachineItemModel {
 
     /** Phases sampled over one turn when framing a model that moves. See {@link #sampleExtents}. */
     private static final int ANIMATION_SAMPLES = 16;
+    /** 1.7 {@code ItemRenderLibraryDoors}: these door items show each skin for a second, in turn. */
+    private static final Map<String, DoorDecl> CYCLING_DOORS = Map.of(
+            "door_skins/secure_access_door", DoorDecl.SECURE_ACCESS_DOOR, "door_skins/fire_door", DoorDecl.FIRE_DOOR,
+            "door_skins/sliding_blast_door", DoorDecl.SLIDE_DOOR, "door_skins/large_vehicle_door", DoorDecl.LARGE_VEHICLE_DOOR,
+            "door_skins/water_door", DoorDecl.WATER_DOOR, "door_skins/qe_containment", DoorDecl.QE_CONTAINMENT,
+            "door_skins/qe_sliding_door", DoorDecl.QE_SLIDING, "door_skins/round_airlock_door", DoorDecl.ROUND_AIRLOCK_DOOR,
+            "door_skins/sliding_seal_door", DoorDecl.SLIDING_SEAL_DOOR);
+
     /** The untextured lamp of the lantern item, tinted per frame. */
     private static final Surface LANTERN_LIGHT = Surface.solid("hbm:textures/models/misc/white.png");
 
@@ -327,7 +337,7 @@ public final class MachineItemModel {
     /** Whether the declared body itself moves: the branches of {@link #declare()} that read the clock. */
     private boolean animatedBody() {
         return "pump".equals(animation) || "autosaw".equals(animation) || "radar_large".equals(animation)
-                || "lantern".equals(animation) || "thresher".equals(animation)
+                || "lantern".equals(animation) || "thresher".equals(animation) || CYCLING_DOORS.containsKey(animation)
                 || (spin && !spinParts.isEmpty());
     }
 
@@ -545,13 +555,19 @@ public final class MachineItemModel {
     }
 
     private void body(ItemGem.Builder builder) {
-        if (passes.isEmpty()) {
-            // The declared "parts"/"translate" hold without extra passes too (charger, red pylons, spotlights...):
-            // so this branch passes them; List.of() and a zero vector would draw every OBJ group, unmoved.
-            pass(builder, model, surface, primaryParts, exclude, primaryTranslation);
-            return;
+        // The declared "parts"/"translate" hold without extra passes too (charger, red pylons, spotlights...):
+        // so this pass takes them; List.of() and a zero vector would draw every OBJ group, unmoved.
+        Gem.Part<ItemPose> primary = pass(builder, model, surface, primaryParts, exclude, primaryTranslation, List.of());
+        DoorDecl door = CYCLING_DOORS.get(animation);
+        if (primary != null && door != null) {
+            Map<Identifier, Surface> skins = new HashMap<>();
+            boolean noCull = surface.blend() == Surface.Blend.CUTOUT_NO_CULL;
+            for (Identifier skin : door.getSEDNASkins()) {
+                skins.put(skin, noCull ? Surface.cutoutNoCull(skin.toString()) : Surface.cutout(skin.toString()));
+            }
+            primary.skin(state -> skins.get(door.getCyclingSkins(System.currentTimeMillis())));
         }
-        pass(builder, model, surface, primaryParts, exclude, primaryTranslation);
+        if (passes.isEmpty()) return;
         for (ModelPass extra : passes) {
             Gem.Part<ItemPose> declared = pass(builder, extra.model(), extra.surface(), extra.parts(), userExclude,
                     extra.translation(), extra.steps());

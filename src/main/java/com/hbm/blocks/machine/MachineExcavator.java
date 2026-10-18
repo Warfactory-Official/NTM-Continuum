@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -82,5 +83,15 @@ public final class MachineExcavator extends BlockMultiblockMachine implements IE
             new int[] {-1, 3, 3, -2, -2, 3},
             new int[] {-1, 3, -2, 3, 3, 3},
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 1, 3, ForgeDirection.SOUTH.ordinal()},
+                {-1, 1, 3, ForgeDirection.SOUTH.ordinal()},
+                {3, 1, 0, ForgeDirection.EAST.ordinal()},
+                {-3, 1, 0, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

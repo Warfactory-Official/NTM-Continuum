@@ -8,14 +8,15 @@ import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModRadarUtilityBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.storage.ModBatteryBlocks;
+import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.compat.computercraft.storage.BarrelPeripheral;
 import com.hbm.compat.computercraft.storage.BatteryREDDPeripheral;
 import com.hbm.compat.computercraft.storage.BatterySocketPeripheral;
-import com.hbm.compat.computercraft.storage.CapacitorPeripheral;
 import com.hbm.compat.computercraft.storage.MachineBatteryPeripheral;
 import com.hbm.compat.computercraft.storage.MachineFluidTankPeripheral;
+import com.hbm.compat.computercraft.storage.MassStoragePeripheral;
 import com.hbm.gametest.FoldedTestSupport;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModBatteryItems;
@@ -29,7 +30,7 @@ import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
 import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
 import com.hbm.tileentity.machine.storage.TileEntityMachineOrbus;
-import com.hbm.tileentity.network.TileEntityCapacitor;
+import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dev.golem.core.computer.PeripheralExposure;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -38,6 +39,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.math.BigInteger;
 
@@ -66,8 +68,8 @@ public final class StoragePeripheralGameTests {
             "cc_battery_socket", 60, PADDING, () -> StoragePeripheralGameTests::batterySocket);
     public static final GameTests.Function BATTERY_REDD = TESTS.function(
             "cc_battery_redd", 60, PADDING, () -> StoragePeripheralGameTests::batteryRedd);
-    public static final GameTests.Function CAPACITOR = TESTS.function(
-            "cc_capacitor", 40, () -> StoragePeripheralGameTests::capacitor);
+    public static final GameTests.Function MASS_STORAGE = TESTS.function(
+            "cc_mass_storage", 40, () -> StoragePeripheralGameTests::massStorage);
 
     private static void barrel(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
@@ -226,21 +228,23 @@ public final class StoragePeripheralGameTests {
         });
     }
 
-    private static void capacitor(GameTestHelper helper) {
+    /** 1.7 names the stored item by its display name and answers "None" without a filter. */
+    private static void massStorage(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
-        helper.setBlock(pos, ModEnergyNetBlocks.machine_capacitor_copper.get().defaultBlockState());
-        TileEntityCapacitor be = GameTestHelpers.blockEntity(helper, pos, TileEntityCapacitor.class);
-        be.power = 4242L;
-        CapacitorPeripheral capacitor = PeripheralTestSupport.expect(helper, pos, Direction.EAST,
-                CapacitorPeripheral.class, "capacitor");
-        helper.runAfterDelay(2, () -> {
-            helper.assertTrue(PeripheralTestSupport.number(helper, capacitor.getEnergy(), 0) == 4242D, "getEnergy");
-            helper.assertTrue(PeripheralTestSupport.number(helper, capacitor.getMaxEnergy(), 0) == 1_000_000D,
-                    "getMaxEnergy");
-            Object[] info = capacitor.getInfo();
-            helper.assertTrue(info.length == 4 && PeripheralTestSupport.number(helper, info, 0) == 4242D, "getInfo");
-            helper.succeed();
-        });
+        helper.setBlock(pos, ModStorageBlocks.mass_storage_wood.get().defaultBlockState());
+        TileEntityMassStorage be = GameTestHelpers.blockEntity(helper, pos, TileEntityMassStorage.class);
+        MassStoragePeripheral storage = PeripheralTestSupport.expect(helper, pos, Direction.NORTH,
+                MassStoragePeripheral.class, "ntm_mass_storage");
+        helper.assertTrue("None".equals(storage.getItemType()[0]), "getType without a filter: " + storage.getItemType()[0]);
+        be.setFilter(new ItemStack(Items.COBBLESTONE));
+        be.setStockpile(100);
+        helper.assertTrue(PeripheralTestSupport.number(helper, storage.getFill(), 0) == 100, "getFill");
+        helper.assertTrue(PeripheralTestSupport.number(helper, storage.getCapacity(), 0) == be.getCapacity(), "getCapacity");
+        helper.assertTrue(new ItemStack(Items.COBBLESTONE).getHoverName().getString().equals(storage.getItemType()[0]),
+                "getType names the stored item: " + storage.getItemType()[0]);
+        storage.setOutputMode(true);
+        helper.assertTrue(be.output && Boolean.TRUE.equals(storage.getOutputMode()[0]), "setOutputMode/getOutputMode");
+        helper.succeed();
     }
 
     private static void assertTank(GameTestHelper helper, Object[] info, int fill, int max, String type) {

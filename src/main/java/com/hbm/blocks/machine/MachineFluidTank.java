@@ -187,4 +187,14 @@ public class MachineFluidTank extends BlockMultiblockMachine implements IFluidCo
         if (MachineExplosionDamage.blownOpen(level, core)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         return super.useAtCore(state, level, core, player, hit);
     }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+        }, dir);
+    }
 }

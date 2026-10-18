@@ -75,6 +75,10 @@ public final class StructureConfig {
     public static int towerBaseSpawnWeight = 30;
     public static int waterPumpSpawnWeight = 15;
     public static int deadDishSmallSpawnWeight = 15;
+    public static int falloutShelterHouseSpawnWeight = 15;
+    public static int abandonedArcticStationSpawnWeight = 5;
+    public static int militaryBaseSpawnWeight = 1;
+    public static int submarineSpawnWeight = 2;
 
     /** 1.7 {@code 5.04_debugStructures}: written by 1.7, read by nothing there (ServerConfig.STRUCTURE_DEBUG is live). */
     public static boolean debugStructures = false;
@@ -136,6 +140,10 @@ public final class StructureConfig {
         towerBaseSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.41_towerBaseSpawnWeight", "Spawn weight for tower base.", 30);
         waterPumpSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.42_waterPumpSpawnWeight", "Spawn weight for water pump structure.", 15);
         deadDishSmallSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.43_deadDishSmallSpawnWeight", "Spawn weight for dead dish small structure.", 15);
+        falloutShelterHouseSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.44_falloutShelterHouseSpawnWeight", "Spawn weight for fallout shelter house.", 15);
+        abandonedArcticStationSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.45_abandonedArcticStationSpawnWeight", "Spawn weight for abandoned arctic station.", 5);
+        militaryBaseSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.46_militaryBaseSpawnWeight", "Spawn weight for military base.", 1);
+        submarineSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.49_submarineSpawnWeight", "Spawn weight for submarine.", 2);
 
         structureMinChunks = CommonConfig.setDef(structureMinChunks, 4);
         structureMaxChunks = CommonConfig.setDef(structureMaxChunks, 12);

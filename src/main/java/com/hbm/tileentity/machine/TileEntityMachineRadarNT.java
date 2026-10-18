@@ -22,6 +22,7 @@ import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModRadarUtilityBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.turret.TileEntityTurretRadarCommandBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -58,6 +59,9 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * 1.7 {@code TileEntityMachineRadarNT}: "Now with SmЯt™ lag-free entity detection! (patent pending)".
@@ -160,9 +164,9 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
         this.power = Library.chargeTEFromItems(inventory, 9, power, maxPower);
         this.power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
 
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos pos : getConPos()) this.trySubscribe(level, pos);
-        }
+        this.setupPowerPorts(getPorts());
+        this.updateAllPorts();
+        this.receivePower();
         this.jammed = false;
         allocateTargets(level);
 
@@ -202,6 +206,8 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
                 screen.networkPackNT();
             }
         }
+
+        commandLinkedTurrets(level);
 
         this.networkPackNT();
         if (this.clearFlag) {
@@ -325,18 +331,11 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     /** 1.7 {@code updateRedstoneConnection} for every connection point: the neighbours, then through them. */
     protected void updateRedstone(Level level) {
         level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
-        for (DirPos pos : getConPos()) level.updateNeighborsAt(pos.getPos(), getBlockState().getBlock());
+        for (PortDef port : getPorts()) for (DirPos pos : port.portConnections) level.updateNeighborsAt(pos.getPos(), getBlockState().getBlock());
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 1, y, z, Library.POS_X),
-                new DirPos(x - 1, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 1, Library.POS_Z),
-                new DirPos(x, y, z - 1, Library.NEG_Z),
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     /** 1.7 subscribed the four horizontal sides; a cable above or below does not connect. */
     @Override
@@ -580,7 +579,8 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
             if (!link.isEmpty() && link.getItem() == ModRadarUtilityItems.radar_linker.get()) {
                 BlockPos pos = ItemCoordinateBase.getPosition(link);
 
-                if (pos != null && level != null && level.getBlockEntity(pos) instanceof IRadarCommandReceiver rec) {
+                if (pos != null && level != null && level.getBlockEntity(pos) instanceof IRadarCommandReceiver rec
+                        && !(rec instanceof TileEntityTurretRadarCommandBase)) {
                     if (Tags.contains(data, "launchEntity")) {
                         Entity entity = level.getEntity(Tags.getIntOr(data, "launchEntity", -1));
                         if (entity != null && rec.sendCommandEntity(entity)) bleep(player);
@@ -592,6 +592,40 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
                 }
             }
         }
+    }
+
+    /** Hands the nearest blip to every turret a linker in slots 0-7 points at; runs every tick. */
+    public void commandLinkedTurrets(ServerLevel level) {
+        RadarEntry nearestEntry = getNearestEntry(level);
+        if (nearestEntry == null) return;
+
+        for (int i = 0; i < 8; i++) {
+            ItemStack link = inventory.getStackInSlot(i);
+            if (link.isEmpty() || link.getItem() != ModRadarUtilityItems.radar_linker.get()) continue;
+            BlockPos pos = ItemCoordinateBase.getPosition(link);
+            if (pos != null && level.isLoaded(pos)
+                    && level.getBlockEntity(pos) instanceof TileEntityTurretRadarCommandBase turret) {
+                Entity entity = level.getEntity(nearestEntry.entityID);
+                if (entity != null && entity.isAlive()) turret.sendCommandEntity(entity);
+            }
+        }
+    }
+
+    /** The live entry closest to the radar, or null. */
+    public @Nullable RadarEntry getNearestEntry(Level level) {
+        RadarEntry nearestEntry = null;
+        // 1.7 starts from the squared range but compares plain distances
+        double nearestDist = this.getRange() * this.getRange();
+        for (RadarEntry entry : this.entries) {
+            double dist = Math.sqrt((origin != null ? origin : worldPosition).distToLowCornerSqr(entry.posX, entry.posY, entry.posZ));
+            if (dist <= nearestDist) {
+                Entity entity = level.getEntity(entry.entityID);
+                if (entity == null || !entity.isAlive()) continue;
+                nearestDist = dist;
+                nearestEntry = entry;
+            }
+        }
+        return nearestEntry;
     }
 
     private void bleep(Player player) {

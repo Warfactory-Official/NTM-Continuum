@@ -101,7 +101,7 @@ public class TurretPeripheral<BE extends TileEntityTurretBaseNT> extends Snapsho
     public final Object[] removeWhitelist(String name) {
         BE machine = machine();
         List<String> names = machine.getWhitelist();
-        // 1.7 dereferences the null whitelist of a turret without a named chip
+        // 1.7 dereferences the null whitelist of a turret without a chip
         if (names == null) return OpenComputers.unknownError();
         if (!names.contains(name)) return new Object[]{false};
         machine.removeName(names.indexOf(name));

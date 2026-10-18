@@ -1,13 +1,19 @@
 package com.hbm.saveddata.satellites;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.entity.missile.EntitySatellitePod;
+import com.hbm.items.ModSatelliteItems;
+import com.hbm.items.machine.ItemDrive.EnumDriveType;
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.tileentity.network.RTTYSystem;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 /**
  * One satellite in orbit; 1.7 {@code com.hbm.saveddata.satellites.SatelliteBase}. Instances live in
@@ -45,6 +51,16 @@ public abstract class Satellite {
      */
     public CompoundTag extra = new CompoundTag();
 
+    /** Set by a ticking satellite that changed; the tick loop turns it into {@code SatelliteSavedData.setDirty()}. */
+    public boolean isDirty = false;
+
+    /** The drive type the satellite swaps for its data, and the one it hands back. */
+    public @Nullable EnumDriveType driveInput = null;
+    public @Nullable EnumDriveType driveOutput = null;
+
+    /** Cargo waiting for a cargo pad to call it down. */
+    public ItemStack[] requestableSlots = new ItemStack[0];
+
     /** 1.7 {@code XSatelliteRegistry.orbit}. */
     public static void orbit(ServerLevel level, ItemStack stack, int freq, double x, double y, double z) {
         XSatelliteRegistry.orbit(level, stack, freq, x, y, z);
@@ -62,6 +78,60 @@ public abstract class Satellite {
      */
     public boolean savesBaseData() {
         return true;
+    }
+
+    /**
+     * The lines a ground station shows; a null entry is skipped. 1.7 declares it abstract.
+     */
+    // port: an addon satellite that states nothing shows no lines
+    public Component[] getInfo(Level level) {
+        return new Component[0];
+    }
+
+    protected static Component nameOf(EnumSatType type) {
+        return Component.translatable(ModSatelliteItems.satellite.get(type).getDescriptionId());
+    }
+
+    /** Whether data is waiting for a drive; may produce it first once a cooldown has passed. */
+    public boolean hasData(Level level) {
+        return this.driveInput != null && this.driveOutput != null;
+    }
+
+    public @Nullable EnumDriveType getOutputData(EnumDriveType input) {
+        if (input == this.driveInput) return this.driveOutput;
+        return null;
+    }
+
+    public void produceData(EnumDriveType input, EnumDriveType output) {
+        this.driveInput = input;
+        this.driveOutput = output;
+    }
+
+    public void consumeData() {
+        this.driveInput = null;
+        this.driveOutput = null;
+    }
+
+    /** Run every server tick for every satellite in orbit. */
+    public void onUpdateTick(ServerLevel level) {
+    }
+
+    /** Sends the waiting cargo down to {@code x, z} in a drop pod; false if there was none or it could not spawn. */
+    public boolean tryRequestItems(ServerLevel level, int x, int y, int z) {
+        if (this.requestableSlots.length <= 0) return false;
+
+        EntitySatellitePod pod = new EntitySatellitePod(level).setup(y, requestableSlots);
+        pod.setPos(x + 0.5, 300, z + 0.5);
+
+        if (!level.addFreshEntity(pod)) return false;
+
+        this.requestableSlots = new ItemStack[0];
+        this.markDirty();
+        return true;
+    }
+
+    public void markDirty() {
+        this.isDirty = true;
     }
 
     /** When a satellite is created, i.e. this frequency is occupied for the first time. */

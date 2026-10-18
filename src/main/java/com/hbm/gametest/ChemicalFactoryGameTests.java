@@ -14,6 +14,7 @@ import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.tool.ItemBlowtorch;
 import com.hbm.lib.DirPos;
+import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -52,12 +53,12 @@ public final class ChemicalFactoryGameTests {
 
         helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), core)),
                 "Chemical Factory core did not resolve to itself");
-        helper.assertTrue(factory.getConPos().length == 26 && factory.getCoolPos().length == 4
-                        && factory.getIOPos().length == 4,
+        helper.assertTrue(factory.getConPos().length == 30 && PortDef.connections(factory.getFluidPorts()).length == 30
+                        && factory.getCoolPos().length == 4 && factory.getIOPos().length == 4,
                 "Chemical Factory connection arrays changed");
 
-        for (DirPos port : factory.getConPos()) assertPort(helper, block, core, port);
-        for (DirPos port : factory.getCoolPos()) assertPort(helper, block, core, port);
+        for (DirPos port : factory.getConPos()) assertPort(helper, block, core, port, false);
+        for (DirPos port : factory.getCoolPos()) assertPort(helper, block, core, port, true);
         helper.assertTrue(block.getContainer(helper.getLevel().getBlockState(core), helper.getLevel(), core) == factory,
                 "Chemical Factory core must expose its inventory");
         helper.assertTrue(block.getContainer(helper.getLevel().getBlockState(core.north()), helper.getLevel(), core.north()) == null,
@@ -67,7 +68,7 @@ public final class ChemicalFactoryGameTests {
         helper.succeed();
     }
 
-    private static void assertPort(GameTestHelper helper, MachineChemicalFactory block, BlockPos core, DirPos port) {
+    private static void assertPort(GameTestHelper helper, MachineChemicalFactory block, BlockPos core, DirPos port, boolean fluid) {
         BlockPos cell = port.getPos().relative(port.getDir().toDirection().getOpposite());
         helper.assertTrue(helper.getLevel().getBlockState(cell).getBlock() == block,
                 "Chemical Factory port cell is not part of the structure: " + cell);
@@ -75,7 +76,7 @@ public final class ChemicalFactoryGameTests {
                 "Chemical Factory port cell does not resolve to the core: " + cell);
         helper.assertTrue(block.canConnect(helper.getLevel(), cell, port.getDir()),
                 "Chemical Factory power port does not connect: " + port.getPos());
-        helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(),
+        helper.assertTrue(!fluid || block.canConnect(Fluids.WATER, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(),
                         port.getDir()),
                 "Chemical Factory fluid port does not connect: " + port.getPos());
     }

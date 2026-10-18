@@ -33,6 +33,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The ICF fuel pellet maker's block entity (1.7 {@code TileEntityICFPress}). Slots: 0 empty pellet, 1 filled
@@ -70,11 +72,12 @@ public class TileEntityICFPress extends TileEntityMachineBase
         return Component.translatable(getName());
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityICFPress press) {
-        if (level.getGameTime() % 20 == 0) {
-            press.subscribeToAllAround(press.tanks[0].getTankType(), press);
-            press.subscribeToAllAround(press.tanks[1].getTankType(), press);
-        }
+        press.setupFluidInPorts(press.getReceivingTanks(), PortDef.combine(press.getPorts()));
+        press.updatePortFIFO();
         press.setTypeFromIdentifier(0, 6);
         press.setTypeFromIdentifier(1, 7);
 

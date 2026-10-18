@@ -4,20 +4,21 @@ import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import com.hbm.tileentity.TileEntityLoadedBase;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.NonNull;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * A creative (infinite) fluid source for testing the network, the fluid analogue of
  * {@link TileEntityCreativeGenerator}. Holds a single {@code WATER} sending tank kept permanently full;
- * pushes fluid into all six neighbours each tick via {@link IFluidStandardSenderMK2#tryProvide}.
+ * offers it on all six sides.
  */
-public class TileEntityCreativeFluidSource extends BlockEntity implements IFluidStandardSenderMK2 {
+public class TileEntityCreativeFluidSource extends TileEntityLoadedBase implements IFluidStandardSenderMK2 {
 
     public static final int CAPACITY = 1_000_000;
     private final FluidTankNTM tank = new FluidTankNTM(Fluids.WATER, CAPACITY);
@@ -27,11 +28,13 @@ public class TileEntityCreativeFluidSource extends BlockEntity implements IFluid
         tank.setFill(CAPACITY);
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCreativeFluidSource source) {
         source.tank.setFill(CAPACITY); // infinite: refill before providing
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            source.tryProvide(source.tank, level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
-        }
+        source.setupFluidPorts(source.getPorts());
+        source.updatePortFIFO();
     }
 
     @Override

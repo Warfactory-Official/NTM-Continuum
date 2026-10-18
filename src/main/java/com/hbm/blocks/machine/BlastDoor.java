@@ -121,12 +121,12 @@ public class BlastDoor extends CompatBlock implements TickingBlock, IBomb {
         if (!(level.getBlockEntity(pos) instanceof TileEntityBlastDoor te)) return;
 
         //frame
-        if (!(te.placeDummy(pos.above(1)) &&
-                te.placeDummy(pos.above(2)) &&
-                te.placeDummy(pos.above(3)) &&
-                te.placeDummy(pos.above(4)) &&
-                te.placeDummy(pos.above(5)) &&
-                te.placeDummy(pos.above(6))))
+        if (!(te.placeDummy(pos.above(1), false) &&
+                te.placeDummy(pos.above(2), false) &&
+                te.placeDummy(pos.above(3), false) &&
+                te.placeDummy(pos.above(4), false) &&
+                te.placeDummy(pos.above(5), false) &&
+                te.placeDummy(pos.above(6), false)))
             level.destroyBlock(pos, true);
     }
 }

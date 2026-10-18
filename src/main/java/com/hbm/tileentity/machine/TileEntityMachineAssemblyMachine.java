@@ -18,7 +18,6 @@ import com.hbm.inventory.container.ContainerMachineAssemblyMachine;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.module.machine.ModuleMachineAssembler;
 import com.hbm.tileentity.IUpgradeInfoProvider;
@@ -44,6 +43,8 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 import java.util.Random;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Assembly Machine: a functional powered machine. The server tick draws power from adjacent networks,
@@ -127,18 +128,15 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     // --- server: power + processing ---
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAssemblyMachine te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         if (te.maxPower <= 0) te.maxPower = 1_000_000;
         // 1.7: the buffer floats to the selected recipe's power x100, never below the stored power or 100k.
         GenericRecipe recipe = te.assemblerModule.getRecipe();
         if (recipe != null) te.maxPower = recipe.power * 100;
         te.maxPower = BobMathUtil.max(te.power, te.maxPower, 100_000);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
-
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
-            if (te.inputTank.getTankType() != Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, dp);
-            if (te.outputTank.getFill() > 0) te.tryProvide(te.outputTank, level, dp);
-        }
 
         // Upgrades (1.12.2 formulas): SPEED +1/3 progress & +100% power each, OVERDRIVE +1 progress &
         // +333% power each, POWER -25% power each; levels clamped by getValidUpgrades via the manager.
@@ -164,16 +162,8 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         te.networkPackNT();
     }
 
-    /** Power connection points around the 3×3 footprint (one block out from each edge cell). */
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z - 1, Library.POS_X), new DirPos(x + 2, y, z, Library.POS_X), new DirPos(x + 2, y, z + 1, Library.POS_X),
-                new DirPos(x - 2, y, z - 1, Library.NEG_X), new DirPos(x - 2, y, z, Library.NEG_X), new DirPos(x - 2, y, z + 1, Library.NEG_X),
-                new DirPos(x - 1, y, z + 2, Library.POS_Z), new DirPos(x, y, z + 2, Library.POS_Z), new DirPos(x + 1, y, z + 2, Library.POS_Z),
-                new DirPos(x - 1, y, z - 2, Library.NEG_Z), new DirPos(x, y, z - 2, Library.NEG_Z), new DirPos(x + 1, y, z - 2, Library.NEG_Z),
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.assembler(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     // --- IUpgradeInfoProvider (formulas above; text ported from the 1.12.2 provideInfo) ---
 

@@ -50,7 +50,8 @@ import java.util.Set;
  *   {@code priority}/{@code redLow}/{@code redHigh}, {@code rotation}/{@code isOn}, {@code phase}, {@code color},
  *   {@code channel}, telex {@code tx}/{@code rx}, turret target flags, ...): the 1.7 compound (without its item list and
  *   position) is loaded as it is.</li>
- *   <li><b>Renamed</b>: the diesel generator's 1.7 tank was {@code fuel*}; the port's is {@code tank*}.</li>
+ *   <li><b>Renamed</b>: the diesel generator's 1.7 tank was {@code fuel*}, the port's is {@code tank*}; the radio torches'
+ *   one-letter keys ({@link #RADIO_TORCH_KEYS}).</li>
  *   <li><b>Items</b>: {@code items} (HBM, {@code slot}) and {@code Items} (vanilla, {@code Slot}) lists, numeric ids
  *   resolved through the file's {@code itemPalette} (1.7 name, {@code hbm:item.x} = {@code hbm:x}, a material item's
  *   damage = its {@code Mats} id), put into the container's slots; the skeleton holder's {@code item}; a book and quill
@@ -73,13 +74,18 @@ public final class LegacyStructureTiles {
             "tileentity_radio_receiver", "tileentity_rtty_telex", "tileentity_fluid_tank",
             "tileentity_turret_howard_damaged", "tileentity_turret_sentry_damaged", "tileentity_pipe_gauge",
             "tileentity_pipe_base", "tileentity_electric_furnace", "tileentity_microwave", "tileentity_funnel",
-            "tileentity_tesla_coil", "tileentity_supply_crate", "tileentity_crate_iron", "tileentity_rotary_furnace");
+            "tileentity_tesla_coil", "tileentity_supply_crate", "tileentity_crate_iron", "tileentity_rotary_furnace",
+            "tileentity_ntm_door");
 
     /** 1.7 ids with nothing but defaults in the bundled files (or data the port keeps elsewhere). */
     private static final Set<String> NOTHING_TO_CARRY = Set.of(
             "tileentity_cable", "tileentity_geiger", "tileentity_ntm_charger", "tileentity_satellitereceicer",
             "tileentity_deco", "tileentity_deco_f", "tileentity_crabs", "tileentity_ntm_loot", "tileentity_data",
-            "tileentity_proxy_combo", "Sign", "Comparator");
+            "tileentity_proxy_combo", "Sign", "Comparator", "tileentity_cable_gauge", "tileentity_cable_switch",
+            "tileentity_crashed_balefire", "tileentity_vending_machine", "tileentity_launchpad_rusted");
+
+    /** 1.7 {@code TileEntityRadioTorchBase} keys and the port's names for them. */
+    private static final String[][] RADIO_TORCH_KEYS = {{"c", "channel"}, {"p", "isPolling"}, {"m", "hasMapping"}, {"l", "lastPower"}};
 
     public static boolean apply(LevelAccessor level, BlockPos pos, @Nullable BlockEntity be, CompoundTag nbt,
                                 Map<Integer, String> itemPalette, int coordBaseMode) {
@@ -104,6 +110,14 @@ public final class LegacyStructureTiles {
             data = nbt.copy();
             for (String suffix : new String[]{"", "_max", "_type", "_p"}) {
                 if (Tags.contains(nbt, "fuel" + suffix)) data.put("tank" + suffix, nbt.get("fuel" + suffix));
+            }
+        } else if (id.equals("tileentity_rtty_sender") || id.equals("tileentity_rtty_rec")) {
+            data = new CompoundTag();
+            for (String[] key : RADIO_TORCH_KEYS) {
+                if (Tags.contains(nbt, key[0])) data.put(key[1], nbt.get(key[0]));
+            }
+            for (int i = 0; i < 16; i++) {
+                if (Tags.contains(nbt, "m" + i)) data.put("mapping" + i, nbt.get("m" + i));
             }
         } else if (id.equals("Chest")) {
             data = new CompoundTag();

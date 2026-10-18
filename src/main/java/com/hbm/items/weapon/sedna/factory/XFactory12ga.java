@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
@@ -43,6 +45,28 @@ import java.util.function.BiConsumer;
 
 /** The source copy of the 12 gauge family, adapted only at the modern registry/projectile seams. */
 public final class XFactory12ga {
+
+    public static final ConfigWrapper<Float> GUN_MARES_LEG_DAMAGE = new ConfigWrapper<>(16F);
+    public static final ConfigWrapper<Float> GUN_MARES_LEG_AKIMBO_LEFT_DAMAGE = new ConfigWrapper<>(16F);
+    public static final ConfigWrapper<Float> GUN_MARES_LEG_AKIMBO_RIGHT_DAMAGE = new ConfigWrapper<>(16F);
+    public static final ConfigWrapper<Float> GUN_BROKEN_DAMAGE = new ConfigWrapper<>(48F);
+    public static final ConfigWrapper<Float> GUN_LIBERATOR_DAMAGE = new ConfigWrapper<>(16F);
+    public static final ConfigWrapper<Float> GUN_SPAS_DAMAGE = new ConfigWrapper<>(32F);
+    public static final ConfigWrapper<Float> GUN_AUTOSHOTGUN_DAMAGE = new ConfigWrapper<>(48F);
+    public static final ConfigWrapper<Float> GUN_SHREDDER_DAMAGE = new ConfigWrapper<>(50F);
+    public static final ConfigWrapper<Float> GUN_SEXY_DAMAGE = new ConfigWrapper<>(64F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_MARES_LEG_DAMAGE", GUN_MARES_LEG_DAMAGE);
+        ServerConfig.configMap.put("GUN_MARES_LEG_AKIMBO_LEFT_DAMAGE", GUN_MARES_LEG_AKIMBO_LEFT_DAMAGE);
+        ServerConfig.configMap.put("GUN_MARES_LEG_AKIMBO_RIGHT_DAMAGE", GUN_MARES_LEG_AKIMBO_RIGHT_DAMAGE);
+        ServerConfig.configMap.put("GUN_BROKEN_DAMAGE", GUN_BROKEN_DAMAGE);
+        ServerConfig.configMap.put("GUN_LIBERATOR_DAMAGE", GUN_LIBERATOR_DAMAGE);
+        ServerConfig.configMap.put("GUN_SPAS_DAMAGE", GUN_SPAS_DAMAGE);
+        ServerConfig.configMap.put("GUN_AUTOSHOTGUN_DAMAGE", GUN_AUTOSHOTGUN_DAMAGE);
+        ServerConfig.configMap.put("GUN_SHREDDER_DAMAGE", GUN_SHREDDER_DAMAGE);
+        ServerConfig.configMap.put("GUN_SEXY_DAMAGE", GUN_SEXY_DAMAGE);
+    }
 
     public static BulletConfig g12_bp;
     public static BulletConfig g12_bp_magnum;

@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -147,5 +148,14 @@ public class MachineFusionMHDT extends BlockMultiblockMachine implements ILookOv
         return new double[][] {
             {1.5, 3.5, -6.5, -6.5, 1, -1}
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {3, 0, 4, ForgeDirection.EAST.ordinal()},
+                {-3, 0, 4, ForgeDirection.WEST.ordinal()},
+                {0, 1, 7, ForgeDirection.SOUTH.ordinal()},
+        }, dir);
     }
 }

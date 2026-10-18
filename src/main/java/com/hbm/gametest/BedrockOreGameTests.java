@@ -48,17 +48,17 @@ public final class BedrockOreGameTests {
 
     private BedrockOreGameTests() {}
 
-    // Produced independently from the old java.util.Random + NoiseGeneratorPerlin implementation.
-    private static final int[][] NOISE_POINTS = {{123, -456}, {-9001, 31415}};
+    // Chunk centres, where 1.7 samples; the noise matches the old java.util.Random + NoiseGeneratorPerlin values.
+    private static final int[][] NOISE_POINTS = {{120, -456}, {-9000, 31416}};
     private static final long[][] OLD_NOISE_BITS = {
-            {0x3fe51899bdf4e65dL, 0x3ffb4aac36ee50d0L, 0x3fe0c173ddb0eec9L,
-                    0x3fef14f5d00aba27L, 0x3ff6f29197370fccL, 0x3fbc423b13902d45L},
-            {0x3fb339185e574dacL, 0x3fb674a1b2434fc1L, 0x3f9b6bbe1b08afe7L,
-                    0x3fda826b3c360da5L, 0x3fc3a470782517b2L, 0x3fd1876adaf50d91L},
+            {0x3fe65e421f2d109eL, 0x3ffa434a7b9d9b9dL, 0x3fdf51f9a09e3428L,
+                    0x3fee75a5a9341e7fL, 0x3ff642963d61bdc1L, 0x3fc3a17445cb1154L},
+            {0x3fb29c36466a41deL, 0x3fb4ed6b457d16f1L, 0x3f9e07d6308a5aa0L,
+                    0x3fdc82dbd59cc988L, 0x3fc40df82e7392ceL, 0x3fd26244daa5916aL},
     };
     private static final long[] OLD_FORTUNE_TWO_BITS = {
-            0x3fefa4e69cef598cL, 0x400478012932bc9cL, 0x3fe9222dcc89662eL,
-            0x3ff74fb85c080b9dL, 0x400135ed31694bd9L, 0x3fc531ac4eac21f4L,
+            0x3ff0c6b19761cc76L, 0x4003b277dcb634b6L, 0x3fe77d7b3876a71eL,
+            0x3ff6d83c3ee716dfL, 0x4000b1f0ae094e51L, 0x3fcd722e68b099feL,
     };
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
@@ -166,7 +166,7 @@ public final class BedrockOreGameTests {
     }
 
     public static void exactOutput(GameTestHelper helper) {
-        BedrockOreBlockEntity ore = new BedrockOreBlockEntity(new BlockPos(123, 0, -456),
+        BedrockOreBlockEntity ore = new BedrockOreBlockEntity(new BlockPos(120, 0, -456),
                 ModOreBlocks.ore_bedrock_block.get().defaultBlockState());
         ore.setDeposit(new ItemStack(ModOreBlocks.bedrock_ore_base.get()), null, 1, 0xD78A16, 0);
         ItemStack output = ore.extract(DrillBitType.STEEL_DIAMOND, null).output();

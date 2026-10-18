@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
-import com.hbm.tileentity.network.TileEntityDiode;
+import com.hbm.tileentity.network.TileEntityNetworkSeparator;
 import com.hbm.packet.ControlEventPayload;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -18,17 +18,17 @@ import net.minecraft.sounds.SoundEvents;
 
 /**
  * 1.7's {@code GUIDiode}: a throughput field and a priority button over the dimmed world; closing it
- * sends both to the diode as one control event. Not a container screen.
+ * sends both to the separator as one control event. Not a container screen.
  */
 public final class GUIDiode extends CompatScreen {
 
-    private final TileEntityDiode diode;
+    private final TileEntityNetworkSeparator diode;
     private EditBox textThroughput;
     private int priority;
     private int buttonX, buttonY;
 
-    public GUIDiode(TileEntityDiode diode) {
-        super(Component.translatable("block.hbm.cable_diode"));
+    public GUIDiode(TileEntityNetworkSeparator diode) {
+        super(Component.translatable("block.hbm.network_separator"));
         this.diode = diode;
         this.priority = diode.priority.ordinal();
     }
@@ -36,7 +36,7 @@ public final class GUIDiode extends CompatScreen {
     @Override
     protected void init() {
         textThroughput = new EditBox(font, this.width / 2 - 150, 100, 90, 20, Component.empty());
-        textThroughput.setValue("" + diode.limit);
+        textThroughput.setValue("" + diode.configuredLimit);
         textThroughput.setMaxLength(11);
         addRenderableWidget(textThroughput);
         focusedEditBoxForInput = textThroughput;

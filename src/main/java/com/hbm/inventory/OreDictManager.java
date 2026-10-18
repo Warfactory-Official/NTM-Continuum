@@ -45,6 +45,7 @@ public final class OreDictManager {
     public static final NTMMaterial PIGIRON    = Mats.MAT_PIGIRON;
     public static final NTMMaterial METEORICIRON = Mats.MAT_METEORICIRON;
     public static final NTMMaterial MALACHITE  = Mats.MAT_MALACHITE;
+    public static final NTMMaterial ILMENITE   = Mats.MAT_ILMENITE;
     public static final NTMMaterial BAUXITE    = Mats.MAT_BAUXITE;
     public static final NTMMaterial CRYOLITE   = Mats.MAT_CRYOLITE;
 

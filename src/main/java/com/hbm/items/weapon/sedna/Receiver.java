@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
 import com.hbm.items.weapon.sedna.factory.Lego;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
@@ -60,6 +61,8 @@ public class Receiver {
     protected int index;
     protected GunConfig parent;
     protected float baseDamage_DNA;
+    /** Added to {@link #baseDamage_DNA}: 1.7 configures gun damage through {@code /ntmserver}. */
+    protected ConfigWrapper<Float> baseDamageConfig_DNA;
     protected int delayAfterFire_DNA;
     protected int delayAfterDryFire_DNA;
     protected int roundsPerCycle_DNA = 1;
@@ -99,7 +102,7 @@ public class Receiver {
     protected BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> onFire_DNA;
     protected BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> onRecoil_DNA;
 
-    public float getBaseDamage(ItemStack s) { return XWeaponModManager.eval(baseDamage_DNA, s, F_BASEDAMAGE, this, parent.index); }
+    public float getBaseDamage(ItemStack s) { return XWeaponModManager.eval(baseDamage_DNA + (baseDamageConfig_DNA != null ? baseDamageConfig_DNA.get() : 0), s, F_BASEDAMAGE, this, parent.index); }
     public int getDelayAfterFire(ItemStack s) { return XWeaponModManager.eval(delayAfterFire_DNA, s, I_DELAYAFTERFIRE, this, parent.index); }
     public int getDelayAfterDryFire(ItemStack s) { return XWeaponModManager.eval(delayAfterDryFire_DNA, s, I_DELAYAFTERDRYFIRE, this, parent.index); }
     public int getRoundsPerCycle(ItemStack s) { return XWeaponModManager.eval(roundsPerCycle_DNA, s, I_ROUNDSPERCYCLE, this, parent.index); }
@@ -134,6 +137,7 @@ public class Receiver {
     public BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> getRecoil(ItemStack s) { return XWeaponModManager.eval(onRecoil_DNA, s, CON_ONRECOIL, this, parent.index); }
 
     public Receiver dmg(float dmg) { this.baseDamage_DNA = dmg; return this; }
+    public Receiver dmg(ConfigWrapper<Float> dmg) { this.baseDamageConfig_DNA = dmg; return this; }
     public Receiver delay(int delay) { this.delayAfterFire_DNA = this.delayAfterDryFire_DNA = delay; return this; }
     public Receiver dry(int delay) { this.delayAfterDryFire_DNA = delay; return this; }
     public Receiver rounds(int rounds) { this.roundsPerCycle_DNA = rounds; return this; }

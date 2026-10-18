@@ -122,8 +122,8 @@ public final class Fix3GameTests {
         GenericRecipe circuit = asm.getRecipe("ass.excircuit");
         helper.assertTrue(circuit != null && fluid(circuit.inputFluid[0], Fluids.SULFURIC_ACID, 1_000), "ass.excircuit acid");
         helper.assertTrue(asm.getRecipe("ass.ex_lead_plating") == null && asm.getRecipe("ass.cast.iron") == null
-                && asm.getRecipe("ass.weld.steel") == null && asm.getRecipe("ass.bat9k") == null
-                && asm.getRecipe("ass.pilethorium") == null, "port-only assembly recipes are gone");
+                && asm.getRecipe("ass.weld.steel") == null && asm.getRecipe("ass.bat9k") == null,
+                "port-only assembly recipes are gone");
         helper.assertTrue(asm.getRecipe("ass.packagehbmfluid.water") != null, "1.7 package ids");
         // ChemicalPlantRecipes:236 meth: Items.dye meta 3 is cocoa beans
         ChemicalPlantRecipes.INSTANCE.registerRecipes();

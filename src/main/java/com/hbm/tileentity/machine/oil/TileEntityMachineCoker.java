@@ -14,8 +14,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CokerRecipes;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.TickPhase;
@@ -35,6 +33,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Coker, a 1:1 port of the 1.12.2 {@code TileEntityMachineCoker}. A 3×3×23 heat-driven tower (pulls heat
@@ -70,13 +70,11 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
     @Override public String getDefaultName() { return "container.machineCoker"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCoker te) {
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
+
         te.tryPullHeat();
         te.setTypeFromFluidId();
-
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos dp : te.getConPos()) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-        }
-
 
         te.wasOn = false;
 
@@ -111,10 +109,6 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
             if (te.wasOn && TickPhase.every(level, pos, 5)) PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 5);
         }
 
-        for (DirPos dp : te.getConPos()) {
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp);
-        }
-
         te.networkPackNT();
     }
 
@@ -124,19 +118,8 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
         }
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z + 1, Library.POS_X),
-                new DirPos(x + 2, y, z - 1, Library.POS_X),
-                new DirPos(x - 2, y, z + 1, Library.NEG_X),
-                new DirPos(x - 2, y, z - 1, Library.NEG_X),
-                new DirPos(x + 1, y, z + 2, Library.POS_Z),
-                new DirPos(x - 1, y, z + 2, Library.POS_Z),
-                new DirPos(x + 1, y, z - 2, Library.NEG_Z),
-                new DirPos(x - 1, y, z - 2, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.refinery(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     public boolean canProcess() {
         CokerRecipes.CokerRecipe recipe = CokerRecipes.getOutput(tanks[0].getTankType());

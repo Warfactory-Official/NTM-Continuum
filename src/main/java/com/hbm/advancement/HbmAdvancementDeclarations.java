@@ -148,11 +148,9 @@ public final class HbmAdvancementDeclarations {
         crafted(entry("tantalum", "tantalum", "hbm:gem_tantalium", "chemplant", CHALLENGE), "hbm:gem_tantalium");
         crafted(entry("gas_cent", "gasCent", "hbm:ingot_uranium_fuel", "desh", TASK), "hbm:machine_gascent");
         crafted(entry("centrifuge", "centrifuge", "hbm:machine_centrifuge", "polymer", TASK), "hbm:machine_centrifuge");
-        entry("foeq", "FOEQ", "hbm:sat_foeq", "desh", CHALLENGE)
-                .criterion("orbit", trigger("orbit").item("hbm:sat_foeq")).register();
         entry("soyuz", "soyuz", "minecraft:baked_potato", "desh", CHALLENGE)
                 .criterion("exhaust", trigger("detonation").kinds("soyuz_exhaust")).register();
-        // 1.7 EntitySoyuz:104: only the flame_pony payload; the port's call site passes the rocket for it
+        // 1.7 EntityRocketSoyuz: only the flame_pony payload; the port's call site passes the rocket for it
         entry("space", "space", "hbm:missile_soyuz_0", "desh", CHALLENGE)
                 .criterion("orbit", trigger("orbit").item("hbm:missile_soyuz_0", "hbm:flame_pony")).register();
         crafted(entry("schrab", "schrab", "hbm:ingot_schrabidium", "desh", TASK), "hbm:ingot_schrabidium", "hbm:nugget_schrabidium");

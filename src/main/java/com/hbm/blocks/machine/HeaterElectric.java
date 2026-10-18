@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -89,5 +90,19 @@ public class HeaterElectric extends BlockMultiblockMachine implements IEnergyCon
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         visitor.passiveCell(core.relative(facing, 2), MASK_ALL, PASSIVE_POWER_IN);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, 2, ForgeDirection.SOUTH.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {1, 1, 0.74, -0.06, 0.4, -0.4, 1},
+        };
     }
 }

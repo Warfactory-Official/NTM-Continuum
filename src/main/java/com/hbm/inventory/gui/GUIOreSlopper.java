@@ -53,8 +53,7 @@ public final class GUIOreSlopper extends CompatContainerScreen<ContainerOreSlopp
         TileEntityMachineOreSlopper slopper = menu.getSlopper();
         if (slopper == null) return;
 
-        // 1.7 renderTankInfo(26, 18, 34, 52) covers the water column plus the gap beside it.
-        if (isHovering(26, 18, 34, 52, mouseX, mouseY)) {
+        if (isHovering(26, 18, 16, 52, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(slopper.tanks[0]), Optional.empty(), mouseX, mouseY);
             return;
         }

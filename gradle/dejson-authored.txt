@@ -228,6 +228,7 @@ assets/hbm/models/block/template_pipe_framed.json
 assets/hbm/models/block/template_pipe_quad.json
 assets/hbm/models/block/template_pipe_rim.json
 assets/hbm/models/block/tinted_cube_all.json
+assets/hbm/models/block/tinted_cube_all_overlay.json
 assets/hbm/models/block/vine_phosphor_ground.json
 assets/hbm/models/block/vine_phosphor_hang.json
 assets/hbm/models/block/vine_phosphor_middle.json

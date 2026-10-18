@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
@@ -19,6 +21,20 @@ import net.minecraft.sounds.SoundSource;
 
 /** The Gen-3 9 mm rounds, ported from upstream's {@code XFactory9mm}. */
 public final class XFactory9mm {
+
+    public static final ConfigWrapper<Float> GUN_GREASEGUN_DAMAGE = new ConfigWrapper<>(3F);
+    public static final ConfigWrapper<Float> GUN_LONG_PISTOL_DAMAGE = new ConfigWrapper<>(25F);
+    public static final ConfigWrapper<Float> GUN_UZI_DAMAGE = new ConfigWrapper<>(3F);
+    public static final ConfigWrapper<Float> GUN_UZI_AKIMBO_LEFT_DAMAGE = new ConfigWrapper<>(3F);
+    public static final ConfigWrapper<Float> GUN_UZI_AKIMBO_RIGHT_DAMAGE = new ConfigWrapper<>(3F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_GREASEGUN_DAMAGE", GUN_GREASEGUN_DAMAGE);
+        ServerConfig.configMap.put("GUN_LONG_PISTOL_DAMAGE", GUN_LONG_PISTOL_DAMAGE);
+        ServerConfig.configMap.put("GUN_UZI_DAMAGE", GUN_UZI_DAMAGE);
+        ServerConfig.configMap.put("GUN_UZI_AKIMBO_LEFT_DAMAGE", GUN_UZI_AKIMBO_LEFT_DAMAGE);
+        ServerConfig.configMap.put("GUN_UZI_AKIMBO_RIGHT_DAMAGE", GUN_UZI_AKIMBO_RIGHT_DAMAGE);
+    }
 
     private XFactory9mm() {}
 

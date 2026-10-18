@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.items.armor.IPAMelee;
 import com.hbm.items.armor.IPARanged;
 import com.hbm.items.armor.IPAWeaponsProvider;
@@ -22,6 +24,25 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 public final class XFactoryPA {
+
+    public static final ConfigWrapper<Float> MELEE_RPA_SWINGS_DAMAGE = new ConfigWrapper<>(15F);
+    public static final ConfigWrapper<Float> MELEE_RPA_SLAP_DAMAGE = new ConfigWrapper<>(35F);
+    public static final ConfigWrapper<Float> MELEE_RPA_LARGE_MULT = new ConfigWrapper<>(2.5F);
+    public static final ConfigWrapper<Float> MELEE_NCRPA_SWINGS_DAMAGE = new ConfigWrapper<>(15F);
+    public static final ConfigWrapper<Float> MELEE_NCRPA_SWEEP_DAMAGE = new ConfigWrapper<>(35F);
+    public static final ConfigWrapper<Float> MELEE_NCRPA_LARGE_MULT = new ConfigWrapper<>(2.5F);
+    public static final ConfigWrapper<Float> RANGED_NCRPA_DAMAGE = new ConfigWrapper<>(25F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("MELEE_RPA_SWINGS_DAMAGE", MELEE_RPA_SWINGS_DAMAGE);
+        ServerConfig.configMap.put("MELEE_RPA_SLAP_DAMAGE", MELEE_RPA_SLAP_DAMAGE);
+        ServerConfig.configMap.put("MELEE_RPA_LARGE_MULT", MELEE_RPA_LARGE_MULT);
+        ServerConfig.configMap.put("MELEE_NCRPA_SWINGS_DAMAGE", MELEE_NCRPA_SWINGS_DAMAGE);
+        ServerConfig.configMap.put("MELEE_NCRPA_SWEEP_DAMAGE", MELEE_NCRPA_SWEEP_DAMAGE);
+        ServerConfig.configMap.put("MELEE_NCRPA_LARGE_MULT", MELEE_NCRPA_LARGE_MULT);
+        ServerConfig.configMap.put("RANGED_NCRPA_DAMAGE", RANGED_NCRPA_DAMAGE);
+    }
+
     public static final BiConsumer<ItemStack, LambdaContext> ORCHESTRA = (stack, ctx) -> {
         IPAMelee component = IPAWeaponsProvider.getMeleeComponentCommon(ctx.getPlayer());
         if (component != null) component.orchestra(stack, ctx);

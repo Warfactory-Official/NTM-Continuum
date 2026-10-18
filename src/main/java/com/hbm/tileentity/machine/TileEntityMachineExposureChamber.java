@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Eight-cycle particle exposure machine, ported from the 1.12.2 implementation. */
 public class TileEntityMachineExposureChamber extends TileEntityMachineBase implements MenuProvider,
@@ -71,12 +72,11 @@ public class TileEntityMachineExposureChamber extends TileEntityMachineBase impl
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineExposureChamber te) {
+        te.setupPowerPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         te.isOn = false;
         te.power = Library.chargeTEFromItems(te.inventory, 5, te.power, MAX_POWER);
-
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos port : te.getConPos()) te.trySubscribe(level, port);
-        }
 
         te.upgradeManager.checkSlots(te.inventory, 6, 7);
         int speedLevel = te.upgradeManager.getLevel(UpgradeType.SPEED);
@@ -153,22 +153,25 @@ public class TileEntityMachineExposureChamber extends TileEntityMachineBase impl
         }
     }
 
-    public DirPos[] getConPos() {
-        ForgeDirection direction = MachineCore.facing(getBlockState());
-        ForgeDirection rotation = direction.getRotation(ForgeDirection.UP).getOpposite();
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + rotation.offsetX * 7 + direction.offsetX * 2, y,
-                        z + rotation.offsetZ * 7 + direction.offsetZ * 2, direction),
-                new DirPos(x + rotation.offsetX * 7 - direction.offsetX * 2, y,
-                        z + rotation.offsetZ * 7 - direction.offsetZ * 2, direction.getOpposite()),
-                new DirPos(x + rotation.offsetX * 8 + direction.offsetX * 2, y,
-                        z + rotation.offsetZ * 8 + direction.offsetZ * 2, direction),
-                new DirPos(x + rotation.offsetX * 8 - direction.offsetX * 2, y,
-                        z + rotation.offsetZ * 8 - direction.offsetZ * 2, direction.getOpposite()),
-                new DirPos(x + rotation.offsetX * 9, y, z + rotation.offsetZ * 9, rotation)
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + rot.offsetX * 7 + dir.offsetX, y, z + rot.offsetZ * 7 + dir.offsetZ, dir),
+                    PortDef.make(x + rot.offsetX * 7 - dir.offsetX, y, z + rot.offsetZ * 7 - dir.offsetZ, dir.getOpposite()),
+                    PortDef.make(x + rot.offsetX * 8 + dir.offsetX, y, z + rot.offsetZ * 8 + dir.offsetZ, dir),
+                    PortDef.make(x + rot.offsetX * 8 - dir.offsetX, y, z + rot.offsetZ * 8 - dir.offsetZ, dir.getOpposite()),
+                    PortDef.make(x + rot.offsetX * 8, y, z + rot.offsetZ * 8, rot),
+            };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     public static ExposureChamberRecipe getRecipe(ItemStack particle, ItemStack ingredient) {
         return ExposureChamberRecipes.getRecipe(particle, ingredient);

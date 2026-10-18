@@ -1,10 +1,13 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.ModDungeonBlocks;
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.generic.BlockPedestal;
 import com.hbm.blocks.generic.BlockRebar;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.PedestalRecipes;
+import com.hbm.tileentity.machine.storage.TileEntityBarrel;
+import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.world.gen.util.LogicBlockActions;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -52,6 +55,36 @@ public final class DungeonGameTests {
         left = rt.transferFluid(Fluids.CONCRETE, 0, 30);
         helper.assertTrue(left == 0 && rt.progress == 30, "upper rebar: left " + left + ", progress " + rt.progress);
         helper.succeed();
+    }
+
+    /** 1.7 X5846 rebar: one concrete port at y + 1 while a duct touches it, so a duct beside it feeds nothing. */
+    public static void rebarFedFromAbove(GameTestHelper helper) {
+        BlockPos side = new BlockPos(1, 1, 2), top = new BlockPos(5, 1, 2);
+        helper.setBlock(side, ModDungeonBlocks.rebar.get().defaultBlockState());
+        helper.setBlock(top, ModDungeonBlocks.rebar.get().defaultBlockState());
+        concreteFeed(helper, side.east(), side.east(2));
+        concreteFeed(helper, top.above(), top.above(2));
+        helper.runAfterDelay(10, () -> {
+            BlockRebar.TileEntityRebar bySide = GameTestHelpers.blockEntity(helper, side, BlockRebar.TileEntityRebar.class);
+            BlockRebar.TileEntityRebar byTop = GameTestHelpers.blockEntity(helper, top, BlockRebar.TileEntityRebar.class);
+            helper.assertTrue(bySide.hasConnection && bySide.progress == 0, "a side duct fed the rebar: " + bySide.progress);
+            helper.assertTrue(byTop.progress > 0, "the duct above fed nothing");
+            helper.runAfterDelay(30, () -> {
+                helper.assertTrue(!helper.getBlockState(top).is(ModDungeonBlocks.rebar.get()), "the fed rebar never set");
+                helper.assertTrue(bySide.progress == 0, "a side duct fed the rebar: " + bySide.progress);
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void concreteFeed(GameTestHelper helper, BlockPos duct, BlockPos barrelAt) {
+        helper.setBlock(duct, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
+        ((TileEntityFluidDuctNT) helper.getLevel().getBlockEntity(helper.absolutePos(duct))).setFluidType(Fluids.CONCRETE);
+        helper.setBlock(barrelAt, ModFluidNetBlocks.barrel_steel.get().defaultBlockState());
+        TileEntityBarrel barrel = GameTestHelpers.blockEntity(helper, barrelAt, TileEntityBarrel.class);
+        barrel.tank.setTankType(Fluids.CONCRETE);
+        barrel.tank.setFill(16_000);
+        barrel.mode = 2;
     }
 
     /** Dani's revolver: gold east and west, lead north and south, the revolver in the middle; redstone performs it. */

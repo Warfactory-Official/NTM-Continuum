@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -80,5 +81,19 @@ public class MachineDeuteriumTower extends BlockMultiblockMachine
         visitor.passiveCell(core.relative(back), MASK_ALL, domains);
         visitor.passiveCell(core.relative(rot), MASK_ALL, domains);
         visitor.passiveCell(core.relative(back).relative(rot), MASK_ALL, domains);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {0, 0, 0, ForgeDirection.EAST.ordinal()},
+                {0, 0, -1, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+                {-1, 0, -1, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

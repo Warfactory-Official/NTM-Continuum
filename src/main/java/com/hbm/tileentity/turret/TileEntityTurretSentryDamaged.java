@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory9mm;
 import com.hbm.sound.ModSounds;
@@ -65,7 +66,7 @@ public class TileEntityTurretSentryDamaged extends TileEntityTurretSentry {
 
         if (shotSide) {
             level.playSound(null, worldPosition, ModSounds.TURRET_SENTRY_FIRE.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
-            spawnBullet(conf, 5F);
+            spawnBullet(conf);
             Vec3 side = toWorldDirection(new Vec3(0.125, 0, 0).yRot((float) -rotationYaw));
             muzzleFlash(barrelTip().add(side.x, 0, side.z), 1F, 1);
             didJustShootLeft = true;
@@ -77,4 +78,7 @@ public class TileEntityTurretSentryDamaged extends TileEntityTurretSentry {
 
         shotSide = !shotSide;
     }
+
+    @Override
+    public float getBaseDamage() { return XFactoryTurret.TURRET_EDWIN_DAMAGE.get(); }
 }

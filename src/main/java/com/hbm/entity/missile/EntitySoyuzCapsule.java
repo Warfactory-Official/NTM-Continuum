@@ -26,10 +26,8 @@ import java.util.List;
 
 /**
  * 1.7 entity/missile/EntitySoyuzCapsule - the soyuz lander's return stage: spawned at y=600 over the target column,
- * free-falls on hand-rolled integration (1.7 replaced the throwable tick wholesale, so no super.tick()), and once its
- * own block position is occupied it discards and places a soyuz_capsule block above, loading payload + missile into it.
- * 1.7's empty {@code onImpact} override has no 26.1 equivalent - this hand-rolled tick never routes impacts.
- * 1.7's ignoreFrustumCheck is a renderer concern in 26.1 (RenderSoyuzCapsule's job).
+ * free-falls on hand-rolled integration (no super.tick()), and once its own block position is occupied it discards and
+ * places a soyuz_capsule block above, loading payload and rocket into it.
  */
 public class EntitySoyuzCapsule extends CompatThrowableProjectile implements StoredItems {
 
@@ -64,16 +62,18 @@ public class EntitySoyuzCapsule extends CompatThrowableProjectile implements Sto
         // 1.7 replaces EntityThrowable.onUpdate wholesale - no super.tick(), no baseTick side effects
 
         Vec3 motion = getDeltaMovement();
+        if (motion.y > -0.2D) {
+            motion = new Vec3(motion.x, motion.y - 0.02D, motion.z);
+            this.setDeltaMovement(motion);
+        }
+        if (getY() > 600) this.setPos(getX(), 600, getZ());
+
+        this.xo = getX();
+        this.yo = getY();
+        this.zo = getZ();
         this.setPos(getX() + motion.x, getY() + motion.y, getZ() + motion.z);
 
-        if (motion.y > -0.2D)
-            this.setDeltaMovement(motion.x, motion.y - 0.02D, motion.z);
-
-        if (getY() > 600)
-            this.setPos(getX(), 600, getZ());
-
-        // 1.7: (int) casts kept - truncation, not floor
-        BlockPos pos = new BlockPos((int) getX(), (int) getY(), (int) getZ());
+        BlockPos pos = BlockPos.containing(getX(), getY(), getZ());
 
         if (!level().getBlockState(pos).isAir()) {
             this.discard();

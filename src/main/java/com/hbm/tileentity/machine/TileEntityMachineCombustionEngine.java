@@ -19,7 +19,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemPistons;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.MachineCore;
@@ -39,6 +38,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Combustion Engine, 1:1 port of the 1.12.2 {@code TileEntityMachineCombustionEngine}: an
@@ -77,6 +77,9 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
     @Override public String getDefaultName() { return "container.combustionEngine"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCombustionEngine te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPOFIFO();
+
         if (MachineFluidContainerIO.load(te.tank, te.inventory, 0, 1)) te.setChanged();
         te.setTypeFromFluidId();
 
@@ -109,12 +112,6 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
 
         te.power = Library.chargeItemsFromTE(te.inventory, 3, te.power, maxPower);
 
-        for (DirPos dp : te.getConPos()) {
-            te.tryProvide(level, dp.getPos().getX(), dp.getPos().getY(), dp.getPos().getZ(), dp.getDir());
-            te.trySubscribe(te.tank.getTankType(), level, dp);
-            te.sendSmoke(dp);
-        }
-
         if (te.power > maxPower) te.power = maxPower;
         te.networkPackNT();
     }
@@ -143,18 +140,22 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
         if (level != null && level.isClientSide()) CombustionEngineSoundHandler.onRemoved(this);
     }
 
-    public DirPos[] getConPos() {
-        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
-        ForgeDirection dir = ForgeDirection.getOrientation(meta);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+    protected PortDef[] cachedPorts;
 
-        return new DirPos[]{
-                new DirPos(x + dir.offsetX + rot.offsetX, y, z + dir.offsetZ + rot.offsetZ, dir),
-                new DirPos(x + dir.offsetX - rot.offsetX, y, z + dir.offsetZ - rot.offsetZ, dir),
-                new DirPos(x - dir.offsetX * 2 + rot.offsetX, y, z - dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 2 - rot.offsetX, y, z - dir.offsetZ * 2 - rot.offsetZ, dir.getOpposite())
-        };
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+            ForgeDirection dir = ForgeDirection.getOrientation(meta);
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + rot.offsetX, y, z + rot.offsetZ, dir),
+                    PortDef.make(x - rot.offsetX, y, z - rot.offsetZ, dir),
+                    PortDef.make(x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX - rot.offsetX, y, z - dir.offsetZ - rot.offsetZ, dir.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 
     private void setTypeFromFluidId() {

@@ -26,7 +26,7 @@ public final class ProductionMachineGameTests {
     /** Iron ingot + coal, fuelled and fed 100 mB/t of steam, yields one ingot of molten steel after 100 ticks. */
     public static void rotaryFurnaceProcessing(GameTestHelper helper) {
         RotaryFurnaceRecipes.register();
-        helper.assertTrue(RotaryFurnaceRecipes.recipes.size() == 12, "rotary furnace must expose the twelve original recipes");
+        helper.assertTrue(RotaryFurnaceRecipes.recipes.size() == 13, "rotary furnace must expose the thirteen 1.7 recipes");
 
         BlockPos core = FoldedTestSupport.assemble(helper, ModProductionBlocks.MACHINE_ROTARY_FURNACE.get(),
                 new BlockPos(6, 1, 6), Direction.NORTH);
@@ -38,7 +38,7 @@ public final class ProductionMachineGameTests {
         furnace.inventory.setStackInSlot(4, new ItemStack(Items.COAL, 4));
         furnace.tanks[1].setFill(12_000);
 
-        RotaryFurnaceRecipes.RotaryFurnaceRecipe recipe = RotaryFurnaceRecipes.getRecipe(
+        RotaryFurnaceRecipes.RotaryFurnaceRecipe recipe = RotaryFurnaceRecipes.getRecipe(furnace.tanks[0].getTankType(),
                 furnace.inventory.getStackInSlot(0), furnace.inventory.getStackInSlot(1), ItemStack.EMPTY);
         helper.assertTrue(recipe != null && recipe.output.material == Mats.MAT_STEEL && recipe.duration == 100 && recipe.steam == 100,
                 "iron + coal must match the 100 tick / 100 mB steel recipe");

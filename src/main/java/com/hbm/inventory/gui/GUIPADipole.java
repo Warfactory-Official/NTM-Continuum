@@ -2,6 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerPADipole;
 import com.hbm.items.machine.ItemPACoil;
+import com.hbm.items.machine.ItemPACoil.EnumCoilType;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
 import com.hbm.tileentity.machine.albion.TileEntityPADipole;
@@ -81,7 +82,17 @@ public class GUIPADipole extends GUIPABase<ContainerPADipole> {
 
         if (dipole.power >= TileEntityPADipole.usage) drawLamp(graphics, x + 83, y + 54);
         if (Math.ceil(dipole.temperature) <= COOL_ENOUGH) drawLamp(graphics, x + 93, y + 54);
-        if (ItemPACoil.typeOf(dipole.inventory.getStackInSlot(1)) != null) drawLamp(graphics, x + 103, y + 54);
+        EnumCoilType coil = ItemPACoil.typeOf(dipole.inventory.getStackInSlot(1));
+        if (coil != null) {
+            drawLamp(graphics, x + 103, y + 54);
+            // the inserted coil, drawn into the magnet window
+            switch (coil) {
+                case GOLD -> GuiDraw.blit(graphics, TEXTURE, x + 83, y + 20, 200F, 96F, 28, 28, 256, 256);
+                case NIOBIUM -> GuiDraw.blit(graphics, TEXTURE, x + 83, y + 20, 228F, 96F, 28, 28, 256, 256);
+                case BSCCO -> GuiDraw.blit(graphics, TEXTURE, x + 83, y + 20, 200F, 124F, 28, 28, 256, 256);
+                case CHLOROPHYTE -> GuiDraw.blit(graphics, TEXTURE, x + 83, y + 20, 228F, 124F, 28, 28, 256, 256);
+            }
+        }
 
         float playerYaw = Minecraft.getInstance().player == null ? 0F : Minecraft.getInstance().player.getYRot();
         dial(graphics, x + 68, y + 35, playerYaw, dipole.dirLower);
@@ -109,7 +120,7 @@ public class GUIPADipole extends GUIPABase<ContainerPADipole> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        drawTitleAndInventory(graphics, -9, 6, 4210752);
+        drawTitleAndInventory(graphics, -9, 6, 0xffffff);
         drawTemperature(graphics, 136, 22, 166, 12);
     }
 

@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.TeslaZap;
 import dev.golem.core.data.DataIn;
@@ -17,6 +16,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 import com.hbm.tileentity.ModEnergyNetBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * 1.7's {@code TileEntityTesla}: a 100 kHE receiver that, every tick it holds 5 kHE, spends it on an
@@ -42,12 +43,15 @@ public class TileEntityTesla extends TileEntityMachineBase implements IEnergyRec
         return "";
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityTesla tesla) {
         if (!(level instanceof ServerLevel server)) return;
 
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            tesla.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
+        tesla.setupPowerPorts(tesla.getPorts());
+        tesla.updateAllPorts();
+        tesla.receivePower();
 
         tesla.targets.clear();
 

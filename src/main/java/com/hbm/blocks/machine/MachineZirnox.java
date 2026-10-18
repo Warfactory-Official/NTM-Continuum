@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
@@ -118,5 +119,16 @@ public class MachineZirnox extends BlockMultiblockMachine implements IFluidConne
             new int[] {4, -2, 0, 0, 2, -2},
             new int[] {4, -2, 0, 0, -2, 2}
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {2, 1, 0, ForgeDirection.EAST.ordinal()},
+                {2, 3, 0, ForgeDirection.EAST.ordinal()},
+                {-2, 1, 0, ForgeDirection.WEST.ordinal()},
+                {-2, 3, 0, ForgeDirection.WEST.ordinal()},
+                {0, 4, 0, ForgeDirection.UP.ordinal()},
+        }, dir);
     }
 }

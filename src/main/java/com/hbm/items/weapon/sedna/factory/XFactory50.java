@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.projectile.EntityBuilding;
 import com.hbm.items.weapon.sedna.BulletConfig;
@@ -8,6 +10,18 @@ import net.minecraft.world.phys.EntityHitResult;
 
 /** The .50 BMG family from 1.7's XFactory50. */
 public final class XFactory50 {
+
+    public static final ConfigWrapper<Float> GUN_ANTI_MATERIEL_DAMAGE = new ConfigWrapper<>(30F);
+    public static final ConfigWrapper<Float> GUN_SUBTLETY_DAMAGE = new ConfigWrapper<>(50F);
+    public static final ConfigWrapper<Float> GUN_PENANCE_DAMAGE = new ConfigWrapper<>(45F);
+    public static final ConfigWrapper<Float> GUN_M2_DAMAGE = new ConfigWrapper<>(7.5F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_ANTI_MATERIEL_DAMAGE", GUN_ANTI_MATERIEL_DAMAGE);
+        ServerConfig.configMap.put("GUN_SUBTLETY_DAMAGE", GUN_SUBTLETY_DAMAGE);
+        ServerConfig.configMap.put("GUN_PENANCE_DAMAGE", GUN_PENANCE_DAMAGE);
+        ServerConfig.configMap.put("GUN_M2_DAMAGE", GUN_M2_DAMAGE);
+    }
 
     public static BulletConfig bmg50_sp;
     public static BulletConfig bmg50_fmj;

@@ -45,6 +45,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Random;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Functional plasma-forge controller: plasma receiver/provider, item processing and one fluid inlet. */
 public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
@@ -98,7 +99,6 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
 
     public final ModuleMachinePlasma plasmaModule;
 
-
     public TileEntityFusionPlasmaForge(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_PLASMA_FORGE.get(), pos, state, 16);
         PlasmaForgeRecipes.INSTANCE.registerRecipes();
@@ -120,6 +120,9 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionPlasmaForge te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         te.plasmaEnergySync = te.plasmaEnergy;
         te.plasmaEnergy = 0;
 
@@ -131,11 +134,6 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         if (recipe != null) te.maxPower = recipe.power * 100L;
         te.maxPower = Math.max(Math.max(te.power, te.maxPower), 100_000L);
         te.power = Library.chargeTEFromItems(te.inventory, SLOT_BATTERY, te.power, te.maxPower);
-
-        for (DirPos port : te.getConPos()) {
-            te.trySubscribe(level, port);
-            if (te.inputTank.getTankType() != Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, port);
-        }
 
         if (te.booster <= 0) {
             ItemStack boosterStack = te.getItem(SLOT_BOOSTER);
@@ -191,22 +189,29 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         }
     }
 
-    public List<DirPos> getConPos() {
-        ForgeDirection dir = FusionNodes.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return List.of(
-                new DirPos(x + dir.offsetX * 6 - rot.offsetX * 2, y, z + dir.offsetZ * 6 - rot.offsetZ * 2, dir),
-                new DirPos(x + dir.offsetX * 6 - rot.offsetX, y, z + dir.offsetZ * 6 - rot.offsetZ, dir),
-                new DirPos(x + dir.offsetX * 6, y, z + dir.offsetZ * 6, dir),
-                new DirPos(x + dir.offsetX * 6 + rot.offsetX, y, z + dir.offsetZ * 6 + rot.offsetZ, dir),
-                new DirPos(x + dir.offsetX * 6 + rot.offsetX * 2, y, z + dir.offsetZ * 6 + rot.offsetZ * 2, dir),
-                new DirPos(x - dir.offsetX * 6 - rot.offsetX * 2, y, z - dir.offsetZ * 6 - rot.offsetZ * 2, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 6 - rot.offsetX, y, z - dir.offsetZ * 6 - rot.offsetZ, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 6, y, z - dir.offsetZ * 6, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 6 + rot.offsetX, y, z - dir.offsetZ * 6 + rot.offsetZ, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 6 + rot.offsetX * 2, y, z - dir.offsetZ * 6 + rot.offsetZ * 2, dir.getOpposite()));
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = FusionNodes.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 5 - rot.offsetX * 2, y, z + dir.offsetZ * 5 - rot.offsetZ * 2, dir),
+                    PortDef.make(x + dir.offsetX * 5 - rot.offsetX * 1, y, z + dir.offsetZ * 5 - rot.offsetZ * 1, dir),
+                    PortDef.make(x + dir.offsetX * 5 + rot.offsetX * 0, y, z + dir.offsetZ * 5 + rot.offsetZ * 0, dir),
+                    PortDef.make(x + dir.offsetX * 5 + rot.offsetX * 1, y, z + dir.offsetZ * 5 + rot.offsetZ * 1, dir),
+                    PortDef.make(x + dir.offsetX * 5 + rot.offsetX * 2, y, z + dir.offsetZ * 5 + rot.offsetZ * 2, dir),
+                    PortDef.make(x - dir.offsetX * 5 - rot.offsetX * 2, y, z - dir.offsetZ * 5 - rot.offsetZ * 2, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 5 - rot.offsetX * 1, y, z - dir.offsetZ * 5 - rot.offsetZ * 1, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 5 + rot.offsetX * 0, y, z - dir.offsetZ * 5 + rot.offsetZ * 0, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 5 + rot.offsetX * 1, y, z - dir.offsetZ * 5 + rot.offsetZ * 1, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 5 + rot.offsetX * 2, y, z - dir.offsetZ * 5 + rot.offsetZ * 2, dir.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
+
+    public List<DirPos> getConPos() { return List.of(PortDef.connections(getPorts())); }
 
     @Override
     public String[] getFunctionInfo() {
@@ -310,7 +315,6 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         FusionLink.release(level, intake(worldPosition, facing), outlet(worldPosition, facing));
         super.setRemoved();
     }
-
 
     public static class ForgeArm {
         private final boolean striker;

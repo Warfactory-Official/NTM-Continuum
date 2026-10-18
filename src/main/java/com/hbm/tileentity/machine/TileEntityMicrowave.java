@@ -1,6 +1,5 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -32,6 +31,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 import com.hbm.inventory.container.ContainerMicrowave;
 import com.hbm.tileentity.ModProductionBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The microwave, ported from the original {@code TileEntityMicrowave}: cooks anything with a smelting
@@ -58,10 +59,13 @@ public class TileEntityMicrowave extends TileEntityMachineBase
         return "container.microwave";
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMicrowave te) {
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
+        te.setupPowerPorts(te.getPorts());
+        te.updateAllPorts();
+        te.receivePower();
         te.power = Library.chargeTEFromItems(te.inventory, 2, te.power, maxPower);
 
         if (te.canProcess(level)) {

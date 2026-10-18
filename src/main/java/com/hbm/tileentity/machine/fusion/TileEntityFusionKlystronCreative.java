@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine.fusion;
 import com.hbm.capability.MachineCaps;
 import com.hbm.inventory.recipes.FusionRecipes;
 import com.hbm.lib.DirPos;
+import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -29,13 +30,15 @@ public class TileEntityFusionKlystronCreative extends TileEntityFusionKlystron {
 
     @Override public String getDefaultName() { return "container.fusionKlystronCreative"; }
 
-    /**
-     * Nothing. The creative klystron takes no power and no compressed air, so it subscribes nowhere:
-     * inheriting the real klystron's three ports would advertise a surface its own tick never reads.
-     */
+    /** None: 1.7's creative klystron takes no power and no compressed air. */
     @Override
     public List<DirPos> getConPos() {
         return List.of();
+    }
+
+    @Override
+    public PortDef[] getPorts() {
+        return new PortDef[0];
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionKlystronCreative te) {

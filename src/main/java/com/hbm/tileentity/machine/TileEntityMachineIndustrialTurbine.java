@@ -23,6 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Random;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Industrial steam turbine, ported from the 1.12.2 turbine base without the old Forge fluid/GUI layer.
@@ -59,6 +60,10 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state,
                                    TileEntityMachineIndustrialTurbine turbine) {
+        turbine.setupPowerPorts(turbine.getPowerPorts());
+        turbine.setupFluidPorts(turbine.getFluidPorts());
+        turbine.updatePortPOFIFO();
+
         turbine.powerBuffer = 0;
         turbine.operational = false;
         turbine.syncedInputFill = turbine.tanks[0].getFill();
@@ -85,13 +90,6 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
         turbine.onServerTick();
 
         if (!valid) turbine.tanks[1].setTankType(Fluids.NONE);
-        for (DirPos connection : turbine.getPowerPos()) {
-            turbine.tryProvide(level, connection.getPos(), connection.getDir());
-        }
-        for (DirPos connection : turbine.getConPos()) {
-            turbine.tryProvide(turbine.tanks[1], level, connection);
-            turbine.trySubscribe(turbine.tanks[0].getTankType(), level, connection); // 1.7 TileEntityTurbineBase
-        }
         turbine.networkPackNT();
     }
 
@@ -182,32 +180,39 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
     public double getEfficiency() { return efficiency; }
     public boolean doesResizeCompressor() { return true; }
 
-    public DirPos[] getConPos() {
-        ForgeDirection dir = getFacing();
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        BlockPos p = getBlockPos();
-        return new DirPos[]{
-                new DirPos(p.getX() + dir.offsetX * 3 + rot.offsetX * 2, p.getY(),
-                        p.getZ() + dir.offsetZ * 3 + rot.offsetZ * 2, rot),
-                new DirPos(p.getX() + dir.offsetX * 3 - rot.offsetX * 2, p.getY(),
-                        p.getZ() + dir.offsetZ * 3 - rot.offsetZ * 2, rot.getOpposite()),
-                new DirPos(p.getX() - dir.offsetX + rot.offsetX * 2, p.getY(),
-                        p.getZ() - dir.offsetZ + rot.offsetZ * 2, rot),
-                new DirPos(p.getX() - dir.offsetX - rot.offsetX * 2, p.getY(),
-                        p.getZ() - dir.offsetZ - rot.offsetZ * 2, rot.getOpposite()),
-                new DirPos(p.getX() + dir.offsetX * 3, p.getY() + 3,
-                        p.getZ() + dir.offsetZ * 3, ForgeDirection.UP),
-                new DirPos(p.getX() - dir.offsetX, p.getY() + 3,
-                        p.getZ() - dir.offsetZ, ForgeDirection.UP)
-        };
+    protected PortDef[] cachedFluidPorts;
+
+    public PortDef[] getFluidPorts() {
+        if (cachedFluidPorts == null) {
+            ForgeDirection dir = getFacing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedFluidPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 3 + rot.offsetX * 1, y, z + dir.offsetZ * 3 + rot.offsetZ * 1, rot),
+                    PortDef.make(x + dir.offsetX * 3 - rot.offsetX * 1, y, z + dir.offsetZ * 3 - rot.offsetZ * 1, rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 1 + rot.offsetX * 1, y, z - dir.offsetZ * 1 + rot.offsetZ * 1, rot),
+                    PortDef.make(x - dir.offsetX * 1 - rot.offsetX * 1, y, z - dir.offsetZ * 1 - rot.offsetZ * 1, rot.getOpposite()),
+                    PortDef.make(x + dir.offsetX * 3, y + 2, z + dir.offsetZ * 3, ForgeDirection.UP),
+                    PortDef.make(x - dir.offsetX * 1, y + 2, z - dir.offsetZ * 1, ForgeDirection.UP),
+            };
+        }
+        return cachedFluidPorts;
     }
 
-    public DirPos[] getPowerPos() {
-        ForgeDirection dir = getFacing();
-        BlockPos p = getBlockPos();
-        return new DirPos[]{new DirPos(p.getX() - dir.offsetX * 4, p.getY() + 1,
-                p.getZ() - dir.offsetZ * 4, dir.getOpposite())};
+    public DirPos[] getConPos() { return PortDef.connections(getFluidPorts()); }
+
+    protected PortDef[] cachedPowerPorts;
+    public PortDef[] getPowerPorts() {
+        if (cachedPowerPorts == null) {
+            ForgeDirection dir = getFacing();
+            cachedPowerPorts = new PortDef[] {
+                    PortDef.make(worldPosition.getX() - dir.offsetX * 3, worldPosition.getY() + 1, worldPosition.getZ() - dir.offsetZ * 3, dir.getOpposite())
+            };
+        }
+        return cachedPowerPorts;
     }
+
+    public DirPos[] getPowerPos() { return PortDef.connections(getPowerPorts()); }
 
     @Override public long getPower() { return powerBuffer; }
     @Override public void setPower(long power) { powerBuffer = power; }

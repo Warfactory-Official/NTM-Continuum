@@ -5,8 +5,12 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.entity.logic.EntityBomber;
 import com.hbm.entity.missile.EntityMissileBaseNT;
+import com.hbm.entity.projectile.EntityArtilleryRocket;
+import com.hbm.entity.projectile.EntityArtilleryShell;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.entity.train.EntityRailCarBase;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModMachineItems;
@@ -14,7 +18,6 @@ import com.hbm.items.machine.ItemTurretBiometry;
 import com.hbm.inventory.container.ContainerTurretBase;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.mojang.serialization.Codec;
@@ -65,6 +68,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The shared turret brain, target acquisition, line of sight, aiming and the ammo/chip inventory.
@@ -74,18 +78,9 @@ import net.minecraft.sounds.SoundSource;
  * acts while switched on and powered; each tick it decays its search timer, reacquires when it has
  * no target, aims at whatever it holds, and lets {@link #updateFiringTick()} decide whether to shoot.
  *
- * <p><b>Deviations from the fork.</b> The 1.12.2 target filter also matches {@code EntityBomber},
- * {@code EntityMissileCustom} and {@code EntityRailCarBase}; the current {@link EntityMissileBaseNT}
- * hierarchy covers the missile branch, while the bomber and rail-car branches are not ported yet.
- * Spent casings are absent too: this port's {@code BulletConfig} carries no casing.
+ * <p><b>Deviation from 1.7.</b> Spent casings are absent: this port's {@code BulletConfig} carries no casing.
  *
- * <p>The fork's redstone-over-radio surface is ten functions; this port carries the seven whose state
- * exists here. The other three, {@code toggleBlacklistMobFilter}, {@code addMobFilter} and
- * {@code removeMobFilter}, drive a per-entity-id target filter that is not ported, so they are absent
- * rather than accepted and dropped. {@code addWhitelist} also guards its list where 1.12.2 does not:
- * {@link #getWhitelist} answers null both for a missing chip and for a chip with an empty roster, so the
- * fork throws on the first name written to a fresh chip. A turret with no chip is still a no-op because
- * {@link #addName} checks for one.
+ * <p>The redstone-over-radio surface is 1.7's seven functions; {@link #getWhitelist} is null only without a chip.
  */
 public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         implements IEnergyReceiverMK2, IControlReceiver, MenuProvider, IRORInteractive {
@@ -148,14 +143,19 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
     protected void tickServer() {
         aligned = false;
-        if (level != null) updateConnections(level);
+        this.setupAllPorts(getPorts());
+        this.updatePortPIFIFO();
 
         if (target != null && !target.isAlive()) {
             target = null;
+            targetLost();
             stattrak++;
         }
 
-        if (target != null && !entityInLOS(target)) target = null;
+        if (target != null && !entityInLOS(target)) {
+            target = null;
+            targetLost();
+        }
 
         tPos = target != null ? getEntityPos(target) : null;
 
@@ -169,6 +169,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         if (target != null && !target.isAlive()) {
             target = null;
             tPos = null;
+            targetLost();
             stattrak++;
         }
 
@@ -204,6 +205,14 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
             if (lastRotationYaw < rotationYaw) lastRotationYaw += Math.PI * 2;
             else lastRotationYaw -= Math.PI * 2;
         }
+    }
+
+    /** Called where the tick drops a dead or hidden target; switching off drops it without this. */
+    protected void targetLost() {}
+
+    /** How far a target may be before line of sight is lost; only relevant once it has been detected. */
+    protected double maxSightRange() {
+        return getDetectorRange() * 1.1;
     }
 
     protected void seekNewTarget() {
@@ -310,7 +319,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         Vec3 delta = ent.subtract(pos);
         double length = delta.length();
 
-        if (length < getDetectorGrace() || length > getDetectorRange() * 1.1) return false;
+        if (length < getDetectorGrace() || length > maxSightRange()) return false;
 
         Vec3 unit = toLocalDirection(delta).normalize();
         double pitchDeg = Math.toDegrees(Math.asin(unit.y / unit.length()));
@@ -362,6 +371,10 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
             if (e instanceof IRadarDetectableNT detectable && !detectable.canBeSeenBy(this)) return false;
             if (e instanceof EntityMissileBaseNT missile) return missile.getDeltaMovement().y < 0D;
             if (e instanceof AbstractMinecart) return true;
+            if (e instanceof EntityRailCarBase) return true;
+            if (e instanceof EntityBomber) return true;
+            if (e instanceof EntityArtilleryRocket) return true;
+            if (e instanceof EntityArtilleryShell) return true;
         }
 
         if (targetPlayers && e instanceof Player) return true;
@@ -484,10 +497,13 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
     public void manualSetup() {}
 
-    public void spawnBullet(BulletConfig bullet, float baseDamage) {
+    /** The {@code /ntmserver} damage the turret's projectiles or hits scale from. */
+    public abstract float getBaseDamage();
+
+    public void spawnBullet(BulletConfig bullet) {
         Vec3 tip = barrelTip();
 
-        EntityBulletBaseMK4 projectile = new EntityBulletBaseMK4(level, bullet, baseDamage, bullet.spread,
+        EntityBulletBaseMK4 projectile = new EntityBulletBaseMK4(level, bullet, getBaseDamage(), bullet.spread,
                 worldYaw(), worldPitch());
         projectile.setPos(tip.x, tip.y, tip.z);
         level.addFreshEntity(projectile);
@@ -517,7 +533,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         ItemStack chip = getItem(SLOT_CHIP);
         if (!chip.is(ModMachineItems.turret_chip.get())) return null;
         String[] names = ItemTurretBiometry.getNames(chip);
-        return names == null ? null : Arrays.asList(names);
+        return names == null ? new ArrayList<>() : Arrays.asList(names);
     }
 
     public void addName(String name) {
@@ -597,48 +613,50 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
     @Override
     public String[] getFunctionInfo() {
-        return new String[]{PREFIX_FUNCTION + "setActive" + NAME_SEPARATOR + "active (0 or 1)",
-                PREFIX_FUNCTION + "targetPlayers" + NAME_SEPARATOR + "enabled (0 or 1)",
-                PREFIX_FUNCTION + "targetAnimals" + NAME_SEPARATOR + "enabled (0 or 1)",
-                PREFIX_FUNCTION + "targetMobs" + NAME_SEPARATOR + "enabled (0 or 1)",
-                PREFIX_FUNCTION + "targetMachines" + NAME_SEPARATOR + "enabled (0 or 1)",
-                PREFIX_FUNCTION + "addWhitelist" + NAME_SEPARATOR + "name",
-                PREFIX_FUNCTION + "removeWhitelist" + NAME_SEPARATOR + "name"};
+        return new String[]{PREFIX_FUNCTION + "setactive" + NAME_SEPARATOR + "active (0 or 1)",
+                PREFIX_FUNCTION + "targetplayers" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetanimals" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetmobs" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetmachines" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "addwhitelist" + NAME_SEPARATOR + "name",
+                PREFIX_FUNCTION + "removewhitelist" + NAME_SEPARATOR + "name"};
     }
 
     @Override
     public String runRORFunction(String name, String[] params) {
-        if ((PREFIX_FUNCTION + "setActive").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "setactive").equals(name) && params.length > 0) {
             isOn = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             markChanged();
         }
-        if ((PREFIX_FUNCTION + "targetPlayers").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "targetplayers").equals(name) && params.length > 0) {
             targetPlayers = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             markChanged();
         }
-        if ((PREFIX_FUNCTION + "targetAnimals").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "targetanimals").equals(name) && params.length > 0) {
             targetAnimals = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             markChanged();
         }
-        if ((PREFIX_FUNCTION + "targetMobs").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "targetmobs").equals(name) && params.length > 0) {
             targetMobs = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             markChanged();
         }
-        if ((PREFIX_FUNCTION + "targetMachines").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "targetmachines").equals(name) && params.length > 0) {
             targetMachines = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             markChanged();
         }
-        if ((PREFIX_FUNCTION + "addWhitelist").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "addwhitelist").equals(name) && params.length > 0) {
             List<String> whitelist = getWhitelist();
-            if (whitelist == null || !whitelist.contains(params[0])) addName(params[0]);
-            markChanged();
-        }
-        if ((PREFIX_FUNCTION + "removeWhitelist").equals(name) && params.length > 0) {
-            List<String> whitelist = getWhitelist();
-            if (whitelist != null && whitelist.contains(params[0])) {
-                removeName(whitelist.indexOf(params[0]));
+            if (whitelist != null) {
+                if (!whitelist.contains(params[0])) addName(params[0]);
+                markChanged();
             }
-            markChanged();
+        }
+        if ((PREFIX_FUNCTION + "removewhitelist").equals(name) && params.length > 0) {
+            List<String> whitelist = getWhitelist();
+            if (whitelist != null) {
+                if (whitelist.contains(params[0])) removeName(whitelist.indexOf(params[0]));
+                markChanged();
+            }
         }
         return null;
     }
@@ -711,24 +729,26 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         return true;
     }
 
-    /**
-     * 1.7 {@code updateConnections}: power at the turret's connection positions, every tick. The positions are the
-     * port's {@link #getConPos} (1.7's eight pad-edge cells, plus the 1.12.2 underside this port kept), so a cable
-     * that connects is a cable the turret subscribes at.
-     */
-    protected void updateConnections(Level level) {
-        for (DirPos port : getConPos()) this.trySubscribe(level, port);
+    protected PortDef[] cachedPorts;
+
+    /** 1.7 {@code TilePortShapes.solderer}: the 2x2 footprint, each cell open on its two outer sides. */
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            Vec3 offset = getHorizontalOffset();
+            int x = worldPosition.getX() + (int) offset.x;
+            int y = worldPosition.getY();
+            int z = worldPosition.getZ() + (int) offset.z;
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x, y, z, Library.POS_X, Library.POS_Z),
+                    PortDef.make(x - 1, y, z, Library.NEG_X, Library.POS_Z),
+                    PortDef.make(x - 1, y, z - 1, Library.NEG_X, Library.NEG_Z),
+                    PortDef.make(x, y, z - 1, Library.POS_X, Library.NEG_Z),
+            };
+        }
+        return cachedPorts;
     }
 
-    /**
-     * The eight pad-edge plugs, in the order 1.12.2's {@code renderConnectors} draws them. The graph
-     * only answers on the server, so the mask is computed there and synced for the renderer.
-     */
-    /**
-     * Where a cable may feed the turret: the eight pad-edge cells plus the four beneath the footprint.
-     * The first eight are also the plugs the renderer draws, in 1.12.2's {@code renderConnectors}
-     * order, which is why the order matters and the underside comes last.
-     */
+    /** The connections of {@link #getPorts}, in the order 1.12.2's {@code renderConnectors} draws the plugs. */
     public DirPos[] getConPos() {
         Vec3 offset = getHorizontalOffset();
         int x = worldPosition.getX() + (int) offset.x;
@@ -740,8 +760,6 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
                 new DirPos(x - 1, y, z + 1, Library.POS_Z), new DirPos(x, y, z + 1, Library.POS_Z),
                 new DirPos(x + 1, y, z, Library.POS_X), new DirPos(x + 1, y, z - 1, Library.POS_X),
                 new DirPos(x, y, z - 2, Library.NEG_Z), new DirPos(x - 1, y, z - 2, Library.NEG_Z),
-                new DirPos(x, y - 1, z, Library.NEG_Y), new DirPos(x - 1, y - 1, z, Library.NEG_Y),
-                new DirPos(x, y - 1, z - 1, Library.NEG_Y), new DirPos(x - 1, y - 1, z - 1, Library.NEG_Y),
         };
     }
 

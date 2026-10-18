@@ -58,14 +58,15 @@ public final class IntakeFanGameTests {
         DirPos[] ports = intake.getConPos();
         BlockPos core = intake.getBlockPos();
         helper.assertTrue(ports.length == 8, "Intake must expose eight anchors");
+        // 1.7 TilePortShapes.solderer: core, +rot, -dir and -dir+rot, each open on its two outer sides
         assertPort(helper, ports[0], core.north(), ForgeDirection.NORTH);
-        assertPort(helper, ports[1], core.east().north(), ForgeDirection.NORTH);
-        assertPort(helper, ports[2], core.south(2), ForgeDirection.SOUTH);
-        assertPort(helper, ports[3], core.east().south(2), ForgeDirection.SOUTH);
-        assertPort(helper, ports[4], core.east(2), ForgeDirection.EAST);
-        assertPort(helper, ports[5], core.east(2).south(), ForgeDirection.EAST);
-        assertPort(helper, ports[6], core.west(), ForgeDirection.WEST);
-        assertPort(helper, ports[7], core.west().south(), ForgeDirection.WEST);
+        assertPort(helper, ports[1], core.west(), ForgeDirection.WEST);
+        assertPort(helper, ports[2], core.east().north(), ForgeDirection.NORTH);
+        assertPort(helper, ports[3], core.east(2), ForgeDirection.EAST);
+        assertPort(helper, ports[4], core.south(2), ForgeDirection.SOUTH);
+        assertPort(helper, ports[5], core.west().south(), ForgeDirection.WEST);
+        assertPort(helper, ports[6], core.east().south(2), ForgeDirection.SOUTH);
+        assertPort(helper, ports[7], core.east(2).south(), ForgeDirection.EAST);
 
         helper.assertTrue(block.canConnect(helper.getLevel(), core, ForgeDirection.NORTH),
                 "Intake must expose its north energy anchor");

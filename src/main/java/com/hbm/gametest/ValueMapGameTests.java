@@ -104,13 +104,13 @@ public final class ValueMapGameTests {
      * hash and compared value by value instead. No 1.12.2 CONTAMINATING entries (1.7 has no such hazard type); 1.7's
      * white phosphorus frame on its ingot and block tags.
      */
-    static final String HASH_HAZARDS = "13fea0451324b361169a32b529ffc96f3a74dd04d3203114703522b71d9b9619";
+    static final String HASH_HAZARDS = "f5dbfc5832973f93e14622e0da0553f75eaf2af25e7a1892d8c97d87da663838";
     /**
      * SHA-256 of {@link #armorDump()}, HBM's items only. 1.7 values: NCRPA resistance 1.7, RPA/NCRPA helmets
      * FULL_PACKAGE, the liquidator and PAA sets with their (empty) resistance, the schrabidium set in
-     * checkForHazmat, NCRPA not in checkForHaz2.
+     * checkForHazmat, NCRPA not in checkForHaz2, RPA at 50/0.75 physical, energy rounds not projectiles.
      */
-    static final String HASH_ARMOR = "6ec900226a2efa8de5d6a7d0c231d8781edc68490694af83a1cf0c8cca18e704";
+    static final String HASH_ARMOR = "9468336a15507e3adb352f10f3f24845cd0ed2f15d080757b6772f86f4df5a05";
     /**
      * SHA-256 of {@link #falloutDump}, with the rules' JSON keys sorted. 1.7 FalloutConfigJSON's solid marks and
      * order, no 1.12 opaque flag or log axis, no snow-block entry, the nether uranium entry.
@@ -291,7 +291,7 @@ public final class ValueMapGameTests {
     /** 1.7 TileEntityFusionPlasmaForge boosters (ticks). */
     private static final String BOOSTER_17 = "nugget_co60=20 billet_co60=120 ingot_co60=200 powder_co60=200 nugget_sr90=40 powder_sr90_tiny=40 billet_sr90=240 ingot_sr90=400 powder_sr90=400 nugget_au198=60 billet_au198=360 ingot_au198=600 powder_au198=600 powder_i131_tiny=60 powder_i131=600 powder_xe135_tiny=60 powder_xe135=600 powder_cs137_tiny=50 powder_cs137=500 powder_at209=1200";
     /** 1.7 Fluids CD_Canister colours. */
-    private static final String CANISTER_17 = "oil=424242 heavyoil=513F39 bitumen=5A5877 smear=624F3B heatingoil=694235 reclaimed=F65723 petroil=2369F6 lubricant=F1CC05 naphtha=5F6D44 diesel=FF2C2C lightoil=B46B52 kerosene=FF377D biofuel=9EB623 nitan=6B238C gasoline=2F7747 coalgas=2E155F fracksol=4F887F ethanol=EAFFF3 crackoil=424242 coaloil=424242 naphtha_crack=5F6D44 lightoil_crack=B46B52 diesel_crack=FF2C2C petroil_leaded=2331F6 gasoline_leaded=2F775A coalgas_leaded=1E155F woodoil=BF7E4F coalcreosote=285A3F seedslurry=7CC35E solvent=E4E3EF heavyoil_vacuum=513F39 reformate=D180D6 lightoil_vacuum=B46B52 xylene=A380D6 heatingoil_vacuum=694235 diesel_reform=FFC500 diesel_crack_reform=FFC500 kerosene_reform=FF377D oil_ds=424242 crackoil_ds=424242 naphtha_ds=5F6D44 lightoil_ds=B46B52";
+    private static final String CANISTER_17 = "oil=424242 heavyoil=513F39 bitumen=5A5877 smear=624F3B heatingoil=694235 reclaimed=F65723 petroil=2369F6 lubricant=F1CC05 naphtha=5F6D44 diesel=FF2C2C lightoil=B46B52 kerosene=FF377D biofuel=9EB623 nitan=6B238C gasoline=2F7747 coalgas=2E155F fracksol=4F887F ethanol=EAFFF3 crackoil=424242 coaloil=424242 naphtha_crack=5F6D44 lightoil_crack=B46B52 diesel_crack=FF2C2C petroil_leaded=2331F6 gasoline_leaded=2F775A coalgas_leaded=1E155F woodoil=BF7E4F coalcreosote=285A3F seedslurry=7CC35E solvent=E4E3EF heavyoil_vacuum=513F39 reformate=D180D6 lightoil_vacuum=B46B52 xylene=A380D6 heatingoil_vacuum=694235 diesel_reform=FFC500 diesel_crack_reform=FFC500 kerosene_reform=FF377D oil_ds=424242 crackoil_ds=424242 naphtha_ds=5F6D44 lightoil_ds=B46B52 titanium_tetrachloride=E1E549";
     /** 1.7 Fluids CD_Gastank bottle/label colours. */
     private static final String GAS_17 = "deuterium=0000FF/FFFFFF tritium=000099/E9FFAA gas=FF4545/FFE97F petroleum=5E7CFF/FFE97F biogas=C8FF1F/303030 hydrogen=4286F4/FFFFFF oxygen=98BDF9/FFFFFF xenon=8C21FF/303030 helium3=FD631F/FFFFFF aromatics=68A09A/EDCF27 unsaturateds=628FAE/EDCF27 syngas=FFFFFF/131313 chlorine=BAB572/887B34 sourgas=C9BE0D/303030 reformgas=9392FF/FFB992 phosgene=CFC4A4/361414 mustardgas=BAB572/361414 helium4=FD631F/FFFF00 flue=FF4545/FFE97F";
 
@@ -325,7 +325,7 @@ public final class ValueMapGameTests {
             helper.assertTrue(c != null && c.gasBottle().orElse(-1) == Integer.parseInt(bl[0], 16)
                     && c.gasLabel().orElse(-1) == Integer.parseInt(bl[1], 16), "gas tank colours of " + fluid);
         });
-        helper.assertTrue(containers.byId().size() == 61, "61 container fluids (42 canister, 19 gas tank)");
+        helper.assertTrue(containers.byId().size() == 62, "62 container fluids (43 canister, 19 gas tank)");
 
         var erosion = WorldDataMaps.EROSION.byId();
         helper.assertTrue(erosion.size() == 4 && "minecraft:gravel".equals(erosion.get("hbm:concrete"))

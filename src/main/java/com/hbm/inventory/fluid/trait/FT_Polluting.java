@@ -1,12 +1,8 @@
 package com.hbm.inventory.fluid.trait;
 
-import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
-import com.hbm.inventory.fluid.FluidType;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.Level;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -20,9 +16,7 @@ import java.util.Map;
  * <p>1.7 stores both tables in {@code HashMap}s keyed by the enum. An {@link EnumMap} holds the same
  * pairs and walks them in declaration order, so tooltip lines do not depend on identity hashes.
  *
- * <p>1.7's {@code onFluidRelease} override is not carried: nothing in 1.7 calls a trait's
- * {@code onFluidRelease} (the {@code FluidType} delegate it would come through is an empty method), so
- * every real release goes through {@link #pollute} or {@code TileEntityMachinePolluting.pollute}.
+ * <p>A release reaches the tables through {@link FluidTrait#onRelease}.
  */
 public final class FT_Polluting {
 
@@ -66,18 +60,5 @@ public final class FT_Polluting {
                 .append(" ")
                 .append(Component.translatable("hbmfluid.trait.perMB"))
                 .withStyle(style);
-    }
-
-    /** 1.7 {@code FT_Polluting.pollute}: {@code mB} of {@code type} released straight into the region. */
-    public static void pollute(Level world, BlockPos pos, FluidType type, FluidReleaseType release, float mB) {
-        FT_Polluting trait = type.getTrait(FT_Polluting.class);
-        if (trait == null) return;
-        if (release == FluidReleaseType.VOID) return;
-
-        Map<PollutionType, Float> map = release == FluidReleaseType.BURN ? trait.burnMap : trait.releaseMap;
-
-        for (Map.Entry<PollutionType, Float> entry : map.entrySet()) {
-            PollutionHandler.incrementPollution(world, pos, entry.getKey(), entry.getValue() * mB);
-        }
     }
 }

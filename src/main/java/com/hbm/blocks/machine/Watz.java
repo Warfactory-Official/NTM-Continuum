@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -135,5 +136,21 @@ public class Watz extends BlockMultiblockMachine implements IFluidConnectorBlock
             new int[] {2, 0, 1, 1, 3, -3},
             new int[] {2, 0, 1, 1, -3, 3},
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {2, 0, 0, ForgeDirection.DOWN.ordinal()},
+                {-2, 0, 0, ForgeDirection.DOWN.ordinal()},
+                {0, 0, 2, ForgeDirection.DOWN.ordinal()},
+                {0, 0, -2, ForgeDirection.DOWN.ordinal()},
+                {2, 2, 0, ForgeDirection.UP.ordinal()},
+                {-2, 2, 0, ForgeDirection.UP.ordinal()},
+                {0, 2, 2, ForgeDirection.UP.ordinal()},
+                {0, 2, -2, ForgeDirection.UP.ordinal()},
+                {0, 2, 0, ForgeDirection.UP.ordinal()},
+                {0, 0, 0, ForgeDirection.DOWN.ordinal()},
+        }, dir);
     }
 }

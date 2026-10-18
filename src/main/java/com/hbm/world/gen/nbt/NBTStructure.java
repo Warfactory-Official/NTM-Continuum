@@ -129,6 +129,7 @@ public class NBTStructure {
             name = path;
             loadStructure(stream);
         } else {
+            name = path;
             Constants.LOG.error("NBT Structure not found: " + path);
         }
     }
@@ -469,6 +470,16 @@ public class NBTStructure {
 
         int bSizeX = totalBounds.maxX() - totalBounds.minX();
         int bSizeZ = totalBounds.maxZ() - totalBounds.minZ();
+
+        // a piece saved before its .nbt changed size would place out of its box
+        boolean swizzle = coordBaseMode == 1 || coordBaseMode == 3;
+        int expectedX = (swizzle ? sizeZ : sizeX) - 1;
+        int expectedZ = (swizzle ? sizeX : sizeZ) - 1;
+        if (bSizeX != expectedX || bSizeZ != expectedZ) {
+            Constants.LOG.warn("NBT structure {} bounds mismatch (saved {}x{}, expected {}x{}) - structure changed since worldgen, skipping piece",
+                    name, bSizeX, bSizeZ, expectedX, expectedZ);
+            return false;
+        }
 
         // voxel grid transforms can fuck you up
         // you have my respect, vaer
@@ -849,7 +860,13 @@ public class NBTStructure {
                                 ChunkGenerator generator, RandomSource random,
                                 BoundingBox chunkBB, ChunkPos chunkPos, BlockPos pivot) {
             if (piece == null) return;
-            piece.structure.build(level, piece, boundingBox, chunkBB, coordBaseMode, structureName);
+            try {
+                piece.structure.build(level, piece, boundingBox, chunkBB, coordBaseMode, structureName);
+            } catch (RuntimeException e) {
+                // 1.7 catches any structure failure so the chunk still generates, without the structure
+                Constants.LOG.error("NTM structure gen failed at chunk {}, {} ({}) - chunk generates without it",
+                        chunkPos.getMinBlockX() >> 4, chunkPos.getMinBlockZ() >> 4, structureName, e);
+            }
         }
 
         void offsetYHeight(int y) {

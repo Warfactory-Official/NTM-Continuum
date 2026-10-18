@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
 public final class AmmoPressRecipes {
 
     /** Number of positional rows in 1.7's default Ammo Press table. */
-    public static final int SOURCE_RECIPE_COUNT = 89;
+    public static final int SOURCE_RECIPE_COUNT = 90;
 
     private AmmoPressRecipes() {}
 

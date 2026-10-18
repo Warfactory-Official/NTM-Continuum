@@ -474,7 +474,8 @@ public final class ModShapelessRecipes {
         shapeless(NS, "crayon_red", ItemIds.crayon_red, 4, ItemIds.chemical_dye_red, TagIds.tars, VanillaIds.paper);
         shapeless(NS, "crayon_silver", ItemIds.crayon_silver, 4,
                 ItemIds.chemical_dye_silver, TagIds.tars, VanillaIds.paper);
-        // no crayon_white: 1.7 PowderRecipes:100 loops i < 15, so WHITE (15) has no recipe
+        shapeless(NS, "crayon_white", ItemIds.crayon_white, 4,
+                ItemIds.chemical_dye_white, TagIds.tars, VanillaIds.paper);
         shapeless(NS, "crayon_yellow", ItemIds.crayon_yellow, 4,
                 ItemIds.chemical_dye_yellow, TagIds.tars, VanillaIds.paper);
         shapeless(NS, "deco_pipe_1", ItemIds.deco_pipe, ItemIds.deco_pipe_rim);

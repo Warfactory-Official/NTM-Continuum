@@ -5,6 +5,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemFluidIDMulti;
 import com.hbm.packet.ItemControlPayload;
 import com.hbm.tileentity.IFluidCopiable;
+import com.hbm.util.Bookmarks;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -26,22 +27,23 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * 1.7 {@code GUIScreenFluid}, the multi identifier's picker: a search line and nine result slots (each a
- * colour swatch); left click sets the primary fluid, right click the secondary, both sent as an item control
- * tag. {@code gui_fluid.png}, 176x54.
+ * 1.7 {@code GUIScreenFluid}, the multi identifier's picker: a search line and two rows of nine result slots (each a
+ * colour swatch); left click sets the primary fluid, right click the secondary, middle click toggles a bookmark. An
+ * empty search shows the bookmarks. Choices are sent as item control tags. {@code gui_fluid.png}, 176x72.
  */
 public class GUIScreenFluid extends CompatScreen {
 
     protected static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/machine/gui_fluid.png");
     protected int xSize = 176;
-    protected int ySize = 54;
+    protected int ySize = 72;
     protected int guiLeft;
     protected int guiTop;
     private EditBox search;
 
     private FluidType primary = Fluids.NONE;
     private FluidType secondary = Fluids.NONE;
-    private FluidType[] searchArray = new FluidType[9];
+    private FluidType[] searchArray = new FluidType[18];
+    private final Bookmarks<FluidType> bookmarks = new Bookmarks<>(searchArray.length);
 
     public GUIScreenFluid() {
         super(Component.empty());
@@ -77,6 +79,11 @@ public class GUIScreenFluid extends CompatScreen {
             ItemStack held = Minecraft.getInstance().player.getMainHandItem();
             this.primary = ItemFluidIDMulti.getType(held, true);
             this.secondary = ItemFluidIDMulti.getType(held, false);
+            FluidType[] saved = ItemFluidIDMulti.getBookmarks(held);
+            for (int i = 0; i < Math.min(saved.length, this.searchArray.length); i++) {
+                this.bookmarks.add(saved[i]);
+                this.searchArray[i] = saved[i];
+            }
         }
     }
 
@@ -86,7 +93,7 @@ public class GUIScreenFluid extends CompatScreen {
         for (int k = 0; k < this.searchArray.length; k++) {
             if (this.searchArray[k] == null) return false;
 
-            if (guiLeft + 7 + k * 18 <= i && guiLeft + 7 + k * 18 + 18 > i && guiTop + 29 < j && guiTop + 29 + 18 >= j) {
+            if (inSlot(k, i, j)) {
                 CompoundTag data = new CompoundTag();
                 if (event.button() == 0) {
                     click();
@@ -96,6 +103,12 @@ public class GUIScreenFluid extends CompatScreen {
                     click();
                     this.secondary = this.searchArray[k];
                     Fluids.write(data, "secondary", this.secondary);
+                } else if (event.button() == 2) {
+                    click();
+                    FluidType fluid = this.searchArray[k];
+                    if (this.bookmarks.add(fluid)) this.bookmarks.remove(fluid);
+                    if (this.search.getValue().trim().isEmpty()) this.searchArray = bookmarked();
+                    return true;
                 } else {
                     return false;
                 }
@@ -104,6 +117,15 @@ public class GUIScreenFluid extends CompatScreen {
             }
         }
         return false;
+    }
+
+    private boolean inSlot(int k, double i, double j) {
+        int x = guiLeft + 7 + (k % 9) * 18, y = guiTop + 29 + (k / 9 * 18);
+        return x <= i && x + 18 > i && y < j && y + 18 >= j;
+    }
+
+    private FluidType[] bookmarked() {
+        return this.bookmarks.set().toArray(new FluidType[this.searchArray.length]);
     }
 
     private static void click() {
@@ -115,7 +137,7 @@ public class GUIScreenFluid extends CompatScreen {
         for (int k = 0; k < this.searchArray.length; k++) {
             if (this.searchArray[k] == null) return;
 
-            if (guiLeft + 7 + k * 18 <= i && guiLeft + 7 + k * 18 + 18 > i && guiTop + 29 < j && guiTop + 29 + 18 >= j) {
+            if (inSlot(k, i, j)) {
                 List<Component> tooltip = new ArrayList<>();
                 tooltip.add(this.searchArray[k].getDisplayName());
                 this.searchArray[k].addInfo(tooltip);
@@ -129,21 +151,22 @@ public class GUIScreenFluid extends CompatScreen {
         GuiDraw.blit(graphics, TEXTURE, guiLeft, guiTop, 0F, 0F, xSize, ySize, 256, 256);
 
         if (this.search.isFocused())
-            GuiDraw.blit(graphics, TEXTURE, guiLeft + 43, guiTop + 7, 166F, 54F, 90, 18, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, guiLeft + 43, guiTop + 7, 166F, 72F, 90, 18, 256, 256);
 
         for (int k = 0; k < this.searchArray.length; k++) {
             FluidType type = this.searchArray[k];
             if (type == null) return;
 
-            GuiDraw.blit(graphics, TEXTURE, guiLeft + 12 + k * 18, guiTop + 31, 12F + k * 18, 56F, 8, 14, 256, 256,
+            int col = k % 9, row = k / 9 * 18;
+            GuiDraw.blit(graphics, TEXTURE, guiLeft + 12 + col * 18, guiTop + 31 + row, 12F + col * 18, 74F, 8, 14, 256, 256,
                     0xFF000000 | (type.getColor() & 0xFFFFFF));
 
             if (type == this.primary && type == this.secondary) {
-                GuiDraw.blit(graphics, TEXTURE, guiLeft + 7 + k * 18, guiTop + 29, 176F, 36F, 18, 18, 256, 256);
+                GuiDraw.blit(graphics, TEXTURE, guiLeft + 7 + col * 18, guiTop + 29 + row, 176F, 36F, 18, 18, 256, 256);
             } else if (type == this.primary) {
-                GuiDraw.blit(graphics, TEXTURE, guiLeft + 7 + k * 18, guiTop + 29, 176F, 0F, 18, 18, 256, 256);
+                GuiDraw.blit(graphics, TEXTURE, guiLeft + 7 + col * 18, guiTop + 29 + row, 176F, 0F, 18, 18, 256, 256);
             } else if (type == this.secondary) {
-                GuiDraw.blit(graphics, TEXTURE, guiLeft + 7 + k * 18, guiTop + 29, 176F, 18F, 18, 18, 256, 256);
+                GuiDraw.blit(graphics, TEXTURE, guiLeft + 7 + col * 18, guiTop + 29 + row, 176F, 18F, 18, 18, 256, 256);
             }
         }
     }
@@ -162,17 +185,32 @@ public class GUIScreenFluid extends CompatScreen {
         return false;
     }
 
+    @Override
+    public void removed() {
+        super.removed();
+        CompoundTag data = new CompoundTag();
+        Fluids.writeList(data, "bookmarks", this.bookmarks.set().toArray(new FluidType[0]));
+        GolemNetwork.sendToServer(ItemControlPayload.CODEC, new ItemControlPayload(data));
+    }
+
     private void updateSearch() {
-        this.searchArray = new FluidType[9];
+        this.searchArray = new FluidType[this.searchArray.length];
+        String searchText = this.search.getValue();
+
+        if (this.bookmarks.size() > 0 && searchText.trim().isEmpty()) {
+            this.searchArray = bookmarked();
+            return;
+        }
+
         int next = 0;
-        String subs = this.search.getValue().toLowerCase(Locale.US);
+        String subs = searchText.toLowerCase(Locale.US);
 
         for (FluidType type : Fluids.getInNiceOrder()) { // 1.7 GUIScreenFluid.updateSearch
             String name = type.getDisplayNameString().toLowerCase(Locale.US);
             if (name.contains(subs) && !IFluidCopiable.ItemFluidIds.hasNoID(type)) {
                 this.searchArray[next] = type;
                 next++;
-                if (next >= 9) return;
+                if (next >= this.searchArray.length) return;
             }
         }
     }

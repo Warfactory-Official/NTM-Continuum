@@ -22,7 +22,8 @@ import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.uninos.graph.EndpointRegistry;
-import com.hbm.uninos.graph.PortClaims;
+import com.hbm.uninos.PortNodes;
+import com.hbm.uninos.networkproviders.FluidNetProvider;
 import dev.golem.core.fluid.FluidContainer;
 import dev.golem.core.fluid.FluidExposure;
 import dev.golem.core.fluid.FluidMachine;
@@ -63,8 +64,8 @@ import java.util.Set;
  *       intake/outlet hold, and nothing is written into a tank directly.</li>
  *   <li>Pressure 0 only: a foreign pipe carries no pressure, so a pressurised tank answers neither way.</li>
  *   <li>A directional user (the flow-control pump) receives only on its intake and provides only on its outlet.</li>
- *   <li>A role is offered only at a port the machine claims it at, as for a duct: its 1.7 {@code trySubscribe} /
- *       {@code tryProvide} at the position the foreign pipe stands at, on this side ({@link PortClaims}).</li>
+ *   <li>A machine with ports offers a role only where one of its ports reaches the foreign pipe and holds that
+ *       role, as for a duct ({@link PortNodes#allows}).</li>
  * </ul>
  *
  * <p>HBM's own duct network is unchanged: it does not reach foreign tanks, and ducts are not exposed.
@@ -166,24 +167,22 @@ public final class ForeignFluids {
         }
 
         /**
-         * The receiver this face is a port of for {@code type}, when it wants some: 1.7's {@code trySubscribe} at the
-         * position a duct (here the foreign pipe) stands at, on this side ({@link PortClaims}), as the duct network asks.
-         * The demand is read first because the role is only asked about with something to move.
+         * The receiver this face is a port of for {@code type}, when it wants some.
          */
         private @Nullable IFluidReceiverMK2 receiver(FluidType type) {
             if (!(user instanceof IFluidReceiverMK2 receiver)) return null;
             if (user instanceof IFluidDirectionalMK2 directional && (side == null || !directional.receivesOn(forgeSide()))) return null;
             if (side == null || Math.min(receiver.getDemand(type, PRESSURE), receiver.getReceiverSpeed(type, PRESSURE)) <= 0L) return null;
-            if (!PortClaims.allows(level, pos.relative(side).asLong(), forgeSide(), user, type, PortClaims.SUBSCRIBE)) return null;
+            if (!PortNodes.allows(level, pos.relative(side).asLong(), forgeSide(), user, FluidNetProvider.of(type), true)) return null;
             return receiver;
         }
 
-        /** The provider this face is a port of for {@code type}, when it holds some: 1.7's {@code tryProvide} there. */
+        /** The provider this face is a port of for {@code type}, when it holds some. */
         private @Nullable IFluidProviderMK2 provider(FluidType type) {
             if (!(user instanceof IFluidProviderMK2 provider)) return null;
             if (user instanceof IFluidDirectionalMK2 directional && (side == null || !directional.providesOn(forgeSide()))) return null;
             if (side == null || Math.min(provider.getFluidAvailable(type, PRESSURE), provider.getProviderSpeed(type, PRESSURE)) <= 0L) return null;
-            if (!PortClaims.allows(level, pos.relative(side).asLong(), forgeSide(), user, type, PortClaims.PROVIDE)) return null;
+            if (!PortNodes.allows(level, pos.relative(side).asLong(), forgeSide(), user, FluidNetProvider.of(type), false)) return null;
             return provider;
         }
 

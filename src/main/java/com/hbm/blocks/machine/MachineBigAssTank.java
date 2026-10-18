@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.items.machine.IItemFluidId;
@@ -101,5 +102,13 @@ public class MachineBigAssTank extends MachineGiantTank {
             new int[] {3, 0, 6, -5, 0, 0},
             new int[] {3, 0, -5, 6, 0, 0}
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, 6, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -6, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

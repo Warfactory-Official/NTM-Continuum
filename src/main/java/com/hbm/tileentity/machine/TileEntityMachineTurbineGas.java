@@ -7,8 +7,6 @@ import com.hbm.client.sound.GasTurbineSoundHandler;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
-import com.hbm.handler.pollution.PollutionHandler;
-import com.hbm.handler.pollution.PollutionType;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -16,6 +14,7 @@ import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.inventory.container.ContainerMachineTurbineGas;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
@@ -24,7 +23,7 @@ import com.hbm.lib.Library;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.TileEntityMachinePolluting;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -39,10 +38,10 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** The legacy gas turbine: a slow-starting gas generator with a steam heat exchanger. */
-public class TileEntityMachineTurbineGas extends TileEntityMachineBase
+public class TileEntityMachineTurbineGas extends TileEntityMachinePolluting
         implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, MenuProvider, IRORValueProvider, IRORInteractive {
 
     public static final long MAX_POWER = 1_000_000L;
@@ -81,10 +80,14 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
     }
 
     public TileEntityMachineTurbineGas(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_TURBINE_GAS.get(), pos, state, 2);
+        super(ModBlockEntities.MACHINE_TURBINE_GAS.get(), pos, state, 2, 150);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbineGas turbine) {
+        turbine.setupPowerPorts(turbine.getPowerPorts());
+        turbine.setupFluidPorts(turbine.getPorts());
+        turbine.updatePortPOFIFO();
+
         turbine.waterToBoil = 0D;
         turbine.throttle = turbine.powerSliderPos * 100 / 60;
         turbine.updateFuelType();
@@ -117,15 +120,8 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         ForgeDirection dir = turbine.getFacing();
         turbine.powerBeforeNet = Math.min(turbine.power, MAX_POWER);
         turbine.power = Library.chargeItemsFromTE(turbine.inventory, 0, turbine.power, MAX_POWER);
-        DirPos power = turbine.getPowerPos();
-        turbine.tryProvide(level, power.getPos(), power.getDir());
         turbine.power = Math.min(turbine.power, MAX_POWER);
 
-        for (int i = 0; i < 2; i++) { // fuel and lube
-            for (DirPos port : turbine.getFuelPos()) turbine.trySubscribe(turbine.tanks[i].getTankType(), level, port);
-        }
-        for (DirPos port : turbine.getWaterPos()) turbine.trySubscribe(turbine.tanks[2].getTankType(), level, port);
-        turbine.tryProvide(turbine.tanks[3], level, turbine.getSteamPos());
         turbine.networkPackNT();
     }
 
@@ -230,14 +226,12 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         int heatTarget = throttle * 5 * (maxTemp - tempIdle) / 500;
         if (heatTarget > temp - tempIdle && TickPhase.every(level, worldPosition, 2)) temp++;
         else if (heatTarget < temp - tempIdle && TickPhase.every(level, worldPosition, 2)) temp--;
-        if (TickPhase.every(level, worldPosition, 20) && tanks[0].getTankType() != Fluids.OXYHYDROGEN) {
-            PollutionHandler.incrementPollution(level, worldPosition, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 3);
-        }
         makePower(level, maxFuelConsumption(tanks[0].getTankType()), throttle);
     }
 
     private void makePower(Level level, double maxConsumption, int throttle) {
         double consumption = maxConsumption * 0.05D + maxConsumption * throttle / 100D;
+        if (TickPhase.every(level, worldPosition, 5)) pollute(tanks[0].getTankType(), FluidReleaseType.BURN, (float) consumption * 0.5F);
         fuelToConsume += consumption;
         // hbm-space: the running turbine breathes as much oxygen as it burns fuel, and stops without it
         if (!Environment.breatheAir(level, worldPosition, (int) Math.floor(fuelToConsume))) {
@@ -281,6 +275,35 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
 
     public ForgeDirection getFacing() {
         return MachineCore.facing(getBlockState());
+    }
+
+    protected PortDef[] cachedPowerPorts;
+    public PortDef[] getPowerPorts() {
+        if (cachedPowerPorts == null) {
+            ForgeDirection rot = getFacing().getRotation(ForgeDirection.UP);
+            cachedPowerPorts = new PortDef[] {
+                    PortDef.make(worldPosition.getX() + rot.offsetX * 4, worldPosition.getY() + 1, worldPosition.getZ() + rot.offsetZ * 4, rot),
+            };
+        }
+        return cachedPowerPorts;
+    }
+
+    /** One passthrough group for all four tanks: fuel, lube, water and steam share every fluid port. */
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = getFacing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x - dir.offsetX * 1 + rot.offsetX, y, z - dir.offsetZ * 1 + rot.offsetZ, dir.getOpposite()),
+                    PortDef.make(x + dir.offsetX * 1 + rot.offsetX, y, z + dir.offsetZ * 1 + rot.offsetZ, dir),
+                    PortDef.make(x - dir.offsetX * 1 + rot.offsetX * -4, y, z - dir.offsetZ * 1 + rot.offsetZ * -4, dir.getOpposite()),
+                    PortDef.make(x + dir.offsetX * 1 + rot.offsetX * -4, y, z + dir.offsetZ * 1 + rot.offsetZ * -4, dir),
+                    PortDef.make(x - rot.offsetX * 5, y + 1, z - rot.offsetZ * 5, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 
     public DirPos getPowerPos() {
@@ -344,7 +367,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
 
     @Override public boolean canConnect(FluidType type, ForgeDirection dir) { return dir != ForgeDirection.DOWN; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0], tanks[1], tanks[2]}; }
-    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[3]}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[3], smoke, smoke_leaded, smoke_poison}; }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
     @Override public long getPower() { return power; }
     @Override public void setPower(long value) { power = value; }

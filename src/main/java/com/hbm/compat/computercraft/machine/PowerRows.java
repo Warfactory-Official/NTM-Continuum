@@ -7,7 +7,6 @@ import com.hbm.tileentity.machine.TileEntityChungus;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
 import com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine;
 import com.hbm.tileentity.machine.TileEntityMachineLargeTurbine;
-import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreInjector;
@@ -25,7 +24,6 @@ public final class PowerRows {
 
     // CELLS: the 1.7 block's makeExtra cells are TileEntityProxyCombo flagged power and/or fluid
     public static final List<Peripherals.Row<?>> ROWS = List.of(
-            Peripherals.row(TileEntityMachineTurbine.class, SmallTurbinePeripheral::new, Reach.BLOCK),
             Peripherals.row(TileEntityMachineLargeTurbine.class, LargeTurbinePeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityChungus.class, ChungusPeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityMachineIndustrialTurbine.class, IndustrialTurbinePeripheral::new, Reach.CELLS),

@@ -18,6 +18,8 @@ import com.hbm.blocks.network.FluidDuctNeo;
 import com.hbm.blocks.network.FluidDuctPaintable;
 import com.hbm.blocks.network.FluidDuctPaintableBlockExhaust;
 import com.hbm.blocks.network.FluidPipeAnchor;
+import com.hbm.blocks.network.ExhaustPipeAnchor;
+import com.hbm.blocks.network.FlowControlPump;
 import com.hbm.blocks.network.FluidPump;
 import com.hbm.blocks.network.FluidSwitch;
 import com.hbm.blocks.machine.FoundryTank;
@@ -77,6 +79,17 @@ public final class ModFluidNetBlocks {
     /** Renderer-drawn duct: a one-part multipart blockstate on the shared empty placeholder. */
     private static final Preset DRAWN_DUCT = multipart(file -> file.part(new Variant(PLACEHOLDER))).and(SELF_PICKAXE);
     /** Effect barrels: renderer-drawn, keyed by "armed". */
+    /** Renderer-drawn folded multiblocks: the shared placeholder; the item is an OBJ definition (ObjItemDeclarations). */
+    private static final Preset FOLDED = Presets.rendered(PLACEHOLDER, Variants.product(
+                    Variants.uniform("facing", "north", "east", "south", "west"),
+                    Variants.uniform("cell", "false", "true")))
+            .and(SELF_PICKAXE);
+    /** The pipe anchors: renderer-drawn, one steel-box model per mounted face for particles and breaking. */
+    private static final Preset ANCHOR = multipart(file -> {
+        for (String facing : new String[]{"down", "up", "north", "south", "west", "east"}) {
+            file.part(When.of("facing", facing), new Variant("hbm:block/pipe_anchor_" + facing));
+        }
+    }).and(SELF_PICKAXE);
     private static final Preset EFFECT_BARREL_DECL = Presets.rendered(Variants.uniform("armed", "false", "true"))
             .and(SELF_PICKAXE);
     /**
@@ -125,11 +138,9 @@ public final class ModFluidNetBlocks {
             REG.block("fluid_duct_paintable_block_exhaust", FluidDuctPaintableBlockExhaust::new, STEEL)
             .transform(multipart(file -> file.part(new Variant("hbm:block/fluid_duct_paintable_block_exhaust"))).and(SELF_PICKAXE));
     public static final RegistryObject<FluidPipeAnchor> pipe_anchor = REG.block("pipe_anchor", FluidPipeAnchor::new, PIPE)
-            .transform(multipart(file -> {
-                for (String facing : new String[]{"down", "up", "north", "south", "west", "east"}) {
-                    file.part(When.of("facing", facing), new Variant("hbm:block/pipe_anchor_" + facing));
-                }
-            }).and(SELF_PICKAXE));
+            .transform(ANCHOR);
+    public static final RegistryObject<ExhaustPipeAnchor> pipe_anchor_exhaust = REG.block("pipe_anchor_exhaust", ExhaustPipeAnchor::new, PIPE)
+            .transform(ANCHOR);
     public static final RegistryObject<FluidDuctPaintable> fluid_duct_paintable = REG.block("fluid_duct_paintable", FluidDuctPaintable::new, STEEL)
             .transform(multipart(file -> file.part(new Variant("hbm:block/fluid_duct_paintable"))).and(SELF_PICKAXE));
     public static final RegistryObject<FluidDuctGauge> fluid_duct_gauge = REG.block("fluid_duct_gauge", FluidDuctGauge::new, STEEL)
@@ -140,6 +151,10 @@ public final class ModFluidNetBlocks {
             .transform(valve("hbm:blocks/fluid_counter_valve_off", "hbm:blocks/fluid_counter_valve_on"));
     public static final RegistryObject<FluidPump> fluid_pump = REG.block("fluid_pump", FluidPump::new, PIPE)
             .transform(Presets.rendered(Variants.uniform("facing", "north", "east", "south", "west")).and(SELF_PICKAXE));
+    public static final RegistryObject<FlowControlPump> flow_control_pump = REG.block("flow_control_pump", FlowControlPump::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops()
+                    .isSuffocating((state, world, pos) -> false).isViewBlocking((state, world, pos) -> false))
+            .transform(FOLDED);
 
     // --- storage barrels ---
 
@@ -148,9 +163,9 @@ public final class ModFluidNetBlocks {
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFluidBarrel> barrel_corroded = REG.block("barrel_corroded",
-            p -> new BlockFluidBarrel(p, 6000, "barrel_corroded", true), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new BlockFluidBarrel(p, 16000, "barrel_corroded", true), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
-            .loot(Loot.self()).tag(BlockTag.PICKAXE);
+            .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFluidBarrel> barrel_steel = REG.block("barrel_steel",
             p -> new BlockFluidBarrel(p, 16000, "barrel_steel", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
@@ -292,12 +307,14 @@ public final class ModFluidNetBlocks {
         }
         item(fluid_duct_paintable_block_exhaust, HbmTab.MACHINES)
                 .transform(Presets.shares("hbm:block/fluid_duct_paintable_block_exhaust"));
-        item(pipe_anchor, HbmTab.MACHINES).transform(Presets.shares("hbm:block/pipe_anchor_up"));
+        item(pipe_anchor, HbmTab.MACHINES);
+        item(pipe_anchor_exhaust, HbmTab.MACHINES);
         item(fluid_duct_paintable, HbmTab.MACHINES).transform(Presets.shares("hbm:block/fluid_duct_paintable"));
         item(fluid_duct_gauge, HbmTab.MACHINES).transform(Presets.shares("hbm:block/fluid_duct_gauge"));
         item(fluid_switch, HbmTab.MACHINES).transform(Presets.shares("hbm:block/fluid_switch_off"));
         item(fluid_counter_valve, HbmTab.MACHINES).transform(Presets.shares("hbm:block/fluid_counter_valve_off"));
-        item(fluid_pump, HbmTab.MACHINES);
+        item(fluid_pump, null); // deprecated in 1.7: no tab, no recipe
+        item(flow_control_pump, HbmTab.MACHINES);
         item(barrel_plastic, HbmTab.MACHINES);
         item(barrel_corroded, null); // 1.7: setCreativeTab(null)
         item(barrel_steel, HbmTab.MACHINES);

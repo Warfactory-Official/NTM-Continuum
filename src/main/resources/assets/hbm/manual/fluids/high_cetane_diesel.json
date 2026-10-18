@@ -13,9 +13,11 @@
 		]
 	],
 	"title": {
-		"en_us": "High-Cetane Diesel"
+		"en_us": "High-Cetane Diesel",
+		"ru_ru": "Высокоцетановый дизель"
 	},
 	"content": {
-		"en_us": "High-cetane diesel can first be obtained by mixing [[reformate|Reformate]] and [[diesel|Diesel]]. It is used as a combustible [[fuel|Fuels]] source. It may also be obtained by [[fractioning|Fractioning Tower]] [[desulfurized naphtha|Desulfurized Naphtha]] or [[desulfurized light oil|Desulfurized Light Oil]].<br><br>{{Template:Oil3}}"
+		"en_us": "High-cetane diesel can first be obtained by mixing [[reformate|Reformate]] and [[diesel|Diesel]]. It is used as a combustible [[fuel|Fuels]] source. It may also be obtained by [[fractioning|Fractioning Tower]] [[desulfurized naphtha|Desulfurized Naphtha]] or [[desulfurized light oil|Desulfurized Light Oil]].<br><br>{{Template:Oil3}}",
+		"ru_ru": "Высокоцетановый дизель в первую очередь можно получить путем смешивания [[реформированного топлива|Reformate]] и [[дизеля|Diesel]]. Он используется в качестве горючего источника [[топлива|Fuels]]. Его также можно получить путем [[ректификации|Fractioning Tower]] [[обессеренного нафта|Desulfurized Naphtha]] или [[обессеренной лёгкой нефти|Desulfurized Light Oil]].<br><br>{{Template:Oil3}}"
 	}
 }

@@ -1,5 +1,8 @@
 package com.hbm.saveddata.satellites;
 
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
+import net.minecraft.network.chat.Component;
+
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionSavedData.PollutionData;
 import com.hbm.handler.pollution.PollutionType;
@@ -32,6 +35,11 @@ public class SatelliteMapper extends Satellite {
     }
 
     @Override public String getType() { return "NOT_A_SPY_SATELLITE_:)"; }
+
+    @Override
+    public Component[] getInfo(Level level) {
+        return new Component[] { nameOf(EnumSatType.SPY) };
+    }
 
     @Override
     public void onCommandImpl(Level level, String... cmd) {

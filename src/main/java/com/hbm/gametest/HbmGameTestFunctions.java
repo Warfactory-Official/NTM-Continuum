@@ -14,7 +14,6 @@ import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.inventory.container.ContainerFurnaceCombination;
 import com.hbm.inventory.container.ContainerMachinePUREX;
 import com.hbm.inventory.container.ContainerMachinePlasmaForge;
-import com.hbm.inventory.container.ContainerMachineTurbine;
 import com.hbm.inventory.container.ContainerStorageDrum;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -56,7 +55,6 @@ import com.hbm.tileentity.machine.TileEntityCondenserPowered;
 import com.hbm.tileentity.machine.TileEntityFurnaceCombination;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
-import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import com.hbm.tileentity.machine.TileEntityStorageDrum;
 import com.hbm.tileentity.machine.TileEntityWatz;
@@ -235,14 +233,6 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function ADVANCED_OIL_MENU_DIRECTION =
             TESTS.function("advanced_oil_menu_direction", 40, 8,
                     () -> AdvancedOilParityGameTests::oilWellMenuKeepsTankInputAboveOutput);
-    public static final GameTests.Function TURBINE_CONVERSION =
-            TESTS.function("turbine_conversion", 20, () -> HbmGameTestFunctions::turbineConversion);
-    public static final GameTests.Function TURBINE_IDENTIFIER =
-            TESTS.function("turbine_identifier", 20, () -> HbmGameTestFunctions::turbineFluidId);
-    public static final GameTests.Function TURBINE_SLOTS =
-            TESTS.function("turbine_slots", 20, () -> HbmGameTestFunctions::turbineSlots);
-    public static final GameTests.Function TURBINE_MENU =
-            TESTS.function("turbine_menu", 20, () -> HbmGameTestFunctions::turbineMenu);
     public static final GameTests.Function CRATER_BIOME_REGISTRY =
             TESTS.function("crater_biome_registry", 20, () -> HbmGameTestFunctions::craterBiomeRegistry);
     public static final GameTests.Function INDUSTRIAL_TURBINE_LAYOUT =
@@ -295,6 +285,20 @@ public final class HbmGameTestFunctions {
             TESTS.function("satellite_linker", 20, () -> SatelliteGameTests::linker);
     public static final GameTests.Function SATELLITE_DOCK =
             TESTS.function("satellite_dock", 100, 4, () -> SatelliteGameTests::dock);
+    public static final GameTests.Function SPACE_SCIENCE_FLIGHT =
+            TESTS.function("space_science_flight", 20, () -> SpaceGameTests::scienceFlightData);
+    public static final GameTests.Function SPACE_SCIENCE_SENSORS =
+            TESTS.function("space_science_sensors", 20, () -> SpaceGameTests::scienceSensors);
+    public static final GameTests.Function SPACE_SCIENCE_ASSEMBLER =
+            TESTS.function("space_science_assembler", 20, () -> SpaceGameTests::scienceAssembler);
+    public static final GameTests.Function SPACE_RELAY =
+            TESTS.function("space_relay_dimension", 20, () -> SpaceGameTests::relay);
+    public static final GameTests.Function SPACE_LAMBDA_GATING =
+            TESTS.function("space_lambda_gating", 100, 8, () -> SpaceGameTests::lambdaGating);
+    public static final GameTests.Function SPACE_SOYUZ_GATING =
+            TESTS.function("space_soyuz_gating", 100, 8, () -> SpaceGameTests::soyuzGating);
+    public static final GameTests.Function SPACE_SOYUZ_LOADING =
+            TESTS.function("space_soyuz_loading", 100, 8, () -> SpaceGameTests::soyuzLoading);
     public static final GameTests.Function SOYUZ_MODES =
             TESTS.function("soyuz_modes", 100, 16, () -> SoyuzGameTests::modes);
     public static final GameTests.Function DFC_BEAM =
@@ -837,6 +841,80 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function PA_ASSETS =
             TESTS.function("pa_assets", 20, () -> AlbionGameTests::assets);
 
+    // Ilmenite chain, raw nuggets and liquefaction
+    public static final GameTests.Function ILMENITE_CHAIN =
+            TESTS.function("ilmenite_chain", 20, () -> IlmeniteGameTests::chain);
+    public static final GameTests.Function RAW_NUGGETS =
+            TESTS.function("raw_nugget_mold_and_crafting", 20, () -> IlmeniteGameTests::nuggets);
+    public static final GameTests.Function LIQUEFACTION_YIELDS =
+            TESTS.function("liquefaction_yields_and_time", 20, () -> IlmeniteGameTests::liquefaction);
+
+    // Network blocks
+    public static final GameTests.Function FLOW_CONTROL_PUMP_LIMIT =
+            TESTS.function("flow_control_pump_limit", 200, 12, () -> NetworkBlockGameTests::pumpLimit);
+    public static final GameTests.Function NETWORK_SEPARATOR_LIMIT =
+            TESTS.function("network_separator_limit", 300, 12, () -> NetworkBlockGameTests::separatorLimit);
+    public static final GameTests.Function FLUID_PUMP_DEPRECATED =
+            TESTS.function("fluid_pump_deprecated_passthrough", 100, 8, () -> NetworkBlockGameTests::deprecatedPump);
+    public static final GameTests.Function CABLE_DIODE_DEPRECATED =
+            TESTS.function("cable_diode_deprecated_cable", 100, 8, () -> NetworkBlockGameTests::deprecatedDiode);
+    public static final GameTests.Function PIPE_ANCHORS =
+            TESTS.function("pipe_anchors_three_networks", 40, 10, () -> NetworkBlockGameTests::anchors);
+    public static final GameTests.Function COUNTER_VALVE_COUNT =
+            TESTS.function("fluid_counter_valve_counts_closing_tick", 100, 8, () -> NetworkBlockGameTests::counterValve);
+    public static final GameTests.Function STEEL_BARREL_CORRODES =
+            TESTS.function("barrel_steel_corrodes", 40, 6, () -> NetworkBlockGameTests::steelBarrelCorrodes);
+    public static final GameTests.Function CATALYTIC_REFORMER_POWER =
+            TESTS.function("catalytic_reformer_port_power", 100, 12, () -> NetworkBlockGameTests::reformerPower);
+
+    // Rock mill, supercomputer and drive enclosure
+    public static final GameTests.Function ROCK_MILL_TABLE =
+            TESTS.function("rock_mill_table", 20, () -> RockMillGameTests::table);
+    public static final GameTests.Function ROCK_MILL_PROCESSING =
+            TESTS.function("rock_mill_processing", 40, 8, () -> RockMillGameTests::processing);
+    public static final GameTests.Function ROCK_MILL_AUTOSWITCH =
+            TESTS.function("rock_mill_autoswitch", 40, 8, () -> RockMillGameTests::autoSwitch);
+    public static final GameTests.Function ROCK_MILL_LAYOUT =
+            TESTS.function("rock_mill_layout", 40, 8, () -> RockMillGameTests::layout);
+    public static final GameTests.Function ROCK_MILL_MENU =
+            TESTS.function("rock_mill_menu", 40, 8, () -> RockMillGameTests::menu);
+    public static final GameTests.Function SUPERCOMPUTER_TABLE =
+            TESTS.function("supercomputer_table", 20, () -> SuperComputerGameTests::table);
+    public static final GameTests.Function SUPERCOMPUTER_PROCESSING =
+            TESTS.function("supercomputer_processing", 40, 20, () -> SuperComputerGameTests::processing);
+    public static final GameTests.Function SUPERCOMPUTER_FAILURE_CHANCE =
+            TESTS.function("supercomputer_failure_chance", 40, 20, () -> SuperComputerGameTests::failureChance);
+    public static final GameTests.Function SUPERCOMPUTER_LAYOUT =
+            TESTS.function("supercomputer_layout", 40, 20, () -> SuperComputerGameTests::layout);
+    public static final GameTests.Function TAPE_DRIVE_SATELLITE =
+            TESTS.function("tape_drive_satellite", 100, 10, () -> SuperComputerGameTests::tapeDrive);
+    public static final GameTests.Function TAPE_DRIVE_MENU =
+            TESTS.function("tape_drive_menu", 20, () -> SuperComputerGameTests::tapeDriveMenu);
+
+    // Doors, conveyors, reactors, AUTOCAL and redstone-over-radio
+    public static final GameTests.Function MACHINE_UPDATE_DOORS =
+            TESTS.function("machine_update_door_skins_larp", 20, () -> MachineUpdateGameTests::doorSkinsAndLarp);
+    public static final GameTests.Function MACHINE_UPDATE_BLAST_DOOR =
+            TESTS.function("machine_update_blast_door_placement", 20, 8, () -> MachineUpdateGameTests::blastDoorPlacement);
+    public static final GameTests.Function MACHINE_UPDATE_CONVEYOR_CRAM =
+            TESTS.function("machine_update_conveyor_cram", 20, 8, () -> MachineUpdateGameTests::conveyorCram);
+    public static final GameTests.Function MACHINE_UPDATE_THRESHER =
+            TESTS.function("machine_update_thresher_crops", 20, () -> MachineUpdateGameTests::thresherCrops);
+    public static final GameTests.Function MACHINE_UPDATE_PILE_THORIUM =
+            TESTS.function("machine_update_pile_thorium", 20, () -> MachineUpdateGameTests::pileThoriumBreeding);
+    public static final GameTests.Function MACHINE_UPDATE_ZIRNOX_SLOT =
+            TESTS.function("machine_update_zirnox_monitor_slot", 20, () -> MachineUpdateGameTests::zirnoxMonitorSlot);
+    public static final GameTests.Function MACHINE_UPDATE_COOLANT_LOCKS =
+            TESTS.function("machine_update_coolant_locks", 20, () -> MachineUpdateGameTests::coolantLocks);
+    public static final GameTests.Function MACHINE_UPDATE_AUTOCAL =
+            TESTS.function("machine_update_autocal_states", 20, 8, () -> MachineUpdateGameTests::autocalReturnStates);
+    public static final GameTests.Function MACHINE_UPDATE_LANTERN =
+            TESTS.function("machine_update_lantern_repair", 20, () -> MachineUpdateGameTests::lanternRepair);
+    public static final GameTests.Function MACHINE_UPDATE_BATTERY_SOCKET =
+            TESTS.function("machine_update_battery_socket_extraction", 20, 8, () -> MachineUpdateGameTests::batterySocketExtraction);
+    public static final GameTests.Function MACHINE_UPDATE_ROR_COMMANDS =
+            TESTS.function("machine_update_ror_commands", 20, () -> MachineUpdateGameTests::rorMachineCommands);
+
     // --- Exposure Chamber ---
     public static final GameTests.Function EXPOSURE_CHAMBER_RECIPES =
             TESTS.function("exposure_chamber_recipes", 20, () -> ExposureChamberGameTests::recipes);
@@ -922,6 +1000,8 @@ public final class HbmGameTestFunctions {
     // --- Sedna guns (implementations live in GunGameTests) ---
     public static final GameTests.Function GUN_RELOAD =
             TESTS.function("gun_reload", 200, () -> GunGameTests::gunReload);
+    public static final GameTests.Function GUN_VALUES_CONFIG =
+            TESTS.function("gun_values_config", 20, () -> GunGameTests::gunValuesConfig);
     public static final GameTests.Function GUN_RELOAD_KEEPS_TYPE =
             TESTS.function("gun_reload_keeps_type", 300, () -> GunGameTests::gunReloadKeepsType);
     public static final GameTests.Function GUN_FIRE =
@@ -1240,6 +1320,14 @@ public final class HbmGameTestFunctions {
             TESTS.function("icf_laser_array", 20, 8, () -> IcfGameTests::laserArrayScan);
     public static final GameTests.Function DUNGEON_REBAR_FILL =
             TESTS.function("dungeon_rebar_fill", 20, () -> DungeonGameTests::rebarFillsLowestLayer);
+    public static final GameTests.Function DUNGEON_REBAR_PORT =
+            TESTS.function("dungeon_rebar_fed_from_above_only", 80, 4, () -> DungeonGameTests::rebarFedFromAbove);
+    public static final GameTests.Function DIESEL_SMOKE_NEEDS_ON =
+            TESTS.function("diesel_smoke_needs_on", 20, 2, () -> MachineDetailGameTests::dieselSmokeNeedsOn);
+    public static final GameTests.Function RBMK_ROD_DESCRIPTION =
+            TESTS.function("rbmk_rod_description_flux", 20, () -> MachineDetailGameTests::rbmkRodDescription);
+    public static final GameTests.Function BEDROCK_ORE_CHUNK_CENTRE =
+            TESTS.function("bedrock_ore_level_chunk_centre", 20, () -> MachineDetailGameTests::bedrockOreChunkCentre);
     public static final GameTests.Function DUNGEON_PEDESTAL_RITUAL =
             TESTS.function("dungeon_pedestal_ritual", 40, 10, () -> DungeonGameTests::pedestalRitual);
     public static final GameTests.Function MISSILE_LAUNCH_TABLE =
@@ -1434,6 +1522,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("custom_machine_structure_recipe", 100, 8, () -> CustomMachineGameTests::structureAndRecipe);
     public static final GameTests.Function CUSTOM_MACHINE_CONTROLLER_RECIPE =
             TESTS.function("custom_machine_controller_recipe", 40, () -> CustomMachineGameTests::controllerRecipe);
+    public static final GameTests.Function CUSTOM_MACHINE_GENERATOR_POWERS_CONSUMER =
+            TESTS.function("custom_machine_generator_powers_consumer", 80, 10, () -> CustomMachineGameTests::generatorPowersConsumer);
 
     // --- the generated id constants (implementations live in IdGameTests) ---
     public static final GameTests.Function IDS_MATCH_REGISTRY =
@@ -1460,6 +1550,10 @@ public final class HbmGameTestFunctions {
             TESTS.function("ntm_structure_palettes", 200, () -> NTMStructureGameTests::palettesResolve);
     public static final GameTests.Function NTM_STRUCTURE_COMPONENT_BUILD =
             TESTS.function("ntm_structure_component_build", 60, 48, () -> NTMStructureGameTests::componentBuild);
+    public static final GameTests.Function NTM_STRUCTURE_NEW_BIOMES =
+            TESTS.function("ntm_structure_new_biomes", 20, () -> NTMStructureGameTests::newStructureBiomes);
+    public static final GameTests.Function NTM_STRUCTURE_BOUNDS_MISMATCH =
+            TESTS.function("ntm_structure_bounds_mismatch", 40, 48, () -> NTMStructureGameTests::boundsMismatch);
     // --- legacy hardcoded dungeons + scattered world blocks, WG-D (implementations live in LegacyDungeonGameTests) ---
     public static final GameTests.Function WGD_BUILDERS = TESTS.function("wgd_builders", 200, () -> LegacyDungeonGameTests::builders);
     public static final GameTests.Function WGD_APPLY = TESTS.function("wgd_apply", 40, 16, () -> LegacyDungeonGameTests::apply);
@@ -1551,151 +1645,11 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** The 85% / 6000 mB-per-tick turbine math, per steam stage, plus the buffer clamp. */
-    private static void turbineConversion(GameTestHelper helper) {
-        Fluids.init();
-        var pos = new BlockPos(1, 1, 1);
-
-        // STEAM: ops = min(64000/100, 128000/1, 6000/100) = 60 -> 6000 mB in, 60 mB out, 60*200*0.85 HE
-        TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
-        turbine.input.setFill(64_000);
-        tick(helper, pos, turbine);
-        helper.assertTrue(turbine.input.getFill() == 58_000, "Turbine drained " + (64_000 - turbine.input.getFill()) + " mB of steam, expected 6000");
-        helper.assertTrue(turbine.output.getTankType() == Fluids.SPENTSTEAM && turbine.output.getFill() == 60,
-                "Turbine spent-steam output regressed");
-        helper.assertTrue(turbine.power == 10_200, "Turbine steam power regressed: " + turbine.power);
-
-        // SUPERHOTSTEAM: ops = min(64000/1, 128000/10, 6000/1) = 6000 -> 6000 mB in, 60000 mB hot steam out
-        turbine = placeTurbine(helper, pos);
-        turbine.input.setTankType(Fluids.SUPERHOTSTEAM);
-        turbine.input.setFill(64_000);
-        tick(helper, pos, turbine);
-        helper.assertTrue(turbine.input.getFill() == 58_000, "Turbine superhot steam throughput must cap at 6000 mB/t");
-        helper.assertTrue(turbine.output.getTankType() == Fluids.HOTSTEAM && turbine.output.getFill() == 60_000,
-                "Turbine must cool superhot steam into hot steam");
-        helper.assertTrue(turbine.power == 91_800, "Turbine superhot steam power regressed: " + turbine.power);
-
-        // the buffer clamps at maxPower
-        turbine = placeTurbine(helper, pos);
-        turbine.input.setFill(64_000);
-        turbine.power = TileEntityMachineTurbine.MAX_POWER - 1;
-        tick(helper, pos, turbine);
-        helper.assertTrue(turbine.power == TileEntityMachineTurbine.MAX_POWER, "Turbine power must clamp to maxPower");
-
-        // a full output tank stalls the machine outright
-        turbine = placeTurbine(helper, pos);
-        turbine.input.setFill(64_000);
-        turbine.output.setFill(turbine.output.getMaxFill());
-        tick(helper, pos, turbine);
-        helper.assertTrue(turbine.input.getFill() == 64_000 && turbine.power == 0,
-                "Turbine must stall when the output tank is full");
-        helper.succeed();
-    }
-
-    /** The fluid identifier picks the steam stage and passes from slot 0 to slot 1. */
-    private static void turbineFluidId(GameTestHelper helper) {
-        Fluids.init();
-        var pos = new BlockPos(1, 1, 1);
-
-        TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
-        turbine.inventory.setStackInSlot(0, ItemFluidId.make(Fluids.SUPERHOTSTEAM));
-        tick(helper, pos, turbine);
-        helper.assertTrue(turbine.input.getTankType() == Fluids.SUPERHOTSTEAM, "Identifier did not retype the input tank");
-        helper.assertTrue(turbine.inventory.getStackInSlot(0).isEmpty(), "Consumed identifier must leave slot 0");
-        helper.assertTrue(turbine.inventory.getStackInSlot(1).getItem() instanceof IItemFluidId,
-                "Identifier must pass down into slot 1");
-
-        // a fluid the turbine cannot cool: no power, and the output tank goes NONE (the GUI's warning state)
-        turbine = placeTurbine(helper, pos);
-        turbine.inventory.setStackInSlot(0, ItemFluidId.make(Fluids.WATER));
-        tick(helper, pos, turbine);
-        helper.assertTrue(turbine.input.getTankType() == Fluids.WATER, "Identifier must retype even to a non-coolable fluid");
-        helper.assertTrue(turbine.output.getTankType() == Fluids.NONE, "Non-coolable input must blank the output tank");
-        helper.assertTrue(turbine.power == 0, "Non-coolable input must not generate power");
-        helper.succeed();
-    }
-
-    /** Slot validity, both canister bays and the battery slot. */
-    private static void turbineSlots(GameTestHelper helper) {
-        Fluids.init();
-        var pos = new BlockPos(1, 1, 1);
-        TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
-
-        var identifier = ItemFluidId.make(Fluids.STEAM);
-        var bucket = new ItemStack(Items.BUCKET);
-        var battery = new ItemStack(
-                ModBatteryItems.PACKS.get(ItemBatteryPack.EnumBatteryPack.BATTERY_LEAD).get());
-        helper.assertTrue(turbine.isItemValidForSlot(0, identifier) && !turbine.isItemValidForSlot(0, bucket),
-                "Slot 0 must take fluid identifiers only");
-        helper.assertTrue(turbine.isItemValidForSlot(2, bucket) && turbine.isItemValidForSlot(2, identifier),
-                "Slot 2 is a plain slot in the 1.7 GUI");
-        helper.assertTrue(!turbine.canPlaceItemThroughFace(2, bucket, Direction.UP)
-                        && turbine.canPlaceItemThroughFace(4, battery, Direction.NORTH)
-                        && !turbine.canTakeItemThroughFace(6, bucket, Direction.DOWN),
-                "1.7 automation: only a battery into slot 4, nothing out");
-        helper.assertTrue(turbine.isItemValidForSlot(4, battery) && !turbine.isItemValidForSlot(4, bucket),
-                "Slot 4 must take batteries only");
-        helper.assertTrue(turbine.isItemValidForSlot(3, bucket) && turbine.isItemValidForSlot(6, bucket),
-                "The bay output slots must accept the machine's own writes");
-
-        // input bay: a full container drains into the input tank (WATER so the conversion stays out of it)
-        turbine.input.setTankType(Fluids.WATER);
-        turbine.inventory.setStackInSlot(2, new ItemStack(Items.WATER_BUCKET));
-        tick(helper, pos, turbine);
-        helper.assertTrue(turbine.input.getFill() == 1_000, "Input canister bay did not drain into the tank");
-        helper.assertTrue(turbine.inventory.getStackInSlot(2).isEmpty()
-                        && turbine.inventory.getStackInSlot(3).is(Items.BUCKET),
-                "Emptied container must move to slot 3");
-
-        // output bay: an empty bucket comes back filled with the spent steam
-        turbine = placeTurbine(helper, pos);
-        turbine.output.setFill(2_000);
-        turbine.inventory.setStackInSlot(5, new ItemStack(Items.BUCKET));
-        tick(helper, pos, turbine);
-        helper.assertTrue(turbine.output.getFill() == 1_000, "Output canister bay did not drain the output tank");
-        helper.assertTrue(turbine.inventory.getStackInSlot(5).isEmpty()
-                        && ItemFluidBucket.getFluid(turbine.inventory.getStackInSlot(6)) == Fluids.SPENTSTEAM,
-                "Filled spent-steam bucket must move to slot 6");
-
-        // battery slot: the buffer empties into the item
-        turbine = placeTurbine(helper, pos);
-        turbine.power = 5_000;
-        turbine.inventory.setStackInSlot(4, battery.copy());
-        tick(helper, pos, turbine);
-        helper.assertTrue(turbine.power == 0, "Turbine must push its buffer into the battery slot");
-        var charged = turbine.inventory.getStackInSlot(4);
-        helper.assertTrue(((IBatteryItem) charged.getItem()).getCharge(charged) == 5_000,
-                "Battery did not receive the turbine's power");
-        helper.succeed();
-    }
-
-    /** The menu layout: the old container's slot count and coordinates. */
-    private static void turbineMenu(GameTestHelper helper) {
-        Fluids.init();
-        var pos = new BlockPos(1, 1, 1);
-        TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
-        helper.assertTrue(turbine instanceof MenuProvider, "The turbine must open a menu");
-
-        var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
-        var menu = new ContainerMachineTurbine(0, player.getInventory(), turbine);
-        helper.assertTrue(menu.slots.size() == 7 + 36, "Turbine menu must have 7 machine slots + the player inventory");
-        assertSlot(helper, menu, 0, 8, 17);
-        assertSlot(helper, menu, 1, 8, 53);
-        assertSlot(helper, menu, 2, 44, 17);
-        assertSlot(helper, menu, 3, 44, 53);
-        assertSlot(helper, menu, 4, 98, 53);
-        assertSlot(helper, menu, 5, 152, 17);
-        assertSlot(helper, menu, 6, 152, 53);
-        helper.assertFalse(menu.slots.get(1).mayPlace(ItemFluidId.make(Fluids.STEAM)),
-                "The identifier output slot must be take-only");
-        helper.succeed();
-    }
-
     private static void assertSlot(GameTestHelper helper, AbstractContainerMenu menu,
                                    int index, int x, int y) {
         var slot = menu.slots.get(index);
         helper.assertTrue(slot.x == x && slot.y == y,
-                "Turbine slot " + index + " sits at " + slot.x + "," + slot.y + ", expected " + x + "," + y);
+                "Slot " + index + " sits at " + slot.x + "," + slot.y + ", expected " + x + "," + y);
     }
 
     /** The condenser closes the loop: spent steam in, the same amount of water out. */
@@ -1711,16 +1665,6 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(condenser.output.getTankType() == Fluids.WATER && condenser.output.getFill() == 100,
                 "Condenser must return the spent steam as water 1:1");
         helper.succeed();
-    }
-
-    private static TileEntityMachineTurbine placeTurbine(GameTestHelper helper, BlockPos pos) {
-        helper.setBlock(pos, Blocks.AIR.defaultBlockState());
-        helper.setBlock(pos, ModMachineBlocks.machine_turbine.get().defaultBlockState());
-        return GameTestHelpers.blockEntity(helper, pos, TileEntityMachineTurbine.class);
-    }
-
-    private static void tick(GameTestHelper helper, BlockPos pos, TileEntityMachineTurbine turbine) {
-        TileEntityMachineTurbine.serverTick(helper.getLevel(), helper.absolutePos(pos), turbine.getBlockState(), turbine);
     }
 
     // --- PUREX ---------------------------------------------------------------------------------------
@@ -2328,7 +2272,7 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** Powered condenser conversion is blocked below 10 HE per mB and consumes exactly that amount. */
+    /** Powered condenser conversion needs 95% of 10 HE per mB and consumes the full amount, down to zero. */
     private static void poweredCondenserConversion(GameTestHelper helper) {
         Fluids.init();
         var pos = new BlockPos(1, 1, 1);
@@ -2337,12 +2281,12 @@ public final class HbmGameTestFunctions {
         var condenser = GameTestHelpers.blockEntity(helper, pos,
                 TileEntityCondenserPowered.class);
         condenser.input.setFill(100);
-        condenser.power = 999;
+        condenser.power = 949;
         TileEntityCondenserPowered.serverTick(helper.getLevel(), helper.absolutePos(pos),
                 state, condenser);
         helper.assertTrue(condenser.input.getFill() == 100 && condenser.output.getFill() == 0,
                 "Powered condenser must be energy-gated");
-        condenser.power = 1_000;
+        condenser.power = 950;
         TileEntityCondenserPowered.serverTick(helper.getLevel(), helper.absolutePos(pos),
                 state, condenser);
         helper.assertTrue(condenser.input.getFill() == 0 && condenser.output.getFill() == 100
@@ -2527,9 +2471,9 @@ public final class HbmGameTestFunctions {
         recipes.registerRecipes();
         // 20 base recipes; +12 ICF parts (plsm.icf*) and plsm.schrabhammer make 33 of
         // the original's 34; plsm.gerald (the construction satellite) completes them; the 35th is
-        // ass.fensusan (the REDD).
-        helper.assertTrue(recipes.recipeOrderedList.size() == 35,
-                "Expected 35 plasma-forge recipes, found " + recipes.recipeOrderedList.size());
+        // ass.fensusan (the REDD); the nine expensive-mode parts and the CMB tubes make 45.
+        helper.assertTrue(recipes.recipeOrderedList.size() == 45,
+                "Expected 45 plasma-forge recipes, found " + recipes.recipeOrderedList.size());
         helper.assertTrue(recipes.autoSwitchGroups.getOrDefault("autoswitch.weldPlates", List.of()).size() == 11,
                 "Expected 11 welded-plate variants in the auto-switch group");
 
@@ -2881,7 +2825,7 @@ public final class HbmGameTestFunctions {
                 BlockMultiblockCore.PASSIVE_ITEMS);
 
         TileEntityReactorZirnox reactor = GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
-        var ports = reactor.getConPos();
+        var ports = List.of(reactor.getConPos());
         helper.assertTrue(ports.size() == 4, "ZIRNOX must expose four lateral duct ports");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.offset(3, 1, 0)))
                         && p.getDir() == ForgeDirection.EAST), "Missing lower east port");

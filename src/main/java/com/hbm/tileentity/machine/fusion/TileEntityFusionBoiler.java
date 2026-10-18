@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Fusion boiler: turns a torus's plasma output into superheated steam.
@@ -46,19 +47,16 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase
     /** Last tick's plasma, which 1.7's OpenComputers callbacks reported. */
     public long plasmaEnergySync() { return plasmaEnergySync; }
 
-
     public TileEntityFusionBoiler(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_BOILER.get(), pos, state);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionBoiler te) {
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
+
         te.plasmaEnergySync = te.plasmaEnergy;
         te.plasmaEnergy = 0;
-
-        for (DirPos port : te.getConPos()) {
-            if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, port);
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, port);
-        }
 
         ForgeDirection dir = FusionNodes.facing(state).getOpposite();
         FusionLink.claim(level, te, plasmaCell(pos, dir), MachineCaps.PLASMA_IN);
@@ -66,16 +64,23 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase
         te.networkPackNT();
     }
 
-    public List<DirPos> getConPos() {
-        ForgeDirection dir = FusionNodes.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return List.of(
-                new DirPos(x - dir.offsetX + rot.offsetX * 2, y, z - dir.offsetZ + rot.offsetZ * 2, rot),
-                new DirPos(x - dir.offsetX - rot.offsetX * 2, y, z - dir.offsetZ - rot.offsetZ * 2, rot.getOpposite()),
-                new DirPos(x + dir.offsetX * 2 + rot.offsetX * 2, y, z + dir.offsetZ * 2 + rot.offsetZ * 2, rot),
-                new DirPos(x + dir.offsetX * 2 - rot.offsetX * 2, y, z + dir.offsetZ * 2 - rot.offsetZ * 2, rot.getOpposite()));
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = FusionNodes.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x - dir.offsetX * 1 + rot.offsetX * 1, y, z - dir.offsetZ * 1 + rot.offsetZ * 1, rot),
+                    PortDef.make(x - dir.offsetX * 1 - rot.offsetX * 1, y, z - dir.offsetZ * 1 - rot.offsetZ * 1, rot.getOpposite()),
+                    PortDef.make(x + dir.offsetX * 2 + rot.offsetX * 1, y, z + dir.offsetZ * 2 + rot.offsetZ * 1, rot),
+                    PortDef.make(x + dir.offsetX * 2 - rot.offsetX * 1, y, z + dir.offsetZ * 2 - rot.offsetZ * 1, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
+
+    public List<DirPos> getConPos() { return List.of(PortDef.connections(getPorts())); }
 
     @Override public boolean receivesFusionPower() { return true; }
 

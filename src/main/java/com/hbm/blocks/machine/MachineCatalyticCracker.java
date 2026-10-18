@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -94,12 +95,7 @@ public class MachineCatalyticCracker extends BlockMultiblockMachine implements I
         return true;
     }
 
-    /**
-     * Six of upstream's eight ports. The pair at {@code +dir*2 - rot*4} and {@code -dir*2 + rot*3}
-     * each carries the face of the opposite flank, so each names a cell one step outside the machine.
-     * 1.7 asks {@code isPort} of a block that is not the cracker and never gets an answer, so they
-     * connect nothing there either, and the table says what the machine really has.
-     */
+    /** 1.7's eight ports: two on each end and two on each flank. */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
@@ -111,6 +107,8 @@ public class MachineCatalyticCracker extends BlockMultiblockMachine implements I
         visitor.cell(core.relative(facing, -3).relative(rot), MASK_NORTH);
         visitor.cell(core.relative(facing, -3).relative(rot, -2), MASK_NORTH);
         visitor.cell(core.relative(facing, 2).relative(rot, 2), MASK_WEST);
+        visitor.cell(core.relative(facing, -2).relative(rot, 2), MASK_WEST);
+        visitor.cell(core.relative(facing, 2).relative(rot, -3), MASK_EAST);
         visitor.cell(core.relative(facing, -2).relative(rot, -3), MASK_EAST);
     }
 
@@ -138,5 +136,19 @@ public class MachineCatalyticCracker extends BlockMultiblockMachine implements I
             new int[]{14, -13, -1, 2, 1, 0},
             new int[]{3, -1, 2, 3, -1, 3}
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 3, ForgeDirection.SOUTH.ordinal()},
+                {-2, 0, 3, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, -3, ForgeDirection.NORTH.ordinal()},
+                {-2, 0, -3, ForgeDirection.NORTH.ordinal()},
+                {2, 0, 2, ForgeDirection.EAST.ordinal()},
+                {-3, 0, 2, ForgeDirection.WEST.ordinal()},
+                {2, 0, -2, ForgeDirection.EAST.ordinal()},
+                {-3, 0, -2, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

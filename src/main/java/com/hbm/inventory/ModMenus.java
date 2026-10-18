@@ -21,6 +21,8 @@ import com.hbm.inventory.container.ContainerFusionTorus;
 import com.hbm.inventory.container.ContainerHeaterHeatex;
 import com.hbm.inventory.container.ContainerLaunchPad;
 import com.hbm.inventory.container.ContainerLiquefactor;
+import com.hbm.inventory.container.ContainerLaunchpadLambda;
+import com.hbm.inventory.container.ContainerLaunchpadSoyuz;
 import com.hbm.inventory.container.ContainerMachineArcWelder;
 import com.hbm.inventory.container.ContainerMachineCatalyticReformer;
 import com.hbm.inventory.container.ContainerMachineCoker;
@@ -44,7 +46,6 @@ import com.hbm.inventory.container.ContainerMachineGasCent;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
 import com.hbm.inventory.container.ContainerMachineChemicalPlant;
 import com.hbm.inventory.container.ContainerMachineRefinery;
-import com.hbm.inventory.container.ContainerMachineTurbine;
 import com.hbm.inventory.container.ContainerMachineTurbineGas;
 import com.hbm.inventory.container.ContainerMachineTurbofan;
 import com.hbm.inventory.container.ContainerMachineVacuumDistill;
@@ -54,6 +55,9 @@ import com.hbm.inventory.container.ContainerMixer;
 import com.hbm.inventory.container.ContainerMachineExposureChamber;
 import com.hbm.inventory.container.ContainerBlastFurnace;
 import com.hbm.inventory.container.ContainerMachinePUREX;
+import com.hbm.inventory.container.ContainerMachineRockMill;
+import com.hbm.inventory.container.ContainerMachineSuperComputer;
+import com.hbm.inventory.container.ContainerTapeDrive;
 import com.hbm.inventory.container.ContainerMachineElectricFurnace;
 import com.hbm.inventory.container.ContainerFurnaceBrick;
 import com.hbm.inventory.container.ContainerFurnaceIron;
@@ -151,6 +155,10 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<ContainerSoyuzLauncher>> SOYUZ_LAUNCHER =
             REG.menu("soyuz_launcher", () -> Menus.typeWithPos(ContainerSoyuzLauncher::new));
+    public static final RegistryObject<MenuType<ContainerLaunchpadSoyuz>> LAUNCHPAD_SOYUZ =
+            REG.menu("launchpad_soyuz", () -> Menus.typeWithPos(ContainerLaunchpadSoyuz::new));
+    public static final RegistryObject<MenuType<ContainerLaunchpadLambda>> LAUNCHPAD_LAMBDA =
+            REG.menu("launchpad_lambda", () -> Menus.typeWithPos(ContainerLaunchpadLambda::new));
 
 
     public static final RegistryObject<MenuType<ContainerMachineBattery>> MACHINE_BATTERY =
@@ -189,6 +197,15 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerMachinePUREX>> MACHINE_PUREX =
             REG.menu("machine_purex", () -> Menus.typeWithPos(ContainerMachinePUREX::new));
 
+    public static final RegistryObject<MenuType<ContainerMachineRockMill>> MACHINE_ROCKMILL =
+            REG.menu("machine_rockmill", () -> Menus.typeWithPos(ContainerMachineRockMill::new));
+
+    public static final RegistryObject<MenuType<ContainerMachineSuperComputer>> MACHINE_SUPERCOMPUTER =
+            REG.menu("machine_supercomputer", () -> Menus.typeWithPos(ContainerMachineSuperComputer::new));
+
+    public static final RegistryObject<MenuType<ContainerTapeDrive>> MACHINE_TAPE_DRIVE =
+            REG.menu("machine_tape_drive", () -> Menus.typeWithPos(ContainerTapeDrive::new));
+
     public static final RegistryObject<MenuType<ContainerMachineSolderingStation>> MACHINE_SOLDERING_STATION =
             REG.menu("machine_soldering_station", () -> Menus.typeWithPos(ContainerMachineSolderingStation::new));
     public static final RegistryObject<MenuType<ContainerMachineArcFurnaceLarge>> MACHINE_ARC_FURNACE =
@@ -221,8 +238,6 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerFEL>> MACHINE_FEL =
             REG.menu("machine_fel", () -> Menus.typeWithPos(ContainerFEL::new));
 
-    public static final RegistryObject<MenuType<ContainerMachineTurbine>> MACHINE_TURBINE =
-            REG.menu("machine_turbine", () -> Menus.typeWithPos(ContainerMachineTurbine::new));
 
     public static final RegistryObject<MenuType<ContainerMachineLargeTurbine>> MACHINE_LARGE_TURBINE =
             REG.menu("machine_large_turbine", () -> Menus.typeWithPos(ContainerMachineLargeTurbine::new));

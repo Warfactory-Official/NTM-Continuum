@@ -87,9 +87,26 @@ public class MachineSatLink extends BlockMultiblockMachine implements ILookOverl
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineSatLink link)) return null;
 
         List<String> text = new ArrayList<>();
-        text.add("Freq: " + link.freq);
-        text.add("Connected: " + (link.connected ? "§aYes" : "§cNo"));
+        text.add(Component.translatable("tile.machine_satlink.freq").getString() + ": " + link.freq);
+        text.add(Component.translatable("tile.machine_satlink.connected").getString() + ": "
+                + (link.connected ? "§a" + Component.translatable("tile.machine_satlink.yes").getString() : "§c" + Component.translatable("tile.machine_satlink.no").getString()));
+        for (Component line : link.info) {
+            if (line != null) text.add(line.getString());
+        }
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {1, 0, -1, ForgeDirection.EAST.ordinal()},
+                {0, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, -1, ForgeDirection.WEST.ordinal()},
+                {0, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
+    }
 }

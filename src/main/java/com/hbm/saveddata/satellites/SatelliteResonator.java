@@ -1,5 +1,9 @@
 package com.hbm.saveddata.satellites;
 
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
+
 import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,6 +24,11 @@ public class SatelliteResonator extends Satellite {
     }
 
     @Override public String getType() { return "XEN_RELAY"; }
+
+    @Override
+    public Component[] getInfo(Level level) {
+        return new Component[] { nameOf(EnumSatType.XENIUM_RESONATOR) };
+    }
 
     @Override
     public void onCoordAction(ServerLevel level, Player player, int x, int y, int z) {

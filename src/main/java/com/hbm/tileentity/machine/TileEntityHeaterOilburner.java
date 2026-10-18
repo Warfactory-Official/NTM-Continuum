@@ -13,8 +13,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.tileentity.TileEntityMachinePolluting;
@@ -31,6 +29,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Oil-Fired Heater, a 1:1 port of the 1.12.2 {@code TileEntityHeaterOilburner}: burns any
@@ -61,13 +61,11 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeaterOilburner te) {
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
+
         if (MachineFluidContainerIO.load(te.tank, te.inventory, 0, 1)) te.setChanged();
         te.setTypeFromFluidId();
-
-        for (DirPos connection : te.getConPos()) {
-            te.trySubscribe(te.tank.getTankType(), level, connection);
-            te.sendSmoke(connection);
-        }
 
         boolean shouldCool = true;
 
@@ -111,15 +109,8 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         }
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z, Library.POS_X),
-                new DirPos(x - 2, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 2, Library.POS_Z),
-                new DirPos(x, y, z - 2, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.flare(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     /** GUI buttons: 0 = burn toggle, 1 = setting up, 2 = setting down (old IControlReceiver+IToolable). */
     @Override

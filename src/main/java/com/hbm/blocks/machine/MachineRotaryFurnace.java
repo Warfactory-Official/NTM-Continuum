@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -133,5 +134,19 @@ public final class MachineRotaryFurnace extends BlockMultiblockMachine
         }
 
         @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {-2, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {2, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-1, 4, 0, ForgeDirection.UP.ordinal()},
+                {-2, 0, -1, ForgeDirection.WEST.ordinal()},
+                {-2, 0, 1, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

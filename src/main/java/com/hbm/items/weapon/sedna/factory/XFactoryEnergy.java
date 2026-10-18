@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.effect.EntityFireLingering;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
@@ -44,6 +46,20 @@ import net.minecraft.world.item.ItemStack;
  * {@code XFactoryEnergy}; registry-backed gun construction lives in {@link NtmEnergyGunCatalog}.
  */
 public final class XFactoryEnergy {
+
+    public static final ConfigWrapper<Float> GUN_TESLA_CANNON_DAMAGE = new ConfigWrapper<>(35F);
+    public static final ConfigWrapper<Float> GUN_LASER_PISTOL_DAMAGE = new ConfigWrapper<>(25F);
+    public static final ConfigWrapper<Float> GUN_PEW_PEW_DAMAGE = new ConfigWrapper<>(30F);
+    public static final ConfigWrapper<Float> GUN_MORNING_GLORY_DAMAGE = new ConfigWrapper<>(30F);
+    public static final ConfigWrapper<Float> GUN_LASER_RIFLE_DAMAGE = new ConfigWrapper<>(50F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_TESLA_CANNON_DAMAGE", GUN_TESLA_CANNON_DAMAGE);
+        ServerConfig.configMap.put("GUN_LASER_PISTOL_DAMAGE", GUN_LASER_PISTOL_DAMAGE);
+        ServerConfig.configMap.put("GUN_PEW_PEW_DAMAGE", GUN_PEW_PEW_DAMAGE);
+        ServerConfig.configMap.put("GUN_MORNING_GLORY_DAMAGE", GUN_MORNING_GLORY_DAMAGE);
+        ServerConfig.configMap.put("GUN_LASER_RIFLE_DAMAGE", GUN_LASER_RIFLE_DAMAGE);
+    }
 
     public static BulletConfig energy_tesla;
     public static BulletConfig energy_tesla_overcharge;
@@ -293,14 +309,14 @@ public final class XFactoryEnergy {
                 .setCasing(() -> ingotPolymer(2), 4).setOnBeamImpact(LAMBDA_IR_HIT);
 
         energy_emerald = beam("energy_emerald", "capacitor", DamageClass.LASER)
-                .setCasing(() -> ingotPolymer(2), 4).setArmorPiercing(0.5F).setThresholdNegation(10F)
+                .setCasing(() -> ingotPolymer(2), 4).setArmorPiercing(0.5F).setThresholdNegation(50F)
                 .setOnBeamImpact(LAMBDA_STANDARD_BEAM_HIT);
         energy_emerald_overcharge = beam("energy_emerald_overcharge", "capacitor_overcharge", DamageClass.LASER)
-                .setCasing(() -> ingotPolymer(2), 4).setArmorPiercing(0.5F).setThresholdNegation(15F)
+                .setCasing(() -> ingotPolymer(2), 4).setArmorPiercing(0.5F).setThresholdNegation(75F)
                 .setDoesPenetrate(true)
                 .setOnBeamImpact(LAMBDA_STANDARD_BEAM_HIT);
         energy_emerald_ir = beam("energy_emerald_ir", "capacitor_ir", DamageClass.FIRE)
-                .setCasing(() -> ingotPolymer(2), 4).setArmorPiercing(0.5F).setThresholdNegation(10F)
+                .setCasing(() -> ingotPolymer(2), 4).setArmorPiercing(0.5F).setThresholdNegation(50F)
                 .setOnBeamImpact(LAMBDA_IR_HIT);
     }
 }

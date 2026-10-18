@@ -146,7 +146,7 @@ public final class CrystallizerTable extends RecipeSource<Row> {
         // 1.7 LATEX.ingot() is the port's ingot_biorubber
         registerRecipe(new ComparableStack(ModItems.ingot_biorubber.get()), new CrystallizerRecipe(ModItems.ingot_rubber.get(), mixingTime).prod(0.15F), new FluidStack(Fluids.SOURGAS, 25));
         registerRecipe(new ComparableStack(ModItems.powder_sawdust.get()), new CrystallizerRecipe(ModItems.cordite.get(), mixingTime).prod(0.25F), new FluidStack(Fluids.NITROGLYCERIN, 250));
-        registerRecipe(new ComparableStack(ModDungeonBlocks.rebar.get().asItem()), new CrystallizerRecipe(ModDecoContent.concrete_rebar.get(), 10), new FluidStack(Fluids.CONCRETE, 1_000));
+        registerRecipe(new ComparableStack(ModDungeonBlocks.rebar.get().asItem()), new CrystallizerRecipe(ModDecoContent.concrete_rebar.get(), 1), new FluidStack(Fluids.CONCRETE, 1_000));
 
         registerRecipe(new ComparableStack(ModAbilityToolItems.meteorite_sword_treated.get()), new CrystallizerRecipe(ModAbilityToolItems.meteorite_sword_etched.get(), baseTime));
         registerRecipe(new ComparableStack(ModItems.powder_impure_osmiridium.get()), new CrystallizerRecipe(ModItems.crystal_osmiridium.get(), baseTime), new FluidStack(Fluids.SCHRABIDIC, 1_000));

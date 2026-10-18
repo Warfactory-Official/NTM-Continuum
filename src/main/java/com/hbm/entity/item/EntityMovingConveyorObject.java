@@ -4,6 +4,7 @@ import dev.golem.core.data.CompatEntity;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.conveyor.IEnterableBlock;
 import com.hbm.api.conveyor.ConveyorLookup;
+import com.hbm.config.ServerConfig;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectTiny;
 import net.minecraft.core.BlockPos;
@@ -28,7 +29,6 @@ import java.util.List;
  */
 public abstract class EntityMovingConveyorObject extends CompatEntity {
 
-    private static final int CRAM_LIMIT = 25;
 
     private final EntityInterpolation interpolation = new EntityInterpolation(this);
 
@@ -119,12 +119,12 @@ public abstract class EntityMovingConveyorObject extends CompatEntity {
         return null;
     }
 
-    /** 1.7 anti-cram: a jam of {@value #CRAM_LIMIT} pops, and takes the belt under it with it. */
-    private void cramCheck(ServerLevel server) {
+    /** 1.7 anti-cram: a jam of {@code CONVEYOR_CRAM_MAX} pops, and takes the belt under it with it. */
+    public void cramCheck(ServerLevel server) {
         List<EntityMovingConveyorObject> objs = server.getEntitiesOfClass(EntityMovingConveyorObject.class,
                 getBoundingBox().inflate(0.125D));
 
-        if (objs.size() < CRAM_LIMIT) return;
+        if (objs.size() < ServerConfig.CONVEYOR_CRAM_MAX.get()) return;
 
         for (EntityMovingConveyorObject obj : objs) obj.discard();
 
@@ -133,7 +133,11 @@ public abstract class EntityMovingConveyorObject extends CompatEntity {
         vnt.explode();
 
         BlockPos pos = blockPosition();
-        if (server.getBlockState(pos).getBlock() instanceof IConveyorBelt) server.destroyBlock(pos, false);
+        // a jam younger than one check cycle piled up while its chunk loaded and spares the belt
+        if (server.getBlockState(pos).getBlock() instanceof IConveyorBelt && this.tickCount > 400
+                && ServerConfig.CONVEYOR_CRAM_EXPLODE.get()) {
+            server.destroyBlock(pos, false);
+        }
     }
 
     public abstract void enterBlock(IEnterableBlock enterable, BlockPos pos, @Nullable Direction dir);

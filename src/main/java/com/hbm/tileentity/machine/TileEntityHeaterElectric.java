@@ -5,7 +5,6 @@ import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.client.sound.HeaterSoundHandler;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
@@ -17,6 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Electric heating unit (1.12.2 {@code TileEntityHeaterElectric}): turns HE into heat, and also relays
@@ -37,9 +37,9 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeaterElectric te) {
-        if (level.getGameTime() % 20 == 0) { // 1.7: "doesn't have to happen constantly"
-            for (DirPos port : te.getConPos()) te.trySubscribe(level, port);
-        }
+        te.setupPowerPorts(te.getPorts());
+        te.updateAllPorts();
+        te.receivePower();
         te.heatEnergy *= 0.999;
 
         te.tryPullHeat(level, pos);
@@ -58,11 +58,13 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
         HeaterSoundHandler.tickLoop(te);
     }
 
-    /** The single power port, 3 blocks along the facing from the core. */
-    public DirPos[] getConPos() {
-        ForgeDirection dir = MachineCore.facing(getBlockState());
-        BlockPos pos = getBlockPos();
-        return new DirPos[]{new DirPos(pos.getX() + dir.offsetX * 3, pos.getY(), pos.getZ() + dir.offsetZ * 3, dir)};
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            cachedPorts = new PortDef[] { PortDef.make(worldPosition.getX() + dir.offsetX * 2, worldPosition.getY(), worldPosition.getZ() + dir.offsetZ * 2, dir) };
+        }
+        return cachedPorts;
     }
 
     /** Heat relay: fully drains an {@link IHeatSource} below at 0.85 efficiency (old behaviour). */

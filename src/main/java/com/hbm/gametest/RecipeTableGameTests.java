@@ -55,9 +55,9 @@ public final class RecipeTableGameTests {
     public static void chemicalPlant(GameTestHelper helper) {
         ChemicalPlantRecipes plant = ChemicalPlantRecipes.INSTANCE;
         plant.registerRecipes();
-        // 74 rows from the Java table (1.7 curated, fuel additives, the generated 1.12.2 bulk)
-        helper.assertTrue(plant.recipeOrderedList.size() == 74,
-                "chemical plant table holds " + plant.recipeOrderedList.size() + " rows, expected 74");
+        // 77 rows from the Java table (1.7 curated, fuel additives, the generated 1.12.2 bulk)
+        helper.assertTrue(plant.recipeOrderedList.size() == 77,
+                "chemical plant table holds " + plant.recipeOrderedList.size() + " rows, expected 77");
         // 1.7's first row (the table is in 1.7's registration order)
         helper.assertTrue(plant.recipeOrderedList.get(0).getInternalName().equals("chem.hydrogen"),
                 "chemical plant display order changed: first row " + plant.recipeOrderedList.get(0).getInternalName());

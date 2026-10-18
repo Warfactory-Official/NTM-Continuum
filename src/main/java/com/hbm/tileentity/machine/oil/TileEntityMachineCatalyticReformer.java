@@ -9,7 +9,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.ReformingRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.MachineCore;
@@ -30,6 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Catalytic Reformer: 1:1 port of the 1.12.2 {@code TileEntityMachineCatalyticReformer}. 11 slots
@@ -62,12 +62,9 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
     @Override public String getDefaultName() { return "container.catalyticReformer"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCatalyticReformer te) {
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos dp : te.getConPos()) {
-                te.trySubscribe(level, dp);
-                te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-            }
-        }
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
         MachineFluidContainerIO.load(te.tanks[0], te.inventory, 1, 2);
@@ -78,30 +75,27 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
         MachineFluidContainerIO.unload(te.tanks[2], te.inventory, 5, 6);
         MachineFluidContainerIO.unload(te.tanks[3], te.inventory, 7, 8);
 
-        for (DirPos dp : te.getConPos()) {
-            for (int i = 1; i < 4; i++) {
-                if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp);
-            }
-        }
-
         te.networkPackNT();
     }
 
+    protected PortDef[] cachedPorts;
 
-    public DirPos[] getConPos() {
-        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
-        ForgeDirection dir = ForgeDirection.getOrientation(meta);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-
-        return new DirPos[]{
-                new DirPos(x + dir.offsetX * 2 + rot.offsetX, y, z + dir.offsetZ * 2 + rot.offsetZ, dir),
-                new DirPos(x + dir.offsetX * 2 - rot.offsetX, y, z + dir.offsetZ * 2 - rot.offsetZ, dir),
-                new DirPos(x - dir.offsetX * 2 + rot.offsetX, y, z - dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 2 - rot.offsetX, y, z - dir.offsetZ * 2 - rot.offsetZ, dir.getOpposite()),
-                new DirPos(x + rot.offsetX * 3, y, z + rot.offsetZ * 3, rot),
-                new DirPos(x - rot.offsetX * 3, y, z - rot.offsetZ * 3, rot.getOpposite())
-        };
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+            ForgeDirection dir = ForgeDirection.getOrientation(meta);
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 1 + rot.offsetX, y, z + dir.offsetZ * 1 + rot.offsetZ, dir),
+                    PortDef.make(x + dir.offsetX * 1 - rot.offsetX, y, z + dir.offsetZ * 1 - rot.offsetZ, dir),
+                    PortDef.make(x - dir.offsetX * 1 + rot.offsetX, y, z - dir.offsetZ * 1 + rot.offsetZ, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 1 - rot.offsetX, y, z - dir.offsetZ * 1 - rot.offsetZ, dir.getOpposite()),
+                    PortDef.make(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot),
+                    PortDef.make(x - rot.offsetX * 2, y, z - rot.offsetZ * 2, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 
     private void reform() {

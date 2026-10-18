@@ -44,7 +44,7 @@ public class CompactLauncher extends BlockMultiblockMachine implements IBomb, IE
         super.visitCells(core, facing, visitor);
         for (int dx = -1; dx <= 1; dx += 2) {
             for (int dz = -1; dz <= 1; dz += 2) {
-                visitor.cell(core.offset(dx, 0, dz), outwardMask(dx, dz, 1) | MASK_DOWN);
+                visitor.cell(core.offset(dx, 0, dz), outwardMask(dx, dz, 1));
             }
         }
     }

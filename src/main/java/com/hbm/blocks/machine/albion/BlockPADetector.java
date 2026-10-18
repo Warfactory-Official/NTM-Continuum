@@ -92,4 +92,21 @@ public class BlockPADetector extends BlockMultiblockMachine
         return core != null && level.getBlockEntity(core) instanceof TileEntityPADetector detector ? detector : null;
     }
 
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {-4, 0, 0, ForgeDirection.WEST.ordinal()},
+                {-4, 1, 0, ForgeDirection.WEST.ordinal()},
+                {-4, -1, 0, ForgeDirection.WEST.ordinal()},
+                {-4, 0, 1, ForgeDirection.WEST.ordinal()},
+                {-4, 0, -1, ForgeDirection.WEST.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {0.9, 0.1, 0, 0.5, 4, 4},
+        };
+    }
 }

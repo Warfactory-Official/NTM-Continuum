@@ -2,13 +2,12 @@ package com.hbm.items.tool;
 
 import com.hbm.api.energymk2.CableData;
 import com.hbm.api.energymk2.IEnergyConductorMK2;
-import com.hbm.api.energymk2.IEnergyProviderMK2;
-import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.energymk2.PowerGraph;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.uninos.PortNet;
 import com.hbm.uninos.graph.NodeNetwork;
-import com.hbm.util.NetworkDiagnostics;
+import com.hbm.util.BobMathUtil;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.LinkedHashSet;
@@ -29,8 +28,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
  * 1.7 {@code ItemPowerNetTool}, the Cable Network Analysis Tool: right-click a conductor and the diagnostic of
- * its power net goes to chat - the net's id (its identity hash), link, provider and receiver counts. Counts
- * come from {@link NetworkDiagnostics}, the graph's equivalent of 1.7's subscriber lists.
+ * its power net goes to chat - the net's id (its identity hash), link count, and the last round's provider and
+ * receiver counts and flow.
  *
  * <p>Every link of the net (each node and every cell of every segment, 1.7's {@code link.positions}) also gets the
  * yellow floating net id 1.5 blocks above it ({@code debug} text particle, scale 0.5), sent to players within 20 blocks
@@ -62,10 +61,10 @@ public class ItemPowerNetTool extends CompatItem {
             String id = Integer.toHexString(net.hashCode());
             say(player, "Start of diagnostic for network " + id, ChatFormatting.GOLD);
             say(player, "Links: " + net.size(), ChatFormatting.YELLOW);
-            say(player, "Providers: " + NetworkDiagnostics.countEndpoints(server, net,
-                    be -> be instanceof IEnergyProviderMK2), ChatFormatting.YELLOW);
-            say(player, "Receivers: " + NetworkDiagnostics.countEndpoints(server, net,
-                    be -> be instanceof IEnergyReceiverMK2), ChatFormatting.YELLOW);
+            PortNet<CableData> last = net.portNet;
+            say(player, "Providers: " + (last == null ? 0 : last.providerEntries.size()), ChatFormatting.YELLOW);
+            say(player, "Receivers: " + (last == null ? 0 : last.receiverEntries.size()), ChatFormatting.YELLOW);
+            say(player, "Last flow: " + BobMathUtil.format(net.tracker) + " HE/t", ChatFormatting.YELLOW);
             say(player, "End of diagnostic for network " + id, ChatFormatting.GOLD);
             Set<Long> links = new LinkedHashSet<>();
             for (var node : net.nodes) links.add(node.posKey);

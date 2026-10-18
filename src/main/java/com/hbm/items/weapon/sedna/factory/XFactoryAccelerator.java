@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.entity.projectile.EntityCoin;
 import com.hbm.items.ModAmmoItems;
@@ -43,6 +45,18 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class XFactoryAccelerator {
 
+    public static final ConfigWrapper<Float> GUN_TAU_CANNON_DAMAGE = new ConfigWrapper<>(25F);
+    public static final ConfigWrapper<Float> GUN_TAU_CANNON_CHARGE_DAMAGE = new ConfigWrapper<>(5F);
+    public static final ConfigWrapper<Float> GUN_COILGUN_DAMAGE = new ConfigWrapper<>(35F);
+    public static final ConfigWrapper<Float> GUN_NI4NI_DAMAGE = new ConfigWrapper<>(35F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_TAU_CANNON_DAMAGE", GUN_TAU_CANNON_DAMAGE);
+        ServerConfig.configMap.put("GUN_TAU_CANNON_CHARGE_DAMAGE", GUN_TAU_CANNON_CHARGE_DAMAGE);
+        ServerConfig.configMap.put("GUN_COILGUN_DAMAGE", GUN_COILGUN_DAMAGE);
+        ServerConfig.configMap.put("GUN_NI4NI_DAMAGE", GUN_NI4NI_DAMAGE);
+    }
+
     public static final MagazineBelt tauChargeMag = new MagazineBelt();
 
     public static BulletConfig tau_uranium;
@@ -82,7 +96,7 @@ public final class XFactoryAccelerator {
             if (config == null) return;
 
             Vec3 offset = primary.getProjectileOffset(stack);
-            float damage = Lego.getStandardWearDamage(stack, ctx.config, index) * unitsUsed * 5;
+            float damage = Lego.getStandardWearDamage(stack, ctx.config, index) * unitsUsed * GUN_TAU_CANNON_CHARGE_DAMAGE.get();
             float spread = Lego.calcSpread(ctx, stack, primary, config, true, index, false);
             EntityBulletBeamBase mk4 = new EntityBulletBeamBase(entity, config, damage, spread,
                     offset.z, offset.y, offset.x);
@@ -228,7 +242,7 @@ public final class XFactoryAccelerator {
     /** The callable NI4NI config, with the source's infinite arc and coin secondary. */
     public static GunConfig ni4niGunConfig() {
         return new GunConfig().dura(0).draw(5).inspect(39).crosshair(Crosshair.CIRCLE)
-                .rec(new Receiver(0).dmg(35F).delay(10).sound(ModGunSounds.FIRE_COIL::get, 1.0F, 1.0F)
+                .rec(new Receiver(0).dmg(GUN_NI4NI_DAMAGE).delay(10).sound(ModGunSounds.FIRE_COIL::get, 1.0F, 1.0F)
                         .mag(new MagazineInfinite(ni4ni_arc)).offset(0.75, -0.0625, -0.1875D)
                         .setupStandardFire().fire(Lego.LAMBDA_NOWEAR_FIRE))
                 .ps(LAMBDA_NI4NI_SECONDARY_PRESS)

@@ -190,16 +190,6 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    /** Nuclear steam-cycle machines. */
-    public static final RegistryObject<MachineTurbine> machine_turbine = REG.<MachineTurbine>block(
-            "machine_turbine", MachineTurbine::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
-            .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/machine_turbine_top", "hbm:blocks/machine_turbine_base", "hbm:blocks/machine_turbine_top"))
-                    .states(Variants.simple())
-                    .blockItemDirect())
-            .loot(Loot.self())
-            .tag(BlockTag.PICKAXE)
-            .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<MachineLargeTurbine> machine_large_turbine = REG.<MachineLargeTurbine>block(
             "machine_large_turbine", MachineLargeTurbine::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
@@ -670,6 +660,24 @@ public final class ModMachineBlocks {
             "machine_purex", MachinePUREX::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<MachineRockMill> machine_rockmill = REG.<MachineRockMill>block(
+            "machine_rockmill", MachineRockMill::new,
+            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<MachineSuperComputer> machine_supercomputer = REG.<MachineSuperComputer>block(
+            "machine_supercomputer", MachineSuperComputer::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<MachineTapeDrive> machine_tape_drive = REG.<MachineTapeDrive>block(
+            "machine_tape_drive", MachineTapeDrive::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            .transform(RENDERED_FACING)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
@@ -1172,6 +1180,20 @@ public final class ModMachineBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
+    public static final RegistryObject<LaunchpadSoyuz> launchpad_soyuz = REG.<LaunchpadSoyuz>block(
+            "launchpad_soyuz", LaunchpadSoyuz::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+
+    public static final RegistryObject<LaunchpadLambda> launchpad_lambda = REG.<LaunchpadLambda>block(
+            "launchpad_lambda", LaunchpadLambda::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+
     // Mining laser
 
     public static final RegistryObject<MachineMiningLaser> machine_mining_laser = REG.<MachineMiningLaser>block(
@@ -1239,7 +1261,6 @@ public final class ModMachineBlocks {
         tabItem(pa_detector);
         tabItem(red_cable);
         tabItem(creative_generator);
-        tabItem(machine_turbine);
         tabItem(machine_large_turbine);
         tabItem(machine_turbine_gas);
         tabItem(machine_turbofan);
@@ -1304,6 +1325,8 @@ public final class ModMachineBlocks {
         tabItem(machine_exposure_chamber);
         tabItem(machine_blast_furnace);
         tabItem(machine_purex);
+        tabItem(machine_rockmill);
+        tabItem(machine_supercomputer);
         tabItem(machine_well);
         tabItem(machine_pumpjack);
         tabItem(machine_fracking_tower);
@@ -1365,6 +1388,9 @@ public final class ModMachineBlocks {
         tabItem(machine_difurnace_off);
         tabItem(machine_difurnace_ext);
         tabItem(HbmTab.MISSILES, launch_pad);
+        tabItem(HbmTab.MISSILES, launchpad_soyuz);
+        tabItem(HbmTab.MISSILES, launchpad_lambda);
+        tabItem(HbmTab.MISSILES, machine_tape_drive);
         // Mining laser item carries the old addInformation tooltip and the legacy Forge renderer bridge.
         REG.<MachineMiningLaser, BlockItem>blockItem(machine_mining_laser,
                 (block, p) -> new CompatBlockItem(block, p) {

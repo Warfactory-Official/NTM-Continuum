@@ -44,6 +44,9 @@ import java.util.HashMap;
 import java.util.List;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePort;
+import com.hbm.uninos.networkproviders.FluidNetProvider;
 
 /** Four-lane Chemical Factory, ported from the legacy TileEntityMachineChemicalFactory. */
 public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
@@ -95,8 +98,8 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public final ChemicalFactoryCoolantDelegate coolantDelegate = new ChemicalFactoryCoolantDelegate(this);
 
-    private DirPos[] conPos;
-    private DirPos[] coolPos;
+    public TilePort coolantInPort;
+    public TilePort coolantOutPort;
     private DirPos[] ioPos;
 
     public TileEntityMachineChemicalFactory(BlockPos pos, BlockState state) {
@@ -150,21 +153,15 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalFactory te) {
-        for (DirPos port : te.getConPos()) {
-            te.trySubscribe(level, port);
-            for (FluidTankNTM tank : te.inputTanks) {
-                if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, port);
-            }
-            for (FluidTankNTM tank : te.outputTanks) {
-                if (tank.getFill() > 0) te.tryProvide(tank, level, port);
-            }
-        }
-
-        for (DirPos port : te.getCoolPos()) {
-            te.coolantDelegate.trySubscribe(level, port);
-            te.coolantDelegate.trySubscribe(te.water.getTankType(), level, port);
-            te.coolantDelegate.tryProvide(te.lps, level, port);
-        }
+        te.setupPowerPorts(te.getPowerPorts());
+        te.setupFluidPorts(te.getFluidPorts());
+        if (te.coolantInPort == null) te.coolantInPort = new TilePort().setupOwner(te.coolantDelegate).setupPort(te.getCoolantPort()).setupType(FluidNetProvider.of(te.water.getTankType()));
+        if (te.coolantOutPort == null) te.coolantOutPort = new TilePort().setupOwner(te.coolantDelegate).setupPort(te.getCoolantPort()).setupType(FluidNetProvider.of(te.lps.getTankType()));
+        te.updatePortPIFIFO();
+        te.coolantInPort.update(level);
+        te.coolantInPort.checkSubscribe(level);
+        te.coolantOutPort.update(level);
+        te.coolantOutPort.checkProvide(level);
 
         if (te.maxPower <= 0) te.maxPower = 10_000_000L;
         long nextMaxPower = 0L;
@@ -229,75 +226,102 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
         return water.getFill() >= 100 && lps.getFill() <= lps.getMaxFill() - 100;
     }
 
-    public DirPos[] getConPos() {
-        if (conPos == null) {
-            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+    protected PortDef[] cachedPowerPorts;
+    public PortDef[] getPowerPorts() {
+        if (cachedPowerPorts == null) {
             ForgeDirection dir = facing();
-            ForgeDirection rotation = dir.getRotation(ForgeDirection.UP);
-            conPos = new DirPos[]{
-                    new DirPos(x + 3, y, z - 2, Library.POS_X),
-                    new DirPos(x + 3, y, z, Library.POS_X),
-                    new DirPos(x + 3, y, z + 2, Library.POS_X),
-                    new DirPos(x - 3, y, z - 2, Library.NEG_X),
-                    new DirPos(x - 3, y, z, Library.NEG_X),
-                    new DirPos(x - 3, y, z + 2, Library.NEG_X),
-                    new DirPos(x - 2, y, z + 3, Library.POS_Z),
-                    new DirPos(x, y, z + 3, Library.POS_Z),
-                    new DirPos(x + 2, y, z + 3, Library.POS_Z),
-                    new DirPos(x - 2, y, z - 3, Library.NEG_Z),
-                    new DirPos(x, y, z - 3, Library.NEG_Z),
-                    new DirPos(x + 2, y, z - 3, Library.NEG_Z),
-                    new DirPos(worldPosition.getX() + dir.offsetX * 2 + rotation.offsetX * 2, y + 3,
-                            worldPosition.getZ() + dir.offsetZ * 2 + rotation.offsetZ * 2, Library.POS_Y),
-                    new DirPos(worldPosition.getX() + dir.offsetX + rotation.offsetX * 2, y + 3,
-                            worldPosition.getZ() + dir.offsetZ + rotation.offsetZ * 2, Library.POS_Y),
-                    new DirPos(worldPosition.getX() + rotation.offsetX * 2, y + 3,
-                            worldPosition.getZ() + rotation.offsetZ * 2, Library.POS_Y),
-                    new DirPos(worldPosition.getX() - dir.offsetX + rotation.offsetX * 2, y + 3,
-                            worldPosition.getZ() - dir.offsetZ + rotation.offsetZ * 2, Library.POS_Y),
-                    new DirPos(worldPosition.getX() - dir.offsetX * 2 + rotation.offsetX * 2, y + 3,
-                            worldPosition.getZ() - dir.offsetZ * 2 + rotation.offsetZ * 2, Library.POS_Y),
-                    new DirPos(worldPosition.getX() + dir.offsetX * 2 - rotation.offsetX * 2, y + 3,
-                            worldPosition.getZ() + dir.offsetZ * 2 - rotation.offsetZ * 2, Library.POS_Y),
-                    new DirPos(worldPosition.getX() + dir.offsetX - rotation.offsetX * 2, y + 3,
-                            worldPosition.getZ() + dir.offsetZ - rotation.offsetZ * 2, Library.POS_Y),
-                    new DirPos(worldPosition.getX() - rotation.offsetX * 2, y + 3,
-                            worldPosition.getZ() - rotation.offsetZ * 2, Library.POS_Y),
-                    new DirPos(worldPosition.getX() - dir.offsetX - rotation.offsetX * 2, y + 3,
-                            worldPosition.getZ() - dir.offsetZ - rotation.offsetZ * 2, Library.POS_Y),
-                    new DirPos(worldPosition.getX() - dir.offsetX * 2 - rotation.offsetX * 2, y + 3,
-                            worldPosition.getZ() - dir.offsetZ * 2 - rotation.offsetZ * 2, Library.POS_Y),
-                    new DirPos(worldPosition.getX() + dir.offsetX + rotation.offsetX * 3, y,
-                            worldPosition.getZ() + dir.offsetZ + rotation.offsetZ * 3, rotation),
-                    new DirPos(worldPosition.getX() - dir.offsetX + rotation.offsetX * 3, y,
-                            worldPosition.getZ() - dir.offsetZ + rotation.offsetZ * 3, rotation),
-                    new DirPos(worldPosition.getX() + dir.offsetX - rotation.offsetX * 3, y,
-                            worldPosition.getZ() + dir.offsetZ - rotation.offsetZ * 3, rotation.getOpposite()),
-                    new DirPos(worldPosition.getX() - dir.offsetX - rotation.offsetX * 3, y,
-                            worldPosition.getZ() - dir.offsetZ - rotation.offsetZ * 3, rotation.getOpposite())
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPowerPorts = new PortDef[] {
+                    PortDef.make(x + rot.offsetX + dir.offsetX * 2, y, z + rot.offsetZ + dir.offsetZ * 2, dir),
+                    PortDef.make(x - rot.offsetX + dir.offsetX * 2, y, z - rot.offsetZ + dir.offsetZ * 2, dir),
+                    PortDef.make(x + rot.offsetX - dir.offsetX * 2, y, z + rot.offsetZ - dir.offsetZ * 2, dir.getOpposite()),
+                    PortDef.make(x - rot.offsetX - dir.offsetX * 2, y, z - rot.offsetZ - dir.offsetZ * 2, dir.getOpposite()),
+                    PortDef.make(x + dir.offsetX + rot.offsetX * 2, y, z + dir.offsetZ + rot.offsetZ * 2, rot),
+                    PortDef.make(x - dir.offsetX + rot.offsetX * 2, y, z - dir.offsetZ + rot.offsetZ * 2, rot),
+                    PortDef.make(x + dir.offsetX - rot.offsetX * 2, y, z + dir.offsetZ - rot.offsetZ * 2, rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX - rot.offsetX * 2, y, z - dir.offsetZ - rot.offsetZ * 2, rot.getOpposite()),
+                    PortDef.make(x + 2, y, z + 0, Library.POS_X),
+                    PortDef.make(x + 2, y, z + 2, Library.POS_X, Library.POS_Z),
+                    PortDef.make(x + 0, y, z + 2, Library.POS_Z),
+                    PortDef.make(x - 2, y, z + 2, Library.NEG_X, Library.POS_Z),
+                    PortDef.make(x - 2, y, z + 0, Library.NEG_X),
+                    PortDef.make(x - 2, y, z - 2, Library.NEG_X, Library.NEG_Z),
+                    PortDef.make(x + 0, y, z - 2, Library.NEG_Z),
+                    PortDef.make(x + 2, y, z - 2, Library.POS_X, Library.NEG_Z),
+                    PortDef.make(x + dir.offsetX * 2 + rot.offsetX * 2, y + 2, z + dir.offsetZ * 2 + rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX * 1 + rot.offsetX * 2, y + 2, z + dir.offsetZ * 1 + rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX * 0 + rot.offsetX * 2, y + 2, z + dir.offsetZ * 0 + rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x - dir.offsetX * 1 + rot.offsetX * 2, y + 2, z - dir.offsetZ * 1 + rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x - dir.offsetX * 2 + rot.offsetX * 2, y + 2, z - dir.offsetZ * 2 + rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX * 2 - rot.offsetX * 2, y + 2, z + dir.offsetZ * 2 - rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX * 1 - rot.offsetX * 2, y + 2, z + dir.offsetZ * 1 - rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX * 0 - rot.offsetX * 2, y + 2, z + dir.offsetZ * 0 - rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x - dir.offsetX * 1 - rot.offsetX * 2, y + 2, z - dir.offsetZ * 1 - rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x - dir.offsetX * 2 - rot.offsetX * 2, y + 2, z - dir.offsetZ * 2 - rot.offsetZ * 2, Library.POS_Y),
             };
         }
-        return conPos;
+        return cachedPowerPorts;
     }
 
-    public DirPos[] getCoolPos() {
-        if (coolPos == null) {
-            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+    /** The fluid group's top row sits on the factory's roof, so 1.7 connects it one block higher than the power ports. */
+    protected PortDef[] cachedFluidPorts;
+    public PortDef[] getFluidPorts() {
+        if (cachedFluidPorts == null) {
             ForgeDirection dir = facing();
-            ForgeDirection rotation = dir.getRotation(ForgeDirection.UP);
-            coolPos = new DirPos[]{
-                    new DirPos(x + rotation.offsetX + dir.offsetX * 3, y,
-                            z + rotation.offsetZ + dir.offsetZ * 3, dir),
-                    new DirPos(x - rotation.offsetX + dir.offsetX * 3, y,
-                            z - rotation.offsetZ + dir.offsetZ * 3, dir),
-                    new DirPos(x + rotation.offsetX - dir.offsetX * 3, y,
-                            z + rotation.offsetZ - dir.offsetZ * 3, dir.getOpposite()),
-                    new DirPos(x - rotation.offsetX - dir.offsetX * 3, y,
-                            z - rotation.offsetZ - dir.offsetZ * 3, dir.getOpposite())
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedFluidPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX + rot.offsetX * 2, y, z + dir.offsetZ + rot.offsetZ * 2, rot),
+                    PortDef.make(x - dir.offsetX + rot.offsetX * 2, y, z - dir.offsetZ + rot.offsetZ * 2, rot),
+                    PortDef.make(x + dir.offsetX - rot.offsetX * 2, y, z + dir.offsetZ - rot.offsetZ * 2, rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX - rot.offsetX * 2, y, z - dir.offsetZ - rot.offsetZ * 2, rot.getOpposite()),
+                    PortDef.make(x + 2, y, z + 0, Library.POS_X),
+                    PortDef.make(x + 2, y, z + 2, Library.POS_X, Library.POS_Z),
+                    PortDef.make(x + 0, y, z + 2, Library.POS_Z),
+                    PortDef.make(x - 2, y, z + 2, Library.NEG_X, Library.POS_Z),
+                    PortDef.make(x - 2, y, z + 0, Library.NEG_X),
+                    PortDef.make(x - 2, y, z - 2, Library.NEG_X, Library.NEG_Z),
+                    PortDef.make(x + 0, y, z - 2, Library.NEG_Z),
+                    PortDef.make(x + 2, y, z - 2, Library.POS_X, Library.NEG_Z),
+                    PortDef.make(x + dir.offsetX * 2 + rot.offsetX * 2, y + 3, z + dir.offsetZ * 2 + rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX * 1 + rot.offsetX * 2, y + 3, z + dir.offsetZ * 1 + rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX * 0 + rot.offsetX * 2, y + 3, z + dir.offsetZ * 0 + rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x - dir.offsetX * 1 + rot.offsetX * 2, y + 3, z - dir.offsetZ * 1 + rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x - dir.offsetX * 2 + rot.offsetX * 2, y + 3, z - dir.offsetZ * 2 + rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX * 2 - rot.offsetX * 2, y + 3, z + dir.offsetZ * 2 - rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX * 1 - rot.offsetX * 2, y + 3, z + dir.offsetZ * 1 - rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX * 0 - rot.offsetX * 2, y + 3, z + dir.offsetZ * 0 - rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x - dir.offsetX * 1 - rot.offsetX * 2, y + 3, z - dir.offsetZ * 1 - rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x - dir.offsetX * 2 - rot.offsetX * 2, y + 3, z - dir.offsetZ * 2 - rot.offsetZ * 2, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX + rot.offsetX * 3, y, z + dir.offsetZ + rot.offsetZ * 3, rot),
+                    PortDef.make(x - dir.offsetX + rot.offsetX * 3, y, z - dir.offsetZ + rot.offsetZ * 3, rot),
+                    PortDef.make(x + dir.offsetX - rot.offsetX * 3, y, z + dir.offsetZ - rot.offsetZ * 3, rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX - rot.offsetX * 3, y, z - dir.offsetZ - rot.offsetZ * 3, rot.getOpposite()),
             };
         }
-        return coolPos;
+        return cachedFluidPorts;
     }
+
+    protected PortDef coolantPort;
+    public PortDef getCoolantPort() {
+        if (coolantPort == null) {
+            ForgeDirection dir = facing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            coolantPort = PortDef.combine(
+                    PortDef.make(x + rot.offsetX + dir.offsetX * 2, y, z + rot.offsetZ + dir.offsetZ * 2, dir),
+                    PortDef.make(x - rot.offsetX + dir.offsetX * 2, y, z - rot.offsetZ + dir.offsetZ * 2, dir),
+                    PortDef.make(x + rot.offsetX - dir.offsetX * 2, y, z + rot.offsetZ - dir.offsetZ * 2, dir.getOpposite()),
+                    PortDef.make(x - rot.offsetX - dir.offsetX * 2, y, z - rot.offsetZ - dir.offsetZ * 2, dir.getOpposite())
+            );
+        }
+        return coolantPort;
+    }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPowerPorts()); }
+
+    public DirPos[] getCoolPos() { return getCoolantPort().portConnections; }
 
     public DirPos[] getIOPos() {
         if (ioPos == null) {
@@ -315,6 +339,15 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
             };
         }
         return ioPos;
+    }
+
+    @Override
+    public void setRemoved() {
+        if (level != null) {
+            if (coolantInPort != null) coolantInPort.disableIfPresent(level);
+            if (coolantOutPort != null) coolantOutPort.disableIfPresent(level);
+        }
+        super.setRemoved();
     }
 
     private ForgeDirection facing() {

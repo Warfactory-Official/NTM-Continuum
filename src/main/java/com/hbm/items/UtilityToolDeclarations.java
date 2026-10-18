@@ -61,6 +61,8 @@ public final class UtilityToolDeclarations {
                 "L", "#c:plates/lead", "U", "#c:ingots/ferrouranium", "C", "hbm:crate_steel");
         shaped(NS, "rtty_pager", "hbm:rtty_pager", rows("R", "C", "S"),
                 "R", "hbm:radio_torch_receiver", "C", "hbm:circuit_basic", "S", "#c:plates/steel");
+        shaped(NS, "rtty_designator", "hbm:rtty_designator", rows("R", "C", "T"),
+                "R", "hbm:radio_torch_reader", "C", "hbm:circuit_analog", "T", "hbm:rangefinder");
         shaped(NS, "fluid_identifier_multi", "hbm:fluid_identifier_multi", rows("D", "C", "P"),
                 "D", "#c:dyes", "C", "hbm:circuit_vacuum_tube", "P", "#c:plates/iron");
         shapeless(NS, "book_guide_rbmk", "hbm:book_guide_rbmk",

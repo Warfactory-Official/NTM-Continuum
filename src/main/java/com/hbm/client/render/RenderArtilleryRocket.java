@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.client.ClientEffects;
 import com.hbm.client.render.turret.TurretResources;
 import com.hbm.entity.projectile.EntityArtilleryRocket;
 import com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType;
@@ -12,6 +13,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * The rocket in flight: the launcher's own rocket meshes, flown nose-first, wearing whichever skin the
@@ -70,6 +72,33 @@ public class RenderArtilleryRocket
         state.yaw = Mth.rotLerp(partialTicks, rocket.yRotO, rocket.getYRot());
         state.pitch = Mth.lerp(partialTicks, rocket.xRotO, rocket.getXRot());
         state.rocket = rocket.getRocket();
+        trail(rocket, partialTicks);
+    }
+
+    /** 1.7 {@code onRenderTick}: a kerosene contrail puff every four blocks of the path drawn since the last frame. */
+    private static void trail(EntityArtilleryRocket rocket, float interp) {
+        double x = Mth.lerp(interp, rocket.xOld, rocket.getX());
+        double y = Mth.lerp(interp, rocket.yOld, rocket.getY());
+        double z = Mth.lerp(interp, rocket.zOld, rocket.getZ());
+
+        if (rocket.lastRenderX == 0) rocket.lastRenderX = x;
+        if (rocket.lastRenderY == 0) rocket.lastRenderY = y;
+        if (rocket.lastRenderZ == 0) rocket.lastRenderZ = z;
+
+        // 1.7 measures from the last frame to the entity's tick position, not to the interpolated one
+        Vec3 delta = new Vec3(rocket.lastRenderX - rocket.getX(), rocket.lastRenderY - rocket.getY(),
+                rocket.lastRenderZ - rocket.getZ());
+        rocket.trailPath += delta.length();
+        delta = delta.normalize();
+
+        for (; rocket.trailPath >= 4D; rocket.trailPath -= 4D) {
+            ClientEffects.spawnContrail(rocket.level(), x - delta.x * rocket.trailPath, y - delta.y * rocket.trailPath,
+                    z - delta.z * rocket.trailPath, ClientEffects.Contrail.KEROSENE);
+        }
+
+        rocket.lastRenderX = x;
+        rocket.lastRenderY = y;
+        rocket.lastRenderZ = z;
     }
 
     public static final class State extends CompatEntityRenderState {

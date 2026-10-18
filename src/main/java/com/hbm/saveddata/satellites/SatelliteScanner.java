@@ -1,5 +1,9 @@
 package com.hbm.saveddata.satellites;
 
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
+
 import com.mojang.serialization.MapCodec;
 
 /**
@@ -19,4 +23,9 @@ public class SatelliteScanner extends Satellite {
     }
 
     @Override public String getType() { return "DEPTH_SCANNER"; }
+
+    @Override
+    public Component[] getInfo(Level level) {
+        return new Component[] { nameOf(EnumSatType.SCANNER) };
+    }
 }

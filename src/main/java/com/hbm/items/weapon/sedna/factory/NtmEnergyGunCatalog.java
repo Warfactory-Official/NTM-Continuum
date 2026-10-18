@@ -41,7 +41,7 @@ public final class NtmEnergyGunCatalog {
 
     public static final RegistryObject<ItemGunBaseNT> gun_tesla_cannon = gun("gun_tesla_cannon", WeaponQuality.A_SIDE,
             () -> new GunConfig().dura(1_000).draw(10).inspect(33).crosshair(Crosshair.CIRCLE)
-                    .rec(new Receiver(0).dmg(35F).delay(20).spreadHipfire(1.5F).reload(44).jam(19)
+                    .rec(new Receiver(0).dmg(XFactoryEnergy.GUN_TESLA_CANNON_DAMAGE).delay(20).spreadHipfire(1.5F).reload(44).jam(19)
                             .sound(ModGunSounds.FIRE_TESLA::get, 1F, 1F)
                             .mag(new MagazineBelt().addConfigs(XFactoryEnergy.energy_tesla,
                                     XFactoryEnergy.energy_tesla_overcharge, XFactoryEnergy.energy_tesla_ir))
@@ -51,7 +51,7 @@ public final class NtmEnergyGunCatalog {
 
     public static final RegistryObject<ItemGunBaseNT> gun_laser_pistol = gun("gun_laser_pistol", WeaponQuality.A_SIDE,
             () -> new GunConfig().dura(500).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
-                    .rec(new Receiver(0).dmg(25F).delay(5).spread(1F).spreadHipfire(1F).reload(45).jam(37)
+                    .rec(new Receiver(0).dmg(XFactoryEnergy.GUN_LASER_PISTOL_DAMAGE).delay(5).spread(1F).spreadHipfire(1F).reload(45).jam(37)
                             .sound(ModGunSounds.FIRE_LASER_PISTOL::get, 1F, 1F)
                             .mag(new MagazineFullReload(0, 30).addConfigs(XFactoryEnergy.energy_las,
                                     XFactoryEnergy.energy_las_overcharge, XFactoryEnergy.energy_las_ir))
@@ -62,7 +62,7 @@ public final class NtmEnergyGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_laser_pistol_pew_pew = gun(
             "gun_laser_pistol_pew_pew", WeaponQuality.B_SIDE,
             () -> new GunConfig().dura(500).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
-                    .rec(new Receiver(0).dmg(30F).rounds(5).delay(10).spread(0.25F).spreadHipfire(1F)
+                    .rec(new Receiver(0).dmg(XFactoryEnergy.GUN_PEW_PEW_DAMAGE).rounds(5).delay(10).spread(0.25F).spreadHipfire(1F)
                             .reload(45).jam(37)
                             .sound(ModGunSounds.FIRE_LASER_PISTOL::get, 1F, 0.8F)
                             .mag(new MagazineFullReload(0, 10).addConfigs(XFactoryEnergy.energy_las,
@@ -74,7 +74,7 @@ public final class NtmEnergyGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_laser_pistol_morning_glory = gun(
             "gun_laser_pistol_morning_glory", WeaponQuality.LEGENDARY,
             () -> new GunConfig().dura(1_500).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
-                    .rec(new Receiver(0).dmg(20F).delay(7).spread(0F).spreadHipfire(0.5F).reload(45).jam(37)
+                    .rec(new Receiver(0).dmg(XFactoryEnergy.GUN_MORNING_GLORY_DAMAGE).delay(7).spread(0F).spreadHipfire(0.5F).reload(45).jam(37)
                             .sound(ModGunSounds.FIRE_LASER_PISTOL::get, 1F, 1.1F)
                             .mag(new MagazineFullReload(0, 20).addConfigs(XFactoryEnergy.energy_emerald,
                                     XFactoryEnergy.energy_emerald_overcharge, XFactoryEnergy.energy_emerald_ir))
@@ -85,7 +85,7 @@ public final class NtmEnergyGunCatalog {
     public static final RegistryObject<ItemGunBaseNT> gun_lasrifle = gun("gun_lasrifle", WeaponQuality.A_SIDE,
             () -> new GunConfig().dura(2_000).draw(10).inspect(26).crosshair(Crosshair.CIRCLE)
                     .scopeTexture(SCOPE_LUNA)
-                    .rec(new Receiver(0).dmg(50F).delay(8).spreadHipfire(1F).reload(44).jam(36)
+                    .rec(new Receiver(0).dmg(XFactoryEnergy.GUN_LASER_RIFLE_DAMAGE).delay(8).spreadHipfire(1F).reload(44).jam(36)
                             .sound(ModGunSounds.FIRE_LASER_RIFLE::get, 1F, 1F)
                             .mag(new MagazineFullReload(0, 24).addConfigs(XFactoryEnergy.energy_las,
                                     XFactoryEnergy.energy_las_overcharge, XFactoryEnergy.energy_las_ir))
@@ -95,7 +95,7 @@ public final class NtmEnergyGunCatalog {
 
     public static final RegistryObject<ItemGunBaseNT> gun_tau = gun("gun_tau", WeaponQuality.A_SIDE,
             () -> new GunConfig().dura(6_400).draw(10).inspect(10).crosshair(Crosshair.CIRCLE)
-                    .rec(new Receiver(0).dmg(25F).spreadHipfire(0F).delay(4).auto(true).spread(0F)
+                    .rec(new Receiver(0).dmg(XFactoryAccelerator.GUN_TAU_CANNON_DAMAGE).spreadHipfire(0F).delay(4).auto(true).spread(0F)
                             .mag(new MagazineBelt().addConfigs(XFactoryAccelerator.tau_uranium))
                             .offset(1, -0.0625 * 2.5, -0.25D)
                             .setupStandardFire().recoil(XFactoryAccelerator.LAMBDA_RECOIL_TAU))
@@ -108,7 +108,7 @@ public final class NtmEnergyGunCatalog {
 
     public static final RegistryObject<ItemGunBaseNT> gun_coilgun = gun("gun_coilgun", WeaponQuality.SPECIAL,
             () -> new GunConfig().dura(400).draw(5).inspect(39).crosshair(Crosshair.L_CIRCUMFLEX)
-                    .rec(new Receiver(0).dmg(35F).delay(5).reload(20).jam(33)
+                    .rec(new Receiver(0).dmg(XFactoryAccelerator.GUN_COILGUN_DAMAGE).delay(5).reload(20).jam(33)
                             .sound(ModGunSounds.FIRE_COIL::get, 1F, 1F)
                             .mag(new MagazineSingleReload(0, 1).addConfigs(XFactoryAccelerator.coil_tungsten,
                                     XFactoryAccelerator.coil_ferrouranium))

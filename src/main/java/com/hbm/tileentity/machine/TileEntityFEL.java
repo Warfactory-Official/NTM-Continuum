@@ -43,6 +43,7 @@ import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Free Electron Laser: a straight port of 1.7.10's {@code TileEntityFEL} (1.7), the machine that
@@ -102,7 +103,9 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFEL te) {
         ForgeDirection dir = te.facing();
-        for (DirPos port : te.getConPos()) te.trySubscribe(level, port);
+        te.setupPowerPorts(te.getPorts());
+        te.updateAllPorts();
+        te.receivePower();
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
 
         ItemStack crystal = te.inventory.getStackInSlot(1);
@@ -255,24 +258,16 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
         return MachineCore.facing(getBlockState());
     }
 
-    /**
-     * The single power port: 5 blocks <b>behind</b> the core at {@code y+1}, one cell past the machine's
-     * rearmost cell (the "extra" dummy {@link com.hbm.blocks.machine.MachineFEL#fillSpace} places at
-     * {@code core + facing·−4}).
-     *
-     * <p><b>Deviation.</b> Upstream passed {@code dir} (the facing) as this port's direction, but a
-     * {@code DirPos}'s direction means "the machine's side that faces the connecting cable": the graph inverts
-     * it when it probes a conductor's face, and {@code IEnergyConnectorBlock.isPort} matches against it. The
-     * port sits behind the machine, so it is {@code facing.getOpposite()}, as in every other ported machine.
-     * With upstream's value a cable at the port <b>fails to connect</b>: {@code isPort} rejects the direction
-     * mismatch, so the cable neither renders as attached nor reports a connection. (In 1.12 a plain cable's
-     * {@code canConnect} returns true for every side, so the functional half survived.)
-     */
-    public DirPos[] getConPos() {
-        ForgeDirection dir = facing();
-        return new DirPos[]{new DirPos(worldPosition.getX() + dir.offsetX * -5, worldPosition.getY() + 1,
-                worldPosition.getZ() + dir.offsetZ * -5, dir.getOpposite())};
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = facing();
+            cachedPorts = new PortDef[] { PortDef.make(worldPosition.getX() + dir.offsetX * -4, worldPosition.getY() + 1, worldPosition.getZ() + dir.offsetZ * -4, dir.getOpposite()) };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     /**
      * The audio ramp: it climbs by 2 per tick while firing and falls by 3 when not, clamped 0–60, and

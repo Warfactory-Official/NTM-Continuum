@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.effect.EntityFireLingering;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
@@ -18,6 +20,16 @@ import net.minecraft.world.phys.HitResult;
  * decides whether the impact is plain or black lightning.
  */
 public final class XFactory35800 {
+
+    public static final ConfigWrapper<Float> GUN_ABERRATOR_DAMAGE = new ConfigWrapper<>(100F);
+    public static final ConfigWrapper<Float> GUN_EOTT_LEFT_DAMAGE = new ConfigWrapper<>(100F);
+    public static final ConfigWrapper<Float> GUN_EOTT_RIGHT_DAMAGE = new ConfigWrapper<>(100F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_ABERRATOR_DAMAGE", GUN_ABERRATOR_DAMAGE);
+        ServerConfig.configMap.put("GUN_EOTT_LEFT_DAMAGE", GUN_EOTT_LEFT_DAMAGE);
+        ServerConfig.configMap.put("GUN_EOTT_RIGHT_DAMAGE", GUN_EOTT_RIGHT_DAMAGE);
+    }
 
     public static BulletConfig p35800;
     public static BulletConfig p35800_bl;

@@ -44,7 +44,7 @@ public final class DetonationTrigger {
          */
         NUCLEAR_CREEPER("nuclear_creeper"),
         /**
-         * 1.7 EntitySoyuz:64 (MainRegistry.achSoyuz) - awarded for standing in the launch plume.
+         * 1.7 EntityRocketSoyuz (MainRegistry.achSoyuz) - awarded for standing in the launch plume.
          */
         SOYUZ_EXHAUST("soyuz_exhaust");
 

@@ -58,10 +58,6 @@ public final class ModShapedRecipes {
                 "C", ItemIds.cordite, "I", TagIds.storage_blocks_iron, "S", TagIds.shells_copper);
         shaped(NS, "ammo_arty_4", stack("hbm:ammo_arty_cargo"), rows(" I ", " S ", "CCC"),
                 "C", ItemIds.cordite, "I", ItemIds.sphere_steel, "S", TagIds.shells_copper);
-        shaped(NS, "ammo_dgk", ItemIds.ammo_dgk, rows("LLL", "GGG", "CCC"),
-                "L", TagIds.plates_lead, "G", ItemIds.ballistite, "C", TagIds.ingots_copper);
-        shaped(NS, "ammo_dgk_1", ItemIds.ammo_dgk, rows("LLL", "GGG", "CCC"),
-                "L", TagIds.plates_lead, "G", ItemIds.cordite, "C", TagIds.ingots_copper);
         shaped(NS, "ammo_shell", ItemIds.ammo_shell, 4, rows(" T ", "GHG", "CCC"),
                 "T", ItemIds.tnt_ntm, "G", VanillaIds.gunpowder, "H", TagIds.shells_steel, "C", TagIds.ingots_copper);
         shaped(NS, "ammo_shell_1", ItemIds.ammo_shell, 4, rows(" T ", "GHG", "CCC"),
@@ -331,8 +327,6 @@ public final class ModShapedRecipes {
         shaped(NS, "c4", ItemIds.c4, rows("DDD", "DSD", "DDD"), "D", ItemIds.stick_c4, "S", ItemIds.safety_fuse);
         shaped(NS, "cable_detector", ItemIds.cable_detector, rows("S", "W"),
                 "S", TagIds.dusts_redstone, "W", "hbm:red_wire_coated"); // 1.7: the coated wire
-        shaped(NS, "cable_diode", ItemIds.cable_diode, rows(" Q ", "CAC", " Q "),
-                "Q", TagIds.nuggets_silicon, "C", ItemIds.red_cable, "A", TagIds.ingots_aluminium);
         shaped(NS, "cable_switch", ItemIds.cable_switch, rows("S", "W"), "S", VanillaIds.lever, "W", "hbm:red_wire_coated"); // 1.7: the coated wire
         shaped(NS, "can_empty", ItemIds.can_empty, rows("P", "P"), "P", TagIds.plates_aluminium);
         shaped(NS, "canister_empty", ItemIds.canister_empty, 2, rows("S ", "AA", "AA"),
@@ -758,9 +752,8 @@ public final class ModShapedRecipes {
         shaped(NS, "fluid_duct_paintable_block_exhaust", ItemIds.fluid_duct_paintable_block_exhaust, 8,
                 rows("SAS", "A A", "SAS"),
                 "S", TagIds.ingots_iron, "A", ItemIds.plate_polymer);
-        shaped(NS, "fluid_pump", ItemIds.fluid_pump, rows(" S ", "PGP", "IMI"),
-                "S", TagIds.shells_steel, "P", TagIds.pipes_steel, "G", TagIds.ingots_graphite, "I", TagIds.ingots_steel,
-                "M", ItemIds.motor);
+        shaped(NS, "flow_control_pump", "hbm:flow_control_pump", rows(" G ", "SMS", " G "),
+                "S", TagIds.shells_steel, "G", TagIds.ingots_graphite, "M", ItemIds.motor);
         shaped(NS, "fluid_switch", ItemIds.fluid_switch, rows("S", "W"),
                 "S", TagIds.dusts_redstone, "W", ItemIds.fluid_duct_paintable);
         shaped(NS, "fluorite_1", ItemIds.fluorite, 9, rows("#"), "#", ItemIds.block_fluorite);
@@ -1004,8 +997,6 @@ public final class ModShapedRecipes {
     }
 
     private static void shaped5() {
-        shaped(NS, "machine_controller", ItemIds.machine_controller, rows("TDT", "DCD", "TDT"),
-                "T", TagIds.ingots_any_resistant_alloy, "D", ItemIds.crt_display, "C", ItemIds.circuit_advanced);
         shaped(NS, "machine_conveyor_press", ItemIds.machine_conveyor_press, rows("CPC", "CBC", "CCC"),
                 "C", TagIds.plates_copper, "P", ItemIds.machine_epress, "B", ItemIds.conveyor_wand_regular);
         // no conveyor-block variant: 1.7 :887 takes only the conveyor wand
@@ -1048,7 +1039,6 @@ public final class ModShapedRecipes {
         shaped(NS, "machine_transformer_dnt", ItemIds.machine_transformer_dnt, rows("SDS", "MCM", "MCM"),
                 "S", TagIds.ingots_starmetal, "D", TagIds.ingots_desh, "M", TagIds.wires_dense_magnetized_tungsten,
                 "C", ItemIds.circuit_bismoid);
-        // no machine_turbine crafting: 1.7 makes it only elsewhere (no CraftingManager line)
         shaped(NS, "machine_waste_drum", ItemIds.machine_waste_drum, rows("LRL", "BRB", "LRL"),
                 "L", TagIds.ingots_lead, "B", VanillaIds.iron_bars, "R", ItemIds.rod_quad_empty);
         shaped(NS, "machine_weapon_table", ItemIds.machine_weapon_table, rows("PPP", "TCT", "TST"),
@@ -1106,6 +1096,8 @@ public final class ModShapedRecipes {
                 "M", ItemIds.motor);
         shaped(NS, "name_tag", VanillaIds.name_tag, rows("SB ", "BPB", " BP"),
                 "S", VanillaIds.string, "B", VanillaIds.slime_ball, "P", VanillaIds.paper);
+        shaped(NS, "network_separator", "hbm:network_separator", rows("SCS", "DTD", "SCS"),
+                "S", TagIds.plates_steel, "D", ItemIds.coil_copper, "C", ItemIds.circuit_basic, "T", ItemIds.machine_transformer);
         shaped(NS, "niter_1", ItemIds.niter, 9, rows("#"), "#", ItemIds.block_niter);
         shaped(NS, "nitra", ItemIds.nitra, rows("##", "##"), "#", ItemIds.nitra_small);
         shaped(NS, "nitra_small", ItemIds.nitra_small, 4, rows("#"), "#", ItemIds.nitra);
@@ -1175,6 +1167,8 @@ public final class ModShapedRecipes {
                 "P", TagIds.plates_steel, "I", TagIds.ingots_steel);
         shaped(NS, "photo_panel", ItemIds.photo_panel, rows(" G ", "IPI", " C "),
                 "G", TagIds.glass_panes, "I", ItemIds.plate_polymer, "P", TagIds.billets_silicon, "C", ItemIds.circuit_pcb);
+        shaped(NS, "machine_tape_drive", "hbm:machine_tape_drive", rows("PPP", "CCC", "PPP"),
+                "P", TagIds.ingots_any_plastic, "C", ItemIds.circuit_pcb);
         shaped(NS, "pile_device_control", stack("hbm:pile_control"),
                 rows(" B ", "SBS", "SBS"),
                 "B", TagIds.ingots_boron, "S", TagIds.plates_steel);
@@ -1197,6 +1191,10 @@ public final class ModShapedRecipes {
     private static void shaped6() {
         shaped(NS, "pipe_anchor", ItemIds.pipe_anchor, 2, rows("P", "P", "S"),
                 "P", TagIds.pipes_steel, "S", TagIds.ingots_steel);
+        shaped(NS, "pipe_anchor_exhaust", "hbm:pipe_anchor_exhaust", 2, rows("P", "P", "S"),
+                "P", TagIds.pipes_iron, "S", ItemIds.plate_polymer);
+        shaped(NS, "pipe_anchor_pneumatic", "hbm:pipe_anchor_pneumatic", 2, rows("P", "P", "S"),
+                "P", TagIds.plates_welded_copper, "S", TagIds.ingots_any_rubber);
         // no pipes_steel crafting: 1.7 has no crafting recipe
         shaped(NS, "piston_selenium", ItemIds.piston_selenium, rows("SSS", "STS", " D "),
                 "S", TagIds.plates_steel, "T", TagIds.ingots_tungsten, "D", TagIds.bolts_dura_steel);

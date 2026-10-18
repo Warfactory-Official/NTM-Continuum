@@ -17,7 +17,6 @@ import com.hbm.compat.computercraft.machine.CoreStabilizerPeripheral;
 import com.hbm.compat.computercraft.machine.GasTurbinePeripheral;
 import com.hbm.compat.computercraft.machine.IndustrialTurbinePeripheral;
 import com.hbm.compat.computercraft.machine.LargeTurbinePeripheral;
-import com.hbm.compat.computercraft.machine.SmallTurbinePeripheral;
 import com.hbm.gametest.FoldedTestSupport;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.Fluids;
@@ -28,7 +27,6 @@ import com.hbm.tileentity.machine.TileEntityChungus;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
 import com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine;
 import com.hbm.tileentity.machine.TileEntityMachineLargeTurbine;
-import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreInjector;
@@ -53,8 +51,6 @@ public final class PowerPeripheralGameTests {
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
-    public static final GameTests.Function SMALL_TURBINE = TESTS.function(
-            "cc_small_turbine", 40, () -> PowerPeripheralGameTests::smallTurbine);
     public static final GameTests.Function LARGE_TURBINE = TESTS.function(
             "cc_large_turbine", 40, 8, () -> PowerPeripheralGameTests::largeTurbine);
     public static final GameTests.Function CHUNGUS = TESTS.function(
@@ -79,28 +75,6 @@ public final class PowerPeripheralGameTests {
     private static final BlockPos SINGLE = new BlockPos(1, 1, 1);
     private static final BlockPos CORE = new BlockPos(3, 1, 3);
     private static final BlockPos CHUNGUS_CORE = new BlockPos(3, 1, 6);
-
-    private static void smallTurbine(GameTestHelper helper) {
-        helper.setBlock(SINGLE, ModMachineBlocks.machine_turbine.get().defaultBlockState());
-        TileEntityMachineTurbine be = GameTestHelpers.blockEntity(helper, SINGLE, TileEntityMachineTurbine.class);
-        be.input.setTankType(Fluids.HOTSTEAM);
-        be.output.setFill(500);
-        be.power = 12_345L;
-        SmallTurbinePeripheral turbine = PeripheralTestSupport.expect(helper, SINGLE, Direction.NORTH,
-                SmallTurbinePeripheral.class, "ntm_turbine");
-        expectNumbers(helper, "getInfo", turbine.getInfo(), 0, be.input.getMaxFill(), 500, be.output.getMaxFill(), 1,
-                12_345);
-        expectNumbers(helper, "getFluid", turbine.getFluid(), 0, be.input.getMaxFill(), 500, be.output.getMaxFill());
-        expectNumbers(helper, "getPower", turbine.getPower(), 12_345);
-
-        Object[] set = turbine.setType(2.9D);
-        helper.assertTrue(set.length == 1 && Boolean.TRUE.equals(set[0]), "setType answers {true}: " + Arrays.toString(set));
-        helper.assertTrue(be.input.getTankType() == Fluids.SUPERHOTSTEAM, "setType(2.9) truncates to 2, super dense steam");
-        helper.runAfterDelay(2, () -> {
-            expectNumbers(helper, "getType after a tick", turbine.steamType(), 2);
-            helper.succeed();
-        });
-    }
 
     private static void largeTurbine(GameTestHelper helper) {
         FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_large_turbine.get(), CORE);

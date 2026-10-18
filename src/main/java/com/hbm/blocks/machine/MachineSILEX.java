@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -70,5 +71,21 @@ public class MachineSILEX extends BlockMultiblockMachine implements IFluidConnec
         int domains = PASSIVE_FLUID_IN | PASSIVE_ITEMS;
         visitor.passiveCell(core.offset(rot.getStepX(), 1, rot.getStepZ()), MASK_ALL, domains);
         visitor.passiveCell(core.offset(-rot.getStepX(), 1, -rot.getStepZ()), MASK_ALL, domains);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 1, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 1, 0, ForgeDirection.WEST.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {1.9, 1.1, 1.5, 1.5, 0.4, -0.4},
+                {1.9, 1.1, -1.5, -1.5, 0.4, -0.4},
+        };
     }
 }

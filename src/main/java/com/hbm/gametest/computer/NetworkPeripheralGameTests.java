@@ -2,21 +2,24 @@ package com.hbm.gametest.computer;
 
 //? if computercraft {
 import com.hbm.Constants;
-import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.blocks.ModEnergyNetBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.compat.computercraft.network.CableGaugePeripheral;
 import com.hbm.compat.computercraft.network.FluidCounterValvePeripheral;
-import com.hbm.compat.computercraft.network.FluidPumpPeripheral;
 import com.hbm.compat.computercraft.network.PipeGaugePeripheral;
+import com.hbm.compat.computercraft.network.RadioAutocalPeripheral;
+import com.hbm.compat.computercraft.network.RadioControllerPeripheral;
+import com.hbm.compat.computercraft.network.RadioReaderPeripheral;
 import com.hbm.compat.computercraft.network.RadioTelexPeripheral;
 import com.hbm.compat.computercraft.network.RadioTorchPeripheral;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.network.TileEntityFluidCounterValve;
-import com.hbm.tileentity.network.TileEntityFluidPump;
 import com.hbm.tileentity.network.TileEntityPipeGauge;
+import com.hbm.tileentity.network.TileEntityRadioAUTOCAL;
 import com.hbm.tileentity.network.TileEntityRadioTelex;
+import com.hbm.tileentity.network.TileEntityRadioTorchController;
+import com.hbm.tileentity.network.TileEntityRadioTorchReader;
 import com.hbm.tileentity.network.TileEntityRadioTorchSender;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.ObjectArguments;
@@ -26,8 +29,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,14 +45,18 @@ public final class NetworkPeripheralGameTests {
             "cc_cable_gauge", 40, () -> NetworkPeripheralGameTests::cableGauge);
     public static final GameTests.Function PIPE_GAUGE = TESTS.function(
             "cc_pipe_gauge", 40, () -> NetworkPeripheralGameTests::pipeGauge);
-    public static final GameTests.Function FLUID_PUMP = TESTS.function(
-            "cc_fluid_pump", 40, () -> NetworkPeripheralGameTests::fluidPump);
     public static final GameTests.Function COUNTER_VALVE = TESTS.function(
             "cc_fluid_counter_valve", 40, () -> NetworkPeripheralGameTests::counterValve);
     public static final GameTests.Function TELEX = TESTS.function(
             "cc_telex", 40, () -> NetworkPeripheralGameTests::telex);
     public static final GameTests.Function RADIO_TORCH = TESTS.function(
             "cc_radio_torch", 40, () -> NetworkPeripheralGameTests::radioTorch);
+    public static final GameTests.Function RADIO_READER = TESTS.function(
+            "cc_radio_reader", 40, () -> NetworkPeripheralGameTests::radioReader);
+    public static final GameTests.Function RADIO_CONTROLLER = TESTS.function(
+            "cc_radio_controller", 40, () -> NetworkPeripheralGameTests::radioController);
+    public static final GameTests.Function AUTOCAL = TESTS.function(
+            "cc_radio_autocal", 40, () -> NetworkPeripheralGameTests::autocal);
 
     private static void cableGauge(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
@@ -85,39 +90,6 @@ public final class NetworkPeripheralGameTests {
             helper.assertTrue(info.length == 6 && Fluids.WATER.getName().equals(info[2])
                     && PeripheralTestSupport.number(helper, info, 3) == absolute.getX()
                     && PeripheralTestSupport.number(helper, info, 5) == absolute.getZ(), "getInfo");
-            helper.succeed();
-        });
-    }
-
-    private static void fluidPump(GameTestHelper helper) {
-        BlockPos pos = new BlockPos(1, 1, 1);
-        BlockState state = ModFluidNetBlocks.fluid_pump.get().defaultBlockState();
-        if (state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
-            state = state.setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH);
-        }
-        helper.setBlock(pos, state);
-        TileEntityFluidPump be = GameTestHelpers.blockEntity(helper, pos, TileEntityFluidPump.class);
-        be.tank[0].setTankType(Fluids.WATER);
-        FluidPumpPeripheral pump = PeripheralTestSupport.expect(helper, pos, Direction.UP,
-                FluidPumpPeripheral.class, "ntm_fluid_pump");
-
-        helper.assertTrue(Boolean.TRUE.equals(pump.setFlow(250.7D)[0]) && be.bufferSize == 250,
-                "setFlow(250.7) left " + be.bufferSize + ", 1.7 truncates to 250");
-        Object[] bad = pump.setFlow(10_001);
-        helper.assertTrue(bad[0] == null && "Number outside of bounds.".equals(bad[1]) && be.bufferSize == 250,
-                "setFlow(10001) is out of bounds");
-        helper.assertTrue(Boolean.TRUE.equals(pump.setPriority(3)[0]) && be.priority == ConnectionPriority.HIGH,
-                "setPriority(3) is HIGH");
-        Object[] badPriority = pump.setPriority(5);
-        helper.assertTrue(badPriority[0] == null && "Not a valid Priority.".equals(badPriority[1]),
-                "setPriority(5) is invalid");
-        helper.runAfterDelay(2, () -> {
-            Object[] info = pump.getInfo();
-            helper.assertTrue(Fluids.WATER.getTranslationKey().equals(info[0]), "getInfo fluid " + info[0]);
-            helper.assertTrue(PeripheralTestSupport.number(helper, info, 2) == 250, "getInfo flow");
-            helper.assertTrue("HIGH".equals(info[3]), "getInfo priority " + info[3]);
-            helper.assertTrue(PeripheralTestSupport.number(helper, pump.getPressure(), 0) == be.tank[0].getPressure(),
-                    "getPressure");
             helper.succeed();
         });
     }
@@ -226,8 +198,76 @@ public final class NetworkPeripheralGameTests {
         helper.assertTrue("low".equals(sender.mapping[0]) && "high".equals(sender.mapping[15]),
                 "setCustomMapValues sets the string entries");
         helper.assertTrue(java.util.Objects.equals(before, sender.mapping[2]), "a non-string entry is skipped");
+        helper.assertTrue("cc".equals(torch.getChannel()[0]) && Boolean.TRUE.equals(torch.getPolling()[0])
+                && Boolean.TRUE.equals(torch.getCustomMap()[0]), "getChannel/getPolling/getCustomMap");
+        Map<?, ?> table = (Map<?, ?>) torch.getCustomMapValues()[0];
+        helper.assertTrue(table.size() == 16 && "low".equals(table.get(1)) && "high".equals(table.get(16)),
+                "getCustomMapValues is indexed from 1: " + table);
         torch.setPolling(false);
         helper.assertTrue(!sender.polling, "setPolling(false)");
+        helper.succeed();
+    }
+
+    /** Indices 0..7 as in 1.7; anything outside answers nothing and changes nothing. */
+    private static void radioReader(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 2, 1);
+        helper.setBlock(pos.below(), Blocks.STONE);
+        helper.setBlock(pos, ModMachineBlocks.radio_torch_reader.get().defaultBlockState());
+        TileEntityRadioTorchReader be = GameTestHelpers.blockEntity(helper, pos, TileEntityRadioTorchReader.class);
+        RadioReaderPeripheral reader = PeripheralTestSupport.expect(helper, pos, Direction.NORTH,
+                RadioReaderPeripheral.class, "radio_reader");
+        reader.setChannel(0, "ccin");
+        reader.setName(7.9D, "last");
+        reader.setChannel(8, "outside");
+        reader.setPolling(true);
+        helper.assertTrue("ccin".equals(be.channels[0]) && "last".equals(be.names[7]) && be.polling,
+                "setChannel/setName/setPolling");
+        helper.assertTrue("ccin".equals(reader.getChannel(0)[0]) && "last".equals(reader.getName(7)[0])
+                && Boolean.TRUE.equals(reader.getPolling()[0]), "getChannel/getName/getPolling");
+        helper.assertTrue(reader.getChannel(8).length == 0 && reader.read(-1).length == 0, "an index outside 0..7");
+        helper.assertTrue("".equals(reader.read(0)[0]), "read of a silent channel");
+        helper.succeed();
+    }
+
+    private static void radioController(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 2, 1);
+        helper.setBlock(pos.below(), Blocks.STONE);
+        helper.setBlock(pos, ModMachineBlocks.radio_torch_controller.get().defaultBlockState());
+        TileEntityRadioTorchController be = GameTestHelpers.blockEntity(helper, pos, TileEntityRadioTorchController.class);
+        RadioControllerPeripheral controller = PeripheralTestSupport.expect(helper, pos, Direction.NORTH,
+                RadioControllerPeripheral.class, "radio_controller");
+        controller.setChannel("ccctl");
+        controller.setPolling(true);
+        helper.assertTrue("ccctl".equals(be.channel) && be.polling, "setChannel/setPolling");
+        helper.assertTrue("ccctl".equals(controller.getChannel()[0]) && Boolean.TRUE.equals(controller.getPolling()[0]),
+                "getChannel/getPolling");
+        controller.send("");
+        controller.send("ping");
+        helper.succeed();
+    }
+
+    /** Script, buffer and flags; a requested shutdown is the newest history line. */
+    private static void autocal(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModMachineBlocks.radio_autocal.get().defaultBlockState()
+                .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
+        TileEntityRadioAUTOCAL be = GameTestHelpers.blockEntity(helper, pos, TileEntityRadioAUTOCAL.class);
+        RadioAutocalPeripheral autocal = PeripheralTestSupport.expect(helper, pos, Direction.EAST,
+                RadioAutocalPeripheral.class, "radio_autocal");
+        autocal.setScript("first\nsecond");
+        helper.assertTrue("first\nsecond\n".equals(autocal.getScript()[0]), "getScript joins the lines: " + autocal.getScript()[0]);
+        helper.assertTrue(Boolean.TRUE.equals(autocal.setBuffer("hello")[0]) && "hello".equals(autocal.getBuffer()[0]),
+                "setBuffer/getBuffer");
+        autocal.setIgnoreError(true);
+        autocal.setAutoReboot(true);
+        helper.assertTrue(be.ignoreError && Boolean.TRUE.equals(autocal.getIgnoreError()[0])
+                && Boolean.TRUE.equals(autocal.getAutoReboot()[0]), "setIgnoreError/setAutoReboot");
+        autocal.setAutoReboot(false);
+        autocal.setState(false);
+        helper.assertTrue(Boolean.FALSE.equals(autocal.getState()[0]), "setState(false)");
+        helper.assertTrue("User requested shutdown".equals(autocal.getHistory(5.5D)[0]), "getHistory(5.5) is the newest line: "
+                + autocal.getHistory(5)[0]);
+        helper.assertTrue(autocal.getHistory(6).length == 0, "getHistory outside 0..5");
         helper.succeed();
     }
 }

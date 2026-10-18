@@ -1,6 +1,5 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
@@ -8,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Compressor ({@code machine_compressor}): 1:1 port of the 1.12.2 {@code TileEntityMachineCompressor}.
@@ -58,17 +58,21 @@ public class TileEntityMachineCompressor extends TileEntityMachineCompressorBase
         }
     }
 
-    @Override
-    public DirPos[] getConPos() {
-        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
-        ForgeDirection dir = ForgeDirection.getOrientation(meta);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+    protected PortDef[] cachedPorts;
 
-        return new DirPos[]{
-                new DirPos(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot),
-                new DirPos(x - rot.offsetX * 2, y, z - rot.offsetZ * 2, rot.getOpposite()),
-                new DirPos(x - dir.offsetX * 2, y, z - dir.offsetZ * 2, dir.getOpposite())
-        };
+    @Override
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+            ForgeDirection dir = ForgeDirection.getOrientation(meta);
+            ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + rot.offsetX, y, z + rot.offsetZ, rot),
+                    PortDef.make(x - rot.offsetX, y, z - rot.offsetZ, rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX, y, z - dir.offsetZ, dir.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 }

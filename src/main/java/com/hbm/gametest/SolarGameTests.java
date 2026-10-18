@@ -26,6 +26,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ModToolItems;
 import com.hbm.items.ModDataComponents;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Focused contracts for the solar boiler, heliostat mirror, and mirror adjustment tool. */
 public final class SolarGameTests {
@@ -175,10 +176,10 @@ public final class SolarGameTests {
                 "One water operation must consume 50 TU and produce 100 steam");
         FoldedTestSupport.assertPort(helper, relative, relative.above(2));
 
-        DirPos[] ports = boiler.getConPos();
+        DirPos[] ports = PortDef.connections(boiler.getPorts());
         helper.assertTrue(ports.length == 2
-                        && ports[0].getPos().equals(core.above(3)) && ports[0].getDir() == ForgeDirection.UP
-                        && ports[1].getPos().equals(core.below()) && ports[1].getDir() == ForgeDirection.DOWN,
+                        && ports[0].getPos().equals(core.below()) && ports[0].getDir() == ForgeDirection.DOWN
+                        && ports[1].getPos().equals(core.above(3)) && ports[1].getDir() == ForgeDirection.UP,
                 "Solar boiler ports must remain top and bottom only");
         for (DirPos port : ports) {
             BlockPos cell = port.getPos().offset(-port.getDir().offsetX, -port.getDir().offsetY,

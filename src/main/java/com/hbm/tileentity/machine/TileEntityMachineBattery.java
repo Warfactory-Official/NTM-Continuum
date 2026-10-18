@@ -1,15 +1,11 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.api.energymk2.CableData;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.api.energymk2.IEnergyConductorMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.energymk2.PowerGraph;
-import com.hbm.api.energymk2.PowerGraphProvider;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.capability.MachineCaps;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -19,7 +15,6 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.item.ItemStack;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.graph.LevelNodeGraph;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -33,6 +28,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Energy Storage Block: the first machine ported onto the HBM BlockEntity tower
@@ -114,25 +111,17 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBattery battery) {
+        battery.setupPowerPorts(battery.getPorts());
+        battery.updateAllPorts();
+        battery.providePower();
+        battery.receivePower();
+
         if (battery.priority == null || battery.priority.ordinal() == 0 || battery.priority.ordinal() == 4) {
             battery.priority = ConnectionPriority.LOW; // 1.7: LOWEST/HIGHEST are not selectable here
         }
         battery.indirectlyPowered = level.hasNeighborSignal(pos);
-        int mode = battery.getRelevantMode();
         long prevPower = battery.power;
         battery.power = Library.chargeItemsFromTE(battery.inventory, 1, battery.power, battery.getMaxPower());
-
-        if (level instanceof ServerLevel server) battery.updateBufferCell(server, state, mode);
-
-        if (mode != MODE_BUFFER) {
-            for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-                BlockPos at = pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ);
-                if (mode == MODE_OUTPUT) battery.tryProvide(level, at, dir);
-                else battery.tryUnprovide(level, at.getX(), at.getY(), at.getZ());
-                if (mode == MODE_INPUT) battery.trySubscribe(level, at, dir);
-                else battery.tryUnsubscribe(level, at.getX(), at.getY(), at.getZ());
-            }
-        }
 
         battery.power = Library.chargeTEFromItems(battery.inventory, 0, battery.power, battery.getMaxPower());
 
@@ -145,25 +134,12 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         battery.networkPackNT(); // broadcast power/mode/priority to tracking clients (deduped when unchanged)
     }
 
+    protected PortDef[] cachedPorts;
     /**
-     * 1.7: "in buffer mode, becomes a cable block and provides power to itself". The cell is what makes
-     * that literal: two cable runs meeting at the battery are one network, so a generator on either
-     * side reaches a machine on the other in a single round instead of every watt crossing through
-     * storage at a twentieth of the buffer a tick. Its own two roles reach that network through the
-     * pseudo-face.
+     * 1.7 hands solderer() the battery's plain block meta, so its direction is UNKNOWN and every port lands on the
+     * battery itself: this deprecated battery connects to nothing.
      */
-    private void updateBufferCell(ServerLevel level, BlockState state, int mode) {
-        LevelNodeGraph<CableData> graph = PowerGraph.get(level);
-        long key = getBlockPos().asLong();
-        if (mode != MODE_BUFFER) {
-            if (graph.containsCell(key)) graph.removeNode(key);
-            return;
-        }
-        if (!graph.containsCell(key)) {
-            graph.addNode(key, PowerGraphProvider.INSTANCE.createData(state), MachineCaps.FACE_MASK_ALL);
-        }
-        graph.setSelfEndpoint(key, true);
-    }
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.solderer(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), ForgeDirection.UNKNOWN); return cachedPorts; }
 
     // Items (1.7 isItemValidForSlot accepts anything; sides as 1.7)
 
@@ -189,12 +165,6 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
     }
 
     // IEnergyHandler / receiver / provider (isLoaded() inherited from the tower)
-
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-        PowerGraph.dropCells(this, getBlockPos());
-    }
 
     @Override
     public long getPower() {

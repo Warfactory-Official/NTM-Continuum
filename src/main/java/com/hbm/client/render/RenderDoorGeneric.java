@@ -266,7 +266,7 @@ public class RenderDoorGeneric implements CompatBER<TileEntityDoorGeneric, DoorR
     // --- RenderSlidingBlastDoor ---
 
     private void renderSlidingBlastDoor(DoorRenderState state, PoseStack poseStack, SubmitSink sink, int light, int overlay) {
-        RenderType type = noCull(DoorDecl.PHEO_BLAST_DOOR_TEX);
+        RenderType type = noCull(DoorDecl.SLIDE_DOOR.getSkinFromIndex(state.skinIndex));
 
         double maxOpen = 2.125;
         double open = 0;
@@ -316,7 +316,7 @@ public class RenderDoorGeneric implements CompatBER<TileEntityDoorGeneric, DoorR
     // --- RenderSealDoor ---
 
     private void renderSealDoor(DoorRenderState state, PoseStack poseStack, SubmitSink sink, int light, int overlay) {
-        RenderType type = cull(DoorDecl.PHEO_SEAL_DOOR_TEX);
+        RenderType type = cull(DoorDecl.SLIDING_SEAL_DOOR.getSkinFromIndex(state.skinIndex));
 
         double maxRaise = 1;
         double raise = 0;
@@ -392,7 +392,7 @@ public class RenderDoorGeneric implements CompatBER<TileEntityDoorGeneric, DoorR
     // --- RenderSlidingDoor (QE sliding) ---
 
     private void renderSlidingDoor(DoorRenderState state, PoseStack poseStack, SubmitSink sink, int light, int overlay) {
-        RenderType type = noCull(DoorDecl.PHEO_SLIDING_DOOR_TEX);
+        RenderType type = noCull(DoorDecl.QE_SLIDING.getSkinFromIndex(state.skinIndex));
 
         double maxOpen = 0.95;
         double open = 0;
@@ -491,7 +491,7 @@ public class RenderDoorGeneric implements CompatBER<TileEntityDoorGeneric, DoorR
     // --- RenderVehicleDoor ---
 
     private void renderVehicleDoor(DoorRenderState state, PoseStack poseStack, SubmitSink sink, int light, int overlay) {
-        RenderType type = noCull(DoorDecl.PHEO_VEHICLE_DOOR_TEX);
+        RenderType type = noCull(DoorDecl.LARGE_VEHICLE_DOOR.getSkinFromIndex(state.skinIndex));
 
         double maxOpen = 3;
         double open = 0;

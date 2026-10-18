@@ -21,7 +21,6 @@ import net.minecraft.ChatFormatting;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemBlueprints;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.module.machine.ModuleMachineChemplant;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
@@ -42,6 +41,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Chemical Plant: built on the assembly machine's recipe framework (selector + control packet) plus the fluid
@@ -97,6 +98,11 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     // --- server: power + fluids + processing ---
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalPlant te) {
+        te.setupPowerPorts(te.getPorts());
+        te.setupFluidInPorts(te.getReceivingTanks(), PortDef.combine(te.getPorts()));
+        te.setupFluidOutPorts(te.getSendingTanks(), PortDef.combine(te.getPorts()));
+        te.updatePortPIFIFO();
+
         if (te.maxPower <= 0) te.maxPower = 1_000_000;
         // 1.7: the buffer floats to the selected recipe's power x100, never below the stored power or 100k,
         // and a battery in slot 0 charges the machine.
@@ -105,12 +111,6 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         te.maxPower = BobMathUtil.max(te.power, te.maxPower, 100_000);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
 
-        // Fluid network: subscribe input tanks to matching nets, push output tanks out, plus bucket I/O.
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
-            for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, dp);
-            for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, dp);
-        }
         boolean containerChanged = false;
         for (int i = 0; i < 3; i++) {
             containerChanged |= MachineFluidContainerIO.load(te.inputTanks[i], te.inventory, 10 + i, 13 + i);
@@ -147,16 +147,8 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         if (te.didProcess) te.anim++;
     }
 
-    /** Power connection points around the 3×3 footprint (one block out from each edge cell). Same as assembly. */
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z - 1, Library.POS_X), new DirPos(x + 2, y, z, Library.POS_X), new DirPos(x + 2, y, z + 1, Library.POS_X),
-                new DirPos(x - 2, y, z - 1, Library.NEG_X), new DirPos(x - 2, y, z, Library.NEG_X), new DirPos(x - 2, y, z + 1, Library.NEG_X),
-                new DirPos(x - 1, y, z + 2, Library.POS_Z), new DirPos(x, y, z + 2, Library.POS_Z), new DirPos(x + 1, y, z + 2, Library.POS_Z),
-                new DirPos(x - 1, y, z - 2, Library.NEG_Z), new DirPos(x, y, z - 2, Library.NEG_Z), new DirPos(x + 1, y, z - 2, Library.NEG_Z),
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.assembler(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {

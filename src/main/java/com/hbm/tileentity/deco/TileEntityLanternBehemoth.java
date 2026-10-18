@@ -30,20 +30,21 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.world.phys.AABB;
 
 /**
  * 1.7 {@code TileEntityLanternBehemoth}: the old lantern's core. A broken lantern ({@code isBroken}, set by the
  * structures that place it) waits for its blowtorch repair; repairing it starts a 400-tick call for help - the
  * near horn at 360, the far horn at 280, the double near horn at 220, the double far horn at 100 - and at 0 a
  * Bobmazon shuttle falls from y 300 somewhere around it (gaussian, sigma 10) with a "Supplies" kit: 4-7 basic
- * and 4-5 advanced circuits, 6-11 diamonds and a poppy - or one alexandrite instead of the diamonds when the first
- * player within 10 blocks has a reputation of at least 10 ({@link com.hbm.extprop.HbmPlayerProps}).
+ * and 4-5 advanced circuits, one vending token per point of the repairer's reputation (at least one), 6-11
+ * diamonds and a poppy, or one alexandrite instead of the diamonds when that reputation was at least 10.
  */
 public class TileEntityLanternBehemoth extends TileEntityLoadedBase implements IRepairable {
 
     public boolean isBroken = false;
     public int comTimer = -1;
+    /** The repairing player's reputation, taken at the repair. */
+    public int reputation = 0;
 
     public TileEntityLanternBehemoth(BlockPos pos, BlockState state) {
         super(ModDungeonBlockEntities.LANTERN_BEHEMOTH.get(), pos, state);
@@ -57,18 +58,14 @@ public class TileEntityLanternBehemoth extends TileEntityLoadedBase implements I
         if (t == 100) lantern.horn(ModSounds.HORN_FAR_DUAL.get(), 10000F);
 
         if (t == 0) {
-            // 1.7: the first player within 10 blocks decides the bonus - alexandrite instead of diamonds at reputation >= 10
-            List<Player> players = level.getEntitiesOfClass(
-                    Player.class, new AABB(
-                            pos.getX() - 10, pos.getY() - 10, pos.getZ() - 10, pos.getX() + 11, pos.getY() + 11, pos.getZ() + 11));
-            Player first = players.isEmpty() ? null : players.get(0);
-            boolean bonus = first != null && HbmPlayerProps.getReputation(first) >= 10;
+            boolean bonus = lantern.reputation >= 10;
             EntityBobmazon shuttle = new EntityBobmazon(level);
             shuttle.setPos(pos.getX() + 0.5 + level.getRandom().nextGaussian() * 10, 300,
                     pos.getZ() + 0.5 + level.getRandom().nextGaussian() * 10);
             shuttle.payload = ItemKitCustom.create("Supplies", null, 0xffffff, 0x008000,
                     ModIntermediateItems.circuit(EnumCircuitType.BASIC, 4 + level.getRandom().nextInt(4)),
                     ModIntermediateItems.circuit(EnumCircuitType.ADVANCED, 4 + level.getRandom().nextInt(2)),
+                    new ItemStack(ModItems.coin_token.get(), Math.max(1, lantern.reputation)),
                     bonus ? new ItemStack(ModItems.gem_alexandrite.get()) : new ItemStack(Items.DIAMOND, 6 + level.getRandom().nextInt(6)),
                     new ItemStack(Items.POPPY));
             level.addFreshEntity(shuttle);
@@ -101,6 +98,7 @@ public class TileEntityLanternBehemoth extends TileEntityLoadedBase implements I
         super.loadData(input);
         isBroken = input.getBooleanOr("isBroken", false);
         comTimer = input.getIntOr("comTimer", -1);
+        reputation = input.getIntOr("reputation", 0);
     }
 
     @Override
@@ -108,6 +106,7 @@ public class TileEntityLanternBehemoth extends TileEntityLoadedBase implements I
         super.saveData(output);
         output.putBoolean("isBroken", isBroken);
         output.putInt("comTimer", comTimer);
+        output.putInt("reputation", reputation);
     }
 
     public boolean isDamaged() {
@@ -123,9 +122,10 @@ public class TileEntityLanternBehemoth extends TileEntityLoadedBase implements I
         return repair;
     }
 
-    public void repair() {
+    public void repair(Player player) {
         this.isBroken = false;
         this.comTimer = 400;
+        this.reputation = HbmPlayerProps.getReputation(player);
         this.setChanged();
     }
 

@@ -1,6 +1,5 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -12,7 +11,6 @@ import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModFuelItems;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
@@ -35,6 +33,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Standard centrifuge, ported from 1.12.2 {@code TileEntityMachineCentrifuge}. */
 public class TileEntityMachineCentrifuge extends TileEntityMachineBase
@@ -65,9 +65,9 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCentrifuge te) {
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
+        te.setupPowerPorts(te.getPorts());
+        te.updateAllPorts();
+        te.receivePower();
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, MAX_POWER);
 
         int consumption = BASE_CONSUMPTION;
@@ -148,17 +148,8 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
         return (progress * scale) / PROCESSING_SPEED;
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 1, y, z, Library.POS_X),
-                new DirPos(x - 1, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 1, Library.POS_Z),
-                new DirPos(x, y, z - 1, Library.NEG_Z),
-                new DirPos(x, y + 1, z, Library.POS_Y),
-                new DirPos(x, y - 1, z, Library.NEG_Y),
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {

@@ -17,6 +17,7 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType;
 import com.hbm.explosion.ExplosionNukeGeneric;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.ContainerReactorZirnox;
@@ -31,7 +32,6 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.sound.ModSounds;
 import com.hbm.Constants;
-import java.util.List;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -51,6 +51,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.AABB;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Server simulation for the 24-channel carbon-dioxide moderated ZIRNOX reactor. */
 public class TileEntityReactorZirnox extends TileEntityMachineBase implements IFluidStandardTransceiverMK2, WorldlyContainer, MenuProvider, IRORValueProvider, IRORInteractive {
@@ -69,6 +70,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     public int pressure;
     public boolean isOn;
     public boolean redstonePowered;
+    /** The rod slot redstone-over-radio reports on; not saved. */
+    private int rorSlot;
     public final FluidTankNTM steam = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 8_000);
     public final FluidTankNTM carbonDioxide = new FluidTankNTM(Fluids.CARBONDIOXIDE, 16_000);
     public final FluidTankNTM water = new FluidTankNTM(Fluids.WATER, 32_000);
@@ -119,12 +122,9 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityReactorZirnox te) {
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos port : te.getConPos()) {
-                te.trySubscribe(te.water.getTankType(), level, port);
-                te.trySubscribe(te.carbonDioxide.getTankType(), level, port);
-            }
-        }
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
+
         if (te.redstonePowered) te.isOn = true;
         MachineFluidContainerIO.load(te.carbonDioxide, te.inventory, 24, 26);
         MachineFluidContainerIO.load(te.water, te.inventory, 25, 27);
@@ -150,9 +150,6 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             if (level.getGameTime() % 100 == 0)
                 SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
                         SatelliteRayScan.RayEvent.INFO_NUCLEAR, 200);
-        }
-        for (DirPos port : te.getConPos()) {
-            te.tryProvide(te.steam, level, port);
         }
         if (te.heat > MAX_HEAT || te.pressure > MAX_PRESSURE) {
             te.meltdown(level, pos, state);
@@ -263,22 +260,36 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         }
     }
 
-    public List<DirPos> getConPos() {
-        ForgeDirection facing = MachineCore.facing(getBlockState());
-        ForgeDirection rot = facing.getRotation(ForgeDirection.UP);
-        return List.of(
-                new DirPos(worldPosition.offset(rot.offsetX * 3, 1, rot.offsetZ * 3), rot),
-                new DirPos(worldPosition.offset(rot.offsetX * 3, 3, rot.offsetZ * 3), rot),
-                new DirPos(worldPosition.offset(-rot.offsetX * 3, 1, -rot.offsetZ * 3), rot.getOpposite()),
-                new DirPos(worldPosition.offset(-rot.offsetX * 3, 3, -rot.offsetZ * 3), rot.getOpposite()));
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection rot = MachineCore.facing(getBlockState()).getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + rot.offsetX * 2, y + 1, z + rot.offsetZ * 2, rot),
+                    PortDef.make(x + rot.offsetX * 2, y + 3, z + rot.offsetZ * 2, rot),
+                    PortDef.make(x - rot.offsetX * 2, y + 1, z - rot.offsetZ * 2, rot.getOpposite()),
+                    PortDef.make(x - rot.offsetX * 2, y + 3, z - rot.offsetZ * 2, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
+
+    // port: 1.7 also drops both to 0 while tilted; the port has no tilting
+    @Override public long getProviderSpeed(FluidType type, int pressure) { return 1_000_000; }
+    @Override public long getReceiverSpeed(FluidType type, int pressure) { return 1_000_000; }
 
     @Override
     public String[] getFunctionInfo() {
         return new String[]{PREFIX_VALUE + "heat", PREFIX_VALUE + "pressure", PREFIX_VALUE + "water",
                 PREFIX_VALUE + "steam", PREFIX_VALUE + "co2", PREFIX_VALUE + "state",
-                PREFIX_FUNCTION + "setState" + NAME_SEPARATOR + "active (0 or 1)",
-                PREFIX_FUNCTION + "ventCO2"};
+                PREFIX_VALUE + "slottype", PREFIX_VALUE + "slotdep", PREFIX_VALUE + "slotmaxdep",
+                PREFIX_FUNCTION + "setslot" + NAME_SEPARATOR + "id (0 to 23)",
+                PREFIX_FUNCTION + "setstate" + NAME_SEPARATOR + "active (0 or 1)",
+                PREFIX_FUNCTION + "ventco2"};
     }
 
     @Override
@@ -289,22 +300,50 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         if ((PREFIX_VALUE + "steam").equals(name)) return "" + steam.getFill();
         if ((PREFIX_VALUE + "co2").equals(name)) return "" + carbonDioxide.getFill();
         if ((PREFIX_VALUE + "state").equals(name)) return isOn ? "1" : "0";
+
+        ItemStack monitored = fuelRod(rorSlot);
+        if ((PREFIX_VALUE + "slottype").equals(name)) {
+            return monitored.isEmpty() ? "" : ((ItemZirnoxRod) monitored.getItem()).fuel().legacyName();
+        }
+        if ((PREFIX_VALUE + "slotmaxdep").equals(name) && !monitored.isEmpty()) {
+            return "" + ((ItemZirnoxRod) monitored.getItem()).stats().maxLife();
+        }
+        if ((PREFIX_VALUE + "slotdep").equals(name) && !monitored.isEmpty()) {
+            return "" + ((ItemZirnoxRod) monitored.getItem()).getLife(monitored);
+        }
         return null;
     }
 
     @Override
     public String runRORFunction(String name, String[] params) {
-        if ((PREFIX_FUNCTION + "setState").equals(name) && params.length > 0) {
+        if ((PREFIX_FUNCTION + "setslot").equals(name) && params.length > 0) {
+            if (redstonePowered) return null;
+            try {
+                int val = Integer.parseInt(params[0]);
+                if (val >= 0 && val < 24) rorSlot = val;
+            } catch (NumberFormatException e) {
+                // 1.7 ignores a malformed slot id
+            }
+            return null;
+        }
+        if ((PREFIX_FUNCTION + "setstate").equals(name) && params.length > 0) {
             if (redstonePowered) return null;
             isOn = IRORInteractive.parseInt(params[0], 0, 1) == 1;
             setChanged();
             return null;
         }
-        if ((PREFIX_FUNCTION + "ventCO2").equals(name)) {
+        if ((PREFIX_FUNCTION + "ventco2").equals(name)) {
             carbonDioxide.setFill(Math.max(carbonDioxide.getFill() - 1_000, 0));
             setChanged();
         }
         return null;
+    }
+
+    /** 1.7 {@code hasFuelRod}: the non-breeding rod in the slot, else empty. */
+    public ItemStack fuelRod(int slot) {
+        ItemStack stack = inventory.getStackInSlot(slot);
+        if (stack.getItem() instanceof ItemZirnoxRod rod && !rod.stats().breeding()) return stack;
+        return ItemStack.EMPTY;
     }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{water, carbonDioxide}; }

@@ -1,14 +1,14 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.config.ClientConfig;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** 9x9x13 cooling tower; exact old 10,000 mB condenser tanks and twelve perimeter ports. */
+/** 9x9x13 cooling tower; 10,000 mB condenser tanks and twelve perimeter ports. */
 public class TileEntityTowerLarge extends TileEntityCondenser {
     public static final int INPUT_TANK_SIZE = 10_000;
     public static final int OUTPUT_TANK_SIZE = 10_000;
@@ -28,20 +28,7 @@ public class TileEntityTowerLarge extends TileEntityCondenser {
 
     @Override public String getDefaultName() { return "block.hbm.machine_tower_large"; }
 
-    @Override public DirPos[] getConPos() {
-        BlockPos p = getBlockPos();
-        return new DirPos[]{new DirPos(p.offset(5, 0, 0), ForgeDirection.EAST),
-                new DirPos(p.offset(5, 0, 3), ForgeDirection.EAST),
-                new DirPos(p.offset(5, 0, -3), ForgeDirection.EAST),
-                new DirPos(p.offset(-5, 0, 0), ForgeDirection.WEST),
-                new DirPos(p.offset(-5, 0, 3), ForgeDirection.WEST),
-                new DirPos(p.offset(-5, 0, -3), ForgeDirection.WEST),
-                new DirPos(p.offset(0, 0, 5), ForgeDirection.SOUTH),
-                new DirPos(p.offset(3, 0, 5), ForgeDirection.SOUTH),
-                new DirPos(p.offset(-3, 0, 5), ForgeDirection.SOUTH),
-                new DirPos(p.offset(0, 0, -5), ForgeDirection.NORTH),
-                new DirPos(p.offset(3, 0, -5), ForgeDirection.NORTH),
-                new DirPos(p.offset(-3, 0, -5), ForgeDirection.NORTH)};
-    }
+    @Override
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.bigTower(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
 }

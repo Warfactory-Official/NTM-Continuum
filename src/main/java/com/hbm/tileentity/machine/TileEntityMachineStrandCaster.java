@@ -30,6 +30,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Seven-slot Strand Caster core: one mold, six output slots, four fluid ports, and old batching. */
 public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
@@ -52,6 +53,9 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
     @Override public int getMoldSize() { return 0; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineStrandCaster caster) {
+        caster.setupAllPorts(caster.getPorts());
+        caster.updatePortFIFO();
+
         if (caster.type != null && caster.amount > caster.getCapacity()) {
             int excess = caster.amount - caster.getCapacity();
             ItemScraps.spawnMats(level, pos.getX() + 0.5D, pos.getY() + 2D, pos.getZ() + 0.5D,
@@ -60,7 +64,6 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
         }
 
         if (caster.amount == 0) caster.type = null;
-        caster.updateConnections(level);
 
         int moldsToCast = caster.maxProcessable();
         if (moldsToCast > 0 && (moldsToCast >= 9 || level.getGameTime() >= caster.lastProgressTick + 200L)) {
@@ -108,13 +111,6 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
         }
         caster.syncOutput = caster.syncOutputs[0];
         caster.networkPackNT();
-    }
-
-    private void updateConnections(Level level) {
-        for (DirPos port : getFluidConPos()) {
-            trySubscribe(water.getTankType(), level, port);
-            tryProvide(steam, level, port);
-        }
     }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{water}; }
@@ -193,20 +189,23 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
         return stack;
     }
 
-    public DirPos[] getFluidConPos() {
-        ForgeDirection dir = facing();
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        return new DirPos[]{
-                new DirPos(worldPosition.getX() + rot.offsetX * 2 - dir.offsetX, worldPosition.getY(),
-                        worldPosition.getZ() + rot.offsetZ * 2 - dir.offsetZ, rot),
-                new DirPos(worldPosition.getX() - rot.offsetX - dir.offsetX, worldPosition.getY(),
-                        worldPosition.getZ() - rot.offsetZ - dir.offsetZ, rot.getOpposite()),
-                new DirPos(worldPosition.getX() + rot.offsetX * 2 - dir.offsetX * 5, worldPosition.getY(),
-                        worldPosition.getZ() + rot.offsetZ * 2 - dir.offsetZ * 5, rot),
-                new DirPos(worldPosition.getX() - rot.offsetX - dir.offsetX * 5, worldPosition.getY(),
-                        worldPosition.getZ() - rot.offsetZ - dir.offsetZ * 5, rot.getOpposite())
-        };
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = facing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + rot.offsetX * 1 - dir.offsetX, y, z + rot.offsetZ * 1 - dir.offsetZ, rot),
+                    PortDef.make(x - dir.offsetX, y, z - dir.offsetZ, rot.getOpposite()),
+                    PortDef.make(x + rot.offsetX * 1 - dir.offsetX * 5, y, z + rot.offsetZ * 1 - dir.offsetZ * 5, rot),
+                    PortDef.make(x - dir.offsetX * 5, y, z - dir.offsetZ * 5, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getFluidConPos() { return PortDef.connections(getPorts()); }
 
     public int[][] getMetalPourPos() {
         ForgeDirection dir = facing();

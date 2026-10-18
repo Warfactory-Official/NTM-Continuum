@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -67,5 +68,19 @@ public class MachineFEL extends BlockMultiblockMachine implements IEnergyConnect
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         visitor.passiveCell(core.offset(-facing.getStepX() * 4, 1, -facing.getStepZ() * 4), MASK_ALL,
                 PASSIVE_POWER_IN);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 1, -4, ForgeDirection.NORTH.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {1.9, 1.1, 2.5, 2.5, 0.4, -0.4},
+        };
     }
 }

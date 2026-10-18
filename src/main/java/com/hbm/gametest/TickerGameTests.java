@@ -40,7 +40,7 @@ public final class TickerGameTests {
      * <p>The cable, fluid duct and fluid valve do not tick: a network node is a graph cell the block owns,
      * so none of the three has anything to do each tick.
      */
-    private static final int TICKING_TYPES = 312;
+    private static final int TICKING_TYPES = 316;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();

@@ -33,6 +33,8 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Liquefactor: 1:1 port of the 1.12.2 {@code TileEntityMachineLiquefactor}: turns items into fluid.
@@ -45,7 +47,7 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
 
     public static final long maxPower = 100000;
     public static final int usageBase = 250; // 1.7.10 value
-    public static final int processTimeBase = 100;
+    public static final int processTimeBase = 60;
 
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
@@ -65,6 +67,9 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineLiquefactor te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
 
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
@@ -77,25 +82,13 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
         if (te.canProcess()) te.process();
         else te.progress = 0;
 
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp); // 1.7 updateConnections (power), same points
-            te.tryProvide(te.tank, level, dp);
-        }
-
         te.networkPackNT();
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x, y + 4, z, Library.POS_Y),
-                new DirPos(x, y - 1, z, Library.NEG_Y),
-                new DirPos(x + 2, y + 1, z, Library.POS_X),
-                new DirPos(x - 2, y + 1, z, Library.NEG_X),
-                new DirPos(x, y + 1, z + 2, Library.POS_Z),
-                new DirPos(x, y + 1, z - 2, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.liquefactor(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     public boolean canProcess() {
         if (this.power < usage) return false;
@@ -205,6 +198,7 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
     protected void saveData(DataOut output) {
         super.saveData(output);
         output.putLong("power", power);
+        output.putInt("progress", progress);
         tank.writeToNBT(output, "tank");
     }
 
@@ -212,6 +206,7 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
     protected void loadData(DataIn input) {
         super.loadData(input);
         power = input.getLongOr("power", 0L);
+        progress = input.getIntOr("progress", 0);
         tank.readFromNBT(input, "tank");
     }
 }

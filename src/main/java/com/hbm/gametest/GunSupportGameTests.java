@@ -14,7 +14,9 @@ import com.hbm.items.tool.ItemCasingBag;
 import dev.golem.core.data.ItemContents;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -65,6 +67,13 @@ public final class GunSupportGameTests {
                 new ItemStackContainer(player, bag, ItemAmmoBag.SLOTS, ModDataComponents.AMMO_BAG));
         helper.assertTrue(menu.getSlot(0).mayPlace(new ItemStack(ModAmmoItems.m357_sp.get())),
                 "Ammo slots must accept uncomponentized ammo");
+        ItemStack named = new ItemStack(ModAmmoItems.m357_sp.get());
+        ItemStacks.setCustomName(named, Component.literal("x"));
+        helper.assertTrue(menu.getSlot(0).mayPlace(new ItemStack(ModAmmoItems.secretAmmo("FOLLY_SM").get()))
+                        && !menu.getSlot(0).mayPlace(new ItemStack(Items.ARROW))
+                        && !menu.getSlot(0).mayPlace(new ItemStack(ModCasingItems.casing(EnumCasingType.SMALL)))
+                        && !menu.getSlot(0).mayPlace(named),
+                "1.7 ammo bag slots hold only plain ammo_standard and ammo_secret");
         ItemStack casingBag = new ItemStack(ModGunSupportItems.casing_bag.get());
         MenuItemBox casingMenu = new MenuItemBox(ModGunSupportMenus.CASING_BAG.get(), 1,
                 player.getInventory(), ItemCasingBag.LAYOUT,

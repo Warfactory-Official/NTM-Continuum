@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
@@ -23,6 +25,16 @@ import net.minecraft.world.phys.EntityHitResult;
 
 /** The conventional 10 gauge rounds from 1.7's XFactory10ga. */
 public final class XFactory10ga {
+
+    public static final ConfigWrapper<Float> GUN_DOUBLE_BARREL_DAMAGE = new ConfigWrapper<>(30F);
+    public static final ConfigWrapper<Float> GUN_SACRED_DRAGON_DAMAGE = new ConfigWrapper<>(45F);
+    public static final ConfigWrapper<Float> GUN_HERETIC_DAMAGE = new ConfigWrapper<>(100F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_DOUBLE_BARREL_DAMAGE", GUN_DOUBLE_BARREL_DAMAGE);
+        ServerConfig.configMap.put("GUN_SACRED_DRAGON_DAMAGE", GUN_SACRED_DRAGON_DAMAGE);
+        ServerConfig.configMap.put("GUN_HERETIC_DAMAGE", GUN_HERETIC_DAMAGE);
+    }
 
     public static BulletConfig g10;
     public static BulletConfig g10_shrapnel;

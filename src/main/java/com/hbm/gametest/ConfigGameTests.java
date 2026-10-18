@@ -113,10 +113,10 @@ public final class ConfigGameTests {
                     helper.assertTrue(expected.contains(category + "/" + key), "hbm.cfg holds an unlisted key: " + category + "/" + key);
                 }
             }
-            // 248 + 57 hook keys (6.04, 10.04, RADWORLD_03, POL_01/03/06/07, 5.01/5.02/5.05-5.43, 9 dungeon
-            // chances) + 1 (1.31_enableSkyboxes) = 306 written, 33 not applicable. The check is exact:
+            // 247 + 61 hook keys (6.04, 10.04, RADWORLD_03, POL_01/03/06/07, 5.01/5.02/5.05-5.49, 9 dungeon
+            // chances) + 1 (1.31_enableSkyboxes) = 309 written, 33 not applicable. The check is exact:
             // a key added to or dropped from the writer without its table row is drift and must fail here.
-            helper.assertTrue(written + absent == 339 && written == 306 && absent == 33, "339 1.7 keys = 306 written + 33 not applicable, got "
+            helper.assertTrue(written + absent == 342 && written == 309 && absent == 33, "342 1.7 keys = 309 written + 33 not applicable, got "
                     + written + " + " + absent);
             // the parsed values are the 1.7 effective defaults too (spot checks of the reported mismatches)
             helper.assertTrue(MobConfig.scoutThreshold == 1D && MobConfig.scoutSwarmSpawnChance == 3 && MobConfig.largeHiveThreshold == 20

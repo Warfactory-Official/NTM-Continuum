@@ -181,8 +181,8 @@ public class GUIScreenRecipeSelector extends CompatScreen {
     protected boolean mouseClickedAfterWidgets(MouseInput event, boolean doubleClick) {
         int x = (int) event.x(), y = (int) event.y();
 
-        if (isOver(x, y, 152, 18, 16, 16)) { if (pageIndex > 0) pageIndex--; return true; }   // page up
-        if (isOver(x, y, 152, 36, 16, 16)) { if (pageIndex < size) pageIndex++; return true; } // page down
+        if (isOver(x, y, 152, 18, 16, 16)) { GuiUtil.playClickSound(); if (pageIndex > 0) pageIndex--; return true; }   // page up
+        if (isOver(x, y, 152, 36, 16, 16)) { GuiUtil.playClickSound(); if (pageIndex < size) pageIndex++; return true; } // page down
 
         if (isOver(x, y, 134, 108, 16, 16)) { // clear search
             this.search.setValue("");
@@ -197,12 +197,14 @@ public class GUIScreenRecipeSelector extends CompatScreen {
             if (isOver(x, y, ix, iy, 18, 18)) {
                 String clicked = recipes.get(i).getInternalName();
                 this.selection = clicked.equals(this.selection) ? NULL_SELECTION : clicked;
+                GuiUtil.playClickSound();
                 return true;
             }
         }
 
         if (isOver(x, y, 151, 71, 18, 18) && !NULL_SELECTION.equals(this.selection)) { // deselect current
             this.selection = NULL_SELECTION;
+            GuiUtil.playClickSound();
             return true;
         }
 
@@ -237,6 +239,7 @@ public class GUIScreenRecipeSelector extends CompatScreen {
         data.putInt("index", this.index);
         data.putString("selection", this.selection);
         GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(tilePos, data));
+        GuiUtil.playClickSound();
         if (this.minecraft != null) this.minecraft.setScreen(previousScreen);
     }
 

@@ -83,4 +83,16 @@ public class MachinePyroOven extends BlockMultiblockMachine implements IEnergyCo
         }
         visitor.passiveCell(core.offset(-rx, 2, -rz), MASK_ALL, domains);
     }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {-2, 0, -2, ForgeDirection.WEST.ordinal()},
+                {-2, 0, -1, ForgeDirection.WEST.ordinal()},
+                {-2, 0, 0, ForgeDirection.WEST.ordinal()},
+                {-2, 0, 1, ForgeDirection.WEST.ordinal()},
+                {-2, 0, 2, ForgeDirection.WEST.ordinal()},
+                {1, 2, 0, ForgeDirection.UP.ordinal()},
+        }, dir);
+    }
 }

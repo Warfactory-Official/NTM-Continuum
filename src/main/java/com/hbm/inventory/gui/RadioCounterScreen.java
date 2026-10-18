@@ -4,6 +4,7 @@ import com.hbm.module.ModulePatternMatcher;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.inventory.container.RadioCounterMenu;
 import com.hbm.tileentity.network.TileEntityRadioTorchCounter;
+import com.hbm.tileentity.network.RTTYSystem;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -37,7 +38,7 @@ public final class RadioCounterScreen extends CompatContainerScreen<RadioCounter
         polling = counter != null && counter.polling;
         for (int i = 0; i < frequency.length; i++) {
             frequency[i] = field(29, 21 + 44 * i, 86,
-                    counter == null ? "" : counter.channel[i], 10);
+                    counter == null ? "" : counter.channel[i], RTTYSystem.MAX_CHAN_LENGTH);
         }
     }
 

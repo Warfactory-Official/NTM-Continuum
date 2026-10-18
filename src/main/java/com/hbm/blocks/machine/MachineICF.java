@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
@@ -106,5 +107,16 @@ public class MachineICF extends BlockMultiblockMachine implements IFluidConnecto
             new int[] {1, 1, -1, 2, 8, 8, 0, 3, 0},
             new int[] {1, 1, 2, -1, 8, 8, 0, 3, 0},
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 5, 0, ForgeDirection.UP.ordinal()},
+                {6, 3, 2, ForgeDirection.SOUTH.ordinal()},
+                {-6, 3, 2, ForgeDirection.SOUTH.ordinal()},
+                {6, 3, -2, ForgeDirection.NORTH.ordinal()},
+                {-6, 3, -2, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

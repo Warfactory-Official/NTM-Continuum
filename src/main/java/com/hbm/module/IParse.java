@@ -2,6 +2,7 @@ package com.hbm.module;
 
 import dev.golem.core.data.Tags;
 
+import com.hbm.config.ServerConfig;
 import com.mojang.serialization.Codec;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -13,12 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 public interface IParse {
-    ReturnInfo eval(ParseContext ctx, String line, int index);
+    EnumStatementReturn eval(ParseContext ctx, String line);
     void generateJumpPoints(ParseContext ctx, String line, int index);
 
     class ParseContext {
-        public static final int MAX_BUFFER_LENGTH = 256;
-        public static final int MAX_STACK_SIZE = 256;
         public static final Codec<List<String>> SCRIPT_CODEC = Codec.STRING.listOf();
         public static final Codec<Map<String, String>> VARIABLES_CODEC = Codec.unboundedMap(Codec.STRING, Codec.STRING);
 
@@ -27,7 +26,7 @@ public interface IParse {
         public final HashMap<String, Integer> jmp = new HashMap<>();
 
         private String buffer = "";
-        private final String[] stack = new String[MAX_STACK_SIZE];
+        private final String[] stack = new String[ServerConfig.MAX_STACK_SIZE.get()];
         private int stackSize = 0;
         public String splitString = ";";
         public int clockSpeed = 1;
@@ -42,10 +41,11 @@ public interface IParse {
             return this.buffer;
         }
 
-        /** Sets the buffer and imposes the old 256-character restriction. */
+        /** Sets the buffer and imposes the {@code MAX_BUFFER_LENGTH} restriction; false if it truncated. */
         public boolean writeBuffer(String buffer) {
-            if (buffer.length() > MAX_BUFFER_LENGTH) {
-                this.buffer = buffer.substring(0, MAX_BUFFER_LENGTH);
+            int max = ServerConfig.MAX_BUFFER_LENGTH.get();
+            if (buffer.length() > max) {
+                this.buffer = buffer.substring(0, max);
                 return false;
             }
             this.buffer = buffer;
@@ -53,8 +53,9 @@ public interface IParse {
         }
 
         public boolean push(String line) {
-            if (stackSize >= MAX_STACK_SIZE) return false;
-            if (line.length() > MAX_BUFFER_LENGTH) line = line.substring(0, MAX_BUFFER_LENGTH);
+            if (stackSize >= stack.length) return false;
+            int max = ServerConfig.MAX_BUFFER_LENGTH.get();
+            if (line.length() > max) line = line.substring(0, max);
             stack[stackSize] = line;
             stackSize++;
             return true;
@@ -62,7 +63,7 @@ public interface IParse {
 
         public String pop() {
             if (stackSize <= 0) return null;
-            if (stackSize > MAX_STACK_SIZE) stackSize = MAX_STACK_SIZE;
+            if (stackSize > stack.length) stackSize = stack.length;
             String ret = stack[stackSize - 1];
             stack[stackSize - 1] = "";
             stackSize--;
@@ -71,7 +72,7 @@ public interface IParse {
 
         public String peek() {
             if (stackSize <= 0) return null;
-            if (stackSize > MAX_STACK_SIZE) stackSize = MAX_STACK_SIZE;
+            if (stackSize > stack.length) stackSize = stack.length;
             return stack[stackSize - 1];
         }
 
@@ -98,7 +99,7 @@ public interface IParse {
             variables.clear();
             input.read("variables", VARIABLES_CODEC).ifPresent(variables::putAll);
 
-            stackSize = Math.max(0, Math.min(MAX_STACK_SIZE, input.getIntOr("stackSize", 0)));
+            stackSize = Math.max(0, Math.min(stack.length, input.getIntOr("stackSize", 0)));
             for (int i = 0; i < stackSize; i++) stack[i] = input.getStringOr("st" + i, "");
             jmp.clear();
             for (int i = 0; i < script.length; i++) parser.generateJumpPoints(this, script[i], i);
@@ -116,20 +117,28 @@ public interface IParse {
         }
     }
 
-    record ReturnInfo(EnumStatementReturn type, int line, String extraInfo) {
-        public ReturnInfo(EnumStatementReturn type, int line) {
-            this(type, line, "");
-        }
-    }
-
     enum EnumStatementReturn {
-        OK,
-        UNRECOGNIZED_COMMAND,
-        PARAMETER_ERROR,
-        END_TICK,
-        SHUTDOWN,
-        SKIP,
-        UNDEFINED,
-        STACK_EXCEEDED
+        OK(false),
+        UNRECOGNIZED_COMMAND(true),
+        /** Ends the tick regardless of remaining clock cycles. */
+        END_TICK(false),
+        SHUTDOWN(false),
+        /** Skips the instruction without using up a clock cycle. */
+        SKIP(false),
+        UNDEFINED(true),
+        STACK_EXCEEDED(true),
+        PARAMETER_MISSING(true),
+        PARAMETER_OOB(true),
+        PARAMETER_PARSE_ERROR(true),
+        /** Jump to an undefined jump point. */
+        NO_DESTINATION(true),
+        ARITHMETIC_EXCEPTION(true),
+        BUFFER_EMPTY(true);
+
+        public final boolean error;
+
+        EnumStatementReturn(boolean error) {
+            this.error = error;
+        }
     }
 }

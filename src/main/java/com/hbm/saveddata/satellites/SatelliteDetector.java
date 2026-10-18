@@ -1,6 +1,9 @@
 package com.hbm.saveddata.satellites;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
@@ -42,6 +45,11 @@ public class SatelliteDetector extends Satellite {
     public final List<RadiationBurst> cachedResults = new ArrayList<>();
 
     @Override public String getType() { return "UWB_EMISSION_DETECTOR"; }
+
+    @Override
+    public Component[] getInfo(Level level) {
+        return new Component[] { nameOf(EnumSatType.DETECTOR) };
+    }
 
     @Override
     public void onCommandImpl(Level level, String... cmd) {
@@ -108,8 +116,8 @@ public class SatelliteDetector extends Satellite {
             };
 
             // 1.7: an unclamped gaussian, so a small burst can read tens of kilometres off
-            this.x = (int) (x + level.getRandom().nextGaussian() * inaccuracy);
-            this.z = (int) (z + level.getRandom().nextGaussian() * inaccuracy);
+            this.x = (int) (x + Mth.clamp(level.getRandom().nextGaussian(), -1, 1) * inaccuracy);
+            this.z = (int) (z + Mth.clamp(level.getRandom().nextGaussian(), -1, 1) * inaccuracy);
         }
     }
 

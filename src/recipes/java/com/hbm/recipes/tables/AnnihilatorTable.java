@@ -24,6 +24,7 @@ import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBlueprints;
+import com.hbm.items.machine.ItemDrive.EnumDriveType;
 import com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType;
 import dev.golem.core.world.RecipeSource;
 import java.util.List;
@@ -61,6 +62,7 @@ public final class AnnihilatorTable extends RecipeSource<Row> {
         put(ANY_RESISTANTALLOY.ingot(),       new AnnihilatorRecipe(1024, ItemBlueprints.make(GenericRecipes.POOL_PREFIX_528 + "tcalloy")));
         put(ModItems.powder_chlorophyte.get(), new AnnihilatorRecipe(1024, ItemBlueprints.make(GenericRecipes.POOL_PREFIX_528 + "chlorophyte")));
 
+        put(new ComparableStack(ModIntermediateItems.drive(EnumDriveType.FLASH_FLIGHTSIM)),  new AnnihilatorRecipe(64, ItemBlueprints.make(GenericRecipes.POOL_PREFIX_528 + "soyuz")));
         put(new ComparableStack(ModAmmoItems.bmg50_fmj.get()),                           new AnnihilatorRecipe(256, ItemBlueprints.make(GenericRecipes.POOL_PREFIX_528 + "bmg")));
         put(new ComparableStack(ModAmmoItems.ammo_arty.get(ArtilleryShellType.NORMAL)),  new AnnihilatorRecipe(128, ItemBlueprints.make(GenericRecipes.POOL_PREFIX_528 + "arty")));
         put(new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER)), new AnnihilatorRecipe(128, ItemBlueprints.make(GenericRecipes.POOL_PREFIX_528 + "controller")));

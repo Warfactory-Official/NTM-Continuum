@@ -21,14 +21,15 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * 1.7 {@code TileEntityMachineSatLinker}, the "Satellite ID Manager": three slots. Every tick, a chip in slot 1
- * takes the frequency of the chip in slot 0, and a chip in slot 2 is given a random frequency below 100,000
- * that no satellite is using (re-rolled every tick, so it keeps changing until taken out).
+ * takes the frequency of the chip in slot 0, and a chip in slot 2 is given a random frequency below
+ * {@link #SAT_ID_RANGE} that no satellite is using (re-rolled every tick, so it keeps changing until taken out).
+ * Automation reaches slot 1 only: it puts chips in, and takes one out once it matches slot 0.
  */
 public class TileEntityMachineSatLinker extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
 
-    private static final int[] slots_top = new int[] {0};
-    private static final int[] slots_bottom = new int[] {1};
-    private static final int[] slots_side = new int[] {2};
+    public static final int SAT_ID_RANGE = 10_000_000;
+
+    private static final int[] ACCESS = new int[] {1};
 
     public TileEntityMachineSatLinker(BlockPos pos, BlockState state) {
         super(ModSatelliteBlockEntities.MACHINE_SATLINKER.get(), pos, state, 3);
@@ -71,7 +72,7 @@ public class TileEntityMachineSatLinker extends TileEntityMachineBase implements
         ItemStack random = linker.inventory.getStackInSlot(2);
         if (!random.isEmpty() && random.getItem() instanceof ISatChip && level instanceof ServerLevel server) {
             SatelliteSavedData satelliteData = SatelliteSavedData.get(server, linker.worldPosition); // hbm-space getData(world, x, z)
-            int newId = level.getRandom().nextInt(100000);
+            int newId = level.getRandom().nextInt(SAT_ID_RANGE);
             if (!satelliteData.isFreqTaken(newId)) {
                 ISatChip.setFreqS(random, newId);
                 linker.setChanged();
@@ -79,15 +80,14 @@ public class TileEntityMachineSatLinker extends TileEntityMachineBase implements
         }
     }
 
-    /** 1.7: nothing may be piped in; everything may be piped out. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return false;
+        return stack.getItem() instanceof ISatChip;
     }
 
     @Override
     public int[] getAccessibleSlotsFromSide(int side) {
-        return side == 0 ? slots_bottom : (side == 1 ? slots_top : slots_side);
+        return ACCESS;
     }
 
     @Override
@@ -102,7 +102,7 @@ public class TileEntityMachineSatLinker extends TileEntityMachineBase implements
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return true;
+        return ISatChip.getFreqS(inventory.getStackInSlot(0)) == ISatChip.getFreqS(inventory.getStackInSlot(1));
     }
 
     @Override

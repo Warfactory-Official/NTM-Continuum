@@ -107,7 +107,7 @@ public final class CentrifugeTable extends RecipeSource<Row> {
         lbs(() ->
             put(TI.ore(), new ItemStack[] {
                     lbs ? new ItemStack(ModItems.powder_titanium.get(), 2) : new ItemStack(ModItems.powder_titanium.get(), 1),
-                    lbs ? new ItemStack(ModItems.powder_titanium.get(), 2) : new ItemStack(ModItems.powder_titanium.get(), 1),
+                    lbs ? ModIntermediateItems.chunk(EnumChunkType.ILMENITE, 4) : ModIntermediateItems.chunk(EnumChunkType.ILMENITE, 2),
                     new ItemStack(ModItems.powder_iron.get(), 1),
                     new ItemStack(Items.GRAVEL, 1) }));
 

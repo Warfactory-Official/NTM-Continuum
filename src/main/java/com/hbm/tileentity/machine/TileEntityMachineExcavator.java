@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.data.MachinePartDataMaps;
 import dev.golem.core.data.Tags;
 
@@ -24,7 +26,6 @@ import com.hbm.items.machine.ItemDrillbit;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.items.special.ItemBedrockOreBase;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.blocks.ModSecurityBlocks;
@@ -68,6 +69,7 @@ import java.util.Set;
 import com.hbm.blocks.ModProduction2Blocks;
 import com.hbm.inventory.container.ContainerMachineExcavator;
 import com.hbm.tileentity.ModProduction2BlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * 1.7 {@code TileEntityMachineExcavator}: the drill-bit driven large mining drill. Slot layout: 0 battery,
@@ -77,7 +79,8 @@ import com.hbm.tileentity.ModProduction2BlockEntities;
  * it extracts every five minutes with the matching drilling fluid).
  */
 public class TileEntityMachineExcavator extends TileEntityMachineBase
-        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver, IUpgradeInfoProvider {
+        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver, IUpgradeInfoProvider,
+        IRORValueProvider, IRORInteractive {
 
     public static final long maxPower = 1_000_000;
     public long power;
@@ -122,6 +125,9 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
     public int getTargetDepth() { return targetDepth; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineExcavator te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         // needs to happen on client too for GUI rendering
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
         int speedLevel = te.upgradeManager.getLevel(UpgradeType.SPEED);
@@ -134,11 +140,6 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
 
         if (level.getGameTime() % 20 == 0) {
             te.tryEjectBuffer();
-
-            for (DirPos port : te.getConPos()) {
-                te.trySubscribe(level, port);
-                te.trySubscribe(te.tank.getTankType(), level, port);
-            }
         }
 
         if (te.chuteTimer > 0) te.chuteTimer--;
@@ -227,17 +228,21 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
         }
     }
 
-    public DirPos[] getConPos() {
-        ForgeDirection dir = MachineCore.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+    protected PortDef[] cachedPorts;
 
-        return new DirPos[] {
-                new DirPos(x + dir.offsetX * 4 + rot.offsetX, y + 1, z + dir.offsetZ * 4 + rot.offsetZ, dir),
-                new DirPos(x + dir.offsetX * 4 - rot.offsetX, y + 1, z + dir.offsetZ * 4 - rot.offsetZ, dir),
-                new DirPos(x + rot.offsetX * 4, y + 1, z + rot.offsetZ * 4, rot),
-                new DirPos(x - rot.offsetX * 4, y + 1, z - rot.offsetZ * 4, rot.getOpposite())
-        };
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 3 + rot.offsetX, y + 1, z + dir.offsetZ * 3 + rot.offsetZ, dir),
+                    PortDef.make(x + dir.offsetX * 3 - rot.offsetX, y + 1, z + dir.offsetZ * 3 - rot.offsetZ, dir),
+                    PortDef.make(x + rot.offsetX * 3, y + 1, z + rot.offsetZ * 3, rot),
+                    PortDef.make(x - rot.offsetX * 3, y + 1, z - rot.offsetZ * 3, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 
     @Override
@@ -876,5 +881,28 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
         upgrades.put(UpgradeType.POWER, 3);
         upgrades.put(UpgradeType.EFFECT, 3);
         return upgrades;
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "power", PREFIX_VALUE + "fluid", PREFIX_VALUE + "state",
+                PREFIX_FUNCTION + "setstate" + NAME_SEPARATOR + "state"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "power").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "fluid").equals(name)) return "" + tank.getFill();
+        if ((PREFIX_VALUE + "state").equals(name)) return operational ? "1" : "0";
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setstate").equals(name) && params.length == 1) {
+            enableDrill = params[0].equals("1");
+            markChanged();
+        }
+        return null;
     }
 }

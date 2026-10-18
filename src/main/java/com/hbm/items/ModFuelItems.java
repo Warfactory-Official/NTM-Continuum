@@ -97,8 +97,8 @@ public final class ModFuelItems {
     // Non-fuel stragglers from the same 1.12.2 neighbourhood, needed by the shredder table
 
     /**
-     * 1.12.2 {@code ItemSchraranium}: its "nikonium" rename + easter-egg tooltip are gated on
-     * {@code enableLBSM && enableLBSMFullSchrab} (both default OFF), so at defaults it is a plain item.
+     * 1.7 {@code ItemSchraranium}: its "nikonium" rename and easter-egg tooltip are gated on {@code enableLBSM}
+     * (default off), so at defaults it is a plain item.
      */
     public static final RegistryObject<Item> ingot_schraranium = plain("ingot_schraranium")
             .transform(Presets.sprite());

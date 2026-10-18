@@ -32,8 +32,8 @@ public final class BlastFurnaceTable extends GenericTableSource<GenericRecipe> {
     private static final TagKey<Item> KEY_SAND = TagKey.create(Registries.ITEM, Ids.of("c", "sands"));
 
     private static final NTMMaterial REDSTONE = Mats.MAT_REDSTONE;
-    /** 1.7 {@code LIMESTONE.ore()} ("oreLimestone"): the limestone stone resource block. */
-    private static final TagKey<Item> LIMESTONE_ORE = TagKey.create(Registries.ITEM, Ids.of("c", "ores/limestone"));
+    /** 1.7 {@code LIMESTONE.dust()} ("dustLimestone"). */
+    private static final TagKey<Item> LIMESTONE_DUST = TagKey.create(Registries.ITEM, Ids.of("c", "dusts/limestone"));
 
     public BlastFurnaceTable() {
         super(BlastFurnaceRecipesNT.INSTANCE);
@@ -91,7 +91,7 @@ public final class BlastFurnaceTable extends GenericTableSource<GenericRecipe> {
                 .inputItems(AL.dust(), new ComparableStack(Items.CLAY_BALL, 7))
                 .outputItems(new ItemStack(ModItems.ingot_firebrick.get(), 8)));
         this.register(new GenericRecipe("blast.firebrickLimestone").setDuration(800)
-                .inputItems(new TagStack(LIMESTONE_ORE), new ComparableStack(Items.CLAY_BALL, 6))
+                .inputItems(new TagStack(LIMESTONE_DUST), new ComparableStack(Items.CLAY_BALL, 6))
                 .outputItems(new ItemStack(ModItems.ingot_firebrick.get(), 8)));
     }
 

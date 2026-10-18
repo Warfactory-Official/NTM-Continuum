@@ -17,14 +17,20 @@ import com.hbm.interfaces.IControlReceiver;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.module.machine.ModuleMachinePUREX;
+import com.hbm.sound.AudioSystem;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.TickPhase;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -37,9 +43,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * PUREX reprocessing plant, a 1:1 port of the 1.12.2 {@code TileEntityMachinePUREX}. 13 slots (0 battery,
@@ -74,11 +83,11 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
     // --- client-only animation state (advanced while didProcess, like the 1.12.2 anim) ---
     public int anim;
     public int prevAnim;
+    private @Nullable AudioWrapper audio;
 
     public final ModuleMachinePUREX purexModule;
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     /** Cached port ring, queried every tick and again by {@code MachinePUREX.canConnect} during meshing. */
-    private DirPos[] conPos;
 
     public TileEntityMachinePUREX(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_PUREX.get(), pos, state, 13);
@@ -91,11 +100,8 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
     @Override public String getDefaultName() { return "container.machinePUREX"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePUREX te) {
-        for (DirPos port : te.getConPos()) {
-            te.trySubscribe(level, port);
-            for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, port);
-            for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, port);
-        }
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
 
         te.updateMaxPower();
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
@@ -117,10 +123,40 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
         te.networkPackNT();
     }
 
-    /** Client ticker: advance the animation counter, gated by the synced {@code didProcess}. */
+    /** Client ticker: the animation counter and the chemical plant loop, both gated by the synced {@code didProcess}. */
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePUREX te) {
         te.prevAnim = te.anim;
         if (te.didProcess) te.anim++;
+        te.tickAudio(pos);
+    }
+
+    private void tickAudio(BlockPos pos) {
+        // LocalPlayer, not Player: the verifier would otherwise load the client class on a dedicated server
+        LocalPlayer me = Minecraft.getInstance().player;
+        if (didProcess && me != null && me.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 25 * 25) {
+            if (audio == null || !audio.isPlaying()) {
+                audio = AudioSystem.getLoopedSound(ModSounds.CHEMICAL_PLANT.get(), SoundSource.BLOCKS,
+                        pos.getX(), pos.getY(), pos.getZ(), 1F, 15F, 0.75F, 15);
+                if (audio != null) audio.startSound();
+            }
+            if (audio != null) {
+                audio.keepAlive();
+                audio.updateVolume(this.getVolume(1F));
+                audio.updatePitch(0.75F);
+            }
+        } else if (audio != null) {
+            audio.stopSound();
+            audio = null;
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (audio != null) {
+            audio.stopSound();
+            audio = null;
+        }
     }
 
     /**
@@ -134,22 +170,10 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
         maxPower = Math.max(power, Math.max(maxPower, BASE_MAX_POWER));
     }
 
-    /** The 20 network ports: one ring of cells just outside the 5×5 footprint, at core height. */
-    public DirPos[] getConPos() {
-        if (conPos == null) {
-            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-            DirPos[] ports = new DirPos[20];
-            int n = 0;
-            for (int i = -2; i <= 2; i++) {
-                ports[n++] = new DirPos(x + 3, y, z + i, Library.POS_X);
-                ports[n++] = new DirPos(x - 3, y, z + i, Library.NEG_X);
-                ports[n++] = new DirPos(x + i, y, z + 3, Library.POS_Z);
-                ports[n++] = new DirPos(x + i, y, z - 3, Library.NEG_Z);
-            }
-            conPos = ports;
-        }
-        return conPos;
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.purex(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {

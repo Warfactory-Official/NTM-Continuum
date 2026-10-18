@@ -4,8 +4,6 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.FractionRecipes;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.TickPhase;
@@ -16,6 +14,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Fractioning Tower, a 1:1 port of the 1.12.2 {@code TileEntityMachineFractionTower}: no power, no GUI,
@@ -38,6 +38,9 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineFractionTower te) {
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
+
         BlockEntity stack = level.getBlockEntity(pos.offset(0, 3, 0));
 
         if (stack instanceof TileEntityMachineFractionTower frac) {
@@ -60,19 +63,8 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 
         if (TickPhase.every(level, pos, 10)) te.fractionate();
 
-        te.sendFluid();
         te.networkPackNT();
     }
-
-    private void sendFluid() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(tanks[0].getTankType(), level, dp); // 1.7 updateConnections, same points, same tick
-
-            this.tryProvide(tanks[1], level, dp);
-            this.tryProvide(tanks[2], level, dp);
-        }
-    }
-
 
     private void setupTanks() {
         FractionRecipes.FractionPair pair = FractionRecipes.getFractions(tanks[0].getTankType());
@@ -86,15 +78,8 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
         }
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z, Library.POS_X),
-                new DirPos(x - 2, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 2, Library.POS_Z),
-                new DirPos(x, y, z - 2, Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.flare(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     private void fractionate() {
         FractionRecipes.FractionPair pair = FractionRecipes.getFractions(tanks[0].getTankType());

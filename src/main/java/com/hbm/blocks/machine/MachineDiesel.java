@@ -88,7 +88,7 @@ public class MachineDiesel extends CompatBlock implements TickingBlock {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (!(level.getBlockEntity(pos) instanceof TileEntityMachineDiesel diesel)) return;
-        if (!diesel.hasAcceptableFuel() || diesel.tank.getFill() <= 0) return;
+        if (!diesel.showsRunning()) return;
 
         Direction facing = state.getValue(FACING);
         Direction rot = facing.getClockWise();

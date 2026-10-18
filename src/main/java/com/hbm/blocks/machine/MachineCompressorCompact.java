@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -58,5 +59,17 @@ public class MachineCompressorCompact extends BlockMultiblockMachine
         visitor.passiveCell(core.above().relative(facing).relative(rot.getOpposite()), MASK_ALL, domains);
         visitor.passiveCell(core.above().relative(facing.getOpposite()).relative(rot), MASK_ALL, domains);
         visitor.passiveCell(core.above().relative(facing.getOpposite()).relative(rot.getOpposite()), MASK_ALL, domains);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {3, 1, 0, ForgeDirection.EAST.ordinal()},
+                {-3, 1, 0, ForgeDirection.WEST.ordinal()},
+                {1, 1, 1, ForgeDirection.SOUTH.ordinal()},
+                {-1, 1, 1, ForgeDirection.SOUTH.ordinal()},
+                {1, 1, -1, ForgeDirection.NORTH.ordinal()},
+                {-1, 1, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

@@ -1,0 +1,23 @@
+{
+	"name": "Sour Gas",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		"hbm:sourgas"
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:sourgas"
+		]
+	],
+	"title": {
+		"en_us": "Sour Gas",
+		"ru_ru": "Кислый газ"
+	},
+	"content": {
+		"en_us": "Sour gas is first obtained by [[vacuum refining|Vacuum Refinery]] [[pressurized|Compressor]] [[crude oil|Crude Oil]]. It is used in a variety of applications including the production of [[TATB]], and the [[conversion|Ore Acidizer]] of [[latex|Latex]] to [[rubber|Rubber]]. It may also be obtained by [[hydrotreating|Hydrotreater]] various [[oil|Crude Oil]] and [[diesel|Cracked Diesel]] variants.<br><br>{{Template:Oil3}}",
+		"ru_ru": "Кислый газ в первую очередь получают путем [[вакуумной переработки|Vacuum Refinery]] [[сжатой|Compressor]] [[сырой нефти|Crude Oil]]. Он используется в самых разных сферах, включая производство [[ТАТБ|TATB]] и [[конверсию|Ore Acidizer]] [[латекса|Latex]] в [[резину|Rubber]]. Его также можно получить путем [[гидроочистки|Hydrotreater]] различных фракций [[нефти|Crude Oil]] и [[крекированного дизеля|Cracked Diesel]].<br><br>{{Template:Oil3}}"
+	}
+}

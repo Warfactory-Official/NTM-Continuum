@@ -51,9 +51,9 @@ public final class UtilityToolGameTests {
         for (String id : ModUtilityToolItems.IDS) {
             helper.assertTrue(BuiltInRegistries.ITEM.containsKey(Ids.of(Constants.MOD_ID, id)), "hbm:" + id + " is registered");
         }
-        // 19 other ids, plus one item per variant of the guide books, holotapes and clay tablets:
+        // 20 other ids, plus one item per variant of the guide books, holotapes and clay tablets:
         // book_guide 4 + holotape_image 18 + clay_tablet 2
-        helper.assertTrue(ModUtilityToolItems.IDS.size() == 43, "43 item ids, got " + ModUtilityToolItems.IDS.size());
+        helper.assertTrue(ModUtilityToolItems.IDS.size() == 44, "44 item ids, got " + ModUtilityToolItems.IDS.size());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(Ids.of(Constants.MOD_ID, "book_guide_block")),
                 "the legacy manual block is registered");
         helper.succeed();

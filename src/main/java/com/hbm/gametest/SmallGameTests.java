@@ -5,7 +5,7 @@ import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.ModNtmEntities;
-import com.hbm.entity.missile.EntitySoyuz;
+import com.hbm.entity.missile.EntityRocketSoyuz;
 import com.hbm.entity.projectile.EntityArtilleryShell;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.handler.ability.IWeaponAbility;
@@ -213,11 +213,11 @@ public final class SmallGameTests {
         Entities.loadFromTag(shellLoaded, shellSave);
         helper.assertTrue(shellLoaded.getShellType() == 1, "artillery shell type did not round-trip: " + shellLoaded.getShellType());
 
-        EntitySoyuz soyuz = Entities.createDetached(ModNtmEntities.SOYUZ.get(), helper.getLevel());
+        EntityRocketSoyuz soyuz = Entities.createDetached(ModNtmEntities.SOYUZ.get(), helper.getLevel());
         soyuz.setSkin(2);
         CompoundTag soyuzSave = Entities.saveToTag(soyuz);
         helper.assertTrue("post_war".equals(Tags.getStringOr(soyuzSave, "skin", "")), "soyuz skin saved as " + soyuzSave.get("skin"));
-        EntitySoyuz soyuzLoaded = Entities.createDetached(ModNtmEntities.SOYUZ.get(), helper.getLevel());
+        EntityRocketSoyuz soyuzLoaded = Entities.createDetached(ModNtmEntities.SOYUZ.get(), helper.getLevel());
         Entities.loadFromTag(soyuzLoaded, soyuzSave);
         helper.assertTrue(soyuzLoaded.getSkin() == 2, "soyuz skin did not round-trip: " + soyuzLoaded.getSkin());
         helper.succeed();

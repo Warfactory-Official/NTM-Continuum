@@ -16,11 +16,11 @@ import com.hbm.tileentity.network.TileEntityCableClassic;
 import com.hbm.tileentity.network.TileEntityCableGauge;
 import com.hbm.tileentity.network.TileEntityCablePaintable;
 import com.hbm.tileentity.network.TileEntityCableSwitch;
-import com.hbm.tileentity.network.TileEntityCapacitor;
 import com.hbm.tileentity.network.TileEntityConnector;
 import com.hbm.tileentity.network.TileEntityConnectorSuper;
 import com.hbm.tileentity.network.TileEntityDiode;
 import com.hbm.tileentity.network.TileEntityHEVBattery;
+import com.hbm.tileentity.network.TileEntityNetworkSeparator;
 import com.hbm.tileentity.network.TileEntityPylon;
 import com.hbm.tileentity.network.TileEntityPylonLarge;
 import com.hbm.tileentity.network.TileEntityPylonMedium;
@@ -68,18 +68,14 @@ public final class ModEnergyNetBlockEntities {
             REG.blockEntity("cable_switch", () -> BlockEntities.type(TileEntityCableSwitch::new,
                     ModEnergyNetBlocks.cable_switch.get(), ModEnergyNetBlocks.cable_detector.get()));
     public static final RegistryObject<BlockEntityType<TileEntityDiode>> CABLE_DIODE =
-            REG.blockEntity("cable_diode", () -> BlockEntities.serverTicking(TileEntityDiode::new,
-                    TileEntityDiode::serverTick, ModEnergyNetBlocks.cable_diode.get()));
+            REG.blockEntity("cable_diode", () -> BlockEntities.type(TileEntityDiode::new, ModEnergyNetBlocks.cable_diode.get()));
+    public static final RegistryObject<BlockEntityType<TileEntityNetworkSeparator>> NETWORK_SEPARATOR =
+            REG.blockEntity("network_separator", () -> BlockEntities.serverTicking(TileEntityNetworkSeparator::new,
+                    TileEntityNetworkSeparator::serverTick, ModEnergyNetBlocks.network_separator.get()));
     public static final RegistryObject<BlockEntityType<TileEntityMachineDetector>> MACHINE_DETECTOR =
             REG.blockEntity("machine_detector", () -> BlockEntities.serverTicking(TileEntityMachineDetector::new,
                     TileEntityMachineDetector::serverTick, ModEnergyNetBlocks.machine_detector.get()));
 
-    public static final RegistryObject<BlockEntityType<TileEntityCapacitor>> CAPACITOR =
-            REG.blockEntity("capacitor", () -> BlockEntities.serverTicking(TileEntityCapacitor::new,
-                    TileEntityCapacitor::serverTick, ModEnergyNetBlocks.machine_capacitor_copper.get(),
-                    ModEnergyNetBlocks.machine_capacitor_gold.get(), ModEnergyNetBlocks.machine_capacitor_niobium.get(),
-                    ModEnergyNetBlocks.capacitor_tantalium.get(),
-                    ModEnergyNetBlocks.capacitor_schrabidate.get()));
     public static final RegistryObject<BlockEntityType<TileEntityBatteryTier>> BATTERY_TIER =
             REG.blockEntity("machine_battery_tier", () -> BlockEntities.serverTicking(TileEntityBatteryTier::new,
                     TileEntityMachineBattery::serverTick,

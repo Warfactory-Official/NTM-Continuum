@@ -137,6 +137,13 @@ public final class ModMaterialTags {
         // FIBER.block() "blockFiberglass"
         tag("ingots/brick", "minecraft:brick");
         tag("ores/quartz", "minecraft:nether_quartz_ore");
+        tag("ores/bauxite", "hbm:stone_resource_bauxite");
+        // 1.7 ILMENITE.ingot(chunk_ore ilmenite) and the raw nuggets 1.7 registers for every NUGGET autogen material
+        tag("ingots/ilmenite", "hbm:chunk_ore_ilmenite");
+        tag("fragments/ilmenite", "hbm:bedrock_ore_fragment_ilmenite");
+        for (String mat : new String[] {"titanium", "copper", "tungsten", "aluminium", "boron", "sodium", "strontium", "lithium"}) {
+            Tags.member("item", NS, "nuggets/" + mat, "hbm:nugget_raw_" + mat);
+        }
         tag("storage_blocks/quartz", "minecraft:quartz_block");
         tag("storage_blocks/fiberglass", "hbm:block_fiberglass");
         tag("tars", "hbm:oil_tar_crude", "hbm:oil_tar_coal", "hbm:oil_tar_crack", "hbm:oil_tar_wood");

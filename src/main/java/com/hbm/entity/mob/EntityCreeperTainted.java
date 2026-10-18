@@ -73,8 +73,8 @@ public class EntityCreeperTainted extends EntityCreeperBase implements IRadiatio
 
         if (!Compat.canEntityGrief(level, this)) return;
 
-        // TAINT_TRAILS keeps the scatter young so it keeps creeping; without it the taint starts old
-        boolean trails = ServerConfig.TAINT_TRAILS.get(); // 1.7 read the /ntmserver key
+        // ENTITY_TAINT_TRAILS keeps the scatter young so it keeps creeping; without it the taint starts old
+        boolean trails = ServerConfig.ENTITY_TAINT_TRAILS.get(); // 1.7 read the /ntmserver key
 
         if (isPowered()) {
             scatter(level, 255, 15, 7, trails ? 0 : 5, 3);

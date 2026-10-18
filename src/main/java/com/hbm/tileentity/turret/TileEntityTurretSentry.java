@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory9mm;
 import com.hbm.lib.DirPos;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The 9 mm sentry: the only turret that fits in one block, so it has no pad, no plugs and takes its
@@ -52,6 +54,12 @@ public class TileEntityTurretSentry extends TileEntityTurretBaseNT {
     @Override
     protected boolean hasConnectorPlugs() {
         return false;
+    }
+
+    @Override
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) cachedPorts = new PortDef[] {PortDef.make(worldPosition, Library.NEG_Y)};
+        return cachedPorts;
     }
 
     @Override
@@ -167,7 +175,7 @@ public class TileEntityTurretSentry extends TileEntityTurretBaseNT {
             BulletConfig conf = getFirstConfigLoaded();
 
             if (conf != null) {
-                spawnBullet(conf, 5F);
+                spawnBullet(conf);
                 consumeAmmo(conf);
                 level.playSound(null, worldPosition, ModSounds.TURRET_SENTRY_FIRE.get(), SoundSource.BLOCKS,
                         2.0F, 1.0F);
@@ -220,4 +228,7 @@ public class TileEntityTurretSentry extends TileEntityTurretBaseNT {
         if (buf.readBoolean()) retractingLeft = true;
         if (buf.readBoolean()) retractingRight = true;
     }
+
+    @Override
+    public float getBaseDamage() { return XFactoryTurret.TURRET_BROWN_DAMAGE.get(); }
 }

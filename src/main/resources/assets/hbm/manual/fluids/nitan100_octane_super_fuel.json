@@ -1,0 +1,23 @@
+{
+	"name": "NITAN© 100 Octane Super Fuel",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		"hbm:nitan"
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:nitan"
+		]
+	],
+	"title": {
+		"en_us": "NITAN© 100 Octane Super Fuel",
+		"ru_ru": "100-октановое сверхтопливо NITAN©"
+	},
+	"content": {
+		"en_us": "NITAN© 100 octane super fuel can be produced by mixing [[mercury|Mercury]], [[kerosene|Kerosene]], and nitanium blend together. It is used as a combustible [[fuel|Fuels]] source for power production.",
+		"ru_ru": "100-октановое сверхтопливо NITAN© можно получить путем смешивания [[ртути|Mercury]], [[керосина|Kerosene]] и нитановой смеси. Оно используется в качестве горючего [[топлива|Fuels]] для производства энергии."
+	}
+}

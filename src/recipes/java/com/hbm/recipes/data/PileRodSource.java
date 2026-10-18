@@ -35,7 +35,6 @@ public final class PileRodSource extends DataMapSource<PileRod> {
         rod("pu239", 1D, 500D, 0.5D, "rgp");
         rod("rgp", 1D, 1_000D, 0.5D, "waste");
         rod("waste", 1D, 0D, 1.5D, "waste");
-        // port: the thorium rods are not in 1.7's EnumPileRod; port-only content, kept
         rod("thorium", 1D, 35_000D, 0.25D, "thorium_fuel");
         rod("thorium_fuel", 1D, 2_000D, 0.5D, "waste");
     }

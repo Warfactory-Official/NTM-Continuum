@@ -427,8 +427,8 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
             }
         }
 
-        if (chestplate.fall != null && fallDistance > 0.25) {
-            player.playSound(chestplate.fall.get(), 1.0F, 1.0F);
+        if (chestplate.fall != null && fallDistance > 0.5) {
+            player.playSound(chestplate.fall.get(), 0.5F, 1.0F);
         }
     }
 

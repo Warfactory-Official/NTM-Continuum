@@ -1,5 +1,7 @@
 package com.hbm.items.machine;
 
+import java.util.Locale;
+
 /** Immutable fuel specification copied from the 1.12.2 ZIRNOX rod enum. */
 public enum ZirnoxFuel {
     NATURAL_URANIUM("natural_uranium_fuel", 250_000, 30, false, 0.35F, 172.5F, "natural_uranium"),
@@ -23,6 +25,14 @@ public enum ZirnoxFuel {
     public final float depletedRadiation;
     /** The matching waste item suffix (1.7 item id {@code waste_<suffix>}), or {@code null} for breeding rods. */
     public final String wasteId;
+
+    /** The 1.7 {@code EnumZirnoxType} constant name, which redstone-over-radio and computers report. */
+    public String legacyName() {
+        return switch (this) {
+            case TH232, LITHIUM, ZFB_MOX -> name();
+            default -> id.toUpperCase(Locale.ROOT);
+        };
+    }
 
     /** 1.7 {@code setTextureName}: natural uranium, U233 and U235 waste share {@code waste_uranium}. */
     public String wasteTexture() {

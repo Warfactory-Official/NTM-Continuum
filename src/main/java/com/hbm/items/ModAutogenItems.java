@@ -25,7 +25,7 @@ import java.util.Map;
  * set). Registry id is {@code <shape-base>_<material>} (e.g. {@code plate_cast_iron}), which is also the
  * sprite id {@link com.hbm.client.AutogenSprites} computes for it at load time.
  *
- * <p>The set of autogen shapes registered here (raw ingot, bedrock fragment, cast/welded plate, shell,
+ * <p>The set of autogen shapes registered here (raw ingot, raw nugget, bedrock fragment, cast/welded plate, shell,
  * pipe, fine/dense wire, bolt, heavy component, gun parts) corresponds to the 1.12.2
  * {@code ItemAutogen} entries.
  */
@@ -57,6 +57,8 @@ public final class ModAutogenItems {
                 "iron", "aluminium", "steel", "lead", "copper", "dura_steel", "rubber"});
         REMAPPED_SHAPES.put("ingot_raw", new String[] {
                 "neodymium", "sodium", "strontium", "borax", "slag", "redstone"});
+        REMAPPED_SHAPES.put("nugget_raw", new String[] {
+                "titanium", "aluminium", "copper", "tungsten", "boron", "sodium", "strontium", "lithium"});
         REMAPPED_SHAPES.put("plate_cast", new String[] {
                 "iron", "gold", "titanium", "aluminium", "steel", "lead", "copper", "weaponsteel",
                 "combine_steel", "dura_steel", "saturnite", "schrabidium", "desh", "tungsten", "zirconium",
@@ -97,7 +99,7 @@ public final class ModAutogenItems {
                 "thorium", "polonium", "u238", "technetium", "ra226", "tantalium", "silicon", "sodium",
                 "strontium", "lithium", "sulfur", "fluorite", "red_phosphorus", "chlorocalcite", "molysite",
                 "cinnabar", "borax", "sodalite", "redstone", "coal", "lignite", "diamond", "bauxite",
-                "cryolite", "emerald", "niter", "rare"});
+                "cryolite", "ilmenite", "emerald", "niter", "rare"});
     }
 
     static {
@@ -139,6 +141,7 @@ public final class ModAutogenItems {
         SHAPES.put(MaterialShapes.SHELL, "shell");
         SHAPES.put(MaterialShapes.PIPE, "pipe");
         SHAPES.put(MaterialShapes.INGOT, "ingot_raw");
+        SHAPES.put(MaterialShapes.NUGGET, "nugget_raw");
         SHAPES.put(MaterialShapes.CASTPLATE, "plate_cast");
         SHAPES.put(MaterialShapes.WELDEDPLATE, "plate_welded");
         SHAPES.put(MaterialShapes.HEAVY_COMPONENT, "heavy_component");

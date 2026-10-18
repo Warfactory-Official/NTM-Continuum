@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -73,5 +74,13 @@ public class MachineSolarBoiler extends BlockMultiblockMachine implements IFluid
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         visitor.passiveCell(core.above(2), MASK_ALL, PASSIVE_FLUID_IN);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 2, 0, ForgeDirection.UP.ordinal()},
+                {0, 0, 0, ForgeDirection.DOWN.ordinal()},
+        }, dir);
     }
 }

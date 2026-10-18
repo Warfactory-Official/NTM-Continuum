@@ -25,6 +25,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The other end of the beam: joules arriving on its face become five thousand HE each, which it pushes
@@ -49,19 +51,19 @@ public class TileEntityCoreReceiver extends TileEntityMachineBase
         return "container.dfcReceiver";
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCoreReceiver receiver) {
         receiver.tickServer(level);
     }
 
     protected void tickServer(Level level) {
         BlockPos pos = getBlockPos();
-        subscribeToAllAround(tank.getTankType(), this);
+        this.setupAllPorts(getPorts());
+        this.updatePortPOFIFO();
 
         power = joules * 5000;
-
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
 
         if (joules > 0) {
             if (tank.getFill() >= 20) {

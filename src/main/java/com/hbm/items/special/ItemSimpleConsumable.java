@@ -6,6 +6,7 @@ import com.hbm.items.ModMedicineItems;
 import com.hbm.potion.ModEffects;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.EnchantmentUtil;
+import com.hbm.util.EntityDamageUtil;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
@@ -67,6 +68,7 @@ public final class ItemSimpleConsumable extends CompatItem {
     private boolean bloodBag(ServerLevel level, Player player, InteractionHand hand) {
         switch (id) {
             case "iv_empty" -> {
+                if (!EntityDamageUtil.isRealPlayer(player)) return true;
                 giveSoundAndDecrement(level, player, hand, ModSounds.SYRINGE.get(),
                         ModArmorSetBItems.iv_blood.get());
                 player.setHealth(Math.max(player.getHealth() - 5F, 0F));
@@ -77,6 +79,7 @@ public final class ItemSimpleConsumable extends CompatItem {
                 player.heal(5F);
             }
             case "iv_xp_empty" -> {
+                if (!EntityDamageUtil.isRealPlayer(player)) return true;
                 if (EnchantmentUtil.getTotalExperience(player) >= 100) {
                     giveSoundAndDecrement(level, player, hand, ModSounds.SYRINGE.get(),
                             ModArmorSetBItems.iv_xp.get());

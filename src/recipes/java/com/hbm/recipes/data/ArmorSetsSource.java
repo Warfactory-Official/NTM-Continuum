@@ -121,12 +121,12 @@ public final class ArmorSetsSource extends DataMapSource<ArmorSet> {
                 .addExact(FALL, 0F, 1F)
                 .setOther(0F, 0.15F));
         registerSet("rpa_helmet", "rpa_plate", "rpa_legs", "rpa_boots", new ResistanceStats()
-                .addCategory(CATEGORY_PHYSICAL, 25F, 0.65F)
-                .addCategory(CATEGORY_FIRE, 10F, 0.9F)
+                .addCategory(CATEGORY_PHYSICAL, 50F, 0.75F)
+                .addCategory(CATEGORY_FIRE, 25F, 0.9F)
                 .addCategory(CATEGORY_EXPLOSION, 15F, 0.25F)
-                .addCategory(CATEGORY_ENERGY, 25F, 0.75F)
+                .addCategory(CATEGORY_ENERGY, 30F, 0.8F)
                 .addExact(FALL, 0F, 1F)
-                .setOther(15F, 0.3F));
+                .setOther(15F, 0.45F));
         registerSet("ncrpa_helmet", "ncrpa_plate", "ncrpa_legs", "ncrpa_boots", new ResistanceStats()
                 .addCategory(CATEGORY_PHYSICAL, 25F, 0.65F)
                 .addCategory(CATEGORY_FIRE, 10F, 0.9F)

@@ -45,7 +45,7 @@ public interface IControlReceiverFilter extends IControlReceiver, ICopiable {
         BlockEntity tile = (BlockEntity) this;
         Container inv = (Container) this;
         int slot = Tags.getIntOr(nbt, "slot", 0);
-        // 1.7: unbounded; a crafted payload wrote a ghost copy into a real slot
+        // a crafted payload must not write a ghost copy into a real slot
         if (slot < getFilterSlots()[0] || slot >= getFilterSlots()[1]) return;
         ItemStack item = readFilterStack(nbt, tile.getLevel());
         if (!item.isEmpty()) item.setCount(1);

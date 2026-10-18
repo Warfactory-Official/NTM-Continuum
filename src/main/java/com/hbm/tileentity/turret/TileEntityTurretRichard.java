@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
@@ -122,7 +123,7 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
             return;
         }
 
-        spawnBullet(conf, 30F);
+        spawnBullet(conf);
         consumeAmmo(conf);
         level.playSound(null, worldPosition, ModSounds.TURRET_RICHARD_FIRE.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
         loaded--;
@@ -130,10 +131,10 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
 
     /** Overridden only to hand the round its lock, which the base's projectiles never carry. */
     @Override
-    public void spawnBullet(BulletConfig bullet, float baseDamage) {
+    public void spawnBullet(BulletConfig bullet) {
         Vec3 tip = barrelTip();
 
-        EntityBulletBaseMK4 projectile = new EntityBulletBaseMK4(level, bullet, baseDamage, bullet.spread,
+        EntityBulletBaseMK4 projectile = new EntityBulletBaseMK4(level, bullet, getBaseDamage(), bullet.spread,
                 worldYaw(), worldPitch());
         projectile.setPos(tip.x, tip.y, tip.z);
         projectile.lockonTarget = target;
@@ -165,4 +166,7 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
         super.loadData(input);
         loaded = input.getIntOr("loaded", 0);
     }
+
+    @Override
+    public float getBaseDamage() { return XFactoryTurret.TURRET_RICHARD_DAMAGE.get(); }
 }

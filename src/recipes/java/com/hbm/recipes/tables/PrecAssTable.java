@@ -2,20 +2,26 @@ package com.hbm.recipes.tables;
 
 import static com.hbm.inventory.OreDictManager.*;
 import static com.hbm.inventory.recipes.loader.GenericRecipes.POOL_PREFIX_528;
+import static com.hbm.inventory.recipes.loader.GenericRecipes.POOL_PREFIX_DISCOVER;
 
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipe.OutputChoice;
 import com.hbm.items.ItemEnums.EnumCircuitType;
+import com.hbm.items.ModArmorItems;
+import com.hbm.items.ModFinalConsumableItems;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.ModSatelliteItems;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemBlueprintFolder;
 import com.hbm.items.machine.ItemBroken;
+import com.hbm.items.machine.ItemOrbitalAssembly.EnumOrbitalAssembly;
 import com.hbm.inventory.recipes.loader.GenericTableSource;
 import dev.golem.core.Ids;
 import net.minecraft.core.registries.Registries;
@@ -45,6 +51,10 @@ public final class PrecAssTable extends GenericTableSource<GenericRecipe> {
 
     @Override
     protected void registerDefaults() {
+
+        // 1.7 picks the inputs and the success chance by expensive mode; each mode is its own pair of rows
+        crystalCircuit(false);
+        crystalCircuit(true);
 
         // i cast: bleeding anus
         // i cast: XL horse dildo (unlubed)
@@ -171,6 +181,64 @@ public final class PrecAssTable extends GenericTableSource<GenericRecipe> {
                     new OutputChoice(ItemBlueprintFolder.make(1), 5),
                     new OutputChoice(new ItemStack(Items.PAPER, 24), 95)
                 ));
+
+        this.register(new GenericRecipe("precass.rpahelmet").setup(3 * min, 25_000L)
+                .inputItems(new ComparableStack(ModItems.plate_armor_ajr.get(), 12),
+                        BIGMT.plateCast().count(4),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4),
+                        new ComparableStack(ModItems.plate_kevlar.get(), 8))
+                .outputItems(new ItemStack(ModArmorItems.rpa_helmet.get())).setPools(POOL_PREFIX_DISCOVER + ".rpa"));
+        this.register(new GenericRecipe("precass.rpaplate").setup(3 * min, 25_000L)
+                .inputItems(new ComparableStack(ModItems.plate_armor_ajr.get(), 24),
+                        BIGMT.plateCast().count(8),
+                        new TagStack(BIGMT.tag(MaterialShapes.MECHANISM)).count(8),
+                        new ComparableStack(ModItems.motor_desh.get(), 8),
+                        new ComparableStack(ModItems.plate_kevlar.get(), 16),
+                        new ComparableStack(ModFinalConsumableItems.parts_legendary_tier2.get(), 1))
+                .outputItems(new ItemStack(ModArmorItems.rpa_plate.get())).setPools(POOL_PREFIX_DISCOVER + ".rpa"));
+        this.register(new GenericRecipe("precass.rpalegs").setup(3 * min, 25_000L)
+                .inputItems(new ComparableStack(ModItems.plate_armor_ajr.get(), 24),
+                        BIGMT.plateCast().count(8),
+                        new ComparableStack(ModItems.motor_desh.get(), 8),
+                        new ComparableStack(ModItems.plate_kevlar.get(), 16))
+                .outputItems(new ItemStack(ModArmorItems.rpa_legs.get())).setPools(POOL_PREFIX_DISCOVER + ".rpa"));
+        this.register(new GenericRecipe("precass.rpaboots").setup(3 * min, 25_000L)
+                .inputItems(new ComparableStack(ModItems.plate_armor_ajr.get(), 12),
+                        BIGMT.plateCast().count(4),
+                        new ComparableStack(ModItems.plate_kevlar.get(), 8))
+                .outputItems(new ItemStack(ModArmorItems.rpa_boots.get())).setPools(POOL_PREFIX_DISCOVER + ".rpa"));
+    }
+
+    private void crystalCircuit(boolean expensive) {
+        GenericRecipe recipe = new GenericRecipe("precass.crystalcircuit").setup(600, 20_000L);
+        if (expensive) {
+            recipe.inputItems(new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CHIP_QUANTUM), 8),
+                    new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CAPACITOR_TANTALIUM), 16),
+                    new ComparableStack(ModItems.ingot_cft.get(), 4),
+                    new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.PCB), 16),
+                    BSCCO.wireDense().count(4));
+        } else {
+            recipe.inputItems(new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CHIP_QUANTUM), 4),
+                    new ComparableStack(ModItems.ingot_cft.get(), 4),
+                    new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.PCB), 16),
+                    GOLD.wire().count(32));
+        }
+        ItemStack output = new ItemStack(ModSatelliteItems.orbital_assembly.get(EnumOrbitalAssembly.CRYSTAL_CIRCUIT));
+        recipe.outputChoices(new OutputChoice(output, expensive ? 25 : 50), new OutputChoice(ItemBroken.make(output), expensive ? 75 : 50));
+        GenericRecipe recycle = recycle(recipe, output, 100);
+        String flag = expensive ? EXPENSIVE : "!" + EXPENSIVE;
+        recipe.requires(flag);
+        recycle.requires(flag);
+
+        if (!expensive) {
+            this.register(recipe);
+            this.register(recycle);
+        } else {
+            recipe.order = position - 2;
+            recycle.order = position - 1;
+            add(id(recipe) + "." + EXPENSIVE, recipe);
+            add(id(recycle) + "." + EXPENSIVE, recycle);
+        }
     }
 
     private void addFirstUpgrade(Item lower, Item higher, String name) {

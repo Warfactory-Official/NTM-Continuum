@@ -70,6 +70,7 @@ public final class FluidContainersSource extends DataMapSource<Containers> {
         canister("crackoil_ds", 0x424242);
         canister("naphtha_ds", 0x5F6D44);
         canister("lightoil_ds", 0xB46B52);
+        canister("titanium_tetrachloride", 0xE1E549);
 
         gastank("deuterium", 0x0000FF, 0xFFFFFF);
         gastank("tritium", 0x000099, 0xE9FFAA);

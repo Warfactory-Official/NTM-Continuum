@@ -4,9 +4,9 @@ import com.hbm.Constants;
 import com.hbm.api.environment.Environment;
 import com.hbm.blocks.machine.MachineDiFurnace;
 import com.hbm.inventory.container.ContainerDiFurnace;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.DiFurnaceRecipes;
 import com.hbm.items.ModItems;
+import com.hbm.tileentity.TileEntityMachinePolluting;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -89,10 +89,8 @@ public final class DiFurnaceGameTests {
         furnace.inventory.setStackInSlot(3, new ItemStack(Items.IRON_INGOT));
         helper.assertTrue(block.comparatorOutput(furnace.getBlockState(), helper.getLevel(), furnace.getBlockPos()) > 0,
                 "DiFurnace comparator did not read the four-slot inventory");
-        helper.assertTrue(furnace.getSendingTanks().length == 3
-                        && furnace.getSendingTanks()[0].getTankType() == Fluids.SMOKE
-                        && furnace.getSendingTanks()[0].getMaxFill() == 50,
-                "DiFurnace smoke-fluid sender contract changed");
+        helper.assertFalse((Object) furnace instanceof TileEntityMachinePolluting,
+                "1.7's DiFurnace neither pollutes nor offers smoke");
         BlockPos extensionPos = new BlockPos(1, 2, 1);
         MachineDiFurnaceExtensionCheck.assertDelegates(helper, furnace, extensionPos);
         helper.succeed();

@@ -59,7 +59,7 @@ public final class FluidPropertyGameTests {
     }
 
     /**
-     * 1.7's {@code new FluidType(name, color, p, f, r, EnumSymbol)} arguments for all 156 fluids, extracted mechanically
+     * 1.7's {@code new FluidType(name, color, p, f, r, EnumSymbol)} arguments for all 157 fluids, extracted mechanically
      * from {@code 1.7 .../inventory/fluid/Fluids.java} ({@code NAME:poison:flammability:reactivity:symbol},
      * 1.7's own symbol spelling, {@code CROYGENIC} included).
      */
@@ -105,7 +105,8 @@ public final class FluidPropertyGameTests {
             "LEAD_HOT:4:0:0:NONE", "PERFLUOROMETHYL:1:0:1:NONE", "PERFLUOROMETHYL_COLD:1:0:1:NONE",
             "PERFLUOROMETHYL_HOT:1:0:1:NONE", "LYE:3:0:1:ACID", "SODIUM_ALUMINATE:3:0:1:ACID",
             "BAUXITE_SOLUTION:3:0:3:ACID", "ALUMINA:0:0:0:NONE", "AIR:0:0:0:NONE", "CONCRETE:0:0:0:NONE",
-            "DHC:0:0:0:NONE", "AIRBLAST:0:3:0:NONE", "FLUE:1:4:1:NONE"
+            "DHC:0:0:0:NONE", "AIRBLAST:0:3:0:NONE", "FLUE:1:4:1:NONE",
+            "TITANIUM_TETRACHLORIDE:3:0:2:NOWATER"
     };
 
     /** A {@code NAME:p:f:r:SYMBOL} row as a hazard (1.7 spells the cryogenic symbol {@code CROYGENIC}). */
@@ -129,7 +130,7 @@ public final class FluidPropertyGameTests {
             FluidHazard expected = hazard17(row);
             if (!fluid.getHazard().equals(expected)) wrong.add(row[0] + " " + fluid.getHazard() + ", expected " + expected);
         }
-        helper.assertTrue(HAZARDS_17.length == 156, "the 1.7 table has " + HAZARDS_17.length + " rows");
+        helper.assertTrue(HAZARDS_17.length == 157, "the 1.7 table has " + HAZARDS_17.length + " rows");
         helper.assertTrue(wrong.isEmpty(), "hazard diamonds differ from 1.7: " + wrong);
         helper.assertTrue(byName.isEmpty(), "HBM fluids missing from the 1.7 table: " + byName.keySet());
         helper.succeed();

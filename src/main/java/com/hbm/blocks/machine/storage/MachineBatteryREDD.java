@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.storage;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.items.ModDataComponents;
@@ -127,5 +128,17 @@ public final class MachineBatteryREDD extends BlockMultiblockMachine implements 
         visitor.passiveCell(core.relative(facing, -2).relative(rot, -2), MASK_ALL, domains);
         visitor.passiveCell(core.relative(rot, 4), MASK_ALL, domains);
         visitor.passiveCell(core.relative(rot, -4), MASK_ALL, domains);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {2, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {-2, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {2, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {-2, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {4, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-4, 0, 0, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

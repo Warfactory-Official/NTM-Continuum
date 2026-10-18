@@ -23,7 +23,6 @@ import com.hbm.items.ModWatzItems;
 import com.hbm.items.machine.EnumWatzType;
 import com.hbm.items.machine.ItemWatzPellet;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -53,6 +52,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.hbm.lib.Library;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The Watz power plant: a stack of 24-channel fuel segments sharing one coolant and mud volume.
@@ -145,6 +146,8 @@ public class TileEntityWatz extends TileEntityMachineBase
     // --- simulation ---
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityWatz te) {
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
         te.resetSharedTanks();
         if (te.updateLock()) return; // a segment above us drives the whole column
 
@@ -153,7 +156,6 @@ public class TileEntityWatz extends TileEntityMachineBase
 
         List<TileEntityWatz> segments = new ArrayList<>();
         segments.add(te);
-        for (DirPos port : te.topPorts()) te.trySubscribe(te.tanks[0].getTankType(), level, port); // 1.7 subscribeToTop
 
         // Accumulate the column downward. Upstream scans to y=0; a 26.1 world can start lower.
         for (int y = pos.getY() - SEGMENT_HEIGHT; y >= level.getMinY(); y -= SEGMENT_HEIGHT) {
@@ -201,8 +203,6 @@ public class TileEntityWatz extends TileEntityMachineBase
                 segment.tanks[j].setFill(min);
             }
         }
-
-        segments.get(segments.size() - 1).sendOutBottom(level);
 
         // Mud that no tank could absorb has nowhere to go: the column ruptures.
         if (te.sharedTanks[2].getFill() > 0) {
@@ -330,41 +330,27 @@ public class TileEntityWatz extends TileEntityMachineBase
                 && level.getBlockEntity(worldPosition.above(SEGMENT_HEIGHT)) instanceof TileEntityWatz;
     }
 
-    // --- fluid I/O: coolant enters at the top of the column, hot coolant and mud leave at the bottom ---
-
-
-    private void sendOutBottom(Level level) {
-        for (DirPos port : bottomPorts()) {
-            if (tanks[1].getFill() > 0) tryProvide(tanks[1], level, port);
-            if (tanks[2].getFill() > 0) tryProvide(tanks[2], level, port);
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + 2, y, z, Library.NEG_Y),
+                    PortDef.make(x - 2, y, z, Library.NEG_Y),
+                    PortDef.make(x, y, z + 2, Library.NEG_Y),
+                    PortDef.make(x, y, z - 2, Library.NEG_Y),
+                    PortDef.make(x, y, z, Library.NEG_Y),
+                    PortDef.make(x + 2, y + 2, z, Library.POS_Y),
+                    PortDef.make(x - 2, y + 2, z, Library.POS_Y),
+                    PortDef.make(x, y + 2, z + 2, Library.POS_Y),
+                    PortDef.make(x, y + 2, z - 2, Library.POS_Y),
+                    PortDef.make(x, y + 2, z, Library.POS_Y),
+            };
         }
+        return cachedPorts;
     }
 
-    private List<DirPos> topPorts() {
-        int x = worldPosition.getX(), y = worldPosition.getY() + 3, z = worldPosition.getZ();
-        return List.of(
-                new DirPos(x, y, z, ForgeDirection.UP),
-                new DirPos(x + 2, y, z, ForgeDirection.UP),
-                new DirPos(x - 2, y, z, ForgeDirection.UP),
-                new DirPos(x, y, z + 2, ForgeDirection.UP),
-                new DirPos(x, y, z - 2, ForgeDirection.UP));
-    }
-
-    private List<DirPos> bottomPorts() {
-        int x = worldPosition.getX(), y = worldPosition.getY() - 1, z = worldPosition.getZ();
-        return List.of(
-                new DirPos(x, y, z, ForgeDirection.DOWN),
-                new DirPos(x + 2, y, z, ForgeDirection.DOWN),
-                new DirPos(x - 2, y, z, ForgeDirection.DOWN),
-                new DirPos(x, y, z + 2, ForgeDirection.DOWN),
-                new DirPos(x, y, z - 2, ForgeDirection.DOWN));
-    }
-
-    public List<DirPos> getConPos() {
-        List<DirPos> all = new ArrayList<>(topPorts());
-        all.addAll(bottomPorts());
-        return all;
-    }
+    public List<DirPos> getConPos() { return List.of(PortDef.connections(getPorts())); }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1], tanks[2]}; }

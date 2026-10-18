@@ -66,9 +66,9 @@ public final class RecipeGapGameTests {
         PUREXRecipes.INSTANCE.registerRecipes();
         Fluids.init();
 
-        // 1.7 total 58 (uzh 1, flash 2, pile 3, zirnox 9, plate 7, pwr 15, salt 1, watz 10 (+2 naquadria-gated), icf 1, vit 3, schrab 4)
+        // 1.7 total 59 (uzh 1, flash 2, pile 4, zirnox 9, plate 7, pwr 15, salt 1, watz 10 (+2 naquadria-gated), icf 1, vit 3, schrab 4)
         int total = PUREXRecipes.INSTANCE.recipeOrderedList.size();
-        helper.assertTrue(total == 56, "PUREX must hold 56 recipes (1.7's 58 minus the two naquadria-gated ones), has " + total);
+        helper.assertTrue(total == 57, "PUREX must hold 57 recipes (1.7's 59 minus the two naquadria-gated ones), has " + total);
         helper.assertTrue(PUREXRecipes.INSTANCE.getRecipe("purex.watznaqadah") == null
                         && PUREXRecipes.INSTANCE.getRecipe("purex.watznaqadria") == null,
                 "without a c:nuggets/naquadria item the two naquadah Watz recipes stay unregistered (1.7 gate)");
@@ -103,8 +103,14 @@ public final class RecipeGapGameTests {
         assertStack(helper, pile.outputItem[0], ModItems.billet_pu239.get(), 2);
         assertStack(helper, pile.outputItem[1], ModItems.billet_uranium.get(), 1);
         assertFluid(helper, pile.inputFluid[0], Fluids.SULFURIC_ACID, 100);
-        helper.assertTrue(PUREXRecipes.INSTANCE.getRecipe("purex.pilethorium") == null,
-                "pilethorium is a 1.12.2 recipe, absent from 1.7");
+        // purex.pilethorium: thorium fuel rod and 100 mB sulfuric acid give 2 thorium fuel billets and 1 waste billet
+        GenericRecipe thorium = PUREXRecipes.INSTANCE.getRecipe("purex.pilethorium");
+        helper.assertTrue(thorium != null && thorium.duration == 40 && thorium.power == 100
+                        && thorium.inputItem[0].matchesRecipe(ModPileBlocks.pile_rod.stack(EnumPileRod.THORIUM_FUEL), false),
+                "pilethorium takes the thorium fuel rod for 40 t at 100 HE/t");
+        assertStack(helper, thorium.outputItem[0], ModItems.billet_thorium_fuel.get(), 2);
+        assertStack(helper, thorium.outputItem[1], ModItems.billet_nuclear_waste.get(), 1);
+        assertFluid(helper, thorium.inputFluid[0], Fluids.SULFURIC_ACID, 100);
 
         // purex.flashgold: Au-198 billet + charged pellet + 1000 mB antimatter -> 2 balefire gold billets
         GenericRecipe flash = PUREXRecipes.INSTANCE.getRecipe("purex.flashgold");

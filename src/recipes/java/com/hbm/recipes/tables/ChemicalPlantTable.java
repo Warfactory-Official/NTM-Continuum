@@ -93,7 +93,7 @@ public final class ChemicalPlantTable extends GenericTableSource<GenericRecipe> 
 
         this.register(new GenericRecipe("chem.helium3").setupNamed(25, 2_000).setIcon(gasFull(Fluids.HELIUM3))
                 .inputItems(new ComparableStack(ModFallingBlocks.moon_turf.get().asItem(), 1))
-                .outputFluids(new FluidStack(Fluids.HELIUM3, 125)));
+                .outputFluids(new FluidStack(Fluids.HELIUM3, 500)));
 
         this.register(new GenericRecipe("chem.co2").setup(60, 100)
                 .inputFluids(new FluidStack(Fluids.GAS, 1_000))
@@ -107,6 +107,11 @@ public final class ChemicalPlantTable extends GenericTableSource<GenericRecipe> 
         this.register(new GenericRecipe("chem.cccentrifuge").setup(200, 100)
                 .inputFluids(new FluidStack(Fluids.CHLOROCALCITE_CLEANED, 500), new FluidStack(Fluids.SULFURIC_ACID, 8_000))
                 .outputFluids(new FluidStack(Fluids.POTASSIUM_CHLORIDE, 250), new FluidStack(Fluids.CALCIUM_CHLORIDE, 250)));
+
+        this.register(new GenericRecipe("chem.ticl4").setup(60, 500)
+                .inputItems(ILMENITE.ingot().count(4), new TagStack(ANY_COKE).count(1))
+                .inputFluids(new FluidStack(Fluids.CHLORINE, 500))
+                .outputFluids(new FluidStack(Fluids.TITANIUM_TETRACHLORIDE, 4_000)));
 
         /// OILS ///
         this.register(new GenericRecipe("chem.ethanol").setupNamed(50, 100).setIcon(canisterFull(Fluids.ETHANOL))
@@ -260,6 +265,13 @@ public final class ChemicalPlantTable extends GenericTableSource<GenericRecipe> 
         this.registerBranch(PRESSURIZED, p528 -> new GenericRecipe("chem.kevlar").setup(60, 300)
                 .inputFluids(new FluidStack(Fluids.AROMATICS, 200), new FluidStack(Fluids.NITRIC_ACID, 100), new FluidStack(p528 ? Fluids.PHOSGENE : Fluids.CHLORINE, 100))
                 .outputItems(new ItemStack(ModItems.plate_kevlar.get(), 4)));
+
+        this.register(new GenericRecipe("chem.lightconstruction").setupNamed(400, 25_000).outputItems(ModIngredientItems.part(EnumPartType.ALCLAD, 1))
+                .inputItems(DURA.plate().count(2))
+                .inputFluids(new FluidStack(Fluids.XYLENE, 1_000), new FluidStack(Fluids.PHOSGENE, 1_000), new FluidStack(Fluids.SOURGAS, 4_000)));
+        this.register(new GenericRecipe("chem.carboncarbon").setupNamed(400, 100_000).outputItems(ModIngredientItems.part(EnumPartType.ALCLAD, 1))
+                .inputItems(new TagStack(ANY_COKE).count(8), TI.plate().count(1))
+                .inputFluids(new FluidStack(Fluids.HEAVYOIL_VACUUM, 1_000), new FluidStack(Fluids.SYNGAS, 8_000)));
 
         this.register(new GenericRecipe("chem.meth").setup(60, 300)
                 .inputItems(new ComparableStack(Items.WHEAT), new ComparableStack(Items.COCOA_BEANS, 2))

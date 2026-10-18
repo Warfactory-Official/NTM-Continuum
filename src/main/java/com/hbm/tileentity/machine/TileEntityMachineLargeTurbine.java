@@ -31,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.network.chat.Component;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Logic for the legacy four-long steam turbine. */
 public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
@@ -58,16 +59,11 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineLargeTurbine turbine) {
+        turbine.setupAllPorts(turbine.getPorts());
+        turbine.updatePortPOFIFO();
+
         turbine.age++;
         if (turbine.age >= 2) turbine.age = 0;
-
-        ForgeDirection dir = turbine.getFacing();
-        BlockPos powerPos = turbine.getBlockPos().offset(-dir.offsetX * 4, 0, -dir.offsetZ * 4);
-        turbine.tryProvide(level, powerPos, dir.getOpposite());
-        for (DirPos connection : turbine.getConPos()) {
-            turbine.trySubscribe(turbine.tanks[0].getTankType(), level, connection);
-            turbine.tryProvide(turbine.tanks[1], level, connection);
-        }
 
         turbine.updateTypeFromFluidId();
         if (MachineFluidContainerIO.load(turbine.tanks[0], turbine.inventory, 2, 3)) turbine.setChanged();
@@ -141,23 +137,26 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
         return MachineCore.facing(getBlockState());
     }
 
-    public DirPos[] getConPos() {
-        ForgeDirection dir = getFacing();
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        BlockPos p = getBlockPos();
-        return new DirPos[]{
-                new DirPos(p.getX() + rot.offsetX * 2, p.getY(), p.getZ() + rot.offsetZ * 2, rot),
-                new DirPos(p.getX() - rot.offsetX * 2, p.getY(), p.getZ() - rot.offsetZ * 2, rot.getOpposite()),
-                new DirPos(p.getX() + dir.offsetX * 2, p.getY(), p.getZ() + dir.offsetZ * 2, dir)
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = getFacing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + rot.offsetX * 1, y, z + rot.offsetZ * 1, rot),
+                    PortDef.make(x - rot.offsetX * 1, y, z - rot.offsetZ * 1, rot.getOpposite()),
+                    PortDef.make(x + dir.offsetX * 1, y, z + dir.offsetZ * 1, dir),
+            };
+        }
+        return cachedPorts;
     }
 
-    public DirPos[] getPowerPos() {
-        ForgeDirection dir = getFacing();
-        BlockPos p = getBlockPos();
-        return new DirPos[]{new DirPos(p.getX() - dir.offsetX * 4, p.getY(),
-                p.getZ() - dir.offsetZ * 4, dir.getOpposite())};
-    }
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
+
+    /** Power leaves through the three fluid ports; 1.7 keeps the rear connector cell but no port there. */
+    public DirPos[] getPowerPos() { return getConPos(); }
 
     /** 1.7 {@code getAccessibleSlotsFromSide}: no automation reaches the large turbine. */
     @Override public int[] getSlotsForFace(Direction side) { return new int[]{}; }

@@ -78,4 +78,21 @@ public class BlockPAQuadrupole extends BlockMultiblockMachine implements IEnergy
                 && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {0, 1, 0, ForgeDirection.UP.ordinal()},
+                {0, -1, 0, ForgeDirection.DOWN.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {0.9, 0.1, -0.4, 0.4, 1.5, 1.5},
+                {0.9, 0.1, -0.4, 0.4, -1.5, -1.5},
+        };
+    }
 }

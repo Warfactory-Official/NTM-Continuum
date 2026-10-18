@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -49,5 +50,13 @@ public class MachineWoodBurner extends BlockMultiblockMachine implements IEnergy
         int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
         visitor.passiveCell(core.relative(back), MASK_ALL, domains);
         visitor.passiveCell(core.relative(back).relative(rot), MASK_ALL, domains);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

@@ -2,7 +2,6 @@ package com.hbm.platform.neoforge;
 
 //? if neoforge {
 
-
 import com.hbm.Constants;
 import com.hbm.gametest.RecipeViewerGameTests;
 import dev.golem.core.gametest.GameTests;
@@ -60,7 +59,8 @@ public class NeoForgeInit {
         com.hbm.gametest.Fix1AGameTests.init();
         com.hbm.gametest.IdsGameTests.init();
         com.hbm.gametest.ForeignFluidGameTests.init();
-        com.hbm.gametest.PortClaimGameTests.init();
+        com.hbm.gametest.TilePortGameTests.init();
+        com.hbm.gametest.PortBenchGameTests.init();
         com.hbm.gametest.Fix4GameTests.init();
         com.hbm.gametest.Fix5GameTests.init();
         com.hbm.gametest.Fix1BGameTests.init();
@@ -173,7 +173,9 @@ public class NeoForgeInit {
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.ForeignFluidGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
-                com.hbm.gametest.PortClaimGameTests.TESTS));
+                com.hbm.gametest.TilePortGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.PortBenchGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Fix4GameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,

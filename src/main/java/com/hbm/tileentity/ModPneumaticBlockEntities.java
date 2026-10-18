@@ -14,6 +14,7 @@ import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageClutter;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageExporter;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageImporter;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageMono;
+import com.hbm.tileentity.network.pneumatic.TileEntityPneumaticPipeAnchor;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
 
 /** Feature-local block-entity types for the pneumatic tube storage system; every one ticks on the server only. */
@@ -52,6 +53,10 @@ public final class ModPneumaticBlockEntities {
             REG.blockEntity("pneumatic_storage_exporter", () -> BlockEntities.serverTicking(
                     TileEntityPneumoStorageExporter::new,
                     (level, pos, state, be) -> be.serverTick(), ModPneumaticBlocks.PNEUMATIC_STORAGE_EXPORTER.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPneumaticPipeAnchor>> PNEUMATIC_PIPE_ANCHOR =
+            REG.blockEntity("pipe_anchor_pneumatic", () -> BlockEntities.type(
+                    TileEntityPneumaticPipeAnchor::new, ModPneumaticBlocks.PIPE_ANCHOR_PNEUMATIC.get()));
 
     public static void init() {}
 }

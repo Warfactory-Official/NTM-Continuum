@@ -52,9 +52,13 @@ public final class HbmJeiRecipeTypes {
     public static final ViewerType<GenericRecipe> PRECISION_ASSEMBLER = type("precass", GenericRecipe.class);
     public static final ViewerType<GenericRecipe> CHEMICAL_PLANT = type("chemical_plant", GenericRecipe.class);
     public static final ViewerType<GenericRecipe> PUREX = type("purex", GenericRecipe.class);
+    public static final ViewerType<GenericRecipe> ROCK_MILL = type("rock_mill", GenericRecipe.class);
+    public static final ViewerType<GenericRecipe> SUPERCOMPUTER = type("supercomputer", GenericRecipe.class);
     public static final ViewerType<GenericRecipe> FUSION = type("fusion", GenericRecipe.class);
     public static final ViewerType<GenericRecipe> FUSION_BREEDER = type("fusionbreeder", GenericRecipe.class);
     public static final ViewerType<GenericRecipe> PLASMA_FORGE = type("plasma_forge", GenericRecipe.class);
+    /** 1.7 {@code SpaceAssemblerHandler} ("ntmSpaceAssembler"). */
+    public static final ViewerType<GenericRecipe> SPACE_ASSEMBLER = type("space_assembler", GenericRecipe.class);
     public static final ViewerType<GenericRecipe> MIXER = type("mixer", GenericRecipe.class);
     public static final ViewerType<GenericRecipe> EXPOSURE_CHAMBER = type("exposure_chamber", GenericRecipe.class);
     public static final ViewerType<ArcFurnaceRecipes.ArcFurnaceRecipe> ARC_FURNACE_SOLID =
@@ -97,6 +101,7 @@ public final class HbmJeiRecipeTypes {
     public static final ViewerType<ConstructionRecipeHandler.Row> CONSTRUCTION =
             type("construction", ConstructionRecipeHandler.Row.class);
     public static final ViewerType<ConstructionRecipeHandler.Row> TOOLING = type("tooling", ConstructionRecipeHandler.Row.class);
+    public static final ViewerType<ConstructionRecipeHandler.Row> ASHPIT = type("ashpit", ConstructionRecipeHandler.Row.class);
     public static final ViewerType<CrucibleSmeltingHandler.Smelting> CRUCIBLE_SMELTING =
             type("crucible_smelting", CrucibleSmeltingHandler.Smelting.class);
     public static final ViewerType<CrucibleCastingHandler.Casting> CRUCIBLE_CASTING =

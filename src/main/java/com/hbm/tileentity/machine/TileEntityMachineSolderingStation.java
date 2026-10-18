@@ -22,7 +22,6 @@ import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.inventory.recipes.SolderingRecipes.SolderingRecipe;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -40,6 +39,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Soldering station: a multiblock that solders the higher-tier circuits from lower
@@ -81,15 +82,11 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineSolderingStation te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         te.power = Library.chargeTEFromItems(te.inventory, 7, te.getPower(), te.getMaxPower());
         te.updateTankType();
-
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos con : te.getConPos()) {
-                te.trySubscribe(level, con);
-                if (te.tank.getTankType() != Fluids.NONE) te.trySubscribe(te.tank.getTankType(), level, con);
-            }
-        }
 
         te.recipe = SolderingRecipes.getRecipe(new ItemStack[]{
                 te.inventory.getStackInSlot(0), te.inventory.getStackInSlot(1), te.inventory.getStackInSlot(2),
@@ -102,7 +99,6 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         if (te.recipe != null && te.recipe.fluid != null && te.tank.getTankType() == Fluids.NONE) {
             te.tank.setTankType(te.recipe.fluid.type);
         }
-
 
         // Upgrades (1.12.2 red/blue/black formulas): SPEED (red) -duration/6 & +100% power per level;
         // POWER (blue) +duration/3 & -power/6 per level; OVERDRIVE (black) ×2 power & +1 progress/tick.
@@ -185,22 +181,10 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         }
     }
 
-    /** The 8 network-connection positions around the footprint, facing-dependent (ported as-is). */
-    public DirPos[] getConPos() {
-        ForgeDirection dir = MachineCore.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + dir.offsetX, y, z + dir.offsetZ, dir),
-                new DirPos(x + dir.offsetX + rot.offsetX, y, z + dir.offsetZ + rot.offsetZ, dir),
-                new DirPos(x - dir.offsetX * 2, y, z - dir.offsetZ * 2, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 2 + rot.offsetX, y, z - dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite()),
-                new DirPos(x - rot.offsetX, y, z - rot.offsetZ, rot.getOpposite()),
-                new DirPos(x - dir.offsetX - rot.offsetX, y, z - dir.offsetZ - rot.offsetZ, rot.getOpposite()),
-                new DirPos(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot),
-                new DirPos(x - dir.offsetX + rot.offsetX * 2, y, z - dir.offsetZ + rot.offsetZ * 2, rot),
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.solderer(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), MachineCore.facing(getBlockState())); return cachedPorts; }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {

@@ -10,9 +10,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.MenuRBMKBoiler;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.lib.DirPos;
 import com.hbm.tileentity.ModRBMKBlockEntities;
-import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -26,6 +24,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
 
 /** Water-to-steam RBMK heat column, including the original compression ratios. */
 public class BlockEntityRBMKBoiler extends BlockEntityRBMKBase implements IFluidProviderMK2, IFluidReceiverMK2, IFluidStandardTransceiverMK2,
@@ -33,14 +32,14 @@ public class BlockEntityRBMKBoiler extends BlockEntityRBMKBase implements IFluid
     @Override public RBMKColumnType getConsoleType() { return RBMKColumnType.BOILER; }
     public final FluidTankNTM feed = new FluidTankNTM(Fluids.WATER, 10_000), steam = new FluidTankNTM(Fluids.STEAM, 1_000_000);
     public int consumption, output;
-    public BlockEntityRBMKBoiler(BlockPos pos, BlockState state) { super(ModRBMKBlockEntities.RBMK_BOILER.get(), pos, state, 0); }
+    public BlockEntityRBMKBoiler(BlockPos pos, BlockState state) { super(ModRBMKBlockEntities.RBMK_BOILER.get(), pos, state, 0); ports = new ModulePortManFluidAdaptive(this).setInputTanks(feed).setOutputTanks(steam); }
     public static double heat(FluidType f) { return f == Fluids.STEAM ? 100 : f == Fluids.HOTSTEAM ? 300 : f == Fluids.SUPERHOTSTEAM ? 450 : f == Fluids.ULTRAHOTSTEAM ? 600 : 0; }
     public static double factor(FluidType f) { return f == Fluids.STEAM ? 1 : f == Fluids.HOTSTEAM ? 10 : f == Fluids.SUPERHOTSTEAM ? 100 : f == Fluids.ULTRAHOTSTEAM ? 1000 : 0; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{feed, steam}; }
-    @Override public void tickServer() { consumption = output = 0; double available = heat - heat(steam.getTankType()); if (available > 0) { double cost = RBMKDials.getBoilerHeatConsumption(level), factor = factor(steam.getTankType()); int used, made; if (steam.getTankType() == Fluids.ULTRAHOTSTEAM) { made = (int)Math.floor(available / cost * 100 / factor); used = (int)Math.floor(made / 100D * factor); if (used > feed.getFill()) { made = (int)Math.floor(feed.getFill() * 100D / factor); used = (int)Math.floor(made / 100D * factor); } } else { used = Math.min((int)Math.floor(available / cost), feed.getFill()); made = (int)Math.floor(used * 100D / factor); } consumption = used; output = made; feed.setFill(feed.getFill() - used); steam.setFill(Math.min(steam.getMaxFill(), steam.getFill() + made)); heat -= used * cost; } if (steam.getFill() > 0) for (DirPos pos : RBMKLoader.outputPositions(level, worldPosition, false)) tryProvide(steam, level, pos); trySubscribe(feed.getTankType(), level, worldPosition.below(), ForgeDirection.DOWN); /* 1.7: the feed from below */ super.tickServer(); }
+    @Override public void tickServer() { ports.update(getLoaderPorts()); consumption = output = 0; double available = heat - heat(steam.getTankType()); if (available > 0) { double cost = RBMKDials.getBoilerHeatConsumption(level), factor = factor(steam.getTankType()); int used, made; if (steam.getTankType() == Fluids.ULTRAHOTSTEAM) { made = (int)Math.floor(available / cost * 100 / factor); used = (int)Math.floor(made / 100D * factor); if (used > feed.getFill()) { made = (int)Math.floor(feed.getFill() * 100D / factor); used = (int)Math.floor(made / 100D * factor); } } else { used = Math.min((int)Math.floor(available / cost), feed.getFill()); made = (int)Math.floor(used * 100D / factor); } consumption = used; output = made; feed.setFill(feed.getFill() - used); steam.setFill(Math.min(steam.getMaxFill(), steam.getFill() + made)); heat -= used * cost; } super.tickServer(); }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{feed}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{steam}; }
-    public void cycleCompressor() { FluidType f = steam.getTankType(); if (f == Fluids.STEAM) { steam.setTankType(Fluids.HOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.HOTSTEAM) { steam.setTankType(Fluids.SUPERHOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.SUPERHOTSTEAM) { steam.setTankType(Fluids.ULTRAHOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.ULTRAHOTSTEAM) { steam.setTankType(Fluids.STEAM); steam.setFill(Math.min(steam.getFill()*1000, steam.getMaxFill())); } setChanged(); }
+    public void cycleCompressor() { if (heat > 50 && feed.getFill() > 0) return; FluidType f = steam.getTankType(); if (f == Fluids.STEAM) { steam.setTankType(Fluids.HOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.HOTSTEAM) { steam.setTankType(Fluids.SUPERHOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.SUPERHOTSTEAM) { steam.setTankType(Fluids.ULTRAHOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.ULTRAHOTSTEAM) { steam.setTankType(Fluids.STEAM); steam.setFill(Math.min(steam.getFill()*1000, steam.getMaxFill())); } setChanged(); }
      @Override public boolean hasPermission(Player player) { return player.containerMenu instanceof MenuRBMKBoiler menu && menu.blockEntity() == this && menu.stillValid(player); }
      @Override public void receiveControl(CompoundTag data) { if (Tags.getBooleanOr(data, "compression", false)) cycleCompressor(); }
     @Override public RBMKColumn getConsoleData() { RBMKColumn.BoilerColumn data=(RBMKColumn.BoilerColumn)super.getConsoleData(); data.water=feed.getFill(); data.maxWater=feed.getMaxFill(); data.steam=steam.getFill(); data.maxSteam=steam.getMaxFill(); data.steamType=RBMKColumn.fluidId(steam.getTankType()); return data; }

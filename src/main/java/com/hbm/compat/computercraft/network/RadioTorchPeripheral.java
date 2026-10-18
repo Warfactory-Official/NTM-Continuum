@@ -6,12 +6,12 @@ import com.hbm.tileentity.network.TileEntityRadioTorchBase;
 import dan200.computercraft.api.lua.LuaFunction;
 import net.minecraft.nbt.CompoundTag;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 1.7 {@code TileEntityRadioTorchBase}'s component {@code radio_torch}, on the sender and the receiver. 1.7 has the
- * four setters only (ntm-next's getters are not in 1.7). Writes go through the torch's own {@code receiveControl},
- * the path its screen uses, so the port's limits (channel 10, mapping 32 characters) and the radio resync apply.
+ * 1.7 {@code TileEntityRadioTorchBase}'s component {@code radio_torch}, on the sender and the receiver. Writes go
+ * through the torch's own {@code receiveControl}, the path its screen uses, so its length limits and resync apply.
  */
 public final class RadioTorchPeripheral extends SnapshotPeripheral<TileEntityRadioTorchBase> {
 
@@ -29,6 +29,30 @@ public final class RadioTorchPeripheral extends SnapshotPeripheral<TileEntityRad
         data.putString("channel", channel);
         machine().receiveControl(data);
         return new Object[]{};
+    }
+
+    @LuaFunction(mainThread = true)
+    public final Object[] getChannel() {
+        return new Object[]{machine().channel};
+    }
+
+    @LuaFunction(mainThread = true)
+    public final Object[] getPolling() {
+        return new Object[]{machine().polling};
+    }
+
+    @LuaFunction(mainThread = true)
+    public final Object[] getCustomMap() {
+        return new Object[]{machine().customMap};
+    }
+
+    // OpenComputers handed the String[] over as a table indexed from 1
+    @LuaFunction(mainThread = true)
+    public final Object[] getCustomMapValues() {
+        String[] mapping = machine().mapping;
+        Map<Integer, String> table = new HashMap<>();
+        for (int i = 0; i < mapping.length; i++) table.put(i + 1, mapping[i]);
+        return new Object[]{table};
     }
 
     @LuaFunction(mainThread = true)

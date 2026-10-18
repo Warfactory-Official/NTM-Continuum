@@ -36,6 +36,7 @@ import com.hbm.blocks.machine.MachineCapacitorBus;
 import com.hbm.blocks.machine.MachineTesla;
 import com.hbm.blocks.machine.PowerDetector;
 import com.hbm.blocks.network.BlockCableClassic;
+import com.hbm.blocks.network.BlockNetworkSeparator;
 import com.hbm.blocks.network.BlockCableGauge;
 import com.hbm.blocks.network.BlockCablePaintable;
 import com.hbm.blocks.network.CableDetector;
@@ -150,6 +151,9 @@ public final class ModEnergyNetBlocks {
             .transform(Presets.shares("hbm:block/cable_diode"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockNetworkSeparator> network_separator = REG.block("network_separator", BlockNetworkSeparator::new,
+            p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()))
+            .transform(FOLDED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<PowerDetector> machine_detector = REG.block("machine_detector", PowerDetector::new,
             p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
             .transform(onOff("hbm:blocks/machine_detector_off", "hbm:blocks/machine_detector"));
@@ -165,19 +169,19 @@ public final class ModEnergyNetBlocks {
     // 1.7 capacitor_copper/gold/niobium; the block ids carry a machine_ prefix because the bare names are the
     // battery-capacitor items in this port. Only copper sits on a tab, as upstream.
     public static final RegistryObject<MachineCapacitor> machine_capacitor_copper = REG.block("machine_capacitor_copper",
-            p -> new MachineCapacitor(p, 1_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            MachineCapacitor::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCapacitor> machine_capacitor_gold = REG.block("machine_capacitor_gold",
-            p -> new MachineCapacitor(p, 5_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            MachineCapacitor::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCapacitor> machine_capacitor_niobium = REG.block("machine_capacitor_niobium",
-            p -> new MachineCapacitor(p, 25_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            MachineCapacitor::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCapacitor> capacitor_tantalium = REG.block("capacitor_tantalium",
-            p -> new MachineCapacitor(p, 150_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            MachineCapacitor::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCapacitor> capacitor_schrabidate = REG.block("capacitor_schrabidate",
-            p -> new MachineCapacitor(p, 50_000_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            MachineCapacitor::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineBatteryTier> machine_battery_potato = REG.block("machine_battery_potato",
             p -> new MachineBatteryTier(p, 10_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
@@ -224,17 +228,18 @@ public final class ModEnergyNetBlocks {
         item(HbmTab.MACHINES, "red_cable_paintable", red_cable_paintable);
         item(HbmTab.MACHINES, "cable_switch", cable_switch);
         item(HbmTab.MACHINES, "cable_detector", cable_detector);
-        item(HbmTab.MACHINES, "cable_diode", cable_diode,
+        item(null, "cable_diode", cable_diode,
                 () -> stack -> List.of(EnergyNetBlockItem.gold("Limits throughput and restricts flow direction")));
+        item(HbmTab.MACHINES, "network_separator", network_separator);
         item(HbmTab.MACHINES, "machine_detector", machine_detector);
 
         // 1.7 registered the legacy storage tiers with no creative tab; they stay reachable by id and pick-block.
         item(null, "capacitor_bus", capacitor_bus);
-        item(HbmTab.MACHINES, "machine_capacitor_copper", machine_capacitor_copper, () -> capacitorInfo(machine_capacitor_copper));
-        item(null, "machine_capacitor_gold", machine_capacitor_gold, () -> capacitorInfo(machine_capacitor_gold));
-        item(null, "machine_capacitor_niobium", machine_capacitor_niobium, () -> capacitorInfo(machine_capacitor_niobium));
-        item(null, "capacitor_tantalium", capacitor_tantalium, () -> capacitorInfo(capacitor_tantalium));
-        item(null, "capacitor_schrabidate", capacitor_schrabidate, () -> capacitorInfo(capacitor_schrabidate));
+        item(HbmTab.MACHINES, "machine_capacitor_copper", machine_capacitor_copper);
+        item(null, "machine_capacitor_gold", machine_capacitor_gold);
+        item(null, "machine_capacitor_niobium", machine_capacitor_niobium);
+        item(null, "capacitor_tantalium", capacitor_tantalium);
+        item(null, "capacitor_schrabidate", capacitor_schrabidate);
         item(null, "machine_battery_potato", machine_battery_potato, () -> batteryInfo(machine_battery_potato));
         item(null, "machine_lithium_battery", machine_lithium_battery, () -> batteryInfo(machine_lithium_battery));
         item(null, "machine_schrabidium_battery", machine_schrabidium_battery, () -> batteryInfo(machine_schrabidium_battery));
@@ -268,11 +273,6 @@ public final class ModEnergyNetBlocks {
                 .variant("overlay=true,painted=true", new Variant(EMPTY))
                 .variant("overlay=false,painted=true", new Variant(EMPTY))
                 .register();
-    }
-
-    /** {@code tile.capacitor.desc} (shared by every capacitor) plus the persistent-charge lines. */
-    private static Function<ItemStack, List<Component>> capacitorInfo(RegistryObject<MachineCapacitor> block) {
-        return stack -> block.get().tooltip(stack, List.of());
     }
 
     /** 1.7 {@code MachineBattery.addInformation}: capacity, charge/discharge speed and the persistent charge. */

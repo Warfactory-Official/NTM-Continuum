@@ -3,6 +3,7 @@ package com.hbm.saveddata.satellites;
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.projectile.EntityTom;
+import com.hbm.items.ModSatelliteItems;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -51,6 +52,14 @@ public class SatelliteHorizons extends Satellite {
     }
 
     @Override public String getType() { return "PAYLOAD_UNKNOWN"; }
+
+    @Override
+    public Component[] getInfo(Level level) {
+        return new Component[] {
+                Component.translatable(ModSatelliteItems.sat_gerald.get().getDescriptionId()),
+                used ? Component.translatable("satellite.spent") : Component.translatable("satellite.ready")
+        };
+    }
 
     /** 1.7 writeToNBT/readFromNBT store only {@code used}; the base target is not saved. */
     @Override

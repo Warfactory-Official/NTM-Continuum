@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityChimneyBase;
 import com.hbm.tileentity.machine.TileEntityChimneyBrick;
 import net.minecraft.core.BlockPos;
@@ -25,4 +26,13 @@ public final class MachineChimneyBrick extends MachineChimneyBase {
     @Override public int[] getDimensions() { return new int[]{12, 0, 1, 1, 1, 1}; }
     @Override public int getOffset() { return 1; }
 
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
+    }
 }

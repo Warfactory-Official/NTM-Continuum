@@ -55,6 +55,7 @@ public final class NTMStructureDeclarations {
     public static final String NS = "hbm";
     public static final String NULL_PLAINS = "null_plains";
     public static final String NULL_OCEAN = "null_ocean";
+    public static final String SUBMARINE = "submarine";
 
     /** 1.7 {@code StructureConfig}: region salt, {@code 996996996 - dimension} for the overworld. */
     public static final int SALT = 996996996;
@@ -215,6 +216,12 @@ public final class NTMStructureDeclarations {
             add("ruin" + Character.toLowerCase(letter), "ruin" + letter, StructureConfig.enableRuins ? ruinWeights[i] : 0, ruins);
         }
         add("tower_base", "tower_base", StructureConfig.towerBaseSpawnWeight, b -> b.heightVariation() <= 0.3F && !b.water() && !b.is(Type.SANDY));
+        add("falloutshelter_house", "falloutshelter_house", StructureConfig.falloutShelterHouseSpawnWeight, b -> b.is(Type.PLAINS), Type.PLAINS);
+        add("abandoned_arcticstation", "abandoned_arcticstation", StructureConfig.abandonedArcticStationSpawnWeight, b -> b.is(Type.SNOWY), Type.SNOWY);
+        add("military_base", "military_base", StructureConfig.militaryBaseSpawnWeight, b -> b.is(Type.SNOWY), Type.SNOWY);
+        // 1.7 matched the submarine by identity (biome == ocean || biome == deepOcean): the table's rows for those two
+        if (StructureConfig.submarineSpawnWeight > 0)
+            ENTRIES.add(new Entry(SUBMARINE, SUBMARINE, StructureConfig.submarineSpawnWeight, null, true, types()));
         add("meteor_dungeon", "meteor_dungeon", 1, b -> b.rootHeight() >= 0); // WG-C: 1.7 left spawnWeight at its default 1
 
         // 1.7 registerNullWeight: plains only by identity (biome == BiomeGenBase.plains), oceans by type
@@ -266,6 +273,10 @@ public final class NTMStructureDeclarations {
             case "ruini" -> ruins ? StructureConfig.ruinsISpawnWeight : 0;
             case "ruinj" -> ruins ? StructureConfig.ruinsJSpawnWeight : 0;
             case "tower_base" -> StructureConfig.towerBaseSpawnWeight;
+            case "falloutshelter_house" -> StructureConfig.falloutShelterHouseSpawnWeight;
+            case "abandoned_arcticstation" -> StructureConfig.abandonedArcticStationSpawnWeight;
+            case "military_base" -> StructureConfig.militaryBaseSpawnWeight;
+            case SUBMARINE -> StructureConfig.submarineSpawnWeight;
             case "meteor_dungeon" -> 1;
             case NULL_PLAINS -> StructureConfig.plainsNullWeight;
             case NULL_OCEAN -> StructureConfig.oceanNullWeight;
@@ -283,6 +294,12 @@ public final class NTMStructureDeclarations {
         List<String> out = new ArrayList<>();
         if (entry.id().equals(NULL_PLAINS)) {
             out.add("minecraft:plains");
+            return out;
+        }
+        if (entry.id().equals(SUBMARINE)) {
+            // the modern temperature variants are 1.7's ocean and deep ocean (see LEGACY); frozen ones are frozenOcean
+            out.addAll(List.of("minecraft:ocean", "minecraft:warm_ocean", "minecraft:lukewarm_ocean", "minecraft:cold_ocean",
+                    "minecraft:deep_ocean", "minecraft:deep_lukewarm_ocean", "minecraft:deep_cold_ocean"));
             return out;
         }
         LEGACY.forEach((id, legacy) -> {
@@ -314,6 +331,7 @@ public final class NTMStructureDeclarations {
         DICTIONARY_TAGS.put("sandy", List.of("#c:is_sandy", "#c:is_desert", "#minecraft:is_badlands", "#c:is_badlands"));
         DICTIONARY_TAGS.put("swamp", List.of("#c:is_swamp"));
         DICTIONARY_TAGS.put("sparse", List.of("#c:is_sparse_vegetation"));
+        DICTIONARY_TAGS.put("snowy", List.of("#c:is_snowy"));
         DICTIONARY_TAGS.put(OVERWORLD, List.of("#minecraft:is_overworld", "#c:is_overworld"));
     }
 
@@ -323,7 +341,7 @@ public final class NTMStructureDeclarations {
     }
 
     /** The dictionary types the predicates read (the ones {@link #DICTIONARY_TAGS} defines). */
-    public static final Set<Type> DICTIONARY_TYPES = types(Type.OCEAN, Type.RIVER, Type.BEACH, Type.PLAINS, Type.SANDY, Type.SWAMP, Type.SPARSE);
+    public static final Set<Type> DICTIONARY_TYPES = types(Type.OCEAN, Type.RIVER, Type.BEACH, Type.PLAINS, Type.SANDY, Type.SWAMP, Type.SPARSE, Type.SNOWY);
 
     /** The table row of a vanilla biome; null for a biome the table has no row for (modded ones). */
     public static LegacyBiome legacy(String biomeId) {
@@ -331,8 +349,8 @@ public final class NTMStructureDeclarations {
     }
 
     /**
-     * The 1.7 biome predicate of a spawn; null when the spawn has none to run at generation (the plains null weight,
-     * which 1.7 matched by identity and whose tag is exactly {@code minecraft:plains}) or is not in the set.
+     * The 1.7 biome predicate of a spawn; null when the spawn has none to run at generation (the plains null weight and
+     * the submarine, which 1.7 matched by identity and whose tags list exactly those biomes) or is not in the set.
      */
     public static Predicate<LegacyBiome> predicate(String spawn) {
         for (Entry entry : ENTRIES) {
@@ -344,7 +362,7 @@ public final class NTMStructureDeclarations {
     /** The has_structure superset for biomes the table does not know: the required types' dictionary tags, or the overworld. */
     static List<String> moddedCandidates(Entry entry) {
         List<String> out = new ArrayList<>();
-        if (entry.biome() == null) return out; // by identity: vanilla plains only
+        if (entry.biome() == null) return out; // by identity: the vanilla biomes only
         if (entry.requires().isEmpty()) {
             out.add("#" + NS + ":" + DICTIONARY + OVERWORLD);
         } else {

@@ -115,7 +115,7 @@ public final class LegacyBiomes {
      */
     public static boolean accepts(String spawn, Holder<Biome> biome, Structure.GenerationContext context) {
         Predicate<LegacyBiome> predicate = NTMStructureDeclarations.predicate(spawn);
-        if (predicate == null) return true; // the tag alone decides (the plains null weight: vanilla plains by identity)
+        if (predicate == null) return true; // the tag alone decides (spawns 1.7 matched by identity)
         LegacyBiome row = NTMStructureDeclarations.legacy(id(biome));
         if (row != null) return predicate.test(row);
         if (!biome.is(OVERWORLD)) return false;

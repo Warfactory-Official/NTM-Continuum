@@ -42,10 +42,7 @@ public class MachineFurnaceCombination extends BlockMultiblockMachine
                 ? furnace : null;
     }
 
-    /**
-     * Every perimeter cell turns its own outward faces, at both courses, and the whole upper course --
-     * the centre included -- vents through its top.
-     */
+    /** 1.7's comboven ports: every perimeter cell turns its own outward faces, at both courses. */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
@@ -53,7 +50,7 @@ public class MachineFurnaceCombination extends BlockMultiblockMachine
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dz = -1; dz <= 1; dz++) {
                     if (dy == 0 && dx == 0 && dz == 0) continue;
-                    int mask = outwardMask(dx, dz, 1) | (dy == 1 ? MASK_UP : MASK_NONE);
+                    int mask = outwardMask(dx, dz, 1);
                     visitor.cell(core.offset(dx, dy, dz), mask);
                 }
             }

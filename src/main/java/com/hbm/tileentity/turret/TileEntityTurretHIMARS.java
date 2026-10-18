@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModEntities;
@@ -301,6 +302,34 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
             return;
         }
         super.handleButtonPacket(value, meta);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_FUNCTION + "setactive" + NAME_SEPARATOR + "active (0 or 1)",
+                PREFIX_FUNCTION + "setmanual" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetplayers" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetanimals" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetmobs" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetmachines" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "addwhitelist" + NAME_SEPARATOR + "name",
+                PREFIX_FUNCTION + "removewhitelist" + NAME_SEPARATOR + "name",
+                PREFIX_FUNCTION + "enqueue" + NAME_SEPARATOR + "x" + PARAM_SEPARATOR + "y" + PARAM_SEPARATOR + "z"};
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        super.runRORFunction(name, params);
+
+        if ((PREFIX_FUNCTION + "setmanual").equals(name) && params.length == 1) {
+            short next = (short) IRORInteractive.parseInt(params[0], 0, 1);
+            // port: a mode change drops the engagement as the mode button does (see abandonEngagement)
+            if (next != mode) abandonEngagement();
+            mode = next;
+            markChanged();
+        }
+
+        return null;
     }
 
     @Override

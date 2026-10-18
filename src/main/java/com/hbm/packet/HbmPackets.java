@@ -35,6 +35,7 @@ import dev.golem.core.net.GolemCodec;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.net.GolemPayload;
 import dev.golem.core.net.GolemSync;
+import dev.golem.core.world.Interactions;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -356,6 +357,8 @@ public final class HbmPackets {
         Level level = player.level();
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof IControlReceiver receiver && receiver.hasPermission(player)) {
+            // a protected area that cancels right-clicking the block also refuses its menu's controls
+            if (!Interactions.allowsUse(player, pos)) return;
             try {
                 receiver.receiveControl(player, data);
                 be.setChanged();

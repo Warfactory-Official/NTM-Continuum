@@ -352,7 +352,7 @@ public final class DamageResistanceHandler {
         return source.is(DamageTypeTags.BYPASSES_ARMOR);
     }
 
-    private static String typeToCategory(DamageSource source) {
+    public static String typeToCategory(DamageSource source) {
         if (source.is(DamageTypeTags.IS_EXPLOSION)) return CATEGORY_EXPLOSION;
         if (source.is(DamageTypeTags.IS_FIRE)) return CATEGORY_FIRE;
         if (source.is(DamageTypeTags.IS_PROJECTILE)) return CATEGORY_PHYSICAL;

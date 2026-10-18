@@ -4,8 +4,6 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -15,6 +13,8 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Converts water to heavy water using the legacy 50:1 ratio and energy cost. */
 public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
@@ -47,11 +47,8 @@ public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
     public static long powerFloorExclusive = Long.MIN_VALUE;
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityDeuteriumExtractor extractor) {
-        for (DirPos connection : extractor.getConPos()) {
-            extractor.trySubscribe(level, connection);
-            extractor.trySubscribe(extractor.tanks[0].getTankType(), level, connection);
-            if (extractor.tanks[1].getFill() > 0) extractor.tryProvide(extractor.tanks[1], level, connection);
-        }
+        extractor.setupAllPorts(extractor.getPorts());
+        extractor.updatePortPIFIFO();
 
         if (extractor.hasPower() && extractor.power > powerFloorExclusive && extractor.hasEnoughWater()
                 && extractor.tanks[1].getMaxFill() > extractor.tanks[1].getFill()) {
@@ -74,17 +71,8 @@ public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
         return tanks[0].getFill() >= 100;
     }
 
-    public DirPos[] getConPos() {
-        BlockPos pos = getBlockPos();
-        return new DirPos[]{
-                new DirPos(pos.east(), ForgeDirection.EAST),
-                new DirPos(pos.west(), ForgeDirection.WEST),
-                new DirPos(pos.above(), ForgeDirection.UP),
-                new DirPos(pos.below(), ForgeDirection.DOWN),
-                new DirPos(pos.south(), ForgeDirection.SOUTH),
-                new DirPos(pos.north(), ForgeDirection.NORTH)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     @Override
     public FluidTankNTM[] getSendingTanks() {

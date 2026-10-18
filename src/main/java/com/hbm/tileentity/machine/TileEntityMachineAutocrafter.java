@@ -1,6 +1,5 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -31,6 +30,8 @@ import java.util.List;
 import com.hbm.blocks.machine.MachineAutocrafter;
 import com.hbm.inventory.container.ContainerAutocrafter;
 import com.hbm.tileentity.ModProductionBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The automatic crafting table, ported from the original {@code TileEntityMachineAutocrafter}.
@@ -92,10 +93,13 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase
         }
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAutocrafter te) {
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            te.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
+        te.setupPowerPorts(te.getPorts());
+        te.updateAllPorts();
+        te.receivePower();
         if (te.templateDirty) {
             te.templateDirty = false;
             int keep = te.recipeIndex;

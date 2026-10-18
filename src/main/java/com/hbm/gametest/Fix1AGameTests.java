@@ -31,7 +31,7 @@ import java.util.List;
  *       three billets as two ingots and two ingots as three billets; nothing turns one billet into six ingots.</li>
  *   <li>Mercury: 1.7 {@code ingot_mercury} is registered as {@code nugget_mercury}, so the electrolyser outputs are
  *       1 / 2 / 8 of {@code hbm:nugget_mercury}, not 9 / 18 / 72.</li>
- *   <li>Fluid ids are the 1.7 positions (CHLORINE 89, DHC 153, FLUE 155, 156 fluids), AIRBLAST is 1,200 degrees,
+ *   <li>Fluid ids are the 1.7 positions (CHLORINE 89, DHC 153, FLUE 155, 157 fluids), AIRBLAST is 1,200 degrees,
  *       FLUE burns for 25,000, and steam has no FT_Heatable.</li>
  *   <li>The machines and rails that dropped nothing drop themselves.</li>
  * </ul>
@@ -112,7 +112,7 @@ public final class Fix1AGameTests {
 
     public static void fluids(GameTestHelper helper) {
         Fluids.init();
-        helper.assertTrue(Fluids.getAll().length == 156, "1.7 has 156 fluids, have " + Fluids.getAll().length);
+        helper.assertTrue(Fluids.getAll().length == 157, "1.7 has 157 fluids, have " + Fluids.getAll().length);
         helper.assertTrue(Fluids.legacyId(Fluids.RADIOSOLVENT) == 88 && Fluids.legacyId(Fluids.CHLORINE) == 89
                         && Fluids.legacyId(Fluids.SMOKE) == 120 && Fluids.legacyId(Fluids.DHC) == 153 && Fluids.legacyId(Fluids.FLUE) == 155,
                 "1.7 ids: RADIOSOLVENT 88, CHLORINE 89, SMOKE 120, DHC 153, FLUE 155; have "

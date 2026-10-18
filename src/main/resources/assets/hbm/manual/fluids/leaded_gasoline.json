@@ -1,0 +1,23 @@
+{
+	"name": "Leaded Gasoline",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		"hbm:gasoline_leaded"
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:gasoline_leaded"
+		]
+	],
+	"title": {
+		"en_us": "Leaded Gasoline",
+		"ru_ru": "Этилированный газолин"
+	},
+	"content": {
+		"en_us": "Leaded gasoline can be obtained by mixing [[tetraethyllead antiknock agent|Tetraethyllead Antiknock Agent]] with [[gasoline|Gasoline]]. Leaded gasoline can be used as a combustible [[fuel|Fuels]].<br><br>See also:<br>[[Basic Oil Processing]]",
+		"ru_ru": "Этилированный газолин можно получить путем смешивания [[антидетонационного средства из тетраэтилсвинца|Tetraethyllead Antiknock Agent]] с [[газолином|Gasoline]]. Этилированный газолин можно использовать в качестве источника горючего [[топлива|Fuels]].<br><br>См. также:<br>[[Базовая переработка нефти|Basic Oil Processing]]"
+	}
+}

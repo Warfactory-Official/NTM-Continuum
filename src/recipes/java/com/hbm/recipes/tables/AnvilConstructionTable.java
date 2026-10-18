@@ -87,6 +87,7 @@ public final class AnvilConstructionTable extends RecipeSource<ConstructionRow> 
     private static final TagKey<Item> KEY_PLANKS = ItemTags.PLANKS;
     private static final TagKey<Item> KEY_LOG = ItemTags.LOGS;
     private static final TagKey<Item> KEY_COBBLESTONE = tag("c", "cobblestones");
+    private static final TagKey<Item> KEY_STONE = tag("c", "stones");
     /** 1.7 {@code KEY_BRICK}, {@code "ingotBrick"}: the brick item. */
     private static final TagKey<Item> KEY_BRICK = tag("c", "ingots/brick");
     private static final TagKey<Item> ANY_CONCRETE = tag("c", "concretes");
@@ -191,6 +192,15 @@ public final class AnvilConstructionTable extends RecipeSource<ConstructionRow> 
                         CU.plate().count(8)
                 },
                 new AnvilOutput(new ItemStack(ModMachineBlocks.machine_blast_furnace.get().asItem()))).setTier(1));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
+                        new TagStack(KEY_STONE, 16),
+                        STEEL.plate().count(4),
+                        CU.pipe().count(1),
+                        new ComparableStack(ModItems.motor.get(), 1)
+                },
+                new AnvilOutput(new ItemStack(ModMachineBlocks.machine_rockmill.get().asItem()))).setTier(2));
 
         // boolean exp = GeneralConfig.enableExpensiveMode: a row for each branch, both at this one position
         for (boolean exp : new boolean[] {false, true}) {
@@ -928,13 +938,6 @@ public final class AnvilConstructionTable extends RecipeSource<ConstructionRow> 
 
         requires = List.of();
         // }
-
-        add(new AnvilConstructionRecipe(
-                new ComparableStack(ModMachineBlocks.machine_turbine.get().asItem()), new AnvilOutput[] {
-                        new AnvilOutput(new ItemStack(ModItems.turbine_titanium.get(), 1)),
-                        new AnvilOutput(new ItemStack(ModItems.coil_copper.get(), 2)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_steel.get(), 4))
-                        }).setTier(3));
 
         add(new AnvilConstructionRecipe(
                 new ComparableStack(ModFluidNetBlocks.yellow_barrel.get().asItem()), new AnvilOutput[] {

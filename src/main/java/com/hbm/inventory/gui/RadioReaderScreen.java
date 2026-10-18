@@ -5,6 +5,7 @@ import com.hbm.packet.ControlEventPayload;
 import com.hbm.inventory.container.RadioReaderMenu;
 import com.hbm.tileentity.network.RadioTargets;
 import com.hbm.tileentity.network.TileEntityRadioTorchReader;
+import com.hbm.tileentity.network.RTTYSystem;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -34,7 +35,7 @@ public final class RadioReaderScreen extends CompatContainerScreen<RadioReaderMe
     @Override protected void init() {
         super.init(); TileEntityRadioTorchReader reader = menu.reader(); polling = reader != null && reader.polling;
         for (int i = 0; i < channels.length; i++) {
-            channels[i] = field(29, 57 + i * 18, 64, reader == null ? "" : reader.channels[i], 15);
+            channels[i] = field(29, 57 + i * 18, 64, reader == null ? "" : reader.channels[i], RTTYSystem.MAX_CHAN_LENGTH);
             names[i] = field(123, 57 + i * 18, 118, reader == null ? "" : reader.names[i], 25);
         }
     }

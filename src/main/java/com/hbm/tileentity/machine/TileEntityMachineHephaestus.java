@@ -8,7 +8,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
 import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingStep;
 import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingType;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.sound.AudioSystem;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 import com.hbm.sound.ModPowerGenSounds;
 import com.hbm.tileentity.ModPowerGenBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The geothermal heat exchanger, 1:1 with 1.7 {@code TileEntityMachineHephaestus}. Every tick it scans one
@@ -60,11 +60,10 @@ public class TileEntityMachineHephaestus extends TileEntityLoadedBase implements
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineHephaestus heatex) {
-        heatex.setupTanks();
+        heatex.setupFluidPorts(heatex.getPorts());
+        heatex.updatePortFIFO();
 
-        if (level.getGameTime() % 20 == 0 && heatex.input.getTankType() != Fluids.NONE) {
-            for (DirPos connection : heatex.getConPos()) heatex.trySubscribe(heatex.input.getTankType(), level, connection);
-        }
+        heatex.setupTanks();
 
         int height = (int) (level.getGameTime() % 10);
         int range = 7;
@@ -83,11 +82,6 @@ public class TileEntityMachineHephaestus extends TileEntityLoadedBase implements
 
         heatex.heatFluid();
 
-        if (heatex.output.getFill() > 0) {
-            for (DirPos connection : heatex.getConPos()) {
-                heatex.tryProvide(heatex.output, level, connection);
-            }
-        }
         heatex.networkPackNT();
     }
 
@@ -198,19 +192,22 @@ public class TileEntityMachineHephaestus extends TileEntityLoadedBase implements
         return total;
     }
 
-    /** 1.7: the eight ring blocks at y and y+11, two out from the core on each horizontal axis. */
-    public DirPos[] getConPos() {
-        BlockPos p = getBlockPos();
-        return new DirPos[]{
-                new DirPos(p.getX() + 2, p.getY(), p.getZ(), Library.POS_X),
-                new DirPos(p.getX() - 2, p.getY(), p.getZ(), Library.NEG_X),
-                new DirPos(p.getX(), p.getY(), p.getZ() + 2, Library.POS_Z),
-                new DirPos(p.getX(), p.getY(), p.getZ() - 2, Library.NEG_Z),
-                new DirPos(p.getX() + 2, p.getY() + 11, p.getZ(), Library.POS_X),
-                new DirPos(p.getX() - 2, p.getY() + 11, p.getZ(), Library.NEG_X),
-                new DirPos(p.getX(), p.getY() + 11, p.getZ() + 2, Library.POS_Z),
-                new DirPos(p.getX(), p.getY() + 11, p.getZ() - 2, Library.NEG_Z)
-        };
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + 1, y, z, Library.POS_X),
+                    PortDef.make(x - 1, y, z, Library.NEG_X),
+                    PortDef.make(x, y, z + 1, Library.POS_Z),
+                    PortDef.make(x, y, z - 1, Library.NEG_Z),
+                    PortDef.make(x + 1, y + 11, z, Library.POS_X),
+                    PortDef.make(x - 1, y + 11, z, Library.NEG_X),
+                    PortDef.make(x, y + 11, z + 1, Library.POS_Z),
+                    PortDef.make(x, y + 11, z - 1, Library.NEG_Z),
+            };
+        }
+        return cachedPorts;
     }
 
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{input, output}; }

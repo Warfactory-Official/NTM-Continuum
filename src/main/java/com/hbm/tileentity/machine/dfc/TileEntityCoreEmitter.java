@@ -38,6 +38,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The emitter: it turns stored HE into a beam of joules and fires it along its facing. The beam walks
@@ -74,16 +76,17 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase
         return "container.dfcEmitter";
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCoreEmitter emitter) {
         emitter.tickServer(level);
     }
 
     protected void tickServer(Level level) {
         BlockPos pos = getBlockPos();
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
-        subscribeToAllAround(tank.getTankType(), this);
+        this.setupAllPorts(getPorts());
+        this.updatePortPIFIFO();
         watts = Mth.clamp(watts, 1, 100);
         long demand = maxPower * watts / 2000;
 

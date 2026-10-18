@@ -1,5 +1,8 @@
 package com.hbm.saveddata.satellites;
 
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
+import net.minecraft.network.chat.Component;
+
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -39,6 +42,11 @@ public class SatelliteRayScan extends Satellite {
     }
 
     @Override public String getType() { return "NB_RAY_SCANNER"; }
+
+    @Override
+    public Component[] getInfo(Level level) {
+        return new Component[] { nameOf(EnumSatType.RAY_SCAN) };
+    }
 
     @Override
     public void onCommandImpl(Level level, String... cmd) {

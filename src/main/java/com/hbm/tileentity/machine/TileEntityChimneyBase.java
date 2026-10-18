@@ -6,7 +6,6 @@ import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.particle.helper.HbmEffectNT;
@@ -17,6 +16,9 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Common smoke reception, capture counters, sync and Tower-particle behavior. */
 public abstract class TileEntityChimneyBase extends TileEntityLoadedBase implements IFluidReceiverMK2 {
@@ -25,19 +27,29 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
     public long sootTick;
     public int onTicks;
 
+    /** Only the port types: the smoke goes straight into the ash counters. */
+    public final FluidTankNTM[] tanks = {
+            new FluidTankNTM(Fluids.SMOKE, 1_000_000),
+            new FluidTankNTM(Fluids.SMOKE_LEADED, 1_000_000),
+            new FluidTankNTM(Fluids.SMOKE_POISON, 1_000_000)};
+
+    protected final ModulePortManFluidAdaptive moduleSmokePorts = new ModulePortManFluidAdaptive(this).setInputTanks(tanks);
+
     protected TileEntityChimneyBase(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityChimneyBase chimney) {
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.flare(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
-        // 1.7: the three smokes at the four connection points, every second (the net keeps a subscriber three)
-        if (level.getGameTime() % 20 == 0) {
-            for (FluidType type : new FluidType[]{
-                    Fluids.SMOKE, Fluids.SMOKE_LEADED, Fluids.SMOKE_POISON}) {
-                for (DirPos port : chimney.getConPos()) chimney.trySubscribe(type, level, port);
-            }
-        }
+    @Override
+    public void setRemoved() {
+        if (level != null) moduleSmokePorts.destroy();
+        super.setRemoved();
+    }
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityChimneyBase chimney) {
+        chimney.moduleSmokePorts.update(chimney.getPorts());
 
         if (chimney.ashTick > 0L || chimney.sootTick > 0L) {
             if (level.getBlockEntity(pos.below()) instanceof TileEntityAshpit ashpit) {
@@ -87,16 +99,6 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
                 worldPosition.getZ() + 0.5D, data);
     }
 
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z, ForgeDirection.EAST),
-                new DirPos(x - 2, y, z, ForgeDirection.WEST),
-                new DirPos(x, y, z + 2, ForgeDirection.SOUTH),
-                new DirPos(x, y, z - 2, ForgeDirection.NORTH)
-        };
-    }
-
     @Override
     public boolean canConnect(FluidType type, ForgeDirection dir) {
         return isSmoke(type) && (dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH
@@ -143,5 +145,4 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
     public void deserialize(RegistryFriendlyByteBuf buf) {
         onTicks = buf.readInt();
     }
-
 }

@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -119,14 +120,13 @@ public class MachineCyclotron extends BlockMultiblockMachine
     }
 
     /**
-     * Twelve perimeter cells, of which the eight either side of each face centre are ports. 1.7 names
-     * them in world axes; the ring is symmetric under a quarter turn, so the facing frame lands them in
-     * the same places.
+     * Twelve perimeter cells, all of them ports. 1.7 names them in world axes; the ring is symmetric under a quarter
+     * turn, so the facing frame lands them in the same places.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        for (int i = -1; i <= 1; i += 2) {
+        for (int i = -1; i <= 1; i++) {
             visitor.cell(core.offset(2, 0, i), MASK_EAST);
             visitor.cell(core.offset(-2, 0, i), MASK_WEST);
             visitor.cell(core.offset(i, 0, 2), MASK_SOUTH);
@@ -144,5 +144,23 @@ public class MachineCyclotron extends BlockMultiblockMachine
             visitor.passiveCell(core.offset(i, 0, 2), MASK_ALL, domains);
             visitor.passiveCell(core.offset(i, 0, -2), MASK_ALL, domains);
         }
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {2, 0, 1, ForgeDirection.EAST.ordinal()},
+                {2, 0, 0, ForgeDirection.EAST.ordinal()},
+                {2, 0, -1, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 1, ForgeDirection.WEST.ordinal()},
+                {-2, 0, 0, ForgeDirection.WEST.ordinal()},
+                {-2, 0, -1, ForgeDirection.WEST.ordinal()},
+                {1, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {0, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, -2, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

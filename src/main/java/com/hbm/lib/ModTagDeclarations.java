@@ -34,7 +34,7 @@ public final class ModTagDeclarations {
                         "minecraft:trapped_chest")
                 .optional("hbm:machine_press", "hbm:machine_chemical_plant", "hbm:machine_chemical_factory",
                         "hbm:machine_purex", "hbm:machine_crystallizer", "hbm:machine_cyclotron", "hbm:machine_epress",
-                        "hbm:machine_diesel", "hbm:machine_turbine", "hbm:machine_industrial_turbine", "hbm:machine_chungus",
+                        "hbm:machine_diesel", "hbm:machine_industrial_turbine", "hbm:machine_chungus",
                         "hbm:machine_rtg_grey", "hbm:crate_iron", "hbm:crate_steel")
                 .register();
         Tags.of("block", "hbm", "fleija_immune")

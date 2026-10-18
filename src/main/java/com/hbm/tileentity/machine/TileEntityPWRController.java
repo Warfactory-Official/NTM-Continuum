@@ -52,6 +52,7 @@ import com.hbm.items.ModPwrItems;
 import com.hbm.items.machine.ItemPWRFuel;
 import com.hbm.items.machine.ItemPWRPrinter;
 import com.hbm.tileentity.ModPwrBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The PWR controller's block entity (1.7 {@code TileEntityPWRController}): the reactor simulation and its
@@ -106,7 +107,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
 
     private @Nullable AudioWrapper audio;
 
-    protected final List<BlockPos> ports = new ArrayList<>();
+    public PortDef[] ports = new PortDef[0];
     protected final List<BlockPos> rods = new ArrayList<>();
 
     public TileEntityPWRController(BlockPos pos, BlockState state) {
@@ -140,7 +141,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
         channelCount = 0;
         heatsinkCount = 0;
         sourceCount = 0;
-        ports.clear();
+        List<PortDef> portList = new ArrayList<>();
         rods.clear();
 
         int connectionsDouble = 0;
@@ -153,7 +154,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
             if (block == channel) channelCount++;
             if (block == heatsink) heatsinkCount++;
             if (block == source) sourceCount++;
-            if (block == port) ports.add(entry.getKey().immutable());
+            if (block == port) portList.add(PortDef.make(entry.getKey().immutable(), ForgeDirection.VALID_DIRECTIONS));
         }
 
         for (Map.Entry<BlockPos, Block> entry : rodMap.entrySet()) {
@@ -182,6 +183,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
             }
         }
 
+        this.ports = portList.toArray(new PortDef[0]);
         connections = connectionsDouble / 2;
         connectionsControlled = connectionsControlledDouble / 2;
         heatsinkCount = Math.min(heatsinkCount, 80);
@@ -209,13 +211,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
         }
 
         if (te.assembled) {
-            for (BlockPos port : te.ports) {
-                for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-                    BlockPos portPos = port.relative(dir.toDirection());
-                    if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, portPos, dir);
-                    te.trySubscribe(te.tanks[0].getTankType(), level, portPos, dir);
-                }
-            }
+            te.setupAllPorts(te.ports);
+            te.updatePortFIFO();
 
             // only perform fission if the area has been loaded for 40 ticks or more
             if (te.unloadDelay <= 0) {
@@ -224,6 +221,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
                 te.hullHeat = 0;
                 te.coreHeat = 0;
             }
+        } else {
+            te.destroyAllPorts();
         }
 
         te.networkPackNT();
@@ -409,8 +408,9 @@ public class TileEntityPWRController extends TileEntityMachineBase
         return this.rodCount + (int) Math.ceil(this.heatsinkCount / 4D);
     }
 
-    /** Slot 2 fluid identifier retypes the cold tank (1.7 {@code tanks[0].setType(2, slots)}). */
-    private void updateTypeFromFluidId() {
+    /** Slot 2 fluid identifier retypes the cold tank (1.7 {@code tanks[0].setType(2, slots)}), never while fuelled. */
+    public void updateTypeFromFluidId() {
+        if (amountLoaded > 0) return;
         ItemStack id = inventory.getStackInSlot(2);
         if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType type = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
@@ -552,12 +552,13 @@ public class TileEntityPWRController extends TileEntityMachineBase
         this.sourceCount = input.getIntOr("sourceCount", 0);
         this.heatsinkCount = input.getIntOr("heatsinkCount", 0);
 
-        ports.clear();
         int portCount = input.getIntOr("portCount", 0);
+        List<PortDef> portList = new ArrayList<>();
         for (int i = 0; i < portCount; i++) {
             int[] port = input.getIntArrayOr("p" + i, null);
-            if (port != null && port.length == 3) ports.add(new BlockPos(port[0], port[1], port[2]));
+            if (port != null && port.length == 3) portList.add(PortDef.make(port[0], port[1], port[2], ForgeDirection.VALID_DIRECTIONS));
         }
+        this.ports = portList.toArray(new PortDef[0]);
 
         rods.clear();
         int rodCount = input.getIntOr("rodCount", 0);
@@ -595,9 +596,9 @@ public class TileEntityPWRController extends TileEntityMachineBase
         output.putInt("sourceCount", sourceCount);
         output.putInt("heatsinkCount", heatsinkCount);
 
-        output.putInt("portCount", ports.size());
-        for (int i = 0; i < ports.size(); i++) {
-            BlockPos pos = ports.get(i);
+        output.putInt("portCount", ports.length);
+        for (int i = 0; i < ports.length; i++) {
+            BlockPos pos = ports[i].portPositions[0];
             output.putIntArray("p" + i, new int[]{pos.getX(), pos.getY(), pos.getZ()});
         }
 
@@ -681,7 +682,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "setrods").equals(name) && params.length > 0) {
             int percent = IRORInteractive.parseInt(params[0], 0, 100);
-            this.rodTarget = percent;
+            // rodTarget is the insertion, the command sets the extraction
+            this.rodTarget = 100 - percent;
             this.markChanged();
             return null;
         }

@@ -1,7 +1,5 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
@@ -9,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** Large deuterium tower variant with the legacy 50,000/5,000 mB tanks and eight ports. */
 public class TileEntityDeuteriumTower extends TileEntityDeuteriumExtractor {
@@ -29,24 +28,19 @@ public class TileEntityDeuteriumTower extends TileEntityDeuteriumExtractor {
     }
 
     @Override
-    public DirPos[] getConPos() {
-        ForgeDirection dir = MachineCore.facing(getBlockState());
-        ForgeDirection rotation = dir.getRotation(ForgeDirection.DOWN);
-        BlockPos pos = getBlockPos();
-        return new DirPos[]{
-                new DirPos(pos.offset(-dir.offsetX * 2, 0, -dir.offsetZ * 2), dir.getOpposite()),
-                new DirPos(pos.offset(-dir.offsetX * 2 + rotation.offsetX, 0,
-                        -dir.offsetZ * 2 + rotation.offsetZ), dir.getOpposite()),
-                new DirPos(pos.offset(dir.offsetX, 0, dir.offsetZ), dir),
-                new DirPos(pos.offset(dir.offsetX + rotation.offsetX, 0,
-                        dir.offsetZ + rotation.offsetZ), dir),
-                new DirPos(pos.offset(-rotation.offsetX, 0, -rotation.offsetZ), rotation.getOpposite()),
-                new DirPos(pos.offset(-dir.offsetX - rotation.offsetX, 0,
-                        -dir.offsetZ - rotation.offsetZ), rotation.getOpposite()),
-                new DirPos(pos.offset(rotation.offsetX * 2, 0, rotation.offsetZ * 2), rotation),
-                new DirPos(pos.offset(-dir.offsetX + rotation.offsetX * 2, 0,
-                        -dir.offsetZ + rotation.offsetZ * 2), rotation)
-        };
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x - dir.offsetX, y, z - dir.offsetZ, dir.getOpposite(), rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ, dir.getOpposite(), rot),
+                    PortDef.make(x, y, z, rot.getOpposite(), dir),
+                    PortDef.make(x + rot.offsetX, y, z + rot.offsetZ, dir, rot),
+            };
+        }
+        return cachedPorts;
     }
 
     @Override

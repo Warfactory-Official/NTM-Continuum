@@ -12,8 +12,8 @@ import static dev.golem.core.dejson.Crafting.smelt;
  * The hbm recipes whose shape carries no decision, declared through Golem Core's {@code dejson}
  * vocabulary instead of written as JSON.
  *
- * <p>This class stands in for {@value #FILES_REPLACED} recipe files: 183 that pack nine of something into
- * a block, 54 that unpack it again, and 121 furnace recipes. Each is a fixed arrangement around two ids
+ * <p>This class stands in for {@value #FILES_REPLACED} recipe files: 192 that pack nine of something into
+ * a block, 62 that unpack it again, and 121 furnace recipes. Each is a fixed arrangement around two ids
  * and a number: a full three-by-three grid of one ingredient, a single shapeless ingredient making nine,
  * two hundred ticks and an experience value.
  *
@@ -29,7 +29,7 @@ public final class ModCraftingRecipes {
     private static final String NS = "hbm";
 
     /** How many recipe files the declarations below stand in for; quoted in this class's own javadoc. */
-    static final int FILES_REPLACED = 358;
+    static final int FILES_REPLACED = 375;
 
     private static boolean declared;
 
@@ -44,6 +44,7 @@ public final class ModCraftingRecipes {
         packing0();
         packing1();
         unpacking();
+        rawNuggets();
         smelting0();
         smelting1();
     }
@@ -66,6 +67,7 @@ public final class ModCraftingRecipes {
         compress(NS, "bedrock_ore_fragment_emerald_compression", TagIds.fragments_emerald, ItemIds.powder_emerald);
         compress(NS, "bedrock_ore_fragment_fluorite_compression", TagIds.fragments_fluorite, ItemIds.fluorite);
         compress(NS, "bedrock_ore_fragment_gold_compression", TagIds.fragments_gold, ItemIds.powder_gold);
+        compress(NS, "bedrock_ore_fragment_ilmenite_compression", "#c:fragments/ilmenite", "hbm:chunk_ore_ilmenite");
         compress(NS, "bedrock_ore_fragment_iron_compression", TagIds.fragments_iron, ItemIds.powder_iron);
         compress(NS, "bedrock_ore_fragment_lanthanium_compression", TagIds.fragments_lanthanium, ItemIds.powder_lanthanium);
         compress(NS, "bedrock_ore_fragment_lead_compression", TagIds.fragments_lead, ItemIds.powder_lead);
@@ -292,6 +294,20 @@ public final class ModCraftingRecipes {
         decompress(NS, "powder_paleogenite_tiny", ItemIds.powder_paleogenite, ItemIds.powder_paleogenite_tiny);
         decompress(NS, "powder_sr90_tiny", ItemIds.powder_sr90, ItemIds.powder_sr90_tiny);
         decompress(NS, "powder_xe135_tiny", ItemIds.powder_xe135, ItemIds.powder_xe135_tiny);
+    }
+
+    /** 1.7 {@code OreDictManager}: every NUGGET autogen material with an ingot gets a 1-to-9 pair with its raw nugget. */
+    private static void rawNuggets() {
+        String[][] pairs = {
+                {"titanium", ItemIds.ingot_titanium}, {"copper", ItemIds.ingot_copper},
+                {"tungsten", ItemIds.ingot_tungsten}, {"aluminium", ItemIds.ingot_aluminium},
+                {"boron", ItemIds.ingot_boron}, {"sodium", "hbm:ingot_raw_sodium"},
+                {"strontium", "hbm:ingot_raw_strontium"}, {"lithium", ItemIds.lithium}};
+        for (String[] pair : pairs) {
+            String nugget = "hbm:nugget_raw_" + pair[0];
+            decompress(NS, "nugget_raw_" + pair[0], pair[1], nugget);
+            compress(NS, "nugget_raw_" + pair[0] + "_to_ingot", nugget, pair[1]);
+        }
     }
 
     private static void smelting0() {

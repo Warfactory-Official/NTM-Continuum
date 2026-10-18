@@ -276,12 +276,12 @@ public final class FluidRecipeTableGameTests {
             oil:hydrogen5@1>oil_ds90,sourgas15
             """);
         EXPECTED.put("liquefaction", """
-            #c:dusts/coal>coaloil100
+            #c:dusts/coal>coaloil250
             #c:dusts/lead>lead100
-            #c:dusts/lignite>coaloil50
+            #c:dusts/lignite>coaloil150
             #c:dusts/sodium>sodium100
-            #c:gems/coal>coaloil100
-            #c:gems/lignite>coaloil50
+            #c:gems/coal>coaloil250
+            #c:gems/lignite>coaloil150
             #c:ingots/lead>lead100
             #c:storage_blocks/lead>lead900
             #hbm:raw_fishes>fishoil100
@@ -293,11 +293,12 @@ public final class FluidRecipeTableGameTests {
             hbm:oil_tar_crude>bitumen75
             hbm:ore_oil_sand>bitumen100
             hbm:plant_flower_cd0>ethanol50
-            hbm:plant_flower_weed>ethanol150
+            hbm:plant_flower_weed>ethanol100
             minecraft:cobblestone>lava250
             minecraft:ender_pearl>enderjuice100
             minecraft:fern>seedslurry100
             minecraft:ice>water1000
+            minecraft:melon_slice>ethanol100
             minecraft:netherrack>lava250
             minecraft:obsidian>lava500
             minecraft:packed_ice>water1000
@@ -379,6 +380,7 @@ public final class FluidRecipeTableGameTests {
             steam500+#c:gems/coalx1>syngas1000+-/100
             syngas2000+#c:dusts/tungstenx1>spentsteam1000+ingot_tungsten_carbidex1/300
             syngas430+->-+solid_fuelx1/60
+            titanium_tetrachloride1000+->chlorine125+ingot_titaniumx5/60
             unsaturateds190+->-+solid_fuelx1/60
             xylene220+->-+solid_fuelx1/60
             """);

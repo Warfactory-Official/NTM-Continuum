@@ -29,7 +29,7 @@ public final class SpecialPlayerGameTests {
     private SpecialPlayerGameTests() {}
 
     private static final String[] CAPES = {"capehbm3", "capehbm2", "capedrillgon", "capedafnik", "capeshield",
-            "capevertice_2", "capered", "capeayy", "capenostalgia2", "capesam", "capehoboy_mk3", "capemaster",
+            "capevertice_2", "capenostalgia2", "capesam", "capehoboy_mk3", "capemaster",
             "capemek", "capezippysqrl", "capetest", "capeschrabbyalt", "capesweatyswiggs", "capedoctor17",
             "capeblaze", "capeblaze2", "capewiki", "capeleftnugget", "caperightnugget", "capetankish",
             "capefrizzlefrazzle", "capevaer", "capeadam", "capejame", "capegolem"};

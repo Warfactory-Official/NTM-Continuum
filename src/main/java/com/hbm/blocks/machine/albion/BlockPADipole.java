@@ -86,4 +86,27 @@ public class BlockPADipole extends BlockMultiblockMachine implements IEnergyConn
                 && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, -1, 0, ForgeDirection.DOWN.ordinal()},
+                {-1, -1, 0, ForgeDirection.DOWN.ordinal()},
+                {0, -1, 1, ForgeDirection.DOWN.ordinal()},
+                {0, -1, -1, ForgeDirection.DOWN.ordinal()},
+                {1, 1, 0, ForgeDirection.UP.ordinal()},
+                {-1, 1, 0, ForgeDirection.UP.ordinal()},
+                {0, 1, 1, ForgeDirection.UP.ordinal()},
+                {0, 1, -1, ForgeDirection.UP.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {0.9, 0.1, -0.4, 0.4, 1.5, 1.5},
+                {0.9, 0.1, -0.4, 0.4, -1.5, -1.5},
+                {0.9, 0.1, 1.5, 1.5, -0.4, 0.4},
+                {0.9, 0.1, -1.5, -1.5, -0.4, 0.4},
+        };
+    }
 }

@@ -83,7 +83,7 @@ public abstract class TileEntityRadioTorchBase extends TileEntityLoadedBase
     public void receiveControl(CompoundTag data) {
         if (data.contains("isPolling")) polling = Tags.getBooleanOr(data, "isPolling", polling);
         if (data.contains("hasMapping")) customMap = Tags.getBooleanOr(data, "hasMapping", customMap);
-        if (data.contains("channel")) channel = limited(Tags.getStringOr(data, "channel", ""), 10);
+        if (data.contains("channel")) channel = limited(Tags.getStringOr(data, "channel", ""), RTTYSystem.MAX_CHAN_LENGTH);
         for (int i = 0; i < MAPPING_SIZE; i++) {
             String key = "mapping" + i;
             if (data.contains(key)) mapping[i] = limited(Tags.getStringOr(data, key, ""), 32);
@@ -123,7 +123,7 @@ public abstract class TileEntityRadioTorchBase extends TileEntityLoadedBase
         polling = buffer.readBoolean();
         customMap = buffer.readBoolean();
         lastState = buffer.readInt();
-        channel = buffer.readUtf(10);
+        channel = buffer.readUtf(RTTYSystem.MAX_CHAN_LENGTH);
         for (int i = 0; i < MAPPING_SIZE; i++) mapping[i] = buffer.readBoolean() ? buffer.readUtf(32) : null;
     }
 

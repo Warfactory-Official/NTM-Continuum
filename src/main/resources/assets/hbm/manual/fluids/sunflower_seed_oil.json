@@ -1,0 +1,23 @@
+{
+	"name": "Sunflower Seed Oil",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		"hbm:sunfloweroil"
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:sunfloweroil"
+		]
+	],
+	"title": {
+		"en_us": "Sunflower Seed Oil",
+		"ru_ru": "Подсолнечное масло"
+	},
+	"content": {
+		"en_us": "Sunflower seed oil can be obtained by [[liquifying|Liquification Machine]] or mixing sunflowers. It is primarily used in the production of [[biofuel|Biofuel]] or [[engine lubricant|Engine Lubricant]] through mixing.",
+		"ru_ru": "Подсолнечное масло можно получить путем [[сжижения|Liquification Machine]] или смешивания подсолнухов. В основном оно используется в производстве [[биотоплива|Biofuel]] или [[моторного масла|Engine Lubricant]] путем смешивания."
+	}
+}

@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.ModCustomMachineBlocks;
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.BlockCustomMachine;
 import com.hbm.config.CustomMachineConfigJSON;
 import com.hbm.config.CustomMachineConfigJSON.MachineConfiguration;
@@ -60,13 +61,54 @@ public final class CustomMachineGameTests {
     }
 
     private static TileEntityCustomMachine placeController(GameTestHelper helper, BlockPos rel) {
+        return placeController(helper, rel, paperPress(helper).unlocalizedName);
+    }
+
+    private static TileEntityCustomMachine placeController(GameTestHelper helper, BlockPos rel, String type) {
         helper.setBlock(rel, ModCustomMachineBlocks.custom_machine.get().defaultBlockState()
                 .setValue(BlockCustomMachine.FACING, Direction.NORTH));
         TileEntityCustomMachine tile = (TileEntityCustomMachine) helper.getLevel().getBlockEntity(helper.absolutePos(rel));
         helper.assertTrue(tile != null, "controller block entity missing");
-        tile.machineType = paperPress(helper).unlocalizedName;
+        tile.machineType = type;
         tile.init();
         return tile;
+    }
+
+    /** The Paper Press structure as a generator with no recipes. */
+    private static String generatorType(GameTestHelper helper) {
+        MachineConfiguration press = paperPress(helper);
+        return CustomMachineConfigJSON.customMachines.computeIfAbsent("gameTestGenerator", name -> {
+            MachineConfiguration conf = new MachineConfiguration();
+            conf.unlocalizedName = name;
+            conf.localizedName = name;
+            conf.recipeKey = name;
+            conf.components = press.components;
+            conf.maxPower = press.maxPower;
+            conf.maxPollutionCap = press.maxPollutionCap;
+            conf.generatorMode = true;
+            return conf;
+        }).unlocalizedName;
+    }
+
+    /** A charged generator's top port, a cable and a consumer's top port: the consumer fills from the generator. */
+    public static void generatorPowersConsumer(GameTestHelper helper) {
+        BlockPos genRel = new BlockPos(2, 2, 2);
+        BlockPos useRel = new BlockPos(6, 2, 2);
+        TileEntityCustomMachine generator = placeController(helper, genRel, generatorType(helper));
+        TileEntityCustomMachine consumer = placeController(helper, useRel);
+        generator.buildStructure();
+        consumer.buildStructure();
+        helper.assertTrue(generator.checkStructure() && consumer.checkStructure(), "structures failed the check");
+        for (int x = 2; x <= 6; x++) helper.setBlock(new BlockPos(x, 4, 2), ModMachineBlocks.red_cable.get());
+        // charged after the first ticks, once both machines connect by their ports and not by their faces
+        helper.runAfterDelay(5, () -> {
+            generator.power = 10_000L;
+            helper.runAfterDelay(40, () -> {
+                helper.assertTrue(consumer.power > 0 && generator.power < 10_000L,
+                        "no power moved: generator " + generator.power + ", consumer " + consumer.power);
+                helper.succeed();
+            });
+        });
     }
 
     /** The structure check fails on an empty site, passes once every component stands, and links the two ports. */

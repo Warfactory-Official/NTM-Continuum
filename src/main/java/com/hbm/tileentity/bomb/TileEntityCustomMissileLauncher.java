@@ -12,7 +12,6 @@ import com.hbm.items.ModFuelItems;
 import com.hbm.items.weapon.ItemCustomMissile;
 import com.hbm.items.weapon.ItemCustomMissilePart;
 import com.hbm.items.weapon.ItemCustomMissilePart.PartSize;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.particle.helper.HbmEffectNT;
@@ -36,6 +35,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The shared body of 1.7's {@code TileEntityCompactLauncher} and {@code TileEntityLaunchTable}. Upstream wrote the
@@ -112,14 +112,8 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCustomMissileLauncher te) {
         te.updateTypes();
 
-        // 1.7 updateConnections, every second: power and both fuel tanks at each connection position
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos port : te.connectionPositions()) {
-                te.trySubscribe(level, port);
-                te.trySubscribe(te.tanks[0].getTankType(), level, port);
-                te.trySubscribe(te.tanks[1].getTankType(), level, port);
-            }
-        }
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
 
         MachineFluidContainerIO.load(te.tanks[0], te.inventory, 2, 6);
         MachineFluidContainerIO.load(te.tanks[1], te.inventory, 3, 7);
@@ -147,8 +141,8 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
         }
     }
 
-    /** 1.7 {@code updateConnections}' positions (a cable at one the table does not open never connects). */
-    public abstract DirPos[] connectionPositions();
+    protected PortDef[] cachedPorts;
+    public abstract PortDef[] getPorts();
 
     public boolean canLaunch() {
         return power >= maxPower * 0.75 && isMissileValid() && (!requiresDesignatorToLaunch() || hasDesignator())

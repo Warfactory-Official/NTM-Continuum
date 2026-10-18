@@ -26,4 +26,12 @@ public class MachineFurnaceSteel extends BlockMultiblockMachine implements World
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityFurnaceSteel furnace ? furnace : null;
     }
+    
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {0, 0, 0.5, -0.3, 0.4, -0.4, 1},
+        };
     }
+}

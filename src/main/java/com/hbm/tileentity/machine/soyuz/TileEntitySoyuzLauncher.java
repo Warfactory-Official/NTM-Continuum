@@ -1,13 +1,11 @@
 package com.hbm.tileentity.machine.soyuz;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.client.ClientEffects;
 import com.hbm.entity.ModNtmEntities;
-import com.hbm.entity.missile.EntitySoyuz;
+import com.hbm.entity.missile.EntityRocketSoyuz;
 import com.hbm.inventory.container.ContainerSoyuzLauncher;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModItems;
@@ -22,6 +20,7 @@ import com.hbm.sound.ModPowerGenSounds;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.machine.TileEntityLaunchpadSoyuz;
 import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -47,14 +46,15 @@ import java.util.List;
  * 2 satellite, 3 orbital module, 4/5 kerosene canister in/out, 6/7 oxygen canister in/out, 8 battery, 9..26 the
  * cargo - two 128,000 mB tanks and a mode byte: SATELLITE (0) puts the item in slot 2 into orbit on its frequency,
  * CARGO (1) flies the eighteen cargo stacks to the designator's target in a lander capsule. Thirty seconds of
- * countdown once started; the rocket leaves when the clock hits zero.
+ * countdown once started; the rocket leaves when the clock hits zero. Superseded by the Soyuz launch pad, it joins
+ * no power or fluid network: canisters and batteries only.
  *
  * <p>1.7's {@code canLaunch} tests {@code hasRocket()} twice and never {@code hasOxy()}, so a launch needs
  * kerosene but not oxygen, while liftoff still drains both tanks. Clamped at zero here; 1.7's {@code FluidTank.setFill}
  * does not clamp, so a 1.7 launch short of oxygen left a negative oxygen fill. Nothing may be piped into the inventory (1.7 {@code isItemValidForSlot} is the base's false).
  */
 public class TileEntitySoyuzLauncher extends TileEntityMachineBase
-        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2 {
+        implements MenuProvider, IEnergyReceiverMK2 {
 
     public static final long maxPower = 1_000_000;
     /** Thirty seconds of hold-down, in ticks. */
@@ -96,13 +96,6 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
     }
 
     protected void tickServer(Level level) {
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos port : getConPos()) {
-                this.trySubscribe(level, port);
-                this.trySubscribe(tanks[0].getTankType(), level, port);
-                this.trySubscribe(tanks[1].getTankType(), level, port);
-            }
-        }
         MachineFluidContainerIO.load(tanks[0], inventory, 4, 5);
         MachineFluidContainerIO.load(tanks[1], inventory, 6, 7);
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, maxPower);
@@ -148,7 +141,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
             launcher.countdown--;
         }
 
-        List<EntitySoyuz> entities = level.getEntitiesOfClass(EntitySoyuz.class, new AABB(
+        List<EntityRocketSoyuz> entities = level.getEntitiesOfClass(EntityRocketSoyuz.class, new AABB(
                 pos.getX() - 0.5, pos.getY(), pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 10, pos.getZ() + 1.5));
 
         if (!entities.isEmpty()) {
@@ -197,7 +190,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
         int req = this.getFuelRequired();
         int pow = this.getPowerRequired();
 
-        EntitySoyuz soyuz = new EntitySoyuz(ModNtmEntities.SOYUZ.get(), level);
+        EntityRocketSoyuz soyuz = new EntityRocketSoyuz(ModNtmEntities.SOYUZ.get(), level);
         soyuz.setSkin(Math.max(0, rocketType()));
         soyuz.mode = this.mode;
         soyuz.snapTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0F, 0F);
@@ -301,14 +294,13 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
     }
 
     /**
-     * 0: orbital module not required, 1: required but not present, 2: present. Gerald and the legacy lunar miner
-     * chip need the lander ({@code missile_soyuz_lander}) in slot 3, which the launch then consumes.
+     * 0: orbital module not required, 1: required but not present, 2: present. Gerald and the lunar mining ship
+     * need the lander ({@code missile_soyuz_lander}) in slot 3, which the launch then consumes.
      */
     public int orbital() {
         if (mode == 1) return 0;
         ItemStack sat = inventory.getStackInSlot(SLOT_SATELLITE);
-        if (sat.is(ModSatelliteItems.sat_gerald.get())
-                || sat.is(ModSatelliteItems.sat_lunar_miner.get())) {
+        if (TileEntityLaunchpadSoyuz.needsOrbiter(sat)) {
             if (inventory.getStackInSlot(SLOT_ORBITAL).is(ModItems.missile_soyuz_lander.get())) return 2;
             return 1;
         }
@@ -344,14 +336,6 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
     @Override public void setPower(long i) { this.power = i; }
     @Override public long getMaxPower() { return maxPower; }
     @Override public boolean canConnect(ForgeDirection dir) { return dir != ForgeDirection.UNKNOWN; }
-
-    @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN && dir != ForgeDirection.UP && dir != ForgeDirection.DOWN;
-    }
-
-    @Override public FluidTankNTM[] getReceivingTanks() { return tanks; }
-    @Override public FluidTankNTM[] getAllTanks() { return tanks; }
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
@@ -21,6 +23,24 @@ import net.minecraft.world.phys.Vec3;
 
 /** The Gen-3 .44 Magnum family, ported from upstream's {@code XFactory44}. */
 public final class XFactory44 {
+
+    public static final ConfigWrapper<Float> GUN_HENRY_DAMAGE = new ConfigWrapper<>(10F);
+    public static final ConfigWrapper<Float> GUN_LINCOLN_DAMAGE = new ConfigWrapper<>(20F);
+    public static final ConfigWrapper<Float> GUN_HEAVY_REVOLVER_DAMAGE = new ConfigWrapper<>(15F);
+    public static final ConfigWrapper<Float> GUN_LILMAC_DAMAGE = new ConfigWrapper<>(30F);
+    public static final ConfigWrapper<Float> GUN_PROTEGE_DAMAGE = new ConfigWrapper<>(30F);
+    public static final ConfigWrapper<Float> GUN_HANGMAN_DAMAGE = new ConfigWrapper<>(25F);
+    public static final ConfigWrapper<Float> GUN_HANGMAN_SMACK_DAMAGE = new ConfigWrapper<>(10F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_HENRY_DAMAGE", GUN_HENRY_DAMAGE);
+        ServerConfig.configMap.put("GUN_LINCOLN_DAMAGE", GUN_LINCOLN_DAMAGE);
+        ServerConfig.configMap.put("GUN_HEAVY_REVOLVER_DAMAGE", GUN_HEAVY_REVOLVER_DAMAGE);
+        ServerConfig.configMap.put("GUN_LILMAC_DAMAGE", GUN_LILMAC_DAMAGE);
+        ServerConfig.configMap.put("GUN_PROTEGE_DAMAGE", GUN_PROTEGE_DAMAGE);
+        ServerConfig.configMap.put("GUN_HANGMAN_DAMAGE", GUN_HANGMAN_DAMAGE);
+        ServerConfig.configMap.put("GUN_HANGMAN_SMACK_DAMAGE", GUN_HANGMAN_SMACK_DAMAGE);
+    }
 
     private XFactory44() {}
 

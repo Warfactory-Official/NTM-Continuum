@@ -40,8 +40,9 @@ public class TileEntityRadioTorchLogic extends TileEntityLoadedBase
     @Override public void serverTick() {
         if (level == null) return;
         if (lastUpdate == Long.MIN_VALUE) lastUpdate = level.getGameTime();
-        if (channel == null || channel.isEmpty()) { networkPackNT(); return; }
-        RTTYSystem.RTTYChannel received = RTTYSystem.listen(level, channel);
+        boolean tuned = channel != null && !channel.isEmpty();
+        if (!tuned && !polling) { networkPackNT(); return; }
+        RTTYSystem.RTTYChannel received = tuned ? RTTYSystem.listen(level, channel) : null;
         if (received != null && (polling || (received.timeStamp > lastUpdate - 1 && received.timeStamp != -1))) {
             String message = String.valueOf(received.signal);
             lastUpdate = level.getGameTime();
@@ -52,15 +53,20 @@ public class TileEntityRadioTorchLogic extends TileEntityLoadedBase
             } else {
                 for (int i = 0; i < MAPPING_SIZE; i++) if (!mapping[i].isEmpty() && parseSignal(message, i)) { nextState = i; break; }
             }
-            if (nextState != lastState) {
-                lastState = nextState;
-                BlockState state = level.getBlockState(worldPosition);
-                if (state.hasProperty(RadioTorchBase.LIT)) level.setBlock(worldPosition,
-                        state.setValue(RadioTorchBase.LIT, nextState > 0), 3);
-                setChanged(); dataChanged();
-            }
+            applyState(nextState);
+        } else if (polling) {
+            applyState(0);
         }
         networkPackNT();
+    }
+
+    private void applyState(int nextState) {
+        if (nextState == lastState) return;
+        lastState = nextState;
+        BlockState state = level.getBlockState(worldPosition);
+        if (state.hasProperty(RadioTorchBase.LIT)) level.setBlock(worldPosition,
+                state.setValue(RadioTorchBase.LIT, nextState > 0), 3);
+        setChanged(); dataChanged();
     }
 
     public boolean parseSignal(String signal, int index) {
@@ -97,7 +103,7 @@ public class TileEntityRadioTorchLogic extends TileEntityLoadedBase
     @Override public void receiveControl(CompoundTag data) {
         if (data.contains("polling")) polling = Tags.getBooleanOr(data, "polling", polling);
         if (data.contains("descending")) descending = Tags.getBooleanOr(data, "descending", descending);
-        if (data.contains("channel")) channel = limit(Tags.getStringOr(data, "channel", ""), 10);
+        if (data.contains("channel")) channel = limit(Tags.getStringOr(data, "channel", ""), RTTYSystem.MAX_CHAN_LENGTH);
         for (int i = 0; i < MAPPING_SIZE; i++) {
             if (data.contains("mapping" + i)) mapping[i] = limit(Tags.getStringOr(data, "mapping" + i, ""), 15);
             if (data.contains("conditions" + i)) conditions[i] = Math.floorMod(Tags.getIntOr(data, "conditions" + i, 0), 10);
@@ -111,7 +117,7 @@ public class TileEntityRadioTorchLogic extends TileEntityLoadedBase
         buffer.writeByte(lastState); for (String value : mapping) buffer.writeUtf(value); for (int value : conditions) buffer.writeInt(value);
     }
     @Override public void deserialize(RegistryFriendlyByteBuf buffer) {
-        super.deserialize(buffer); polling = buffer.readBoolean(); channel = buffer.readUtf(10); descending = buffer.readBoolean();
+        super.deserialize(buffer); polling = buffer.readBoolean(); channel = buffer.readUtf(RTTYSystem.MAX_CHAN_LENGTH); descending = buffer.readBoolean();
         lastState = buffer.readByte(); for (int i = 0; i < MAPPING_SIZE; i++) mapping[i] = buffer.readUtf(15);
         for (int i = 0; i < MAPPING_SIZE; i++) conditions[i] = buffer.readInt();
     }

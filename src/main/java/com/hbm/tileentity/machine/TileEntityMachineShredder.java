@@ -6,7 +6,6 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.inventory.container.ContainerMachineShredder;
 import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.items.machine.ItemBlades;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -28,6 +27,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Shredder: grinds items into dusts (and anything unrecognised into scrap; see {@link ShredderRecipes}).
@@ -86,7 +87,9 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineShredder te) {
-        for (DirPos con : te.getConPos()) te.trySubscribe(level, con);
+        te.setupPowerPorts(te.getPorts());
+        te.updateAllPorts();
+        te.receivePower();
         te.gearLeft = te.gearState(SLOT_BLADE_LEFT);
         te.gearRight = te.gearState(SLOT_BLADE_RIGHT);
 
@@ -250,18 +253,8 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
         return slot == SLOT_BATTERY && Library.isEmptyBattery(stack);
     }
 
-    /** Power connection points: all six faces. */
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 1, y, z, Library.POS_X),
-                new DirPos(x - 1, y, z, Library.NEG_X),
-                new DirPos(x, y, z + 1, Library.POS_Z),
-                new DirPos(x, y, z - 1, Library.NEG_Z),
-                new DirPos(x, y + 1, z, Library.POS_Y),
-                new DirPos(x, y - 1, z, Library.NEG_Y),
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     // IEnergyReceiverMK2
 

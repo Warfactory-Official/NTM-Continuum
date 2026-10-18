@@ -77,6 +77,10 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements ICont
                 for (EntityMovingItem item : grabbable(inputSide)) {
                     if (item.isRemoved()) continue;
                     ItemStack stack = item.getItemStack();
+                    if (stack.isEmpty()) {
+                        item.discard();
+                        continue;
+                    }
                     boolean match = this.matchesFilter(stack);
                     if (this.isWhitelist && !match || !this.isWhitelist && match) continue;
 
@@ -108,7 +112,12 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements ICont
                      * to fuck with the AABB further, since that's just a major headache for no practical benefit
                      */
                     for (EntityMovingItem item : grabbable(inputSide)) {
+                        if (item.isRemoved()) continue;
                         ItemStack stack = item.getItemStack();
+                        if (stack.isEmpty()) {
+                            item.discard();
+                            continue;
+                        }
                         boolean match = this.matchesFilter(stack);
                         if (this.isWhitelist && !match || !this.isWhitelist && match) continue;
 

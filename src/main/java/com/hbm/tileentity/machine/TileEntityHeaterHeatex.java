@@ -30,6 +30,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The legacy heat-exchanging heater. Hot fluid is cooled into its trait-declared output while its
@@ -62,20 +63,16 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeaterHeatex heater) {
+        heater.setupFluidPorts(heater.getPorts());
+        heater.updatePortFIFO();
+
         heater.updateTypeFromFluidId();
         heater.setupTanks();
-        for (DirPos connection : heater.getConPos()) heater.trySubscribe(heater.tanks[0].getTankType(), level, connection);
 
         // The old machine decays its stored TU before adding the current cooling operation's heat.
         heater.heatEnergy *= 0.999;
         heater.tryConvert(level);
         heater.networkPackNT();
-
-        for (DirPos connection : heater.getConPos()) {
-            if (heater.tanks[1].getFill() > 0) {
-                heater.tryProvide(heater.tanks[1], level, connection);
-            }
-        }
     }
 
     /** Slot 0 changes the input type in place; the identifier is not consumed or moved. */
@@ -103,7 +100,6 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
         tanks[1].setTankType(Fluids.NONE);
     }
 
-
     /** Performs the exact old min(input, output, throttle) operation calculation. */
     protected void tryConvert(Level level) {
         FT_Coolable trait = tanks[0].getTankType().getTrait(FT_Coolable.class);
@@ -123,24 +119,25 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
         setChanged();
     }
 
-    /** The four old horizontal ports: two facing forward and two facing backward. */
-    public DirPos[] getConPos() {
-        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
-        ForgeDirection facing = ForgeDirection.getOrientation(meta);
-        ForgeDirection lateral = facing.getRotation(ForgeDirection.UP);
-        BlockPos pos = getBlockPos();
+    protected PortDef[] cachedPorts;
 
-        return new DirPos[]{
-                new DirPos(pos.getX() + facing.offsetX * 2 + lateral.offsetX, pos.getY(),
-                        pos.getZ() + facing.offsetZ * 2 + lateral.offsetZ, facing),
-                new DirPos(pos.getX() + facing.offsetX * 2 - lateral.offsetX, pos.getY(),
-                        pos.getZ() + facing.offsetZ * 2 - lateral.offsetZ, facing),
-                new DirPos(pos.getX() - facing.offsetX * 2 + lateral.offsetX, pos.getY(),
-                        pos.getZ() - facing.offsetZ * 2 + lateral.offsetZ, facing.getOpposite()),
-                new DirPos(pos.getX() - facing.offsetX * 2 - lateral.offsetX, pos.getY(),
-                        pos.getZ() - facing.offsetZ * 2 - lateral.offsetZ, facing.getOpposite())
-        };
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+            ForgeDirection dir = ForgeDirection.getOrientation(meta);
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX + rot.offsetX, y, z + dir.offsetZ + rot.offsetZ, dir),
+                    PortDef.make(x + dir.offsetX - rot.offsetX, y, z + dir.offsetZ - rot.offsetZ, dir),
+                    PortDef.make(x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX - rot.offsetX, y, z - dir.offsetZ - rot.offsetZ, dir.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     @Override
     public int getHeatStored() {

@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -215,5 +216,37 @@ public class MachineFusionTorus extends BlockMultiblockMachine
             {3.5, 1.5, 1, -1, 7.5, 7.5},
             {3.5, 1.5, 1, -1, -7.5, -7.5},
         };
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 4, 0, ForgeDirection.UP.ordinal()},
+                {0, 0, 0, ForgeDirection.DOWN.ordinal()},
+                {2, 0, 6, ForgeDirection.DOWN.ordinal()},
+                {2, 4, 6, ForgeDirection.UP.ordinal()},
+                {2, 0, -6, ForgeDirection.DOWN.ordinal()},
+                {2, 4, -6, ForgeDirection.UP.ordinal()},
+                {-2, 0, 6, ForgeDirection.DOWN.ordinal()},
+                {-2, 4, 6, ForgeDirection.UP.ordinal()},
+                {-2, 0, -6, ForgeDirection.DOWN.ordinal()},
+                {-2, 4, -6, ForgeDirection.UP.ordinal()},
+                {6, 0, 0, ForgeDirection.DOWN.ordinal()},
+                {6, 4, 0, ForgeDirection.UP.ordinal()},
+                {6, 0, 2, ForgeDirection.DOWN.ordinal()},
+                {6, 4, 2, ForgeDirection.UP.ordinal()},
+                {6, 0, -2, ForgeDirection.DOWN.ordinal()},
+                {6, 4, -2, ForgeDirection.UP.ordinal()},
+                {-6, 0, 0, ForgeDirection.DOWN.ordinal()},
+                {-6, 4, 0, ForgeDirection.UP.ordinal()},
+                {-6, 0, 2, ForgeDirection.DOWN.ordinal()},
+                {-6, 4, 2, ForgeDirection.UP.ordinal()},
+                {-6, 0, -2, ForgeDirection.DOWN.ordinal()},
+                {-6, 4, -2, ForgeDirection.UP.ordinal()},
+                {0, 0, 6, ForgeDirection.DOWN.ordinal()},
+                {0, 4, 6, ForgeDirection.UP.ordinal()},
+                {0, 0, -6, ForgeDirection.DOWN.ordinal()},
+                {0, 4, -6, ForgeDirection.UP.ordinal()},
+        }, dir);
     }
 }

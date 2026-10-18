@@ -15,6 +15,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * What the two big guns share: a queue of fire missions, and a line-of-sight test that answers over the
@@ -33,10 +35,23 @@ public abstract class TileEntityTurretBaseArtillery extends TileEntityTurretBase
         super(type, pos, state);
     }
 
+    /** Shells carry their own damage. */
+    @Override
+    public float getBaseDamage() {
+        return 0;
+    }
+
     /** 1.12.2's artillery renderers extend the raw TESR, so they never draw the pad-edge plugs. */
     @Override
     protected boolean hasConnectorPlugs() {
         return false;
+    }
+
+    // port: 1.7 asks the ring about world-constant faces; these follow getConPos's derived faces
+    @Override
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) cachedPorts = TilePortShapes.fromConnections(getConPos());
+        return cachedPorts;
     }
 
     /**
@@ -121,13 +136,13 @@ public abstract class TileEntityTurretBaseArtillery extends TileEntityTurretBase
 
     @Override
     public String[] getFunctionInfo() {
-        return new String[]{PREFIX_FUNCTION + "setActive" + NAME_SEPARATOR + "active (0 or 1)",
-                PREFIX_FUNCTION + "targetPlayers" + NAME_SEPARATOR + "enabled (0 or 1)",
-                PREFIX_FUNCTION + "targetAnimals" + NAME_SEPARATOR + "enabled (0 or 1)",
-                PREFIX_FUNCTION + "targetMobs" + NAME_SEPARATOR + "enabled (0 or 1)",
-                PREFIX_FUNCTION + "targetMachines" + NAME_SEPARATOR + "enabled (0 or 1)",
-                PREFIX_FUNCTION + "addWhitelist" + NAME_SEPARATOR + "name",
-                PREFIX_FUNCTION + "removeWhitelist" + NAME_SEPARATOR + "name",
+        return new String[]{PREFIX_FUNCTION + "setactive" + NAME_SEPARATOR + "active (0 or 1)",
+                PREFIX_FUNCTION + "targetplayers" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetanimals" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetmobs" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetmachines" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "addwhitelist" + NAME_SEPARATOR + "name",
+                PREFIX_FUNCTION + "removewhitelist" + NAME_SEPARATOR + "name",
                 PREFIX_FUNCTION + "enqueue" + NAME_SEPARATOR + "x" + PARAM_SEPARATOR + "y"
                         + PARAM_SEPARATOR + "z"};
     }
@@ -178,5 +193,4 @@ public abstract class TileEntityTurretBaseArtillery extends TileEntityTurretBase
         int height = level.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(e.getX()), Mth.floor(e.getZ()));
         return height < e.getY() + e.getBbHeight();
     }
-
 }

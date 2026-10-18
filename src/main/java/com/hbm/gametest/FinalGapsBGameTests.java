@@ -39,7 +39,8 @@ import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.tileentity.machine.storage.TileEntityCrate;
-import com.hbm.tileentity.network.TileEntityPipeAnchor;
+import com.hbm.tileentity.network.TileEntityFluidPipeAnchor;
+import com.hbm.tileentity.network.TileEntityPipelineBase;
 import com.hbm.world.gen.nbt.LegacyStructureTiles;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -270,7 +271,7 @@ public final class FinalGapsBGameTests {
         TileEntityMachineFluidTank.serverTick(level, tank.getBlockPos(), tank.getBlockState(), tank);
         helper.assertTrue(tank.tank.getFill() == 100_000 - 256_000 / 10000, "a liquid leaks max/10000 a tick, fill "
                 + tank.tank.getFill());
-        helper.assertTrue(tank.getSendingTanks().length == 0 && tank.getReceivingTanks().length == 0,
+        helper.assertTrue(tank.getProviderSpeed(Fluids.GASOLINE, 0) == 0 && tank.getReceiverSpeed(Fluids.GASOLINE, 0) == 0,
                 "a torn tank neither sends nor receives");
         helper.assertTrue(tank.getRepairMaterials().size() == 1 && tank.getRepairMaterials().get(0).stacksize == 6,
                 "repair is six steel plates");
@@ -321,7 +322,7 @@ public final class FinalGapsBGameTests {
     /** The /ntmserver keys at work where 1.7 read them. */
     private static void serverKeys(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        boolean trails = ServerConfig.TAINT_TRAILS.get();
+        boolean trails = ServerConfig.ENTITY_TAINT_TRAILS.get();
         boolean keep = ServerConfig.CRATE_KEEP_CONTENTS.get();
         boolean mku = ServerConfig.ENABLE_MKU.get();
         int tickrate = ServerConfig.ITEM_HAZARD_DROP_TICKRATE.get();
@@ -340,12 +341,12 @@ public final class FinalGapsBGameTests {
             ServerConfig.ENABLE_MKU.set(true);
             helper.assertTrue(HbmLivingProps.getContagion(zombie) == 1000, "MKU with ENABLE_MKU");
 
-            // TAINT_TRAILS: the tainted leave taint in the block below
+            // ENTITY_TAINT_TRAILS: the tainted leave taint in the block below
             for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) {
                 helper.setBlock(new BlockPos(4 + dx, 1, 4 + dz), Blocks.STONE.defaultBlockState());
             }
             var cow = helper.spawn(EntityType.COW, new BlockPos(4, 2, 4));
-            ServerConfig.TAINT_TRAILS.set(true);
+            ServerConfig.ENTITY_TAINT_TRAILS.set(true);
             Effects.addRegistered(cow, ModEffects.TAINT.get(), 40, 0);
             // the batch's explosion tests run beside this one and fling the cow off its stone: hold it in place, and
             // record how far it was moved, so the check below is about the trail and not about the neighbours.
@@ -382,9 +383,9 @@ public final class FinalGapsBGameTests {
                     if (forcedByTest) Compat.updateChunkForced(level, cowChunkX, cowChunkZ, false);
                     try {
                         helper.assertTrue(tainted,
-                                "a tainted mob on stone leaves taint with TAINT_TRAILS (cow at " + cow.blockPosition() + ", effect "
+                                "a tainted mob on stone leaves taint with ENTITY_TAINT_TRAILS (cow at " + cow.blockPosition() + ", effect "
                                         + Effects.hasRegistered(cow, ModEffects.TAINT.get()) + ", pushed up to "
-                                        + pushed[0] + " blocks, key " + ServerConfig.TAINT_TRAILS.get() + ", below "
+                                        + pushed[0] + " blocks, key " + ServerConfig.ENTITY_TAINT_TRAILS.get() + ", below "
                                         + level.getBlockState(cowAt.below()) + ", cow ticks " + cow.tickCount + ", effect left "
                                         + (Effects.getRegistered(cow, ModEffects.TAINT.get()) == null ? -1
                                         : Effects.getRegistered(cow, ModEffects.TAINT.get()).getDuration())
@@ -409,7 +410,7 @@ public final class FinalGapsBGameTests {
                                 "contents spill and the crate drops empty");
                     } finally {
                         // the keys are global: put them back whether this passed or failed, so no later test inherits them
-                        ServerConfig.TAINT_TRAILS.set(trails);
+                        ServerConfig.ENTITY_TAINT_TRAILS.set(trails);
                         ServerConfig.CRATE_KEEP_CONTENTS.set(keep);
                         ServerConfig.ENABLE_MKU.set(mku);
                         ServerConfig.ITEM_HAZARD_DROP_TICKRATE.set(tickrate);
@@ -418,7 +419,7 @@ public final class FinalGapsBGameTests {
                 });
             }
         } catch (RuntimeException | AssertionError e) {
-            ServerConfig.TAINT_TRAILS.set(trails);
+            ServerConfig.ENTITY_TAINT_TRAILS.set(trails);
             ServerConfig.CRATE_KEEP_CONTENTS.set(keep);
             ServerConfig.ENABLE_MKU.set(mku);
             ServerConfig.ITEM_HAZARD_DROP_TICKRATE.set(tickrate);
@@ -558,14 +559,14 @@ public final class FinalGapsBGameTests {
         helper.setBlock(a, anchorBlock.defaultBlockState());
         helper.setBlock(b, anchorBlock.defaultBlockState());
         helper.setBlock(far, anchorBlock.defaultBlockState());
-        TileEntityPipeAnchor first = GameTestHelpers.blockEntity(helper, a, TileEntityPipeAnchor.class);
-        TileEntityPipeAnchor second = GameTestHelpers.blockEntity(helper, b, TileEntityPipeAnchor.class);
-        TileEntityPipeAnchor third = GameTestHelpers.blockEntity(helper, far, TileEntityPipeAnchor.class);
+        TileEntityFluidPipeAnchor first = GameTestHelpers.blockEntity(helper, a, TileEntityFluidPipeAnchor.class);
+        TileEntityFluidPipeAnchor second = GameTestHelpers.blockEntity(helper, b, TileEntityFluidPipeAnchor.class);
+        TileEntityFluidPipeAnchor third = GameTestHelpers.blockEntity(helper, far, TileEntityFluidPipeAnchor.class);
         first.setFluidType(Fluids.WATER);
 
-        helper.assertTrue(TileEntityPipeAnchor.canConnect(first, first) == 2, "an anchor cannot link to itself");
-        helper.assertTrue(TileEntityPipeAnchor.canConnect(first, third) == 3, "15.6 m is too far for 10 m pipes");
-        helper.assertTrue(TileEntityPipeAnchor.canConnect(first, second) == 0 && second.getFluidType() == Fluids.WATER,
+        helper.assertTrue(TileEntityPipelineBase.canConnect(first, first) == 2, "an anchor cannot link to itself");
+        helper.assertTrue(TileEntityPipelineBase.canConnect(first, third) == 3, "15.6 m is too far for 10 m pipes");
+        helper.assertTrue(TileEntityPipelineBase.canConnect(first, second) == 0 && second.getFluidType() == Fluids.WATER,
                 "7 m links, and the fluid-less anchor takes the other's fluid");
         first.addConnection(second.getBlockPos());
         second.addConnection(first.getBlockPos());
@@ -574,7 +575,7 @@ public final class FinalGapsBGameTests {
         helper.assertTrue(netA != null && netA == graph.networkAt(second.getBlockPos().asLong()),
                 "the two anchors are one fluid network over the pipe");
         third.setFluidType(Fluids.OIL);
-        helper.assertTrue(TileEntityPipeAnchor.canConnect(second, third) == 4 || TileEntityPipeAnchor.canConnect(second, third) == 3,
+        helper.assertTrue(TileEntityPipelineBase.canConnect(second, third) == 4 || TileEntityPipelineBase.canConnect(second, third) == 3,
                 "different fluids do not link");
 
         level.removeBlock(helper.absolutePos(b), false);

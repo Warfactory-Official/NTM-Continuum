@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  * which counts them so one lever produces one launch rather than nine.
  *
  * <p><b>Cables and ducts attach at the four corner cells only</b>, one block further out: the eight
- * positions in {@link com.hbm.tileentity.bomb.TileEntityLaunchPad#getConPos()}. As upstream, only the corner cells
+ * connections of {@link TileEntityLaunchPad#getPorts()}. As upstream, only the corner cells
  * forward power, fluid and inventory to the core. The port has no proxy block entities: a cable asks the
  * neighbouring <em>block</em> whether that face is a port, so the pad answers through
  * {@link IEnergyConnectorBlock}/{@link IFluidConnectorBlockMK2}.

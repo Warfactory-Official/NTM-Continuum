@@ -101,16 +101,17 @@ public final class ModDamageTypes {
                 type("cloud").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("pink_cloud").message("pc").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
 
-                type("bullet_electric").projectile(),
+                // 1.7 BulletConfig.getDamage marks only physical rounds as projectiles; energy rounds stay ENERGY
+                type("bullet_electric"),
                 type("bullet_explosive").projectile().tags(IS_EXPLOSION),
                 type("bullet_fire").projectile().tags(IS_FIRE),
-                type("bullet_laser").projectile(),
-                type("bullet_microwave").projectile(),
+                type("bullet_laser"),
+                type("bullet_microwave"),
                 type("bullet_other").projectile(),
                 type("bullet_physical").projectile(),
                 type("bullet_piercing").message("bullet_physical").projectile().tags(BYPASSES_ARMOR),
-                type("bullet_plasma").projectile(),
-                type("bullet_subatomic").projectile(),
+                type("bullet_plasma"),
+                type("bullet_subatomic"),
                 type("rubble").projectile(),
                 type("shrapnel").projectile());
     }

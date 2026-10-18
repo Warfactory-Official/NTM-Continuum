@@ -9,20 +9,26 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModRBMKBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** ReaSim outlet: exposes the steam extracted from adjacent RBMK columns. */
 public class BlockEntityRBMKOutlet extends TileEntityMachineBase implements IFluidProviderMK2, IFluidStandardSenderMK2, IRBMKTicking {
     public final FluidTankNTM steam = new FluidTankNTM(Fluids.SUPERHOTSTEAM, 32_000);
     public BlockEntityRBMKOutlet(BlockPos pos, BlockState state) { super(ModRBMKBlockEntities.RBMK_OUTLET.get(), pos, state, 0); }
     @Override public String getDefaultName() { return "container.rbmk_steam_outlet"; }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     @Override public void tickServer() {
+        this.setupAllPorts(getPorts());
+        this.updatePortPIFIFO();
         if (RBMKDials.getReasimBoilers(level)) for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos adjacent = worldPosition.relative(direction);
             if (!(level.getBlockState(adjacent).getBlock() instanceof RBMKBase)) continue;
@@ -31,7 +37,6 @@ public class BlockEntityRBMKOutlet extends TileEntityMachineBase implements IFlu
             int moved = Math.min(steam.getMaxFill() - steam.getFill(), column.reasimSteam);
             if (moved > 0) { column.reasimSteam -= moved; steam.setFill(steam.getFill() + moved); column.markChanged(); markChanged(); }
         }
-        if (steam.getFill() > 0) for (Direction direction : Direction.values()) tryProvide(steam, level, worldPosition.relative(direction), ForgeDirection.getOrientation(direction));
     }
     @Override public long getFluidAvailable(FluidType type, int pressure) { return type == steam.getTankType() && pressure == steam.getPressure() ? steam.getFill() : 0; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{steam}; }

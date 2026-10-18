@@ -27,12 +27,12 @@ import net.minecraft.world.phys.HitResult;
 abstract class WeaponModBayonet extends WeaponModBase {
     WeaponModBayonet(int id) { super(id, "BAYONET"); }
 
-    private static void stab(Player player, LivingEntity entity) {
+    private void stab(Player player, LivingEntity entity) {
         HitResult hit = EntityDamageUtil.getMouseOver(player, 3D, 0.3D);
         if (hit instanceof EntityHitResult entityHit) {
             Entity victim = entityHit.getEntity();
             if (entity.level() instanceof ServerLevel level)
-                Compat.hurt(victim, level, player.damageSources().playerAttack(player), 15F);
+                Compat.hurt(victim, level, player.damageSources().playerAttack(player), stabDamage());
             victim.setDeltaMovement(victim.getDeltaMovement().multiply(2D, 1D, 2D));
             entity.level().playSound(null, victim.getX(), victim.getY(), victim.getZ(), ModSounds.GUN_STAB.get(),
                     SoundSource.PLAYERS, 1F, 0.9F + entity.getRandom().nextFloat() * 0.2F);
@@ -44,6 +44,7 @@ abstract class WeaponModBayonet extends WeaponModBase {
         }
     }
 
+    abstract float stabDamage();
     abstract BiFunction<ItemStack, GunAnimation, BusAnimation> inspectionAnimation();
     abstract BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> normalOrchestra();
 

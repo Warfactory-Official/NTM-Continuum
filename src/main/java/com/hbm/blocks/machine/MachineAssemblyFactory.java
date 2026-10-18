@@ -144,4 +144,30 @@ public final class MachineAssemblyFactory extends BlockMultiblockMachine
         return Math.abs(MultiblockMaskTable.localX(dx, 0, dz, facing)) == 1
                 && Math.abs(MultiblockMaskTable.localZ(dx, 0, dz, facing)) == 2;
     }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {-2, 0, -2, ForgeDirection.WEST.ordinal()},
+                {-2, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {0, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {1, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {2, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {2, 0, -2, ForgeDirection.EAST.ordinal()},
+                {-2, 0, -1, ForgeDirection.WEST.ordinal()},
+                {2, 0, -1, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 0, ForgeDirection.WEST.ordinal()},
+                {2, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 1, ForgeDirection.WEST.ordinal()},
+                {2, 0, 1, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 2, ForgeDirection.WEST.ordinal()},
+                {-2, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {2, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {2, 0, 2, ForgeDirection.EAST.ordinal()},
+        }, dir);
+    }
 }

@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyConnectorMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
@@ -12,6 +11,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** The small and polonium RTGs share the old one-cell generator implementation. */
 public class TileEntityMachineMiniRTG extends TileEntityLoadedBase
@@ -36,10 +37,13 @@ public class TileEntityMachineMiniRTG extends TileEntityLoadedBase
         return isPolonium() ? 50000L : 10000L;
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineMiniRTG generator) {
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            generator.tryProvide(level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
-        }
+        generator.setupPowerPorts(generator.getPorts());
+        generator.updateAllPorts();
+        generator.providePower();
         generator.power = Math.min(generator.power + generator.getGeneration(), generator.getMaxPower());
         generator.setChanged();
         generator.networkPackNT();

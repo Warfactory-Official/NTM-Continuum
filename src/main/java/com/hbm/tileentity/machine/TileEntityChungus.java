@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Random;
 import com.hbm.tileentity.ModPowerGenBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The Leviathan steam turbine, a 1:1 port of 1.7 {@code TileEntityChungus} over {@code TileEntityTurbineBase}.
@@ -65,6 +66,10 @@ public class TileEntityChungus extends TileEntityLoadedBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityChungus turbine) {
+        turbine.setupPowerPorts(turbine.getPowerPorts());
+        turbine.setupFluidPorts(turbine.getFluidPorts());
+        turbine.updatePortPOFIFO();
+
         turbine.powerBuffer = 0;
         turbine.operational = false;
         turbine.syncedInputFill = turbine.tanks[0].getFill();
@@ -91,13 +96,6 @@ public class TileEntityChungus extends TileEntityLoadedBase
         turbine.onServerTick();
 
         if (!valid) turbine.tanks[1].setTankType(Fluids.NONE);
-        for (DirPos connection : turbine.getPowerPos()) {
-            turbine.tryProvide(level, connection.getPos(), connection.getDir());
-        }
-        for (DirPos connection : turbine.getConPos()) {
-            turbine.tryProvide(turbine.tanks[1], level, connection);
-            turbine.trySubscribe(turbine.tanks[0].getTankType(), level, connection); // 1.7 TileEntityTurbineBase
-        }
         turbine.networkPackNT();
     }
 
@@ -212,23 +210,35 @@ public class TileEntityChungus extends TileEntityLoadedBase
         return dir != ForgeDirection.UP && dir != ForgeDirection.DOWN && dir != ForgeDirection.UNKNOWN;
     }
 
-    public DirPos[] getConPos() {
-        ForgeDirection dir = getFacing();
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        BlockPos p = getBlockPos();
-        return new DirPos[]{
-                new DirPos(p.getX() + dir.offsetX * 5, p.getY() + 2, p.getZ() + dir.offsetZ * 5, dir),
-                new DirPos(p.getX() + rot.offsetX * 3, p.getY(), p.getZ() + rot.offsetZ * 3, rot),
-                new DirPos(p.getX() - rot.offsetX * 3, p.getY(), p.getZ() - rot.offsetZ * 3, rot.getOpposite())
-        };
+    protected PortDef[] cachedFluidPorts;
+    public PortDef[] getFluidPorts() {
+        if (cachedFluidPorts == null) {
+            ForgeDirection dir = getFacing();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedFluidPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 4, y + 2, z + dir.offsetZ * 4, dir),
+                    PortDef.make(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot),
+                    PortDef.make(x - rot.offsetX * 2, y, z - rot.offsetZ * 2, rot.getOpposite()),
+            };
+        }
+        return cachedFluidPorts;
     }
 
-    public DirPos[] getPowerPos() {
-        ForgeDirection dir = getFacing();
-        BlockPos p = getBlockPos();
-        return new DirPos[]{new DirPos(p.getX() - dir.offsetX * 11, p.getY(), p.getZ() - dir.offsetZ * 11,
-                dir.getOpposite())};
+    public DirPos[] getConPos() { return PortDef.connections(getFluidPorts()); }
+
+    protected PortDef[] cachedPowerPorts;
+    public PortDef[] getPowerPorts() {
+        if (cachedPowerPorts == null) {
+            ForgeDirection dir = getFacing();
+            cachedPowerPorts = new PortDef[] {
+                    PortDef.make(worldPosition.getX() - dir.offsetX * 10, worldPosition.getY(), worldPosition.getZ() - dir.offsetZ * 10, dir.getOpposite()),
+            };
+        }
+        return cachedPowerPorts;
     }
+
+    public DirPos[] getPowerPos() { return PortDef.connections(getPowerPorts()); }
 
     @Override public long getPower() { return powerBuffer; }
     @Override public void setPower(long power) { powerBuffer = power; }

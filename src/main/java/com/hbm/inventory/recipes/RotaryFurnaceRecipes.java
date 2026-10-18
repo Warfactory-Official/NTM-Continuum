@@ -2,6 +2,7 @@ package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.FluidStack;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
@@ -80,11 +81,14 @@ public final class RotaryFurnaceRecipes {
      * The original matcher, verbatim in shape: every non-empty input must be consumed by exactly one
      * ingredient (counts included) and every ingredient must be claimed, in any slot order.
      */
-    public static @Nullable RotaryFurnaceRecipe getRecipe(ItemStack... inputs) {
+    public static @Nullable RotaryFurnaceRecipe getRecipe(FluidType fluid, ItemStack... inputs) {
         register();
 
         outer:
         for (RotaryFurnaceRecipe recipe : recipes) {
+            // never try to match if a fluid is required and our tank doesn't match it
+            if (recipe.fluid != null && recipe.fluid.type != fluid) continue;
+
             List<AStack> recipeList = new ArrayList<>(List.of(recipe.ingredients));
 
             for (ItemStack inputStack : inputs) {

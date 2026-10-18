@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.items.ItemEnums.EnumCasingType;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModItems;
@@ -18,6 +20,26 @@ import java.util.function.BiConsumer;
 
 /** The source copy of the 7.62 mm and Lacunae rounds, adapted to flat ammo/Core registration. */
 public final class XFactory762mm {
+
+    public static final ConfigWrapper<Float> GUN_CARBINE_DAMAGE = new ConfigWrapper<>(15F);
+    public static final ConfigWrapper<Float> GUN_CARBINE_BAYONET_DAMAGE = new ConfigWrapper<>(15F);
+    public static final ConfigWrapper<Float> GUN_MINIGUN_DAMAGE = new ConfigWrapper<>(6F);
+    public static final ConfigWrapper<Float> GUN_LACUNAE_DAMAGE = new ConfigWrapper<>(12F);
+    public static final ConfigWrapper<Float> GUN_MINIGUN_DUAL_LEFT_DAMAGE = new ConfigWrapper<>(6F);
+    public static final ConfigWrapper<Float> GUN_MINIGUN_DUAL_RIGHT_DAMAGE = new ConfigWrapper<>(6F);
+    public static final ConfigWrapper<Float> GUN_SOUTH_STAR_DAMAGE = new ConfigWrapper<>(30F);
+    public static final ConfigWrapper<Float> GUN_SOUTH_STAR_BAYONET_DAMAGE = new ConfigWrapper<>(15F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_CARBINE_DAMAGE", GUN_CARBINE_DAMAGE);
+        ServerConfig.configMap.put("GUN_CARBINE_BAYONET_DAMAGE", GUN_CARBINE_BAYONET_DAMAGE);
+        ServerConfig.configMap.put("GUN_MINIGUN_DAMAGE", GUN_MINIGUN_DAMAGE);
+        ServerConfig.configMap.put("GUN_LACUNAE_DAMAGE", GUN_LACUNAE_DAMAGE);
+        ServerConfig.configMap.put("GUN_MINIGUN_DUAL_LEFT_DAMAGE", GUN_MINIGUN_DUAL_LEFT_DAMAGE);
+        ServerConfig.configMap.put("GUN_MINIGUN_DUAL_RIGHT_DAMAGE", GUN_MINIGUN_DUAL_RIGHT_DAMAGE);
+        ServerConfig.configMap.put("GUN_SOUTH_STAR_DAMAGE", GUN_SOUTH_STAR_DAMAGE);
+        ServerConfig.configMap.put("GUN_SOUTH_STAR_BAYONET_DAMAGE", GUN_SOUTH_STAR_BAYONET_DAMAGE);
+    }
 
     public static BulletConfig r762_sp;
     public static BulletConfig r762_fmj;

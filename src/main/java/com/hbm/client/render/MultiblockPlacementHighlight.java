@@ -30,7 +30,8 @@ import org.jspecify.annotations.Nullable;
  * 1.7 {@code BlockDummyable#drawPlacementHighlight}, called from {@code ModEventHandlerRenderer#onDrawHighlight}:
  * while the main hand holds a multiblock's item and the crosshair is on a block, the footprint it would occupy is
  * outlined (only the outer edges of the union of its {@link BlockMultiblockCore#getAllDimensions} boxes), pulsing
- * green if it can be placed there and red if not, plus any {@link BlockMultiblockCore#getAABBExtras} boxes in blue.
+ * green if it can be placed there and red if not, plus any {@link BlockMultiblockCore#getAABBExtras} boxes (blue unless
+ * coloured) and a yellow square on each {@link BlockMultiblockCore#getAllPorts} face.
  * Vanilla's own block outline is suppressed for as long as the item is held, as 1.7 cancelled the event.
  *
  * <p>Lines are 2 px wide ({@code glLineWidth(2)}), full-bright and untextured. 1.7 also turned depth writes off;
@@ -128,6 +129,7 @@ public final class MultiblockPlacementHighlight {
         int color = (int) (255 * (sine * 0.25 + 0.75));
         int footprintColor = canPlace ? 0xFF000000 | color << 8 : 0xFF000000 | color << 16;
         int extraColor = 0xFF000000 | color;
+        int portColor = 0xFF000000 | color << 16 | color << 8;
 
         // Every cell of every box; the set answers the neighbour tests that decide which edges are outer.
         List<BlockPos> blocks = new ArrayList<>();
@@ -152,6 +154,10 @@ public final class MultiblockPlacementHighlight {
 
         ForgeDirection fdFinal = fd, lateralFinal = lateral; // the lambda below needs effectively final copies
         double[][] extras = block.getAABBExtras();
+        int[][] ports = block.getAllPorts(fd);
+        int portX = originX - fd.offsetX * o;
+        int portY = originY;
+        int portZ = originZ - fd.offsetZ * o;
         double cX = originX - dX + 0.5;
         double cY = originY - dY;
         double cZ = originZ - dZ + 0.5;
@@ -212,7 +218,7 @@ public final class MultiblockPlacementHighlight {
                 }
             }
 
-            // "boo-yeah": the extra boxes, in blue.
+            // "boo-yeah": the extra boxes, in blue, a heat port's orange (1) or their own RGB.
             for (double[] extra : extras) {
                 double upr = extra[0];
                 double lwr = extra[1];
@@ -227,7 +233,8 @@ public final class MultiblockPlacementHighlight {
                 float y1 = (float) (cY + upr);
                 float z0 = (float) (cZ + fwd * fdFinal.offsetZ + lft * lateralFinal.offsetZ);
                 float z1 = (float) (cZ + bwd * fdFinal.offsetZ + rgt * lateralFinal.offsetZ);
-                int c = extraColor;
+                int c = extra.length <= 6 ? extraColor
+                        : extra[6] == 1 ? 0xFFFFA500 : 0xFF000000 | (int) Math.round(extra[6]);
 
                 line(pose, buffer, x0, y0, z0, x0, y0, z1, c);
                 line(pose, buffer, x1, y0, z0, x1, y0, z1, c);
@@ -244,7 +251,41 @@ public final class MultiblockPlacementHighlight {
                 line(pose, buffer, x0, y0, z1, x0, y1, z1, c);
                 line(pose, buffer, x1, y0, z1, x1, y1, z1, c);
             }
+
+            // 1.7's port faces: a 0.6 square on the face each port opens to, pulsing yellow.
+            for (int[] port : ports) {
+                float jX = (float) (portX + port[0] - dX);
+                float jY = (float) (portY + port[1] - dY);
+                float jZ = (float) (portZ + port[2] - dZ);
+                ForgeDirection dir = ForgeDirection.getOrientation(port[3]);
+                if (dir == ForgeDirection.UP || dir == ForgeDirection.DOWN) {
+                    float y = jY + (dir.offsetY > 0 ? 1 : 0);
+                    square(pose, buffer, jX + 0.5F, y, jZ + 0.5F, Direction.Axis.Y, portColor);
+                } else if (dir == ForgeDirection.EAST || dir == ForgeDirection.WEST) {
+                    float x = jX + (dir.offsetX > 0 ? 1 : 0);
+                    square(pose, buffer, x, jY + 0.5F, jZ + 0.5F, Direction.Axis.X, portColor);
+                } else {
+                    float z = jZ + (dir.offsetZ > 0 ? 1 : 0);
+                    square(pose, buffer, jX + 0.5F, jY + 0.5F, z, Direction.Axis.Z, portColor);
+                }
+            }
         });
+    }
+
+    /** The outline of a 0.6-wide square centred on {@code (x, y, z)}, flat across {@code axis}. */
+    private static void square(PoseStack.Pose pose, VertexConsumer buffer, float x, float y, float z,
+                               Direction.Axis axis, int color) {
+        float s = 0.3F;
+        float[][] corners = switch (axis) {
+            case Y -> new float[][] {{x - s, y, z - s}, {x + s, y, z - s}, {x + s, y, z + s}, {x - s, y, z + s}};
+            case X -> new float[][] {{x, y - s, z - s}, {x, y + s, z - s}, {x, y + s, z + s}, {x, y - s, z + s}};
+            case Z -> new float[][] {{x - s, y - s, z}, {x + s, y - s, z}, {x + s, y + s, z}, {x - s, y + s, z}};
+        };
+        for (int i = 0; i < 4; i++) {
+            float[] a = corners[i];
+            float[] b = corners[(i + 1) % 4];
+            line(pose, buffer, a[0], a[1], a[2], b[0], b[1], b[2], color);
+        }
     }
 
     /** One GL_LINES segment. A zero-length one (a flat extra box) drew nothing in 1.7 and has no direction here. */

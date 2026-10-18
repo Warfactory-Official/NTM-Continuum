@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockMaskTable;
@@ -41,10 +42,9 @@ public class MachineBlastFurnace extends BlockMultiblockMachine implements IFlui
     }
 
     /**
-     * Three of the four ground neighbours are ports, and 1.7 names them in <b>world</b> axes -- POS_X,
-     * NEG_X, POS_Z -- while the two stack ports rotate with the machine. The set is not symmetric (there
-     * is no north port), so the ground course cannot be baked in the facing frame; {@link #maskAt} gives
-     * it back the world directions.
+     * The four ground neighbours are ports named in <b>world</b> axes, while the two stack ports rotate with the
+     * machine, so the ground course cannot be baked in the facing frame; {@link #maskAt} gives it back the world
+     * directions.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
@@ -52,7 +52,7 @@ public class MachineBlastFurnace extends BlockMultiblockMachine implements IFlui
         visitor.cell(core.offset(1, 0, 0), MASK_EAST);
         visitor.cell(core.offset(-1, 0, 0), MASK_WEST);
         visitor.cell(core.offset(0, 0, 1), MASK_SOUTH);
-        visitor.cell(core.relative(facing), MASK_NONE);
+        visitor.cell(core.offset(0, 0, -1), MASK_NORTH);
         visitor.cell(core.relative(facing).above(3), MASK_SOUTH);
         visitor.cell(core.relative(facing).above(5), MASK_SOUTH);
         visitor.cell(core.above(6), MASK_UP);
@@ -67,6 +67,7 @@ public class MachineBlastFurnace extends BlockMultiblockMachine implements IFlui
         if (dz == 0 && dx == 1) return worldFace(Direction.EAST, facing);
         if (dz == 0 && dx == -1) return worldFace(Direction.WEST, facing);
         if (dx == 0 && dz == 1) return worldFace(Direction.SOUTH, facing);
+        if (dx == 0 && dz == -1) return worldFace(Direction.NORTH, facing);
         return MASK_NONE;
     }
 
@@ -85,5 +86,18 @@ public class MachineBlastFurnace extends BlockMultiblockMachine implements IFlui
         visitor.passiveCell(core.relative(facing).above(3), MASK_ALL, domains);
         visitor.passiveCell(core.relative(facing).above(5), MASK_ALL, domains);
         visitor.passiveCell(core.above(6), MASK_ALL, domains);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {0, 3, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 5, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 6, 0, ForgeDirection.UP.ordinal()},
+        }, dir);
     }
 }

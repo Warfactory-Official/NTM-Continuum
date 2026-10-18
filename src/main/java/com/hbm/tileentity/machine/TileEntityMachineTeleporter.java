@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.IRelocatable;
 import com.hbm.tileentity.ModRadarUtilityBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -25,6 +24,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * 1.7 {@code TileEntityMachineTeleporter}: takes power from all six sides and, once it has an exit, sends every
@@ -47,7 +48,6 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements
         setChanged();
     }
 
-
     public long power = 0;
     public int targetX = -1;
     public int targetY = -1;
@@ -60,10 +60,13 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase implements
         super(ModRadarUtilityBlockEntities.TELEPORTER.get(), pos, state);
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTeleporter tele) {
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            tele.trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
+        tele.setupPowerPorts(tele.getPorts());
+        tele.updateAllPorts();
+        tele.receivePower();
         if (tele.targetY != -1) {
             List<Entity> entities = level.getEntities((Entity) null, new AABB(pos.getX() + 0.25, pos.getY(),
                     pos.getZ() + 0.25, pos.getX() + 0.75, pos.getY() + 2, pos.getZ() + 0.75));

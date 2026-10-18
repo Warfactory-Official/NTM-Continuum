@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.inventory.recipes.FusionRecipes;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
 import dev.golem.core.data.Tags;
@@ -43,6 +44,7 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.MachineAudio;
 import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The fusion torus is a tokamak that burns a fluid fuel cycle into plasma energy.
@@ -66,7 +68,7 @@ import net.minecraft.sounds.SoundSource;
  * hum (no positional looped-audio facade).
  */
 public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuProvider, IControlReceiver, IRORValueProvider,
-        WorldlyContainer {
+        IRORInteractive, WorldlyContainer {
 
     public static final int SLOTS = 3;
     /** Slot 0 battery, slot 1 blueprint, slot 2 product. */
@@ -130,24 +132,15 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionTorus te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPIFIFO();
+
         for (int i = 0; i < 4; i++) {
             FusionLink.claim(level, te, te.nodePos(ForgeDirection.getOrientation(i + 2)),
                     MachineCaps.PLASMA_OUT | MachineCaps.KLYSTRON_IN);
         }
 
         te.updateCooling();
-
-        for (DirPos port : te.getConPos()) {
-            if (level.getGameTime() % 20 == 0) {
-                te.trySubscribe(level, port);
-                te.trySubscribe(te.coolantTanks[0].getTankType(), level, port);
-                if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, port);
-                if (te.tanks[1].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[1].getTankType(), level, port);
-                if (te.tanks[2].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[2].getTankType(), level, port);
-            }
-            if (te.coolantTanks[1].getFill() > 0) te.tryProvide(te.coolantTanks[1], level, port);
-            if (te.tanks[3].getFill() > 0) te.tryProvide(te.tanks[3], level, port);
-        }
 
         te.power = Library.chargeTEFromItems(te.inventory, SLOT_BATTERY, te.power, te.getMaxPower());
 
@@ -278,31 +271,43 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         super.setRemoved();
     }
 
-    /**
-     * Where pipes attach: <b>vertically</b>, under the bottom ring and over the top one.
-     *
-     * <p>The reactor's mask reaches a full seven blocks on both horizontal axes, so a sideways port would
-     * put the pipe inside the machine's own mass. Upstream routes every connection up or down for that
-     * reason, and the ports sit above/below the promoted cells at &plusmn;6 plus the centre column.
-     */
-    public List<DirPos> getConPos() {
-        List<DirPos> ports = new ArrayList<>();
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-
-        // The centre column, through the core itself at the bottom and the crown cell at the top.
-        ports.add(new DirPos(x, y - 1, z, ForgeDirection.DOWN));
-        ports.add(new DirPos(x, y + 5, z, ForgeDirection.UP));
-
-        for (int off : new int[]{0, 2, -2}) {
-            for (int side : new int[]{6, -6}) {
-                ports.add(new DirPos(x + side, y - 1, z + off, ForgeDirection.DOWN));
-                ports.add(new DirPos(x + side, y + 5, z + off, ForgeDirection.UP));
-                ports.add(new DirPos(x + off, y - 1, z + side, ForgeDirection.DOWN));
-                ports.add(new DirPos(x + off, y + 5, z + side, ForgeDirection.UP));
-            }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x, y + 0, z, Library.NEG_Y),
+                    PortDef.make(x, y + 4, z, Library.POS_Y),
+                    PortDef.make(x + 6, y + 0, z, Library.NEG_Y),
+                    PortDef.make(x + 6, y + 4, z, Library.POS_Y),
+                    PortDef.make(x + 6, y + 0, z + 2, Library.NEG_Y),
+                    PortDef.make(x + 6, y + 4, z + 2, Library.POS_Y),
+                    PortDef.make(x + 6, y + 0, z - 2, Library.NEG_Y),
+                    PortDef.make(x + 6, y + 4, z - 2, Library.POS_Y),
+                    PortDef.make(x - 6, y + 0, z, Library.NEG_Y),
+                    PortDef.make(x - 6, y + 4, z, Library.POS_Y),
+                    PortDef.make(x - 6, y + 0, z + 2, Library.NEG_Y),
+                    PortDef.make(x - 6, y + 4, z + 2, Library.POS_Y),
+                    PortDef.make(x - 6, y + 0, z - 2, Library.NEG_Y),
+                    PortDef.make(x - 6, y + 4, z - 2, Library.POS_Y),
+                    PortDef.make(x, y + 0, z + 6, Library.NEG_Y),
+                    PortDef.make(x, y + 4, z + 6, Library.POS_Y),
+                    PortDef.make(x + 2, y + 0, z + 6, Library.NEG_Y),
+                    PortDef.make(x + 2, y + 4, z + 6, Library.POS_Y),
+                    PortDef.make(x - 2, y + 0, z + 6, Library.NEG_Y),
+                    PortDef.make(x - 2, y + 4, z + 6, Library.POS_Y),
+                    PortDef.make(x, y + 0, z - 6, Library.NEG_Y),
+                    PortDef.make(x, y + 4, z - 6, Library.POS_Y),
+                    PortDef.make(x + 2, y + 0, z - 6, Library.NEG_Y),
+                    PortDef.make(x + 2, y + 4, z - 6, Library.POS_Y),
+                    PortDef.make(x - 2, y + 0, z - 6, Library.NEG_Y),
+                    PortDef.make(x - 2, y + 4, z - 6, Library.POS_Y),
+            };
         }
-        return ports;
+        return cachedPorts;
     }
+
+    public List<DirPos> getConPos() { return List.of(PortDef.connections(getPorts())); }
 
     @Override public boolean hasPermission(Player player) {
         return player.containerMenu instanceof ContainerFusionTorus menu
@@ -384,13 +389,28 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
 
     @Override
     public String[] getFunctionInfo() {
-        return new String[]{PREFIX_VALUE + "plasma", PREFIX_VALUE + "consumption"};
+        return new String[]{PREFIX_VALUE + "plasma", PREFIX_VALUE + "consumption", PREFIX_VALUE + "progress",
+                PREFIX_VALUE + "recipe", PREFIX_VALUE + "active", PREFIX_VALUE + "temp",
+                PREFIX_FUNCTION + "setrecipe" + NAME_SEPARATOR + "name"};
     }
 
     @Override
     public String provideRORValue(String name) {
         if ((PREFIX_VALUE + "plasma").equals(name)) return "" + plasmaEnergy;
         if ((PREFIX_VALUE + "consumption").equals(name)) return "" + (int) (fuelConsumption * 100);
+        if ((PREFIX_VALUE + "progress").equals(name)) return "" + (int) Math.round(fusionModule.progress * 100);
+        if ((PREFIX_VALUE + "recipe").equals(name)) return fusionModule.recipe;
+        if ((PREFIX_VALUE + "active").equals(name)) return "" + (didProcess ? 1 : 0);
+        if ((PREFIX_VALUE + "temp").equals(name)) return "" + (int) temperature;
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setrecipe").equals(name) && params.length == 1) {
+            fusionModule.setRecipe(params[0], false);
+            markChanged();
+        }
         return null;
     }
 

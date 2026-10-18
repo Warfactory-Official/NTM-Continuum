@@ -15,13 +15,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** ReaSim inlet: transfers its complete water buffer to adjacent RBMK columns. */
 public class BlockEntityRBMKInlet extends TileEntityMachineBase implements IFluidReceiverMK2, IFluidStandardReceiverMK2, IRBMKTicking {
     public final FluidTankNTM water = new FluidTankNTM(Fluids.WATER, 32_000);
     public BlockEntityRBMKInlet(BlockPos pos, BlockState state) { super(ModRBMKBlockEntities.RBMK_INLET.get(), pos, state, 0); }
     @Override public String getDefaultName() { return "container.rbmk_steam_inlet"; }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     @Override public void tickServer() {
+        this.setupFluidPorts(getPorts());
+        this.updatePortFIFO();
         if (!RBMKDials.getReasimBoilers(level)) return;
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos adjacent = worldPosition.relative(direction);

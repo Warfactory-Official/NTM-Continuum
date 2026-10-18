@@ -32,7 +32,7 @@ import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
-import com.hbm.tileentity.network.TileEntityPipeAnchor;
+import com.hbm.tileentity.network.TileEntityFluidPipeAnchor;
 import com.hbm.util.EntityDamageUtil;
 import dev.golem.core.Ids;
 import dev.golem.core.harness.HarnessQueryRegistry;
@@ -217,7 +217,7 @@ public final class GapsBHarnessQueries {
                 json.addProperty("done", done != null && done);
             }
             case "anchor" -> {
-                if (level.getBlockEntity(pos) instanceof TileEntityPipeAnchor anchor) {
+                if (level.getBlockEntity(pos) instanceof TileEntityFluidPipeAnchor anchor) {
                     JsonArray links = new JsonArray();
                     for (BlockPos l : anchor.getConnected()) links.add(l.getX() + "," + l.getY() + "," + l.getZ());
                     json.add("links", links);
@@ -343,7 +343,7 @@ public final class GapsBHarnessQueries {
             }
             case "config" -> {
                 json.addProperty("hazardTickRate", RadiationConfig.itemHazardDropTickRate);
-                json.addProperty("taintTrails", ServerConfig.TAINT_TRAILS.get());
+                json.addProperty("taintTrails", ServerConfig.ENTITY_TAINT_TRAILS.get());
                 json.addProperty("keepContents", ServerConfig.CRATE_KEEP_CONTENTS.get());
                 json.addProperty("openHeld", ServerConfig.CRATE_OPEN_HELD.get());
                 json.addProperty("mku", ServerConfig.ENABLE_MKU.get());
@@ -465,7 +465,7 @@ public final class GapsBHarnessQueries {
                 }
             }
             case "anchorFluid" -> {
-                if (level.getBlockEntity(pos) instanceof TileEntityPipeAnchor anchor) {
+                if (level.getBlockEntity(pos) instanceof TileEntityFluidPipeAnchor anchor) {
                     anchor.setFluidType(Fluids.fromName(p.get("fluid").getAsString()));
                     json.addProperty("fluid", anchor.getFluidType().getName());
                 }

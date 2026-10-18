@@ -60,20 +60,15 @@ public class MachineLargeTurbine extends BlockMultiblockMachine
                 && IEnergyConnectorBlock.isPort(turbine.getPowerPos(), pos, dir);
     }
 
-    /**
-     * The rear anchor takes power and the other three carry steam. 1.7 states those two surfaces at
-     * separate call sites, so folding them into one mask would open a cable at a steam port and a duct at
-     * the power one; the roles keep them apart.
-     */
+    /** The three steam ports carry power too; 1.7 keeps the rear anchor cell but gives it no port. */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
 
         Direction rot = facing.getClockWise();
-        visitor.cell(core.relative(facing), MASK_SOUTH, ROLE_FLUID);
-        visitor.cell(core.relative(facing, -3), MASK_NORTH, ROLE_POWER);
-        visitor.cell(core.relative(rot), MASK_WEST, ROLE_FLUID);
-        visitor.cell(core.relative(rot, -1), MASK_EAST, ROLE_FLUID);
+        visitor.cell(core.relative(facing), MASK_SOUTH);
+        visitor.cell(core.relative(rot), MASK_WEST);
+        visitor.cell(core.relative(rot, -1), MASK_EAST);
     }
 
     @Override

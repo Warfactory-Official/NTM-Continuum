@@ -26,6 +26,7 @@ public final class SatelliteSource extends DataMapSource<String> {
         put("hbm:satellite_relay", "relay");
         put("hbm:satellite_detector", "detector");
         put("hbm:satellite_ray_scan", "ray_scan");
+        put("hbm:satellite_science", "science");
         put("hbm:sat_gerald", "horizons");
     }
 }

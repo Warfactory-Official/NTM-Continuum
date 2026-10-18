@@ -26,6 +26,7 @@ import net.minecraft.world.phys.AABB;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The ICF laser controller's block entity (1.7 {@code TileEntityICFController}). An assembled array buffers HE
@@ -68,7 +69,7 @@ public class TileEntityICFController extends TileEntityLoadedBase implements IEn
         }
     };
 
-    protected final List<BlockPos> ports = new ArrayList<>();
+    public PortDef[] ports = new PortDef[0];
 
     public boolean assembled;
 
@@ -137,21 +138,17 @@ public class TileEntityICFController extends TileEntityLoadedBase implements IEn
             }
         }
 
-        // 1.7 appends without clearing, so a re-assembled array lists its ports again; only the save/load path
-        // below clears. The list is informational here (the energy graph finds the port cells itself).
-        this.ports.addAll(ports);
+        List<PortDef> portList = new ArrayList<>();
+        for (BlockPos port : ports) portList.add(PortDef.make(port, ForgeDirection.VALID_DIRECTIONS));
+        this.ports = portList.toArray(new PortDef[0]);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityICFController te) {
         te.networkPackNT();
 
         if (te.assembled) {
-            // 1.7: each port's neighbours; the port cells front the controller (TileEntityBlockICF)
-            for (BlockPos port : te.ports) {
-                for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-                    if (te.getMaxPower() > 0) te.trySubscribe(level, port.getX() + dir.offsetX, port.getY() + dir.offsetY, port.getZ() + dir.offsetZ, dir);
-                }
-            }
+            te.setupAllPorts(te.ports);
+            te.updatePortPIFIFO();
             if (te.power > 0) {
                 ForgeDirection dir = te.facing();
 
@@ -196,6 +193,7 @@ public class TileEntityICFController extends TileEntityLoadedBase implements IEn
                 te.laserLength = 0;
             }
         } else {
+            te.destroyAllPorts();
             te.laserLength = 0;
         }
     }
@@ -243,12 +241,13 @@ public class TileEntityICFController extends TileEntityLoadedBase implements IEn
         this.capacitorCount = input.getIntOr("capacitorCount", 0);
         this.turbochargerCount = input.getIntOr("turbochargerCount", 0);
 
-        ports.clear();
         int portCount = input.getIntOr("portCount", 0);
+        List<PortDef> portList = new ArrayList<>();
         for (int i = 0; i < portCount; i++) {
             int[] port = input.getIntArrayOr("p" + i, null);
-            if (port != null && port.length == 3) ports.add(new BlockPos(port[0], port[1], port[2]));
+            if (port != null && port.length == 3) portList.add(PortDef.make(port[0], port[1], port[2], ForgeDirection.VALID_DIRECTIONS));
         }
+        this.ports = portList.toArray(new PortDef[0]);
     }
 
     @Override
@@ -263,9 +262,9 @@ public class TileEntityICFController extends TileEntityLoadedBase implements IEn
         output.putInt("capacitorCount", capacitorCount);
         output.putInt("turbochargerCount", turbochargerCount);
 
-        output.putInt("portCount", ports.size());
-        for (int i = 0; i < ports.size(); i++) {
-            BlockPos pos = ports.get(i);
+        output.putInt("portCount", ports.length);
+        for (int i = 0; i < ports.length; i++) {
+            BlockPos pos = ports[i].portPositions[0];
             output.putIntArray("p" + i, new int[]{pos.getX(), pos.getY(), pos.getZ()});
         }
     }

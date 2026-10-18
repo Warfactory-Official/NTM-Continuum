@@ -15,7 +15,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachinePolluting;
@@ -37,6 +36,8 @@ import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.MachineAudio;
 import com.hbm.sound.ModSounds;
 import net.minecraft.sounds.SoundSource;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * Diesel Generator, a straight port of 1.7.10's {@code TileEntityMachineDiesel} (1.7). Burns any
@@ -96,21 +97,26 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         return powerCap <= 0 ? 0 : (power * i) / powerCap;
     }
 
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineDiesel te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPOFIFO();
+
         te.wasOn = false;
 
         te.setTypeFromFluidId();
         if (MachineFluidContainerIO.load(te.tank, te.inventory, 0, 1)) te.setChanged();
 
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            te.tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-            te.sendSmoke(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-            te.trySubscribe(te.tank.getTankType(), level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
-
         te.power = Library.chargeItemsFromTE(te.inventory, 2, te.power, te.powerCap);
         if (te.isOn) te.generate(level);
         te.networkPackNT();
+    }
+
+    /** The smoke and engine-swing condition: switched on with burnable fuel, redstone or not. */
+    public boolean showsRunning() {
+        return isOn && hasAcceptableFuel() && tank.getFill() > 0;
     }
 
     public boolean hasAcceptableFuel() {

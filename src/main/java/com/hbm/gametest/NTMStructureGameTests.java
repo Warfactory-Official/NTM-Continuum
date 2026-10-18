@@ -2,15 +2,21 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.generic.BlockWandLoot;
 import com.hbm.world.gen.NTMStructureDeclarations;
+import com.hbm.world.gen.NTMStructureDeclarations.LegacyBiome;
 import com.hbm.world.gen.NTMWorldGenerator;
 import com.hbm.world.gen.nbt.NBTStructure;
 import com.hbm.world.gen.nbt.SpawnCondition;
+import dev.golem.core.Ids;
+import dev.golem.core.world.Biomes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
@@ -18,6 +24,7 @@ import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStruct
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadType;
 
 import java.util.Random;
+import java.util.function.Predicate;
 
 /**
  * The world-generation half of the 1.7 NBT structure system (WG-A): the region pick against 1.7's own arithmetic, every
@@ -73,7 +80,7 @@ public final class NTMStructureGameTests {
             "oil_rig", "lighthouse", "dish", "water_pump", "forestchem", "labolatory", "forest_post", "radio", "factory",
             "crane", "broadcaster_tower", "plane1", "plane2", "desert_shack_1", "desert_shack_2", "desert_shack_3",
             "dead_dish_small", "ruinA", "ruinB", "ruinC", "ruinD", "ruinE", "ruinF", "ruinG", "ruinH", "ruinI", "ruinJ",
-            "tower_base"};
+            "tower_base", "falloutshelter_house", "abandoned_arcticstation", "military_base", "submarine"};
 
     /** Every 1.7 spawn is registered with its piece loaded, the two null weights have none, heights are 1.7's. */
     public static void spawnsRegistered(GameTestHelper helper) {
@@ -95,8 +102,8 @@ public final class NTMStructureGameTests {
     }
 
     /**
-     * Every palette entry of all 33 structures resolves in all four rotations without throwing (1.21.1 once crashed world
-     * generation on the dish: a 1.7 metadata value vanilla's flattening marks "%%FILTER_ME%%").
+     * Every palette entry of all 37 structures resolves in all four rotations without throwing, including the dish's
+     * 1.7 metadata value that vanilla's flattening marks "%%FILTER_ME%%".
      */
     public static void palettesResolve(GameTestHelper helper) {
         NTMWorldGenerator.registerSpawns();
@@ -168,6 +175,64 @@ public final class NTMStructureGameTests {
             helper.assertTrue(placeholders == 0, placeholders + " loot placeholders left (" + filled + " filled containers)");
             helper.succeed();
         });
+    }
+
+    /**
+     * The four structures 1.7 added with their biome rules: the fallout shelter house on PLAINS, the arctic station and
+     * military base on SNOWY (frozen rivers and oceans too, as in 1.7), the submarine on 1.7's ocean and deep ocean
+     * (their modern temperature variants included, the frozen ones not).
+     */
+    public static void newStructureBiomes(GameTestHelper helper) {
+        Predicate<LegacyBiome> house = NTMStructureDeclarations.predicate("falloutshelter_house");
+        Predicate<LegacyBiome> base = NTMStructureDeclarations.predicate("military_base");
+        Predicate<LegacyBiome> station = NTMStructureDeclarations.predicate("abandoned_arcticstation");
+        helper.assertTrue(house.test(NTMStructureDeclarations.legacy("minecraft:plains"))
+                && house.test(NTMStructureDeclarations.legacy("minecraft:savanna"))
+                && !house.test(NTMStructureDeclarations.legacy("minecraft:desert")), "fallout shelter house is PLAINS");
+        for (String snowy : new String[] {"minecraft:snowy_plains", "minecraft:snowy_taiga", "minecraft:frozen_river", "minecraft:frozen_ocean"}) {
+            helper.assertTrue(base.test(NTMStructureDeclarations.legacy(snowy)) && station.test(NTMStructureDeclarations.legacy(snowy)), snowy + " is SNOWY");
+        }
+        helper.assertTrue(!base.test(NTMStructureDeclarations.legacy("minecraft:taiga")), "taiga is not SNOWY");
+        helper.assertTrue(NTMStructureDeclarations.predicate("submarine") == null, "the submarine is matched by identity");
+        var registries = helper.getLevel().registryAccess();
+        TagKey<Biome> submarine = TagKey.create(Registries.BIOME, Ids.of("hbm", "has_structure/submarine"));
+        TagKey<Biome> military = TagKey.create(Registries.BIOME, Ids.of("hbm", "has_structure/military_base"));
+        helper.assertTrue(Biomes.holder(registries, Biomes.key("minecraft", "ocean")).is(submarine)
+                && Biomes.holder(registries, Biomes.key("minecraft", "deep_ocean")).is(submarine)
+                && Biomes.holder(registries, Biomes.key("minecraft", "warm_ocean")).is(submarine)
+                && !Biomes.holder(registries, Biomes.key("minecraft", "frozen_ocean")).is(submarine)
+                && !Biomes.holder(registries, Biomes.key("minecraft", "beach")).is(submarine), "submarine tag is the oceans 1.7 called ocean");
+        helper.assertTrue(Biomes.holder(registries, Biomes.key("minecraft", "snowy_plains")).is(military)
+                && !Biomes.holder(registries, Biomes.key("minecraft", "plains")).is(military), "military base tag is the snowy biomes");
+        helper.succeed();
+    }
+
+    /** A saved piece whose .nbt changed size since generation places nothing instead of building out of its box. */
+    public static void boundsMismatch(GameTestHelper helper) {
+        NTMWorldGenerator.registerSpawns();
+        ServerLevel level = helper.getLevel();
+        SpawnCondition shack = NBTStructure.getStructure("desert_shack_1");
+        BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
+        NBTStructure.Component component = new NBTStructure.Component(shack, shack.structure, origin.getX(), origin.getY(), origin.getZ(), 0);
+        CompoundTag tag = component.createTag(StructurePieceSerializationContext.fromLevel(level));
+        tag.putString("piece", "submarine");
+        NBTStructure.Component stale = new NBTStructure.Component(StructurePieceSerializationContext.fromLevel(level), tag);
+        BoundingBox box = stale.getBoundingBox();
+        helper.assertTrue(stale.getPiece() == NBTStructure.getStructure("submarine").structure, "the saved piece reads as the submarine");
+        int before = solidBlocks(level, box);
+        stale.postProcess(level, level.structureManager(), level.getChunkSource().getGenerator(), level.getRandom(),
+                box, new ChunkPos(origin.getX() >> 4, origin.getZ() >> 4), origin);
+        int placed = solidBlocks(level, box) - before;
+        helper.assertTrue(placed == 0, placed + " blocks placed by a piece whose box no longer fits its structure");
+        helper.succeed();
+    }
+
+    private static int solidBlocks(ServerLevel level, BoundingBox box) {
+        int n = 0;
+        for (BlockPos pos : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
+            if (!level.getBlockState(pos).isAir()) n++;
+        }
+        return n;
     }
 
 }

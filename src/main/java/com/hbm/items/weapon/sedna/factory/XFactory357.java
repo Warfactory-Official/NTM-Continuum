@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
+import com.hbm.config.ServerConfig;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
@@ -20,6 +22,18 @@ import net.minecraft.world.item.ItemStack;
  * are not ported.
  */
 public class XFactory357 {
+
+    public static final ConfigWrapper<Float> GUN_LIGHT_REVOLVER_DAMAGE = new ConfigWrapper<>(7.5F);
+    public static final ConfigWrapper<Float> GUN_ATLAS_DAMAGE = new ConfigWrapper<>(12.5F);
+    public static final ConfigWrapper<Float> GUN_DANI_CELESTIAL_DAMAGE = new ConfigWrapper<>(15F);
+    public static final ConfigWrapper<Float> GUN_DANI_LUNAR_DAMAGE = new ConfigWrapper<>(15F);
+
+    public static void initConfig() {
+        ServerConfig.configMap.put("GUN_LIGHT_REVOLVER_DAMAGE", GUN_LIGHT_REVOLVER_DAMAGE);
+        ServerConfig.configMap.put("GUN_ATLAS_DAMAGE", GUN_ATLAS_DAMAGE);
+        ServerConfig.configMap.put("GUN_DANI_CELESTIAL_DAMAGE", GUN_DANI_CELESTIAL_DAMAGE);
+        ServerConfig.configMap.put("GUN_DANI_LUNAR_DAMAGE", GUN_DANI_LUNAR_DAMAGE);
+    }
 
     public static BulletConfig m357_bp;
     public static BulletConfig m357_sp;

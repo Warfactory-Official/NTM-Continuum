@@ -153,4 +153,17 @@ public class MachineIndustrialTurbine extends BlockMultiblockMachine
         return CoolingRecipes.get(type) != null
                 || type == Fluids.SPENTSTEAM;
     }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 3, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 3, ForgeDirection.WEST.ordinal()},
+                {1, 0, -1, ForgeDirection.EAST.ordinal()},
+                {-1, 0, -1, ForgeDirection.WEST.ordinal()},
+                {0, 2, 3, ForgeDirection.UP.ordinal()},
+                {0, 2, -1, ForgeDirection.UP.ordinal()},
+                {0, 1, -3, ForgeDirection.NORTH.ordinal()},
+        }, dir);
+    }
 }

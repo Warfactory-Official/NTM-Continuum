@@ -35,6 +35,8 @@ import com.hbm.tileentity.machine.TileEntityHeaterFirebox;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import com.hbm.tileentity.machine.TileEntityHeaterOven;
+import com.hbm.tileentity.machine.TileEntityLaunchpadLambda;
+import com.hbm.tileentity.machine.TileEntityLaunchpadSoyuz;
 import com.hbm.tileentity.machine.TileEntityMachineArcWelder;
 import com.hbm.tileentity.machine.TileEntityMachineBlastFurnace;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
@@ -47,9 +49,11 @@ import com.hbm.tileentity.machine.TileEntityMachineIntake;
 import com.hbm.tileentity.machine.TileEntityMachineLargeTurbine;
 import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
+import com.hbm.tileentity.machine.TileEntityMachineRockMill;
+import com.hbm.tileentity.machine.TileEntityMachineSuperComputer;
+import com.hbm.tileentity.machine.TileEntityMachineTapeDrive;
 import com.hbm.tileentity.machine.TileEntityMachineSatLink;
 import com.hbm.tileentity.machine.TileEntityMachineSteamEngine;
-import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
 import com.hbm.tileentity.machine.TileEntityMachineWoodBurner;
@@ -268,9 +272,6 @@ public final class ModBlockEntities {
             REG.blockEntity("creative_generator",
                     () -> BlockEntities.serverTicking(TileEntityCreativeGenerator::new, TileEntityCreativeGenerator::serverTick, ModMachineBlocks.creative_generator.get()));
 
-    public static final RegistryObject<BlockEntityType<TileEntityMachineTurbine>> MACHINE_TURBINE =
-            REG.blockEntity("machine_turbine",
-                    () -> BlockEntities.serverTicking(TileEntityMachineTurbine::new, TileEntityMachineTurbine::serverTick, ModMachineBlocks.machine_turbine.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineLargeTurbine>> MACHINE_LARGE_TURBINE =
             REG.blockEntity("machine_large_turbine",
@@ -691,6 +692,15 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityMachinePUREX>> MACHINE_PUREX =
             REG.blockEntity("machine_purex",
                     () -> BlockEntities.ticking(TileEntityMachinePUREX::new, TileEntityMachinePUREX::clientTick, TileEntityMachinePUREX::serverTick, ModMachineBlocks.machine_purex.get()));
+    public static final RegistryObject<BlockEntityType<TileEntityMachineRockMill>> MACHINE_ROCKMILL =
+            REG.blockEntity("machine_rockmill",
+                    () -> BlockEntities.ticking(TileEntityMachineRockMill::new, TileEntityMachineRockMill::clientTick, TileEntityMachineRockMill::serverTick, ModMachineBlocks.machine_rockmill.get()));
+    public static final RegistryObject<BlockEntityType<TileEntityMachineSuperComputer>> MACHINE_SUPERCOMPUTER =
+            REG.blockEntity("machine_supercomputer",
+                    () -> BlockEntities.serverTicking(TileEntityMachineSuperComputer::new, TileEntityMachineSuperComputer::serverTick, ModMachineBlocks.machine_supercomputer.get()));
+    public static final RegistryObject<BlockEntityType<TileEntityMachineTapeDrive>> MACHINE_TAPE_DRIVE =
+            REG.blockEntity("machine_tape_drive",
+                    () -> BlockEntities.serverTicking(TileEntityMachineTapeDrive::new, TileEntityMachineTapeDrive::serverTick, ModMachineBlocks.machine_tape_drive.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineSolderingStation>> MACHINE_SOLDERING_STATION =
             REG.blockEntity("machine_soldering_station",
@@ -790,8 +800,7 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineCompressorCompact>> MACHINE_COMPRESSOR_COMPACT =
             REG.blockEntity("machine_compressor_compact",
-                    () -> BlockEntities.ticking(TileEntityMachineCompressorCompact::new,
-                            TileEntityMachineCompressorCompact::clientTick,
+                    () -> BlockEntities.serverTicking(TileEntityMachineCompressorCompact::new,
                             TileEntityMachineCompressorBase::serverTick,
                             ModMachineBlocks.machine_compressor_compact.get()));
 
@@ -933,6 +942,12 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityLaunchPad>> LAUNCH_PAD =
             REG.blockEntity("launch_pad",
                     () -> BlockEntities.serverTicking(TileEntityLaunchPad::new, TileEntityLaunchPad::serverTick, ModMachineBlocks.launch_pad.get()));
+    public static final RegistryObject<BlockEntityType<TileEntityLaunchpadSoyuz>> LAUNCHPAD_SOYUZ =
+            REG.blockEntity("launchpad_soyuz", () -> BlockEntities.ticking(TileEntityLaunchpadSoyuz::new,
+                    TileEntityLaunchpadSoyuz::clientTick, TileEntityLaunchpadSoyuz::serverTick, ModMachineBlocks.launchpad_soyuz.get()));
+    public static final RegistryObject<BlockEntityType<TileEntityLaunchpadLambda>> LAUNCHPAD_LAMBDA =
+            REG.blockEntity("launchpad_lambda", () -> BlockEntities.ticking(TileEntityLaunchpadLambda::new,
+                    TileEntityLaunchpadLambda::clientTick, TileEntityLaunchpadLambda::serverTick, ModMachineBlocks.launchpad_lambda.get()));
 
     // Bombs
 

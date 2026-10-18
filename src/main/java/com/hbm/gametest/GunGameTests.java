@@ -1,5 +1,9 @@
 package com.hbm.gametest;
 
+import com.hbm.config.ServerConfig;
+import com.hbm.items.weapon.sedna.factory.XFactory762mm;
+import com.hbm.items.weapon.sedna.factory.XFactoryDrill;
+import com.hbm.items.weapon.sedna.factory.XFactoryFolly;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.entity.ModEntities;
@@ -980,6 +984,47 @@ public final class GunGameTests {
         gun.tryEmpty(Fluids.DIESEL, 5_000, stack);
         helper.assertTrue(magazine.getAmount(stack, null) == 0,
                 "draining must empty the magazine, left " + magazine.getAmount(stack, null));
+        helper.succeed();
+    }
+
+    /**
+     * Gun base damage is a server config value: 92 keys (GUN_, MELEE_, RANGED_, TURRET_), edited values reach the
+     * receiver, akimbo halves are separate keys, and 1.7 files the drill under GUN_DOUBLE_BARREL_DAMAGE.
+     */
+    public static void gunValuesConfig(GameTestHelper helper) {
+        long keys = ServerConfig.configMap.keySet().stream()
+                .filter(k -> k.startsWith("GUN_") || k.startsWith("MELEE_") || k.startsWith("RANGED_")
+                        || k.startsWith("TURRET_"))
+                .count();
+        helper.assertTrue(keys == 92, "1.7 puts 92 weapon damage keys into /ntmserver, found " + keys);
+        helper.assertTrue(ServerConfig.configMap.get("GUN_DOUBLE_BARREL_DAMAGE") == XFactoryDrill.GUN_DRILL_DAMAGE,
+                "GUN_DOUBLE_BARREL_DAMAGE must hold the drill's value, as in 1.7");
+        helper.assertTrue(!ServerConfig.configMap.containsValue(XFactoryFolly.GUN_FOLLY_DAMAGE),
+                "1.7 never puts the Folly into the server config");
+
+        ItemStack greasegun = new ItemStack(ModGunItems.gun_greasegun.get());
+        Receiver grease = ((ItemGunBaseNT) greasegun.getItem()).getConfig(greasegun, 0).getReceivers(greasegun)[0];
+        ItemStack akimbo = new ItemStack(ModGunItems.gun_uzi_akimbo.get());
+        Receiver left = ((ItemGunBaseNT) akimbo.getItem()).getConfig(akimbo, 0).getReceivers(akimbo)[0];
+        Receiver right = ((ItemGunBaseNT) akimbo.getItem()).getConfig(akimbo, 1).getReceivers(akimbo)[0];
+        ItemStack glory = new ItemStack(ModGunItems.gun_laser_pistol_morning_glory.get());
+        Receiver gloryReceiver = ((ItemGunBaseNT) glory.getItem()).getConfig(glory, 0).getReceivers(glory)[0];
+
+        helper.assertTrue(grease.getBaseDamage(greasegun) == 3F, "The grease gun defaults to 3");
+        helper.assertTrue(gloryReceiver.getBaseDamage(glory) == 30F, "Morning Glory matches the B-side's 30");
+        try {
+            ServerConfig.configMap.get("GUN_GREASEGUN_DAMAGE").update("4.5");
+            ServerConfig.configMap.get("GUN_UZI_AKIMBO_LEFT_DAMAGE").update("5");
+            helper.assertTrue(grease.getBaseDamage(greasegun) == 4.5F, "An edited key must reach the receiver");
+            helper.assertTrue(left.getBaseDamage(akimbo) == 5F && right.getBaseDamage(akimbo) == 3F,
+                    "Akimbo halves are configured separately");
+        } finally {
+            XFactory9mm.GUN_GREASEGUN_DAMAGE.set(3F);
+            XFactory9mm.GUN_UZI_AKIMBO_LEFT_DAMAGE.set(3F);
+        }
+        helper.assertTrue(XFactory762mm.GUN_CARBINE_BAYONET_DAMAGE.get() == 15F
+                        && XFactory44.GUN_HANGMAN_SMACK_DAMAGE.get() == 10F && XFactoryPA.MELEE_RPA_SLAP_DAMAGE.get() == 35F,
+                "Attachment and power armour melee defaults are 1.7's");
         helper.succeed();
     }
 }

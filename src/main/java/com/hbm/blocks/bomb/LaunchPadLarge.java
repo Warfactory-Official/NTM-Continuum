@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
  * upstream's three boxes: the two pad halves and the recessed rail between them, one eighth lower.
  *
  * <p>1.7 stamped an inventory proxy on every cell and a full power/fluid/inventory proxy on the eight
- * {@code makeExtra} cells at (+-4, +-2) and (+-2, +-4), which are where {@code getConPos} reaches out from.
+ * {@code makeExtra} cells at (+-4, +-2) and (+-2, +-4), the large pad's ports.
  * Redstone on any cell counts once toward the pad's rising edge, as for the small pad.
  */
 public class LaunchPadLarge extends BlockMultiblockMachine implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2 {

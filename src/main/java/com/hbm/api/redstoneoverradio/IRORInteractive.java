@@ -40,4 +40,19 @@ public interface IRORInteractive extends IRORInfo {
         if (result < min || result > max) throw new RORFunctionException(EX_FORMAT);
         return result;
     }
+
+    static long parseLong(String value, long min, long max) {
+        long result;
+        try {
+            result = Long.parseLong(value);
+        } catch (Exception first) {
+            try {
+                result = Math.round(Double.parseDouble(value));
+            } catch (Exception second) {
+                throw new RORFunctionException(EX_FORMAT);
+            }
+        }
+        if (result < min || result > max) throw new RORFunctionException(EX_FORMAT);
+        return result;
+    }
 }

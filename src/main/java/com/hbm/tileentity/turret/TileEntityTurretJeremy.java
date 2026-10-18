@@ -96,10 +96,13 @@ public class TileEntityTurretJeremy extends TileEntityTurretBaseNT {
         BulletConfig conf = getFirstConfigLoaded();
         if (conf == null) return;
 
-        spawnBullet(conf, 50F);
+        spawnBullet(conf);
         consumeAmmo(conf);
         level.playSound(null, worldPosition, ModSounds.TURRET_JEREMY_FIRE.get(), SoundSource.BLOCKS, 4.0F, 1.0F);
         reload = 20;
         muzzleFlash(barrelTip(), 0F, 5);
     }
+
+    @Override
+    public float getBaseDamage() { return XFactoryTurret.TURRET_JEREMY_DAMAGE.get(); }
 }

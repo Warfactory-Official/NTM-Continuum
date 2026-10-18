@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.environment.Environment;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.sound.ModSounds;
@@ -15,6 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** 16,000,000 mB Big Ass Tank controller. */
 public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
@@ -32,12 +32,12 @@ public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
 
     @Override
     public long getReceiverSpeed(FluidType type, int pressure) {
-        return Math.max(50_000L, (tankNew.getMaxFill() - tankNew.getFill()) / 100L);
+        return (mode == 0 || mode == 1) ? Math.max(50_000L, (tankNew.getMaxFill() - tankNew.getFill()) / 100L) : 0L;
     }
 
     @Override
     public long getProviderSpeed(FluidType type, int pressure) {
-        return Math.max(50_000L, tankNew.getFill() / 100L);
+        return (mode == 1 || mode == 2) ? Math.max(50_000L, tankNew.getFill() / 100L) : 0L;
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBigAssTank tank) {
@@ -93,14 +93,18 @@ public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
         return true;
     }
 
+    protected PortDef[] cachedPorts;
+
     @Override
-    public DirPos[] getConPos() {
-        ForgeDirection dir = getFacing();
-        return new DirPos[]{
-                new DirPos(worldPosition.getX() + dir.offsetX * 7, worldPosition.getY(),
-                        worldPosition.getZ() + dir.offsetZ * 7, dir),
-                new DirPos(worldPosition.getX() - dir.offsetX * 7, worldPosition.getY(),
-                        worldPosition.getZ() - dir.offsetZ * 7, dir.getOpposite())
-        };
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = getFacing();
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 6, y, z + dir.offsetZ * 6, dir),
+                    PortDef.make(x - dir.offsetX * 6, y, z - dir.offsetZ * 6, dir.getOpposite())
+            };
+        }
+        return cachedPorts;
     }
 }

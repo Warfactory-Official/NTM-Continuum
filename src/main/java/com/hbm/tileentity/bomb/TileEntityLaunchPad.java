@@ -3,8 +3,6 @@ package com.hbm.tileentity.bomb;
 import dev.golem.core.data.Tags;
 
 import com.hbm.inventory.container.ContainerLaunchPad;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -18,6 +16,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The small launch pad: 1.12.2's {@code TileEntityLaunchPad}. A 3×3 pad that fires anything from a V2
@@ -71,23 +71,7 @@ public class TileEntityLaunchPad extends TileEntityLaunchPadBase implements Menu
         this.delay = 100;
     }
 
-    /** The eight cable/pipe anchors around the 3×3 pad, two per side, one block out from each corner. */
-    @Override
-    public DirPos[] getConPos() {
-        int x = worldPosition.getX();
-        int y = worldPosition.getY();
-        int z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z - 1, Library.POS_X),
-                new DirPos(x + 2, y, z + 1, Library.POS_X),
-                new DirPos(x - 2, y, z - 1, Library.NEG_X),
-                new DirPos(x - 2, y, z + 1, Library.NEG_X),
-                new DirPos(x - 1, y, z + 2, Library.POS_Z),
-                new DirPos(x + 1, y, z + 2, Library.POS_Z),
-                new DirPos(x - 1, y, z - 2, Library.NEG_Z),
-                new DirPos(x + 1, y, z - 2, Library.NEG_Z)
-        };
-    }
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.refinery(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     // --- MenuProvider ---
 

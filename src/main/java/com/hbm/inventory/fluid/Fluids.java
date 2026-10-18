@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p>The registry mechanics ({@code registerSelf}/{@code byRegistryName}/{@code fromName}) and the identity
  * (name/color/temperature) cover the full base set: every fluid the 1.7.10 {@code Fluids.init()} hardcodes, in the
- * same order so the IDs match 1:1 (0..155, FLUE last; the JSON-dump custom-fluid demo is dropped). 1.12.2 inserted
+ * same order so the IDs match 1:1 (0..156, TITANIUM_TETRACHLORIDE last; the JSON-dump custom-fluid demo is dropped). 1.12.2 inserted
  * a HYDRAZINE at 89 that 1.7 never had, which shifts CHLORINE..FLUE by one; it is not ported, so structure NBT,
  * QMAW pages and 1.7 data that store a fluid id resolve to the 1.7 fluid. The declarations are generated; thermal
  * traits are maintained below.
@@ -212,6 +212,7 @@ public class Fluids {
     public static FluidType DHC;
     public static FluidType AIRBLAST;
     public static FluidType FLUE;
+    public static FluidType TITANIUM_TETRACHLORIDE;
 
     /**
      * Populate the registry. Idempotent; safe to call from common bootstrap. IDs are assigned
@@ -383,6 +384,7 @@ public class Fluids {
         DHC = new FluidType(153, "DHC", 0xD2AFFF);
         AIRBLAST = new FluidType("AIRBLAST", 0xFFDADA); // 1.7 Fluids.java:414
         FLUE = new FluidType(155, "FLUE", 0x131313); // 1.7 asserts id 155 here
+        TITANIUM_TETRACHLORIDE = new FluidType(156, "TITANIUM_TETRACHLORIDE", 0xDBF796);
 
         // 1.7 Fluids.java:427-606, "AND DON'T FORGET THE META DOWN HERE": the display order (getInNiceOrder)
         // lists fluids in identifiers, creative tabs, NEI and the assembly machine's fluid packages. Every fluid exactly
@@ -525,6 +527,7 @@ public class Fluids {
         metaOrder.add(SODIUM_ALUMINATE);
         metaOrder.add(BAUXITE_SOLUTION);
         metaOrder.add(ALUMINA);
+        metaOrder.add(TITANIUM_TETRACHLORIDE);
         metaOrder.add(CONCRETE);
         //solutions and working fluids
         metaOrder.add(FRACKSOL);

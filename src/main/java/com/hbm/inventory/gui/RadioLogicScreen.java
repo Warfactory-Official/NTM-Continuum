@@ -3,6 +3,7 @@ package com.hbm.inventory.gui;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.inventory.container.RadioLogicMenu;
 import com.hbm.tileentity.network.TileEntityRadioTorchLogic;
+import com.hbm.tileentity.network.RTTYSystem;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -30,7 +31,7 @@ public final class RadioLogicScreen extends CompatContainerScreen<RadioLogicMenu
     @Override protected void init() {
         super.init(); TileEntityRadioTorchLogic logic = menu.logic();
         polling = logic != null && logic.polling; descending = logic != null && logic.descending;
-        frequency = field(29, 21, 82, logic == null ? "" : logic.channel, 10);
+        frequency = field(29, 21, 82, logic == null ? "" : logic.channel, RTTYSystem.MAX_CHAN_LENGTH);
         for (int i = 0; i < mapping.length; i++) {
             mapping[i] = field(29 + 130 * (i / 8), 57 + 18 * (i % 8), 46,
                     logic == null ? "" : logic.mapping[i], 15);

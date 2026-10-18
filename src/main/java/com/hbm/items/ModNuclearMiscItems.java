@@ -98,10 +98,10 @@ public final class ModNuclearMiscItems {
     }
 
     /** 1.7 ItemDepletedFuel: subtype 1 (hot) tinted 0xFFBFA5, carried as custom model data here. */
+    /** 1.7 deprecates the waste plates: no creative tab. */
     private static RegistryObject<ItemDepletedFuel> waste(String id, String texture) {
         return REG.item(id, ItemDepletedFuel::new)
-                .transform(Presets.sprite("hbm:items/" + texture).tints(Tints.customModelData(0, 0xFFFFFF)))
-                .tab(HbmTab.MATERIALS);
+                .transform(Presets.sprite("hbm:items/" + texture).tints(Tints.customModelData(0, 0xFFFFFF)));
     }
 
     public static ItemBreedingRod rod(RodSize size, BreedingRodType type) {

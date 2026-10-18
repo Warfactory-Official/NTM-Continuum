@@ -8,9 +8,6 @@ import dev.golem.core.data.Tags;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -24,6 +21,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /** Steam-powered groundwater pump ported from the legacy pump base and steam implementation. */
 public class TileEntityMachinePumpSteam extends TileEntityMachineBase
@@ -54,15 +53,10 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePumpSteam pump) {
-        // The legacy steam subtype subscribes steam and sends spent steam before the base sends water.
-        for (DirPos connection : pump.getConPos()) {
-            pump.trySubscribe(pump.steam.getTankType(), level, connection);
-            if (pump.lps.getFill() > 0) pump.tryProvide(pump.lps, level, connection);
-        }
+        pump.setupAllPorts(pump.getPorts());
+        pump.updatePortPIFIFO();
 
-        for (DirPos connection : pump.getConPos()) {
-            if (pump.water.getFill() > 0) pump.tryProvide(pump.water, level, connection);
-        }
+        // The legacy steam subtype subscribes steam and sends spent steam before the base sends water.
 
         if (pump.groundCheckDelay > 0) pump.groundCheckDelay--;
         else pump.onGround = pump.checkGround(level, pos);
@@ -130,15 +124,8 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
         return validBlocks >= invalidBlocks;
     }
 
-    public DirPos[] getConPos() {
-        BlockPos pos = getBlockPos();
-        return new DirPos[]{
-                new DirPos(pos.east(2), Library.POS_X),
-                new DirPos(pos.west(2), Library.NEG_X),
-                new DirPos(pos.south(2), Library.POS_Z),
-                new DirPos(pos.north(2), Library.NEG_Z)
-        };
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.flare(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{steam}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{water, lps}; }

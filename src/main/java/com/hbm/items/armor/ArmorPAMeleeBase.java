@@ -23,9 +23,10 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class ArmorPAMeleeBase implements IPAMelee {
-    protected static final float LIGHT_DAMAGE = 15F;
-    protected static final float HEAVY_DAMAGE = 35F;
-
+    protected abstract float lightDamage();
+    protected abstract float heavyDamage();
+    /** Damage multiplier against targets with at least 100 max health. */
+    protected abstract float largeMult();
     protected abstract boolean isLightHit(int timer);
     protected abstract boolean isHeavyHit(int timer);
     protected abstract SoundEvent hitSound();
@@ -65,11 +66,11 @@ public abstract class ArmorPAMeleeBase implements IPAMelee {
     }
 
     private void hitEntity(Player player, Entity hit, boolean light) {
-        float damage = light ? LIGHT_DAMAGE : HEAVY_DAMAGE;
+        float damage = light ? lightDamage() : heavyDamage();
         float threshold = light ? 5F : 15F;
         float piercing = light ? 0.1F : 0.25F;
         if (hit instanceof LivingEntity living) {
-            if (living.getMaxHealth() >= 100F) damage *= 2.5F;
+            if (living.getMaxHealth() >= 100F) damage *= largeMult();
             Vec3 before = living.getDeltaMovement();
             living.invulnerableTime = 0;
             DamageResistanceHandler.hurt((ServerLevel) player.level(), living,

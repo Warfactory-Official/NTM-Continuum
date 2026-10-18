@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Magnetohydrodynamic turbine: the fusion chain's electrical output, converting plasma straight to HE
@@ -32,7 +34,7 @@ import java.util.List;
  * all rather than merely less.
  */
 public class TileEntityFusionMHDT extends TileEntityLoadedBase
-        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, IFusionPowerReceiver {
+        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, IFusionPowerReceiver, IRORValueProvider {
 
     public static final double PLASMA_EFFICIENCY = 1.35D;
     public static final int COOLANT_USE = 50;
@@ -57,7 +59,6 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
     public float prevRotor;
     public float rotorSpeed;
 
-
     public TileEntityFusionMHDT(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_MHDT.get(), pos, state);
     }
@@ -72,6 +73,9 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionMHDT te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPOFIFO();
+
         te.plasmaEnergySync = te.plasmaEnergy;
 
         if (te.isCool()) {
@@ -79,12 +83,6 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
             if (!te.hasMinimumPlasma()) te.power /= 2;
             te.tanks[0].setFill(te.tanks[0].getFill() - COOLANT_USE);
             te.tanks[1].setFill(te.tanks[1].getFill() + COOLANT_USE);
-        }
-
-        for (DirPos port : te.getConPos()) {
-            te.tryProvide(level, port.getPos().getX(), port.getPos().getY(), port.getPos().getZ(), port.getDir());
-            if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, port);
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, port);
         }
 
         ForgeDirection dir = FusionNodes.facing(state).getOpposite();
@@ -109,15 +107,22 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
         }
     }
 
-    public List<DirPos> getConPos() {
-        ForgeDirection dir = FusionNodes.facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return List.of(
-                new DirPos(x + dir.offsetX * 4 + rot.offsetX * 4, y, z + dir.offsetZ * 4 + rot.offsetZ * 4, rot),
-                new DirPos(x + dir.offsetX * 4 - rot.offsetX * 4, y, z + dir.offsetZ * 4 - rot.offsetZ * 4, rot.getOpposite()),
-                new DirPos(x + dir.offsetX * 8, y + 1, z + dir.offsetZ * 8, dir));
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = FusionNodes.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 4 + rot.offsetX * 3, y, z + dir.offsetZ * 4 + rot.offsetZ * 3, rot),
+                    PortDef.make(x + dir.offsetX * 4 - rot.offsetX * 3, y, z + dir.offsetZ * 4 - rot.offsetZ * 3, rot.getOpposite()),
+                    PortDef.make(x + dir.offsetX * 7, y + 1, z + dir.offsetZ * 7, dir),
+            };
+        }
+        return cachedPorts;
     }
+
+    public List<DirPos> getConPos() { return List.of(PortDef.connections(getPorts())); }
 
     @Override public boolean receivesFusionPower() { return true; }
 
@@ -179,5 +184,16 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
     private static BlockPos plasmaCell(BlockPos pos, ForgeDirection dir) {
         return new BlockPos(pos.getX() + dir.offsetX * 6, pos.getY() + 2,
                 pos.getZ() + dir.offsetZ * 6);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "output"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "output").equals(name)) return "" + power;
+        return null;
     }
 }

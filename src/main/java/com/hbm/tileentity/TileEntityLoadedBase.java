@@ -1,6 +1,14 @@
 package com.hbm.tileentity;
 
 import dev.golem.core.data.CompatBlockEntity;
+import com.hbm.api.energymk2.IEnergyProviderMK2;
+import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.uninos.networkproviders.FluidNetProvider;
+import com.hbm.uninos.networkproviders.PowerNetProvider;
 import com.hbm.api.tile.ILoadedTile;
 import com.hbm.lib.Library;
 import com.hbm.packet.BlockEntitySyncPayload;
@@ -50,6 +58,98 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
 
     public TileEntityLoadedBase(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    public TilePort[] powerPorts;
+    public TilePort[] fluidInPorts;
+    public TilePort[] fluidOutPorts;
+
+    /** Power ports and, where the tile has tanks of that role, fluid in and fluid out ports. */
+    public void setupAllPorts(PortDef[] ports) {
+        this.setupPowerPorts(ports);
+        this.setupFluidPorts(ports);
+    }
+
+    /** Separate power ports, no passthrough. */
+    public void setupPowerPorts(PortDef[] ports) {
+        if (powerPorts != null) return;
+        powerPorts = TilePort.manyToMany(this, ports);
+        for (TilePort port : powerPorts) {
+            port.setupType(PowerNetProvider.THE_PROVIDER);
+        }
+    }
+
+    public void setupFluidPorts(PortDef[] ports) {
+        if (fluidInPorts == null && this instanceof IFluidStandardReceiverMK2 receiver) this.setupFluidInPorts(receiver.getReceivingTanks(), PortDef.combine(ports));
+        if (fluidOutPorts == null && this instanceof IFluidStandardSenderMK2 sender) this.setupFluidOutPorts(sender.getSendingTanks(), PortDef.combine(ports));
+    }
+
+    public void setupFluidInPorts(FluidTankNTM[] tanks, PortDef ports) {
+        if (fluidInPorts != null) return;
+        fluidInPorts = TilePort.oneToMany(this, tanks.length, ports);
+        for (int i = 0; i < fluidInPorts.length; i++) {
+            fluidInPorts[i].setupType(FluidNetProvider.of(tanks[i].getTankType()));
+        }
+    }
+
+    public void setupFluidOutPorts(FluidTankNTM[] tanks, PortDef ports) {
+        if (fluidOutPorts != null) return;
+        fluidOutPorts = TilePort.oneToMany(this, tanks.length, ports);
+        for (int i = 0; i < fluidOutPorts.length; i++) {
+            fluidOutPorts[i].setupType(FluidNetProvider.of(tanks[i].getTankType()));
+        }
+    }
+
+    public void updateAllPorts() {
+        if (powerPorts != null) for (TilePort port : powerPorts) port.update(level);
+        if (fluidInPorts != null) for (TilePort port : fluidInPorts) port.update(level);
+        if (fluidOutPorts != null) for (TilePort port : fluidOutPorts) port.update(level);
+    }
+
+    /** Fluid in, fluid out. */
+    public void updatePortFIFO() {
+        this.updateAllPorts();
+        if (this instanceof IFluidStandardReceiverMK2 receiver) this.receiveFluid(receiver.getReceivingTanks());
+        if (this instanceof IFluidStandardSenderMK2 sender) this.provideFluid(sender.getSendingTanks());
+    }
+
+    /** Power in, fluid in, fluid out. */
+    public void updatePortPIFIFO() { this.updatePortFIFO(); this.receivePower(); }
+    /** Power out, fluid in, fluid out. */
+    public void updatePortPOFIFO() { this.updatePortFIFO(); this.providePower(); }
+
+    public void receivePower() { if (powerPorts == null) return; if (this instanceof IEnergyReceiverMK2) for (TilePort port : powerPorts) port.checkSubscribe(level); }
+    public void providePower() { if (powerPorts == null) return; if (this instanceof IEnergyProviderMK2) for (TilePort port : powerPorts) port.checkProvide(level); }
+
+    public void provideFluid(FluidTankNTM[] tanks) { provideFluid(tanks, this.fluidOutPorts); }
+    public void provideFluid(FluidTankNTM[] tanks, TilePort[] ports) {
+        if (ports == null || ports.length != tanks.length) return;
+        for (int i = 0; i < ports.length; i++) {
+            ports[i].setupType(FluidNetProvider.of(tanks[i].getTankType()));
+            if (!ports[i].needsRebuild) ports[i].checkProvide(level);
+        }
+    }
+
+    public void receiveFluid(FluidTankNTM[] tanks) { receiveFluid(tanks, this.fluidInPorts); }
+    public void receiveFluid(FluidTankNTM[] tanks, TilePort[] ports) {
+        if (ports == null || ports.length != tanks.length) return;
+        for (int i = 0; i < ports.length; i++) {
+            ports[i].setupType(FluidNetProvider.of(tanks[i].getTankType()));
+            if (!ports[i].needsRebuild) ports[i].checkSubscribe(level);
+        }
+    }
+
+    public void destroyAllPorts() {
+        disablePorts(powerPorts);
+        disablePorts(fluidInPorts);
+        disablePorts(fluidOutPorts);
+        powerPorts = null;
+        fluidInPorts = null;
+        fluidOutPorts = null;
+    }
+
+    private void disablePorts(TilePort[] ports) {
+        if (ports != null && level != null) for (TilePort port : ports) if (port != null) port.disableIfPresent(level);
     }
 
     @Override
@@ -150,6 +250,10 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     @Override
     public void setRemoved() {
         if (level instanceof ServerLevel serverLevel) GolemSync.retract(serverLevel, worldPosition);
+        // also a chunk unload: 1.7 dropped the port nodes in onChunkUnload and invalidate alike
+        disablePorts(powerPorts);
+        disablePorts(fluidInPorts);
+        disablePorts(fluidOutPorts);
         super.setRemoved();
     }
 

@@ -29,4 +29,12 @@ public class BlockPABeamline extends BlockMultiblockMachine implements ITooltipP
     public int getOffset() {
         return 0;
     }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {0.9, 0.1, -0.4, 0.4, 1.5, 1.5},
+                {0.9, 0.1, -0.4, 0.4, -1.5, -1.5},
+        };
+    }
 }

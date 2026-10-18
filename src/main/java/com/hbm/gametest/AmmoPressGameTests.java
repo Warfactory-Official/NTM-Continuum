@@ -26,7 +26,7 @@ public final class AmmoPressGameTests {
 
     public static void recipes(GameTestHelper helper) {
         helper.assertTrue(AmmoPressRecipes.getRecipes().size() == AmmoPressRecipes.SOURCE_RECIPE_COUNT,
-                "Ammo Press should expose all dependency-complete 1.7 rows (89), got "
+                "Ammo Press should expose all dependency-complete 1.7 rows (" + AmmoPressRecipes.SOURCE_RECIPE_COUNT + "), got "
                         + AmmoPressRecipes.getRecipes().size());
         helper.assertTrue(AmmoPressRecipes.recipes.get(0).output.is(ModAmmoItems.m357_bp.get())
                         && AmmoPressRecipes.recipes.get(6).output.is(ModAmmoItems.m44_bp.get())

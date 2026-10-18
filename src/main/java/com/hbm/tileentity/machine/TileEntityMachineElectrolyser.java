@@ -54,6 +54,9 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
+import com.hbm.module.portmanager.ModulePortManPower;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /** The dual fluid/metal electrolyser, ported from the 1.12.2 machine. */
 public class TileEntityMachineElectrolyser extends TileEntityMachineBase
@@ -86,7 +89,9 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
             new FluidTankNTM(Fluids.NITRIC_ACID, 16_000)
     };
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
-    private DirPos[] conPos;
+
+    protected final ModulePortManFluidAdaptive moduleFluidPorts = new ModulePortManFluidAdaptive(this).setInputTanks(getReceivingTanks()).setOutputTanks(getSendingTanks());
+    protected final ModulePortManPower modulePowerPorts = new ModulePortManPower(this);
 
     public TileEntityMachineElectrolyser(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_ELECTROLYSER.get(), pos, state, 21);
@@ -100,21 +105,14 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineElectrolyser te) {
+        te.moduleFluidPorts.update(te.getPorts());
+        te.modulePowerPorts.update(te.getPorts());
+
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, MAX_POWER);
         te.selectInputFluid();
         MachineFluidContainerIO.load(te.tanks[0], te.inventory, 5, 6);
         MachineFluidContainerIO.unload(te.tanks[1], te.inventory, 7, 8);
         MachineFluidContainerIO.unload(te.tanks[2], te.inventory, 9, 10);
-
-        for (DirPos connection : te.getConPos()) {
-            if (level.getGameTime() % 20 == 0) {
-                te.trySubscribe(level, connection);
-                te.trySubscribe(te.tanks[0].getTankType(), level, connection);
-                te.trySubscribe(te.tanks[3].getTankType(), level, connection);
-            }
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, connection);
-            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, connection);
-        }
 
         te.upgradeManager.checkSlots(te.inventory, 1, 2);
         int speedLevel = te.upgradeManager.getLevel(UpgradeType.SPEED);
@@ -271,29 +269,52 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         }
     }
 
-    public DirPos[] getConPos() {
-        if (conPos == null) {
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
             ForgeDirection dir = MachineCore.facing(getBlockState());
             ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-            conPos = new DirPos[]{
-                    new DirPos(worldPosition.getX() - dir.offsetX * 6, worldPosition.getY(), worldPosition.getZ() - dir.offsetZ * 6, dir.getOpposite()),
-                    new DirPos(worldPosition.getX() - dir.offsetX * 6 + rot.offsetX, worldPosition.getY(), worldPosition.getZ() - dir.offsetZ * 6 + rot.offsetZ, dir.getOpposite()),
-                    new DirPos(worldPosition.getX() - dir.offsetX * 6 - rot.offsetX, worldPosition.getY(), worldPosition.getZ() - dir.offsetZ * 6 - rot.offsetZ, dir.getOpposite()),
-                    new DirPos(worldPosition.getX() + dir.offsetX * 6, worldPosition.getY(), worldPosition.getZ() + dir.offsetZ * 6, dir),
-                    new DirPos(worldPosition.getX() + dir.offsetX * 6 + rot.offsetX, worldPosition.getY(), worldPosition.getZ() + dir.offsetZ * 6 + rot.offsetZ, dir),
-                    new DirPos(worldPosition.getX() + dir.offsetX * 6 - rot.offsetX, worldPosition.getY(), worldPosition.getZ() + dir.offsetZ * 6 - rot.offsetZ, dir)
-            };
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            List<PortDef> ports = new ArrayList<>(List.of(
+                    PortDef.make(x - dir.offsetX * 5 - rot.offsetX * 1, y, z - dir.offsetZ * 5 - rot.offsetZ * 1, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 5 + rot.offsetX * 0, y, z - dir.offsetZ * 5 + rot.offsetZ * 0, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 5 + rot.offsetX * 1, y, z - dir.offsetZ * 5 + rot.offsetZ * 1, dir.getOpposite()),
+
+                    PortDef.make(x - dir.offsetX * 4 + rot.offsetX * 1, y, z - dir.offsetZ * 4 + rot.offsetZ * 1, rot),
+                    PortDef.make(x - dir.offsetX * 2 + rot.offsetX * 1, y, z - dir.offsetZ * 2 + rot.offsetZ * 1, rot),
+                    PortDef.make(x + dir.offsetX * 0 + rot.offsetX * 1, y, z + dir.offsetZ * 0 + rot.offsetZ * 1, rot),
+                    PortDef.make(x + dir.offsetX * 2 + rot.offsetX * 1, y, z + dir.offsetZ * 2 + rot.offsetZ * 1, rot),
+                    PortDef.make(x + dir.offsetX * 4 + rot.offsetX * 1, y, z + dir.offsetZ * 4 + rot.offsetZ * 1, rot),
+
+                    PortDef.make(x - dir.offsetX * 4 - rot.offsetX * 3, y, z - dir.offsetZ * 4 - rot.offsetZ * 3, rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 2 - rot.offsetX * 3, y, z - dir.offsetZ * 2 - rot.offsetZ * 3, rot.getOpposite()),
+                    PortDef.make(x + dir.offsetX * 0 - rot.offsetX * 3, y, z + dir.offsetZ * 0 - rot.offsetZ * 3, rot.getOpposite()),
+                    PortDef.make(x + dir.offsetX * 2 - rot.offsetX * 3, y, z + dir.offsetZ * 2 - rot.offsetZ * 3, rot.getOpposite()),
+                    PortDef.make(x + dir.offsetX * 4 - rot.offsetX * 3, y, z + dir.offsetZ * 4 - rot.offsetZ * 3, rot.getOpposite()),
+
+                    PortDef.make(x + dir.offsetX * 5 - rot.offsetX * 1, y, z + dir.offsetZ * 5 - rot.offsetZ * 1, dir),
+                    PortDef.make(x + dir.offsetX * 5 + rot.offsetX * 0, y, z + dir.offsetZ * 5 + rot.offsetZ * 0, dir),
+                    PortDef.make(x + dir.offsetX * 5 + rot.offsetX * 1, y, z + dir.offsetZ * 5 + rot.offsetZ * 1, dir)));
             if (MachineElectrolyser.sidePorts) {
-                // hbm-space's four extra points (V-178)
-                int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-                conPos = Arrays.copyOf(conPos, 10);
-                conPos[6] = new DirPos(x - rot.offsetX * 4, y, z - rot.offsetZ * 4, rot.getOpposite());
-                conPos[7] = new DirPos(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot);
-                conPos[8] = new DirPos(x - dir.offsetX * 5 + rot.offsetX * 2, y, z - dir.offsetZ * 5 + rot.offsetZ * 2, rot);
-                conPos[9] = new DirPos(x + dir.offsetX * 5 + rot.offsetX * 2, y, z + dir.offsetZ * 5 + rot.offsetZ * 2, rot);
+                // hbm-space's end cells beside the hall, which 1.7 does not have
+                ports.add(PortDef.make(x - dir.offsetX * 5 + rot.offsetX, y, z - dir.offsetZ * 5 + rot.offsetZ, rot));
+                ports.add(PortDef.make(x + dir.offsetX * 5 + rot.offsetX, y, z + dir.offsetZ * 5 + rot.offsetZ, rot));
             }
+            cachedPorts = ports.toArray(new PortDef[0]);
         }
-        return conPos;
+        return cachedPorts;
+    }
+
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
+
+    @Override
+    public void setRemoved() {
+        if (level != null) {
+            moduleFluidPorts.destroy();
+            modulePowerPorts.destroy();
+        }
+        super.setRemoved();
     }
 
     @Override public long getPower() { return power; }

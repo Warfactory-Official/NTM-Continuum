@@ -32,7 +32,7 @@ public final class BedrockOreType {
     // primary, sulfuric byproducts, solvent byproducts, high-performance-solvent byproducts
     public static final BedrockOreType LIGHT_METAL = register(new BedrockOreType("light", "Light Metal",
             o(MAT_IRON, 9), o(MAT_COPPER, 9),
-            o(MAT_TITANIUM, 6), o(MAT_BAUXITE, 9), o(MAT_CRYOLITE, 3),
+            o(MAT_ILMENITE, 6), o(MAT_BAUXITE, 9), o(MAT_CRYOLITE, 3),
             o(MAT_CHLOROCALCITE, 5), o(MAT_LITHIUM, 5), o(MAT_SODIUM, 3),
             o(MAT_CHLOROCALCITE, 6), o(MAT_LITHIUM, 6), o(MAT_SODIUM, 6)));
     public static final BedrockOreType HEAVY_METAL = register(new BedrockOreType("heavy", "Heavy Metal",

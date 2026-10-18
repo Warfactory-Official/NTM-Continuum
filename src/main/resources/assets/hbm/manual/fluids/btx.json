@@ -1,0 +1,23 @@
+{
+	"name": "BTX",
+	"icon": [
+		"hbm:fluid_icon",
+		1,
+		"hbm:xylene"
+	],
+	"trigger": [
+		[
+			"hbm:fluid_icon",
+			1,
+			"hbm:xylene"
+		]
+	],
+	"title": {
+		"en_us": "BTX",
+		"ru_ru": "БТК"
+	},
+	"content": {
+		"en_us": "BTX can be obtained by [[fractioning|Fractioning Tower]] [[reformate|Reformate]] or [[desulfurized naphtha|Desulfurized Naphtha]]. It is primarily used to produce [[hard plastic|Hard Plastic]] when combined with [[phosgene]]. Later, it is used to produce [[crystalline fullerite|Crystalline Fullerite]] through [[acidizing|Ore Acidizer]] [[fullerine|Fullerine]]. It can be [[cracked|Catalytic Cracking Tower]] for additional [[aromatic hydrocarbons|Aromatic Hydrocarbons]] and [[petroleum gas|Petroleum Gas]].<br><br>{{Template:Oil3}}",
+		"ru_ru": "БТК можно получить путем [[ректификации|Fractioning Tower]] [[реформированного топлива|Reformate]] или [[обессеренного нафта|Desulfurized Naphtha]]. В основном он используется для производства [[твёрдого пластика|Hard Plastic]] при объединении с [[фосгеном|phosgene]]. Позже он используется для производства [[кристаллического фуллерита|Crystalline Fullerite]] путем [[обработки кислотой|Ore Acidizer]] [[фуллерина|Fullerine]]. Его можно подвергнуть [[крекингу|Catalytic Cracking Tower]] для получения дополнительных [[ароматических углеводородов|Aromatic Hydrocarbons]] и [[попутного нефтяного газа|Petroleum Gas]].<br><br>{{Template:Oil3}}"
+	}
+}

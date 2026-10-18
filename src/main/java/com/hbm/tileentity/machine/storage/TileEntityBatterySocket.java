@@ -23,11 +23,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -41,6 +43,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The Battery Socket multiblock's core BlockEntity. Unlike the {@code machine_battery} block (which stores
@@ -55,7 +58,8 @@ import net.minecraft.world.phys.Vec3;
  * tick) and every 1 to 3 minutes discharges: electric beams at every living thing within 15 blocks, each ending in a
  * small electric explosion, plus one explosion at the socket.
  */
-public class TileEntityBatterySocket extends TileEntityBatteryBase implements MenuProvider, IRORValueProvider, IRORInteractive {
+public class TileEntityBatterySocket extends TileEntityBatteryBase implements MenuProvider, IRORValueProvider, IRORInteractive,
+        WorldlyContainer {
 
     /** Net throughput over the last second (HE/s), for the GUI energy-bar tooltip; synced to clients. */
     public long delta = 0L;
@@ -251,6 +255,25 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
     @Override
     public int[] getAccessibleSlotsFromSide(int side) {
         return new int[]{0};
+    }
+
+    @Override
+    public int[] getSlotsForFace(Direction side) {
+        return getAccessibleSlotsFromSide(side.ordinal());
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
+        return isItemValidForSlot(slot, stack);
+    }
+
+    /** Automation takes an empty battery out while discharging and a full one while charging, by the active mode. */
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
+        if (!(stack.getItem() instanceof IBatteryItem bat)) return false;
+        int mode = getRelevantMode(false);
+        if (mode == mode_output && bat.getCharge(stack) == 0) return true;
+        return mode == mode_input && bat.getCharge(stack) == bat.getMaxCharge(stack);
     }
 
     // Multiblock port geometry (ported unchanged from the 1.12.2 socket)

@@ -5,6 +5,8 @@ import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
+import com.hbm.items.machine.ItemOrbitalAssembly;
+import com.hbm.items.machine.ItemOrbitalAssembly.EnumOrbitalAssembly;
 import com.hbm.items.machine.ItemSatChip;
 import com.hbm.items.machine.ItemSatellite;
 import com.hbm.items.machine.ItemSatellite.EnumSatType;
@@ -41,6 +43,14 @@ public final class ModSatelliteItems {
                 .transform(Presets.sprite("hbm:items/" + id));
     });
 
+    /** 1.7 {@code orbital_assembly}, one item per type; every type draws the single 1.7 sprite. */
+    public static final ItemFamily<EnumOrbitalAssembly, ItemOrbitalAssembly> orbital_assembly =
+            ItemFamily.of(EnumOrbitalAssembly.class, type -> {
+                String id = "orbital_assembly_" + type.name().toLowerCase(Locale.ROOT);
+                return REG.item(id, p -> new ItemOrbitalAssembly(p, type), p -> p.stacksTo(1))
+                        .transform(Presets.sprite("hbm:items/orbital_assembly"));
+            });
+
     @Deprecated public static final RegistryObject<ItemSatChip> sat_mapper = chip("sat_mapper");
     @Deprecated public static final RegistryObject<ItemSatChip> sat_scanner = chip("sat_scanner");
     @Deprecated public static final RegistryObject<ItemSatChip> sat_radar = chip("sat_radar");
@@ -66,6 +76,7 @@ public final class ModSatelliteItems {
 
     static {
         ModTabs.addStacksTo(HbmTab.MISSILES, satellite::stacks);
+        ModTabs.addStacksTo(HbmTab.MATERIALS, orbital_assembly::stacks);
         for (RegistryObject<? extends Item> item : List.of(sat_gerald, sat_chip, sat_coord, sat_designator,
                 sat_relay)) {
             ModTabs.addTo(HbmTab.MISSILES, item);

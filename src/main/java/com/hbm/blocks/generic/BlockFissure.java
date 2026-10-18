@@ -2,10 +2,8 @@ package com.hbm.blocks.generic;
 
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.blocks.ModFluidNetBlocks;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.ForgeDirection;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -23,6 +21,9 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import com.hbm.tileentity.ModTerrainBlockEntities;
+import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * 1.7 {@code BlockFissure} ({@code ore_volcano}, "Geothermal Vent"): unbreakable bedrock with a molten
@@ -64,8 +65,8 @@ public class BlockFissure extends CompatBlock implements TickingBlock {
         return new TileEntityFissure(pos, state);
     }
 
-    /** 1.7 {@code TileEntityFissure}: a permanently full 1,000 mB lava tank sending upward only. */
-    public static class TileEntityFissure extends BlockEntity implements IFluidStandardSenderMK2 {
+    /** 1.7 {@code TileEntityFissure}: a permanently full 1,000 mB lava tank. */
+    public static class TileEntityFissure extends TileEntityLoadedBase implements IFluidStandardSenderMK2 {
 
         public final FluidTankNTM lava = new FluidTankNTM(Fluids.LAVA, 1_000);
 
@@ -73,18 +74,16 @@ public class BlockFissure extends CompatBlock implements TickingBlock {
             super(ModTerrainBlockEntities.FISSURE.get(), pos, state);
         }
 
-        public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFissure fissure) {
-            fissure.lava.setFill(1_000);
-            fissure.tryProvide(fissure.lava, level, pos.above(), ForgeDirection.UP);
-        }
+        protected PortDef[] cachedPorts;
+        public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
-        @Override
-        public boolean canConnect(FluidType type, ForgeDirection dir) {
-            return dir == ForgeDirection.DOWN && type == Fluids.LAVA;
+        public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFissure fissure) {
+            fissure.setupFluidPorts(fissure.getPorts());
+            fissure.updatePortFIFO();
+            fissure.lava.setFill(1_000);
         }
 
         @Override public @NonNull FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{lava}; }
         @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{lava}; }
-        @Override public boolean isLoaded() { return !isRemoved(); }
     }
 }

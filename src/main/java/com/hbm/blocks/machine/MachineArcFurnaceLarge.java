@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
@@ -123,5 +124,17 @@ public class MachineArcFurnaceLarge extends BlockMultiblockMachine implements IE
         visitor.passiveCell(core.relative(rot, 2).relative(facing, -1), MASK_ALL, domains);
         visitor.passiveCell(core.relative(rot, -2).relative(facing), MASK_ALL, domains);
         visitor.passiveCell(core.relative(rot, -2).relative(facing, -1), MASK_ALL, domains);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {2, 0, 1, ForgeDirection.EAST.ordinal()},
+                {2, 0, -1, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 1, ForgeDirection.WEST.ordinal()},
+                {-2, 0, -1, ForgeDirection.WEST.ordinal()},
+        }, dir);
     }
 }

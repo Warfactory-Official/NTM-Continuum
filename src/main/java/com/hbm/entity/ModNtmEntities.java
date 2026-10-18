@@ -37,7 +37,7 @@ import com.hbm.entity.logic.EntityNukeExplosionMK3;
 import com.hbm.entity.logic.EntityTomBlast;
 import com.hbm.entity.logic.EntityWaypoint;
 import com.hbm.entity.missile.EntityBobmazon;
-import com.hbm.entity.missile.EntityMinerRocket;
+import com.hbm.entity.missile.EntitySatellitePod;
 import com.hbm.entity.missile.EntityMissileCustom;
 import com.hbm.entity.missile.EntityMissileShuttle;
 import com.hbm.entity.missile.EntityMissileTier0.EntityMissileBHole;
@@ -49,7 +49,8 @@ import com.hbm.entity.missile.EntityMissileTier2.EntityMissileClusterStrong;
 import com.hbm.entity.missile.EntityMissileTier3.EntityMissileDrill;
 import com.hbm.entity.missile.EntityMissileTier3.EntityMissileRain;
 import com.hbm.entity.missile.EntityMissileTier4.EntityMissileVolcano;
-import com.hbm.entity.missile.EntitySoyuz;
+import com.hbm.entity.missile.EntityRocketLambda;
+import com.hbm.entity.missile.EntityRocketSoyuz;
 import com.hbm.entity.missile.EntitySoyuzCapsule;
 import com.hbm.entity.mob.EntityBlockSpider;
 import com.hbm.entity.mob.EntityCreeperGold;
@@ -356,9 +357,9 @@ public final class ModNtmEntities {
     public static final RegistryObject<EntityType<EntityBobmazon>> BOBMAZON_DELIVERY =
             REG.entity("entity_bobmazon_delivery", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityBobmazon>of(EntityBobmazon::new, MobCategory.MISC)).sized(1.0F, 3.0F).clientTrackingRange(63).updateInterval(1), key));
-    public static final RegistryObject<EntityType<EntityMinerRocket>> MINER_LANDER =
+    public static final RegistryObject<EntityType<EntitySatellitePod>> MINER_LANDER =
             REG.entity("entity_miner_lander", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityMinerRocket>of(EntityMinerRocket::new, MobCategory.MISC)).sized(1.0F, 3.0F).clientTrackingRange(63).updateInterval(1), key));
+                    Entities.noLoot(EntityType.Builder.<EntitySatellitePod>of(EntitySatellitePod::new, MobCategory.MISC)).fireImmune().sized(0.95F, 5.25F).clientTrackingRange(63).updateInterval(1), key));
     public static final RegistryObject<EntityType<EntityQuasar>> DIGAMMA_QUASAR =
             REG.entity("entity_digamma_quasar", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityQuasar>of(EntityQuasar::new, MobCategory.MISC)).sized(0.6F, 1.8F).clientTrackingRange(16).updateInterval(1), key));
@@ -392,9 +393,12 @@ public final class ModNtmEntities {
     public static final RegistryObject<EntityType<EntityTom>> TOM_THE_MOONSTONE =
             REG.entity("entity_tom_the_moonstone", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityTom>of(EntityTom::new, MobCategory.MISC)).sized(0.25F, 0.25F).clientTrackingRange(63).updateInterval(1), key));
-    public static final RegistryObject<EntityType<EntitySoyuz>> SOYUZ =
+    public static final RegistryObject<EntityType<EntityRocketSoyuz>> SOYUZ =
             REG.entity("entity_soyuz", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntitySoyuz>of(EntitySoyuz::new, MobCategory.MISC)).fireImmune().sized(5.0F, 50.0F).clientTrackingRange(63).updateInterval(1), key));
+                    Entities.noLoot(EntityType.Builder.<EntityRocketSoyuz>of(EntityRocketSoyuz::new, MobCategory.MISC)).fireImmune().sized(5.0F, 50.0F).clientTrackingRange(63).updateInterval(1), key));
+    public static final RegistryObject<EntityType<EntityRocketLambda>> LAMBDA_ROCKET =
+            REG.entity("entity_lambda_rocket", key -> Entities.build(
+                    Entities.noLoot(EntityType.Builder.<EntityRocketLambda>of(EntityRocketLambda::new, MobCategory.MISC)).sized(0.6F, 1.8F).clientTrackingRange(63).updateInterval(1), key));
     public static final RegistryObject<EntityType<EntitySoyuzCapsule>> SOYUZ_CAPSULE =
             REG.entity("entity_soyuz_capsule", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntitySoyuzCapsule>of(EntitySoyuzCapsule::new, MobCategory.MISC)).fireImmune().sized(1.0F, 1.0F).clientTrackingRange(63).updateInterval(1), key));

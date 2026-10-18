@@ -19,6 +19,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -52,6 +53,7 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     private boolean didWhistle;
 
     private ItemStack cargo = ItemStack.EMPTY;
+    public int health = 50;
 
     public EntityArtilleryShell(EntityType<? extends EntityArtilleryShell> type, Level level) {
         super(type, level);
@@ -65,6 +67,16 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
 
     @Override
     public boolean shouldRenderAtSqrDistance(double distance) {
+        return true;
+    }
+
+    @Override
+    protected boolean onHurt(DamageSource source, float amount) {
+        if (isInvulnerable()) return false;
+        if (this.health > 0 && !level().isClientSide()) {
+            this.health -= (int) amount;
+            if (this.health <= 0) discard();
+        }
         return true;
     }
 

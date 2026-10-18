@@ -7,9 +7,10 @@ import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
-import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.IFillableItem;
+import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -23,12 +24,10 @@ import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.Library;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.graph.EndpointRegistry;
 import dev.golem.core.Ids;
 import dev.golem.core.world.Effects;
 import java.util.ArrayList;
@@ -54,7 +53,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
-
+import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The fluid tank multiblock's core BlockEntity: a tank-backed fluid transceiver
@@ -85,8 +85,6 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     public final FluidTankNTM tank = new FluidTankNTM(Fluids.NONE, CAPACITY);
 
-    private long[] cells = FluidGraph.NONE;
-
     private boolean climbRegistered = false;
     private AABB ladderAABB;
 
@@ -105,24 +103,14 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineFluidTank tank) {
+        tank.setupFluidPorts(tank.getPorts());
+        tank.updatePortFIFO();
         tank.ensureClimbRegistered();
         FluidType type = tank.tank.getTankType();
         if (!tank.hasExploded) {
-            if (level instanceof ServerLevel server) tank.updateCells(server, type);
-            if (tank.mode != 1) {
-                for (DirPos dp : tank.getConPos()) {
-                    BlockPos at = dp.getPos();
-                    if (tank.mode == 2) tank.tryProvide(tank.tank, level, at, dp.getDir());
-                    else tank.tryUnprovide(type, level, at.getX(), at.getY(), at.getZ());
-                    if (tank.mode == 0) tank.trySubscribe(type, level, at, dp.getDir());
-                    else tank.tryUnsubscribe(type, level, at.getX(), at.getY(), at.getZ());
-                }
-            }
             MachineFluidContainerIO.load(tank.tank, tank.inventory, 2, 3);
             tank.updateTypeFromFluidId();
             type = tank.tank.getTankType();
-        } else if (level instanceof ServerLevel server) {
-            tank.cells = FluidGraph.release(server, tank.cells); // 1.7: a torn tank leaves the network
         }
 
         // 1.7: antimatter does not stay in a tank, a highly corrosive fluid eats through it
@@ -198,7 +186,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
                     z + rand.nextDouble(), flame, 150);
 
             if (server.getGameTime() % 5 == 0) {
-                FT_Polluting.pollute(server, worldPosition, type, FluidReleaseType.BURN, amount * 5);
+                FluidTrait.onRelease(server, worldPosition, type, FluidReleaseType.BURN, amount * 5);
             }
         } else if (FluidTraitSimple.isGaseousAny(type)) {
             if (server.getGameTime() % 5 == 0) {
@@ -213,7 +201,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
             }
 
             if (server.getGameTime() % 5 == 0) {
-                FT_Polluting.pollute(server, worldPosition, type, FluidReleaseType.SPILL, amount * 5);
+                FluidTrait.onRelease(server, worldPosition, type, FluidReleaseType.SPILL, amount * 5);
             }
         }
     }
@@ -348,38 +336,15 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         return entity.getBoundingBox().intersects(getLadderAABB());
     }
 
-    /**
-     * 1.7.10's eight fixed (unrotated) positions two blocks out, all facing the four inner-corner proxy
-     * cells (core ± 1, ± 1). Whatever the facing, the four along the long axis fall inside the 5×3
-     * footprint and are dead; the other four sit against the long sides, which is where 1.7 connects.
-     */
-    public DirPos[] getConPos() {
-        int x = getBlockPos().getX(), y = getBlockPos().getY(), z = getBlockPos().getZ();
-        return new DirPos[]{
-                new DirPos(x + 2, y, z - 1, Library.POS_X), new DirPos(x + 2, y, z + 1, Library.POS_X),
-                new DirPos(x - 2, y, z - 1, Library.NEG_X), new DirPos(x - 2, y, z + 1, Library.NEG_X),
-                new DirPos(x - 1, y, z + 2, Library.POS_Z), new DirPos(x + 1, y, z + 2, Library.POS_Z),
-                new DirPos(x - 1, y, z - 2, Library.NEG_Z), new DirPos(x + 1, y, z - 2, Library.NEG_Z)};
-    }
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.refinery(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
-    /**
-     * Buffer mode makes the tank a length of duct: it holds its own footprint as cells, so runs touching
-     * two different ports are one network. Every other mode gives them back and lets the ducts find it by
-     * probing, which is all a plain provider or receiver ever needed.
-     */
-    private void updateCells(ServerLevel level, FluidType type) {
-        cells = mode == 1 && type != Fluids.NONE
-                ? FluidGraph.hold(level, this, type, getConPos())
-                : FluidGraph.release(level, cells);
-    }
+    public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
         unregisterClimbable();
-        if (cells.length > 0 && FluidGraph.dropCells(this, cells) && level instanceof ServerLevel server) {
-            EndpointRegistry.of(server).withdraw(getBlockPos());
-        }
     }
 
     // IFluidStandardTransceiverMK2 (tank-backed, gated by mode)
@@ -391,14 +356,35 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     @Override
     public FluidTankNTM[] getSendingTanks() {
-        if (hasExploded) return new FluidTankNTM[0];
-        return (mode == 1 || mode == 2) ? new FluidTankNTM[]{tank} : new FluidTankNTM[0];
+        return new FluidTankNTM[]{tank};
     }
 
     @Override
     public FluidTankNTM[] getReceivingTanks() {
-        if (hasExploded) return new FluidTankNTM[0];
-        return (mode == 0 || mode == 1) ? new FluidTankNTM[]{tank} : new FluidTankNTM[0];
+        return new FluidTankNTM[]{tank};
+    }
+
+    // 1.7 runs the tank like a barrel: the mode gates what it holds and wants, the speeds scale with the fill
+    @Override
+    public long getDemand(FluidType type, int pressure) {
+        if (this.mode == 2 || this.mode == 3) return 0;
+        if (tank.getPressure() != pressure) return 0;
+        return type == tank.getTankType() ? tank.getMaxFill() - tank.getFill() : 0;
+    }
+
+    @Override
+    public long getFluidAvailable(FluidType type, int pressure) {
+        if (this.mode == 0 || this.mode == 3) return 0;
+        if (tank.getPressure() != pressure) return 0;
+        return type == tank.getTankType() ? tank.getFill() : 0;
+    }
+
+    @Override public long getReceiverSpeed(FluidType type, int pressure) { return this.hasExploded ? 0 : (mode == 0 || mode == 1) ? Math.max(500, (tank.getMaxFill() - tank.getFill()) / 100) : 0; }
+    @Override public long getProviderSpeed(FluidType type, int pressure) { return this.hasExploded ? 0 : (mode == 1 || mode == 2) ? Math.max(500, tank.getFill() / 100) : 0; }
+
+    @Override
+    public ConnectionPriority getFluidPriority() {
+        return mode == 1 ? ConnectionPriority.LOW : ConnectionPriority.NORMAL;
     }
 
     // MenuProvider

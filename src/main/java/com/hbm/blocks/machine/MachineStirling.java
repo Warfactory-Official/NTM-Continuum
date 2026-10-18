@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -153,5 +154,22 @@ public class MachineStirling extends BlockMultiblockMachine implements IEnergyCo
         visitor.cell(core.offset(-1, 0, 0), MASK_WEST);
         visitor.cell(core.offset(0, 0, 1), MASK_SOUTH);
         visitor.cell(core.offset(0, 0, -1), MASK_NORTH);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-1, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
+    }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {0, 0, 0.5, -0.3, 0.4, -0.4, 1},
+        };
     }
 }

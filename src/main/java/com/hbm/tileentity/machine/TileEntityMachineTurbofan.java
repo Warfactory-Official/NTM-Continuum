@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.environment.Environment;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.sound.TurbofanSoundHandler;
@@ -51,16 +52,16 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The legacy afterburning turbofan, including its thrust and blade damage volumes.
  *
  * <p>Smoke: once a second while burning, the fuel's {@code FT_Polluting} burn table goes into the 150 mB
- * smoke tanks. 1.7 calls {@code sendSmoke} at every port but lists only the blood tank as sending, so no
- * smoke is ever available to a duct; the tanks fill and then vent their overflow into the region. Kept.
+ * smoke tanks, which its ports offer to a chimney.
  */
 public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
-        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, MenuProvider {
+        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, MenuProvider, IRORValueProvider {
 
     public static final long MAX_POWER = 1_000_000L;
     public final FluidTankNTM tank = new FluidTankNTM(Fluids.KEROSENE, 24_000);
@@ -82,6 +83,9 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbofan fan) {
+        fan.setupAllPorts(fan.getPorts());
+        fan.updatePortPOFIFO();
+
         fan.output = 0;
         fan.consumption = 0;
         fan.updateFuelType();
@@ -124,12 +128,6 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         }
 
         fan.power = Library.chargeItemsFromTE(fan.inventory, 3, fan.power, fan.power);
-        for (DirPos connection : fan.getConPos()) {
-            fan.tryProvide(level, connection.getPos(), connection.getDir());
-            fan.trySubscribe(fan.tank.getTankType(), level, connection);
-            if (fan.blood.getFill() > 0) fan.tryProvide(fan.blood, level, connection);
-            fan.sendSmoke(connection);
-        }
 
         if (burnValue > 0 && amountToBurn > 0) fan.applyExhaust(level, amountToBurn);
         fan.power = Math.min(fan.power, MAX_POWER);
@@ -204,6 +202,23 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         return MachineCore.facing(getBlockState());
     }
 
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = getFacing().getRotation(ForgeDirection.UP);
+            ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + rot.offsetX, y, z + rot.offsetZ, rot),
+                    PortDef.make(x + rot.offsetX - dir.offsetX, y, z + rot.offsetZ - dir.offsetZ, rot),
+                    PortDef.make(x - rot.offsetX, y, z - rot.offsetZ, rot.getOpposite()),
+                    PortDef.make(x - rot.offsetX - dir.offsetX, y, z - rot.offsetZ - dir.offsetZ, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
+    }
+
     public DirPos[] getConPos() {
         ForgeDirection dir = getFacing().getRotation(ForgeDirection.UP);
         ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
@@ -217,7 +232,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
 
     @Override public boolean canConnect(FluidType type, ForgeDirection dir) { return dir != ForgeDirection.DOWN; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
-    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{blood}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{blood, smoke, smoke_leaded, smoke_poison}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank, blood, smoke, smoke_leaded, smoke_poison}; }
     @Override public long getPower() { return power; }
     @Override public void setPower(long value) { power = value; }
@@ -271,5 +286,22 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         super.loadData(input);
         power = input.getLongOr("powerTime", 0L); afterburner = input.getIntOr("afterburner", 0);
         showBlood = input.getBooleanOr("showBlood", false); tank.readFromNBT(input, "tank"); blood.readFromNBT(input, "blood");
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "state", PREFIX_VALUE + "output", PREFIX_VALUE + "power",
+                PREFIX_VALUE + "fuel", PREFIX_VALUE + "blood", PREFIX_VALUE + "afterburner"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "state").equals(name)) return wasOn ? "1" : "0";
+        if ((PREFIX_VALUE + "output").equals(name)) return "" + output;
+        if ((PREFIX_VALUE + "power").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "fuel").equals(name)) return "" + tank.getFill();
+        if ((PREFIX_VALUE + "blood").equals(name)) return "" + blood.getFill();
+        if ((PREFIX_VALUE + "afterburner").equals(name)) return "" + afterburner;
+        return null;
     }
 }

@@ -6,7 +6,6 @@ import dev.golem.core.data.Tags;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
@@ -17,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * The sunlight-fed solar boiler, a straight port of 1.7.10's {@code TileEntitySolarBoiler}: 100 mB of
@@ -40,26 +40,24 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntitySolarBoiler te) {
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
         te.tryConvert();
-        te.sendFluid(level);
         // 1.7 networkPackNT(15) every tick
         te.networkPackNT();
         te.setChanged();
     }
 
-
-    private void sendFluid(Level level) {
-        for (DirPos connection : getConPos()) {
-            trySubscribe(tanks[0].getTankType(), level, connection);
-            tryProvide(tanks[1], level, connection);
+    protected PortDef[] cachedPorts;
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x, y, z, Library.NEG_Y),
+                    PortDef.make(x, y + 2, z, Library.POS_Y),
+            };
         }
-    }
-
-    public DirPos[] getConPos() {
-        return new DirPos[]{
-                new DirPos(worldPosition.above(3), Library.POS_Y),
-                new DirPos(worldPosition.below(), Library.NEG_Y)
-        };
+        return cachedPorts;
     }
 
     private void tryConvert() {

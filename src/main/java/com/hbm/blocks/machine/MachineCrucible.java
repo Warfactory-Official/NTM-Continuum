@@ -114,4 +114,11 @@ public class MachineCrucible extends BlockMultiblockMachine implements ICrucible
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         passiveEverywhere(core, facing, visitor, PASSIVE_ITEMS);
     }
+
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {0, 0, 0.5, -0.3, 0.4, -0.4, 1},
+        };
+    }
 }

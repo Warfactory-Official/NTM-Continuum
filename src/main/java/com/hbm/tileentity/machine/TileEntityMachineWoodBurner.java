@@ -16,7 +16,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ItemEnums.EnumAshType;
 import com.hbm.items.ModIngredientItems;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.module.ModuleBurnTime;
@@ -39,6 +38,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Wood burner, ported from the 1.12.2 {@code TileEntityMachineWoodBurner}. It remains separate from
@@ -71,15 +71,13 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
     @Override public String getDefaultName() { return "container.machineWoodBurner"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineWoodBurner te) {
+        te.setupAllPorts(te.getPorts());
+        te.updatePortPOFIFO();
+
         te.powerGen = 0;
         te.setTypeFromFluidId();
         if (MachineFluidContainerIO.load(te.tank, te.inventory, 3, 4)) te.setChanged();
         te.power = Library.chargeItemsFromTE(te.inventory, 5, te.power, maxPower);
-
-        for (DirPos connection : te.getConPos()) {
-            if (te.power > 0) te.tryProvide(level, connection.getPos(), connection.getDir());
-            if (level.getGameTime() % 20 == 0) te.trySubscribe(te.tank.getTankType(), level, connection);
-        }
 
         if (!te.liquidBurn) {
             if (te.burnTime <= 0) {
@@ -132,14 +130,19 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
                 pos.getZ() + 0.5 - dir.offsetZ + rot.offsetZ, 0, 0.05, 0);
     }
 
-    public DirPos[] getConPos() {
-        ForgeDirection dir = facing(getBlockState());
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        return new DirPos[]{
-                new DirPos(x - dir.offsetX * 2, y, z - dir.offsetZ * 2, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 2 + rot.offsetX, y, z - dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite())
-        };
+    protected PortDef[] cachedPorts;
+
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x - dir.offsetX, y, z - dir.offsetZ, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ, dir.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 
     private ForgeDirection facing(BlockState state) {

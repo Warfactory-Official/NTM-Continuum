@@ -92,7 +92,6 @@ public final class StandardInfoGameTests {
             Map.entry("machine_stirling_creative", 4),
             Map.entry("machine_stirling_steel", 5),
             Map.entry("machine_thresher", 7),
-            Map.entry("machine_turbine", 1),
             Map.entry("machine_wood_burner", 3),
             Map.entry("pa_beamline", 3),
             Map.entry("pa_detector", 4),

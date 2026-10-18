@@ -7,10 +7,13 @@ import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.tileentity.network.RTTYSystem;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.net.GolemBuffers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,13 +25,9 @@ import org.jspecify.annotations.Nullable;
  * satellite answers on that frequency. That is the whole machine: a text channel between a radio torch on
  * the ground and something that is not in the world at all.
  *
- * <p>The fourteenth machine with a redstone-over-radio surface, and the only one whose function forwards to
- * something outside the world: {@code FUN:tx} splits its payload back into a command and hands it to the
- * satellite, whose reply is left in {@code VAL:rx}.
- *
- * <p>1.7 {@code provideRORValue} compares against {@code PREFIX_VALUE + connected} - the boolean field, not the
- * string - so it only ever matches "VAL:true" or "VAL:false", and the advertised {@code VAL:connected} answers
- * nothing. Ported as found.
+ * <p>{@code FUN:tx} splits its payload back into a command and hands it to the satellite, whose reply is left in
+ * {@code VAL:rx}; {@code FUN:txrx} also broadcasts that reply on a channel. The satellite's status lines are synced
+ * for the look overlay.
  */
 public class TileEntityMachineSatLink extends TileEntityLoadedBase
         implements IRORValueProvider, IRORInteractive {
@@ -50,6 +49,8 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
     public float lift = INACTIVE_LIFT;
     public float prevLift = INACTIVE_LIFT;
 
+    public Component[] info = new Component[0];
+
     public TileEntityMachineSatLink(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_SATLINK.get(), pos, state);
     }
@@ -61,6 +62,7 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
             link.connected = SatelliteSavedData.get(server).isFreqTaken(link.freq);
         }
 
+        link.updateInfo(level);
         link.networkPackNT();
     }
 
@@ -90,6 +92,15 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
         return value < target ? value + SPEED : value - SPEED;
     }
 
+    protected void updateInfo(Level level) {
+        if (!connected) {
+            if (this.info.length > 0) this.info = new Component[0];
+            return;
+        }
+        Satellite sat = satellite(level);
+        if (sat != null) this.info = sat.getInfo(level);
+    }
+
     private @Nullable Satellite satellite(Level level) {
         if (!(level instanceof ServerLevel server)) return null;
         return SatelliteSavedData.get(server).getSatFromFreq(freq);
@@ -102,6 +113,11 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
         super.serialize(buf);
         buf.writeBoolean(connected);
         buf.writeInt(freq);
+        buf.writeInt(info.length);
+        for (Component line : info) {
+            buf.writeBoolean(line != null);
+            if (line != null) GolemBuffers.writeComponent(buf, line);
+        }
     }
 
     @Override
@@ -109,6 +125,9 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
         super.deserialize(buf);
         this.connected = buf.readBoolean();
         this.freq = buf.readInt();
+        int length = buf.readInt();
+        if (this.info.length != length) this.info = new Component[length];
+        for (int i = 0; i < length; i++) info[i] = buf.readBoolean() ? GolemBuffers.readComponent(buf) : null;
     }
 
     @Override
@@ -128,15 +147,21 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
     @Override
     public String[] getFunctionInfo() {
         return new String[]{
-                PREFIX_VALUE + "connected", PREFIX_VALUE + "freq", PREFIX_VALUE + "rx",
+                PREFIX_VALUE + "connected", PREFIX_VALUE + "freq", PREFIX_VALUE + "rx", PREFIX_VALUE + "type",
                 PREFIX_FUNCTION + "setfreq" + NAME_SEPARATOR + "freq",
-                PREFIX_FUNCTION + "tx" + NAME_SEPARATOR + "payload"};
+                PREFIX_FUNCTION + "tx" + NAME_SEPARATOR + "payload",
+                PREFIX_FUNCTION + "txrx" + NAME_SEPARATOR + "return freq" + PARAM_SEPARATOR + "payload"};
     }
 
     @Override
     public String provideRORValue(String name) {
-        if ((PREFIX_VALUE + connected).equals(name)) return this.connected ? "TRUE" : "FALSE";
+        if ((PREFIX_VALUE + "connected").equals(name)) return this.connected ? "TRUE" : "FALSE";
         if ((PREFIX_VALUE + "freq").equals(name)) return "" + this.freq;
+
+        if ((PREFIX_VALUE + "type").equals(name)) {
+            Satellite sat = satellite(level);
+            return sat != null ? sat.getType() : "";
+        }
 
         if ((PREFIX_VALUE + "rx").equals(name)) {
             Satellite sat = satellite(level);
@@ -146,6 +171,12 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
         return null;
     }
 
+    private void reportRadio() {
+        BlockPos pos = getBlockPos();
+        SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(), SatelliteRayScan.RayEvent.INFO_RADIO, 300);
+        setChanged();
+    }
+
     @Override
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "setfreq").equals(name) && params.length == 1) {
@@ -153,17 +184,27 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
             setChanged();
         }
 
-        if ((PREFIX_FUNCTION + "tx").equals(name)) {
+        if ((PREFIX_FUNCTION + "tx").equals(name) && params.length > 0) {
             Satellite sat = satellite(level);
             String[] cmd = String.join(IRORInteractive.PARAM_SEPARATOR, params).split(" ");
             if (sat != null && level instanceof ServerLevel server) {
                 sat.onCommand(level, cmd);
                 SatelliteSavedData.get(server).setDirty();
             }
-            BlockPos pos = getBlockPos();
-            SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
-                    SatelliteRayScan.RayEvent.INFO_RADIO, 300);
-            setChanged();
+            reportRadio();
+        }
+
+        if ((PREFIX_FUNCTION + "txrx").equals(name) && params.length > 1) {
+            Satellite sat = satellite(level);
+            String[] args = new String[params.length - 1];
+            System.arraycopy(params, 1, args, 0, args.length);
+            String[] cmd = String.join(IRORInteractive.PARAM_SEPARATOR, args).split(" ");
+            if (sat != null && level instanceof ServerLevel server) {
+                sat.onCommand(level, cmd);
+                RTTYSystem.broadcast(level, params[0], sat.tx);
+                SatelliteSavedData.get(server).setDirty();
+            }
+            reportRadio();
         }
 
         return null;

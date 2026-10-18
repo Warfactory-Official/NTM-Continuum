@@ -19,7 +19,6 @@ import com.hbm.tileentity.network.TileEntityConverterRfHe;
 import com.hbm.uninos.graph.Distribution;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
-import com.hbm.uninos.graph.PortClaims;
 import dev.golem.core.GolemCore;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.EnergyCompat;
@@ -56,9 +55,8 @@ import java.util.List;
  */
 public final class PowerNetworkGameTests {
 
-    /** Long enough for every machine to claim its ports and an unclaiming class to pass its PortClaims grace. */
-    private static final int PORT_CLAIM_WAIT = (int) PortClaims.GRACE_TICKS + 10;
-
+    /** Long enough for every machine to build its ports and a round to run. */
+    private static final int PORT_CLAIM_WAIT = 20;
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
@@ -281,7 +279,6 @@ public final class PowerNetworkGameTests {
                 rig.batteryAt(CABLE_FROM, 3, GRAPH_Z - 1, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
         TileEntityMachineBattery sink =
                 rig.batteryAt(CABLE_FROM + 6, 3, GRAPH_Z + 1, TileEntityMachineBattery.MODE_INPUT, 0L);
-        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
         helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
             String failure;
             long moved;
@@ -344,7 +341,6 @@ public final class PowerNetworkGameTests {
         TileEntityMachineBattery source =
                 rig.battery(CABLE_FROM, FOREIGN_Z - 1, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
 
-        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
         helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
             BlockPos cable = helper.absolutePos(new BlockPos(CABLE_FROM + 2, 1, FOREIGN_Z));
             EnergyView view = EnergyCompat.find(level, cable, Direction.UP);
@@ -409,7 +405,6 @@ public final class PowerNetworkGameTests {
         TileEntityMachineElectricFurnace furnace = rig.furnace(CABLE_FROM - 1, THEFT_Z, 50_000L);
         TileEntityMachineBattery battery = rig.battery(CABLE_FROM + 3, THEFT_Z, TileEntityMachineBattery.MODE_INPUT, 0L);
 
-        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
         helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
             for (int pass = 0; pass < 8; pass++) {
                 rig.tickBatteries();
@@ -441,7 +436,6 @@ public final class PowerNetworkGameTests {
         TileEntityMachineBattery battery = rig.battery(CABLE_FROM - 1, GENERATOR_Z, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
         TileEntityConverterRfHe converter = rig.converter(CABLE_FROM + 3, GENERATOR_Z);
 
-        // PortClaims: a machine is on a net only through the ports it claimed on its own ticks (1.7 trySubscribe/tryProvide)
         helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
             for (int pass = 0; pass < 8; pass++) {
                 rig.tickBatteries();
@@ -582,9 +576,7 @@ public final class PowerNetworkGameTests {
 
         TileEntityMachineBattery batteryAt(int x, int y, int z, int mode, long power) {
             BlockPos pos = helper.absolutePos(new BlockPos(x, y, z));
-            level.setBlock(pos, ModMachineBlocks.machine_battery.get().defaultBlockState(), 3);
-            TileEntityMachineBattery battery = (TileEntityMachineBattery) level.getBlockEntity(pos);
-            helper.assertTrue(battery != null, "A battery block entity failed to appear at " + pos);
+            TileEntityMachineBattery battery = PortedBattery.place(level, pos);
             battery.redLow = (short) mode;
             battery.redHigh = (short) mode;
             battery.power = power;

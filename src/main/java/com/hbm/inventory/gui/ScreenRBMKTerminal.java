@@ -18,7 +18,7 @@ import net.minecraft.network.chat.Component;
  *
  * <p>The screen itself is only the input line and a key legend; the scrollback is drawn on the block's
  * own face by {@link com.hbm.client.render.RBMKTerminalRenderer}, which reads the line being typed
- * straight off this screen through {@link #workingLine()}.
+ * straight off this screen through {@link #workingLine}.
  */
 public final class ScreenRBMKTerminal extends CompatScreen {
 
@@ -30,10 +30,15 @@ public final class ScreenRBMKTerminal extends CompatScreen {
         this.terminal = terminal;
     }
 
-    /** What the block face draws on its top line while this screen is open. */
-    public static String workingLine() {
-        return Minecraft.getInstance().screen instanceof ScreenRBMKTerminal screen && screen.line != null
-                ? screen.line.getValue()
+    /** Whether this screen is open on {@code terminal}; other terminals keep their own top line. */
+    public static boolean editing(BlockEntityRBMKTerminal terminal) {
+        return Minecraft.getInstance().screen instanceof ScreenRBMKTerminal screen && screen.terminal == terminal;
+    }
+
+    /** What {@code terminal}'s face draws on its top line while this screen is open on it. */
+    public static String workingLine(BlockEntityRBMKTerminal terminal) {
+        return editing(terminal) && ((ScreenRBMKTerminal) Minecraft.getInstance().screen).line != null
+                ? ((ScreenRBMKTerminal) Minecraft.getInstance().screen).line.getValue()
                 : "";
     }
 

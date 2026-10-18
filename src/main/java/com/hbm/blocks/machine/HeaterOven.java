@@ -22,4 +22,10 @@ public class HeaterOven extends HeaterFirebox {
         return new TileEntityHeaterOven(pos, state);
     }
 
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+                {1, 1, 0.5, -0.3, 0.4, -0.4, 1},
+        };
+    }
 }

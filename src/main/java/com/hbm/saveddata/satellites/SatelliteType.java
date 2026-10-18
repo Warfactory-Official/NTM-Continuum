@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 
 /**
  * A kind of satellite: 1.7 {@code XSatelliteRegistry.idToClass}, as a registry of records keyed by the name saves
- * carry ({@code "mapper"}, {@code "laser"}, ...). HBM registers 1.7's twelve in 1.7 id order; an addon registers its
+ * carry ({@code "mapper"}, {@code "laser"}, ...). HBM registers 1.7's thirteen in 1.7 id order; an addon registers its
  * own under its namespace ({@code SatelliteType.register("ntmspace:dyson_relay", ...)}) at mod construction, and
  * {@code SatelliteSavedData} saves and loads it by that name. Which item launches which satellite is
  * {@link XSatelliteRegistry}'s job (the {@code hbm:satellite} item data map), as it was in 1.7.
@@ -22,7 +22,7 @@ import java.util.function.Supplier;
  */
 public final class SatelliteType {
 
-    /** Every satellite type, HBM's 1.7 twelve first. */
+    /** Every satellite type, HBM's 1.7 thirteen first. */
     public static final NamedRegistry<SatelliteType> REGISTRY = new NamedRegistry<>("satellite type", SatelliteType::name);
 
     public static final SatelliteType MAPPER = register("mapper", SatelliteMapper::new, SatelliteMapper.CODEC, null);
@@ -38,6 +38,7 @@ public final class SatelliteType {
     public static final SatelliteType PRECISION_LASER = register("precision_laser", SatellitePrecisionLaser::new, SatellitePrecisionLaser.CODEC, null);
     public static final SatelliteType DETECTOR = register("detector", SatelliteDetector::new, SatelliteDetector.CODEC, null);
     public static final SatelliteType RAY_SCAN = register("ray_scan", SatelliteRayScan::new, SatelliteRayScan.CODEC, null);
+    public static final SatelliteType SCIENCE = register("science", SatelliteScience::new, SatelliteScience.CODEC, null);
 
     /** A satellite type by its saved name; an unknown name fails to decode. */
     public static final Codec<SatelliteType> CODEC = REGISTRY.codec();

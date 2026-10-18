@@ -157,6 +157,9 @@ public final class HbmBlockEntityRenderers {
                  tex("machines/pump_steam.png")));
          regGem(sink, ModBlockEntities.MACHINE_STIRLING.get(), StirlingRenderer::new);
          regGem(sink, ModBlockEntities.MACHINE_PUREX.get(), PUREXRenderer::new);
+         regGem(sink, ModBlockEntities.MACHINE_ROCKMILL.get(), RockMillRenderer::new);
+         regGem(sink, ModBlockEntities.MACHINE_SUPERCOMPUTER.get(), SuperComputerRenderer::new);
+         regGem(sink, ModBlockEntities.MACHINE_TAPE_DRIVE.get(), TapeDriveRenderer::new);
         // Presses: a static body + a head that descends with the machine's progress, and the ingredient
         // lying on the anvil between them.
         regGem(sink, ModBlockEntities.MACHINE_EPRESS.get(), () -> new PressRenderer<>(
@@ -174,6 +177,8 @@ public final class HbmBlockEntityRenderers {
         // The launch pad draws the missile it is holding on top of the silo, so it needs its own
         // renderer rather than the generic static-OBJ one.
         regGem(sink, ModBlockEntities.LAUNCH_PAD.get(), LaunchPadRenderer::new);
+        regGem(sink, ModBlockEntities.LAUNCHPAD_SOYUZ.get(), LaunchpadSoyuzRenderer::new);
+        regGem(sink, ModBlockEntities.LAUNCHPAD_LAMBDA.get(), LaunchpadLambdaRenderer::new);
 
         // Soldering station: its own renderer: the static OBJ (with the asymmetric-footprint offset) plus
         // the current recipe's output item floating above (the 1.12.2 product display).

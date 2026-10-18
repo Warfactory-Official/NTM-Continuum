@@ -161,9 +161,7 @@ public final class ForeignEnergyGameTests {
     }
 
     private static TileEntityMachineBattery battery(GameTestHelper helper, int x, int z, int mode, long power) {
-        BlockPos pos = place(helper, x, z, ModMachineBlocks.machine_battery.get());
-        TileEntityMachineBattery battery = (TileEntityMachineBattery) helper.getLevel().getBlockEntity(pos);
-        helper.assertTrue(battery != null, "A battery block entity failed to appear at " + pos);
+        TileEntityMachineBattery battery = PortedBattery.place(helper.getLevel(), helper.absolutePos(new BlockPos(x, Y, z)));
         battery.redLow = (short) mode;
         battery.redHigh = (short) mode;
         battery.power = power;

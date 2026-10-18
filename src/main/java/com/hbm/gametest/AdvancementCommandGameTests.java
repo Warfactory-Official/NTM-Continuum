@@ -37,13 +37,13 @@ public final class AdvancementCommandGameTests {
     public static final GameTests.Function COMMANDS =
             TESTS.function("cmd_tree_and_config", 20, () -> AdvancementCommandGameTests::commands);
 
-    /** The 62 1.7 achievements and the tab root, minus the satellite-owned ones checked when their items exist. */
+    /** The 61 1.7 achievements and the tab root, minus the satellite-owned ones checked when their items exist. */
     public static final String[] IDS = {"root", "sacrifice", "impossible", "taste_of_blood", "go_fish", "potato", "c20_5",
             "fiend", "fiend2", "stratum", "omega12", "no9", "slimeball", "sulfuric", "inferno", "red_room", "hidden",
             "horizons_start", "horizons_end", "horizons_bonus", "boss_creeper", "boss_meltdown", "boss_maskman",
             "boss_worm", "boss_ufo", "rad_poison", "rad_death", "some_wounds", "digamma_see", "digamma_feel",
             "digamma_know", "digamma_kauai_moho", "digamma_up_on_top", "burner_press", "blast_furnace", "assembly",
-            "selenium", "chemplant", "concrete", "polymer", "desh", "tantalum", "gas_cent", "centrifuge", "foeq",
+            "selenium", "chemplant", "concrete", "polymer", "desh", "tantalum", "gas_cent", "centrifuge",
             "soyuz", "space", "schrab", "acidizer", "radium", "technetium", "zirnox_boom", "chicago_pile", "silex",
             "watz", "watz_boom", "rbmk", "rbmk_boom", "bismuth", "breeding", "fusion", "red_balloons", "manhattan"};
 
@@ -57,7 +57,7 @@ public final class AdvancementCommandGameTests {
             if (!satellites && id.startsWith("horizons_")) continue;
             if (Advancements.isDone(player, Constants.MOD_ID + ":" + id) == null) missing.add(id);
         }
-        helper.assertTrue(IDS.length == 63, "the tree lost a row: " + IDS.length);
+        helper.assertTrue(IDS.length == 62, "the tree lost a row: " + IDS.length);
         helper.assertTrue(missing.isEmpty(), "advancements not loaded: " + missing);
         // the root completes on the first tick, so the tab is open for everyone
         helper.assertTrue(Fluids.ASCHRAB.getRegistryName().equals(HbmAdvancementDeclarations.ASCHRAB_ID),
@@ -100,7 +100,6 @@ public final class AdvancementCommandGameTests {
         expect(helper, player, "desh", false);
 
         HbmCriteria.ORBIT.fire(player, new ItemStack(item("sat_foeq")));
-        expect(helper, player, "foeq", true);
         expect(helper, player, "space", false);
 
         // No. 9: the cigarette alone is not enough, the helmet must be worn
@@ -154,7 +153,8 @@ public final class AdvancementCommandGameTests {
         } finally {
             MineConfig.MINE_AP_DAMAGE = before;
         }
-        helper.assertTrue(ServerConfig.configMap.size() == 13, "1.7 ServerConfig has 13 variables, not "
+        // 19 ServerConfig keys plus 92 distinct GunValues keys
+        helper.assertTrue(ServerConfig.configMap.size() == 111, "1.7 ServerConfig has 111 variables, not "
                 + ServerConfig.configMap.size());
         helper.succeed();
     }

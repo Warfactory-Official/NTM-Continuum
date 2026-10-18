@@ -62,4 +62,30 @@ public final class MachinePUREX extends BlockMultiblockMachine implements IEnerg
             }
         }
     }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {-2, 0, -2, ForgeDirection.WEST.ordinal()},
+                {-2, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {0, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {1, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {2, 0, -2, ForgeDirection.NORTH.ordinal()},
+                {2, 0, -2, ForgeDirection.EAST.ordinal()},
+                {-2, 0, -1, ForgeDirection.WEST.ordinal()},
+                {2, 0, -1, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 0, ForgeDirection.WEST.ordinal()},
+                {2, 0, 0, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 1, ForgeDirection.WEST.ordinal()},
+                {2, 0, 1, ForgeDirection.EAST.ordinal()},
+                {-2, 0, 2, ForgeDirection.WEST.ordinal()},
+                {-2, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {2, 0, 2, ForgeDirection.SOUTH.ordinal()},
+                {2, 0, 2, ForgeDirection.EAST.ordinal()},
+        }, dir);
+    }
 }

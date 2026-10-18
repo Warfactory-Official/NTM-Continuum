@@ -12,6 +12,7 @@ import com.hbm.inventory.gui.GUIScreenFluid;
 import com.hbm.inventory.gui.GUIScreenGuide;
 import com.hbm.inventory.gui.GUIScreenHolotape;
 import com.hbm.inventory.gui.GUIScreenPager;
+import dev.golem.core.Ids;
 import com.hbm.items.tool.ItemColtanCompass;
 import com.hbm.items.tool.UtilityToolScreens;
 import com.hbm.main.MainRegistry;
@@ -58,6 +59,8 @@ public final class UtilityToolClientRegistrations {
             Minecraft mc = Minecraft.getInstance();
             switch (kind) {
                 case PAGER -> mc.setScreen(new GUIScreenPager(stack));
+                case RTTY_DESIGNATOR -> mc.setScreen(new GUIScreenPager(stack, Component.translatable("container.rttyDesignator"),
+                        Ids.of(Constants.MOD_ID, "textures/gui/machine/gui_rtty_designator.png")));
                 case FLUID_MULTI -> mc.setScreen(new GUIScreenFluid());
                 case GUIDE -> mc.setScreen(new GUIScreenGuide(stack));
                 case BOOK_LORE -> mc.setScreen(new GUIBookLore(stack));

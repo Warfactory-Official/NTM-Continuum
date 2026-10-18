@@ -3,9 +3,15 @@ package com.hbm.items.special;
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.VersatileConfig;
-import com.hbm.explosion.ExplosionLarge;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
+import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
+import com.hbm.explosion.vanillant.standard.DropChanceMutatorStandard;
+import com.hbm.explosion.vanillant.standard.EntityProcessorCross;
+import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.items.ModConsumableTailItems;
 import com.hbm.items.ModItems;
+import com.hbm.particle.helper.ExplosionCreator;
 import dev.golem.core.hook.Hook;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
@@ -141,8 +147,17 @@ public final class ItemEnergy extends CompatItem {
             case "bottle2_fritz" -> { player.heal(6F); add(player, Effects.speed(), 30 * 20, 1); add(player, Effects.resistance(), 30 * 20, 2); add(player, Effects.jumpBoost(), 30 * 20, 2); }
             case "bottle_sparkle" -> { player.heal(10F); add(player, Effects.speed(), 120 * 20, 1); add(player, Effects.resistance(), 120 * 20, 2); add(player, Effects.strength(), 120 * 20, 2); add(player, Effects.haste(), 120 * 20, 1); HbmLivingProps.incrementRadiation(player, 5F); }
             case "bottle_rad" -> { player.heal(10F); add(player, Effects.speed(), 120 * 20, 1); add(player, Effects.resistance(), 120 * 20, 2); add(player, MobEffects.FIRE_RESISTANCE, 120 * 20, 0); add(player, Effects.strength(), 120 * 20, 4); add(player, Effects.haste(), 120 * 20, 1); HbmLivingProps.incrementRadiation(player, 15F); }
-            // 1.7: "Totally not made from nitroglycerine." A size-50 large explosion (cloud, no rubble/shrapnel).
-            case "chocolate_milk" -> ExplosionLarge.explode(level, player.getX(), player.getY(), player.getZ(), 50, true, false, false);
+            // 1.7: "Totally not made from nitroglycerine." A size-50 blast at chest height that drops nothing.
+            case "chocolate_milk" -> {
+                double y = player.getY() + player.getBbHeight() / 2;
+                ExplosionCreator.composeEffectStandard(level, player.getX(), y, player.getZ());
+                ExplosionVNT xnt = new ExplosionVNT(level, player.getX(), y, player.getZ(), 50F);
+                xnt.setBlockAllocator(new BlockAllocatorStandard(32));
+                xnt.setBlockProcessor(new BlockProcessorStandard().withChance(new DropChanceMutatorStandard(0F)));
+                xnt.setEntityProcessor(new EntityProcessorCross(5D));
+                xnt.setPlayerProcessor(new PlayerProcessorStandard());
+                xnt.explode();
+            }
             case "coffee", "coffee_radium" -> { player.heal(10F); add(player, Effects.speed(), 60 * 20, 2); if (id.equals("coffee_radium")) HbmLivingProps.incrementRadiation(player, 500F); }
             default -> { }
         }

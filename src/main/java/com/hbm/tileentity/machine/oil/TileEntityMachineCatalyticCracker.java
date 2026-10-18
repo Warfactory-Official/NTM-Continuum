@@ -4,7 +4,6 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CrackingRecipes;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
@@ -16,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * Catalytic Cracker: 1:1 port of the 1.12.2 {@code TileEntityMachineCatalyticCracker}. A large
@@ -41,41 +41,38 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCatalyticCracker te) {
+        te.setupFluidPorts(te.getPorts());
+        te.updatePortFIFO();
+
         te.setupTanks();
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-            te.trySubscribe(te.tanks[1].getTankType(), level, dp);
-        }
 
         if (TickPhase.every(level, pos, 5)) te.crack();
 
         if (TickPhase.every(level, pos, 10)) {
-            for (DirPos dp : te.getConPos()) {
-                for (int i = 2; i <= 4; i++) {
-                    if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp);
-                }
-            }
             te.networkPackNT();
         }
     }
 
+    protected PortDef[] cachedPorts;
 
-    public DirPos[] getConPos() {
-        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
-        ForgeDirection dir = ForgeDirection.getOrientation(meta);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-
-        return new DirPos[]{
-                new DirPos(x + dir.offsetX * 4 + rot.offsetX, y, z + dir.offsetZ * 4 + rot.offsetZ, dir),
-                new DirPos(x + dir.offsetX * 4 - rot.offsetX * 2, y, z + dir.offsetZ * 4 - rot.offsetZ * 2, dir),
-                new DirPos(x - dir.offsetX * 4 + rot.offsetX, y, z - dir.offsetZ * 4 + rot.offsetZ, dir.getOpposite()),
-                new DirPos(x - dir.offsetX * 4 - rot.offsetX * 2, y, z - dir.offsetZ * 4 - rot.offsetZ * 2, dir.getOpposite()),
-                new DirPos(x + dir.offsetX * 2 + rot.offsetX * 3, y, z + dir.offsetZ * 2 + rot.offsetZ * 3, rot),
-                new DirPos(x + dir.offsetX * 2 - rot.offsetX * 4, y, z + dir.offsetZ * 2 - rot.offsetZ * 4, rot),
-                new DirPos(x - dir.offsetX * 2 + rot.offsetX * 3, y, z - dir.offsetZ * 2 + rot.offsetZ * 3, rot.getOpposite()),
-                new DirPos(x - dir.offsetX * 2 - rot.offsetX * 4, y, z - dir.offsetZ * 2 - rot.offsetZ * 4, rot.getOpposite())
-        };
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+            ForgeDirection dir = ForgeDirection.getOrientation(meta);
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX * 3 + rot.offsetX * 1, y, z + dir.offsetZ * 3 + rot.offsetZ * 1, dir),
+                    PortDef.make(x + dir.offsetX * 3 - rot.offsetX * 2, y, z + dir.offsetZ * 3 - rot.offsetZ * 2, dir),
+                    PortDef.make(x - dir.offsetX * 3 + rot.offsetX * 1, y, z - dir.offsetZ * 3 + rot.offsetZ * 1, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 3 - rot.offsetX * 2, y, z - dir.offsetZ * 3 - rot.offsetZ * 2, dir.getOpposite()),
+                    PortDef.make(x + dir.offsetX * 2 + rot.offsetX * 2, y, z + dir.offsetZ * 2 + rot.offsetZ * 2, rot),
+                    PortDef.make(x + dir.offsetX * 2 - rot.offsetX * 3, y, z + dir.offsetZ * 2 - rot.offsetZ * 3, rot.getOpposite()),
+                    PortDef.make(x - dir.offsetX * 2 + rot.offsetX * 2, y, z - dir.offsetZ * 2 + rot.offsetZ * 2, rot),
+                    PortDef.make(x - dir.offsetX * 2 - rot.offsetX * 3, y, z - dir.offsetZ * 2 - rot.offsetZ * 3, rot.getOpposite()),
+            };
+        }
+        return cachedPorts;
     }
 
     public void setupTanks() {

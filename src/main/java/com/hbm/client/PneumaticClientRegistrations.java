@@ -1,6 +1,7 @@
 package com.hbm.client;
 
 import com.hbm.client.render.HbmBlockEntityRenderers;
+import com.hbm.client.render.RenderPipeAnchor;
 import com.hbm.tileentity.ModPneumaticBlockEntities;
 import com.hbm.inventory.ModPneumaticMenus;
 import com.hbm.packet.PneumoAccessSyncPayload;
@@ -28,6 +29,7 @@ public final class PneumaticClientRegistrations {
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {
+        HbmBlockEntityRenderers.regGem(sink, ModPneumaticBlockEntities.PNEUMATIC_PIPE_ANCHOR.get(), () -> new RenderPipeAnchor<>("pipe_anchor_pneumatic"));
         HbmBlockEntityRenderers.regGem(sink, ModPneumaticBlockEntities.PNEUMATIC_TUBE.get(), PneumoTubeRenderer::new);
         HbmBlockEntityRenderers.regGem(sink, ModPneumaticBlockEntities.PNEUMATIC_TUBE_PAINTABLE.get(),
                 PneumoTubePaintableRenderer::new);

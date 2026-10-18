@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -122,5 +123,19 @@ public class MachineRefinery extends BlockMultiblockMachine implements IEnergyCo
             Player player, BlockHitResult hit) {
         if (MachineExplosionDamage.blownOpen(level, core)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         return super.useAtCore(state, level, core, player, hit);
+    }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {1, 0, 1, ForgeDirection.EAST.ordinal()},
+                {1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {1, 0, -1, ForgeDirection.EAST.ordinal()},
+                {1, 0, -1, ForgeDirection.NORTH.ordinal()},
+                {-1, 0, 1, ForgeDirection.WEST.ordinal()},
+                {-1, 0, 1, ForgeDirection.SOUTH.ordinal()},
+                {-1, 0, -1, ForgeDirection.WEST.ordinal()},
+                {-1, 0, -1, ForgeDirection.NORTH.ordinal()},
+        }, dir);
     }
 }

@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.config.RunningConfig.ConfigWrapper;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
@@ -43,6 +44,9 @@ import net.minecraft.world.phys.Vec3;
 /** The two secret Folly warheads, copied from ntm-next's XFactoryFolly. */
 public final class XFactoryFolly {
 
+    // 1.7 never puts this one into the server config.
+    public static final ConfigWrapper<Float> GUN_FOLLY_DAMAGE = new ConfigWrapper<>(1_000F);
+
     public static BulletConfig folly_sm;
     public static BulletConfig folly_nuke;
 
@@ -81,7 +85,7 @@ public final class XFactoryFolly {
                             var source = ModDamageSources.bullet(server, beam.config.dmgClass.type(), beam,
                                     beam.getThrower());
                             if (victim instanceof LivingEntity living) {
-                                DamageResistanceHandler.hurt(server, living, source, beam.damage, 100F, 0.99F);
+                                DamageResistanceHandler.hurt(server, living, source, beam.damage, 1_000F, 1F);
                             } else {
                                 EntityDamageUtil.attackEntityFromIgnoreIFrame(victim, source, beam.damage);
                             }
@@ -172,7 +176,7 @@ public final class XFactoryFolly {
 
     public static GunConfig gunConfig() {
         return new GunConfig().dura(0).draw(40).crosshair(Crosshair.NONE)
-                .rec(new Receiver(0).dmg(1000F).delay(26).dryfire(false).reload(160).jam(0)
+                .rec(new Receiver(0).dmg(GUN_FOLLY_DAMAGE).delay(26).dryfire(false).reload(160).jam(0)
                         .sound(ModGunSounds.FIRE_FOLLY::get, 100F, 1F)
                         .mag(new MagazineSingleReload(0, 1).addConfigs(folly_sm, folly_nuke))
                         .offset(0.75, -0.0625, -0.1875D).offsetScoped(0.75, -0.0625, -0.125D)

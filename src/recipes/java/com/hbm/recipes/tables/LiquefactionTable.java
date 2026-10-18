@@ -49,10 +49,10 @@ public final class LiquefactionTable extends RecipeSource<Row> {
     protected void registerDefaults() {
 
         //oil processing
-        put(COAL.gem(),                                         new FluidStack(100, Fluids.COALOIL));
-        put(COAL.dust(),                                        new FluidStack(100, Fluids.COALOIL));
-        put(LIGNITE.gem(),                                      new FluidStack(50, Fluids.COALOIL));
-        put(LIGNITE.dust(),                                     new FluidStack(50, Fluids.COALOIL));
+        put(COAL.gem(),                                         new FluidStack(250, Fluids.COALOIL));
+        put(COAL.dust(),                                        new FluidStack(250, Fluids.COALOIL));
+        put(LIGNITE.gem(),                                      new FluidStack(150, Fluids.COALOIL));
+        put(LIGNITE.dust(),                                     new FluidStack(150, Fluids.COALOIL));
         put(new ComparableStack(ModOilItems.tar(EnumTarType.CRUDE)),    new FluidStack(75, Fluids.BITUMEN));    // KEY_OIL_TAR
         put(new ComparableStack(ModOilItems.tar(EnumTarType.CRACK)),    new FluidStack(100, Fluids.BITUMEN));   // KEY_CRACK_TAR
         put(new ComparableStack(ModOilItems.tar(EnumTarType.COAL)),     new FluidStack(50, Fluids.BITUMEN));    // KEY_COAL_TAR
@@ -61,7 +61,8 @@ public final class LiquefactionTable extends RecipeSource<Row> {
         put(PB.ingot(),                                         new FluidStack(100, Fluids.LEAD));
         put(PB.dust(),                                          new FluidStack(100, Fluids.LEAD));
         put(PB.block(),                                         new FluidStack(900, Fluids.LEAD));
-        //general utility recipes because why not
+
+        // general utility recipes because why not
         put(new ComparableStack(Items.NETHERRACK),              new FluidStack(250, Fluids.LAVA));
         put(new ComparableStack(Items.COBBLESTONE),             new FluidStack(250, Fluids.LAVA));
         put(new ComparableStack(Items.STONE),                   new FluidStack(250, Fluids.LAVA));
@@ -73,14 +74,17 @@ public final class LiquefactionTable extends RecipeSource<Row> {
         put(new ComparableStack(Items.ENDER_PEARL),             new FluidStack(100, Fluids.ENDERJUICE));
         put(new ComparableStack(ModFallingBlocks.ore_oil_sand.get().asItem()), new FluidStack(100, Fluids.BITUMEN));
 
+        // biofuel
         put(new ComparableStack(Items.SUGAR),                   new FluidStack(100, Fluids.ETHANOL));
-        put(new ComparableStack(ModTerrainBlocks.plant_flower(BlockNTMFlower.Type.WEED).asItem()), new FluidStack(150, Fluids.ETHANOL));   // plant_flower:3
+        put(new ComparableStack(Items.MELON_SLICE),             new FluidStack(100, Fluids.ETHANOL));           // Items.melon
+        put(new ComparableStack(ModTerrainBlocks.plant_flower(BlockNTMFlower.Type.WEED).asItem()), new FluidStack(100, Fluids.ETHANOL));   // plant_flower:3
         put(new ComparableStack(ModTerrainBlocks.plant_flower(BlockNTMFlower.Type.CD0).asItem()), new FluidStack(50, Fluids.ETHANOL));     // plant_flower:4
         put(new ComparableStack(ModFuelItems.biomass.get()),        new FluidStack(125, Fluids.BIOGAS));
         put(new ComparableStack(ModItems.glyphid_gland_empty.get()), new FluidStack(2000, Fluids.BIOGAS));
         put(new TagStack(MixerRecipes.RAW_FISHES),              new FluidStack(100, Fluids.FISHOIL));           // Items.fish, any meta
         put(new ComparableStack(Items.SUNFLOWER),               new FluidStack(100, Fluids.SUNFLOWEROIL));      // double_plant:0
 
+        // plant gunk
         put(new ComparableStack(Items.WHEAT_SEEDS),             new FluidStack(50, Fluids.SEEDSLURRY));
         put(new ComparableStack(Item.byBlock(Blocks.SHORT_GRASS)), new FluidStack(100, Fluids.SEEDSLURRY));     // tallgrass:1
         put(new ComparableStack(Items.FERN),                    new FluidStack(100, Fluids.SEEDSLURRY));        // tallgrass:2

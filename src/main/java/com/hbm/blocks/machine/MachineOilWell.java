@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -70,5 +71,15 @@ public class MachineOilWell extends BlockMultiblockMachine implements IEnergyCon
     }
 
     /** The whole port surface is the core's own four horizontals. */
-    @Override public int coreMask() { return MASK_HORIZONTAL; }
+    @Override public int coreMask() { return MASK_HORIZONTAL | MASK_DOWN; }
+
+    @Override
+    public int[][] getAllPorts(ForgeDirection dir) {
+        return rotatePorts(new int[][] {
+                {0, 0, 0, ForgeDirection.EAST.ordinal()},
+                {0, 0, 0, ForgeDirection.WEST.ordinal()},
+                {0, 0, 0, ForgeDirection.SOUTH.ordinal()},
+                {0, 0, 0, ForgeDirection.NORTH.ordinal()},
+        }, dir);
+    }
 }
