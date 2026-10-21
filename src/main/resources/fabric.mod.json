@@ -3,7 +3,12 @@
     "id": "${mod_id}",
     "version": "${mod_version}",
     "name": "${mod_name}",
-    "description": "${mod_description} ${mod_credits}",
+    "description": "${mod_description}@golem.credits@",
+    "contact": {
+        "homepage": "@golem.homepage@",
+        "sources": "@golem.sources@",
+        "issues": "@golem.issues@"
+    },
     "authors": [
         "${mod_author}"
     ],

@@ -1,15 +1,16 @@
 modLoader = "javafml"
 loaderVersion = "${neoforge_loader_range}"
 license = "${mod_license}"
+issueTrackerURL = "@golem.issues@"
 
 [[mods]]
 modId = "${mod_id}"
 version = "${mod_version}"
 displayName = "${mod_name}"
+displayURL = "@golem.homepage@"
 logoFile = "assets/${mod_id}/icon.png"
-credits = "${mod_credits}"
 authors = "${mod_author}"
-description = '''${mod_description}'''
+description = '''${mod_description}@golem.credits@'''
 
 # NeoForge has no loader-specific mixins: its only one was the template's demo MixinTitleScreen,
 # removed during the flat-layout restructure. Only the shared config is listed.

@@ -356,7 +356,7 @@ fun ProcessResources.expandModResources() {
 tasks.processResources { expandModResources() }
 
 tasks.jar {
-    from(files(rootProject.file("LICENSE"), rootProject.file("LICENSE.LESSER"))) { rename { "${it}_${prop("mod.id")}" } }
+    from(files(rootProject.file("LICENSE"), rootProject.file("LICENSE.LESSER"), rootProject.file("CREDITS.txt"))) { rename { "${it}_${prop("mod.id")}" } }
 }
 
 tasks.named("createMinecraftArtifacts") { dependsOn(tasks.named("stonecutterGenerate")) }
@@ -394,6 +394,8 @@ apply(from = rootProject.file("../Golem-Core/gradle/mod/mixin-validation.gradle.
 
 // The uploaded jar: no GameTests or harness queries (see the script).
 apply(from = rootProject.file("gradle/release-jar.gradle.kts"))
+// Credits and links in the loader metadata, from the mod.* properties.
+apply(from = rootProject.file("../Golem-Core/gradle/mod/mod-metadata.gradle.kts"))
 // Modrinth + CurseForge upload of this node's jar; run every node with the root `publishAllMods`.
 apply(from = rootProject.file("../Golem-Core/gradle/mod/publish.gradle.kts"))
 
