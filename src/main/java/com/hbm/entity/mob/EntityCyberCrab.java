@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.CompatMonster;
 import com.hbm.entity.projectile.EntityBullet;
@@ -88,7 +89,7 @@ public class EntityCyberCrab extends CompatMonster implements RangedAttackMob, I
         if (getHealth() <= 0) {
             discard();
             // 1.7 createExplosion(isSmoking=false): never breaks blocks
-            server.explode(this, getX(), getY(), getZ(),
+            Explosions.explode(server, this, getX(), getY(), getZ(),
                     this instanceof EntityTaintCrab ? 3F : 0.1F, Level.ExplosionInteraction.NONE);
         }
     }

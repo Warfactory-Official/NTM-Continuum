@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.dfc;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.dfc.CoreComponent;
@@ -89,7 +90,7 @@ public class TileEntityCoreReceiver extends TileEntityMachineBase
             joules += energy;
         } else {
             level.destroyBlock(pos, false);
-            level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 2.5F,
+            Explosions.explode(level, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 2.5F,
                     Level.ExplosionInteraction.BLOCK);
         }
     }

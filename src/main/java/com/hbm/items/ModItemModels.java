@@ -36,13 +36,19 @@ public final class ModItemModels {
     private ModItemModels() {}
 
     /**
-     * The GameTest-only block {@code test_fan_blowable}. Its owner, {@code IntakeFanGameTests}, registers it
+     * The GameTest-only blocks {@code test_fan_blowable} and {@code test_fe_cell}. Their owners,
+     * {@code IntakeFanGameTests} and {@code ForeignEnergyFixture}, register them
      * through a GameTest suite whose class cannot initialise in Dejson's plain JVM, so its plain stone
      * cube is stated here.
      */
     private static void gameTestFixtures() {
         Dejson.block(NS, "test_fan_blowable")
                 .models(Models.cubeAll("minecraft:block/stone"))
+                .states(Variants.simple())
+                .blockItem()
+                .register();
+        Dejson.block(NS, "test_fe_cell")
+                .models(Models.cubeAll("minecraft:block/gold_block"))
                 .states(Variants.simple())
                 .blockItem()
                 .register();

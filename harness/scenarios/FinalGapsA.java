@@ -39,7 +39,7 @@ public final class FinalGapsA implements Scenario {
     private static final int X = 0;
     private static final int Y = 100;
     private static final int Z = 0;
-    private static final String WATER = "hbm:water";
+    private static final String WATER = "minecraft:water";
 
     private interface Step { void run() throws Exception; }
 
@@ -577,9 +577,11 @@ public final class FinalGapsA implements Scenario {
     // ============================================================== 8: survey scanner
 
     private static void survey(Client c) {
-        c.cmd("setblock " + X + " -64 " + Z + " hbm:ore_bedrock_block{tier:1}");
+        // 1.7 scans the 5x5 around the chunk centre (8, 8) of the floor
+        int ox = X + 8, oz = Z + 8;
+        c.cmd("setblock " + ox + " -64 " + oz + " hbm:ore_bedrock_block{tier:1}");
         c.waitTicks(3);
-        String b = c.block(X, -64, Z).get("block").getAsString();
+        String b = c.block(ox, -64, oz).get("block").getAsString();
         Expect.that(b.equals("hbm:ore_bedrock_block"), "a bedrock deposit under the player: " + b);
         Fixtures.giveOnly(c, "hbm:survey_scanner", 1);
         c.teleport(X + 0.5, Y + 1, Z + 0.5);
@@ -591,7 +593,7 @@ public final class FinalGapsA implements Scenario {
         List<String> lines = c.logSinceMark("Found BEDROCK ORE for");
         c.screenshot("60-survey-bedrock-line");
         Expect.that(!lines.isEmpty() && lines.get(0).contains("Iron"), "1.7 'Found BEDROCK ORE for <resource>!': " + lines);
-        c.cmd("setblock " + X + " -64 " + Z + " minecraft:bedrock");
+        c.cmd("setblock " + ox + " -64 " + oz + " minecraft:bedrock");
     }
 
     // ============================================================== 9: trenchmaster
@@ -916,8 +918,8 @@ public final class FinalGapsA implements Scenario {
         c.keyUp("key.sneak");
         c.waitTicks(10);
         String settings = held(c).toString();
-        // fluids are saved by registry name since History 19ej-ids (was the numeric fluidID array)
-        Expect.that(settings.contains("fluids:[") && settings.contains("hbm:water") && settings.contains("hbm:steam")
+        // fluids are saved by vanilla id, water included
+        Expect.that(settings.contains("fluids:[") && settings.contains(WATER) && settings.contains("hbm:steam")
                 && settings.contains("copyIndex:0"), "copied the boiler's two tanks: " + settings);
         JsonObject keys = holdAltUntil(c, 1);
         settings = held(c).toString();
@@ -933,7 +935,7 @@ public final class FinalGapsA implements Scenario {
         c.waitTicks(1);
         c.use(2);
         c.waitTicks(5);
-        Expect.that(ductType(c, dx, dz).equals("hbm:steam") && ductType(c, dx + 1, dz).equals("hbm:none"), "a plain paste retypes one duct to steam");
+        Expect.that(ductType(c, dx, dz).equals("hbm:steam") && ductType(c, dx + 1, dz).equals("minecraft:empty"), "a plain paste retypes one duct to steam");
 
         // Alt back to water (the index wraps), then Ctrl-paste into the untyped run
         holdAltUntil(c, 0);
@@ -1083,11 +1085,11 @@ public final class FinalGapsA implements Scenario {
         }
         Expect.that(rx != Integer.MIN_VALUE, "the ROR reader was placed against the ground station");
         c.cmd("data merge block " + rx + " " + (Y + 1) + " " + rz
-                + " {channels0:\"gsat\",names0:\"freq\",channels1:\"gsatok\",names1:\"true\"}");
+                + " {channels0:\"gsat\",names0:\"freq\",channels1:\"gsatok\",names1:\"connected\"}");
         c.waitTicks(40);
         String reader = c.blockEntity(rx, Y + 1, rz).get("nbt").getAsString().replaceAll("\\s", "");
         Expect.that(reader.contains("prev0:\"" + freq + "\""), "the reader took VAL:freq from the ground station: " + reader);
-        Expect.that(reader.contains("prev1:\"TRUE\""), "and 1.7's VAL:true quirk (connected) answered TRUE: " + reader);
+        Expect.that(reader.contains("prev1:\"TRUE\""), "and 1.7 VAL:connected answered TRUE: " + reader);
         c.teleport(rx + 0.5 + (rx - link[0]), Y + 1, rz + 0.5 + (rz - link[2]));
         c.waitTicks(3);
         Fixtures.interact(c, rx, Y + 1, rz);

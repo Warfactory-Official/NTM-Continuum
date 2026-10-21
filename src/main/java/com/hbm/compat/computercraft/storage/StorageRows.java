@@ -12,7 +12,6 @@ import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
 import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
 import com.hbm.tileentity.machine.storage.TileEntityMachineOrbus;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
-import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
@@ -37,9 +36,5 @@ public final class StorageRows {
             Peripherals.row(TileEntityBatteryREDD.class, BatteryREDDPeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityMassStorage.class, MassStoragePeripheral::new, Reach.BLOCK)
     );
-
-    public static GameTests.Suite tests() {
-        return com.hbm.gametest.computer.StoragePeripheralGameTests.TESTS;
-    }
 }
 //?}

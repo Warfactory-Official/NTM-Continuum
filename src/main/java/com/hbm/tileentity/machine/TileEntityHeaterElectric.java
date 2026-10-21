@@ -30,7 +30,7 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
     public long power;
     public int heatEnergy;
     public boolean isOn;
-    public int setting = 1;
+    public int setting = 0;
 
     public TileEntityHeaterElectric(BlockPos pos, BlockState state) {
         super(ModBlockEntities.HEATER_ELECTRIC.get(), pos, state);
@@ -144,7 +144,7 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
     protected void loadData(DataIn input) {
         super.loadData(input);
         power = input.getLongOr("power", 0L);
-        setting = input.getIntOr("setting", 1);
+        setting = input.getIntOr("setting", 0);
         heatEnergy = input.getIntOr("heatEnergy", 0);
     }
 }

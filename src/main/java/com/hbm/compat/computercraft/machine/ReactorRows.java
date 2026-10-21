@@ -17,7 +17,6 @@ import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import com.hbm.tileentity.machine.TileEntityWatz;
 import com.hbm.tileentity.machine.pile.TileEntityPileControl;
 import com.hbm.tileentity.machine.pile.TileEntityPileLoader;
-import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
@@ -48,9 +47,5 @@ public final class ReactorRows {
             // 1.7 MachineSatLink's cells are a flagless TileEntityProxyCombo, never a component
             Peripherals.row(TileEntityMachineSatLink.class, SatLinkPeripheral::new, Reach.BLOCK)
     );
-
-    public static GameTests.Suite tests() {
-        return com.hbm.gametest.computer.ReactorPeripheralGameTests.TESTS;
-    }
 }
 //?}

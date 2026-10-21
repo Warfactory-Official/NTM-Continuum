@@ -15,6 +15,7 @@ import com.hbm.util.ArmorRegistry.HazardClass;
 import java.util.List;
 import java.util.stream.IntStream;
 import com.hbm.items.tool.ItemDosimeter;
+import com.hbm.items.tool.ItemFilter;
 import com.hbm.items.tool.ItemGeigerCounter;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -36,6 +37,9 @@ public final class ModGearItems {
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
+
+    /** 1.7 {@code ItemFilter}: every filter wears out after 20,000 damage. */
+    private static final int FILTER_DURABILITY = 20_000;
 
     // Diagnostic tools
     public static final RegistryObject<ItemGeigerCounter> geiger_counter =
@@ -74,11 +78,11 @@ public final class ModGearItems {
     public static final RegistryObject<ItemGasMask> gas_mask_m65 = gasMask("gas_mask_m65", "hbm:items/gas_mask_m65", List.of(HazardClass.GAS_BLISTERING));
     public static final RegistryObject<ItemGasMask> gas_mask_mono = gasMask("gas_mask_mono", "hbm:items/gas_mask_mono", List.of(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA));
     public static final RegistryObject<ItemGasMask> gas_mask_olde = gasMask("gas_mask_olde", "hbm:items/gas_mask_olde", List.of(HazardClass.GAS_BLISTERING));
-    public static final RegistryObject<Item> gas_mask_filter_rag = filter("gas_mask_filter_rag", "hbm:items/gas_mask_filter_rag", 4_000);
-    public static final RegistryObject<Item> gas_mask_filter_piss = filter("gas_mask_filter_piss", "hbm:items/gas_mask_filter_piss", 4_000);
-    public static final RegistryObject<Item> gas_mask_filter_mono = filter("gas_mask_filter_mono", "hbm:items/gas_mask_filter_mono", 12_000);
-    public static final RegistryObject<Item> gas_mask_filter = filter("gas_mask_filter", "hbm:items/gas_mask_filter", 18_000);
-    public static final RegistryObject<Item> gas_mask_filter_combo = filter("gas_mask_filter_combo", "hbm:items/gas_mask_filter_combo", 24_000);
+    public static final RegistryObject<ItemFilter> gas_mask_filter_rag = filter("gas_mask_filter_rag", "hbm:items/gas_mask_filter_rag");
+    public static final RegistryObject<ItemFilter> gas_mask_filter_piss = filter("gas_mask_filter_piss", "hbm:items/gas_mask_filter_piss");
+    public static final RegistryObject<ItemFilter> gas_mask_filter_mono = filter("gas_mask_filter_mono", "hbm:items/gas_mask_filter_mono");
+    public static final RegistryObject<ItemFilter> gas_mask_filter = filter("gas_mask_filter", "hbm:items/gas_mask_filter");
+    public static final RegistryObject<ItemFilter> gas_mask_filter_combo = filter("gas_mask_filter_combo", "hbm:items/gas_mask_filter_combo");
 
     /** The material is read when the item is built: the materials are registry-backed (see {@link ModArmorItems}). */
     private static RegistryObject<Item> armor(String name, Supplier<GolemArmorMaterial> material, ArmorSlot slot) {
@@ -95,8 +99,8 @@ public final class ModGearItems {
         return ro;
     }
 
-    private static RegistryObject<Item> filter(String name, String sprite, int durability) {
-        RegistryObject<Item> ro = REG.simpleItem(name, (Item.Properties p) -> p.stacksTo(1).durability(durability))
+    private static RegistryObject<ItemFilter> filter(String name, String sprite) {
+        RegistryObject<ItemFilter> ro = REG.item(name, ItemFilter::new, p -> p.stacksTo(1).durability(FILTER_DURABILITY))
                 .transform(Presets.sprite(sprite));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;

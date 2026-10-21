@@ -75,7 +75,7 @@ public class ContainerFurnaceIron extends AbstractContainerMenu {
             result = stack.copy();
             if (index < MACHINE_SLOTS) {
                 if (!moveItemStackTo(stack, MACHINE_SLOTS, MACHINE_SLOTS + 36, true)) return ItemStack.EMPTY;
-            } else if (!moveItemStackTo(stack, 0, 3, false)) {
+            } else if (!moveItemStackTo(stack, 0, MACHINE_SLOTS, false)) {
                 return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();

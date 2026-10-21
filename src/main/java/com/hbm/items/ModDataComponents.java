@@ -189,6 +189,9 @@ public final class ModDataComponents {
     /** Fixed fifteen-slot contents carried by the spent-casing bag. */
     public static final GolemComponent<ItemContents> CASING_BAG =
             GolemComponent.of(Constants.MOD_ID, "casing_bag", ItemContents.CODEC);
+    /** The single item a plastic bag carries. */
+    public static final GolemComponent<ItemContents> PLASTIC_BAG =
+            GolemComponent.of(Constants.MOD_ID, "plastic_bag", ItemContents.CODEC);
     /** Fractional casing progress, retained between shots until a whole casing is produced. */
     public static final GolemComponent<CompoundTag> CASING_PROGRESS =
             GolemComponent.compound(Constants.MOD_ID, "casing_progress");

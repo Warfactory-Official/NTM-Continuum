@@ -1,5 +1,6 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.world.Explosions;
 import dev.golem.core.data.Tags;
 
 import com.hbm.config.CompatibilityConfig;
@@ -35,7 +36,7 @@ public final class EntityRagingVortex extends EntityBlackHole {
         if (level().getRandom().nextInt(100) == 0) {
             decrease = 0.1F;
             if (level() instanceof ServerLevel server) {
-                server.explode(null, getX(), getY(), getZ(), 10F, false,
+                Explosions.explode(server, null, getX(), getY(), getZ(), 10F, false,
                         Level.ExplosionInteraction.TNT);
             }
         }

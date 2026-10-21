@@ -8,7 +8,6 @@ import com.hbm.tileentity.machine.albion.TileEntityPADipole;
 import com.hbm.tileentity.machine.albion.TileEntityPAQuadrupole;
 import com.hbm.tileentity.machine.albion.TileEntityPARFC;
 import com.hbm.tileentity.machine.albion.TileEntityPASource;
-import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
@@ -25,9 +24,5 @@ public final class AlbionRows {
             Peripherals.row(TileEntityPARFC.class, PARFCPeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityPADetector.class, PADetectorPeripheral::new, Reach.CELLS)
     );
-
-    public static GameTests.Suite tests() {
-        return com.hbm.gametest.computer.AlbionPeripheralGameTests.TESTS;
-    }
 }
 //?}

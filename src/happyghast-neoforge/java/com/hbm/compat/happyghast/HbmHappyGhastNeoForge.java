@@ -1,12 +1,10 @@
 package com.hbm.compat.happyghast;
 
 import com.hbm.Constants;
-import dev.golem.core.gametest.GameTests;
 import net.minecraft.world.InteractionResult;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
-import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
@@ -25,11 +23,6 @@ public final class HbmHappyGhastNeoForge {
     @SubscribeEvent
     public static void construct(FMLConstructModEvent event) {
         HbmHappyGhast.init();
-    }
-
-    @SubscribeEvent
-    public static void registerGameTests(RegisterGameTestsEvent event) {
-        GameTests.register(event, HbmHappyGhast.gameTests());
     }
 
     @SubscribeEvent

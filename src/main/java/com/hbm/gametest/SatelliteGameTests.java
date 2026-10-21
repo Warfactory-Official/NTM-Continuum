@@ -18,6 +18,7 @@ import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteDeathRay;
 import com.hbm.saveddata.satellites.SatelliteDetector;
 import com.hbm.saveddata.satellites.SatelliteHorizons;
+import com.hbm.saveddata.satellites.SatelliteLunarMiner;
 import com.hbm.saveddata.satellites.SatelliteMapper;
 import com.hbm.saveddata.satellites.SatelliteMiner;
 import com.hbm.saveddata.satellites.SatellitePrecisionLaser;
@@ -401,6 +402,21 @@ public final class SatelliteGameTests {
         helper.assertTrue(items > 0 && !pod.isLanding(), "the landed pod unloads its cargo into the pad");
         pod.discard();
         data.descend(FREQ);
+        helper.succeed();
+    }
+
+    /** 1.7: a miner fills its hold after 18,000 ticks (15 minutes), 10..15 stacks, and not before. */
+    public static void minerTiming(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (SatelliteMiner miner : new SatelliteMiner[] {new SatelliteMiner(), new SatelliteLunarMiner()}) {
+            int ticks = 0;
+            while (miner.requestableSlots.length == 0 && ticks < 20_000) {
+                miner.onUpdateTick(level);
+                ticks++;
+            }
+            helper.assertTrue(ticks >= 17_999 && ticks <= 18_001, miner.getType() + " filled after " + ticks + " ticks, expected 18,000");
+            helper.assertTrue(miner.requestableSlots.length >= 10 && miner.requestableSlots.length <= 15, "hold size " + miner.requestableSlots.length);
+        }
         helper.succeed();
     }
 

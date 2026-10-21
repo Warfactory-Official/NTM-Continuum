@@ -120,6 +120,31 @@ public final class MissileGameTests {
     }
 
     /**
+     * A chunk forced through the level's forced set (a /forceload, a GameTest plot) keeps ticking when HBM claims
+     * the same chunk first and lets go of it. The two share nothing, so the claim must not take the forced
+     * chunk's ticket with it.
+     */
+    public static void chunkClaimLeavesForcedChunkTicking(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        int cx = (origin.getX() >> 4) + 112;
+        int cz = (origin.getZ() >> 4) + 112;
+        // an entity-ticking chunk needs the chunks within two of it generated
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) level.getChunk(cx + dx, cz + dz);
+        }
+
+        ChunkLoaderTicket claim = ChunkLoadingManager.requestTicket(level, "test-forced-neighbour");
+        claim.force(cx, cz);
+        level.setChunkForced(cx, cz, true);
+        claim.release();
+
+        BlockPos probe = new BlockPos(cx << 4, origin.getY(), cz << 4);
+        helper.succeedWhen(() -> helper.assertTrue(level.isPositionEntityTicking(probe),
+                "a forced chunk stopped ticking once an HBM claim over it was released"));
+    }
+
+    /**
      * A ticket following a moving entity claims the new chunk and drops the old one. Upstream unforced
      * everything and re-forced each tick; the port diffs the set instead, so this also checks the diff
      * does not lose the chunk it is supposed to keep.

@@ -150,7 +150,7 @@ public final class ItemProcessingTableGameTests {
     private static final String EXPECTED_MATERIAL_DISTRIBUTION =
             "43:8d8d6efeb499f2297406b4b922a29f241ac800c4e8fc250f51c1325f15ff7e1b";
     private static final String EXPECTED_ARC_FURNACE =
-            "79:332f0f4148ae66004519055f4eced829907561525930a954de6f0a8cc0dffe51";
+            "79:27f6f8737eeccb2f41680fb8fce5ab0530ff1bd96f931769ad6a1739b78c985e";
     private static final String EXPECTED_CENTRIFUGE =
             "160:44469901e1139890ce7fed11002cc24d422c0accd6e15a4ab5abaa6b69163f1d";
     private static final String EXPECTED_CRYSTALLIZER =

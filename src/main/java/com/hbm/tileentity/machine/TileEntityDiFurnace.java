@@ -34,12 +34,12 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
     public static final int MAX_FUEL = 12_800;
     public static final int PROCESSING_SPEED = 400;
 
-    private static final int[] TOP = {0, 1};
-    private static final int[] BOTTOM = {3};
-    private static final int[] SIDES = {2};
+    private static final int[] ALL_SLOTS = {0, 1, 2, 3};
 
     public int progress;
     public int fuel;
+
+    // Per-slot insertion face (a Direction ordinal), cycled in the GUI: upper input, lower input, fuel.
     public byte sideFuel = 1;
     public byte sideUpper = 1;
     public byte sideLower = 1;
@@ -121,44 +121,29 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
         return slot != 2 || hasItemPower(stack);
     }
 
-    /** Legacy sided-inventory rule: top inputs, bottom output, every horizontal side fuel. */
     @Override
     public int[] getAccessibleSlotsFromSide(int side) {
-        return side == Direction.DOWN.ordinal() ? BOTTOM
-                : side == Direction.UP.ordinal() ? TOP : SIDES;
+        return ALL_SLOTS;
     }
 
     @Override
     public int[] getSlotsForFace(Direction side) {
-        return getAccessibleSlotsFromSide(side.ordinal());
-    }
-
-    /** Old canInsertItem rule, including the item-identity exclusion between the two input slots. */
-    public boolean canInsertItem(int slot, ItemStack stack) {
-        if (!isItemValidForSlot(slot, stack)) return false;
-        if (slot == 0) {
-            ItemStack other = inventory.getStackInSlot(1);
-            return other.isEmpty() || other.getItem() != stack.getItem();
-        }
-        if (slot == 1) {
-            ItemStack other = inventory.getStackInSlot(0);
-            return other.isEmpty() || other.getItem() != stack.getItem();
-        }
-        return true;
-    }
-
-    public boolean canExtractItem(int slot, ItemStack stack, int amount) {
-        return slot == 3;
+        return ALL_SLOTS;
     }
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return canInsertItem(slot, stack);
+        if (side != null) {
+            if (slot == 0 && sideUpper != side.ordinal()) return false;
+            if (slot == 1 && sideLower != side.ordinal()) return false;
+            if (slot == 2 && sideFuel != side.ordinal()) return false;
+        }
+        return isItemValidForSlot(slot, stack);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return canExtractItem(slot, stack, 1);
+        return slot == 3;
     }
 
     public boolean isUsableByPlayer(Player player) {

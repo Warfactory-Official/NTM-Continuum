@@ -1,0 +1,209 @@
+package com.hbm.gametest;
+
+import com.hbm.gametest.computer.ComputerSuites;
+import dev.golem.core.gametest.GameTests;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Every HBM GameTest suite, in registration order. The loaders' dev hooks ({@link GameTestSetup} on NeoForge and
+ * Forge, {@link GameTestEntry} on Fabric) call {@link #all()} before the registries fill and hand each suite to the
+ * loader. Release jars drop this package with them.
+ */
+public final class HbmGameTestSuites {
+
+    private static List<GameTests.Suite> suites;
+
+    private HbmGameTestSuites() {}
+
+    /** Declares the suites on the first call and returns them; later calls return the same list. */
+    public static synchronized List<GameTests.Suite> all() {
+        if (suites == null) {
+            declare();
+            List<GameTests.Suite> list = new ArrayList<>();
+            list.add(HbmGameTestFunctions.TESTS);
+            list.add(FoodCatalystGameTests.TESTS);
+            list.add(OutgasGameTests.TESTS);
+            list.add(DosimeterGasGameTests.TESTS);
+            list.add(GeigerCounterGameTests.TESTS);
+            list.add(SteelStructureGameTests.TESTS);
+            list.add(HazardGameTests.TESTS);
+            list.add(ToolingGameTests.TESTS);
+            list.add(AbilityToolGameTests.TESTS);
+            list.add(MeleeKitGameTests.TESTS);
+            list.add(FinalCellHudFixGameTests.TESTS);
+            list.add(FinalGapsAGameTests.TESTS);
+            list.add(FinalGapsBGameTests.TESTS);
+            list.add(AdvancementCommandGameTests.TESTS);
+            list.add(DecoCrateGameTests.TESTS);
+            list.add(FinalConsumableGameTests.TESTS);
+            list.add(FinalRecipeGapGameTests.TESTS);
+            list.add(Fix1AGameTests.TESTS);
+            list.add(IdsGameTests.TESTS);
+            list.add(ReleaseSweepGameTests.TESTS);
+            list.add(ForeignFluidGameTests.TESTS);
+            list.add(TilePortGameTests.TESTS);
+            list.add(PortBenchGameTests.TESTS);
+            list.add(Fix4GameTests.TESTS);
+            list.add(Fix5GameTests.TESTS);
+            list.add(Fix1BGameTests.TESTS);
+            list.add(Fix3GameTests.TESTS);
+            list.add(Fix7GameTests.TESTS);
+            list.add(SmallGameTests.TESTS);
+            list.add(Fix7GlyphidGameTests.TESTS);
+            list.add(Fix7BossGameTests.TESTS);
+            list.add(Fix7MobGameTests.TESTS);
+            list.add(RecipeContentGameTests.TESTS);
+            list.add(RecipeViewerGameTests.TESTS);
+            list.add(UtilityToolGameTests.TESTS);
+            list.add(AssemblyFactoryGameTests.TESTS);
+            list.add(ChemicalFactoryGameTests.TESTS);
+            list.add(AutosawGameTests.TESTS);
+            list.add(SolarGameTests.TESTS);
+            list.add(IntakeFanGameTests.TESTS);
+            list.add(DiFurnaceGameTests.TESTS);
+            list.add(RecipeTableGameTests.TESTS);
+            list.add(FluidPropertyGameTests.TESTS);
+            list.add(DataMapGameTests.TESTS);
+            list.add(AddonEnumGameTests.TESTS);
+            list.add(EnvironmentGameTests.TESTS);
+            list.add(ScriptHookGameTests.TESTS);
+            list.add(AddonContentGameTests.TESTS);
+            list.add(GenericRecipeTableGameTests.TESTS);
+            list.add(ItemProcessingTableGameTests.TESTS);
+            list.add(ValueMapGameTests.TESTS);
+            list.add(AddonSeamGameTests.TESTS);
+            list.add(FluidRecipeTableGameTests.TESTS);
+            list.add(ItemRecipeTableGameTests.TESTS);
+            list.add(MaterialCompletionGameTests.TESTS);
+            list.add(BedrockOreGameTests.TESTS);
+            list.add(ExplosiveContentGameTests.TESTS);
+            list.add(Bombs2GameTests.TESTS);
+            list.add(NtmEntityPortGameTests.TESTS);
+            list.add(Gen3SednaGameTests.TESTS);
+            list.add(ReloadedGunGameTests.TESTS);
+            list.add(RadioGameTests.TESTS);
+            list.add(CounterControllerGameTests.TESTS);
+            list.add(TelexGameTests.TESTS);
+            list.add(AutocalGameTests.TESTS);
+            list.add(RadioProviderGameTests.TESTS);
+            list.add(RtgGameTests.TESTS);
+            list.add(SingularityGameTests.TESTS);
+            list.add(TurretGameTests.TESTS);
+            list.addAll(ComputerSuites.all());
+            list.add(PowerNetworkGameTests.TESTS);
+            list.add(NetworkReachGameTests.TESTS);
+            list.add(FluidNetworkGameTests.TESTS);
+            list.add(ForeignEnergyGameTests.TESTS);
+            list.add(FoldedGeometryGameTests.TESTS);
+            list.add(NetworkSyncGameTests.TESTS);
+            list.add(ChunkPromotionGameTests.TESTS);
+            list.add(TickPhaseGameTests.TESTS);
+            list.add(MultiblockMenuGameTests.TESTS);
+            list.add(RadiationPersistenceGameTests.TESTS);
+            list.add(WorldgenImpactGameTests.TESTS);
+            list.add(ConfigGameTests.TESTS);
+            list.add(HooksGameTests.TESTS);
+            list.add(FoldedPortParityGameTests.TESTS);
+            list.add(GunSupportGameTests.TESTS);
+            list.add(FlywheelGameTests.TESTS);
+            list.add(WeaponTableGameTests.TESTS);
+            list.add(PollutionGameTests.TESTS);
+            list.add(ToxinGameTests.TESTS);
+            suites = List.copyOf(list);
+        }
+        return suites;
+    }
+
+    private static void declare() {
+        HbmGameTestFunctions.init();
+        FoodCatalystGameTests.init();
+        OutgasGameTests.init();
+        DosimeterGasGameTests.init();
+        GeigerCounterGameTests.init();
+        SteelStructureGameTests.init();
+        HazardGameTests.init();
+        ToolingGameTests.init();
+        AbilityToolGameTests.init();
+        MeleeKitGameTests.init();
+        FinalCellHudFixGameTests.init();
+        FinalGapsAGameTests.init();
+        FinalGapsBGameTests.init();
+        AdvancementCommandGameTests.init();
+        DecoCrateGameTests.init();
+        FinalConsumableGameTests.init();
+        FinalRecipeGapGameTests.init();
+        Fix1AGameTests.init();
+        IdsGameTests.init();
+        ReleaseSweepGameTests.init();
+        ForeignFluidGameTests.init();
+        TilePortGameTests.init();
+        PortBenchGameTests.init();
+        Fix4GameTests.init();
+        Fix5GameTests.init();
+        Fix1BGameTests.init();
+        Fix3GameTests.init();
+        Fix7GameTests.init();
+        SmallGameTests.init();
+        Fix7GlyphidGameTests.init();
+        Fix7BossGameTests.init();
+        Fix7MobGameTests.init();
+        RecipeContentGameTests.init();
+        RecipeViewerGameTests.init();
+        UtilityToolGameTests.init();
+        AssemblyFactoryGameTests.init();
+        ChemicalFactoryGameTests.init();
+        AutosawGameTests.init();
+        SolarGameTests.init();
+        IntakeFanGameTests.init();
+        DiFurnaceGameTests.init();
+        RecipeTableGameTests.init();
+        FluidPropertyGameTests.init();
+        DataMapGameTests.init();
+        AddonEnumGameTests.init();
+        EnvironmentGameTests.init();
+        ScriptHookGameTests.init();
+        AddonContentGameTests.init();
+        GenericRecipeTableGameTests.init();
+        ItemProcessingTableGameTests.init();
+        ValueMapGameTests.init();
+        AddonSeamGameTests.init();
+        FluidRecipeTableGameTests.init();
+        ItemRecipeTableGameTests.init();
+        MaterialCompletionGameTests.init();
+        BedrockOreGameTests.init();
+        ExplosiveContentGameTests.init();
+        Bombs2GameTests.init();
+        NtmEntityPortGameTests.init();
+        Gen3SednaGameTests.init();
+        ReloadedGunGameTests.init();
+        RadioGameTests.init();
+        CounterControllerGameTests.init();
+        TelexGameTests.init();
+        FlywheelGameTests.init();
+        AutocalGameTests.init();
+        RadioProviderGameTests.init();
+        RtgGameTests.init();
+        SingularityGameTests.init();
+        TurretGameTests.init();
+        PowerNetworkGameTests.init();
+        NetworkReachGameTests.init();
+        FluidNetworkGameTests.init();
+        ForeignEnergyGameTests.init();
+        ForeignEnergyFixture.init();
+        FoldedGeometryGameTests.init();
+        NetworkSyncGameTests.init();
+        ChunkPromotionGameTests.init();
+        TickPhaseGameTests.init();
+        MultiblockMenuGameTests.init();
+        RadiationPersistenceGameTests.init();
+        WorldgenImpactGameTests.init();
+        ConfigGameTests.init();
+        HooksGameTests.init();
+        FoldedPortParityGameTests.init();
+        WeaponTableGameTests.init();
+        GunSupportGameTests.init();
+        PollutionGameTests.init();
+        ToxinGameTests.init();
+    }
+}

@@ -1,8 +1,6 @@
 package com.hbm.compat.computercraft;
 
-import dev.golem.core.gametest.GameTests;
 
-import java.util.List;
 
 /**
  * 1.7's OpenComputers components, served to CC: Tweaked. OpenComputers has no
@@ -22,13 +20,5 @@ public final class ComputerCraft {
         //? if computercraft {
         if (dev.golem.core.computer.PeripheralExposure.available()) Peripherals.init();
         //?}
-    }
-
-    /** The peripheral GameTest suites; empty without CC: Tweaked, whose types their bodies name. */
-    public static List<GameTests.Suite> gameTestSuites() {
-        //? if computercraft {
-        if (dev.golem.core.computer.PeripheralExposure.available()) return Peripherals.gameTestSuites();
-        //?}
-        return List.of();
     }
 }

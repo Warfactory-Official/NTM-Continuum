@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.explosion.ExplosionThermo;
 import com.hbm.interfaces.IBomb;
 import dev.golem.core.world.CompatBlock;
@@ -46,7 +47,7 @@ public class BombThermo extends CompatBlock implements IBomb {
             ExplosionThermo.scorch(level, pos, 15);
             ExplosionThermo.setEntitiesOnFire(level, pos.getX(), pos.getY(), pos.getZ(), 20);
         }
-        level.explode(null, pos.getX(), pos.getY(), pos.getZ(), 5.0F, true, Level.ExplosionInteraction.TNT);
+        Explosions.explode(level, null, pos.getX(), pos.getY(), pos.getZ(), 5.0F, Level.ExplosionInteraction.TNT);
         return BombReturnCode.DETONATED;
     }
 }

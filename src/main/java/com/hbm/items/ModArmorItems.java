@@ -237,7 +237,7 @@ public final class ModArmorItems {
     /** RPA and NCRPA draw 1.7's renderStandard OBJ icons (ArmorRPA/ArmorNCRPA renderers; ArmorSetDeclarations). */
     private static RegistryObject<ArmorFSBPowered> paPowered(String name, ArmorSlot slot) {
         RegistryObject<ArmorFSBPowered> ro = REG.item(name,
-                p -> new ArmorFSBPowered(HbmArmorMaterials.AJR, slot, p, AJR_POWER, 10_000L, 1_000L, 25L),
+                p -> new ArmorFSBPowered(HbmArmorMaterials.AJR, slot, p, AJR_POWER, 10_000L, 2_000L, 25L),
                 p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
@@ -312,7 +312,8 @@ public final class ModArmorItems {
         ArmorFSB taurunHelmet = taurun_helmet.get()
                 .addEffect(Effects.instance(Effects.strength(), 20, 0))
                 .setStepSize(1)
-                .setHides(EnumPlayerPart.HAT);
+                .setHides(EnumPlayerPart.HAT)
+                .setArmorModel("taurun");
         taurun_plate.get().cloneStats(taurunHelmet);
         taurun_legs.get().cloneStats(taurunHelmet);
         taurun_boots.get().cloneStats(taurunHelmet);
@@ -397,7 +398,7 @@ public final class ModArmorItems {
         dns_boots.get().setArmorModel("dns");
 
         ArmorFSBPowered rpa = rpa_helmet.get();
-        rpa.addEffect(Effects.instance(Effects.strength(), 20, 2)).enableVATS(true)
+        rpa.addEffect(Effects.instance(Effects.strength(), 20, 3)).enableVATS(true)
                 .setHasGeigerSound(true).setHasHardLanding(true)
                 .setStep(ModSounds.STEP_POWERED)
                 .setJump(ModSounds.STEP_POWERED)
@@ -408,7 +409,7 @@ public final class ModArmorItems {
         for (var piece : List.of(rpa_helmet, rpa_plate, rpa_legs, rpa_boots)) piece.get().setArmorModel("rpa"); // G-C: worn ModelArmorRPA
 
         ArmorFSBPowered ncrpa = ncrpa_helmet.get();
-        ncrpa.addEffect(Effects.instance(Effects.strength(), 20, 2)).enableVATS(true)
+        ncrpa.addEffect(Effects.instance(Effects.strength(), 20, 3)).enableVATS(true)
                 .setHasGeigerSound(true).setHasHardLanding(true)
                 .setStep(ModSounds.STEP_POWERED)
                 .setJump(ModSounds.STEP_POWERED)

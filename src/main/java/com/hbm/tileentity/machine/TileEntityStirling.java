@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.entity.projectile.EntityCog;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.MachineCore;
@@ -68,7 +69,7 @@ public class TileEntityStirling extends TileEntityMachineBase implements IEnergy
 
                 if (stirling.overspeed > overspeedLimit) {
                     stirling.hasCog = false;
-                    level.explode(null, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D,
+                    Explosions.explode(level, null, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D,
                             5F, false, Level.ExplosionInteraction.NONE);
 
                     // 1.7: the gear flies off sideways (facing rotated DOWN) and upward with the excess heat.

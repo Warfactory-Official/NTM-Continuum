@@ -52,6 +52,13 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
     @Override public Component getDisplayName() { return Component.translatable(getDefaultName()); }
     @Override public int getMoldSize() { return 0; }
 
+    /** Any mold size fits the caster; the client reads the synced copy of slot 0. */
+    @Override
+    public ItemMold.@Nullable Mold getInstalledMold() {
+        ItemStack stack = inventory.getStackInSlot(0);
+        return ItemMold.getMold(stack.isEmpty() ? syncMold : stack);
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineStrandCaster caster) {
         caster.setupAllPorts(caster.getPorts());
         caster.updatePortFIFO();

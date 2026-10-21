@@ -142,9 +142,6 @@ public final class RenderInputClientRegistrations {
             }
             Particles.add(new ParticleHadron(client, x, y, z).makeSmall(small));
         });
-        GapsCHarnessQueries.register(); // harness query hbm_gapsc (FinalGapsC)
-        ConnectedTextureHarnessQueries.register(); // harness query hbm_ct (ConnectedTextures17)
-        IconAuditHarnessQueries.register(); // harness query hbm_icon_audit (ItemIconAudit)
         // 1.7 IBlockCT connected textures: hadron coils, coated wire, ICF/PWR shells, deco metals, CT glass, platemetal, pile
         ConnectedTextureRegistrations.register();
         // 1.7 RenderOverhead markers ("marker" aux effect) and ParticleText ("debug")

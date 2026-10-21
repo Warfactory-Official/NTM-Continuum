@@ -40,7 +40,7 @@ import com.hbm.tileentity.TilePortShapes;
  * {@link IHeatSource} consumer above drains. Burn time only ticks down while the reservoir isn't full;
  * with no fire the reservoir passively decays by {@code max(heat/1000, 1)}. While burning below full heat it
  * puts 1.7's {@code SOOT_PER_SECOND * 3} into its smoke tanks each second and offers them to the ring of
- * cells around its footprint. Deferred from the original: the ashpit and the muffler.
+ * cells around its footprint. Fuel loaded also feeds an ashpit below.
  */
 public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting implements MenuProvider, IHeatSource {
 
@@ -82,6 +82,13 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
 
                 int baseTime = te.getModule().getBurnTime(level, fuel);
                 if (baseTime <= 0) continue;
+
+                if (level.getBlockEntity(pos.below()) instanceof TileEntityAshpit ashpit) {
+                    ItemEnums.EnumAshType ash = getAshFromFuel(fuel);
+                    if (ash == ItemEnums.EnumAshType.WOOD) ashpit.ashLevelWood += baseTime;
+                    if (ash == ItemEnums.EnumAshType.COAL) ashpit.ashLevelCoal += baseTime;
+                    if (ash == ItemEnums.EnumAshType.MISC) ashpit.ashLevelMisc += baseTime;
+                }
 
                 te.maxBurnTime = te.burnTime = (int) (baseTime * te.getTimeMult());
                 te.burnHeat = te.getModule().getBurnHeat(te.getBaseHeat(), fuel);

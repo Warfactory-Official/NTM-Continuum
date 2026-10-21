@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.advancement.DetonationTrigger;
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.api.data.ReactorDataMaps;
@@ -212,7 +213,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
 
         level.playSound(null, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D,
                 ModSounds.RBMK_EXPLOSION.get(), SoundSource.BLOCKS, 10.0F, 1.0F);
-        level.explode(null, pos.getX() + 0.5D, pos.getY() + 3.0D, pos.getZ() + 0.5D, 12.0F,
+        Explosions.explode(level, null, pos.getX() + 0.5D, pos.getY() + 3.0D, pos.getZ() + 0.5D, 12.0F,
                 Level.ExplosionInteraction.BLOCK);
 
         ModMachineBlocks.zirnox_destroyed.get().formWreck(level, pos,

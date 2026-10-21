@@ -21,8 +21,7 @@ import net.minecraft.world.item.ItemStack;
  * ({@code {"input": ingredient, "item_output": item, "fluid_output": {type, amount}, "order": n}}; both outputs
  * optional, the first match by {@code order} wins). Converted once from the Java table: 1.7's defaults, the three
  * briquettes (formerly {@code FinalConsumableMachineRecipes.combination}) and the bedrock-ore roasting rows (still
- * {@code BedrockOreChainRecipes}, which another table owner converts). The sodium-dust row keeps 1.7's missing item
- * output, which the furnace refuses ({@code canSmelt}), as 1.7 did.
+ * {@code BedrockOreChainRecipes}, which another table owner converts). The sodium-dust row has no item output, only the fluid.
  */
 public final class CombinationRecipes {
 

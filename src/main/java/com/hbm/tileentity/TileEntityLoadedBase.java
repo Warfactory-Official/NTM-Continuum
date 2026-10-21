@@ -168,6 +168,8 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
         setChanged();
     }
 
+    private static final int SAVE_INTERVAL = 100;
+
     public void dataChanged() {
         this.hasDataChanged = true;
     }
@@ -220,6 +222,9 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
      */
     public void networkPackNT() {
         if (level == null || level.isClientSide() || !(level instanceof ServerLevel serverLevel)) return;
+        // Machines change progress, fuel, heat, power and tanks every tick without marking the chunk
+        // unsaved, so a chunk that is otherwise unmodified would save and unload stale state.
+        if (Math.floorMod(serverLevel.getGameTime() + worldPosition.hashCode(), SAVE_INTERVAL) == 0) setChanged();
         if (!GolemSync.isWatched(serverLevel, worldPosition)) return;
 
         byte[] data = compilePayload();
@@ -239,6 +244,7 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     public void networkPackMK2() {
         if (level == null || level.isClientSide() || !(level instanceof ServerLevel serverLevel)) return;
         if (!hasDataChanged) return;
+        setChanged();
         if (!GolemSync.isWatched(serverLevel, worldPosition)) return;
 
         byte[] data = compilePayload();

@@ -4,6 +4,7 @@ import com.hbm.blocks.DecoCrateDeclarations;
 import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.BlockPlushie;
 import com.hbm.blocks.generic.BlockSnowglobe;
+import com.hbm.items.machine.ItemPACoil;
 import com.hbm.items.machine.ItemPileRodMK2;
 import com.hbm.items.machine.ItemSatellite;
 import com.hbm.items.special.ItemHolotapeImage;
@@ -63,6 +64,7 @@ public final class LegacyMetaIds {
         t.put("satellite", lower("satellite", ItemSatellite.EnumSatType.values()));
         t.put("missile_soyuz", new String[] {"missile_soyuz_0", "missile_soyuz_1", "missile_soyuz_2"});
         t.put("pile_rod", lower("pile_rod_mk2", ItemPileRodMK2.EnumPileRod.values()));
+        t.put("pa_coil", lower("pa_coil", ItemPACoil.EnumCoilType.values()));
         t.put("holotape_image", lower("holotape_image", ItemHolotapeImage.EnumHoloImage.values()));
         t.put("book_guide", lower("book_guide", ItemGuideBook.BookType.values()));
         t.put("weapon_mod_test", lower("weapon_mod_test", GunFactory.EnumModTest.values()));

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
@@ -31,7 +32,7 @@ public class TileEntityMachineBAT9000 extends TileEntityMachineGiantTank {
         if (tankNew.getTankType() != Fluids.AMAT
                 && tankNew.getTankType() != Fluids.ASCHRAB) return false;
         level.removeBlock(worldPosition, false);
-        level.explode(null, worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
+        Explosions.explode(level, null, worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
                 worldPosition.getZ() + 0.5D, 10F, true, Level.ExplosionInteraction.TNT);
         return true;
     }

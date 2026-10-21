@@ -24,8 +24,10 @@ public final class ScreenItemBox extends CompatContainerScreen<MenuItemBox> {
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         MenuItemBox.Layout layout = menu.layout();
-        GuiDraw.text(graphics, font, title, (layout.width() - font.width(title)) / 2,
-                layout.titleY(), 0xFFFFFFFF, false);
+        if (layout.titleY() >= 0) {
+            GuiDraw.text(graphics, font, title, (layout.width() - font.width(title)) / 2,
+                    layout.titleY(), 0xFFFFFFFF, false);
+        }
         GuiDraw.text(graphics, font, playerInventoryTitle, 8, layout.inventoryLabelY(),
                 0xFF404040, false);
     }

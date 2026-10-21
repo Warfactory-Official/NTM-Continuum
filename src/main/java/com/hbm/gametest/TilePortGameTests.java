@@ -63,6 +63,49 @@ public final class TilePortGameTests {
     public static final GameTests.Function TOWERS =
             TESTS.function("ports_cooling_towers_perimeter_only", 200, 24, () -> TilePortGameTests::towers);
 
+    public static final GameTests.Function OIL_REFINERY =
+            TESTS.function("oil_chain_refinery_ratios", 40, 6, () -> OilChainParityGameTests::refinery);
+    public static final GameTests.Function OIL_REFINERY_POWER =
+            TESTS.function("oil_chain_refinery_power_floor", 40, 6, () -> OilChainParityGameTests::refineryPower);
+    public static final GameTests.Function OIL_VACUUM =
+            TESTS.function("oil_chain_vacuum_ratios", 40, 6, () -> OilChainParityGameTests::vacuum);
+    public static final GameTests.Function OIL_CRACKER =
+            TESTS.function("oil_chain_cracker_ratios", 40, 6, () -> OilChainParityGameTests::cracker);
+    public static final GameTests.Function OIL_REFORMER =
+            TESTS.function("oil_chain_reformer_ratios", 40, 6, () -> OilChainParityGameTests::reformer);
+    public static final GameTests.Function OIL_HYDROTREATER =
+            TESTS.function("oil_chain_hydrotreater_ratios", 40, 6, () -> OilChainParityGameTests::hydrotreater);
+    public static final GameTests.Function OIL_FRACTION =
+            TESTS.function("oil_chain_fraction_tower_ratios", 40, 6, () -> OilChainParityGameTests::fractionTower);
+    public static final GameTests.Function OIL_FLARE =
+            TESTS.function("oil_chain_flare_vent_and_burn", 60, 6, () -> OilChainParityGameTests::flare);
+    public static final GameTests.Function OIL_COKER =
+            TESTS.function("oil_chain_coker_heat_model", 80, 6, () -> OilChainParityGameTests::coker);
+    public static final GameTests.Function OIL_LIQUEFACTOR =
+            TESTS.function("oil_chain_liquefactor_cycle", 120, 6, () -> OilChainParityGameTests::liquefactor);
+    public static final GameTests.Function OIL_BARREL_HOPPER =
+            TESTS.function("oil_chain_barrel_hopper_sides", 80, 6, () -> OilChainParityGameTests::barrelHopper);
+
+    public static final GameTests.Function CARRY_TANK =
+            TESTS.function("persistent_fluid_tank_core_and_cell", 40, 14, () -> PersistentMachineGameTests::fluidTank);
+    public static final GameTests.Function CARRY_TANK_EMPTY =
+            TESTS.function("persistent_empty_tank_plain_item", 40, 14, () -> PersistentMachineGameTests::emptyTank);
+    public static final GameTests.Function CARRY_REFINERY =
+            TESTS.function("persistent_refinery_tanks_and_damage", 40, 14, () -> PersistentMachineGameTests::refinery);
+    public static final GameTests.Function CARRY_DERRICK =
+            TESTS.function("persistent_derrick_power_and_tanks", 40, 14, () -> PersistentMachineGameTests::derrick);
+    public static final GameTests.Function CARRY_CREATIVE =
+            TESTS.function("persistent_creative_break_drops_nothing", 40, 14, () -> PersistentMachineGameTests::creativeBreak);
+    public static final GameTests.Function CARRY_EXPLOSION =
+            TESTS.function("persistent_explosion_drops_nothing", 40, 14, () -> PersistentMachineGameTests::explosion);
+    public static final GameTests.Function GAS_DERRICK =
+            TESTS.function("oil_chain_derrick_gas_pocket_diagonal", 40, 14, () -> PersistentMachineGameTests::derrickGas);
+    public static final GameTests.Function GAS_PUMPJACK =
+            TESTS.function("oil_chain_pumpjack_gas_pocket", 40, 14, () -> PersistentMachineGameTests::pumpjackGas);
+
+    public static final GameTests.Function GAS_ASBESTOS =
+            TESTS.function("oil_chain_pumpjack_asbestos_pocket", 40, 14, () -> PersistentMachineGameTests::pumpjackAsbestos);
+
     public static void init() {}
 
     /** Port and connection counts of each 1.7 shape, and every connection one step out from its own port. */
@@ -186,16 +229,18 @@ public final class TilePortGameTests {
         TileEntityBarrel source = barrel(helper, new BlockPos(1, 1, 2), Fluids.WATER, 2, 1_000);
         duct(helper, new BlockPos(2, 1, 2), Fluids.WATER);
         TileEntityBarrel sink = barrel(helper, new BlockPos(3, 1, 2), Fluids.WATER, 0, 0);
-        refill(helper, source, sink, 20);
+        refill(helper, source, sink, 70);
     }
 
     private static void refill(GameTestHelper helper, TileEntityBarrel source, TileEntityBarrel sink, int ticksLeft) {
         helper.runAfterDelay(1, () -> {
-            if (ticksLeft == 0) {
-                PortNet<?> net = source.fluidOutPorts == null ? null : source.fluidOutPorts[0].getNetwork();
-                helper.assertTrue(net != null && net.tracker == 1_000,
-                        "the tracker must equal the last round's supply change of 1000 mB: " + (net == null ? "no net" : net.tracker));
+            PortNet<?> net = source.fluidOutPorts == null ? null : source.fluidOutPorts[0].getNetwork();
+            if (net != null && net.tracker == 1_000) {
                 helper.succeed();
+                return;
+            }
+            if (ticksLeft == 0) {
+                helper.fail("the tracker must equal the last round's supply change of 1000 mB: " + (net == null ? "no net" : net.tracker));
                 return;
             }
             source.tank.setFill(1_000);

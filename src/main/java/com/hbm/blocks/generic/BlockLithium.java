@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Explosions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -33,7 +34,7 @@ public class BlockLithium extends BlockBeaconable {
 
     private void react(Level level, BlockPos pos) {
         level.destroyBlock(pos, false);
-        level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 15F, false, Level.ExplosionInteraction.BLOCK);
+        Explosions.explode(level, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 15F, false, Level.ExplosionInteraction.BLOCK);
     }
 
     @Override

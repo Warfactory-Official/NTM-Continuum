@@ -1,5 +1,6 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.world.Explosions;
 import dev.golem.core.data.Tags;
 
 import com.hbm.capability.HbmLivingProps;
@@ -160,7 +161,7 @@ public class EntityMist extends CompatEntity {
         double intensity = 1D - (double) this.tickCount / (double) getMaxAge();
 
         if (FluidCombustion.isFlammable(type) && isOnFire()) {
-            server.explode(this, getX(), getY() + height / 2D, getZ(), (float) intensity * 15F,
+            Explosions.explode(server, this, getX(), getY() + height / 2D, getZ(), (float) intensity * 15F,
                     Level.ExplosionInteraction.BLOCK);
             this.discard();
             return;

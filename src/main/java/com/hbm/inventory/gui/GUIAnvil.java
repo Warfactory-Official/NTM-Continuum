@@ -76,6 +76,34 @@ public class GUIAnvil extends CompatContainerScreen<ContainerAnvil> {
         addRenderableWidget(this.search);
     }
 
+    /** Clears the search and selects {@code target}, paged into view; ignored when this anvil's tier cannot run it. */
+    public void focusRecipe(AnvilConstructionRecipe target) {
+        if (target == null || indexOfRecipe(this.originList, target) < 0) return;
+        this.search.setValue("");
+        regenerateRecipes();
+        int pos = indexOfRecipe(this.recipes, target);
+        if (pos < 0) return;
+        this.selection = pos;
+        this.index = Mth.clamp(pos / 2, 0, this.size);
+    }
+
+    private static int indexOfRecipe(List<AnvilConstructionRecipe> list, AnvilConstructionRecipe target) {
+        for (int i = 0; i < list.size(); i++) {
+            AnvilConstructionRecipe recipe = list.get(i);
+            if (recipe == target || !target.id.isEmpty() && recipe.id.equals(target.id)) return i;
+        }
+        return -1;
+    }
+
+    /** Id of the selected recipe, or null. */
+    public String selectedRecipeId() {
+        return this.selection >= 0 && this.selection < this.recipes.size() ? this.recipes.get(this.selection).id : null;
+    }
+
+    public int pageIndex() {
+        return this.index;
+    }
+
     private boolean matchState(AnvilConstructionRecipe recipe) {
         return this.state == OverlayType.NONE || recipe.getOverlay() == this.state;
     }

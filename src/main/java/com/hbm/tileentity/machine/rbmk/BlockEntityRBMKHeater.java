@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine.rbmk;
 
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
+import com.hbm.entity.projectile.EntityRBMKDebris;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.container.MenuRBMKHeater;
@@ -70,6 +71,7 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
 
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{feed, steam}; }
 
+    @Override public void onMelt(int reduce) { spawnDebris(EntityRBMKDebris.DebrisType.BLANK, 1 + level.getRandom().nextInt(2)); super.onMelt(reduce); }
     @Override public RBMKColumnType getConsoleType() { return RBMKColumnType.HEATEX; }
     @Override public RBMKColumn getConsoleData() {
         RBMKColumn.HeaterColumn data = (RBMKColumn.HeaterColumn) super.getConsoleData();

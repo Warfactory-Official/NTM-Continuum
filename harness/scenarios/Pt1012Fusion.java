@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
  *   <li>the torus is placed from its block item (the whole 925-cell multiblock); a klystron twelve blocks east of the core
  *       faces away from it, so its emitter claim (four blocks behind it) meets the torus's east arm (seven out);</li>
  *   <li>three air intakes ("air compressors": 1.7's only source of compressed air, 1,000 mB a tick each for 100 HE a
- *       tick) feed the klystron's south air port over an air duct; a machine battery charged by a creative battery and
- *       switched to output feeds the intakes over red cable;</li>
+ *       tick) feed the klystron's south air port over an air duct; a creative generator
+ *       feeds the intakes over red cable;</li>
  *   <li>a deuterium tank and a cold-perfluoromethyl tank on the torus's top ring feed its top ports, each typed with a
  *       fluid identifier and filled by an infinite barrel through the tank menu;</li>
  *   <li>the torus gets a creative battery and the D-D cycle ({@code fus.dd}: 750 kKyU ignition, 20 mB D a tick, 1,000 mB
@@ -56,10 +56,8 @@ public class Pt1012Fusion implements Scenario {
         }
         // air duct from the klystron's south port (12, G, 3) along the intakes' west faces
         for (int z = 3; z <= 9; z++) place(c, "hbm:fluid_duct_neo", 10.5, G, z + 0.5, 12, Y, z);
-        // red cable along the intakes' east faces to a machine battery
+        // red cable along the intakes' east faces; the power source is placed at its end later
         for (int z = 4; z <= 9; z++) place(c, "hbm:red_cable", 17.5, G, z + 0.5, 15, Y, z);
-        place(c, "hbm:machine_battery", 17.5, G, 10.5, 15, Y, 10);
-        Expect.block(c, 15, G, 10, "hbm:machine_battery");
 
         // --- the two fuel tanks on the torus's top ring ---
         place(c, "hbm:machine_fluidtank", -6.5, TOP, 0.5, -5, TOP - 1, 0);   // deuterium, core (-4, TOP, 0)
@@ -154,20 +152,10 @@ public class Pt1012Fusion implements Scenario {
         // negative control 2: a klystron without air emits nothing, so the torus still does not light
         Expect.that(doubleOf(torus, "progress0") == 0.0, "no air, no ignition: " + summary(torus));
 
-        // --- power the intakes: creative battery into the machine battery, both redstone modes to output ---
-        openAt(c, 17.5, G, 10.5, 15, G, 10, "GUIMachineBattery");
-        insertOpen(c, "hbm:battery_creative", 0);
-        s = c.screen();
-        left = s.get("left").getAsInt();
-        top = s.get("top").getAsInt();
-        for (int i = 0; i < 2; i++) { c.click(left + 142, top + 25); c.waitTicks(3); }   // low-redstone mode -> output
-        for (int i = 0; i < 2; i++) { c.click(left + 142, top + 61); c.waitTicks(3); }   // high-redstone mode -> output
+        // --- power the intakes: a creative generator at the cable's end ---
+        place(c, "hbm:creative_generator", 17.5, G, 10.5, 15, Y, 10);
+        Expect.block(c, 15, G, 10, "hbm:creative_generator");
         c.waitTicks(10);
-        c.screenshot("40-battery-output");
-        closeAll(c);
-        String bat = nbt(c, 15, G, 10);
-        // with no redstone signal the low mode applies (1.7 TileEntityMachineBattery.getRelevantMode)
-        Expect.that(intOf(bat, "redLow") == 2, "battery set to output: " + bat);
 
         // --- run and sample ---
         long helium = 0, lastHelium = -1;

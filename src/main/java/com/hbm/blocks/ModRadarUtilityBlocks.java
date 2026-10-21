@@ -1,13 +1,11 @@
 package com.hbm.blocks;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
+import com.hbm.registration.CarriedDrops;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
-import dev.golem.core.dejson.Drops;
 import dev.golem.core.dejson.Variants;
 import com.hbm.Constants;
 import com.hbm.blocks.machine.BlockHatch;
@@ -54,7 +52,6 @@ public final class ModRadarUtilityBlocks {
     private static final Preset FOLDED = Presets.rendered(Variants.product(
             Variants.uniform("facing", "north", "east", "south", "west"),
             Variants.uniform("cell", "false", "true")));
-    private static final Loot ORBUS_DROP = ModRadarUtilityBlocks::orbusDrop;
 
     private static UnaryOperator<BlockBehaviour.Properties> iron(float hardness, float resistance) {
         return p -> p.strength(hardness, resistance).sound(SoundType.METAL).requiresCorrectToolForDrops();
@@ -91,7 +88,7 @@ public final class ModRadarUtilityBlocks {
     public static final RegistryObject<MachineOrbus> machine_orbus =
             REG.block("machine_orbus", MachineOrbus::new, rendered(5.0F, 10.0F))
                     .transform(FOLDED)
-                    .loot(ORBUS_DROP)
+                    .loot(CarriedDrops.ALWAYS)
                     .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSeal> seal_controller =
             REG.block("seal_controller", BlockSeal::new, iron(10.0F, 100.0F))
@@ -125,24 +122,6 @@ public final class ModRadarUtilityBlocks {
     private static void item(String name, RegistryObject<? extends Block> block, HbmTab tab) {
         Reg.Handle<BlockItem> item = REG.blockItem(block, Compat::blockDescription);
         if (tab != null) item.tab(tab);
-    }
-
-    /**
-     * 1.7 IPersistentNBT: a filled orbus keeps its tank in the item, as the barrels do. Only the core rolls this
-     * table; a broken cell drops the core's (MachineOrbus.onPlayerWillDestroy), 1.7's IPersistentNBT.getDrops
-     * through CompatExternal.getCoreFromPos from any part of the tank.
-     */
-    private static void orbusDrop(String namespace, String block) {
-        JsonObject orbus = Drops.container(namespace, block, "minecraft:custom_data", "minecraft:custom_name");
-        JsonObject cellProperty = new JsonObject();
-        cellProperty.addProperty("cell", "false");
-        JsonObject coreOnly = new JsonObject();
-        coreOnly.addProperty("condition", "minecraft:block_state_property");
-        coreOnly.addProperty("block", "hbm:machine_orbus");
-        coreOnly.add("properties", cellProperty);
-        JsonArray orbusConditions = new JsonArray();
-        orbusConditions.add(coreOnly);
-        orbus.getAsJsonArray("pools").get(0).getAsJsonObject().add("conditions", orbusConditions);
     }
 
     public static void init() {}

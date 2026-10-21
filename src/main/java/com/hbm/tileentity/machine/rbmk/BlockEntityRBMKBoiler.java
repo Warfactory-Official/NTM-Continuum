@@ -1,6 +1,11 @@
 package com.hbm.tileentity.machine.rbmk;
 
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
+import com.hbm.entity.projectile.EntityRBMKDebris;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.sound.ModSounds;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -30,15 +35,26 @@ import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
 public class BlockEntityRBMKBoiler extends BlockEntityRBMKBase implements IFluidProviderMK2, IFluidReceiverMK2, IFluidStandardTransceiverMK2,
         IControlReceiver, MenuProvider, IRORValueProvider {
     @Override public RBMKColumnType getConsoleType() { return RBMKColumnType.BOILER; }
+    @Override public void onMelt(int reduce) { spawnDebris(EntityRBMKDebris.DebrisType.BLANK, 1 + level.getRandom().nextInt(2)); super.onMelt(reduce); }
     public final FluidTankNTM feed = new FluidTankNTM(Fluids.WATER, 10_000), steam = new FluidTankNTM(Fluids.STEAM, 1_000_000);
     public int consumption, output;
+    public int ventDelay;
     public BlockEntityRBMKBoiler(BlockPos pos, BlockState state) { super(ModRBMKBlockEntities.RBMK_BOILER.get(), pos, state, 0); ports = new ModulePortManFluidAdaptive(this).setInputTanks(feed).setOutputTanks(steam); }
     public static double heat(FluidType f) { return f == Fluids.STEAM ? 100 : f == Fluids.HOTSTEAM ? 300 : f == Fluids.SUPERHOTSTEAM ? 450 : f == Fluids.ULTRAHOTSTEAM ? 600 : 0; }
     public static double factor(FluidType f) { return f == Fluids.STEAM ? 1 : f == Fluids.HOTSTEAM ? 10 : f == Fluids.SUPERHOTSTEAM ? 100 : f == Fluids.ULTRAHOTSTEAM ? 1000 : 0; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{feed, steam}; }
-    @Override public void tickServer() { ports.update(getLoaderPorts()); consumption = output = 0; double available = heat - heat(steam.getTankType()); if (available > 0) { double cost = RBMKDials.getBoilerHeatConsumption(level), factor = factor(steam.getTankType()); int used, made; if (steam.getTankType() == Fluids.ULTRAHOTSTEAM) { made = (int)Math.floor(available / cost * 100 / factor); used = (int)Math.floor(made / 100D * factor); if (used > feed.getFill()) { made = (int)Math.floor(feed.getFill() * 100D / factor); used = (int)Math.floor(made / 100D * factor); } } else { used = Math.min((int)Math.floor(available / cost), feed.getFill()); made = (int)Math.floor(used * 100D / factor); } consumption = used; output = made; feed.setFill(feed.getFill() - used); steam.setFill(Math.min(steam.getMaxFill(), steam.getFill() + made)); heat -= used * cost; } super.tickServer(); }
+    @Override public void tickServer() { ports.update(getLoaderPorts()); consumption = output = 0; if (ventDelay > 0) ventDelay--; double available = heat - heat(steam.getTankType()); if (available > 0) { double cost = RBMKDials.getBoilerHeatConsumption(level), factor = factor(steam.getTankType()); int used, made; if (steam.getTankType() == Fluids.ULTRAHOTSTEAM) { made = (int)Math.floor(available / cost * 100 / factor); used = (int)Math.floor(made / 100D * factor); if (used > feed.getFill()) { made = (int)Math.floor(feed.getFill() * 100D / factor); used = (int)Math.floor(made / 100D * factor); } } else { used = Math.min((int)Math.floor(available / cost), feed.getFill()); made = (int)Math.floor(used * 100D / factor); } consumption = used; output = made; feed.setFill(feed.getFill() - used); int total = steam.getFill() + made; steam.setFill(Math.min(steam.getMaxFill(), total)); if (total > steam.getMaxFill()) vent(); heat -= used * cost; } super.tickServer(); }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{feed}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{steam}; }
+    /** A full steam tank blows off a jet above the column, at most every 20 to 30 ticks. */
+    private void vent() {
+        if (ventDelay > 0) return;
+        RandomSource random = level.getRandom();
+        double x = worldPosition.getX(), y = worldPosition.getY() + RBMKDials.getColumnHeight(level), z = worldPosition.getZ();
+        HbmEffectNT.RBMKSteam.send(level, x + .25D + random.nextInt(2) * .5D, y, z + .25D + random.nextInt(2) * .5D, null, 100D);
+        ventDelay = 20 + random.nextInt(10);
+        level.playSound(null, x, y, z, ModSounds.STEAM_ENGINE_OPERATE.get(), SoundSource.BLOCKS, 2F, 1F + random.nextFloat() * .25F);
+    }
     public void cycleCompressor() { if (heat > 50 && feed.getFill() > 0) return; FluidType f = steam.getTankType(); if (f == Fluids.STEAM) { steam.setTankType(Fluids.HOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.HOTSTEAM) { steam.setTankType(Fluids.SUPERHOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.SUPERHOTSTEAM) { steam.setTankType(Fluids.ULTRAHOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.ULTRAHOTSTEAM) { steam.setTankType(Fluids.STEAM); steam.setFill(Math.min(steam.getFill()*1000, steam.getMaxFill())); } setChanged(); }
      @Override public boolean hasPermission(Player player) { return player.containerMenu instanceof MenuRBMKBoiler menu && menu.blockEntity() == this && menu.stillValid(player); }
      @Override public void receiveControl(CompoundTag data) { if (Tags.getBooleanOr(data, "compression", false)) cycleCompressor(); }

@@ -6,13 +6,16 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import com.hbm.lib.ModDamageSources;
 import com.hbm.packet.HbmPackets;
+import com.hbm.packet.PlasmaBlastPayload;
 import com.hbm.particle.SpentCasing;
 import com.hbm.particle.helper.CasingCreator;
 import com.hbm.sound.ModGunSounds;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.EntityDamageUtil;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.Sounds;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
@@ -20,6 +23,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -913,9 +917,39 @@ public final class Orchestras {
             cue(GunAnimation.INSPECT, 11, ModGunSounds.MAG_SMALL_REMOVE, 1F, 1F),
             cue(GunAnimation.INSPECT, 72, ModGunSounds.MAG_SMALL_INSERT, 1F, 1F),
             cue(GunAnimation.INSPECT, 84, ModGunSounds.REVOLVER_CLOSE, 1F, 1F));
-    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_TAU = timeline(
+    private static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> TAU_TIMELINE = timeline(
             cue(GunAnimation.CYCLE, 0, ModGunSounds.FIRE_TAU, 0.5F, 1F),
             cue(GunAnimation.ALT_CYCLE, 0, ModGunSounds.FIRE_TAU, 0.5F, 0.8F));
+    /** The timeline plus the charge: one round per 10 ticks up to 130, and past 200 ticks the cannon blows up. */
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_TAU = (stack, ctx) -> {
+        TAU_TIMELINE.accept(stack, ctx);
+        LivingEntity entity = ctx.entity;
+        if (!(entity.level() instanceof ServerLevel level)
+                || ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) != GunAnimation.SPINUP) return;
+        int timer = ItemGunBaseNT.getAnimTimer(stack, ctx.configIndex);
+        if (timer % 10 == 0 && timer < 130) {
+            IMagazine<?> mag = magazine(stack, ctx, 0);
+            if (mag.getAmount(stack, ctx.inventory) <= 0) {
+                ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, GunAnimation.CYCLE_DRY, ctx.configIndex);
+                return;
+            }
+            mag.useUpAmmo(stack, ctx.inventory, 1);
+        }
+        if (timer <= 200) return;
+        ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, GunAnimation.CYCLE_DRY, ctx.configIndex);
+        Compat.hurt(entity, level, ModDamageSources.tauBlast(level), 1_000F);
+        ItemGunBaseNT.setWear(stack, ctx.configIndex, Math.min(ItemGunBaseNT.getWear(stack, ctx.configIndex) + 10_000F,
+                ctx.config.getDurability(stack)));
+        double eyeY = entity.getY() + entity.getEyeHeight();
+        level.playSound(null, entity.getX(), eyeY, entity.getZ(), ModGunSounds.TESLA_BLAST.get(),
+                SoundSource.PLAYERS, 5.0F, 0.9F);
+        level.playSound(null, entity.getX(), eyeY, entity.getZ(), Sounds.minecraft("entity.firework_rocket.blast"),
+                SoundSource.PLAYERS, 5.0F, 0.5F);
+        float yaw = level.getRandom().nextFloat() * 180F;
+        for (int i = 0; i < 3; i++) {
+            PlasmaBlastPayload.send(level, entity.getX(), eyeY, entity.getZ(), 1.0F, 0.8F, 0.5F, -60F + 60F * i, yaw, 2F);
+        }
+    };
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_FATMAN = timeline(
             cue(GunAnimation.RELOAD, 0, ModGunSounds.FATMAN_RELOAD, 1F, 1F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_LASRIFLE = timeline(

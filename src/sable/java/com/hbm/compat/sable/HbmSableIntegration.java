@@ -1,7 +1,6 @@
 package com.hbm.compat.sable;
 
 import com.hbm.Constants;
-import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.SubLevels;
 
 /**
@@ -19,10 +18,5 @@ public final class HbmSableIntegration {
         SubLevels.addMoveListener(CarriedBlocks::afterMove);
         SubLevels.addStructureResolver(MultiblockParts::partsWith);
         Constants.LOG.info("Sable present: HBM blocks follow sub-level assembly, splitting and disassembly");
-    }
-
-    /** The {@code hbm:sable_*} GameTests, which drive Sable's own assembly. */
-    public static GameTests.Suite gameTests() {
-        return SableGameTests.TESTS;
     }
 }

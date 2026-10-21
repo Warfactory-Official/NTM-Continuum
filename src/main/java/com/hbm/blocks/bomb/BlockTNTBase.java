@@ -1,7 +1,10 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.block.IToolable;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.IBlockExplodedVNT;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatBlock;
 import dev.golem.core.world.Fires;
@@ -34,7 +37,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /** Shared legacy TNT behavior: configurable break ignition and a custom persistent primed entity. */
-public abstract class BlockTNTBase extends CompatBlock implements IToolable {
+public abstract class BlockTNTBase extends CompatBlock implements IToolable, IBlockExplodedVNT {
 
     public static final BooleanProperty ARMED = BooleanProperty.create("armed");
     private static final int POP_FUSE = 20;
@@ -132,6 +135,15 @@ public abstract class BlockTNTBase extends CompatBlock implements IToolable {
         return true;
     }
 
+    /** A VNT blast pops the block into a primed explosive with the same short fuse as a vanilla blast. */
+    @Override
+    public boolean onVNTExploded(ServerLevel level, BlockPos pos, BlockState state, ExplosionVNT explosion) {
+        level.removeBlock(pos, false);
+        EntityPrimedExplosive primed = prime(level, pos, state, IBlockExplodedVNT.igniter(explosion), false);
+        primed.setFuse(level.getRandom().nextInt(POP_FUSE) + POP_FUSE / 2);
+        return true;
+    }
+
     protected EntityPrimedExplosive prime(Level level, BlockPos pos, BlockState state,
                                            @Nullable LivingEntity owner) {
         return prime(level, pos, state, owner, true);
@@ -178,6 +190,7 @@ public abstract class BlockTNTBase extends CompatBlock implements IToolable {
     public abstract float blastStrength();
 
     public void detonate(Level level, double x, double y, double z, EntityPrimedExplosive primed) {
-        level.explode(primed, x, y, z, blastStrength(), true, Level.ExplosionInteraction.TNT);
+        Explosions.explode(level, primed, primed == null ? null : primed.getOwnerEntity(), x, y, z, blastStrength(), false,
+                Level.ExplosionInteraction.TNT);
     }
 }

@@ -82,19 +82,19 @@ public final class AddonContentGameTests {
     public static void init() {}
 
     /**
-     * E-046: HBM's 44 effects keep their 1.7 names in declaration order; an addon's namespaced effect is registered,
+     * E-046: HBM's 45 effects keep their 1.7 names in declaration order; an addon's namespaced effect is registered,
      * found by name, listed after HBM's, survives the particle payload, and a bare or taken name is refused.
      */
     public static void effects(GameTestHelper helper) {
         var all = HbmEffectNT.values();
-        helper.assertTrue(all.length >= 44 && all[0] == HbmEffectNT.Flamethrower
-                && all[43] == HbmEffectNT.Ufo
+        helper.assertTrue(all.length >= 45 && all[0] == HbmEffectNT.Flamethrower
+                && all[44] == HbmEffectNT.Ufo
                 && "ExplosionSmall".equals(HbmEffectNT.ExplosionSmall.name()),
                 "HBM's effects must come first, in 1.7 order, under their 1.7 names");
         var probe = HbmEffectNT.byName("hbm_test:probe");
         if (probe == null) probe = HbmEffectNT.register("hbm_test:probe");
         helper.assertTrue(HbmEffectNT.byName("hbm_test:probe") == probe
-                && Arrays.asList(HbmEffectNT.values()).indexOf(probe) >= 44,
+                && Arrays.asList(HbmEffectNT.values()).indexOf(probe) >= 45,
                 "an addon effect must resolve by name and follow HBM's");
         boolean bareRefused = false, takenRefused = false;
         try { HbmEffectNT.register("Probe"); } catch (IllegalArgumentException e) { bareRefused = true; }

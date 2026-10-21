@@ -22,6 +22,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.particle.helper.EntityEffects;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
@@ -38,6 +39,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -101,6 +103,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         int amountToBurn = Math.min(1 + fan.afterburner, fan.tank.getFill());
         boolean redstone = false;
         for (DirPos connection : fan.getConPos()) {
+            if (!level.hasChunkAt(connection.getPos())) continue;
             if (level.hasNeighborSignal(connection.getPos())) {
                 redstone = true;
                 break;
@@ -149,9 +152,27 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
     private void applyExhaust(Level level, int amountToBurn) {
         ForgeDirection dir = getFacing().getRotation(ForgeDirection.UP);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        if (afterburner > 90 && level.getRandom().nextInt(30) == 0) {
+        RandomSource rand = level.getRandom();
+        if (afterburner > 0) {
+            for (int i = 0; i < 2; i++) {
+                double speed = 2 + rand.nextDouble() * 3;
+                double deviation = rand.nextGaussian() * 0.2;
+                EntityEffects.gasFlame(level, worldPosition.getX() + 0.5 - dir.offsetX * (3 - i), worldPosition.getY() + 1.5,
+                        worldPosition.getZ() + 0.5 - dir.offsetZ * (3 - i), -dir.offsetX * speed + deviation, 0,
+                        -dir.offsetZ * speed + deviation, 8F, 150D);
+            }
+        }
+        if (afterburner > 90 && rand.nextInt(30) == 0) {
             level.playSound(null, worldPosition.above(), ModSounds.TURBOFAN_DAMAGE.get(),
-                    SoundSource.BLOCKS, 3.0F, 0.95F + level.getRandom().nextFloat() * 0.2F);
+                    SoundSource.BLOCKS, 3.0F, 0.95F + rand.nextFloat() * 0.2F);
+        }
+        if (afterburner > 90) {
+            // 1.7 subtracts the Z offset along dir but adds it along rot
+            EntityEffects.gasFlame(level,
+                    worldPosition.getX() + 0.5 + dir.offsetX * (rand.nextDouble() * 4 - 2) + rot.offsetX * (rand.nextDouble() * 2 - 1),
+                    worldPosition.getY() + 1 + rand.nextDouble() * 2,
+                    worldPosition.getZ() + 0.5 - dir.offsetZ * (rand.nextDouble() * 4 - 2) + rot.offsetZ * (rand.nextDouble() * 2 - 1),
+                    0, 0.1 * rand.nextDouble(), 0, 4F, 150D);
         }
         affectBox(level, exhaustBox(dir, rot, -3.5D, -19.5D, 1.5D), entity -> {
             if (afterburner > 0) {

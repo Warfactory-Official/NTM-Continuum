@@ -95,6 +95,42 @@ public final class DFCGameTests {
         }
     }
 
+    /** Emitter to core to receiver with every step worked out from the 1.7 formulas. */
+    public static void chainNumbers(GameTestHelper helper) {
+        TileEntityCore core = build(helper);
+        TileEntityCoreEmitter emitter = be(helper, EMITTER, TileEntityCoreEmitter.class);
+        TileEntityCoreReceiver receiver = be(helper, RECEIVER, TileEntityCoreReceiver.class);
+        try {
+            fuel(core);
+            core.inventory.setStackInSlot(1, new ItemStack(ModDFCBlocks.ams_core_sing.get()));
+            catalysts(core);
+            tick(helper, CORE, core, TileEntityCore::serverTick);
+
+            emitter.watts = 100;
+            emitter.isOn = true;
+            emitter.power = TileEntityCoreEmitter.maxPower;
+            emitter.tank.setFill(emitter.tank.getMaxFill());
+            receiver.tank.setFill(receiver.tank.getMaxFill());
+            int fuelBefore = core.tanks[0].getFill();
+            tick(helper, EMITTER, emitter, TileEntityCoreEmitter::serverTick);
+
+            // demand 1e9 * 100 / 2000, 100 W add 10,000 J, 95 % leaves the emitter
+            helper.assertTrue(emitter.power == 1_000_000_000L - 50_000_000L, "emitter power " + emitter.power);
+            helper.assertTrue(emitter.prev == 10_000L, "emitter joules " + emitter.prev);
+            // ceil(9500 / 1000) = 10 mB of each fuel, ceil(9500 / 10000) = 1 heat
+            helper.assertTrue(core.tanks[0].getFill() == fuelBefore - 10 && core.tanks[1].getFill() == fuelBefore - 10,
+                    "fuel use " + core.tanks[0].getFill() + "/" + core.tanks[1].getFill());
+            helper.assertTrue(core.heat == 1, "core heat " + core.heat);
+            // 9500 * 500 (singularity) * 1.5 (deuterium) * 1.7 (tritium)
+            helper.assertTrue(receiver.joules == 12_112_500L, "receiver joules " + receiver.joules);
+            tick(helper, RECEIVER, receiver, TileEntityCoreReceiver::serverTick);
+            helper.assertTrue(receiver.power == 12_112_500L * 5000L, "receiver power " + receiver.power);
+            helper.succeed();
+        } finally {
+            quench(core);
+        }
+    }
+
     public static void stabilizer(GameTestHelper helper) {
         TileEntityCore core = build(helper);
         TileEntityCoreStabilizer stabilizer = be(helper, STABILIZER, TileEntityCoreStabilizer.class);

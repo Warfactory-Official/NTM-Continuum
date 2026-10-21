@@ -6,7 +6,6 @@ import com.hbm.compat.computercraft.Peripherals.Reach;
 import com.hbm.tileentity.bomb.TileEntityLaunchPad;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadLarge;
 import com.hbm.tileentity.bomb.TileEntityLaunchTable;
-import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
@@ -23,9 +22,5 @@ public final class BombRows {
             Peripherals.row(TileEntityLaunchPadLarge.class, LaunchPadPeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityLaunchTable.class, LaunchTablePeripheral::new, Reach.BLOCK)
     );
-
-    public static GameTests.Suite tests() {
-        return com.hbm.gametest.computer.BombPeripheralGameTests.TESTS;
-    }
 }
 //?}

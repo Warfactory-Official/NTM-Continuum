@@ -14,12 +14,18 @@ import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModArmorModItems;
 import com.hbm.saveddata.SatelliteSavedData;
+import com.hbm.api.block.IRadarCommandReceiver;
+import com.hbm.tileentity.network.RTTYSystem;
+import com.hbm.items.ModMissileItems;
+import com.hbm.items.ModDataComponents;
+import com.hbm.saveddata.satellites.SatelliteMiner;
 import com.hbm.saveddata.satellites.SatelliteScanner;
 import dev.golem.core.Ids;
 import dev.golem.core.client.EquipProgress;
 import dev.golem.core.client.VanillaHud;
 import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.render.ConnectedTextures;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
@@ -130,6 +136,30 @@ public final class GapsCHarnessQueries {
             ArmorModHandler.applyMod(helmet, lens);
             player.setItemSlot(EquipmentSlot.HEAD, helmet);
             json.addProperty("lens_applied", ArmorModHandler.pryMods(helmet)[ArmorModHandler.extra] != null);
+        }
+        if (params.has("command")) {
+            var c = params.getAsJsonArray("command");
+            var be = player.level().getBlockEntity(new BlockPos(c.get(0).getAsInt(), c.get(1).getAsInt(), c.get(2).getAsInt()));
+            json.addProperty("command_accepted", be instanceof IRadarCommandReceiver rec
+                    && rec.sendCommandPosition(c.get(3).getAsInt(), c.get(4).getAsInt(), c.get(5).getAsInt()));
+        }
+        if (params.has("designate")) {
+            var xz = params.getAsJsonArray("designate");
+            ItemStack designator = new ItemStack(ModMissileItems.designator_manual.get());
+            ModDataComponents.DESIGNATOR_X.set(designator, xz.get(0).getAsInt());
+            ModDataComponents.DESIGNATOR_Z.set(designator, xz.get(1).getAsInt());
+            json.addProperty("designated", player.getInventory().add(designator));
+        }
+        if (params.has("rtty")) {
+            var msg = params.getAsJsonArray("rtty");
+            String text = msg.get(1).getAsString();
+            RTTYSystem.broadcast(player.level(), msg.get(0).getAsString(), msg.size() > 2 ? (Object) text.charAt(0) : text);
+            json.addProperty("rtty_sent", true);
+        }
+        if (params.has("miner")) {
+            var sat = SatelliteSavedData.get((ServerLevel) player.level()).getSatFromFreq(params.get("miner").getAsInt());
+            if (sat instanceof SatelliteMiner miner) miner.progress = 1D - SatelliteMiner.SPEED / 2;
+            json.addProperty("miner_primed", sat instanceof SatelliteMiner);
         }
         json.addProperty("server_shield", props.shield);
         json.addProperty("server_max_shield", props.maxShield);

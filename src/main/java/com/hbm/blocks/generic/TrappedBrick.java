@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.blocks.ModSecurityBlocks;
@@ -103,7 +104,7 @@ public class TrappedBrick extends CompatBlock {
                 level.playSound(null, x + 0.5, y + 1.5, z + 0.5, ModSecuritySounds.SLICER.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
             // 1.7 createExplosion(null, ..., 1F, false): a small block-breaking blast, no fire
-            case MINE -> level.explode(null, x + 0.5, y + 1.5, z + 0.5, 1F, false, Level.ExplosionInteraction.BLOCK);
+            case MINE -> Explosions.explode(level, null, x + 0.5, y + 1.5, z + 0.5, 1F, false, Level.ExplosionInteraction.BLOCK);
             case WEB -> {
                 if (level.getBlockState(above).canBeReplaced()) level.setBlockAndUpdate(above, Blocks.COBWEB.defaultBlockState());
             }

@@ -52,7 +52,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
 
     public static final int FUEL_COAL = 200 * 8;
     public static final int FUEL_RATE = 200 * 4;
-    public static final int MAX_FUEL = FUEL_COAL * 16;
+    public static final int MAX_FUEL = FUEL_COAL * 24;
     /** mB of flue gas per tick of operation, about a coal firebox's worth of heat in a fluid heater. */
     public static final int FLUE_GAS = 8;
 

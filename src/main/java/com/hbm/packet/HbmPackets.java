@@ -313,6 +313,13 @@ public final class HbmPackets {
         handleAnvilCraft(player, payload.recipeId(), payload.mode());
     }
 
+    /** Crafts per click: one, or with shift enough for one stack of the output. */
+    public static int anvilCraftCount(AnvilRecipes.AnvilConstructionRecipe recipe, int mode) {
+        if (mode != 1) return 1;
+        ItemStack first = recipe.output.get(0).stack;
+        return recipe.output.size() > 1 ? 64 : first.getMaxStackSize() / first.getCount();
+    }
+
     public static void handleAnvilCraft(ServerPlayer player, String recipeId, int mode) {
         if (player == null || recipeId == null) return;
         AnvilRecipes.AnvilConstructionRecipe recipe =
@@ -322,7 +329,7 @@ public final class HbmPackets {
 
         if (!recipe.isTierValid(anvil.tier)) return;
 
-        int count = mode == 1 ? 64 : 1;
+        int count = anvilCraftCount(recipe, mode);
         for (int i = 0; i < count; i++) {
             if (InventoryUtil.doesPlayerHaveAStacks(player, recipe.input, true)) {
                 InventoryUtil.giveChanceStacksToPlayer(player, recipe.output);

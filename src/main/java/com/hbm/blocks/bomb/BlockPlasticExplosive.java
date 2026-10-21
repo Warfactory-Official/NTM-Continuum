@@ -4,6 +4,7 @@ import com.hbm.api.block.IFuckingExplode;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.item.EntityTntNtm;
 import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.IBlockExplodedVNT;
 import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.interfaces.IBomb;
 import dev.golem.core.world.CompatBlock;
@@ -34,7 +35,7 @@ import org.jspecify.annotations.Nullable;
  * orientation (the player's look direction, or up/down when standing right over/under the block) and
  * the {@code _front} texture sits on the opposite face, toward the player.
  */
-public class BlockPlasticExplosive extends CompatBlock implements IBomb, IFuckingExplode {
+public class BlockPlasticExplosive extends CompatBlock implements IBomb, IFuckingExplode, IBlockExplodedVNT {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
@@ -96,6 +97,16 @@ public class BlockPlasticExplosive extends CompatBlock implements IBomb, IFuckin
         level.removeBlock(pos, false);
         EntityTntNtm primed = new EntityTntNtm(ModNtmEntities.TNT_NTM.get(), level,
                 pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, igniter, state);
+        primed.setFuse(0);
+        level.addFreshEntity(primed);
+        return true;
+    }
+
+    @Override
+    public boolean onVNTExploded(ServerLevel level, BlockPos pos, BlockState state, ExplosionVNT explosion) {
+        level.removeBlock(pos, false);
+        EntityTntNtm primed = new EntityTntNtm(ModNtmEntities.TNT_NTM.get(), level,
+                pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, IBlockExplodedVNT.igniter(explosion), state);
         primed.setFuse(0);
         level.addFreshEntity(primed);
         return true;

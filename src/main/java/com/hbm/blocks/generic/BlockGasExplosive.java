@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.config.GeneralConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -52,7 +53,7 @@ public class BlockGasExplosive extends BlockGasFlammable {
                 BlockPos pos = queue.poll();
                 processed++;
                 level.setBlock(pos, Blocks.FIRE.defaultBlockState(), 2);
-                level.explode(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 3.0F,
+                Explosions.explode(level, null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 3.0F,
                         Level.ExplosionInteraction.BLOCK);
                 for (Direction dir : Direction.values()) {
                     BlockPos neighbour = pos.relative(dir);

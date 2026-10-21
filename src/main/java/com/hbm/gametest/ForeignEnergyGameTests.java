@@ -2,6 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.network.BlockCable;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
@@ -13,6 +14,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -40,6 +42,9 @@ public final class ForeignEnergyGameTests {
     public static final GameTests.Function FACE =
             TESTS.function("power_foreign_mod_face", 40, () -> ForeignEnergyGameTests::face);
 
+    public static final GameTests.Function CABLE_ARMS =
+            TESTS.function("power_foreign_cable_arms", 160, () -> ForeignEnergyGameTests::cableArms);
+
     /** Pipez's energy pipe, the peer these tests drive. */
     private static final String PIPE_NAMESPACE = "pipez", PIPE_PATH = "energy_pipe";
 
@@ -58,6 +63,7 @@ public final class ForeignEnergyGameTests {
     private static final int Y = 3;
     private static final int ROUND_TRIP_Z = 6;
     private static final int FACE_Z = 12;
+    private static final int ARMS_Z = 18;
 
     /** The pipe sits between the two runs, so neither is a neighbour of the other. */
     private static final int RUN_A_FROM = 6, RUN_A_TO = 10, PIPE_X = 11, RUN_B_FROM = 12, RUN_B_TO = 16;
@@ -137,6 +143,41 @@ public final class ForeignEnergyGameTests {
             helper.fail("Pipez no longer has setExtracting(Direction, boolean): " + e);
         }
         return pos;
+    }
+
+    /**
+     * A cable draws an arm toward a foreign energy block exactly when the power net can push into it, and the arm
+     * goes with the block. The fixture cell stands on every node (the loader's capability, Team Reborn Energy on
+     * Fabric), so this runs everywhere there is a foreign energy system.
+     */
+    private static void cableArms(GameTestHelper helper) {
+        if (!EnergyCompat.supported()) {
+            helper.succeed();
+            return;
+        }
+        int z = ARMS_Z;
+        BlockPos cable = place(helper, 5, z, ModMachineBlocks.red_cable.get());
+        place(helper, 4, z, ModMachineBlocks.creative_generator.get());
+        BlockPos cell = place(helper, 6, z, ForeignEnergyFixture.CELL.get());
+        BlockPos stone = place(helper, 5, z + 1, Blocks.STONE);
+        helper.assertTrue(helper.getLevel().getBlockState(cable).getValue(BlockCable.EAST),
+                "No arm toward a foreign energy block the net can push into");
+        helper.assertFalse(helper.getLevel().getBlockState(cable).getValue(BlockCable.SOUTH),
+                "An arm toward a block that exposes no energy");
+        helper.assertTrue(helper.getLevel().getBlockState(cable).getValue(BlockCable.WEST),
+                "No arm toward the generator");
+        helper.assertTrue(EnergyCompat.find(helper.getLevel(), cell, Direction.WEST) != null,
+                "The fixture exposes nothing on the face the cable touches");
+
+        helper.runAfterDelay(100, () -> {
+            helper.assertTrue(ForeignEnergyFixture.stored(helper.getLevel(), cell) > 0L,
+                    "Power did not reach the foreign cell");
+            helper.getLevel().setBlock(cell, Blocks.AIR.defaultBlockState(), 3);
+            helper.getLevel().setBlock(stone, Blocks.AIR.defaultBlockState(), 3);
+            helper.assertFalse(helper.getLevel().getBlockState(cable).getValue(BlockCable.EAST),
+                    "The arm stayed after the foreign block went");
+            helper.succeed();
+        });
     }
 
     /** Nothing to test where there is no foreign energy system, or no foreign mod to be one. */

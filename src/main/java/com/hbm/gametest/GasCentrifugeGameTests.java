@@ -20,6 +20,7 @@ import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineGasCent;
 import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
@@ -127,6 +128,22 @@ public final class GasCentrifugeGameTests {
                         && gasCent.inputTank.getFill() == 0,
                 "gas centrifuge must process two batches at the normal cadence");
         helper.succeed();
+    }
+
+    public static void cascadeIgnoresTargetTank(GameTestHelper helper) {
+        TileEntityMachineGasCent first = place(helper, new BlockPos(2, 1, 2));
+        ForgeDirection facing = MachineCore.facing(first.getBlockState());
+        BlockPos secondPos = new BlockPos(2 - facing.offsetX, 1, 2 - facing.offsetZ);
+        TileEntityMachineGasCent second = place(helper, secondPos);
+        second.tank.setFill(500);
+        first.outputTank.setFill(300);
+
+        helper.succeedWhen(() -> {
+            tick(helper, first);
+            helper.assertTrue(second.inputTank.getFill() == 300 && first.outputTank.getFill() == 0,
+                    "a cascade target holding raw UF6 must still receive the output; got "
+                            + second.inputTank.getFill() + " and " + first.outputTank.getFill());
+        });
     }
 
     public static void uf6FluidNetwork(GameTestHelper helper) {

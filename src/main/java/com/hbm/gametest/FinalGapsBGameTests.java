@@ -47,7 +47,7 @@ import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.world.Advancements;
-import dev.golem.core.world.Compat;
+import dev.golem.core.world.Chunks;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
@@ -356,11 +356,10 @@ public final class FinalGapsBGameTests {
             // that is the template's chunk depends on where the random grid start puts the chunk borders; in the
             // full suite it was a neighbour that was loaded but never entity-ticking (cow ticks 0, entity-ticking
             // false, not removed, after 190 ticks). So the test forces the cow's own chunk, polls until the cow has
-            // had its ticks, and gives the chunk back only if it forced it (the forced set is one flag per chunk).
+            // had its ticks, and gives the chunk back when done.
             BlockPos cowAt = helper.absolutePos(new BlockPos(4, 2, 4));
             int cowChunkX = cowAt.getX() >> 4, cowChunkZ = cowAt.getZ() >> 4;
-            boolean forcedByTest = !Compat.isChunkForced(level, cowChunkX, cowChunkZ);
-            if (forcedByTest) Compat.updateChunkForced(level, cowChunkX, cowChunkZ, true);
+            Chunks.claimTicking(level, cowChunkX, cowChunkZ);
             double[] pushed = new double[1];
             boolean[] done = new boolean[1];
             // the effect acts every second tick of the cow's own, so 20 of them are ten chances; the test timeout
@@ -380,7 +379,7 @@ public final class FinalGapsBGameTests {
                     }
                     if (!tainted && cow.tickCount < cowTicks && tick < last) return;
                     done[0] = true;
-                    if (forcedByTest) Compat.updateChunkForced(level, cowChunkX, cowChunkZ, false);
+                    Chunks.releaseTicking(level, cowChunkX, cowChunkZ);
                     try {
                         helper.assertTrue(tainted,
                                 "a tainted mob on stone leaves taint with ENTITY_TAINT_TRAILS (cow at " + cow.blockPosition() + ", effect "

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.pile;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.config.GeneralConfig;
 import dev.golem.core.data.Tags;
 
@@ -44,7 +45,7 @@ public class TileEntityPileFuel extends TileEntityPileBase implements IPileNeutr
         pile.transmute();
 
         if (pile.heat >= maxHeat) {
-            level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 4, true, Level.ExplosionInteraction.BLOCK);
+            Explosions.explode(level, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 4, true, Level.ExplosionInteraction.BLOCK);
             level.setBlockAndUpdate(pos, ModNuclearBlocks.gas_radon_dense.get().defaultBlockState());
             return;
         }

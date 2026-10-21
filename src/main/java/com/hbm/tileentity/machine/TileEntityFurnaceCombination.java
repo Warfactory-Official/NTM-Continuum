@@ -2,7 +2,9 @@ package com.hbm.tileentity.machine;
 
 import dev.golem.core.data.Tags;
 
+import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.MachineCore;
+import dev.golem.core.world.ItemStacks;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.inventory.container.ContainerFurnaceCombination;
@@ -19,6 +21,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -89,7 +92,11 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
                     CombinationRecipes.CombinationRecipe recipe =
                             CombinationRecipes.getOutput(furnace.inventory.getStackInSlot(0));
                     ItemStack output = recipe.itemOutput();
-                    furnace.inventory.insertItem(1, output.copy(), false);
+                    if (output != null) {
+                        ItemStack slot = furnace.inventory.getStackInSlot(1);
+                        if (slot.isEmpty()) furnace.inventory.setStackInSlot(1, output.copy());
+                        else slot.grow(output.getCount());
+                    }
                     if (recipe.fluidOutput() != null) {
                         furnace.tank.setTankType(recipe.fluidOutput().type);
                         furnace.tank.setFill(furnace.tank.getFill() + recipe.fluidOutput().fill);
@@ -104,9 +111,10 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
                     Effects.ignite(entity, 5);
                 }
 
+                if (TickPhase.every(level, pos, 10L)) {
+                    level.playSound(null, pos.getX(), pos.getY() + 1, pos.getZ(), ModSounds.FLAMETHROWER_SHOOT.get(), SoundSource.BLOCKS, 0.25F, 0.5F);
+                }
                 if (TickPhase.every(level, pos, 20L)) furnace.pollute(PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 3);
-            } else {
-                furnace.progress = 0;
             }
         } else {
             furnace.progress = 0;
@@ -126,8 +134,13 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
     public boolean canSmelt() {
         ItemStack input = inventory.getStackInSlot(0);
         CombinationRecipes.CombinationRecipe recipe = CombinationRecipes.getOutput(input);
-        if (recipe == null || recipe.itemOutput() == null) return false;
-        if (!inventory.insertItem(1, recipe.itemOutput().copy(), true).isEmpty()) return false;
+        if (recipe == null) return false;
+        ItemStack out = recipe.itemOutput();
+        ItemStack slot = inventory.getStackInSlot(1);
+        if (out != null && !slot.isEmpty()) {
+            if (!ItemStacks.sameItemAndData(out, slot)) return false;
+            if (out.getCount() + slot.getCount() > slot.getMaxStackSize()) return false;
+        }
 
         if (recipe.fluidOutput() != null) {
             FluidType type = recipe.fluidOutput().type;

@@ -166,7 +166,7 @@ public class BlockEntityRBMKConsole extends TileEntityMachineBase implements ICo
             case "level" -> {
                 double target = Tags.getDoubleOr(data, "level", 0D);
                 for (int index : Tags.getIntArrayOr(data, "cols", EMPTY_INT)) {
-                    if (columnAt(index) instanceof BlockEntityRBMKControl rod) {
+                    if (columnAt(index) instanceof BlockEntityRBMKControlManual rod) {
                         rod.setTarget(Mth.clamp(target, 0D, 1D));
                         rod.setChanged();
                     }

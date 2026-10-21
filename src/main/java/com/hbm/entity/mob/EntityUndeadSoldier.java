@@ -115,8 +115,11 @@ public final class EntityUndeadSoldier extends CompatMonster {
     protected void loadData(DataIn input) {
         super.loadData(input);
         // saved by name (1.7 kept the byte); an old byte reads as the default zombie
-        String type = input.getStringOr("type", "zombie");
-        if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("undead soldier type", "type");
+        String type = input.getStringOr("type", null);
+        if (type == null) {
+            if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("undead soldier type", "type");
+            type = "zombie";
+        }
         entityData.set(TYPE, "skeleton".equals(type) ? TYPE_SKELETON : TYPE_ZOMBIE);
     }
 

@@ -1,5 +1,6 @@
 package com.hbm.handler.ability;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.registry.NamedRegistry;
 import com.hbm.config.ToolConfig;
 import com.hbm.explosion.vanillant.ExplosionVNT;
@@ -225,7 +226,7 @@ public interface IToolAreaAbility extends IBaseAbility {
                     .setBlockProcessor(new BlockProcessorStandard().setAllDrop())
                     .explode();
 
-            world.explode(player, x, y, z, 0.1F, Level.ExplosionInteraction.NONE);
+            Explosions.explode(world, player, x, y, z, 0.1F, Level.ExplosionInteraction.NONE);
             return true;
         }
     };

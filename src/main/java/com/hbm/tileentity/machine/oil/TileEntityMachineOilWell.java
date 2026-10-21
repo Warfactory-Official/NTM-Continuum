@@ -53,6 +53,20 @@ public class TileEntityMachineOilWell extends TileEntityOilDrillBase {
     @Override public int getDelay() { return delay; }
 
     @Override
+    public void onDrill(int y) {
+        Block gas = gasOfDrilledOre(y);
+        if (gas == null) return;
+        // 1.7 tests the cell at (j, j) but fills (k, k), so only the diagonal of the 3x3 gets gas
+        for (int j = -1; j <= 1; j++) {
+            for (int k = -1; k <= 1; k++) {
+                if (level.getBlockState(worldPosition.offset(j, 10, j)).canBeReplaced()) {
+                    level.setBlockAndUpdate(worldPosition.offset(k, 10, k), gas.defaultBlockState());
+                }
+            }
+        }
+    }
+
+    @Override
     public void onSuck(BlockPos pos, DepositDataMaps.Deposit deposit) {
         level.playSound(null, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
                 SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 2.0F, 0.5F);

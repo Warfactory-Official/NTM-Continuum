@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.environment.Environment;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.ModOilBlocks;
@@ -47,7 +48,7 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
 
         if (drain.tank.getFill() > 0) {
             if (drain.tank.getTankType() == Fluids.AMAT || drain.tank.getTankType() == Fluids.ASCHRAB) {
-                level.explode(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+                Explosions.explode(level, null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
                         10F, true, Level.ExplosionInteraction.TNT);
                 return;
             } else {

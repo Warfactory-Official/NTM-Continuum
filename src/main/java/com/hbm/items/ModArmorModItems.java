@@ -15,6 +15,7 @@ import com.hbm.items.armor.ItemModAuto;
 import com.hbm.items.armor.ItemModBandaid;
 import com.hbm.items.armor.ItemModBathwater;
 import com.hbm.items.armor.ItemModCard;
+import com.hbm.items.armor.ItemModCloud;
 import com.hbm.items.armor.ItemModCharm;
 import com.hbm.items.armor.ItemModGasmask;
 import com.hbm.items.armor.ItemModHealth;
@@ -127,6 +128,7 @@ public final class ModArmorModItems {
     public static final RegistryObject<ItemModCard> card_qos = REG.item("card_qos", p -> new ItemModCard(true, p), p -> p.stacksTo(1))
             .transform(Presets.sprite());
     public static final RegistryObject<ItemModShield> australium_iii = mod("australium_iii", p -> new ItemModShield(25F, p));
+    public static final RegistryObject<ItemModCloud> bottled_cloud = mod("bottled_cloud", ItemModCloud::new);
 
     // Armor
     public static final RegistryObject<MaskOfInfamy> mask_of_infamy = armor("mask_of_infamy",

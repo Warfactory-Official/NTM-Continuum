@@ -3,6 +3,7 @@ package com.hbm.blocks.generic;
 import com.hbm.blocks.bomb.BlockDetonatable;
 import com.hbm.blocks.bomb.BlockTNTBase;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
+import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.tileentity.network.TileEntityBarrelDeco;
 import com.hbm.api.block.IToolable;
 import dev.golem.core.world.Fires;
@@ -116,6 +117,13 @@ public abstract class BlockBarrelDeco extends BlockTNTBase implements EntityBloc
     protected boolean onExplosion(BlockState state, ServerLevel level, BlockPos pos,
                                   Explosion explosion,
                                   BiConsumer<ItemStack, BlockPos> onHit) {
+        level.removeBlock(pos, false);
+        pop(level, pos);
+        return true;
+    }
+
+    @Override
+    public boolean onVNTExploded(ServerLevel level, BlockPos pos, BlockState state, ExplosionVNT explosion) {
         level.removeBlock(pos, false);
         pop(level, pos);
         return true;

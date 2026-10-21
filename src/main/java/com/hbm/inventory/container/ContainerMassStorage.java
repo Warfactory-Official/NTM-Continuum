@@ -145,16 +145,21 @@ public class ContainerMassStorage extends CompatContainerMenu {
         if (storage != null) storage.closeInventory(player);
     }
 
+    /** 1.7: shift-click on an empty output slot refills it from the stockpile, and a stack of the filtered type goes straight in. */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         ItemStack result = ItemStack.EMPTY;
         Slot slot = slots.get(index);
+        if (index == TileEntityMassStorage.OUTPUT_SLOT && storage != null && slot != null && !slot.hasItem()) {
+            slot.set(storage.quickExtract());
+        }
         if (slot != null && slot.hasItem()) {
             ItemStack stack = slot.getItem();
             result = stack.copy();
             if (index < MACHINE_SLOTS) {
                 if (!moveItemStackTo(stack, MACHINE_SLOTS, MACHINE_SLOTS + 36, true)) return ItemStack.EMPTY;
-            } else if (!moveItemStackTo(stack, TileEntityMassStorage.INPUT_SLOT, TileEntityMassStorage.INPUT_SLOT + 1, false)) {
+            } else if (!(storage != null && storage.quickInsert(stack))
+                    && !moveItemStackTo(stack, TileEntityMassStorage.INPUT_SLOT, TileEntityMassStorage.INPUT_SLOT + 1, false)) {
                 return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

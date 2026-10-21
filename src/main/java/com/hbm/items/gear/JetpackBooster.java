@@ -30,6 +30,7 @@ public class JetpackBooster extends JetpackFueledBase {
     @Override
     protected void tickFlight(Level level, Player player, ItemStack stack) {
         if (getFuel(stack) <= 0 || !isActive(player)) return;
+        JetpackHandler.resetFlightTime(player);
         Vec3 motion = player.getDeltaMovement();
         // hbm-space: the lift shrinks (never grows) with gravity (com.hbm.api.environment.Environment.gravity)
         if (motion.y < 0.6D) motion = motion.add(0, 0.1D * Math.min(Environment.gravity(player), 1D), 0);

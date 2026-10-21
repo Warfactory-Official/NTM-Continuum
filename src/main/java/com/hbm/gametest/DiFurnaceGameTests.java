@@ -6,8 +6,12 @@ import com.hbm.blocks.machine.MachineDiFurnace;
 import com.hbm.inventory.container.ContainerDiFurnace;
 import com.hbm.inventory.recipes.DiFurnaceRecipes;
 import com.hbm.items.ModItems;
+import com.hbm.items.ModMachineItems;
+import com.hbm.items.ModUpgradeItems;
 import com.hbm.tileentity.TileEntityMachinePolluting;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
+import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
+import com.hbm.tileentity.machine.TileEntityMachineShredder;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.hook.Verdict;
@@ -33,6 +37,10 @@ public final class DiFurnaceGameTests {
 
     public static final GameTests.Function RECIPES =
             TESTS.function("difurnace_recipes", 20, () -> DiFurnaceGameTests::recipes);
+    public static final GameTests.Function SHREDDER_RULES =
+            TESTS.function("shredder_hopper_and_output_rules", 200, () -> DiFurnaceGameTests::shredderRules);
+    public static final GameTests.Function CRYSTALLIZER_UPGRADES =
+            TESTS.function("crystallizer_upgrade_formulas", 20, () -> DiFurnaceGameTests::crystallizerUpgrades);
     public static final GameTests.Function SLOTS_AND_MENU =
             TESTS.function("difurnace_slots_and_menu", 20, () -> DiFurnaceGameTests::slotsAndMenu);
     public static final GameTests.Function PROCESSING =
@@ -62,16 +70,23 @@ public final class DiFurnaceGameTests {
 
     public static void slotsAndMenu(GameTestHelper helper) {
         TileEntityDiFurnace furnace = place(helper, new BlockPos(1, 1, 1));
-        helper.assertTrue(furnace.getSlotsForFace(Direction.DOWN).length == 1
-                        && furnace.getSlotsForFace(Direction.DOWN)[0] == 3
-                        && furnace.getSlotsForFace(Direction.UP)[0] == 0
-                        && furnace.getSlotsForFace(Direction.UP)[1] == 1
-                        && furnace.getSlotsForFace(Direction.NORTH)[0] == 2,
-                "DiFurnace sided slots changed");
-        helper.assertTrue(furnace.canInsertItem(2, new ItemStack(Items.COAL))
-                        && !furnace.canInsertItem(2, new ItemStack(Items.STONE))
-                        && !furnace.canInsertItem(3, new ItemStack(Items.COAL)),
-                "DiFurnace fuel/output slot validation changed");
+        for (Direction face : Direction.values()) {
+            helper.assertTrue(furnace.getSlotsForFace(face).length == 4, "DiFurnace exposes all four slots on every face");
+        }
+        ItemStack coal = new ItemStack(Items.COAL);
+        helper.assertTrue(furnace.canPlaceItemThroughFace(0, new ItemStack(Items.IRON_INGOT), Direction.UP)
+                        && !furnace.canPlaceItemThroughFace(0, new ItemStack(Items.IRON_INGOT), Direction.NORTH)
+                        && furnace.canPlaceItemThroughFace(2, coal, Direction.UP)
+                        && !furnace.canPlaceItemThroughFace(2, new ItemStack(Items.STONE), Direction.UP)
+                        && !furnace.canPlaceItemThroughFace(3, coal, Direction.UP),
+                "DiFurnace inserts only through each slot's configured face (default up)");
+        furnace.cycleSide(2);
+        helper.assertTrue(furnace.sideFuel == 2 && furnace.canPlaceItemThroughFace(2, coal, Direction.NORTH)
+                        && !furnace.canPlaceItemThroughFace(2, coal, Direction.UP),
+                "DiFurnace fuel face follows the side button");
+        helper.assertTrue(furnace.canTakeItemThroughFace(3, new ItemStack(Items.IRON_INGOT), Direction.WEST)
+                        && !furnace.canTakeItemThroughFace(0, new ItemStack(Items.IRON_INGOT), Direction.DOWN),
+                "DiFurnace output leaves from any face, nothing else does");
 
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ContainerDiFurnace menu = new ContainerDiFurnace(0, player.getInventory(), furnace);
@@ -191,6 +206,55 @@ public final class DiFurnaceGameTests {
         TileEntityDiFurnace.serverTick(helper.getLevel(), abs, furnace.getBlockState(), furnace);
         helper.assertTrue(furnace.fuel > 0 && furnace.inventory.getStackInSlot(2).getCount() == 3,
                 "DiFurnace must take coal where air is unanswered (Earth): fuel " + furnace.fuel);
+        helper.succeed();
+    }
+
+    public static void shredderRules(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModMachineBlocks.machine_shredder.get().defaultBlockState());
+        TileEntityMachineShredder shredder = GameTestHelpers.blockEntity(helper, pos, TileEntityMachineShredder.class);
+        ItemStack iron = new ItemStack(Items.IRON_INGOT);
+        shredder.inventory.setStackInSlot(0, new ItemStack(Items.IRON_INGOT, 5));
+        shredder.inventory.setStackInSlot(1, new ItemStack(Items.IRON_INGOT, 3));
+        helper.assertFalse(shredder.canPlaceItemThroughFace(0, iron, Direction.UP),
+                "hoppers must not add to the larger stack while an input slot is empty");
+        shredder.inventory.setStackInSlot(2, new ItemStack(Items.IRON_INGOT, 3));
+        for (int i = 3; i < 9; i++) shredder.inventory.setStackInSlot(i, new ItemStack(Items.COAL, 4));
+        helper.assertTrue(shredder.canPlaceItemThroughFace(1, iron, Direction.UP)
+                        && !shredder.canPlaceItemThroughFace(0, iron, Direction.UP),
+                "hoppers add only to the smallest matching input stack");
+        helper.assertFalse(shredder.canPlaceItemThroughFace(9, iron, Direction.UP),
+                "hoppers never insert into the output grid");
+
+        TileEntityMachineShredder fresh = shredder;
+        for (int i = 0; i < 9; i++) fresh.inventory.setStackInSlot(i, ItemStack.EMPTY);
+        fresh.inventory.setStackInSlot(0, new ItemStack(Items.IRON_INGOT, 2));
+        fresh.inventory.setStackInSlot(TileEntityMachineShredder.SLOT_BLADE_LEFT, new ItemStack(ModMachineItems.blades_steel.get()));
+        fresh.inventory.setStackInSlot(TileEntityMachineShredder.SLOT_BLADE_RIGHT, new ItemStack(ModMachineItems.blades_steel.get()));
+        fresh.power = 1000;
+        for (int i = 0; i < TileEntityMachineShredder.PROCESSING_SPEED; i++) {
+            TileEntityMachineShredder.serverTick(helper.getLevel(), helper.absolutePos(pos), helper.getLevel().getBlockState(helper.absolutePos(pos)), fresh);
+        }
+        helper.assertTrue(fresh.inventory.getStackInSlot(0).getCount() == 1
+                        && fresh.inventory.getStackInSlot(9).is(ModItems.powder_iron.get())
+                        && fresh.power == 700,
+                "one cycle shreds one item for 60 x 5 HE");
+        helper.succeed();
+    }
+
+    public static void crystallizerUpgrades(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModMachineBlocks.machine_crystallizer.get().defaultBlockState());
+        TileEntityMachineCrystallizer te = GameTestHelpers.blockEntity(helper, pos, TileEntityMachineCrystallizer.class);
+        BlockPos abs = helper.absolutePos(pos);
+        te.inventory.setStackInSlot(5, new ItemStack(ModUpgradeItems.upgrade_effect_3.get()));
+        TileEntityMachineCrystallizer.serverTick(helper.getLevel(), abs, helper.getLevel().getBlockState(abs), te);
+        helper.assertTrue(te.getPowerRequired() == 7000, "effect 3 costs 1000 + 3 x 2000 HE/t, got " + te.getPowerRequired());
+        helper.assertTrue(te.getRequiredAcid(500) == 500, "effect cards never change the acid use");
+        te.inventory.setStackInSlot(5, new ItemStack(ModUpgradeItems.upgrade_speed_3.get()));
+        TileEntityMachineCrystallizer.serverTick(helper.getLevel(), abs, helper.getLevel().getBlockState(abs), te);
+        helper.assertTrue(te.getPowerRequired() == 4000 && te.getDuration(null) == 150,
+                "speed 3 costs 4000 HE/t and takes a quarter of 600 ticks, got " + te.getPowerRequired() + "/" + te.getDuration(null));
         helper.succeed();
     }
 

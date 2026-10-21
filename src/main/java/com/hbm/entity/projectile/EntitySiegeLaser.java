@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Explosions;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.world.Compat;
@@ -124,7 +125,7 @@ public class EntitySiegeLaser extends EntityThrowableNT {
 
                 // 1.7 newExplosion(..., isFlaming=incendiary, isSmoking=false): no block destruction
                 if (this.explosive > 0)
-                    server.explode(this, hitVec.x, hitVec.y, hitVec.z, this.explosive, this.incendiary,
+                    Explosions.explode(server, this, hitVec.x, hitVec.y, hitVec.z, this.explosive, this.incendiary,
                             Level.ExplosionInteraction.NONE);
             }
 
@@ -132,7 +133,7 @@ public class EntitySiegeLaser extends EntityThrowableNT {
             BlockPos pos = blockHit.getBlockPos();
 
             if (this.explosive > 0) {
-                server.explode(this, hitVec.x, hitVec.y, hitVec.z, this.explosive, this.incendiary,
+                Explosions.explode(server, this, hitVec.x, hitVec.y, hitVec.z, this.explosive, this.incendiary,
                         Level.ExplosionInteraction.NONE);
 
             } else if (this.incendiary) {

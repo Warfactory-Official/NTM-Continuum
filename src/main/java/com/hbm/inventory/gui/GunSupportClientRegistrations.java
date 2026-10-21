@@ -11,5 +11,6 @@ public final class GunSupportClientRegistrations {
     public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
         sink.register(ModGunSupportMenus.AMMO_BAG.get(), ScreenItemBox::new);
         sink.register(ModGunSupportMenus.CASING_BAG.get(), ScreenItemBox::new);
+        sink.register(ModGunSupportMenus.PLASTIC_BAG.get(), ScreenItemBox::new);
     }
 }

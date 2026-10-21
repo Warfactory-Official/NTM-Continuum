@@ -3,6 +3,7 @@ package com.hbm.blocks.generic;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelReader;
 import dev.golem.core.world.BlockTickScheduler;
@@ -60,7 +61,10 @@ public class BlockStalagmite extends CompatBlock {
     @Override
     protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
                                        Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
-        return canSurvive(state, level, pos) ? state : Blocks.AIR.defaultBlockState();
+        if (canSurvive(state, level, pos)) return state;
+        // 1.7 breaks it with drops
+        if (level instanceof ServerLevel server) dropResources(state, server, pos);
+        return Blocks.AIR.defaultBlockState();
     }
 
     @Override

@@ -5,7 +5,7 @@ import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.tileentity.ModRBMKBlockEntities;
 import dev.golem.core.data.Tags;
 
-import com.hbm.blocks.ModHazardBlocks;
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKRod;
@@ -75,10 +75,17 @@ public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFlux
         if (node == null) { node = RBMKNeutronHandler.makeNode(world, this); world.addNode(node); }
         for (Vec3 direction : fluxDirs) new RBMKNeutronHandler.RBMKNeutronStream(node, direction, flux, ratio);
     }
+    /** A column mined out (not unloaded) while its rod hull is at 1500 C or more melts the reactor before anything drops, and the melt consumes the rod. */
+    @Override public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        ItemStack fuel = inventory.getStackInSlot(0);
+        boolean hot = fuel.getItem() instanceof ItemRBMKRod && ItemRBMKRod.getHullHeat(fuel) >= 1500D;
+        if (hot && level != null && !level.isClientSide() && !RBMKDials.getMeltdownsDisabled(level)) meltdown();
+        super.preRemoveSideEffects(pos, state);
+    }
     @Override public void onMelt(int reduce) {
         boolean moderated = isModerated(), fuelled = inventory.getStackInSlot(0).getItem() instanceof ItemRBMKRod;
         boolean drx = inventory.getStackInSlot(0).is(ModRBMKItems.rbmk_fuel_drx.get()); inventory.setStackInSlot(0, ItemStack.EMPTY); if (drx) RBMKBase.digamma = true;
-        if (fuelled) { int h = RBMKDials.getColumnHeight(level); reduce = Mth.clamp(reduce, 1, h); if (level.getRandom().nextInt(3) == 0) reduce++; BlockState melt = (drx ? ModRBMKBlocks.rbmk_debris_digamma : ModHazardBlocks.block_corium).get().defaultBlockState(); for (int i = h; i >= 0; i--) level.setBlock(worldPosition.above(i), i <= h + 1 - reduce ? melt : Blocks.AIR.defaultBlockState(), 3); for (int i = 0, n = 1 + level.getRandom().nextInt(h); i < n; i++) spawnDebris(EntityRBMKDebris.DebrisType.FUEL); } else standardMelt(reduce);
+        if (fuelled) { int h = RBMKDials.getColumnHeight(level); reduce = Mth.clamp(reduce, 1, h); if (level.getRandom().nextInt(3) == 0) reduce++; BlockState melt = ModFluidNetBlocks.corium_block.get().defaultBlockState(); for (int i = h; i >= 0; i--) level.setBlock(worldPosition.above(i), i <= h + 1 - reduce ? melt : Blocks.AIR.defaultBlockState(), 3); for (int i = 0, n = 1 + level.getRandom().nextInt(h); i < n; i++) spawnDebris(EntityRBMKDebris.DebrisType.FUEL); } else standardMelt(reduce);
         if (moderated) for (int i = 0, n = 2 + level.getRandom().nextInt(2); i < n; i++) spawnDebris(EntityRBMKDebris.DebrisType.GRAPHITE);
         spawnDebris(EntityRBMKDebris.DebrisType.ELEMENT); if (RBMKBase.lidOf(getBlockState()) == RBMKBase.Lid.CONCRETE) spawnDebris(EntityRBMKDebris.DebrisType.LID);
     }

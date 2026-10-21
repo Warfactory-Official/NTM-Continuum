@@ -1,6 +1,11 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import dev.golem.core.gui.MouseInput;
+import dev.golem.core.net.GolemNetwork;
+import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.CompoundTag;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -11,11 +16,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
+import java.util.List;
+
 
 /**
  * Client screen for the soldering station: 1.7.10 {@code GUIMachineSolderingStation}
- * ({@code processing/gui_soldering_station.png}, 176x204). Not ported: 1.7's recipe-collision-prevention toggle
- * at (5,66) 10x10 (sprite (192,14)). The block entity does not implement {@code collisionPrevention} yet.
+ * ({@code processing/gui_soldering_station.png}, 176x204).
  */
 public class GUIMachineSolderingStation extends CompatContainerScreen<ContainerMachineSolderingStation> implements IUpgradeInfoProviderSource {
 
@@ -35,6 +41,10 @@ public class GUIMachineSolderingStation extends CompatContainerScreen<ContainerM
 
         TileEntityMachineSolderingStation te = this.menu.getStation();
         if (te == null) return;
+
+        if (te.collisionPrevention) {
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 5, this.topPos + 66, 192.0F, 14.0F, 10, 10, 256, 256);
+        }
 
         int p = (int) (te.power * 52 / Math.max(te.maxPower, 1));
         if (p > 0) {
@@ -70,6 +80,13 @@ public class GUIMachineSolderingStation extends CompatContainerScreen<ContainerM
             GuiUtil.tooltip(graphics, this.font, GuiUtil.tankTooltip(te.tank), mouseX, mouseY);
         } else if (GuiUtil.hover(mouseX, mouseY, gl + 152, gt + 18, 16, 52)) {
             GuiUtil.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.maxPower), mouseX, mouseY);
+        } else if (GuiUtil.hover(mouseX, mouseY, gl + 5, gt + 66, 10, 10)) {
+            GuiUtil.tooltip(graphics, this.font, List.of(
+                    Component.literal("Recipe Collision Prevention: ").append(te.collisionPrevention
+                            ? Component.literal("ON").withStyle(ChatFormatting.GREEN)
+                            : Component.literal("OFF").withStyle(ChatFormatting.RED)),
+                    Component.literal("Prevents no-fluid recipes from being processed"),
+                    Component.literal("when fluid is present.")), mouseX, mouseY);
         } else if (GuiUtil.hover(mouseX, mouseY, gl + INFO_X, gt + INFO_Y, 8, 8)) {
             GuiUtil.tooltip(graphics, this.font, GuiUtil.upgradeInfo(te), gl + INFO_X, gt + INFO_Y);
         }
@@ -78,5 +95,16 @@ public class GUIMachineSolderingStation extends CompatContainerScreen<ContainerM
     @Override
     public IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getStation();
+    }
+
+    @Override
+    protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
+        TileEntityMachineSolderingStation te = this.menu.getStation();
+        if (te != null && GuiUtil.hover(event.x(), event.y(), this.leftPos + 5, this.topPos + 66, 10, 10)) {
+            GuiUtil.playClickSound();
+            GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(te.getBlockPos(), new CompoundTag()));
+            return true;
+        }
+        return false;
     }
 }

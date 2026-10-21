@@ -19,7 +19,6 @@ import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKNumitron;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKOutgasser;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKRod;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal;
-import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
@@ -51,9 +50,5 @@ public final class RbmkRows {
             Peripherals.row(BlockEntityRBMKGraph.class, RBMKGraphPeripheral::new, Reach.BLOCK),
             Peripherals.row(BlockEntityRBMKGauge.class, RBMKGaugePeripheral::new, Reach.BLOCK)
     );
-
-    public static GameTests.Suite tests() {
-        return com.hbm.gametest.computer.RbmkPeripheralGameTests.TESTS;
-    }
 }
 //?}

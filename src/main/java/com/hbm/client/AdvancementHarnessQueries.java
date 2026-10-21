@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.Constants;
 import com.hbm.gametest.AdvancementCommandGameTests;
+import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -22,7 +23,8 @@ import java.util.concurrent.TimeUnit;
  * <li>{@code hbm_advancements}: the integrated server's view of which {@code hbm:} advancements the local player has
  *     completed ({@code done}) and how many are loaded ({@code loaded});</li>
  * <li>{@code hbm_suggest} ({@code input}: a command line without the slash): the server dispatcher's tab-completion
- *     suggestions for it, as the player would get them.</li>
+ *     suggestions for it, as the player would get them;</li>
+ * <li>{@code hbm_rbmk_dials}: three RBMK dials as the client reads them.</li>
  * </ul>
  */
 public final class AdvancementHarnessQueries {
@@ -32,6 +34,7 @@ public final class AdvancementHarnessQueries {
     public static void register() {
         HarnessQueryRegistry.register("hbm_advancements", (mc, params) -> advancements(mc));
         HarnessQueryRegistry.register("hbm_suggest", AdvancementHarnessQueries::suggest);
+        HarnessQueryRegistry.register("hbm_rbmk_dials", (mc, params) -> rbmkDials(mc));
     }
 
     private static ServerPlayer serverPlayer(Minecraft mc) {
@@ -54,6 +57,14 @@ public final class AdvancementHarnessQueries {
         }
         json.addProperty("loaded", loaded);
         json.add("done", done);
+        return json;
+    }
+
+    private static JsonObject rbmkDials(Minecraft mc) {
+        JsonObject json = new JsonObject();
+        json.addProperty("controlSpeed", RBMKDials.getControlSpeed(mc.level));
+        json.addProperty("columnHeight", RBMKDials.getColumnHeightRuleValue(mc.level));
+        json.addProperty("disableMeltdowns", RBMKDials.getMeltdownsDisabled(mc.level));
         return json;
     }
 

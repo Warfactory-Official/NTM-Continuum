@@ -1,7 +1,8 @@
 package com.hbm.entity.mob;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.item.IGasMask;
-import com.hbm.items.ModEntityItems;
+import com.hbm.items.ModArmorModItems;
 import com.hbm.items.ModGearItems;
 import dev.golem.core.data.CompatMonster;
 import com.hbm.advancement.BossKilledTrigger;
@@ -109,7 +110,7 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
             if (this.lastHealth >= getMaxHealth() / 2F && getHealth() < getMaxHealth() / 2F && isAlive()) {
                 this.lastHealth = getHealth();
                 // 1.7 createExplosion(..., true) broke blocks without consulting mobGriefing, so not MOB
-                server.explode(this, getX(), getY() + 4, getZ(), 2.5F, Level.ExplosionInteraction.BLOCK);
+                Explosions.explode(server, this, getX(), getY() + 4, getZ(), 2.5F, Level.ExplosionInteraction.BLOCK);
             }
 
             this.lastHealth = getHealth();
@@ -156,7 +157,7 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
 
         spawnAtLocation(level, mask);
         spawnAtLocation(level, new ItemStack(ModItems.coin_maskman.get()));
-        spawnAtLocation(level, new ItemStack(ModEntityItems.bottled_cloud.get()));
+        spawnAtLocation(level, new ItemStack(ModArmorModItems.bottled_cloud.get()));
         spawnAtLocation(level, new ItemStack(Items.SKELETON_SKULL));
     }
 }

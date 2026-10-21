@@ -38,50 +38,50 @@ public final class HbmArmorMaterials {
     public static final GolemArmorMaterial STEEL = new GolemArmorMaterial(
             Constants.MOD_ID, "steel", 30, 3, 8, 6, 3, 5, 0.0F, 0.0F, "repairs/steel");
 
-    /** Legacy robes use steel's numbers but have their own armor texture path. */
+    /** 1.7 {@code ArmorMaterial.CHAIN}: 15, {2, 5, 4, 1}, 12; its own armor texture path. */
     public static final GolemArmorMaterial ROBES = new GolemArmorMaterial(
-            Constants.MOD_ID, "robes", 30, 3, 8, 6, 3, 5, 0.0F, 0.0F, "repairs/steel");
+            Constants.MOD_ID, "robes", 15, 2, 5, 4, 1, 12, 0.0F, 0.0F, "repairs/steel");
 
     /** 1.12.2 {@code aMatTitan}: multiplier 25, defense {3, 6, 8, 3}, enchantability 9. */
     public static final GolemArmorMaterial TITANIUM = new GolemArmorMaterial(
-            Constants.MOD_ID, "titanium", 25, 3, 8, 6, 3, 9, 2.0F, 0.0F, "repairs/titanium");
+            Constants.MOD_ID, "titanium", 25, 3, 8, 6, 3, 9, 0.0F, 0.0F, "repairs/titanium");
 
     /**
      * T-51b power armour (1.12.2 {@code enumArmorMaterialT51}): durability 150, defense {3, 8, 6, 3} in
-     * [boots, legs, chest, helmet] order, enchantability 0, toughness 2.0.
+     * [helmet, chest, legs, boots] order, enchantability 0, no toughness.
      *
      * <p>The repair tag is the same armour plate the suit is built from. Enchantability is zero because
      * upstream refuses enchantments on power armour outright; see {@code ArmorFSBPowered}.
      */
     public static final GolemArmorMaterial T51 = new GolemArmorMaterial(
-            Constants.MOD_ID, "t51", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/t51");
+            Constants.MOD_ID, "t51", 150, 3, 8, 6, 3, 0, 0.0F, 0.0F, "repairs/t51");
 
     /** Legacy Blackjack armor material: the separate identity is required for full-set detection. */
     public static final GolemArmorMaterial BJ = new GolemArmorMaterial(
-            Constants.MOD_ID, "bj", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/bj");
+            Constants.MOD_ID, "bj", 150, 3, 8, 6, 3, 0, 0.0F, 0.0F, "repairs/bj");
 
     /** Legacy DNT nanosuit material: the separate identity is required for full-set detection. */
     public static final GolemArmorMaterial DNS = new GolemArmorMaterial(
-            Constants.MOD_ID, "dns", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/dns");
+            Constants.MOD_ID, "dns", 150, 3, 8, 6, 3, 0, 0.0F, 0.0F, "repairs/dns");
 
     public static final GolemArmorMaterial AJR = new GolemArmorMaterial(
-            Constants.MOD_ID, "ajr", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/ajr");
+            Constants.MOD_ID, "ajr", 150, 3, 8, 6, 3, 0, 0.0F, 0.0F, "repairs/ajr");
 
     /** Jetpack modules were not armor themselves in 1.12; this material keeps direct wear non-protective. */
     public static final GolemArmorMaterial JETPACK = new GolemArmorMaterial(
             Constants.MOD_ID, "jetpack", 1, 0, 0, 0, 0, 0, 0.0F, 0.0F, "repairs/steel");
 
-    /** 1.12.2 {@code aMatCobalt}: multiplier 70, defense {3, 6, 8, 3}, enchantability 25. */
+    /** 1.12.2 {@code aMatCobalt}: multiplier 70, defense {3, 6, 8, 3}, enchantability 60. */
     public static final GolemArmorMaterial COBALT = new GolemArmorMaterial(
-            Constants.MOD_ID, "cobalt", 70, 3, 8, 6, 3, 25, 2.0F, 0.0F, "repairs/cobalt");
+            Constants.MOD_ID, "cobalt", 70, 3, 8, 6, 3, 60, 0.0F, 0.0F, "repairs/cobalt");
 
     /** 1.12.2 {@code aMatStarmetal}: multiplier 150, defense {3, 6, 8, 3}, enchantability 100. */
     public static final GolemArmorMaterial STARMETAL = new GolemArmorMaterial(
-            Constants.MOD_ID, "starmetal", 150, 3, 8, 6, 3, 100, 2.0F, 0.0F, "repairs/starmetal");
+            Constants.MOD_ID, "starmetal", 150, 3, 8, 6, 3, 100, 0.0F, 0.0F, "repairs/starmetal");
 
     /** 1.12.2 {@code aMatSchrab}: multiplier 100, defense {3, 6, 8, 3}, enchantability 50. */
     public static final GolemArmorMaterial SCHRABIDIUM = new GolemArmorMaterial(
-            Constants.MOD_ID, "schrabidium", 100, 3, 8, 6, 3, 50, 2.0F, 0.0F, "repairs/schrabidium");
+            Constants.MOD_ID, "schrabidium", 100, 3, 8, 6, 3, 50, 0.0F, 0.0F, "repairs/schrabidium");
 
     /** 1.12.2 {@code aMatTaurun} ("HBM_TRENCH"): multiplier 150, defense {3, 8, 6, 3}, enchantability 10, repaired by iron plate. */
     public static final GolemArmorMaterial TAURUN = new GolemArmorMaterial(
@@ -89,7 +89,7 @@ public final class HbmArmorMaterials {
 
     /** 1.12.2 {@code aMatSecurity}: multiplier 100, defense {3, 6, 8, 3}, enchantability 15. */
     public static final GolemArmorMaterial SECURITY = new GolemArmorMaterial(
-            Constants.MOD_ID, "security", 100, 3, 8, 6, 3, 15, 2.0F, 0.0F, "repairs/security");
+            Constants.MOD_ID, "security", 100, 3, 8, 6, 3, 15, 0.0F, 0.0F, "repairs/security");
 
     /** 1.12.2 {@code aMatAsbestos}: multiplier 20, defense {1, 3, 4, 1}, enchantability 5. */
     public static final GolemArmorMaterial ASBESTOS = new GolemArmorMaterial(
@@ -97,7 +97,7 @@ public final class HbmArmorMaterials {
 
     /** 1.12.2 {@code aMatPaa}: multiplier 75, defense {3, 6, 8, 3}, enchantability 25. */
     public static final GolemArmorMaterial PAA = new GolemArmorMaterial(
-            Constants.MOD_ID, "paa", 75, 3, 8, 6, 3, 25, 2.0F, 0.0F, "repairs/paa");
+            Constants.MOD_ID, "paa", 75, 3, 8, 6, 3, 25, 0.0F, 0.0F, "repairs/paa");
 
     // Armor sets A (1.7 MainRegistry / ModItemsArmor). 1.7 defense arrays are {helmet, chest,
     // legs, boots}; 1.7 has no toughness, so these materials declare 0. Each EnumHelper call made its own
@@ -135,7 +135,7 @@ public final class HbmArmorMaterials {
             Constants.MOD_ID, "trenchmaster", 150, 3, 8, 6, 3, 0, 0.0F, 0.0F, "repairs/taurun");
 
     private static GolemArmorMaterial hazmat(String name, String repairIngredient) {
-        return new GolemArmorMaterial(Constants.MOD_ID, name, 15, 2, 5, 4, 1, 5,
+        return new GolemArmorMaterial(Constants.MOD_ID, name, 60, 2, 5, 4, 1, 5,
                 0.0F, 0.0F, "repairs/" + repairIngredient);
     }
 }

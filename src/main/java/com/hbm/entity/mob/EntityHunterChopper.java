@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.data.SynchedData;
@@ -156,7 +157,7 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
         }
 
         if (random.nextInt(15) == 0 && !isDying()) {
-            level.explode(this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.MOB);
+            Explosions.explode(level, this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.MOB);
             dropDamageItem(level);
         }
 
@@ -304,7 +305,7 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
         }
 
         if (random.nextInt(20) == 0) {
-            level.explode(this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.MOB);
+            Explosions.explode(level, this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.MOB);
         }
 
         // 1.7 "exhaust" / "meteor": ten rocket-flame puffs spread 1 block in every axis, sent 100 blocks
@@ -317,7 +318,7 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
         setYRot(getYRot() + 20F);
 
         if (onGround()) {
-            level.explode(this, getX(), getY(), getZ(), 15F, Level.ExplosionInteraction.MOB);
+            Explosions.explode(level, this, getX(), getY(), getZ(), 15F, Level.ExplosionInteraction.MOB);
             dropItems(level);
             discard();
         }
@@ -400,7 +401,7 @@ public class EntityHunterChopper extends CompatMob implements Enemy, IRadiationI
     }
 
     private void initDeath(ServerLevel level) {
-        level.explode(this, getX(), getY(), getZ(), 10F, Level.ExplosionInteraction.MOB);
+        Explosions.explode(level, this, getX(), getY(), getZ(), 10F, Level.ExplosionInteraction.MOB);
         if (!isDying()) {
             level.playSound(null, this, ModSounds.CHOPPER_DAMAGE.get(), SoundSource.HOSTILE, 10.0F, 1.0F);
         }

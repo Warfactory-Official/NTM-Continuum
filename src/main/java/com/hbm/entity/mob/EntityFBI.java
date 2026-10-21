@@ -25,7 +25,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import dev.golem.core.world.CompatMeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
@@ -73,7 +73,7 @@ public class EntityFBI extends CompatMonster implements RangedAttackMob {
         // 1.7's ranged goal outranks the melee one and shares its MOVE|LOOK mutex, so the melee goal can never
         // start while a target exists - and performRangedAttack is empty. The FBI closes and does nothing.
         goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0D, 20, 25, 15.0F));
-        goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.0D, true));
+        goalSelector.addGoal(3, new CompatMeleeAttackGoal(this, 1.0D, true));
         goalSelector.addGoal(5, new MoveTowardsRestrictionGoal(this, 1.0D));
         goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0D));
         goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));

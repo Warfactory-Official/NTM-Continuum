@@ -1,5 +1,6 @@
 package com.hbm.items.tool;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.blocks.ModRadarUtilityBlocks;
 import com.hbm.items.ModDataComponents;
@@ -93,7 +94,7 @@ public class ItemAnchorRemote extends CompatItem implements IBatteryItem {
         if (level.getBlockState(pos).getBlock() == ModRadarUtilityBlocks.teleanchor.get()) {
             if (player.isPassenger()) player.stopRiding();
 
-            level.explode(player, pos.getX() + 0.5, pos.getY() + 1 + player.getBbHeight() / 2, pos.getZ() + 0.5, 2F,
+            Explosions.explode(level, player, pos.getX() + 0.5, pos.getY() + 1 + player.getBbHeight() / 2, pos.getZ() + 0.5, 2F,
                     false, Level.ExplosionInteraction.NONE);
             level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDERMAN_TELEPORT,
                     SoundSource.PLAYERS, 1.0F, 1.0F);

@@ -1,5 +1,6 @@
 package com.hbm.entity.missile;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionLarge;
@@ -72,7 +73,7 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
         }
         @Override public void onMissileImpact(HitResult hit) {
             for (int i = 0; i < 20; i++) {
-                level().explode(this, getX(), getY() - i, getZ(), 7.5F, Level.ExplosionInteraction.TNT);
+                Explosions.explode(level(), this, getX(), getY() - i, getZ(), 7.5F, Level.ExplosionInteraction.TNT);
             }
             ExplosionLarge.spawnParticles(level(), getX(), getY(), getZ(), 8);
             ExplosionLarge.spawnShrapnels(level(), getX(), getY(), getZ(), 8);
@@ -110,7 +111,7 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
 
         @Override
         public void onMissileImpact(HitResult mop) {
-            level().explode(this, getX(), getY(), getZ(), 15F, Level.ExplosionInteraction.TNT);
+            Explosions.explode(level(), this, getX(), getY(), getZ(), 15F, Level.ExplosionInteraction.TNT);
             ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 50, getYRot(), getXRot(),
                     (float) Math.PI * 0.25F, (float) Math.PI * 0.25F, 1F);
         }

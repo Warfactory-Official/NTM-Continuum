@@ -146,13 +146,6 @@ public final class ModEntityItems {
     public static final RegistryObject<ItemPlasticBag> plastic_bag = REG.item("plastic_bag",
                     ItemPlasticBag::new, p -> p)
             .transform(Presets.sprite()).tab(HbmTab.CONSUMABLES);
-    /**
-     * 1.7 ModItems.bottled_cloud, the mask man's drop. In 1.7/ntm-next it is an armour module
-     * ({@code ItemModCloud}); this port's armour-module work owns that behaviour, so the drop is a plain
-     * item until it is wired there.
-     */
-    public static final RegistryObject<Item> bottled_cloud = REG.item("bottled_cloud")
-            .transform(Presets.sprite()).tab(HbmTab.CONSUMABLES);
     public static final RegistryObject<ItemBatteryCreative> battery_creative = REG.item(
                     "battery_creative", ItemBatteryCreative::new, p -> p.stacksTo(1))
             .transform(Presets.sprite("hbm:items/battery_creative_new")).tab(HbmTab.CONTROL);

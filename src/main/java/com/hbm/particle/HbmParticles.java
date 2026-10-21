@@ -20,6 +20,9 @@ public final class HbmParticles {
     public static final RegistryObject<SimpleParticleType> RBMK_MUSH =
             REG.register(Registries.PARTICLE_TYPE, "rbmk_mush", () -> new SimpleParticleType(true) {});
 
+    public static final RegistryObject<SimpleParticleType> RBMK_JET_STEAM =
+            REG.register(Registries.PARTICLE_TYPE, "rbmk_jet_steam", () -> new SimpleParticleType(true) {});
+
     /** Class-load hook for the parent bootstrap, alongside the other deferred registrars. */
     public static void init() {}
 }

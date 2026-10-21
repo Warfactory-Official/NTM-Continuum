@@ -2,10 +2,13 @@ package com.hbm.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.Constants;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.harness.HarnessQueryRegistry;
+import dev.golem.core.registry.Entities;
 import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +16,12 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 
 /**
  * The {@code hbm_icon_audit} harness query read by {@code ItemIconAudit}: every HBM stack a player can see in a slot
@@ -36,6 +43,47 @@ public final class IconAuditHarnessQueries {
 
     public static void register() {
         HarnessQueryRegistry.register("hbm_icon_audit", IconAuditHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_sweep_ids", IconAuditHarnessQueries::sweepIds);
+        LangAuditHarnessQueries.register();
+    }
+
+    /** Every hbm block (id, whether it has a block entity) and entity type (id, class name), sorted by id. */
+    private static JsonObject sweepIds(Minecraft mc, JsonObject params) {
+        JsonObject json = new JsonObject();
+        List<Block> blocks = new ArrayList<>();
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (BuiltInRegistries.BLOCK.getKey(block).getNamespace().equals(Constants.MOD_ID)) blocks.add(block);
+        }
+        blocks.sort(Comparator.comparing(b -> BuiltInRegistries.BLOCK.getKey(b).toString()));
+        JsonArray blockList = new JsonArray();
+        for (Block block : blocks) {
+            JsonObject entry = new JsonObject();
+            entry.addProperty("id", BuiltInRegistries.BLOCK.getKey(block).toString());
+            entry.addProperty("be", block instanceof EntityBlock);
+            blockList.add(entry);
+        }
+        json.add("blocks", blockList);
+        List<EntityType<?>> types = new ArrayList<>();
+        for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
+            if (BuiltInRegistries.ENTITY_TYPE.getKey(type).getNamespace().equals(Constants.MOD_ID)) types.add(type);
+        }
+        types.sort(Comparator.comparing(t -> BuiltInRegistries.ENTITY_TYPE.getKey(t).toString()));
+        JsonArray entityList = new JsonArray();
+        for (EntityType<?> type : types) {
+            JsonObject entry = new JsonObject();
+            entry.addProperty("id", BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
+            Entity probe = mc.level == null ? null : Entities.createDetached(type, mc.level);
+            entry.addProperty("cls", probe == null ? "" : probe.getClass().getSimpleName());
+            entityList.add(entry);
+        }
+        json.add("entities", entityList);
+        return json;
+    }
+
+    /** Every stack of the icon audit, built once. */
+    static List<ItemStack> allStacks() {
+        if (stacks == null) stacks = collect();
+        return stacks;
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {

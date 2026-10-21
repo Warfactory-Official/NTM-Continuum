@@ -102,8 +102,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         te.upgradeManager.checkSlots(te.inventory, 5, 6);
         te.cycleCount = te.getCycleCount();
 
-        // Duration/power/acid all scale with the plugged upgrades (the 1.12.2 getDuration/getPowerRequired/
-        // getRequiredAcid); OVERDRIVE runs the whole process block cycleCount times per tick.
+        // Duration, power and acid scale with the plugged upgrades; OVERDRIVE runs the process block cycleCount times per tick.
         for (int cycle = 0; cycle < te.cycleCount; cycle++) {
             CrystallizerRecipe recipe = CrystallizerRecipes.getOutput(te.inventory.getStackInSlot(0), te.tank.getTankType());
             te.duration = te.getDuration(recipe);
@@ -162,24 +161,22 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         }
         tank.setFill(tank.getFill() - getRequiredAcid(recipe.acidAmount));
 
-        // EFFECT: 5%/level chance (max 15%) to run the op without consuming the input item.
-        float freeChance = getFreeChance();
+        float freeChance = getFreeChance(recipe);
         if (freeChance == 0 || freeChance < level.getRandom().nextFloat()) {
             inventory.getStackInSlot(0).shrink(recipe.input.stacksize);
         }
     }
 
-    // Upgrade-scaled parameters (1.12.2 getRequiredAcid/getFreeChance/getDuration/getPowerRequired/getCycleCount)
+    // Upgrade-scaled parameters
 
     public int getRequiredAcid(int base) {
-        int efficiency = Math.min(upgradeManager.getLevel(UpgradeType.EFFECT), 3);
-        if (efficiency > 0) return base * (efficiency + 2);
         return base;
     }
 
-    public float getFreeChance() {
-        int efficiency = Math.min(upgradeManager.getLevel(UpgradeType.EFFECT), 3);
-        if (efficiency > 0) return Math.min(efficiency * 0.05F, 0.15F);
+    /** EFFECT: chance per level (the recipe's productivity, at most 99%) to run without consuming the input. */
+    public float getFreeChance(CrystallizerRecipe recipe) {
+        int efficiency = upgradeManager.getLevel(UpgradeType.EFFECT);
+        if (efficiency > 0) return Math.min(efficiency * recipe.productivity, 0.99F);
         return 0;
     }
 
@@ -191,8 +188,9 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
     }
 
     public int getPowerRequired() {
-        int speed = Math.min(upgradeManager.getLevel(UpgradeType.SPEED), 3);
-        return DEMAND + Math.min(speed * 1000, 3000);
+        int speed = upgradeManager.getLevel(UpgradeType.SPEED);
+        int effect = upgradeManager.getLevel(UpgradeType.EFFECT);
+        return DEMAND + speed * DEMAND + effect * DEMAND * 2;
     }
 
     public int getCycleCount() {

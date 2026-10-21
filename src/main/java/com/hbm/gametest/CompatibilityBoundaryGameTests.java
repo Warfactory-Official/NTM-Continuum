@@ -110,7 +110,7 @@ public final class CompatibilityBoundaryGameTests {
                 "carried crate item did not place its block entity");
         TileEntityCrate restored = (TileEntityCrate) helper.getLevel().getBlockEntity(support.above());
         helper.assertTrue(restored.getItem(0).is(Items.DIAMOND) && restored.getItem(0).getCount() == 3
-                        && restored.hasCustomName() && restored.getName().equals("Audit Crate"),
+                        && restored.hasCustomName() && "Audit Crate".equals(restored.customName),
                 "crate contents or custom name did not survive break and replacement");
         helper.succeed();
     }

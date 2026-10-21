@@ -15,7 +15,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import dev.golem.core.world.CompatMeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -60,7 +60,7 @@ public class EntityParasiteMaggot extends CompatMonster {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
-        goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, false));
+        goalSelector.addGoal(2, new CompatMeleeAttackGoal(this, 1.0D, false));
         goalSelector.addGoal(3, new RandomStrollGoal(this, 1.0D)); // 1.7 old-AI wander did not avoid water
         goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 8F));
         goalSelector.addGoal(5, new RandomLookAroundGoal(this));

@@ -82,4 +82,8 @@ public class MachineOilWell extends BlockMultiblockMachine implements IEnergyCon
                 {0, 0, 0, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+    @Override
+    protected boolean carriesData() {
+        return true;
+    }
 }

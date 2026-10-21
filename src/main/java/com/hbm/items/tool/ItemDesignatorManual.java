@@ -6,7 +6,6 @@ import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -33,15 +32,7 @@ public final class ItemDesignatorManual extends CompatItem implements IDesignato
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        if (ModDataComponents.DESIGNATOR_X.has(stack)) {
-            tooltip.add(Component.literal("Target Coordinates:").withStyle(ChatFormatting.GREEN));
-            tooltip.add(Component.literal("X: " + ModDataComponents.DESIGNATOR_X.getOr(stack, 0))
-                    .withStyle(ChatFormatting.GREEN));
-            tooltip.add(Component.literal("Z: " + ModDataComponents.DESIGNATOR_Z.getOr(stack, 0))
-                    .withStyle(ChatFormatting.GREEN));
-        } else {
-            tooltip.add(Component.literal("Please select a target.").withStyle(ChatFormatting.YELLOW));
-        }
+        ItemDesignator.appendTargetTooltip(stack, tooltip);
     }
 
     @Override

@@ -10,13 +10,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -75,23 +73,9 @@ public class MachineOrbus extends BlockMultiblockMachine implements IFluidConnec
         visitor.cell(core.offset(back.offsetX + d2.offsetX, 0, back.offsetZ + d2.offsetZ), MASK_DOWN, ROLE_FLUID);
     }
 
-    /**
-     * 1.7 {@code getDrops} returned {@code IPersistentNBT.getDrops} of the core found from whichever part was broken,
-     * so the tank's contents came along from every cell. A cell here is the machine's own block with no block entity
-     * (its loot table is limited to the core), so a cell broken by a player drops the core's loot, rolled with the
-     * core's block entity, exactly as {@code BlockMultiblockCell} does for shared cells.
-     */
     @Override
-    protected void onPlayerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        super.onPlayerWillDestroy(level, pos, state, player);
-        if (!(level instanceof ServerLevel server) || !state.getValue(CELL)
-                || playerPreventsBlockDrops(player) || !player.hasCorrectToolForDrops(state)) return;
-        BlockPos core = coreOf(level, pos, state);
-        if (core == null) return;
-        BlockState coreState = level.getBlockState(core);
-        if (coreState.getBlock() != this) return;
-        Block.dropResources(coreState, server, pos, server.getBlockEntity(core), player,
-                player.getMainHandItem());
+    protected boolean carriesData() {
+        return true;
     }
 
     @Override

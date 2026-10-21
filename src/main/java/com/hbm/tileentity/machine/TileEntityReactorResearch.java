@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.data.MachineDataMaps;
 import com.hbm.config.MobConfig;
 import com.hbm.extprop.HbmPlayerProps;
@@ -277,7 +278,7 @@ public class TileEntityReactorResearch extends TileEntityMachineBase implements 
             }
         }
 
-        world.explode(null, x, y, z, 18.0F, true, Level.ExplosionInteraction.BLOCK);
+        Explosions.explode(world, null, x, y, z, 18.0F, Level.ExplosionInteraction.BLOCK);
         world.setBlock(pos, ModBlocks.deco_steel.get().defaultBlockState(), 3);
         world.setBlock(pos.above(), ModFluidNetBlocks.corium_block.get().defaultBlockState(), 3);
         world.setBlock(pos.above(2), ModBlocks.deco_steel.get().defaultBlockState(), 3);

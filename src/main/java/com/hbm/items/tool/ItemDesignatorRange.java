@@ -6,7 +6,6 @@ import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -36,7 +35,7 @@ public class ItemDesignatorRange extends CompatItem implements IDesignatorItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        ItemDesignator.appendTargetTooltip(stack, tooltip, "desc.choosetarget3");
+        ItemDesignator.appendTargetTooltip(stack, tooltip);
     }
 
     @Override
@@ -48,7 +47,7 @@ public class ItemDesignatorRange extends CompatItem implements IDesignatorItem {
         if (level.getBlockState(pos).getBlock() instanceof LaunchPad) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         ItemDesignator.setTarget(level, player, player.getItemInHand(hand), pos.getX(), pos.getZ(),
-                Component.translatable("chat.possetxz", pos.getX(), pos.getZ()).withStyle(ChatFormatting.GREEN));
+                Component.literal("Position set to X:" + pos.getX() + ", Z:" + pos.getZ()));
         return InteractionResult.SUCCESS;
     }
 

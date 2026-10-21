@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.blocks.bomb.BlockTaint;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
@@ -40,13 +41,13 @@ public class RedBarrel extends BlockBarrelDeco {
     public void detonate(Level level, double x, double y, double z, @Nullable EntityPrimedExplosive primed) {
         int ix = Mth.floor(x), iy = Mth.floor(y), iz = Mth.floor(z);
         switch (effect) {
-            case RED, PINK -> level.explode(primed, x, y, z, 2.5F, true, Level.ExplosionInteraction.TNT);
+            case RED, PINK -> Explosions.explode(level, primed, x, y, z, 2.5F, true, Level.ExplosionInteraction.TNT);
             case LOX -> {
-                level.explode(primed, x, y, z, 1F, false, Level.ExplosionInteraction.NONE);
+                Explosions.explode(level, primed, x, y, z, 1F, false, Level.ExplosionInteraction.NONE);
                 freezer(level, ix, iy, iz, 7);
             }
             case TAINT -> {
-                level.explode(primed, x, y, z, 1F, false, Level.ExplosionInteraction.NONE);
+                Explosions.explode(level, primed, x, y, z, 1F, false, Level.ExplosionInteraction.NONE);
                 RandomSource rand = level.getRandom();
                 for (int i = 0; i < 100; i++) {
                     int a = rand.nextInt(9) - 4 + ix;

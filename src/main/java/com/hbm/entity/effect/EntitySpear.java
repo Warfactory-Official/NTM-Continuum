@@ -1,5 +1,6 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.advancement.DetonationTrigger;
 import com.hbm.advancement.HbmCriteria;
 import dev.golem.core.data.DataIn;
@@ -51,7 +52,7 @@ public class EntitySpear extends CompatEntity {
                 double blastX = getX() + random.nextGaussian() * 25D;
                 double blastZ = getZ() + random.nextGaussian() * 25D;
                 double blastY = server.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(blastX), Mth.floor(blastZ)) + 2D;
-                server.explode(this, blastX, blastY, blastZ, 7.5F, Level.ExplosionInteraction.NONE);
+                Explosions.explode(server, this, blastX, blastY, blastZ, 7.5F, Level.ExplosionInteraction.NONE);
                 for (ServerPlayer player : server.players()) {
                     ContaminationUtil.contaminate(player, ContaminationUtil.HazardType.DIGAMMA,
                             ContaminationUtil.ContaminationType.DIGAMMA, 0.05D);

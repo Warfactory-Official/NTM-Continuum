@@ -6,6 +6,7 @@ import com.hbm.api.energymk2.PowerGraphProvider;
 import com.hbm.capability.MachineCaps;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import dev.golem.core.world.CompatBlock;
+import dev.golem.core.world.EnergyCompat;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
@@ -45,7 +46,7 @@ import java.util.Map;
  * HBM's red power cable: a connecting conductor. Six {@link BooleanProperty} connection flags drive a
  * multipart model (a central core + an arm per connected side), like vanilla {@code PipeBlock}. It
  * connects to any neighbour whose BlockEntity is an {@link IEnergyConnectorMK2} (cables, machines,
- * batteries, generators). These flags are purely the visual/collision shape; conduction is the graph
+ * batteries, generators) and to any foreign energy handler the power net can push into. These flags are purely the visual/collision shape; conduction is the graph
  * cell this block owns, which lives and dies with the block rather than with its BlockEntity.
  *
  * <p>Ported from 1.12.2's {@code BlockCable} (which used an OBJ-baked model + {@code getActualState});
@@ -112,7 +113,9 @@ public class BlockCable extends CompatBlock implements TickingBlock, SimpleWater
             return true;
         }
         BlockEntity be = level.getBlockEntity(neighbour);
-        return be instanceof IEnergyConnectorMK2 connector && connector.canConnect(neighbourSide);
+        if (be instanceof IEnergyConnectorMK2 connector && connector.canConnect(neighbourSide)) return true;
+        // the same question the power net asks of a face it has no native machine for
+        return EnergyCompat.exposes(level, neighbour, dir.getOpposite());
     }
 
     @Override

@@ -147,6 +147,8 @@ public final class TurretGameTests {
             TESTS.function("turret_config_damage", 60, 16, () -> TurretGameTests::configDamage);
     public static final GameTests.Function CIWS_RADAR =
             TESTS.function("turret_ciws_radar", 100, 64, () -> TurretGameTests::ciwsRadar);
+    public static final GameTests.Function ANIMAL_TARGETS =
+            TESTS.function("rc_space_turret_animals", 60, 16, () -> TurretGameTests::animalTargets);
     public static final GameTests.Function PROJECTILE_HEALTH =
             TESTS.function("turret_projectile_health", 60, 8, () -> TurretGameTests::projectileHealth);
     public static final GameTests.Function ROCKET_GUIDANCE =
@@ -190,6 +192,23 @@ public final class TurretGameTests {
         for (int i = 0; i < 5; i++) tauon.updateFiringTick();
         float dealt = before - golem.getHealth();
         helper.assertTrue(dealt >= 30F && dealt < 40F, "The Tauon must deal 30 to 40, dealt " + dealt);
+        helper.succeed();
+    }
+
+    /** 1.7 IAnimals: the animal filter takes animals, ambient and water creatures, golems and villagers, not monsters. */
+    public static void animalTargets(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_chekhov.get());
+        TileEntityTurretChekhov turret = (TileEntityTurretChekhov) helper.getLevel().getBlockEntity(core);
+        turret.targetMobs = false;
+        turret.targetAnimals = true;
+        for (EntityType<?> type : new EntityType<?>[] {EntityType.COW, EntityType.BAT, EntityType.SQUID,
+                EntityType.IRON_GOLEM, EntityType.SNOW_GOLEM, EntityType.VILLAGER}) {
+            var entity = helper.spawn(type, new BlockPos(10, 2, 2));
+            helper.assertTrue(turret.entityAcceptableTarget(entity), "The animal filter must accept " + type);
+            entity.discard();
+        }
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(10, 2, 2));
+        helper.assertTrue(!turret.entityAcceptableTarget(zombie), "The animal filter must refuse a zombie");
         helper.succeed();
     }
 

@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
@@ -397,7 +398,7 @@ public class EntityUFO extends CompatMob implements Enemy, IRadiationImmune {
         if (this.deathTime == 19 && level() instanceof ServerLevel server) {
 
             // 1.7 newExplosion(isFlaming = true, isSmoking = true)
-            server.explode(this, getX(), getY(), getZ(), 10F, true, Level.ExplosionInteraction.MOB);
+            Explosions.explode(server, this, getX(), getY(), getZ(), 10F, true, Level.ExplosionInteraction.MOB);
             ExplosionNukeSmall.explode(server, getX(), getY(), getZ(), ExplosionNukeSmall.PARAMS_MEDIUM);
 
             HbmCriteria.bossKilled(this, BossKilledTrigger.Kind.UFO, 200D);

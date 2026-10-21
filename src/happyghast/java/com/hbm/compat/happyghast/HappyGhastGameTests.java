@@ -40,6 +40,9 @@ final class HappyGhastGameTests {
 
     static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
+    /** Forces the suite's declarations; called while mods construct, before the registries fill. */
+    static void init() {}
+
     private static final int PADDING = 8;
 
     static {

@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
+import com.hbm.api.block.IToolable;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
 import dev.golem.core.registry.TickingBlock;
@@ -12,6 +14,7 @@ import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityFoundryOutlet;
+import com.hbm.items.tool.ItemTooling;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -41,10 +44,10 @@ import java.util.List;
 /**
  * Foundry outlet (1.12.2 {@code FoundryOutlet}), a filtered, redstone-closable tap that takes flow
  * from a channel behind it and re-pours 4 blocks down. Right-click with scraps sets the material
- * filter; empty-hand right-click clears it (the invert toggles are deferred with IToolable). Drawn by
+ * filter; the screwdriver clears it. Drawn by
  * the BER (the old {@code foundry_outlet.obj}).
  */
-public class FoundryOutlet extends CompatBlock implements TickingBlock, ICrucibleAcceptor, ILookOverlay {
+public class FoundryOutlet extends CompatBlock implements TickingBlock, ICrucibleAcceptor, ILookOverlay, IToolable {
 
     public FoundryOutlet(Properties properties) {
         super(properties);
@@ -94,12 +97,11 @@ public class FoundryOutlet extends CompatBlock implements TickingBlock, ICrucibl
         return level.getBlockEntity(pos) instanceof TileEntityFoundryOutlet te ? te : null;
     }
 
-    /** 1.12.2 interactions: scraps set the filter, any other right-click toggles the redstone invert;
-     * sneak-right-click with an empty hand clears the filter (replaces the old screwdriver). */
+    /** Scraps set the filter, any other right-click toggles the redstone invert; sneaking does neither. */
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         MaterialStack mats = ItemScraps.getMats(stack);
-        if (mats != null) {
+        if (mats != null && !player.isShiftKeyDown()) {
             if (!level.isClientSide()) {
                 TileEntityFoundryOutlet te = getTE(level, pos);
                 if (te != null) {
@@ -114,16 +116,11 @@ public class FoundryOutlet extends CompatBlock implements TickingBlock, ICrucibl
 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (player.getMainHandItem().getItem() instanceof ItemTooling) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide()) {
             TileEntityFoundryOutlet te = getTE(level, pos);
             if (te != null) {
-                if (player.isShiftKeyDown()) {
-                    // screwdriver replacement: clear the filter + the filter invert
-                    te.filter = null;
-                    te.invertFilter = false;
-                } else {
-                    te.invertRedstone = !te.invertRedstone;
-                }
+                if (!player.isShiftKeyDown()) te.invertRedstone = !te.invertRedstone;
                 te.setChanged();
             }
         }
@@ -172,5 +169,22 @@ public class FoundryOutlet extends CompatBlock implements TickingBlock, ICrucibl
     @Override
     public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(BlockStateProperties.HORIZONTAL_FACING)));
+    }
+
+    /** The screwdriver clears the filter, the hand drill flips the filter inversion. */
+    @Override
+    public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit, InteractionHand hand, ToolType tool) {
+        if (tool != ToolType.SCREWDRIVER && tool != ToolType.HAND_DRILL) return false;
+        if (level.isClientSide()) return true;
+        TileEntityFoundryOutlet te = getTE(level, pos);
+        if (te == null) return false;
+        if (tool == ToolType.SCREWDRIVER) {
+            te.filter = null;
+            te.invertFilter = false;
+        } else {
+            te.invertFilter = !te.invertFilter;
+        }
+        te.setChanged();
+        return false;
     }
 }

@@ -100,7 +100,7 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase impleme
         super.loadData(input);
         input.child("inventory").ifPresent(inventory::load);
         hasSpiders = input.getBooleanOr("spiders", false);
-        String name = input.getStringOr("name", "");
+        String name = input.getStringOr("name", input.getStringOr("customName", ""));
         customName = name.isEmpty() ? null : name;
     }
 

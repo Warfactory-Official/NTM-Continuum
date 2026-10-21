@@ -5,6 +5,7 @@ import com.hbm.blocks.ModAnvilBlocks;
 import com.hbm.blocks.ModProductionBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.container.ContainerAnvil;
 import com.hbm.inventory.container.ContainerDiFurnace;
 import com.hbm.inventory.container.ContainerMachineArcFurnaceLarge;
 import com.hbm.inventory.container.ContainerMachineArcWelder;
@@ -14,6 +15,7 @@ import com.hbm.inventory.container.ContainerCentrifuge;
 import com.hbm.inventory.container.ContainerMachineCyclotron;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
 import com.hbm.inventory.gui.GUIFusionBreeder;
+import com.hbm.inventory.gui.GUIAnvil;
 import com.hbm.inventory.gui.GUIDiFurnace;
 import com.hbm.inventory.gui.GUIMachineArcFurnaceLarge;
 import com.hbm.inventory.gui.GUIMachineArcWelder;
@@ -71,6 +73,9 @@ import dev.golem.core.data.ModelData;
 import java.util.ArrayList;
 import java.util.List;
 import com.hbm.blocks.ModSatelliteBlocks;
+import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
+import dev.golem.core.viewer.TransferAction;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import dev.golem.core.viewer.ViewerPlugin;
 
 /**
@@ -462,6 +467,18 @@ public final class HbmRecipeViewer implements ViewerPlugin {
           reg.addSelective(ContainerDiFurnace.class,
                   ModMenus.MACHINE_DIFURNACE.get(), HbmJeiRecipeTypes.ALLOY,
                   new int[]{0, 1}, 4, 36, recipe -> true);
+        reg.addAction(ContainerAnvil.class, ModMenus.ANVIL.get(), HbmJeiRecipeTypes.ANVIL_CON,
+                new TransferAction<ContainerAnvil, AnvilConstructionRecipe>() {
+                    @Override
+                    public Component unavailable(ContainerAnvil menu, AnvilConstructionRecipe recipe) {
+                        return recipe.isTierValid(menu.tier) ? null : Component.translatable("hbm.anvil_construction.tier");
+                    }
+
+                    @Override
+                    public void run(AbstractContainerScreen<?> screen, ContainerAnvil menu, AnvilConstructionRecipe recipe) {
+                        if (screen instanceof GUIAnvil anvil) anvil.focusRecipe(recipe);
+                    }
+                });
         RTGJeiIntegration.registerTransfer(reg);
      }
 

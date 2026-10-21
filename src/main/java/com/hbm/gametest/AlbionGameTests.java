@@ -286,6 +286,13 @@ public final class AlbionGameTests {
         helper.assertTrue(detector.inventory.getStackInSlot(1).isEmpty(),
                 "The detector must spend the empty capsule the product needs");
 
+        detector.inventory.setStackInSlot(1, new ItemStack(ModItems.particle_empty.get()));
+        Particle again = collision(source, entry, beam);
+        again.momentum = 300;
+        detector.onEnter(again, beam);
+        helper.assertTrue(detector.inventory.getStackInSlot(3).getCount() == 2,
+                "A second product must stack on the first; got " + detector.inventory.getStackInSlot(3));
+
         Particle unknown = particleAt(source, entry, beam);
         unknown.input1 = new ItemStack(Items.STONE);
         unknown.input2 = new ItemStack(Items.STONE);

@@ -34,8 +34,8 @@ public final class ModStorageBlocks {
     private static final Reg REG = Reg.of(BLOCKS, ITEMS);
     /** A renderer-drawn block with one state. */
     private static final Preset RENDERED_SIMPLE = Presets.rendered(Variants.simple());
-    /** Crates keep their name and contents when broken. */
-    private static final Loot CRATE_LOOT = Loot.container("minecraft:custom_name", "minecraft:container");
+    /** Crates keep their name, contents and lock when broken. */
+    private static final Loot CRATE_LOOT = Loot.container("minecraft:container", "minecraft:custom_data", "minecraft:custom_name");
 
     public static final RegistryObject<BlockCrate> crate_iron = REG.<BlockCrate>block(
             "crate_iron", p -> new BlockCrate(p, CrateType.IRON),

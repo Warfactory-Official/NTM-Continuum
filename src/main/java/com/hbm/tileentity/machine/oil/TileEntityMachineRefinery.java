@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.oil;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.interfaces.IRepairable;
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.items.ModItems;
@@ -190,7 +191,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         if (type == EnumExtinguishType.WATER) {
             for (FluidTankNTM tank : tanks) {
                 if (tank.getFill() > 0) {
-                    world.explode(null, worldPosition.getX() + 0.5, worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5,
+                    Explosions.explode(world, null, worldPosition.getX() + 0.5, worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5,
                             5F, true, Level.ExplosionInteraction.BLOCK);
                     return;
                 }
@@ -216,6 +217,36 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     public void repair() {
         this.hasExploded = false;
         this.setChanged();
+    }
+
+    /** 1.7 {@code writeNBT}: a refinery with fluid in it, or a torn one, travels with its item. */
+    @Override
+    protected CompoundTag collectCarriedData() {
+        boolean empty = !hasExploded;
+        for (FluidTankNTM tank : tanks) if (tank.getFill() > 0) empty = false;
+        if (empty) return null;
+        CompoundTag data = new CompoundTag();
+        for (int i = 0; i < tanks.length; i++) tanks[i].writeCarried(data, "tank" + i);
+        data.putBoolean("exploded", hasExploded);
+        data.putBoolean("onFire", onFire);
+        return data;
+    }
+
+    @Override
+    protected void applyCarriedData(CompoundTag data) {
+        for (int i = 0; i < tanks.length; i++) tanks[i].readCarried(data, "tank" + i);
+        hasExploded = Tags.getBooleanOr(data, "exploded", false);
+        onFire = Tags.getBooleanOr(data, "onFire", false);
+    }
+
+    @Override
+    protected void removeSavedComponents(DataOut output) {
+        super.removeSavedComponents(output);
+        for (String key : new String[] {"inventory", "input", "input_max", "input_type", "input_p", "heavy", "heavy_max",
+                "heavy_type", "heavy_p", "naphtha", "naphtha_max", "naphtha_type", "naphtha_p", "light", "light_max",
+                "light_type", "light_p", "petroleum", "petroleum_max", "petroleum_type", "petroleum_p", "exploded", "onFire"}) {
+            output.discard(key);
+        }
     }
 
     protected PortDef[] cachedPorts;

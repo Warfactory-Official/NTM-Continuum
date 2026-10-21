@@ -176,9 +176,10 @@ public final class ChemicalFactoryGameTests {
         factory.setItem(16, torch);
         factory.setItem(19, new ItemStack(Items.STONE));
         tick(helper, factory);
-        helper.assertTrue(factory.outputTanks[0].getFill() == 0
+        // 1.7 ItemBlowtorch.tryFill takes at most 50 mB per call
+        helper.assertTrue(factory.outputTanks[0].getFill() == 950
                         && factory.getItem(16).is(ModToolItems.blowtorch.get())
-                        && ((ItemBlowtorch) factory.getItem(16).getItem()).getFill(factory.getItem(16)) == 1_000
+                        && ((ItemBlowtorch) factory.getItem(16).getItem()).getFill(factory.getItem(16)) == 50
                         && factory.getItem(19).is(Items.STONE),
                 "A single fillable container must remain in its input when the preferred output is blocked");
         helper.succeed();

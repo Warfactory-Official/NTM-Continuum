@@ -12,6 +12,7 @@ import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -82,6 +83,13 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
     public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
         this.speed = buf.readFloat();
+    }
+
+    @Override
+    public void onDrill(int y) {
+        Block gas = gasOfDrilledOre(y);
+        if (gas == null) return;
+        for (Direction dir : Direction.Plane.HORIZONTAL) releaseGas(worldPosition.relative(dir), gas);
     }
 
     @Override

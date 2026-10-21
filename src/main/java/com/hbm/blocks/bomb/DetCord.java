@@ -1,8 +1,11 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.block.IFuckingExplode;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.item.EntityTntNtm;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.IBlockExplodedVNT;
 import dev.golem.core.world.BlockTickScheduler;
 import dev.golem.core.world.CompatBlock;
 import java.util.Map;
@@ -39,7 +42,7 @@ import com.hbm.tileentity.bomb.TileEntityDetCord;
  * connection flags live in the state, as the red cable's do, and a block-entity renderer draws the
  * matching OBJ parts (1.7 {@code RenderDetCord}).
  */
-public class DetCord extends CompatBlock implements EntityBlock, IDetConnectible, IFuckingExplode {
+public class DetCord extends CompatBlock implements EntityBlock, IDetConnectible, IFuckingExplode, IBlockExplodedVNT {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;
@@ -124,7 +127,7 @@ public class DetCord extends CompatBlock implements EntityBlock, IDetConnectible
     public void explode(Level level, BlockPos pos) {
         if (level.isClientSide()) return;
         level.removeBlock(pos, false);
-        level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 1.5F, Level.ExplosionInteraction.TNT);
+        Explosions.explode(level, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 1.5F, Level.ExplosionInteraction.TNT);
     }
 
     @Override
@@ -134,6 +137,16 @@ public class DetCord extends CompatBlock implements EntityBlock, IDetConnectible
         level.removeBlock(pos, false);
         EntityTntNtm primed = new EntityTntNtm(ModNtmEntities.TNT_NTM.get(), level,
                 pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, igniter, state);
+        primed.setFuse(0);
+        level.addFreshEntity(primed);
+        return true;
+    }
+
+    @Override
+    public boolean onVNTExploded(ServerLevel level, BlockPos pos, BlockState state, ExplosionVNT explosion) {
+        level.removeBlock(pos, false);
+        EntityTntNtm primed = new EntityTntNtm(ModNtmEntities.TNT_NTM.get(), level,
+                pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, IBlockExplodedVNT.igniter(explosion), state);
         primed.setFuse(0);
         level.addFreshEntity(primed);
         return true;

@@ -108,4 +108,8 @@ public class MachinePumpjack extends BlockMultiblockMachine implements IEnergyCo
                 {-4, 0, -1, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+    @Override
+    protected boolean carriesData() {
+        return true;
+    }
 }

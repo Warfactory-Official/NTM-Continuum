@@ -12,9 +12,11 @@
     "environment": "*",
     "entrypoints": {
         "golemcore:entry": [
+            "com.hbm.gametest.GameTestEntry",
             "com.hbm.platform.fabric.FabricInit"
         ],
         "client": [
+            "com.hbm.client.HarnessQueriesFabricEntry",
             "com.hbm.platform.fabric.FabricClientInit"
         ],
         "jei_mod_plugin": [

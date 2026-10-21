@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Explosions;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.tile.IHeatSource;
@@ -126,7 +127,7 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
                     }
                     if (sawmill.overspeed > 300) {
                         sawmill.hasBlade = false;
-                        level.explode(null, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D,
+                        Explosions.explode(level, null, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D,
                                 5F, false, Level.ExplosionInteraction.NONE);
                         int orientation = MachineCore.facingOrdinal(state, 2);
                         ForgeDirection direction = ForgeDirection.getOrientation(orientation);

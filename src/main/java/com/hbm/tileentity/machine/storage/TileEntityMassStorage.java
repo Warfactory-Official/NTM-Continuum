@@ -4,8 +4,8 @@ import com.hbm.inventory.container.ContainerMassStorage;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.NTMItemHandler;
+import com.hbm.items.ModFluidNetItems;
 import com.hbm.sound.ModSounds;
-import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -17,8 +17,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -34,7 +32,7 @@ import java.util.function.Supplier;
  * The legacy three-slot mass-storage stockpile. The block supplies the variant and registry suppliers;
  * this class contains all four capacities' shared behavior.
  */
-public class TileEntityMassStorage extends TileEntityMachineBase implements MenuProvider, WorldlyContainer, IRORValueProvider, IRORInteractive {
+public class TileEntityMassStorage extends TileEntityCrateBase implements IRORValueProvider, IRORInteractive {
 
     public static final int INPUT_SLOT = 0;
     public static final int FILTER_SLOT = 1;
@@ -76,6 +74,9 @@ public class TileEntityMassStorage extends TileEntityMachineBase implements Menu
 
         ItemStack type = storage.getFilterType();
         ItemStack input = storage.inventory.getStackInSlot(INPUT_SLOT);
+        if (input.is(ModFluidNetItems.fluid_barrel_infinite.get())) storage.stockpile = storage.capacity;
+        if (type.isEmpty()) storage.stockpile = 0;
+
         if (!type.isEmpty() && storage.stockpile < storage.capacity
                 && !input.isEmpty() && ItemStacks.sameItemAndData(input, type)) {
             int amount = Math.min(storage.capacity - storage.stockpile, input.getCount());
@@ -154,11 +155,37 @@ public class TileEntityMassStorage extends TileEntityMachineBase implements Menu
         return capacity <= 0 ? 0 : Math.max(0, Math.min(15, stockpile * 15 / capacity));
     }
 
-    @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return slot == INPUT_SLOT && (getFilterType().isEmpty()
-                || ItemStacks.sameItemAndData(stack, getFilterType()))
-                || slot == FILTER_SLOT;
+        return slot == INPUT_SLOT || slot == FILTER_SLOT;
+    }
+
+    private boolean matchesFilter(ItemStack stack) {
+        ItemStack type = getFilterType();
+        return type.isEmpty() || ItemStacks.sameItemAndData(stack, type);
+    }
+
+    /** 1.7 {@code canInsert}: the stockpile takes only the filtered type. */
+    public boolean canInsert(ItemStack stack) {
+        ItemStack type = getFilterType();
+        return !type.isEmpty() && stockpile < capacity && !stack.isEmpty() && ItemStacks.sameItemAndData(stack, type);
+    }
+
+    /** 1.7 {@code quickInsert}: shift-click moves a whole stack straight into the stockpile if all of it fits. */
+    public boolean quickInsert(ItemStack stack) {
+        if (!canInsert(stack) || capacity - stockpile < stack.getCount()) return false;
+        stockpile += stack.getCount();
+        stack.setCount(0);
+        setChanged();
+        return true;
+    }
+
+    /** 1.7 {@code quickExtract}: one full stack of the filtered type, or empty when output is off or the stockpile is short. */
+    public ItemStack quickExtract() {
+        ItemStack type = getFilterType();
+        if (!output || type.isEmpty() || stockpile < type.getMaxStackSize()) return ItemStack.EMPTY;
+        stockpile -= type.getMaxStackSize();
+        setChanged();
+        return ItemStacks.copyWithCount(type, type.getMaxStackSize());
     }
 
     @Override
@@ -167,23 +194,13 @@ public class TileEntityMassStorage extends TileEntityMachineBase implements Menu
     }
 
     @Override
-    public int[] getAccessibleSlotsFromSide(int side) {
-        return new int[]{INPUT_SLOT, OUTPUT_SLOT};
-    }
-
-    @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot == INPUT_SLOT && isItemValidForSlot(slot, stack);
+        return !isLocked() && slot == INPUT_SLOT && matchesFilter(stack);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot == OUTPUT_SLOT;
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return hasCustomName() ? Component.literal(getName()) : Component.translatable(getDefaultName());
+        return !isLocked() && slot == OUTPUT_SLOT;
     }
 
     public void openInventory(Player player) {
@@ -255,7 +272,8 @@ public class TileEntityMassStorage extends TileEntityMachineBase implements Menu
 
     @Override
     protected CompoundTag collectCarriedData() {
-        CompoundTag data = new CompoundTag();
+        CompoundTag lock = super.collectCarriedData();
+        CompoundTag data = lock == null ? new CompoundTag() : lock;
         data.putInt("stack", stockpile);
         data.putBoolean("output", output);
         data.putInt("capacity", capacity);
@@ -265,6 +283,7 @@ public class TileEntityMassStorage extends TileEntityMachineBase implements Menu
 
     @Override
     protected void applyCarriedData(CompoundTag data) {
+        super.applyCarriedData(data);
         loadItemState(data);
     }
 

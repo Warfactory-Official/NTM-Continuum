@@ -118,7 +118,6 @@ public class FoundryChannel extends CompatBlock implements TickingBlock, ICrucib
                 }
                 cast.amount = 0;
                 cast.type = null;
-                cast.propagateMaterial(null);
                 cast.setChanged();
             }
             return InteractionResult.SUCCESS;

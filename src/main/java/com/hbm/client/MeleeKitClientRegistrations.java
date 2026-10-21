@@ -13,7 +13,6 @@ public final class MeleeKitClientRegistrations {
 
     public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
         ItemCatalog.setClientScreenOpener(GUIScreenBobmazon::open);
-        MeleeKitHarnessQueries.register();
         sink.register(ModMeleeKitMenus.TOOLBOX.get(), GUIToolBox::new);
         sink.register(ModMeleeKitMenus.BOOK.get(), GUIBook::new);
     }

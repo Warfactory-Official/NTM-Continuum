@@ -1,5 +1,6 @@
 package com.hbm.handler;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.api.environment.Environment;
 import com.hbm.config.ServerConfig;
@@ -261,7 +262,7 @@ public class EntityEffectHandler {
         if (oil <= 0) return;
         if (entity.isOnFire()) {
             HbmLivingProps.setOil(entity, 0);
-            entity.level().explode(null, entity.getX(), entity.getY() + entity.getBbHeight() / 2, entity.getZ(), 3F,
+            Explosions.explode(entity.level(), null, entity.getX(), entity.getY() + entity.getBbHeight() / 2, entity.getZ(), 3F,
                     false, Level.ExplosionInteraction.TNT);
         } else {
             HbmLivingProps.setOil(entity, oil - 1);

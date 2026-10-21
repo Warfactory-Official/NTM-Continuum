@@ -71,7 +71,8 @@ public final class DoorColladaModel {
      */
     private void declare(Node node, Gem.Part<Pose> parent, Gem.Model<Pose> declaration) {
         Gem.Part<Pose> part;
-        if (node.geometry == null) {
+        // an object the OBJ holds no faces for (the seal's empty door.009) draws nothing, so it is a joint
+        if (node.geometry == null || !model.partNames().contains(node.name)) {
             part = parent == null ? declaration.joint() : parent.joint();
         } else {
             part = parent == null

@@ -31,7 +31,11 @@ import dev.golem.core.data.DataOut;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.IntStream;
+import com.hbm.entity.ModEntities;
+import com.hbm.entity.projectile.EntityShrapnel;
+import com.hbm.particle.helper.ExplosionCreator;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -363,7 +367,18 @@ public class TileEntityWatz extends TileEntityMachineBase
      * clears the space above the core, replaces the reactor with mud and broken component columns,
      * dumps 1000 rads and plays the RBMK detonation.
      */
-    private void meltdown(Level level, BlockPos pos) {
+    public void meltdown(Level level, BlockPos pos) {
+        RandomSource random = level.getRandom();
+        for (int i = 0; i < 100; i++) {
+            EntityShrapnel shrapnel = new EntityShrapnel(ModEntities.SHRAPNEL.get(), level);
+            shrapnel.setPos(pos.getX() + 0.5D, pos.getY() + 3D, pos.getZ() + 0.5D);
+            shrapnel.setDeltaMovement(random.nextGaussian(),
+                    (random.nextFloat() * 0.5D + 0.5D) * (1 + 20 / (15 + random.nextInt(21))) + random.nextFloat() / 50D * 20,
+                    random.nextGaussian());
+            shrapnel.setWatz(true);
+            level.addFreshEntity(shrapnel);
+        }
+        ExplosionCreator.composeEffectRBMKMush(level, pos.getX() + 0.5D, pos.getY() + 2D, pos.getZ() + 0.5D, 5F);
         for (int x = -3; x <= 3; x++) {
             for (int y = 3; y < 6; y++) {
                 for (int z = -3; z <= 3; z++) {

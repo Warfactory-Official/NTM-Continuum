@@ -33,8 +33,6 @@ public class FabricInit implements ModEntry {
     public void declare() {
         Constants.LOG.info("Hello Fabric world!");
         common.declare();
-        // GameTest suites before the registries are filled: one of them owns a test-only block.
-        FabricGameTests.initAll();
     }
 
     @Override

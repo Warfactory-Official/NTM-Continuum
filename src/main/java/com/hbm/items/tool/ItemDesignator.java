@@ -7,7 +7,6 @@ import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
@@ -39,17 +38,17 @@ public class ItemDesignator extends CompatItem implements IDesignatorItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        appendTargetTooltip(stack, tooltip, "desc.choosetarget1");
+        appendTargetTooltip(stack, tooltip);
     }
 
-    /** Shared by every designator: either the recorded target, or the item's own "pick a target" hint. */
-    static void appendTargetTooltip(ItemStack stack, List<Component> tooltip, String hintKey) {
+    /** Shared by the target-recording designators: the recorded X/Z, or the 1.7 hint. */
+    static void appendTargetTooltip(ItemStack stack, List<Component> tooltip) {
         if (ModDataComponents.DESIGNATOR_X.has(stack)) {
-            tooltip.add(Component.translatable("desc.targetcoord").withStyle(ChatFormatting.GREEN));
-            tooltip.add(Component.literal("X: " + ModDataComponents.DESIGNATOR_X.getOr(stack, 0)).withStyle(ChatFormatting.GREEN));
-            tooltip.add(Component.literal("Z: " + ModDataComponents.DESIGNATOR_Z.getOr(stack, 0)).withStyle(ChatFormatting.GREEN));
+            tooltip.add(Component.literal("Target Coordinates:"));
+            tooltip.add(Component.literal("X: " + ModDataComponents.DESIGNATOR_X.getOr(stack, 0)));
+            tooltip.add(Component.literal("Z: " + ModDataComponents.DESIGNATOR_Z.getOr(stack, 0)));
         } else {
-            tooltip.add(Component.translatable(hintKey).withStyle(ChatFormatting.YELLOW));
+            tooltip.add(Component.literal("Please select a target."));
         }
     }
 
@@ -74,7 +73,7 @@ public class ItemDesignator extends CompatItem implements IDesignatorItem {
         if (context.getPlayer() == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         setTarget(level, context.getPlayer(), context.getItemInHand(), pos.getX(), pos.getZ(),
-                Component.translatable("chat.posset").withStyle(ChatFormatting.GREEN));
+                Component.literal("Position set!"));
         return InteractionResult.SUCCESS;
     }
 

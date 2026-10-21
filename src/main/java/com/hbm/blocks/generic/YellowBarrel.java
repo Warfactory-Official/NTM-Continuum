@@ -1,7 +1,9 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
+import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.handler.radiation.ChunkRadiationManager;
@@ -62,6 +64,12 @@ public class YellowBarrel extends BlockBarrelDeco {
     }
 
     @Override
+    public boolean onVNTExploded(ServerLevel level, BlockPos pos, BlockState state, ExplosionVNT explosion) {
+        if (vitrified) return false;
+        return super.onVNTExploded(level, pos, state, explosion);
+    }
+
+    @Override
     public void detonate(Level level, double x, double y, double z, @Nullable EntityPrimedExplosive primed) {
         int ix = Mth.floor(x), iy = Mth.floor(y), iz = Mth.floor(z);
         BlockPos center = new BlockPos(ix, iy, iz);
@@ -69,7 +77,7 @@ public class YellowBarrel extends BlockBarrelDeco {
         if (rand.nextInt(3) == 0) {
             level.setBlock(center, ModFluidNetBlocks.toxic_block.get().defaultBlockState(), 3);
         } else {
-            level.explode(primed, x, y, z, 12.0F, Level.ExplosionInteraction.TNT);
+            Explosions.explode(level, primed, x, y, z, 12.0F, Level.ExplosionInteraction.TNT);
         }
         ExplosionNukeGeneric.waste(level, center, 35); // 1.7 YellowBarrel:103
         for (int i = -5; i <= 5; i++) {

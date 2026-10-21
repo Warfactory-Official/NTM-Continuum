@@ -10,10 +10,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
-/** 1.7 {@code GUIRtgFurnace}: {@code RTGfurnace.png}, 176x166. */
+/** 1.7 {@code GUIRtgFurnace}: {@code rtg_furnace.png}, 176x166. */
 public final class GUIRtgFurnace extends CompatContainerScreen<ContainerRtgFurnace> {
 
-    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/RTGfurnace.png");
+    private static final Identifier TEXTURE = Ids.of("hbm", "textures/gui/rtg_furnace.png");
 
     public GUIRtgFurnace(ContainerRtgFurnace menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 166);

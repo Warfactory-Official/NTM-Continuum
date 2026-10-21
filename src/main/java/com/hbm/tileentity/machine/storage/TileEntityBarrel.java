@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.storage;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
@@ -26,6 +27,8 @@ import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
 import dev.golem.core.hook.Hook;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -56,7 +59,8 @@ import com.hbm.tileentity.TilePortShapes;
  * <p>Its six faces are one passthrough port, so ducts on two sides are one net in every mode; the mode only sets
  * the speeds and buffer mode's LOW priority.
  */
-public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive {
+public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive,
+        WorldlyContainer {
 
     public final FluidTankNTM tank;
     public short mode = 0;
@@ -162,6 +166,10 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         return new int[]{2, 3, 4, 5};
     }
 
+    @Override public int[] getSlotsForFace(Direction side) { return new int[]{2, 3, 4, 5}; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == 3 || slot == 5; }
+
     /** 1.7 {@code isAntimatter}: the {@code FT_Amat} carriers (AMAT, ASCHRAB, STELLAR_FLUX). */
     public static boolean isAntimatter(FluidType type) {
         return type.isAntimatter();
@@ -188,7 +196,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
             for (AntimatterBlast listener : ANTIMATTER_BLAST) {
                 if (listener.explode(level, pos, type)) return;
             }
-            level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, Level.ExplosionInteraction.TNT);
+            Explosions.explode(level, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, Level.ExplosionInteraction.TNT);
             return;
         }
         // for when you fill hot or corrosive liquids into a plastic tank
@@ -216,7 +224,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         if (type == Fluids.WATER && level instanceof ServerLevel server) {
             TomSaveData tom = TomSaveData.getExisting(server);
             if (tom != null && tom.fire > 1e-5 && level.getBrightness(LightLayer.SKY, pos) > 7) {
-                level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, Level.ExplosionInteraction.TNT);
+                Explosions.explode(level, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, Level.ExplosionInteraction.TNT);
             }
         }
     }

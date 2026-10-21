@@ -22,8 +22,6 @@ import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.DamageEvents;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.GolemArmorMaterial;
-import dev.golem.core.world.Attributes;
-import com.hbm.items.armor.ItemModInsert;
 import com.hbm.util.TickPhase;
 import dev.golem.core.world.StepHeight;
 import java.util.ArrayList;
@@ -284,7 +282,6 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
      * comment in the old file: an effect refreshed 20 times a second is otherwise a wall of them.
      */
     public static void handleTick(Player player) {
-        updateInsertSpeed(player);
         updateStepSize(player);
 
         // 1.7: the_NCR and Pheo always walk with the powered step while wearing any FSB chestplate (1.7 only called
@@ -333,18 +330,6 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
         int size = plate != null && hasFSBArmor(player) ? plate.stepSize : 0;
         if (size > 0) StepHeight.set(player, "hbm:armor_step_size", size + 0.003D);
         else StepHeight.clear(player, "hbm:armor_step_size");
-    }
-
-    private static void updateInsertSpeed(Player player) {
-        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-        ItemStack insert = ArmorModHandler.pryMod(chest, ArmorModHandler.kevlar);
-        if (insert.getItem() instanceof ItemModInsert mod && mod.speed() != 1F) {
-            Attributes.replaceTransient(player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED),
-                    "hbm:armor_insert_speed", mod.speed() - 1F);
-        } else {
-            Attributes.removeTransient(player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED),
-                    "hbm:armor_insert_speed");
-        }
     }
 
     /**

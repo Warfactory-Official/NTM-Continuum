@@ -354,6 +354,7 @@ public final class JetpackGameTests {
         player.setOnGround(false);
         player.setXRot(0F);
         player.setYRot(0F);
+        player.setSprinting(true); // 1.7 scales the steering by 1 while sprinting, 0.25 otherwise
         player.setDeltaMovement(Vec3.ZERO);
         JetpackHandler.setInput(player, 0F, 1F, false, false, false);
         Vec3 look = player.getViewVector(1.0F);

@@ -200,7 +200,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
         public void onHarvestBlock(int level, ServerLevel world, BlockPos pos, ServerPlayer player, BlockState state) {
             int mercury = 0;
 
-            if (state.is(Blocks.REDSTONE_ORE)) mercury = player.getRandom().nextInt(5) + 4;
+            if (state.is(Blocks.REDSTONE_ORE) || state.is(Blocks.DEEPSLATE_REDSTONE_ORE)) mercury = player.getRandom().nextInt(5) + 4;
             if (state.is(Blocks.REDSTONE_BLOCK)) mercury = player.getRandom().nextInt(7) + 8;
 
             boolean doesConvert = mercury > 0;

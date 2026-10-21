@@ -285,6 +285,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("satellite_linker", 20, () -> SatelliteGameTests::linker);
     public static final GameTests.Function SATELLITE_DOCK =
             TESTS.function("satellite_dock", 100, 4, () -> SatelliteGameTests::dock);
+    public static final GameTests.Function RC_SPACE_MINER_TIMING =
+            TESTS.function("rc_space_miner_timing", 100, 4, () -> SatelliteGameTests::minerTiming);
     public static final GameTests.Function SPACE_SCIENCE_FLIGHT =
             TESTS.function("space_science_flight", 20, () -> SpaceGameTests::scienceFlightData);
     public static final GameTests.Function SPACE_SCIENCE_SENSORS =
@@ -335,6 +337,50 @@ public final class HbmGameTestFunctions {
             TESTS.function("large_turbine_conversion", 100, 8, () -> LargeTurbineGameTests::conversion);
     public static final GameTests.Function LARGE_TURBINE_MENU =
             TESTS.function("large_turbine_menu", 40, () -> LargeTurbineGameTests::menu);
+    public static final GameTests.Function POWER_WOOD_BURNER_ASH =
+            TESTS.function("power_wood_burner_ash", 100, 8, () -> PowerAuditGameTests::woodBurnerAsh);
+    public static final GameTests.Function POWER_LARGE_TURBINE_DECAY =
+            TESTS.function("power_large_turbine_decay", 100, 8, () -> PowerAuditGameTests::largeTurbineDecay);
+    public static final GameTests.Function POWER_BATTERY_COMPARATOR =
+            TESTS.function("power_battery_comparator", 40, 8, () -> PowerAuditGameTests::batteryComparator);
+    public static final GameTests.Function POWER_DIESEL_OUTPUT =
+            TESTS.function("power_diesel_output", 40, 8, () -> PowerAuditGameTests::dieselOutput);
+    public static final GameTests.Function POWER_DIESEL_AUTOMATION =
+            TESTS.function("power_diesel_automation", 40, 8, () -> PowerAuditGameTests::dieselAutomation);
+    public static final GameTests.Function POWER_WOOD_BURNER_FULL =
+            TESTS.function("power_wood_burner_full_buffer", 40, 8, () -> PowerAuditGameTests::woodBurnerFullBuffer);
+    public static final GameTests.Function METAL_CHANNEL_CLOG =
+            TESTS.function("metal_channel_clog", 40, 8, () -> MetalAuditGameTests::channelClog);
+    public static final GameTests.Function METAL_CRUCIBLE_WASTE =
+            TESTS.function("metal_crucible_waste", 100, 8, () -> MetalAuditGameTests::crucibleWithoutRecipeMakesWaste);
+    public static final GameTests.Function METAL_BLAST_FUEL =
+            TESTS.function("metal_blast_fuel_cap", 20, 8, () -> MetalAuditGameTests::blastFurnaceFuelCap);
+    public static final GameTests.Function METAL_BORON_MELTS =
+            TESTS.function("metal_boron_melts", 20, 8, () -> MetalAuditGameTests::boronMelts);
+    public static final GameTests.Function METAL_FIREBOX_ASH =
+            TESTS.function("metal_firebox_ashpit", 40, 8, () -> MetalAuditGameTests::fireboxFeedsAshpit);
+    public static final GameTests.Function RC_BOMB_PAD_AUTOMATION =
+            TESTS.function("rc_bomb_pad_automation", 100, 12, () -> RcBombGameTests::padAutomation);
+    public static final GameTests.Function RC_BOMB_FISSURE_SWEEP =
+            TESTS.function("rc_bomb_fissure_sweep", 40, 12, () -> RcBombGameTests::fissureBombSweep);
+    public static final GameTests.Function RC_BOMB_LARGE_CORE_BARE =
+            TESTS.function("rc_bomb_large_core_bare", 140, 8, () -> RcBombGameTests::largeLauncherCoreStaysBare);
+    public static final GameTests.Function RC_BOMB_NO_FIRE =
+            TESTS.function("rc_bomb_tnt_no_fire", 40, 12, () -> RcBombGameTests::tntLeavesNoFire);
+    public static final GameTests.Function RC_BOMB_VNT_CHAIN =
+            TESTS.function("rc_bomb_vnt_chain", 40, 12, () -> RcBombGameTests::vntBlastChainsDetonatables);
+    public static final GameTests.Function RC_BOMB_LEGACY_DAMAGE =
+            TESTS.function("rc_bomb_legacy_damage", 40, 12, () -> RcBombGameTests::legacyExplosionDamage);
+    public static final GameTests.Function RC_BOMB_PROJECTILE_CREDIT =
+            TESTS.function("rc_bomb_projectile_explosion_credit", 40, 12, () -> RcBombGameTests::projectileExplosionCredit);
+    public static final GameTests.Function METAL_ANVIL_SHIFT =
+            TESTS.function("metal_anvil_shift_count", 20, 8, () -> MetalAuditGameTests::anvilShiftCraftCount);
+    public static final GameTests.Function METAL_STRAND_LARGE_MOLD =
+            TESTS.function("metal_strand_large_mold", 20, 8, () -> MetalAuditGameTests::strandCasterTakesLargeMold);
+    public static final GameTests.Function METAL_COMBINATION_COAL =
+            TESTS.function("metal_combination_coal", 20, 8, () -> MetalAuditGameTests::combinationCoal);
+    public static final GameTests.Function METAL_COMBINATION_SMELTS =
+            TESTS.function("metal_combination_smelts", 100, 8, () -> MetalAuditGameTests::combinationFurnaceSmelts);
     public static final GameTests.Function GAS_TURBINE_LAYOUT =
             TESTS.function("gas_turbine_layout", 100, 8, () -> GasTurbineGameTests::layout);
     public static final GameTests.Function GAS_TURBINE_PORTS =
@@ -690,6 +736,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("gas_centrifuge_processing", 300, 8, () -> GasCentrifugeGameTests::processing);
     public static final GameTests.Function GAS_CENTRIFUGE_TWO_BATCHES =
             TESTS.function("gas_centrifuge_two_batches", 400, 8, () -> GasCentrifugeGameTests::twoBatchesResetProgress);
+    public static final GameTests.Function GAS_CENTRIFUGE_CASCADE_TARGET =
+            TESTS.function("gas_centrifuge_cascade_target", 100, 8, () -> GasCentrifugeGameTests::cascadeIgnoresTargetTank);
     public static final GameTests.Function GAS_CENTRIFUGE_UF6_NETWORK =
             TESTS.function("gas_centrifuge_uf6_network", 100, 8, () -> GasCentrifugeGameTests::uf6FluidNetwork);
     public static final GameTests.Function GAS_CENTRIFUGE_OVERCLOCK =
@@ -737,6 +785,95 @@ public final class HbmGameTestFunctions {
             TESTS.function("nuclear_misc_menus", 40, 8, () -> NuclearMiscGameTests::menus);
     public static final GameTests.Function NUCLEAR_MISC_PILE_NEUTRONS =
             TESTS.function("nuclear_misc_pile_neutrons", 100, () -> NuclearMiscGameTests::pileNeutrons);
+
+    // --- reactors audit ---
+    public static final GameTests.Function RC_NUKE_FUEL_DATA =
+            TESTS.function("rc_nuke_fuel_data", 20, () -> RcNukeGameTests::fuelDataMatchesCode);
+    public static final GameTests.Function RC_NUKE_ROD_RUN =
+            TESTS.function("rc_nuke_rod_run", 40, 8, () -> RcNukeGameTests::rodRunMatchesFormula);
+    public static final GameTests.Function RC_NUKE_CONTROL =
+            TESTS.function("rc_nuke_control", 40, 8, () -> RcNukeGameTests::controlRates);
+    public static final GameTests.Function RC_NUKE_CONTROL_AUTO =
+            TESTS.function("rc_nuke_control_auto", 40, 8, () -> RcNukeGameTests::controlAutoCurves);
+    public static final GameTests.Function RC_NUKE_BOILER =
+            TESTS.function("rc_nuke_boiler", 40, 8, () -> RcNukeGameTests::boilerSteamTypes);
+    public static final GameTests.Function RC_NUKE_COOLER_HEATER =
+            TESTS.function("rc_nuke_cooler_heater", 40, 8, () -> RcNukeGameTests::coolerAndHeater);
+    public static final GameTests.Function RC_NUKE_MELTDOWN_DEBRIS =
+            TESTS.function("rc_nuke_meltdown_debris", 60, 8, () -> RcNukeGameTests::meltdownDebris);
+    public static final GameTests.Function RC_NUKE_MELTDOWN_DIGAMMA =
+            TESTS.function("rc_nuke_meltdown_digamma", 60, 8, () -> RcNukeGameTests::meltdownDigamma);
+    public static final GameTests.Function RC_NUKE_LIDS =
+            TESTS.function("rc_nuke_lids", 40, 8, () -> RcNukeGameTests::lidDropsAndScrewdriver);
+    public static final GameTests.Function RC_NUKE_ROUND_TRIP =
+            TESTS.function("rc_nuke_columns_round_trip", 60, 8, () -> RcNukeGameTests::columnsRoundTrip);
+    public static final GameTests.Function RC_NUKE_ICF_SEED =
+            TESTS.function("rc_nuke_icf_seed", 120, 8, () -> RcNukeGameTests::icfSeedSurvivesBare);
+
+    public static final GameTests.Function RC_NUKE_BOILER_VENT =
+            TESTS.function("rc_nuke_boiler_vent", 40, 8, () -> RcNukeGameTests::boilerVent);
+    public static final GameTests.Function RC_NUKE_HOT_ROD_REMOVAL =
+            TESTS.function("rc_nuke_hot_rod_removal", 60, 8, () -> RcNukeGameTests::hotRodRemoval);
+    public static final GameTests.Function RC_NUKE_WATZ_MELTDOWN =
+            TESTS.function("rc_nuke_watz_meltdown", 100, 8, () -> RcNukeGameTests::watzMeltdown);
+    public static final GameTests.Function RC_NUKE_MACHINES_ROUND_TRIP =
+            TESTS.function("rc_nuke_machines_round_trip", 100, 12, () -> RcNukeGameTests::machinesRoundTrip);
+    public static final GameTests.Function RC_NUKE_CRANE =
+            TESTS.function("rc_nuke_crane", 80, 8, () -> RcNukeGameTests::craneLoadUnload);
+    public static final GameTests.Function RC_NUKE_DFC_CHAIN =
+            TESTS.function("rc_nuke_dfc_chain", 100, 12, () -> DFCGameTests::chainNumbers);
+    public static final GameTests.Function RC_NUKE_DIALS_DEFAULTS =
+            TESTS.function("rc_nuke_dials_defaults", 20, () -> RbmkDialGameTests::defaults);
+    public static final GameTests.Function RC_NUKE_DIALS_COMMANDS =
+            TESTS.function("rc_nuke_dials_commands", 20, () -> RbmkDialGameTests::commandsAndRanges);
+    public static final GameTests.Function RC_NUKE_DIALS_CONTROL_SPEED =
+            TESTS.function("rc_nuke_dials_control_speed", 40, 8, () -> RbmkDialGameTests::controlSpeed);
+    public static final GameTests.Function RC_NUKE_DIALS_MELTDOWNS =
+            TESTS.function("rc_nuke_dials_meltdowns", 60, 8, () -> RbmkDialGameTests::meltdowns);
+    public static final GameTests.Function RC_NUKE_DIALS_COLUMN_HEIGHT =
+            TESTS.function("rc_nuke_dials_column_height", 60, 12, () -> RbmkDialGameTests::columnHeight);
+    public static final GameTests.Function RC_NUKE_PWR_HEAT =
+            TESTS.function("rc_nuke_pwr_heat", 60, 8, () -> PwrGameTests::heatAndMeltdown);
+
+    // --- reactors audit, round two: long runs against 1.7 numbers ---
+    public static final GameTests.Function RC_NUKE2_FUSION_TABLE =
+            TESTS.function("rc_nuke2_fusion_table", 40, () -> RcNuke2GameTests::fusionRecipeTable);
+    public static final GameTests.Function RC_NUKE2_FUSION_CHAIN =
+            TESTS.function("rc_nuke2_fusion_chain", 900, RcNuke2GameTests.FUSION_PADDING, () -> RcNuke2GameTests::fusionChainRun);
+    public static final GameTests.Function RC_NUKE2_CYCLOTRON =
+            TESTS.function("rc_nuke2_cyclotron", 1100, 12, () -> RcNuke2GameTests::cyclotronRun);
+    public static final GameTests.Function RC_NUKE2_CYCLOTRON_UPGRADES =
+            TESTS.function("rc_nuke2_cyclotron_upgrades", 400, 12, () -> RcNuke2GameTests::cyclotronUpgrades);
+    public static final GameTests.Function RC_NUKE2_CYCLOTRON_HOPPERS =
+            TESTS.function("rc_nuke2_cyclotron_hoppers", 200, 12, () -> RcNuke2GameTests::cyclotronHoppers);
+    public static final GameTests.Function RC_NUKE2_WATZ_RUN =
+            TESTS.function("rc_nuke2_watz_run", 300, 8, () -> RcNuke2GameTests::watzPelletRun);
+    public static final GameTests.Function RC_NUKE2_WATZ_COOLING =
+            TESTS.function("rc_nuke2_watz_cooling", 200, 8, () -> RcNuke2GameTests::watzCoolingAndIdle);
+    public static final GameTests.Function RC_NUKE2_PWR_RUN =
+            TESTS.function("rc_nuke2_pwr_run", 100, 8, () -> RcNuke2GameTests::pwrFuelRun);
+    public static final GameTests.Function RC_NUKE2_RESEARCH =
+            TESTS.function("rc_nuke2_research_reactor", 400, 8, () -> RcNuke2GameTests::researchReactorRun);
+    public static final GameTests.Function RC_NUKE2_REACTOR_BREEDER =
+            TESTS.function("rc_nuke2_reactor_breeder", 600, 8, () -> RcNuke2GameTests::reactorBreederRun);
+    public static final GameTests.Function RC_NUKE2_WASTE_DRUM =
+            TESTS.function("rc_nuke2_waste_drum", 1000, RcNuke2GameTests.WASTE_PADDING, () -> RcNuke2GameTests::wasteDrumCooling);
+    public static final GameTests.Function RC_NUKE2_WASTE_ITEMS =
+            TESTS.function("rc_nuke2_waste_items", 60, 8, () -> RcNuke2GameTests::wasteItems);
+    public static final GameTests.Function RC_NUKE2_AUTOLOADER =
+            TESTS.function("rc_nuke2_rbmk_autoloader", 700, 10, () -> RcNuke2GameTests::rbmkAutoloaderRun);
+    public static final GameTests.Function RC_NUKE2_AUTOLOADER_GATES =
+            TESTS.function("rc_nuke2_rbmk_autoloader_gates", 200, 10, () -> RcNuke2GameTests::rbmkAutoloaderGates);
+    public static final GameTests.Function RC_NUKE2_CONSOLE =
+            TESTS.function("rc_nuke2_rbmk_console", 300, 16, () -> RcNuke2GameTests::rbmkConsoleScan);
+    public static final GameTests.Function RC_NUKE2_REACTOR_HOPPERS =
+            TESTS.function("rc_nuke2_reactor_hoppers", 200, 10, () -> RcNuke2GameTests::reactorHoppers);
+    public static final GameTests.Function RC_NUKE2_TOOL =
+            TESTS.function("rc_nuke2_rbmk_tool", 100, 16, () -> RcNuke2GameTests::rbmkToolLinks);
+    public static final GameTests.Function RC_NUKE2_INTAKE =
+            TESTS.function("rc_nuke2_intake", 100, 12, () -> RcNuke2GameTests::intakeRun);
+    public static final GameTests.Function RC_NUKE2_PWR_HOPPER =
+            TESTS.function("rc_nuke2_pwr_hopper", 200, 8, () -> RcNuke2GameTests::pwrHopper);
 
     // --- production machines (group A) ---
 
@@ -980,6 +1117,22 @@ public final class HbmGameTestFunctions {
     // --- medicine (implementations live in MedicineGameTests) ---
     public static final GameTests.Function MEDICINE =
             TESTS.function("medicine", 40, () -> MedicineGameTests::medicine);
+    public static final GameTests.Function RC_ARMOR_MEDICINE =
+            TESTS.function("rc_armor_medicine", 40, () -> MedicineGameTests::medicineArmorRc);
+    public static final GameTests.Function RC_ARMOR_FILTER =
+            TESTS.function("rc_armor_filter", 40, () -> MedicineGameTests::filterSwap);
+    public static final GameTests.Function RC_GEAR2_EUTHANIZED =
+            TESTS.function("rc_gear2_euthanized", 60, () -> RcGear2GameTests::euthanizedAttacker);
+    public static final GameTests.Function RC_GEAR2_DAMAGE_TYPES =
+            TESTS.function("rc_gear2_damage_types", 40, () -> RcGear2GameTests::damageTypes);
+    public static final GameTests.Function RC_GEAR2_TAU_OVERCHARGE =
+            TESTS.function("rc_gear2_tau_overcharge", 400, () -> RcGear2GameTests::tauOvercharge);
+    public static final GameTests.Function RC_GEAR2_TAU_SHOT =
+            TESTS.function("rc_gear2_tau_shot", 200, () -> RcGear2GameTests::tauChargedShot);
+    public static final GameTests.Function RC_GEAR2_INSERTS =
+            TESTS.function("rc_gear2_inserts", 60, () -> RcGear2GameTests::inserts);
+    public static final GameTests.Function RC_GEAR2_CHARMS =
+            TESTS.function("rc_gear2_charms", 60, () -> RcGear2GameTests::charmsAndInjector);
 
     // --- FEL (implementations live in FelGameTests) ---
     public static final GameTests.Function FEL_BEAM =
@@ -1026,6 +1179,12 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_minigun_firing_routes", 300, () -> GunGameTests::minigunFiringRoutes);
     public static final GameTests.Function GUN_LAG_FIRING_ROUTE =
             TESTS.function("gun_lag_firing_route", 200, () -> GunGameTests::gunLagFiringRoute);
+    public static final GameTests.Function RC_GUN_AMMO_SWEEP =
+            TESTS.function("rc_gun_ammo_sweep", 600, () -> RcGunGameTests::gunAmmoSweep);
+    public static final GameTests.Function RC_GUN_ANIMATION_SPEED =
+            TESTS.function("rc_gun_animation_speed", 20, () -> RcGunGameTests::gunAnimationSpeed);
+    public static final GameTests.Function RC_GRENADE_FILLINGS =
+            TESTS.function("rc_grenade_fillings", 600, () -> RcGrenadeGameTests::grenadeFillings);
     public static final GameTests.Function GUN_DRY_FIRE =
             TESTS.function("gun_dry_fire", 100, () -> GunGameTests::gunDryFire);
     public static final GameTests.Function GUN_CHEMTHROWER_TANK =
@@ -1253,6 +1412,48 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function CONVEYOR_ROUTE_VERTICAL_THEN_TURN =
             TESTS.function("conveyor_route_vertical_then_turn", 40, 16, () -> ConveyorRouteGameTests::verticalThenTurn);
 
+    public static final GameTests.Function RC_LOGI_BOXER_SURVIVES =
+            TESTS.function("rc_logi_boxer_survives", 20, () -> RcLogiGameTests::boxerSurvives);
+    public static final GameTests.Function RC_LOGI_BELT_SPEEDS =
+            TESTS.function("rc_logi_belt_speeds", 120, 16, () -> RcLogiGameTests::beltSpeeds);
+    public static final GameTests.Function RC_LOGI_CRANE_CHAIN =
+            TESTS.function("rc_logi_crane_chain", 400, 16, () -> RcLogiGameTests::craneChain);
+    public static final GameTests.Function RC_LOGI_CRATE_LOCKABLE =
+            TESTS.function("rc_logi_crate_lockable", 40, 16, () -> RcLogiGameTests::crateLockable);
+
+    public static final GameTests.Function RC_LOGI_DOOR_PADLOCK =
+            TESTS.function("rc_logi_door_padlock", 40, 16, () -> RcLogiGameTests::doorPadlockAndKey);
+    public static final GameTests.Function RC_LOGI_DOOR_REDSTONE =
+            TESTS.function("rc_logi_door_redstone", 40, 16, () -> RcLogiGameTests::doorRedstone);
+    public static final GameTests.Function RC_LOGI_MASS_STORAGE_INFINITE =
+            TESTS.function("rc_logi_mass_storage_infinite", 40, 16, () -> RcLogiGameTests::massStorageInfinite);
+
+    public static final GameTests.Function RC_LOGI_TICKERS =
+            TESTS.function("ticker_every_ticking_block_entity_ticks", 40, () -> RcLogiGameTests::everyTickingBlockEntityHasATicker);
+
+    public static final GameTests.Function RC_LOGI_ROUTER =
+            TESTS.function("rc_logi_router_filters", 40, 16, () -> RcLogiGameTests::routerFilters);
+    public static final GameTests.Function RC_LOGI_SPLITTER =
+            TESTS.function("rc_logi_splitter_ratio", 40, 16, () -> RcLogiGameTests::splitterRatio);
+    public static final GameTests.Function RC_LOGI_BOXER_CHAIN =
+            TESTS.function("rc_logi_boxer_unboxer_chain", 700, 16, () -> RcLogiGameTests::boxerUnboxerChain);
+    public static final GameTests.Function RC_LOGI_GRABBER =
+            TESTS.function("rc_logi_grabber_whitelist", 600, 16, () -> RcLogiGameTests::grabberWhitelist);
+
+    public static final GameTests.Function RC_LOGI_MASS_LOCK =
+            TESTS.function("rc_logi_mass_storage_lockable", 40, 16, () -> RcLogiGameTests::massStorageLockable);
+
+    public static final GameTests.Function RC_LOGI_CRATE_OLD_NAME =
+            TESTS.function("rc_logi_crate_old_custom_name", 40, 16, () -> RcLogiGameTests::crateOldCustomName);
+
+    public static final GameTests.Function RC_LOGI_PNEUMATIC =
+            TESTS.function("rc_logi_pneumatic_import_export", 400, 16, () -> RcLogiGameTests::pneumaticImportExport);
+    public static final GameTests.Function RC_LOGI_ELEVATOR =
+            TESTS.function("rc_logi_cargo_elevator_carries", 200, 16, () -> RcLogiGameTests::cargoElevatorCarries);
+
+    public static final GameTests.Function RC_LOGI_KEY_KIT =
+            TESTS.function("rc_logi_key_kit", 40, 16, () -> RcLogiGameTests::keyKitCopiesLocks);
+
     // Pick and fallout (implementations in PickAndFalloutGameTests)
     public static final GameTests.Function PICK_BOBBLEHEAD_TYPE =
             TESTS.function("pick_bobblehead_type", 20, () -> PickAndFalloutGameTests::bobblePick);
@@ -1300,6 +1501,8 @@ public final class HbmGameTestFunctions {
     // --- chunk loading + missiles (implementations live in MissileGameTests) ---
     public static final GameTests.Function CHUNK_REFCOUNTING =
             TESTS.function("chunk_refcounting", 40, () -> MissileGameTests::chunkRefcounting);
+    public static final GameTests.Function CHUNK_CLAIM_LEAVES_FORCED_TICKING =
+            TESTS.function("chunk_claim_leaves_forced_chunk_ticking", 100, () -> MissileGameTests::chunkClaimLeavesForcedChunkTicking);
     public static final GameTests.Function CHUNK_FOLLOWS_MOVEMENT =
             TESTS.function("chunk_follows_movement", 40, () -> MissileGameTests::chunkFollowsMovement);
     public static final GameTests.Function CHUNK_RELEASED_TICKET_INERT =

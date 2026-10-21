@@ -4,6 +4,7 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.data.DepositDataMaps;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.fluid.FluidType;
@@ -18,6 +19,14 @@ import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import com.hbm.util.TickPhase;
 import java.util.HashMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import org.jspecify.annotations.Nullable;
+import dev.golem.core.Ids;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
@@ -27,6 +36,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.data.Tags;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -52,7 +62,10 @@ import com.hbm.tileentity.TilePort.PortDef;
  * seam: the gas blocks are unported).
  */
 public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
-        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider {
+        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, WorldlyContainer {
+
+    private static final TagKey<Item> ORE_URANIUM = TagKey.create(Registries.ITEM, Ids.of("c", "ores/uranium"));
+    private static final TagKey<Item> ORE_ASBESTOS = TagKey.create(Registries.ITEM, Ids.of("c", "ores/asbestos"));
 
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
     public long power;
@@ -148,7 +161,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         }
     }
 
-    /** Old hook for the uranium/asbestos gas-pocket easter eggs, unported (gas blocks missing). */
+    /** Called with the y of each block the drill goes through; the derrick and pumpjack release gas from some ores. */
     public void onDrill(int y) {}
 
     public int getDrillDepth() {
@@ -250,6 +263,47 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         }
     }
 
+    /** 1.7 {@code writeNBT}: a drill with power or fluid in it travels with its item (1.7 shows no tooltip for it). */
+    @Override
+    protected CompoundTag collectCarriedData() {
+        boolean empty = power == 0;
+        for (FluidTankNTM tank : tanks) if (tank.getFill() > 0) empty = false;
+        if (empty) return null;
+        CompoundTag data = new CompoundTag();
+        data.putLong("power", power);
+        for (int i = 0; i < tanks.length; i++) tanks[i].writeCarried(data, "t" + i);
+        return data;
+    }
+
+    @Override
+    protected void applyCarriedData(CompoundTag data) {
+        power = Tags.getLongOr(data, "power", 0L);
+        for (int i = 0; i < tanks.length; i++) tanks[i].readCarried(data, "t" + i);
+    }
+
+    @Override
+    protected void removeSavedComponents(DataOut output) {
+        super.removeSavedComponents(output);
+        output.discard("inventory");
+        output.discard("power");
+        for (int i = 0; i < tanks.length; i++) {
+            for (String suffix : new String[] {"", "_max", "_type", "_p"}) output.discard("t" + i + suffix);
+        }
+    }
+
+    /** The gas 1.7 lets out of the ore the drill just went through, or null: uranium ore dense radon, asbestos ore asbestos. */
+    protected @Nullable Block gasOfDrilledOre(int y) {
+        ItemStack ore = new ItemStack(level.getBlockState(new BlockPos(worldPosition.getX(), y, worldPosition.getZ())).getBlock());
+        if (ore.is(ORE_URANIUM)) return ModNuclearBlocks.gas_radon_dense.get();
+        if (ore.is(ORE_ASBESTOS)) return ModNuclearBlocks.gas_asbestos.get();
+        return null;
+    }
+
+    /** Puts {@code gas} at {@code pos} when whatever is there can be replaced. */
+    protected void releaseGas(BlockPos pos, Block gas) {
+        if (level.getBlockState(pos).canBeReplaced()) level.setBlockAndUpdate(pos, gas.defaultBlockState());
+    }
+
     public abstract PortDef[] getPorts();
 
     @Override
@@ -319,4 +373,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         this.power = input.getLongOr("power", 0L);
         for (int i = 0; i < tanks.length; i++) tanks[i].readFromNBT(input, "t" + i);
     }
+    @Override public int[] getSlotsForFace(Direction side) { return new int[0]; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 }

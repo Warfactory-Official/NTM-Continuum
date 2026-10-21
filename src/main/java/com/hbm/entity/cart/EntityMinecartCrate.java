@@ -1,5 +1,6 @@
 package com.hbm.entity.cart;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.world.Compat;
@@ -66,7 +67,7 @@ public class EntityMinecartCrate extends EntityMinecartContainerBase {
 
         if (oversize) {
             // 1.7: also dropped the packed cart beside a bonus empty one; the block crate's own guard ejects the hold
-            level.explode(this, getX(), getY(), getZ(), 2.0F, true, Level.ExplosionInteraction.BLOCK);
+            Explosions.explode(level, this, getX(), getY(), getZ(), 2.0F, true, Level.ExplosionInteraction.BLOCK);
             for (ItemStack loose : held) if (!loose.isEmpty()) spawnAtLocation(level, loose);
         } else if (any) {
             stack = packed;

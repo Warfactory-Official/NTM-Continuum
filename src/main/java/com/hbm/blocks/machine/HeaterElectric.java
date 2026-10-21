@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.api.block.IToolable;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
@@ -10,16 +11,14 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityHeaterElectric;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -27,11 +26,10 @@ import java.util.List;
 
 /**
  * Electric heating unit (1.12.2 {@code heater_electric}): a dummyable power-to-heat converter; a heat
- * consumer sits on its core. No GUI: the setting (0 to 10) is cycled by right-clicking (sneak = down; the
- * old screwdriver/hand-drill tools aren't ported), and the look-overlay shows heat/consumption/output.
+ * consumer sits on its core. No GUI: the setting (0 to 10) is cycled with the screwdriver, and the look-overlay shows heat/consumption/output.
  * Cables connect at the single rear power port.
  */
-public class HeaterElectric extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, ITooltipProvider {
+public class HeaterElectric extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, ITooltipProvider, IToolable {
 
     public HeaterElectric(Properties properties) {
         super(properties);
@@ -52,20 +50,14 @@ public class HeaterElectric extends BlockMultiblockMachine implements IEnergyCon
         return 2;
     }
 
-    /** Right-click cycles the heat setting up, sneak-right-click cycles it down (replaces IToolable). */
+    /** The screwdriver cycles the heat setting up. */
     @Override
-    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide()) {
-            if (MultiblockSurface.coreEntity(level, pos) instanceof TileEntityHeaterElectric te) {
-                if (player.isShiftKeyDown()) te.toggleSettingDown();
-                else te.toggleSettingUp();
-                if (player instanceof ServerPlayer sp) {
-                    sp.sendSystemMessage(Component.literal(
-                            "Setting: " + te.setting + " (" + te.getHeatGen() + " TU/t, " + te.getConsumption() + " HE/t)"), true);
-                }
-            }
-        }
-        return InteractionResult.SUCCESS;
+    public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit, InteractionHand hand, ToolType tool) {
+        if (tool != ToolType.SCREWDRIVER) return false;
+        if (level.isClientSide()) return true;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityHeaterElectric te)) return false;
+        te.toggleSettingUp();
+        return true;
     }
 
     @Override

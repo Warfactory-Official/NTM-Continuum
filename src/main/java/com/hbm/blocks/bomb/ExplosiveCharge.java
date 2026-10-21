@@ -5,8 +5,9 @@ import com.hbm.config.BombConfig;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.item.EntityTntNtm;
-import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.IBlockExplodedVNT;
+import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
 import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
@@ -32,7 +33,7 @@ import org.jspecify.annotations.Nullable;
  * explosion it becomes a zero-fuse primed entity (1.7 {@code BlockDetonatable}, popFuse 0) and never
  * drops.
  */
-public class ExplosiveCharge extends CompatBlock implements IBomb, IDetConnectible, IFuckingExplode {
+public class ExplosiveCharge extends CompatBlock implements IBomb, IDetConnectible, IFuckingExplode, IBlockExplodedVNT {
 
     public enum Kind { CHARGE, NUKE }
 
@@ -89,6 +90,16 @@ public class ExplosiveCharge extends CompatBlock implements IBomb, IDetConnectib
         level.removeBlock(pos, false);
         EntityTntNtm primed = new EntityTntNtm(ModNtmEntities.TNT_NTM.get(), level,
                 pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, igniter, state);
+        primed.setFuse(0);
+        level.addFreshEntity(primed);
+        return true;
+    }
+
+    @Override
+    public boolean onVNTExploded(ServerLevel level, BlockPos pos, BlockState state, ExplosionVNT explosion) {
+        level.removeBlock(pos, false);
+        EntityTntNtm primed = new EntityTntNtm(ModNtmEntities.TNT_NTM.get(), level,
+                pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, IBlockExplodedVNT.igniter(explosion), state);
         primed.setFuse(0);
         level.addFreshEntity(primed);
         return true;

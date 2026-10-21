@@ -197,4 +197,8 @@ public class MachineFluidTank extends BlockMultiblockMachine implements IFluidCo
                 {-1, 0, 1, ForgeDirection.SOUTH.ordinal()},
         }, dir);
     }
+    @Override
+    protected boolean carriesData() {
+        return true;
+    }
 }

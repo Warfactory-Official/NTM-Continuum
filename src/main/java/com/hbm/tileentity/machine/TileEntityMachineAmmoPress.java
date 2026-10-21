@@ -219,8 +219,11 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("recipe index", "recipe");
-        String saved = input.getStringOr("recipe", "");
+        String saved = input.getStringOr("recipe", null);
+        if (saved == null) {
+            if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("recipe index", "recipe");
+            saved = "";
+        }
         if (AmmoPressRecipes.byId(saved) != null || !saved.contains("#")) {
             selectedRecipe = saved;
         } else {

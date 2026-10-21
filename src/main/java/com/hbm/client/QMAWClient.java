@@ -54,6 +54,9 @@ public final class QMAWClient {
         json.addProperty("files", QMAWLoader.sourceFiles);
         json.addProperty("triggers", QMAWLoader.indexedTriggers);
         json.addProperty("unresolved", QMAWLoader.unresolvedTriggers.size());
+        JsonArray unresolved = new JsonArray();
+        QMAWLoader.unresolvedTriggers.forEach(unresolved::add);
+        json.add("unresolved_list", unresolved);
         if (mc.screen instanceof GuiQMAW gui) {
             json.addProperty("page", gui.pageId());
             JsonArray lines = new JsonArray();

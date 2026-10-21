@@ -4,6 +4,8 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.interfaces.IControlReceiver;
+import net.minecraft.nbt.CompoundTag;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -50,11 +52,13 @@ import com.hbm.tileentity.TilePortShapes;
  *
  * <p>Slot roles: 0–2 toppings, 3–4 pcb, 5 solder, 6 output (take-only), 7 battery, 8 fluid identifier,
  * 9–10 upgrades (SPEED/POWER/OVERDRIVE, 1.12.2 red/blue/black formulas). Slim port (deferred): the
- * looping sound, the Tau particle effect, the floating output-item render, and the {@code collisionPrevention}
- * redstone toggle.
+ * looping sound, the Tau particle effect and the floating output-item render.
  */
 public class TileEntityMachineSolderingStation extends TileEntityMachineBase
-        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2, WorldlyContainer, IUpgradeInfoProvider {
+        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver, WorldlyContainer, IUpgradeInfoProvider {
+
+    /** Stops no-fluid recipes from running while the tank holds fluid. */
+    public boolean collisionPrevention;
 
     private static final int SLOTS = 11;
     private static final int[] IO_SLOTS = {0, 1, 2, 3, 4, 5, 6};
@@ -145,6 +149,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
             if (this.tank.getTankType() != recipe.fluid.type) return false;
             if (this.tank.getFill() < recipe.fluid.fill) return false;
         }
+        if (collisionPrevention && recipe.fluid == null && this.tank.getFill() > 0) return false;
         ItemStack out = inventory.getStackInSlot(6);
         if (!out.isEmpty()) {
             if (!ItemStacks.sameItemAndData(out, recipe.output)) return false;
@@ -272,6 +277,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         buf.writeInt(progress);
         buf.writeInt(processTime);
         tank.serialize(buf);
+        buf.writeBoolean(collisionPrevention);
         ItemStacks.writeOptional(buf, display);
     }
 
@@ -283,6 +289,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         progress = buf.readInt();
         processTime = buf.readInt();
         tank.deserialize(buf);
+        collisionPrevention = buf.readBoolean();
         display = ItemStacks.readOptional(buf);
     }
 
@@ -294,6 +301,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         output.putInt("progress", progress);
         output.putInt("processTime", processTime);
         tank.writeToNBT(output, "tank");
+        output.putBoolean("collisionPrevention", collisionPrevention);
     }
 
     @Override
@@ -304,5 +312,17 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         progress = input.getIntOr("progress", 0);
         processTime = input.getIntOr("processTime", 1);
         tank.readFromNBT(input, "tank");
+        collisionPrevention = input.getBooleanOr("collisionPrevention", false);
+    }
+
+    @Override
+    public boolean hasPermission(Player player) {
+        return stillValid(player);
+    }
+
+    @Override
+    public void receiveControl(CompoundTag data) {
+        collisionPrevention = !collisionPrevention;
+        setChanged();
     }
 }

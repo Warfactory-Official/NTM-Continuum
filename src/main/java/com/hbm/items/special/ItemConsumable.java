@@ -2,6 +2,7 @@ package com.hbm.items.special;
 
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.VersatileConfig;
+import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.potion.ModEffects;
@@ -41,7 +42,10 @@ public final class ItemConsumable extends CompatItem {
 
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
-        if (level instanceof ServerLevel serverLevel) apply(serverLevel, player, player, hand);
+        // 1.7: the MKU syringe only works as a melee injection
+        if (level instanceof ServerLevel serverLevel && !id.equals("syringe_mkunicorn")) {
+            apply(serverLevel, player, player, hand);
+        }
         return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
@@ -90,6 +94,7 @@ public final class ItemConsumable extends CompatItem {
                 add(target, MobEffects.HEALTH_BOOST, 50 * 20, 9);
                 add(target, MobEffects.ABSORPTION, 50 * 20, 4);
                 add(target, MobEffects.NAUSEA, 5 * 20, 4);
+                Effects.addRegistered(target, ModEffects.RADX.get(), 50 * 20, 9);
                 play(level, target, ModSounds.SYRINGE.get());
                 shrinkAndReplace(user, hand, ModItems.syringe_empty.get());
                 VersatileConfig.applyPotionSickness(target, 5);
@@ -97,8 +102,9 @@ public final class ItemConsumable extends CompatItem {
             case "syringe_poison" -> {
                 play(level, target, ModSounds.SYRINGE.get());
                 shrinkAndReplace(user, hand, ModItems.syringe_empty.get());
-                Compat.hurt(target, level, level.getRandom().nextBoolean()
-                        ? ModDamageSources.euthanizedSelf(level) : ModDamageSources.euthanizedSelf2(level), 30F);
+                Compat.hurt(target, level, target == user ? (level.getRandom().nextBoolean()
+                        ? ModDamageSources.euthanizedSelf(level) : ModDamageSources.euthanizedSelf2(level))
+                        : ModDamageSources.euthanized(level, user), 30F);
             }
             case "syringe_metal_stimpak" -> {
                 if (VersatileConfig.hasPotionSickness(target)) return;
@@ -149,9 +155,8 @@ public final class ItemConsumable extends CompatItem {
                 Effects.addRegistered(target, ModEffects.TAINT.get(), 60 * 20, 0);
                 add(target, MobEffects.NAUSEA, 5 * 20, 0);
                 play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, level.getRandom().nextBoolean()
-                        ? ModItems.syringe_metal_empty.get()
-                        : ModItems.bottle2_empty.get());
+                shrinkAndReplace(user, hand, ModItems.syringe_metal_empty.get());
+                giveOrDrop(user, ModItems.bottle2_empty.get().getDefaultInstance());
             }
             case "cbt_device" -> {
                 Effects.addRegistered(target, ModEffects.BANG.get(), 30, 0);
@@ -169,12 +174,16 @@ public final class ItemConsumable extends CompatItem {
                 add(target, MobEffects.MINING_FATIGUE, 30 * 20, 9);
             }
             case "jetpack_tank" -> {
-                ItemStack jetpack = target.getItemBySlot(EquipmentSlot.CHEST);
+                ItemStack chest = target.getItemBySlot(EquipmentSlot.CHEST);
+                // 1.7: a jetpack module inside the chestplate is filled the same way
+                ItemStack jetpack = chest.getItem() instanceof JetpackFueledBase || !ArmorModHandler.hasMods(chest)
+                        ? chest : ArmorModHandler.pryMod(chest, ArmorModHandler.plate_only);
                 if (jetpack.getItem() instanceof JetpackFueledBase jetItem && jetItem.fuel == Fluids.KEROSENE) {
                     int oldFuel = JetpackFueledBase.getFuel(jetpack);
                     int newFuel = Math.min(oldFuel + 1000, jetItem.maxFuel);
                     if (oldFuel != newFuel) {
                         JetpackFueledBase.setFuel(jetpack, newFuel);
+                        if (jetpack != chest) ArmorModHandler.applyMod(chest, jetpack);
                         play(level, target, ModSounds.JETPACK_TANK.get());
                         user.getItemInHand(hand).shrink(1);
                     }
@@ -200,9 +209,13 @@ public final class ItemConsumable extends CompatItem {
         ItemStack result = replacement.getDefaultInstance();
         if (held.isEmpty()) {
             player.setItemInHand(hand, result);
-        } else if (!player.getInventory().add(result)) {
-            player.drop(result, false);
+        } else {
+            giveOrDrop(player, result);
         }
+    }
+
+    private static void giveOrDrop(Player player, ItemStack stack) {
+        if (!player.getInventory().add(stack)) player.drop(stack, false);
     }
 
     @Override

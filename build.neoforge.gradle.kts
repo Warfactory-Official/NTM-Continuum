@@ -392,6 +392,8 @@ apply(from = rootProject.file("../Golem-Core/gradle/mod/generated-data.gradle.kt
 
 apply(from = rootProject.file("../Golem-Core/gradle/mod/mixin-validation.gradle.kts"))
 
+// The uploaded jar: no GameTests or harness queries (see the script).
+apply(from = rootProject.file("gradle/release-jar.gradle.kts"))
 // Modrinth + CurseForge upload of this node's jar; run every node with the root `publishAllMods`.
 apply(from = rootProject.file("../Golem-Core/gradle/mod/publish.gradle.kts"))
 

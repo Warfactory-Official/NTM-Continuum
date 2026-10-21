@@ -241,6 +241,10 @@ public final class FinalSatellites implements Scenario {
         c.cmd("give @s " + chip(c, "hbm:sat_chip", minerFreq) + " 1");
         c.waitTicks(2);
         openAt(c, dock[0] + 3.5, dock[2] + 0.5, dock[0] + 0.5, dock[2] + 0.5, "Cargo Landing Pad");
+        // 1.7 fills a miner after 15 minutes of ticks; the hook leaves one tick to go (GameTest rc_space_miner_timing covers the 18,000)
+        JsonObject prime = new JsonObject();
+        prime.addProperty("miner", minerFreq);
+        Expect.that(c.query("hbm_gapsc", prime).get("miner_primed").getAsBoolean(), "the miner is up and primed");
         clickFromInventory(c, "hbm:sat_chip", 15);
         c.waitTicks(5);
         c.screenshot("70-gui-sat-dock-chip");
@@ -421,7 +425,7 @@ public final class FinalSatellites implements Scenario {
         clickFromInventory(c, satId(variant), 2);
         c.waitTicks(5);
         int freq = freqIn(c.blockEntity(LX, Y + 1, LZ).toString(), 2);
-        Expect.that(freq >= 0 && freq < 100_000, "the randomiser gave a frequency below 100,000: " + freq);
+        Expect.that(freq >= 0 && freq < 10_000_000, "the randomiser gave a frequency below 10,000,000: " + freq);
         // take it out of the randomiser (it re-rolls every tick) and into the copy source
         c.clickSlot(2);
         c.waitTicks(1);

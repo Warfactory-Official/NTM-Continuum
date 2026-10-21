@@ -222,7 +222,6 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return maxPower; }
-    @Override public long getReceiverSpeed() { return maxPower / 20; }
 
     public long getPowerScaled(long i) { return (power * i) / maxPower; }
     public int getProgressScaled(int i) { return (progress * i) / maxProgress; }

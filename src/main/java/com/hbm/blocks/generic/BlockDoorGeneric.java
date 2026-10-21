@@ -32,6 +32,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.concurrent.ConcurrentHashMap;
 import com.hbm.tileentity.DoorDecl;
 import com.hbm.tileentity.TileEntityDoorGeneric;
+import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.util.DoorRotation;
 
 /**
@@ -137,6 +138,7 @@ public class BlockDoorGeneric extends BlockMultiblockMachine implements IBomb, I
 
     @Override
     protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core, Player player, BlockHitResult hit) {
+        if (TileEntityLockableBase.LOCK_TOOLS.test(player.getMainHandItem())) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (level.getBlockEntity(core) instanceof TileEntityDoorGeneric door && door.getDoorType() != null) {

@@ -4,6 +4,7 @@ import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModZirnoxItems;
+import com.hbm.lib.Library;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
@@ -81,10 +82,16 @@ public class ItemZirnoxRod extends CompatItem {
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
         ReactorDataMaps.ZirnoxFuel fuel = stats();
-        tooltip.add(Component.translatable("item.hbm.zirnox_rod.life", getLife(stack), fuel.maxLife())
-                .withStyle(ChatFormatting.GRAY));
+        double depletion = (int) ((double) getLife(stack) / fuel.maxLife() * 100000) / 1000D;
+        tooltip.add(Component.translatable("trait.rbmk.depletion", depletion + "%").withStyle(ChatFormatting.YELLOW));
+        String key = fuel.breeding() ? "desc.item.zirnoxBreedingRod" : "desc.item.zirnoxRod";
+        String life = Library.getShortNumber(fuel.maxLife());
+        tooltip.add(Component.translatable(key + ".0"));
         if (fuel.breeding()) {
-            tooltip.add(Component.translatable("desc.item.zirnoxBreedingRod").withStyle(ChatFormatting.GOLD));
+            tooltip.add(Component.translatable(key + ".1"));
+        } else {
+            tooltip.add(Component.translatable(key + ".1", fuel.heat()));
         }
+        tooltip.add(Component.translatable(key + ".2", life));
     }
 }

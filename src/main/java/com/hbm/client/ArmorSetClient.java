@@ -27,6 +27,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -66,6 +67,7 @@ public final class ArmorSetClient {
         json.addProperty("health", server.getHealth());
         json.addProperty("max_health", server.getMaxHealth());
         json.addProperty("armor_value", server.getArmorValue());
+        json.addProperty("armor_toughness", server.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
         json.addProperty("fsb", ArmorFSB.hasFSBArmor(server));
         json.addProperty("fsb_ignore_charge", ArmorFSB.hasFSBArmorIgnoreCharge(server));
         json.addProperty("trenchmaster", ArmorTrenchmaster.isTrenchMaster(server));
@@ -82,10 +84,13 @@ public final class ArmorSetClient {
         json.addProperty("dash_cooldown", dash.dashCooldown);
         json.addProperty("fall_distance_client", mc.player.fallDistance);
         JsonArray effects = new JsonArray();
+        JsonArray durations = new JsonArray();
         for (MobEffectInstance effect : server.getActiveEffects()) {
             effects.add(effect.getDescriptionId() + "@" + effect.getAmplifier());
+            durations.add(effect.getDescriptionId() + "@" + effect.getAmplifier() + ":" + effect.getDuration());
         }
         json.add("effects", effects);
+        json.add("effect_ticks", durations);
         for (EquipmentSlot slot : new EquipmentSlot[] {
                 EquipmentSlot.HEAD, EquipmentSlot.CHEST,
                 EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
@@ -94,6 +99,7 @@ public final class ArmorSetClient {
             piece.addProperty("id", stack.isEmpty() ? ""
                     : BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
             piece.addProperty("damageable", stack.isDamageableItem());
+            piece.addProperty("max_damage", stack.getMaxDamage());
             if (stack.getItem() instanceof ArmorFSBPowered powered) {
                 piece.addProperty("charge", powered.getCharge(stack));
                 piece.addProperty("max_charge", powered.getMaxCharge(stack));

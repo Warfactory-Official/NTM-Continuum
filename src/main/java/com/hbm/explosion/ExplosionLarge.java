@@ -2,6 +2,7 @@ package com.hbm.explosion;
 
 import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.api.event.HbmEvents;
+import dev.golem.core.world.Explosions;
 import com.hbm.particle.helper.ExplosionCreator;
 import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.nbt.CompoundTag;
@@ -262,7 +263,7 @@ public final class ExplosionLarge {
      */
     private static void explode(Level level, @Nullable Entity detonator, double x, double y, double z, float strength,
                                 boolean fire, boolean cloud, boolean rubble, boolean shrapnel) {
-        level.explode(detonator, null, null, x, y, z, strength, fire, Level.ExplosionInteraction.TNT);
+        Explosions.explode(level, detonator, x, y, z, strength, fire, Level.ExplosionInteraction.TNT);
         if (cloud) spawnParticles(level, x, y, z, cloudFunction((int) strength));
         if (rubble) spawnRubble(level, x, y, z, rubbleFunction((int) strength));
         if (shrapnel) spawnShrapnels(level, x, y, z, shrapnelFunction((int) strength));
@@ -280,8 +281,7 @@ public final class ExplosionLarge {
     public static void buster(Level level, double x, double y, double z, Vec3 vector, float strength, int depth) {
         Vec3 dir = vector.normalize();
         for (int i = 0; i < depth; i += 2) {
-            level.explode(null, null, null, x + dir.x * i, y + dir.y * i, z + dir.z * i, strength, false,
-                    Level.ExplosionInteraction.TNT);
+            Explosions.explode(level, null, x + dir.x * i, y + dir.y * i, z + dir.z * i, strength, Level.ExplosionInteraction.TNT);
         }
     }
 

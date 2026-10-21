@@ -150,7 +150,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
         ForgeDirection facing = MachineCore.facing(getBlockState());
         BlockPos adjacent = worldPosition.offset(-facing.offsetX, 0, -facing.offsetZ);
         if (level.getBlockEntity(adjacent) instanceof TileEntityMachineGasCent target
-                && target.tank.getFill() == 0 && target.tank.getTankType() == tank.getTankType()) {
+                && target.tank.getTankType() == tank.getTankType()) {
             if (target.inputTank.getTankType() != outputTank.getTankType()
                     && outputTank.getTankType() != PseudoFluidType.NONE) {
                 target.inputTank.setTankType(outputTank.getTankType());

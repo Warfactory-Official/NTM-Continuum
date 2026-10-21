@@ -1,6 +1,7 @@
 package com.hbm.inventory.fluid.tank;
 
 import dev.golem.core.data.Tags;
+import net.minecraft.nbt.CompoundTag;
 
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
@@ -138,6 +139,19 @@ public class FluidTankNTM implements Cloneable {
         nbt.putInt(s + "_max", maxFluid);
         Fluids.write(nbt, s + "_type", type); // registry name, never the numeric id
         nbt.putShort(s + "_p", (short) pressure);
+    }
+
+    /** Writes fill, capacity and type under {@code key} into an item's carried data. */
+    public void writeCarried(CompoundTag tag, String key) {
+        tag.putInt(key, fluid);
+        tag.putInt(key + "_max", maxFluid);
+        Fluids.write(tag, key + "_type", type);
+    }
+
+    /** Reads what {@link #writeCarried} wrote; the capacity stays the tile's own. */
+    public void readCarried(CompoundTag tag, String key) {
+        type = Fluids.read(tag, key + "_type");
+        fluid = Math.min(Tags.getIntOr(tag, key, 0), maxFluid);
     }
 
     public void readFromNBT(DataIn nbt, String s) {

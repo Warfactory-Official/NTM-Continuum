@@ -2,15 +2,16 @@ package com.hbm.blocks.machine.storage;
 
 import com.hbm.inventory.container.ContainerMassStorage;
 import com.hbm.tileentity.machine.storage.MassStorageType;
+import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import com.hbm.interfaces.ILookOverlay;
 import dev.golem.core.gui.Menus;
+import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CarriedBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +43,7 @@ import java.util.function.Supplier;
  * texture and {@code RenderMassStorage}'s panel on the side that faced the placer. A block saved
  * before this property existed loads with the default, north, which is 1.7's metadata-0 face.
  */
-public class BlockMassStorage extends CarriedBlock implements ILookOverlay {
+public class BlockMassStorage extends CarriedBlock implements TickingBlock, ILookOverlay {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -105,9 +106,10 @@ public class BlockMassStorage extends CarriedBlock implements ILookOverlay {
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                   BlockHitResult hit) {
+        if (TileEntityLockableBase.LOCK_TOOLS.test(player.getMainHandItem())) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && !player.isShiftKeyDown() && player instanceof ServerPlayer serverPlayer
-                && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            Menus.openWithPos(serverPlayer, provider, pos);
+                && level.getBlockEntity(pos) instanceof TileEntityMassStorage storage && storage.canAccess(player)) {
+            Menus.openWithPos(serverPlayer, storage, pos);
         }
         return level.isClientSide() || !player.isShiftKeyDown()
                 ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;

@@ -4,6 +4,7 @@ import com.hbm.inventory.ItemStackContainer;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.tool.ItemAmmoBag;
 import com.hbm.items.tool.ItemCasingBag;
+import com.hbm.items.tool.ItemPlasticBag;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.data.ItemContents;
 import dev.golem.core.gui.CompatContainerMenu;
@@ -49,6 +50,11 @@ public final class MenuItemBox extends CompatContainerMenu {
                     public boolean mayPlace(ItemStack stack) {
                         return MenuItemBox.this.accepts(stack);
                     }
+
+                    @Override
+                    public int getMaxStackSize() {
+                        return layout.equals(ItemPlasticBag.LAYOUT) ? 1 : super.getMaxStackSize();
+                    }
                 });
             }
         }
@@ -79,6 +85,7 @@ public final class MenuItemBox extends CompatContainerMenu {
     private boolean accepts(ItemStack stack) {
         // The casing bag is filled by spent-casing recovery, never by player insertion.
         if (layout.equals(ItemCasingBag.LAYOUT)) return false;
+        if (layout.equals(ItemPlasticBag.LAYOUT)) return true;
         if (layout.equals(ItemAmmoBag.LAYOUT) && !ItemAmmoBag.holds(stack)) return false;
         // 1.7 refused stacks with NBT; metadata and damage were fine. The metadata families are items of their own,
         // and the few 1.7 metadata values kept on one item are these typed components.

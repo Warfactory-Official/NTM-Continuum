@@ -22,13 +22,13 @@ public final class ItemModCladding extends ItemArmorMod {
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal("+" + rad + " rad-resistance").withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.empty());
         super.appendCompatHoverText(stack, context, tooltip, flag);
     }
 
     @Override
     public void addArmorModDescription(List<Component> tooltip, ItemStack stack, ItemStack armor) {
-        // Keep upstream's visible "resistence" spelling in the installed-mod line.
         tooltip.add(Component.literal("  ").append(stack.getHoverName().copy().withStyle(ChatFormatting.YELLOW))
-                .append(Component.literal(" (+" + rad + " radiation resistence)").withStyle(ChatFormatting.YELLOW)));
+                .append(Component.literal(" (+" + rad + " radiation resistance)").withStyle(ChatFormatting.YELLOW)));
     }
 }

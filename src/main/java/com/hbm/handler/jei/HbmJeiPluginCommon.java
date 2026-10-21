@@ -10,6 +10,8 @@ import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
+import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * The loader-agnostic body of the mod's JEI plugin. Each loader's thin {@code @JeiPlugin} entrypoint delegates its
@@ -20,6 +22,9 @@ import mezz.jei.api.registration.ISubtypeRegistration;
 public final class HbmJeiPluginCommon {
 
     private HbmJeiPluginCommon() {}
+
+    /** The names of the HBM fluid ingredients JEI lists; set once its runtime exists, read by the harness. */
+    public static volatile Supplier<List<String>> fluidNames = null;
 
     public static void registerItemSubtypes(ISubtypeRegistration reg) {
         JeiViewer.subtypes(reg, HbmViewerSubtypes::register);
@@ -57,7 +62,7 @@ public final class HbmJeiPluginCommon {
     public static void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime runtime) {
         JeiViewer.runtime(runtime, HbmRecipeViewer.INSTANCE);
         java.util.List<String> fluids = hbmFluidIngredients(runtime);
-        com.hbm.client.ForeignFluidHarnessQueries.jeiFluids = () -> hbmFluidIngredients(runtime);
+        fluidNames = () -> hbmFluidIngredients(runtime);
         com.hbm.Constants.LOG.info("[JEI] {} HBM fluid(s) listed as fluid ingredients", fluids.size());
     }
 

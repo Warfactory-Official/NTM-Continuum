@@ -20,6 +20,6 @@ public final class HbmSableFabricGameTests {
     @GameTestGenerator
     public static Collection<TestFunction> generate() {
         if (!FabricLoader.getInstance().isModLoaded("sable")) return List.of();
-        return GameTests.functionsOf(HbmSableIntegration.gameTests());
+        return GameTests.functionsOf(SableGameTests.TESTS);
     }
 }

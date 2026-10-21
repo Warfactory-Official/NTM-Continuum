@@ -359,6 +359,11 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         if (targetAnimals) {
             if (e instanceof Animal || e instanceof AmbientCreature) return true;
             if (e instanceof Npc) return true;
+            // 1.7 IAnimals also covers squid and golems
+            if (e.getType() == EntityType.IRON_GOLEM || e.getType() == EntityType.SNOW_GOLEM) return true;
+            MobCategory category = e.getType().getCategory();
+            if (category == MobCategory.WATER_CREATURE || category == MobCategory.WATER_AMBIENT
+                    || category == MobCategory.UNDERGROUND_WATER_CREATURE) return true;
         }
 
         if (targetMobs) {

@@ -1,5 +1,6 @@
 package com.hbm.entity.mob.glyphid;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.config.MobConfig;
 import com.hbm.entity.logic.EntityWaypoint;
 import com.hbm.entity.mob.glyphid.GlyphidStats.StatBundle;
@@ -191,7 +192,7 @@ public class EntityGlyphidScout extends EntityGlyphid {
                     } else if (timer >= 5) {
 
                         if (level() instanceof ServerLevel serverLevel) {
-                            serverLevel.explode(this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.NONE);
+                            Explosions.explode(serverLevel, this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.NONE);
                             // 1.7: the scout builds the same small hive the world generator does, infested unless it is
                             // a normal glyphid, and without the hive loot
                             GlyphidHive.generateSmall(serverLevel, (int) Math.floor(getX()),

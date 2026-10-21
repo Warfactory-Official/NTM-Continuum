@@ -34,10 +34,12 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -71,7 +73,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * connection-anchor conveniences.
  */
 public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
-        implements IEnergyReceiverMK2, IFluidStandardReceiverMK2, IRadarCommandReceiver {
+        implements IEnergyReceiverMK2, IFluidStandardReceiverMK2, IRadarCommandReceiver, WorldlyContainer {
 
     /**
      * Which entity each missile item becomes. Upstream keys this by {@code ComparableStack}; a plain
@@ -385,8 +387,8 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
 
         boolean needsDesignator = needsDesignator(inventory.getStackInSlot(0).getItem());
 
-        int targetX = 0;
-        int targetZ = 0;
+        int targetX = worldPosition.getX();
+        int targetZ = worldPosition.getZ();
 
         ItemStack designatorStack = inventory.getStackInSlot(1);
         if (!designatorStack.isEmpty() && designatorStack.getItem() instanceof IDesignatorItem designator) {
@@ -494,6 +496,27 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return slot == 0 && this.isMissileValid(stack);
+    }
+
+    /** Automation reaches the missile slot only, insert-only. */
+    @Override
+    public int[] getAccessibleSlotsFromSide(int side) {
+        return new int[]{0};
+    }
+
+    @Override
+    public int[] getSlotsForFace(Direction side) {
+        return getAccessibleSlotsFromSide(side.ordinal());
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
+        return isItemValidForSlot(slot, stack);
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
+        return false;
     }
 
     // --- power + fluid ---

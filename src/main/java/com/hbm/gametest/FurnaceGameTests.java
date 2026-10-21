@@ -107,6 +107,11 @@ public final class FurnaceGameTests {
         helper.assertTrue(iron.canPlaceItem(4, new ItemStack(ModUpgradeItems.upgrade_speed_1.get()))
                         && ironMenu.slots.get(4).mayPlace(new ItemStack(ModUpgradeItems.upgrade_speed_1.get())),
                 "Iron furnace upgrade slot is not insertable");
+        ItemStack card = new ItemStack(ModUpgradeItems.upgrade_speed_1.get());
+        ironMenu.slots.get(5).set(card);
+        ironMenu.quickMoveStack(player, 5);
+        helper.assertTrue(iron.inventory.getStackInSlot(4).is(ModUpgradeItems.upgrade_speed_1.get()),
+                "Shift-click must move an upgrade card into the iron furnace's upgrade slot");
         helper.assertTrue(!steelMenu.slots.get(3).mayPlace(new ItemStack(Items.IRON_INGOT)),
                 "Steel furnace outputs must be take-only");
         helper.succeed();

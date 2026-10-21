@@ -55,6 +55,8 @@ public final class HbmEffectNT {
     public static final HbmEffectNT Giblets = hbm("Giblets");
     /** The full-size RBMK meltdown cloud. */
     public static final HbmEffectNT RBMKMush = hbm("RBMKMush");
+    /** The jet of steam a full RBMK boiler vents. */
+    public static final HbmEffectNT RBMKSteam = hbm("RBMKSteam");
     /** The 1.7 small-nuke wave, flare and delayed cloud effect. */
     public static final HbmEffectNT Muke = hbm("Muke");
     /** The tiny-tot wave and immediate small-nuke cloud effect. */

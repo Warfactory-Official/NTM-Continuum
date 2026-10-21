@@ -8,9 +8,12 @@ import com.hbm.interfaces.IBomb;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadLarge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,7 +28,8 @@ import org.jspecify.annotations.Nullable;
  * {@code makeExtra} cells at (+-4, +-2) and (+-2, +-4), the large pad's ports.
  * Redstone on any cell counts once toward the pad's rising edge, as for the small pad.
  */
-public class LaunchPadLarge extends BlockMultiblockMachine implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class LaunchPadLarge extends BlockMultiblockMachine
+        implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public LaunchPadLarge(Properties properties) {
         super(properties);
@@ -56,6 +60,15 @@ public class LaunchPadLarge extends BlockMultiblockMachine implements IBomb, IEn
         for (int[] e : EXTRA) {
             visitor.passiveCell(core.offset(e[0], 0, e[1]), MASK_ALL, PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS);
         }
+    }
+
+
+    @Override
+    @Nullable
+    public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityLaunchPadLarge pad ? pad : null;
     }
 
     @Override

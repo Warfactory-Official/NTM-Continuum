@@ -16,7 +16,6 @@ import com.hbm.compat.computercraft.storage.StorageRows;
 import com.hbm.compat.computercraft.turret.TurretRows;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import dev.golem.core.computer.PeripheralExposure;
-import dev.golem.core.gametest.GameTests;
 import dev.golem.core.platform.Lifecycle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -91,24 +90,21 @@ public final class Peripherals {
         }, Reach.NONE);
     }
 
-    /** One family's rows and its GameTests; the family classes own their lists. */
-    private record Family(List<Row<?>> rows, GameTests.Suite tests) {
+    /** One family's rows; the family classes own their lists. */
+    private record Family(List<Row<?>> rows) {
     }
 
     private static List<Family> families() {
         return List.of(
-                new Family(PowerRows.ROWS, PowerRows.tests()),
-                new Family(ReactorRows.ROWS, ReactorRows.tests()),
-                new Family(StorageRows.ROWS, StorageRows.tests()),
-                new Family(NetworkRows.ROWS, NetworkRows.tests()),
-                new Family(RbmkRows.ROWS, RbmkRows.tests()),
-                new Family(AlbionRows.ROWS, AlbionRows.tests()),
-                new Family(FusionRows.ROWS, FusionRows.tests()),
-                new Family(BombRows.ROWS, BombRows.tests()),
-                new Family(TurretRows.ROWS, TurretRows.tests()),
-                // a real CC computer running Lua; no rows. Listed here so init declares its bodies early enough:
-                // 26.1 freezes the test-function registry before the loaders' GameTest hooks run
-                new Family(List.of(), com.hbm.gametest.computer.ComputerLuaGameTests.TESTS));
+                new Family(PowerRows.ROWS),
+                new Family(ReactorRows.ROWS),
+                new Family(StorageRows.ROWS),
+                new Family(NetworkRows.ROWS),
+                new Family(RbmkRows.ROWS),
+                new Family(AlbionRows.ROWS),
+                new Family(FusionRows.ROWS),
+                new Family(BombRows.ROWS),
+                new Family(TurretRows.ROWS));
     }
 
     // Server thread only: lookups and the refresh both run there.
@@ -135,12 +131,6 @@ public final class Peripherals {
             BY_MACHINE.clear();
             LIVE.clear();
         });
-    }
-
-    static List<GameTests.Suite> gameTestSuites() {
-        List<GameTests.Suite> suites = new ArrayList<>();
-        for (Family family : families()) suites.add(family.tests());
-        return suites;
     }
 
     /** The rows, for the GameTest that checks the roster against the registered block entities. */

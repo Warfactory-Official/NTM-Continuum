@@ -4,6 +4,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.blocks.machine.BlockPWR;
 import com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
 import com.hbm.blocks.machine.MachinePWRController;
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModPwrBlocks;
 import com.hbm.items.ModPwrItems;
 import com.hbm.tileentity.machine.TileEntityBlockPWR;
@@ -131,6 +132,39 @@ public final class PwrGameTests {
         helper.succeed();
     }
 
+    /**
+     * No fuel, 1,000,000 hull and core heat on one side: the heat exchanger pulls both toward their mean by
+     * (1 - e^(-5 * 1 / 4 / 2)) / 2 and both then lose 0.1 %; past the capacity the controller melts every rod into corium.
+     */
+    public static void heatAndMeltdown(GameTestHelper helper) {
+        TileEntityPWRController controller = build(helper);
+        BlockPos pos = controller.getBlockPos();
+        controller.coreHeat = 1_000_000L;
+        controller.hullHeat = 0L;
+        controller.runReactor(helper.getLevel(), pos);
+        double approach = (1D - Math.pow(Math.E, -(1D * 5D / 4D) / 2D)) / 2D;
+        long average = (1_000_000L + 0L) / 2;
+        long core = 1_000_000L;
+        core = (long) (core - (core - average) * approach);
+        long hull = 0L;
+        hull = (long) (hull - (hull - average) * approach);
+        core = (long) (core * 0.999D);
+        hull = (long) (hull * 0.999D);
+        helper.assertTrue(controller.coreHeat == core && controller.hullHeat == hull,
+                "heat " + controller.coreHeat + "/" + controller.hullHeat + " vs 1.7 " + core + "/" + hull);
+        helper.assertTrue(controller.flux == 20, "one source, no fuel: 20 flux");
+
+        controller.coreHeat = 20_000_000L;
+        controller.hullHeat = 20_000_000L;
+        controller.runReactor(helper.getLevel(), pos);
+        helper.assertTrue(helper.getBlockState(new BlockPos(6, 3, 6)).isAir() || !helper.getBlockState(new BlockPos(6, 3, 6)).is(ModPwrBlocks.PWR_CONTROLLER.get()),
+                "past 12,000,000 heat the controller is destroyed");
+        helper.assertTrue(helper.getBlockState(new BlockPos(6, 3, 7)).is(ModFluidNetBlocks.corium_block.get())
+                || helper.getBlockState(new BlockPos(6, 3, 9)).is(ModFluidNetBlocks.corium_block.get()),
+                "a fuel rod became corium");
+        helper.succeed();
+    }
+
     // --- fixture ---
 
     /** The six-way flood fill reaches the core box and any cell face-adjacent to it (outside on at most one axis). */
@@ -154,7 +188,7 @@ public final class PwrGameTests {
         return ModPwrBlocks.PWR_CHANNEL.get();
     }
 
-    private static TileEntityPWRController build(GameTestHelper helper) {
+    static TileEntityPWRController build(GameTestHelper helper) {
         for (int x = 4; x <= 8; x++) {
             for (int y = 1; y <= 5; y++) {
                 for (int z = 6; z <= 10; z++) {

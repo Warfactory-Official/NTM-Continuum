@@ -47,8 +47,6 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
     public long power = 0;
     public FluidTankNTM[] tanks;
 
-    private static final int[] IO_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-
     public TileEntityMachineCatalyticReformer(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_CATALYTIC_REFORMER.get(), pos, state, 11);
         tanks = new FluidTankNTM[4];
@@ -133,11 +131,9 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
         return true;
     }
 
-    @Override public int[] getSlotsForFace(Direction side) { return IO_SLOTS; }
-    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
-    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot == 2 || slot == 4 || slot == 6 || slot == 8;
-    }
+    @Override public int[] getSlotsForFace(Direction side) { return new int[0]; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long i) { power = i; }

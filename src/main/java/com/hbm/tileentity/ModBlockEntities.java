@@ -1046,8 +1046,8 @@ public final class ModBlockEntities {
     private static RegistryObject<BlockEntityType<TileEntityMassStorage>> massStorage(
             MassStorageType type,
             RegistryObject<? extends Block> block) {
-        return REG.blockEntity(type.id, () -> BlockEntities.type(
-                (pos, state) -> new TileEntityMassStorage(type, pos, state), block.get()));
+        return REG.blockEntity(type.id, () -> BlockEntities.serverTicking(
+                (pos, state) -> new TileEntityMassStorage(type, pos, state), TileEntityMassStorage::serverTick, block.get()));
     }
 
     private static TileEntityMachineIntake newIntake(

@@ -1,5 +1,6 @@
 package com.hbm.entity.missile;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.explosion.ExplosionChaos;
@@ -61,7 +62,7 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
             super(ModMissileEntities.MISSILE_DECOY.get(), world, x, y, z, a, b);
         }
         @Override public void onMissileImpact(HitResult hit) {
-            level().explode(this, getX(), getY(), getZ(), 4F, Level.ExplosionInteraction.NONE);
+            Explosions.explode(level(), this, getX(), getY(), getZ(), 4F, Level.ExplosionInteraction.NONE);
         }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.ingot_steel.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_decoy.get()); }
@@ -91,7 +92,7 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
         }
         @Override public void onMissileImpact(HitResult hit) {
             for (int i = 0; i < 15; i++) {
-                level().explode(this, getX(), getY() - i, getZ(), 5F, Level.ExplosionInteraction.TNT);
+                Explosions.explode(level(), this, getX(), getY() - i, getZ(), 5F, Level.ExplosionInteraction.TNT);
             }
             ExplosionLarge.spawnParticles(level(), getX(), getY(), getZ(), 5);
             ExplosionLarge.spawnShrapnels(level(), getX(), getY(), getZ(), 5);
@@ -114,7 +115,7 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
 
         @Override
         public void onMissileImpact(HitResult mop) {
-            level().explode(this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.TNT);
+            Explosions.explode(level(), this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.TNT);
             ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 25, getYRot(), getXRot(),
                     (float) Math.PI * 0.25F, (float) Math.PI * 0.25F, 1F);
         }

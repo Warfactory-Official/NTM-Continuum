@@ -2,7 +2,16 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.config.PotionConfig;
+import com.hbm.capability.HbmLivingProps;
+import com.hbm.api.item.IGasMask;
+import com.hbm.handler.ArmorModHandler;
+import com.hbm.items.ModGearItems;
+import com.hbm.interfaces.IArmorModDash;
+import com.hbm.items.ModArmorItems;
+import com.hbm.items.ModArmorModItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.armor.ItemArmorMod;
+import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.ModMedicineItems;
 import com.hbm.potion.ModEffects;
 import dev.golem.core.Ids;
@@ -13,6 +22,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -104,6 +114,64 @@ public final class MedicineGameTests {
         ModMedicineItems.med_bag.get().hurtEnemy(medBag, target, player);
         helper.assertTrue(target.getHealth() == 5F && medBag.getCount() == 1,
                 "Med bag must not trigger from a melee hit");
+        helper.succeed();
+    }
+
+
+    /** Syringe and wearable corrections: Awesome's Rad-X, both taint containers, MKU melee-only, bottled cloud, RPA. */
+    public static void medicineArmorRc(GameTestHelper helper) {
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModMedicineItems.syringe_awesome.get()));
+        ModMedicineItems.syringe_awesome.get().use(player.level(), player, InteractionHand.MAIN_HAND);
+        assertEffect(helper, player, ModEffects.RADX.get(), 50 * 20, 9, "Awesome syringe Rad-X");
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModMedicineItems.syringe_taint.get()));
+        ModMedicineItems.syringe_taint.get().use(player.level(), player, InteractionHand.MAIN_HAND);
+        int metal = 0;
+        int bottle = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack held = player.getInventory().getItem(i);
+            if (held.is(ModItems.syringe_metal_empty.get())) metal += held.getCount();
+            if (held.is(ModItems.bottle2_empty.get())) bottle += held.getCount();
+        }
+        helper.assertTrue(metal == 1 && bottle == 1, "taint syringe returns a metal syringe and a bottle, got " + metal + "/" + bottle);
+
+        ItemStack mku = new ItemStack(ModMedicineItems.syringe_mkunicorn.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, mku);
+        ModMedicineItems.syringe_mkunicorn.get().use(player.level(), player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(HbmLivingProps.getContagion(player) == 0 && mku.getCount() == 1,
+                "the MKU syringe does nothing on right-click");
+
+        Item cloud = ModArmorModItems.bottled_cloud.get();
+        helper.assertTrue(cloud instanceof IArmorModDash dash && dash.getDashes() == 3
+                        && ((ItemArmorMod) cloud).type == ArmorModHandler.plate_only, "bottled cloud: 3 dashes, chestplate module");
+
+        for (ArmorFSB plate : List.of(ModArmorItems.rpa_plate.get(), ModArmorItems.ncrpa_plate.get())) {
+            helper.assertTrue(plate.effects.size() == 1 && plate.effects.get(0).getAmplifier() == 3,
+                    "power armour strength IV");
+        }
+        helper.assertTrue(ModArmorItems.rpa_plate.get().getMaxCharge(new ItemStack(ModArmorItems.rpa_plate.get())) == 2_500_000L,
+                "RPA capacity");
+        helper.succeed();
+    }
+
+
+    /** The 1.7 filter flow: right-click a filter with a mask worn (or in the helmet module) and with a filter already in. */
+    public static void filterSwap(GameTestHelper helper) {
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(ModGearItems.gas_mask.get()));
+        helper.assertTrue(new ItemStack(ModGearItems.gas_mask_filter.get()).getMaxDamage() == 20_000, "1.7 filters have 20,000 durability");
+        ItemStack first = new ItemStack(ModGearItems.gas_mask_filter.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, first);
+        first.getItem().use(player.level(), player, InteractionHand.MAIN_HAND);
+        ItemStack mask = player.getItemBySlot(EquipmentSlot.HEAD);
+        helper.assertTrue(((IGasMask) mask.getItem()).getFilter(mask).is(ModGearItems.gas_mask_filter.get())
+                && player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty(), "the filter goes into the worn mask and is used up");
+        ItemStack second = new ItemStack(ModGearItems.gas_mask_filter_combo.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, second);
+        second.getItem().use(player.level(), player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(((IGasMask) mask.getItem()).getFilter(mask).is(ModGearItems.gas_mask_filter_combo.get())
+                && player.getItemInHand(InteractionHand.MAIN_HAND).is(ModGearItems.gas_mask_filter.get()), "installing over a filter swaps the old one into the hand");
         helper.succeed();
     }
 

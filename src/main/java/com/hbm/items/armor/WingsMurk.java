@@ -25,9 +25,9 @@ public class WingsMurk extends JetpackBase {
         JetpackHandler.resetFlightTime(player);
         player.fallDistance = 0;
         Vec3 motion = player.getDeltaMovement();
-        if (motion.y < -0.4D) motion = new Vec3(motion.x, -0.4D, motion.z);
 
         if (!murk) {
+            if (motion.y < -0.4D) motion = new Vec3(motion.x, -0.4D, motion.z);
             if (player.isShiftKeyDown() && motion.y < -0.08D) {
                 double amount = motion.y * -0.2D;
                 motion = motion.add(0, amount, 0).add(player.getViewVector(1.0F).scale(amount));
@@ -37,8 +37,20 @@ public class WingsMurk extends JetpackBase {
         }
 
         if (JetpackHandler.isJetpackActive(player)) {
-            if (motion.y < 0.6D) motion = motion.add(0, 0.2D, 0);
-            else motion = new Vec3(motion.x, 0.8D, motion.z);
+            if (player.isShiftKeyDown()) {
+                double y = motion.y;
+                if (y < -1D) y += 0.4D;
+                else if (y < -0.1D) y += 0.2D;
+                else if (y < 0D) y = 0D;
+                else if (y > 1D) y -= 0.4D;
+                else if (y > 0.1D) y -= 0.2D;
+                else if (y > 0D) y = 0D;
+                motion = new Vec3(motion.x, y, motion.z);
+            } else if (motion.y < 0.6D) {
+                motion = motion.add(0, 0.2D, 0);
+            } else {
+                motion = new Vec3(motion.x, 0.8D, motion.z);
+            }
         } else if (JetpackHandler.isBackpackEnabled(player) && !player.isShiftKeyDown()) {
             double y = motion.y;
             if (y < -1D) y += 0.4D;
@@ -67,7 +79,7 @@ public class WingsMurk extends JetpackBase {
             Vec3 look = player.getViewVector(1.0F);
             Vec3 horizontal = new Vec3(look.x, 0, look.z);
             if (horizontal.lengthSqr() > 0D) horizontal = horizontal.normalize();
-            double modifier = player.isShiftKeyDown() ? 0.25D : 1D;
+            double modifier = player.isSprinting() ? 1D : 0.25D;
             float forward = JetpackHandler.getForwardInput(player);
             float strafe = JetpackHandler.getStrafeInput(player);
             if (forward != 0F) motion = motion.add(horizontal.scale(0.35D * forward * modifier));

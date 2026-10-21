@@ -20,6 +20,7 @@ import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -29,6 +30,8 @@ import dev.golem.core.world.Effects;
 import java.util.HashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -65,7 +68,7 @@ import com.hbm.tileentity.TilePortShapes;
  */
 public class TileEntityMachineGasFlare extends TileEntityMachineBase
         implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2, IUpgradeInfoProvider, IRORInteractive,
-        IRORValueProvider {
+        IRORValueProvider, WorldlyContainer {
 
     public static final long maxPower = 100000;
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
@@ -150,6 +153,9 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                 for (Entity e : list) {
                     Effects.ignite(e, 5);
                     e.hurt(level.damageSources().onFire(), 5F);
+                }
+                if (TickPhase.every(level, pos, 3)) {
+                    level.playSound(null, pos.getX(), pos.getY() + 11, pos.getZ(), ModSounds.FLAMETHROWER_SHOOT.get(), SoundSource.BLOCKS, te.getVolume(1.5F), 0.75F);
                 }
 
                 if (TickPhase.every(level, pos, 5) && eject > 0) {
@@ -315,4 +321,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         }
         return null;
     }
+    @Override public int[] getSlotsForFace(Direction side) { return new int[0]; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 }

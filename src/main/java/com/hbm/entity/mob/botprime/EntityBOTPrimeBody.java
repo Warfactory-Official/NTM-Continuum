@@ -1,5 +1,6 @@
 package com.hbm.entity.mob.botprime;
 
+import dev.golem.core.world.Explosions;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.mob.ai.EntityAINearestAttackableTargetNT;
@@ -59,7 +60,7 @@ public class EntityBOTPrimeBody extends EntityBOTPrimeBase {
             }
 
             if ((this.followed == null || !this.followed.isAlive()) && this.random.nextInt(60) == 0) {
-                level.explode(this, getX(), getY(), getZ(), 2F, Level.ExplosionInteraction.NONE);
+                Explosions.explode(level, this, getX(), getY(), getZ(), 2F, Level.ExplosionInteraction.NONE);
             }
         }
 

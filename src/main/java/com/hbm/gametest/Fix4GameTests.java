@@ -24,10 +24,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -221,6 +224,22 @@ public final class Fix4GameTests {
             nothing(helper, id, Tool.PLAIN);
         }
         helper.succeed();
+    }
+
+    /** 1.7 breaks a stalagmite with drops when its floor goes. */
+    public static void stalagmitePopDrops(GameTestHelper helper) {
+        BlockPos floor = new BlockPos(1, 1, 1);
+        BlockPos spike = floor.above();
+        helper.setBlock(floor, Blocks.STONE);
+        helper.setBlock(spike, block("hbm:stalagmite_sulfur"));
+        helper.setBlock(floor, Blocks.AIR);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(spike)).isAir(), "the stalagmite pops with its floor");
+            List<ItemEntity> items = helper.getLevel().getEntitiesOfClass(
+                    ItemEntity.class, new AABB(helper.absolutePos(spike)).inflate(3));
+            helper.assertTrue(items.stream().anyMatch(i -> i.getItem().is(item("hbm:sulfur"))), "it drops its sulfur: " + items);
+            helper.succeed();
+        });
     }
 
     /** Drops with their own 1.7 logic: the meteorite treasure pool, the boiler's scraps, the self-dropping blocks. */

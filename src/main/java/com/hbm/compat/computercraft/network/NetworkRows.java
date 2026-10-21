@@ -11,7 +11,6 @@ import com.hbm.tileentity.network.TileEntityRadioTelex;
 import com.hbm.tileentity.network.TileEntityRadioTorchBase;
 import com.hbm.tileentity.network.TileEntityRadioTorchController;
 import com.hbm.tileentity.network.TileEntityRadioTorchReader;
-import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
@@ -33,9 +32,5 @@ public final class NetworkRows {
             // the sender and the receiver
             Peripherals.row(TileEntityRadioTorchBase.class, RadioTorchPeripheral::new, Reach.BLOCK)
     );
-
-    public static GameTests.Suite tests() {
-        return com.hbm.gametest.computer.NetworkPeripheralGameTests.TESTS;
-    }
 }
 //?}

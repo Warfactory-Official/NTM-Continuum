@@ -82,7 +82,6 @@ public final class UtilityToolClientRegistrations {
         KEYS[EnumToolKey.TOOL_ALT.ordinal()] = KeyMappings.register("hbm", "key.hbm.copyToolAlt", InputConstants.KEY_LALT, "hbm");
         KEYS[EnumToolKey.TOOL_CTRL.ordinal()] = KeyMappings.register("hbm", "key.hbm.copyToolCtrl", InputConstants.KEY_LCONTROL, "hbm");
         ClientTicks.onEndTick(UtilityToolClientRegistrations::tick);
-        UtilityToolHarnessQueries.register();
     }
 
     private static void tick() {

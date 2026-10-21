@@ -67,6 +67,7 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
         turbine.tanks[0].setType(turbine.inventory, 0, 1);
         if (MachineFluidContainerIO.load(turbine.tanks[0], turbine.inventory, 2, 3)) turbine.setChanged();
         turbine.power = Library.chargeItemsFromTE(turbine.inventory, 4, turbine.power, MAX_POWER);
+        turbine.power *= 0.95; // unsent power leaks away
         turbine.convert();
         if (turbine.power > MAX_POWER) turbine.power = MAX_POWER;
         if (MachineFluidContainerIO.unload(turbine.tanks[1], turbine.inventory, 5, 6)) turbine.setChanged();

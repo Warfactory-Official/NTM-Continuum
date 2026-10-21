@@ -152,6 +152,7 @@ import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModMedicineItems;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.ModRBMKBlockEntities;
+import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import com.hbm.tileentity.machine.pile.TileEntityPileCore;
 import com.hbm.tileentity.network.RTTYSystem;
 import com.hbm.tileentity.network.RequestNetwork;
@@ -373,6 +374,7 @@ public final class MainRegistry {
         ModSounds.init();          // sound events (assembly machine motor/strike/start/stop)
         ModTabs.init();
         NeutronLifecycle.init();
+        RBMKDials.init();            // the RBMK dials as /gamerule world rules
         PollutionLifecycle.init();   // soot/poison field: diffusion, decay and blight
         ModEventHandlerMobs.init();     // 1.7 ModEventHandler mob death drops, decorateMob, addAITasks
         ModEventHandlerImpact.init();   // Tom impact aftermath: dust/fire decay, burning, spawns

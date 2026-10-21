@@ -1,5 +1,6 @@
 package com.hbm.entity.missile;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.blocks.ModBombs2Blocks;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.generic.BlockSellafieldSlaked;
@@ -97,7 +98,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
             Vec3 at = hit != null ? hit.getLocation() : position();
             BlockPos block = hit instanceof BlockHitResult blockHit
                     ? blockHit.getBlockPos() : BlockPos.containing(at);
-            level().explode(this, at.x, at.y, at.z, 5.0F, Level.ExplosionInteraction.TNT);
+            Explosions.explode(level(), this, at.x, at.y, at.z, 5.0F, Level.ExplosionInteraction.TNT);
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int i = 0; i < 100; i++) {
                 int x = random.nextInt(11) + block.getX() - 5;
@@ -201,7 +202,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
 
         @Override
         public void onMissileImpact(HitResult mop) {
-            level().explode(this, getX(), getY(), getZ(), 1.5F, Level.ExplosionInteraction.TNT);
+            Explosions.explode(level(), this, getX(), getY(), getZ(), 1.5F, Level.ExplosionInteraction.TNT);
 
             EntityBlackHole hole = new EntityBlackHole(
                     ModEntities.BLACK_HOLE.get(), level(), 1.5F);

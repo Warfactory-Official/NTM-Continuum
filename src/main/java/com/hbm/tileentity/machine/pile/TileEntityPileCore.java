@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.pile;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.blocks.machine.pile.BlockPile;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
@@ -92,7 +93,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
                             fragment.getY() - 0.125D, fragment.getZ(), FlameCreator.META_FIRE);
                 })
                 .setOnImpact((bullet, hit) -> {
-                    bullet.level().explode(bullet, bullet.getX(), bullet.getY(), bullet.getZ(), 5F,
+                    Explosions.explode(bullet.level(), bullet, bullet.getX(), bullet.getY(), bullet.getZ(), 5F,
                             Level.ExplosionInteraction.TNT);
                     bullet.discard();
                 }));
@@ -365,7 +366,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
         avgZ /= this.fuelChannels.size();
 
         meltingDown = true;
-        level.explode(null, avgX, worldPosition.getY() + up, avgZ, 15F, true, Level.ExplosionInteraction.TNT);
+        Explosions.explode(level, null, avgX, worldPosition.getY() + up, avgZ, 15F, true, Level.ExplosionInteraction.TNT);
         meltingDown = false;
 
         if (pile_debris == null) return;

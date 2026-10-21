@@ -48,6 +48,9 @@ public final class HbmParticleHandlers {
                 Tags.getFloatOr(data, "scale", 20F)));
         HbmEffectNT.RBMKMushSmall.setHandler((level, x, y, z, data) -> spawnRBMKMush(level, x, y, z,
                 Tags.getFloatOr(data, "scale", 5F)));
+        HbmEffectNT.RBMKSteam.setHandler((level, x, y, z, data) -> {
+            if (level instanceof ClientLevel clientLevel) ParticleRBMKSteam.spawn(clientLevel, x, y, z);
+        });
         HbmEffectNT.Muke.setHandler(MukeParticles::spawnMuke);
         HbmEffectNT.TinyTot.setHandler(MukeParticles::spawnTinyTot);
         HbmEffectNT.Skeleton.setHandler((level, x, y, z, data) -> {

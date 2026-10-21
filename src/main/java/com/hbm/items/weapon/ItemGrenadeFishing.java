@@ -1,5 +1,6 @@
 package com.hbm.items.weapon;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.entity.item.EntityItemBuoyant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -28,7 +29,7 @@ public class ItemGrenadeFishing extends ItemGenericGrenade {
 
     @Override
     public void explode(Entity grenade, LivingEntity thrower, Level world, double x, double y, double z) {
-        world.explode(null, x, y + 0.25D, z, 3F, false, Level.ExplosionInteraction.NONE);
+        Explosions.explode(world, null, x, y + 0.25D, z, 3F, false, Level.ExplosionInteraction.NONE);
 
         int iX = Mth.floor(x);
         int iY = Mth.floor(y);

@@ -49,8 +49,7 @@ import java.util.List;
  * stack</b>, and pours both out via a downward raytrace ({@link CrucibleUtil}): waste out the back,
  * recipe output out the front. Slots 1–9 are the 3×3 input grid (limit 1/slot; slot 0 is unused, as in
  * the original); thrown items landing in the basin are vacuumed in. Constants as written; the
- * {@code IConfigurableMachine} JSON config is deferred, and the modern (non-legacy) crucible rules are
- * hardcoded. Each non-empty pour stack adds 1.7's {@code SOOT_PER_SECOND / 20} soot every tick.
+ * {@code IConfigurableMachine} JSON config is deferred. Each non-empty pour stack adds 1.7's {@code SOOT_PER_SECOND / 20} soot every tick.
  */
 public class TileEntityCrucible extends TileEntityMachineBase implements MenuProvider, ICrucibleAcceptor, IControlReceiver {
 
@@ -256,8 +255,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
             for (Mats.MaterialStack material : materials) {
                 boolean recipeMaterial = recipe != null && (getQuantaFromType(recipe.input, material.material) > 0 || getQuantaFromType(recipe.output, material.material) > 0);
 
-                // modern (non-legacy) rules hardcoded: with no recipe, everything goes to the recipe stack
-                if (recipe == null || recipeMaterial) {
+                if (recipeMaterial) {
                     this.addToStack(this.recipeStack, material);
                 } else {
                     this.addToStack(this.wasteStack, material);
@@ -337,13 +335,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
             }
 
             if (recipeInputRequired == 0) {
-                // modern rules: with no recipe set, throw everything into the recipe stack
-                if (recipe == null) {
-                    recipeAmount += mat.amount;
-                } else {
-                    // if this type isn't required by the recipe, add it to the waste stack
-                    wasteAmount += mat.amount;
-                }
+                // if this type isn't required by the recipe (or no recipe is set), it lands in the waste stack
+                wasteAmount += mat.amount;
             } else {
                 // the maximum is the recipe's ratio scaled up to the recipe stack's capacity
                 int matMaximum = recipeInputRequired * recipeZCapacity / recipeContent;

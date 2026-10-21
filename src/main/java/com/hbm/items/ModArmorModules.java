@@ -22,7 +22,7 @@ public final class ModArmorModules {
     private static final Reg REG = Reg.of(ITEMS);
 
     public static final RegistryObject<ItemModCladding> cladding_paint = cladding("cladding_paint", 0.025D);
-    public static final RegistryObject<ItemModCladding> cladding_rubber = cladding("cladding_rubber", 0.05D);
+    public static final RegistryObject<ItemModCladding> cladding_rubber = cladding("cladding_rubber", 0.005D);
     public static final RegistryObject<ItemModCladding> cladding_lead = cladding("cladding_lead", 0.1D);
     public static final RegistryObject<ItemModCladding> cladding_desh = cladding("cladding_desh", 0.2D);
     public static final RegistryObject<ItemModCladding> cladding_ghiorsium = cladding("cladding_ghiorsium", 0.5D);
@@ -33,7 +33,7 @@ public final class ModArmorModules {
     public static final RegistryObject<ItemModInsert> insert_xsapi = insert("insert_xsapi", 2500, .9F, .75F, 1F, 1F);
     public static final RegistryObject<ItemModInsert> insert_steel = insert("insert_steel", 1000, 1F, .95F, .75F, .95F);
     public static final RegistryObject<ItemModInsert> insert_du = insert("insert_du", 1500, .9F, .85F, .5F, .9F);
-    public static final RegistryObject<ItemModInsert> insert_polonium = insert("insert_polonium", 500, .9F, 1F, .25F, .9F);
+    public static final RegistryObject<ItemModInsert> insert_polonium = insert("insert_polonium", 500, .9F, 1F, .95F, .9F);
     public static final RegistryObject<ItemModInsert> insert_ghiorsium = insert("insert_ghiorsium", 2000, .8F, .75F, .35F, .9F);
     public static final RegistryObject<ItemModInsert> insert_yharonite = insert("insert_yharonite", 9999, .01F, 1F, 1F, 1F);
     public static final RegistryObject<ItemModInsert> insert_doxium = insert("insert_doxium", 9999, 5F, 1F, 1F, 1F);

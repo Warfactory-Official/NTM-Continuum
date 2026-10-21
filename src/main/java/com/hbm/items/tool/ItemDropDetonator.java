@@ -1,5 +1,6 @@
 package com.hbm.items.tool;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.Constants;
 import com.hbm.api.event.HbmEvents;
 import com.hbm.config.GeneralConfig;
@@ -89,11 +90,11 @@ public class ItemDropDetonator extends CompatItem {
                             pos.getX(), pos.getY(), pos.getZ());
                 }
             }
-            level.explode(entity, entity.getX(), entity.getY(), entity.getZ(), 0.0F, Level.ExplosionInteraction.TNT);
+            Explosions.explode(level, entity, entity.getX(), entity.getY(), entity.getZ(), 0.0F, Level.ExplosionInteraction.TNT);
             entity.discard();
         } else {
             if (WeaponConfig.dropDead) { // 1.7 10.05_dropDead
-                level.explode(entity, entity.getX(), entity.getY(), entity.getZ(), 15.0F, Level.ExplosionInteraction.TNT);
+                Explosions.explode(level, entity, entity.getX(), entity.getY(), entity.getZ(), 15.0F, Level.ExplosionInteraction.TNT);
                 if (GeneralConfig.enableExtendedLogging) {
                     Constants.LOG.info("[DET] Detonated dead man's explosive at {} / {} / {}!",
                             (int) entity.getX(), (int) entity.getY(), (int) entity.getZ());

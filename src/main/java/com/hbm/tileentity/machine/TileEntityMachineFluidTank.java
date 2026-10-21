@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.interfaces.IRepairable;
 import com.hbm.inventory.FluidContainerRegistry;
@@ -36,6 +37,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
@@ -53,6 +56,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.data.Tags;
 import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.TilePortShapes;
 
@@ -69,7 +73,8 @@ import com.hbm.tileentity.TilePortShapes;
  * ported. The side ladder ({@link IClimbable}) is kept. The tank defaults to {@code NONE}; drop a
  * {@code fluid_identifier} in slot 0 to set its type (it then passes to slot 1), like the 1.12.2 tank.
  */
-public class TileEntityMachineFluidTank extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IClimbable, IRORValueProvider, IRORInteractive, IRepairable {
+public class TileEntityMachineFluidTank extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IClimbable, IRORValueProvider, IRORInteractive, IRepairable,
+        WorldlyContainer {
 
     /** 1.7 {@code hasExploded}: torn open by an explosion, antimatter or a highly corrosive fluid; leaks until repaired. */
     public boolean hasExploded = false;
@@ -213,7 +218,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         if (type == EnumExtinguishType.WATER) {
             // extinguishing oil with water is a terrible idea!
             if (tank.getTankType().hasTrait(FluidTraitSimple.FT_Liquid.class)) {
-                world.explode(null, worldPosition.getX() + 0.5, worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5,
+                Explosions.explode(world, null, worldPosition.getX() + 0.5, worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5,
                         5F, true, Level.ExplosionInteraction.BLOCK);
             } else {
                 this.onFire = false;
@@ -385,6 +390,34 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         return new ContainerMachineFluidTank(containerId, playerInventory, this);
     }
 
+    /** 1.7 {@code writeNBT}: a tank with fluid in it, or a torn one, travels with its item. */
+    @Override
+    protected CompoundTag collectCarriedData() {
+        if (tank.getFill() == 0 && !hasExploded) return null;
+        CompoundTag data = new CompoundTag();
+        tank.writeCarried(data, "tank");
+        data.putShort("mode", mode);
+        data.putBoolean("exploded", hasExploded);
+        data.putBoolean("onFire", onFire);
+        return data;
+    }
+
+    @Override
+    protected void applyCarriedData(CompoundTag data) {
+        tank.readCarried(data, "tank");
+        mode = (short) Tags.getIntOr(data, "mode", 0);
+        hasExploded = Tags.getBooleanOr(data, "exploded", false);
+        onFire = Tags.getBooleanOr(data, "onFire", false);
+    }
+
+    @Override
+    protected void removeSavedComponents(DataOut output) {
+        super.removeSavedComponents(output);
+        for (String key : new String[] {"inventory", "tank", "tank_max", "tank_type", "tank_p", "mode", "exploded", "onFire"}) {
+            output.discard(key);
+        }
+    }
+
     // Sync (BufPacket) + persistence
 
     @Override
@@ -446,4 +479,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         }
         return null;
     }
+    @Override public int[] getSlotsForFace(Direction side) { return new int[0]; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 }

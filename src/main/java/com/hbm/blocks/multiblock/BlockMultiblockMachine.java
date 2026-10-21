@@ -120,6 +120,27 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
                 MultiblockMaskTable.localZ(dx, dy, dz, facing), facing, forCollision);
     }
 
+    /** Whether the core's item carries state ({@code CarriedDrops}): a cell a player breaks then rolls the core's loot. */
+    protected boolean carriesData() {
+        return false;
+    }
+
+    /**
+     * A cell has no block entity and its loot table is limited to the core, so a cell broken by a player drops the
+     * core's loot, rolled with the core's block entity: the machine's contents come from whichever part was broken.
+     */
+    @Override
+    protected void onPlayerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        super.onPlayerWillDestroy(level, pos, state, player);
+        if (!carriesData() || !(level instanceof ServerLevel server) || !state.getValue(CELL)
+                || playerPreventsBlockDrops(player) || !player.hasCorrectToolForDrops(state)) return;
+        BlockPos core = coreOf(level, pos, state);
+        if (core == null) return;
+        BlockState coreState = level.getBlockState(core);
+        if (coreState.getBlock() != this) return;
+        Block.dropResources(coreState, server, pos, server.getBlockEntity(core), player, player.getMainHandItem());
+    }
+
     @Override protected void removedAt(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         if (state.getValue(CELL)) BlockMultiblockCore.foldedCellRemoved(level, pos, movedByPiston);
         else super.removedAt(state, level, pos, movedByPiston);

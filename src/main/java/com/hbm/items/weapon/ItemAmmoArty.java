@@ -1,5 +1,6 @@
 package com.hbm.items.weapon;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.blocks.ModBlocks;
@@ -236,7 +237,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 Level level = shell.level();
                 Vec3 impact = behindImpact(shell, hit);
                 shell.killAndClear();
-                level.explode(shell, impact.x, impact.y, impact.z, 0F, Level.ExplosionInteraction.NONE);
+                Explosions.explode(level, shell, impact.x, impact.y, impact.z, 0F, Level.ExplosionInteraction.NONE);
 
                 EntityMist mist = new EntityMist(level);
                 mist.setType(Fluids.CHLORINE);
@@ -252,7 +253,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 Level level = shell.level();
                 Vec3 impact = behindImpact(shell, hit);
                 shell.killAndClear();
-                level.explode(shell, impact.x, impact.y, impact.z, 5F, Level.ExplosionInteraction.NONE);
+                Explosions.explode(level, shell, impact.x, impact.y, impact.z, 5F, Level.ExplosionInteraction.NONE);
                 gasCloud(shell, impact, Fluids.PHOSGENE, 3, 15D, 15F, 10F);
                 PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.HEAVYMETAL, 10F);
                 PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.POISON, 15F);
@@ -264,7 +265,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 Level level = shell.level();
                 Vec3 impact = behindImpact(shell, hit);
                 shell.killAndClear();
-                level.explode(shell, impact.x, impact.y, impact.z, 5F, Level.ExplosionInteraction.NONE);
+                Explosions.explode(level, shell, impact.x, impact.y, impact.z, 5F, Level.ExplosionInteraction.NONE);
                 gasCloud(shell, impact, Fluids.MUSTARDGAS, 5, 25D, 20F, 10F);
                 PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.HEAVYMETAL, 15F);
                 PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.POISON, 30F);

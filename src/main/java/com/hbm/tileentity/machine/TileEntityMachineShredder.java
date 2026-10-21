@@ -125,40 +125,33 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
         }
     }
 
-    /**
-     * Shreds one item out of every occupied input slot into the output grid. Ported 1:1 from the old
-     * {@code processItem}: merge into matching stacks first, then fill empty output slots.
-     */
+    /** Shreds one item out of every occupied input slot; the whole result goes into one output slot. */
     private void processItem() {
         for (int inpSlot = 0; inpSlot < 9; inpSlot++) {
             ItemStack input = inventory.getStackInSlot(inpSlot);
             if (input.isEmpty() || !hasSpace(input)) continue;
 
             ItemStack output = ShredderRecipes.getShredderResult(input);
-            int itemsLeft = output.getCount();
-
-            for (int out = 9; out < 27 && itemsLeft > 0; out++) {
+            boolean merged = false;
+            for (int out = 9; out < 27; out++) {
                 ItemStack slotStack = inventory.getStackInSlot(out);
-                if (!slotStack.isEmpty() && ItemStacks.sameItemAndData(slotStack, output)) {
-                    int space = slotStack.getMaxStackSize() - slotStack.getCount();
-                    if (space > 0) {
-                        int amount = Math.min(itemsLeft, space);
-                        slotStack.grow(amount);
-                        itemsLeft -= amount;
+                if (!slotStack.isEmpty() && ItemStacks.sameItemAndData(slotStack, output)
+                        && slotStack.getCount() + output.getCount() <= output.getMaxStackSize()) {
+                    slotStack.grow(output.getCount());
+                    input.shrink(1);
+                    merged = true;
+                    break;
+                }
+            }
+            if (!merged) {
+                for (int out = 9; out < 27; out++) {
+                    if (inventory.getStackInSlot(out).isEmpty()) {
+                        inventory.setStackInSlot(out, output.copy());
+                        input.shrink(1);
+                        break;
                     }
                 }
             }
-            for (int out = 9; out < 27 && itemsLeft > 0; out++) {
-                if (inventory.getStackInSlot(out).isEmpty()) {
-                    int amount = Math.min(itemsLeft, output.getMaxStackSize());
-                    ItemStack newStack = output.copy();
-                    newStack.setCount(amount);
-                    inventory.setStackInSlot(out, newStack);
-                    itemsLeft -= amount;
-                }
-            }
-
-            input.shrink(1);
             if (input.isEmpty()) inventory.setStackInSlot(inpSlot, ItemStack.EMPTY);
         }
     }
@@ -193,21 +186,17 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
         return false;
     }
 
-    /** Whether the output grid can absorb a full result stack for {@code stack}. */
+    /** Whether one output slot is empty or holds the result with room for all of it. */
     public boolean hasSpace(ItemStack stack) {
         ItemStack result = ShredderRecipes.getShredderResult(stack);
         if (result.isEmpty()) return false;
-
-        int spaceLeft = 0;
         for (int i = 9; i < 27; i++) {
             ItemStack slotStack = inventory.getStackInSlot(i);
-            if (slotStack.isEmpty()) {
-                spaceLeft += result.getMaxStackSize();
-            } else if (ItemStacks.sameItemAndData(slotStack, result)) {
-                spaceLeft += slotStack.getMaxStackSize() - slotStack.getCount();
-            }
+            if (slotStack.isEmpty()) return true;
+            if (ItemStacks.sameItemAndData(slotStack, result)
+                    && slotStack.getCount() + result.getCount() <= result.getMaxStackSize()) return true;
         }
-        return spaceLeft >= result.getCount();
+        return false;
     }
 
     /** 0 = missing, 1 = good, 2 = worn past halfway, 3 = spent. Durability-less blades are always 1. */
@@ -239,9 +228,17 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        if (slot != SLOT_BLADE_LEFT && slot != SLOT_BLADE_RIGHT && stack.getItem() instanceof ItemBlades) return false;
-        if (slot != SLOT_BATTERY && Library.isDischargeableBattery(stack)) return false;
-        return isItemValidForSlot(slot, stack);
+        if ((slot >= 9 && slot != SLOT_BLADE_LEFT && slot != SLOT_BLADE_RIGHT) || !isItemValidForSlot(slot, stack)) return false;
+        ItemStack current = inventory.getStackInSlot(slot);
+        if (current.isEmpty()) return true;
+
+        // Hoppers only top up the input slot with the smallest matching stack.
+        for (int k = 0; k < 9; k++) {
+            ItemStack other = inventory.getStackInSlot(k);
+            if (other.isEmpty()) return false;
+            if (ItemStacks.sameItemAndData(other, stack) && other.getCount() < current.getCount()) return false;
+        }
+        return true;
     }
 
     @Override
@@ -264,7 +261,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 
     public long getPowerScaled(long i) { return (power * i) / maxPower; }
     public int getProgressScaled(int i) { return (progress * i) / PROCESSING_SPEED; }
-    public boolean hasPower() { return power >= CONSUMPTION; }
+    public boolean hasPower() { return power > 0; }
     public boolean isProcessing() { return progress > 0; }
 
     // MenuProvider

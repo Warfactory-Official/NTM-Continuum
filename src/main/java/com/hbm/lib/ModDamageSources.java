@@ -2,12 +2,14 @@ package com.hbm.lib;
 
 import com.hbm.Constants;
 import dev.golem.core.Ids;
+import java.util.List;
 import java.util.Locale;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
 /**
@@ -128,6 +130,21 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> SUBATOMIC = key("subatomic");
     /** ntm-next tau: bypasses_armor, is_projectile. */
     public static final ResourceKey<DamageType> TAU = key("tau");
+    /** 1.7 {@code ModDamageSource.euthanized}: a poison syringe used on someone else. */
+    public static final ResourceKey<DamageType> EUTHANIZED = key("euthanized");
+    /** 1.7 {@code ModDamageSource.tauBlast}: the tau cannon charged too long. */
+    public static final ResourceKey<DamageType> TAU_BLAST = key("tau_blast");
+    public static final ResourceKey<DamageType> ELECTRIFIED = key("electrified");
+    public static final ResourceKey<DamageType> PLASMA = key("plasma");
+    public static final ResourceKey<DamageType> SUICIDE = key("suicide");
+    public static final ResourceKey<DamageType> TELEPORTER = key("teleporter");
+    public static final ResourceKey<DamageType> SUBATOMIC_1 = key("subatomic_1");
+    public static final ResourceKey<DamageType> SUBATOMIC_2 = key("subatomic_2");
+    public static final ResourceKey<DamageType> SUBATOMIC_3 = key("subatomic_3");
+    public static final ResourceKey<DamageType> SUBATOMIC_4 = key("subatomic_4");
+    public static final ResourceKey<DamageType> SUBATOMIC_5 = key("subatomic_5");
+    private static final List<ResourceKey<DamageType>> SUBATOMIC_VARIANTS =
+            List.of(SUBATOMIC_1, SUBATOMIC_2, SUBATOMIC_3, SUBATOMIC_4, SUBATOMIC_5);
 
     /**
      * The damage categories a bullet can belong to, ported from 1.7's
@@ -208,4 +225,15 @@ public final class ModDamageSources {
     public static DamageSource euthanizedSelf(Level level) { return source(level, EUTHANIZED_SELF); }
     public static DamageSource euthanizedSelf2(Level level) { return source(level, EUTHANIZED_SELF2); }
     public static DamageSource overdose(Level level) { return source(level, OVERDOSE); }
+    public static DamageSource tauBlast(Level level) { return source(level, TAU_BLAST); }
+
+    /** 1.7 {@code euthanized(ent, hit)}: the attacker is both direct and causing entity. */
+    public static DamageSource euthanized(Level level, Entity attacker) {
+        return source(level, EUTHANIZED, attacker, attacker);
+    }
+
+    /** 1.7 {@code causeSubatomicDamage}: one of five death messages, picked at random. */
+    public static DamageSource subatomic(Level level, Entity direct, Entity causing) {
+        return source(level, SUBATOMIC_VARIANTS.get(level.getRandom().nextInt(SUBATOMIC_VARIANTS.size())), direct, causing);
+    }
 }

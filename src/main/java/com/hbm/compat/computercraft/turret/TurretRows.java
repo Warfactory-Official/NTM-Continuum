@@ -6,7 +6,6 @@ import com.hbm.compat.computercraft.Peripherals.Reach;
 import com.hbm.tileentity.turret.TileEntityTurretArty;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretHIMARS;
-import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
@@ -22,9 +21,5 @@ public final class TurretRows {
             Peripherals.row(TileEntityTurretArty.class, ArtyPeripheral::new, Reach.DOWN),
             Peripherals.row(TileEntityTurretHIMARS.class, HimarsPeripheral::new, Reach.DOWN)
     );
-
-    public static GameTests.Suite tests() {
-        return com.hbm.gametest.computer.TurretPeripheralGameTests.TESTS;
-    }
 }
 //?}

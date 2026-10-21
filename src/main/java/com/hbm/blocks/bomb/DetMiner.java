@@ -3,8 +3,9 @@ package com.hbm.blocks.bomb;
 import com.hbm.api.block.IFuckingExplode;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.item.EntityTntNtm;
-import com.hbm.explosion.ExplosionLarge;
 import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.IBlockExplodedVNT;
+import com.hbm.explosion.ExplosionLarge;
 import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
 import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.interfaces.IBomb;
@@ -29,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * then the 30-count smoke cloud. {@code ExplosionNT} is not ported; the VNT with the standard 16-ray
  * allocator, an all-drop processor and no entity processor is the same blast.
  */
-public class DetMiner extends CompatBlock implements IBomb, IFuckingExplode {
+public class DetMiner extends CompatBlock implements IBomb, IFuckingExplode, IBlockExplodedVNT {
 
     public DetMiner(Properties properties) {
         super(properties);
@@ -67,6 +68,16 @@ public class DetMiner extends CompatBlock implements IBomb, IFuckingExplode {
         level.removeBlock(pos, false);
         EntityTntNtm primed = new EntityTntNtm(ModNtmEntities.TNT_NTM.get(), level,
                 pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, igniter, state);
+        primed.setFuse(0);
+        level.addFreshEntity(primed);
+        return true;
+    }
+
+    @Override
+    public boolean onVNTExploded(ServerLevel level, BlockPos pos, BlockState state, ExplosionVNT explosion) {
+        level.removeBlock(pos, false);
+        EntityTntNtm primed = new EntityTntNtm(ModNtmEntities.TNT_NTM.get(), level,
+                pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, IBlockExplodedVNT.igniter(explosion), state);
         primed.setFuse(0);
         level.addFreshEntity(primed);
         return true;

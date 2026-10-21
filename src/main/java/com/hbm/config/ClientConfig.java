@@ -3,6 +3,7 @@ package com.hbm.config;
 import com.hbm.client.AbilityToolClientRegistrations;
 import com.hbm.client.render.RenderInfoSystem;
 import com.hbm.client.render.RenderPylonBase;
+import dev.golem.core.render.anim.BusAnimationKeyframe;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -63,7 +64,7 @@ public final class ClientConfig extends RunningConfig {
         configMap.put("GUN_ANIMS_LEGACY", ConfigWrapper.bound(() -> GUN_ANIMS_LEGACY, v -> GUN_ANIMS_LEGACY = v));
         configMap.put("GUN_MODEL_FOV", new ConfigWrapper<>(false));
         configMap.put("GUN_VISUAL_RECOIL", ConfigWrapper.bound(() -> GUN_VISUAL_RECOIL, v -> GUN_VISUAL_RECOIL = v));
-        configMap.put("GUN_ANIMATION_SPEED", new ConfigWrapper<>(1D));
+        configMap.put("GUN_ANIMATION_SPEED", ConfigWrapper.bound(() -> BusAnimationKeyframe.speed, v -> BusAnimationKeyframe.speed = v));
         configMap.put("ITEM_TOOLTIP_SHOW_OREDICT", new ConfigWrapper<>(true));
         configMap.put("ITEM_TOOLTIP_SHOW_CUSTOM_NUKE", new ConfigWrapper<>(true));
         configMap.put("MAIN_MENU_WACKY_SPLASHES", new ConfigWrapper<>(true));

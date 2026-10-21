@@ -69,11 +69,10 @@ public final class GunSupportGameTests {
                 "Ammo slots must accept uncomponentized ammo");
         ItemStack named = new ItemStack(ModAmmoItems.m357_sp.get());
         ItemStacks.setCustomName(named, Component.literal("x"));
-        helper.assertTrue(menu.getSlot(0).mayPlace(new ItemStack(ModAmmoItems.secretAmmo("FOLLY_SM").get()))
-                        && !menu.getSlot(0).mayPlace(new ItemStack(Items.ARROW))
-                        && !menu.getSlot(0).mayPlace(new ItemStack(ModCasingItems.casing(EnumCasingType.SMALL)))
-                        && !menu.getSlot(0).mayPlace(named),
-                "1.7 ammo bag slots hold only plain ammo_standard and ammo_secret");
+        helper.assertTrue(menu.getSlot(0).mayPlace(new ItemStack(ModAmmoItems.secretAmmo("FOLLY_SM").get())), "secret ammo");
+        helper.assertTrue(!menu.getSlot(0).mayPlace(new ItemStack(Items.ARROW)), "arrow");
+        helper.assertTrue(!menu.getSlot(0).mayPlace(new ItemStack(ModCasingItems.casing(EnumCasingType.SMALL))), "casing");
+        helper.assertTrue(!menu.getSlot(0).mayPlace(named), "named");
         ItemStack casingBag = new ItemStack(ModGunSupportItems.casing_bag.get());
         MenuItemBox casingMenu = new MenuItemBox(ModGunSupportMenus.CASING_BAG.get(), 1,
                 player.getInventory(), ItemCasingBag.LAYOUT,

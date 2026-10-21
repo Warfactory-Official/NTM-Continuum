@@ -3,7 +3,6 @@ package com.hbm.compat.happyghast;
 import com.hbm.Constants;
 import com.hbm.blocks.bomb.NukeMan;
 import com.hbm.tileentity.bomb.TileEntityNukeMan;
-import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.BlockPos;
@@ -53,17 +52,11 @@ public final class HbmHappyGhast {
 
     private static boolean initialised;
 
-    /** Creates the registers (entity type, GameTest bodies). Idempotent; must run before the registry flush. */
+    /** Creates the registers (the entity type). Idempotent; must run before the registry flush. */
     public static synchronized void init() {
         if (initialised) return;
         initialised = true;
-        GameTests.Suite unused = HappyGhastGameTests.TESTS;
         Constants.LOG.info("Happy ghasts present: a ready Fat Man can be rigged for carrying");
-    }
-
-    /** The {@code hbm:happy_ghast_*} GameTests. */
-    public static GameTests.Suite gameTests() {
-        return HappyGhastGameTests.TESTS;
     }
 
     /**

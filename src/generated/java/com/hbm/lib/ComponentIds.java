@@ -89,6 +89,7 @@ public final class ComponentIds {
     public static final String persistent_data = "hbm:persistent_data";
     public static final String pile_rod_depletion = "hbm:pile_rod_depletion";
     public static final String pipette = "hbm:pipette";
+    public static final String plastic_bag = "hbm:plastic_bag";
     public static final String plate_fuel_life = "hbm:plate_fuel_life";
     public static final String potatos_timer = "hbm:potatos_timer";
     public static final String rbmk_fuel = "hbm:rbmk_fuel";

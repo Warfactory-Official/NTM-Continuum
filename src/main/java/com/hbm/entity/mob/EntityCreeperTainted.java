@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.advancement.AwardRegions;
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.blocks.bomb.ModBombBlocks;
@@ -69,7 +70,7 @@ public class EntityCreeperTainted extends EntityCreeperBase implements IRadiatio
 
     @Override
     protected void detonate(ServerLevel level) {
-        level.explode(this, getX(), getY(), getZ(), 5.0F, Level.ExplosionInteraction.NONE);
+        Explosions.explode(level, this, getX(), getY(), getZ(), 5.0F, Level.ExplosionInteraction.NONE);
 
         if (!Compat.canEntityGrief(level, this)) return;
 

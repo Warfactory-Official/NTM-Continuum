@@ -37,9 +37,6 @@ public final class ForeignFluidHarnessQueries {
 
     private ForeignFluidHarnessQueries() {}
 
-    /** Set by the JEI plugin once its runtime exists: the names of the HBM fluid ingredients JEI lists. */
-    public static volatile Supplier<List<String>> jeiFluids = null;
-
     public static void register() {
         HarnessQueryRegistry.register("hbm_fluidcaps", ForeignFluidHarnessQueries::query);
     }
@@ -71,7 +68,10 @@ public final class ForeignFluidHarnessQueries {
 
     private static JsonObject jei() {
         JsonObject json = new JsonObject();
-        Supplier<List<String>> source = jeiFluids;
+        Supplier<List<String>> source = null;
+        //? if jei {
+        source = com.hbm.handler.jei.HbmJeiPluginCommon.fluidNames;
+        //?}
         json.addProperty("ready", source != null);
         if (source == null) return json;
         List<String> names = source.get();

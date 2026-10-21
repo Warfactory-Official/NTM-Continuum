@@ -1,5 +1,6 @@
 package com.hbm.items.tool;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth;
@@ -89,7 +90,7 @@ public class WeaponSpecial extends CompatSwordItem {
             }
             case ULLAPOOL_CABER -> {
                 // createExplosion(null, x, y, z, 7.5, true): a smoking (block-breaking) blast, no fire
-                world.explode(null, entity.getX(), entity.getY(), entity.getZ(), 7.5F, false, Level.ExplosionInteraction.TNT);
+                Explosions.explode(world, null, entity.getX(), entity.getY(), entity.getZ(), 7.5F, false, Level.ExplosionInteraction.TNT);
                 Tools.hurt(stack, 505, attacker);
             }
             case SHIMMER_SLEDGE -> {

@@ -30,6 +30,7 @@ public final class ArmorRenderers {
         RENDERERS.put("hev", new HEVArmorRenderer());
         RENDERERS.put("fau", new DigammaArmorRenderer());
         RENDERERS.put("trenchmaster", new TrenchmasterArmorRenderer());
+        RENDERERS.put("taurun", new TaurunArmorRenderer());
         // final armor B
         RENDERERS.put("steamsuit", new SteamsuitArmorRenderer());
         RENDERERS.put("dieselsuit", new DieselsuitArmorRenderer());

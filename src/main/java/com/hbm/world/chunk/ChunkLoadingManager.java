@@ -2,7 +2,7 @@ package com.hbm.world.chunk;
 
 import com.hbm.Constants;
 import dev.golem.core.platform.Lifecycle;
-import dev.golem.core.world.Compat;
+import dev.golem.core.world.Chunks;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -17,16 +17,13 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 
 /**
- * HBM's forced-chunk bookkeeping: reference-counted chunk claims on top of vanilla's
- * {@code ServerLevel.setChunkForced}, plus the restart reconciliation that Forge's ticket system used
- * to provide.
+ * HBM's forced-chunk bookkeeping: reference-counted claims on a chunk-system ticket of HBM's own
+ * ({@link Chunks#claimTicking}), plus the restart reconciliation that Forge's ticket system used to provide.
  *
- * <p><b>Why vanilla and not a loader API.</b> {@code setChunkForced} exists unchanged on every node
- * from 1.20.1 to 26.1 and gives a fully ticking chunk (rung 1 of the mixin ladder). NeoForge's
- * {@code TicketController} and Fabric's lack of one would need two implementations behind a facade. What
- * vanilla does <em>not</em> give is ownership: the forced set is a flat boolean set, so two holders over one
- * chunk would clobber each other and a crash would pin chunks forever. Refcounts close the first gap,
- * {@link ForcedChunkData} plus the grace window below the second.
+ * <p><b>Why not the forced set.</b> {@code ServerLevel.setChunkForced} is a flat boolean set shared with
+ * /forceload, GameTest plots and other mods, and its ticket is shared too: removing it removes the other
+ * user's. HBM's tickets are separate, refcounts give ownership among HBM's holders, and
+ * {@link ForcedChunkData} plus the grace window below close the crash gap.
  *
  * <p><b>The grace window.</b> On the first server tick after a level comes up, every chunk HBM had
  * recorded is re-forced under an internal ticket released {@value #RESTORE_GRACE_TICKS} ticks later, like
@@ -47,13 +44,6 @@ public final class ChunkLoadingManager {
 
     private static final class LevelState {
         final Long2IntOpenHashMap refCounts = new Long2IntOpenHashMap();
-        /**
-         * Chunks that were already in the level's forced set when HBM first claimed them. The set is one flag
-         * per chunk, not a refcount (1.7's ForgeChunkManager gave every mod its own tickets instead), so HBM
-         * leaves the flag alone for these when its last claim goes: clearing it would unload a chunk someone
-         * else forced (a /forceload, or a GameTest plot whose test has not started yet).
-         */
-        final LongOpenHashSet borrowed = new LongOpenHashSet();
         final Set<ChunkLoaderTicket> tickets = Collections.newSetFromMap(new IdentityHashMap<>());
         ChunkLoaderTicket restoreTicket;
         long restoreExpiresAt = -1L;
@@ -100,17 +90,10 @@ public final class ChunkLoadingManager {
         LevelState state = state(level);
         int count = state.refCounts.addTo(packed, 1);
         if (count == 0) {
-            // updateChunkForced, NOT setChunkForced: the latter is this call plus a blocking
-            // getChunk(x, z), so claiming a wide area (a fallout disc is thousands of chunks) pays a
-            // full chunk generation on the server thread per chunk before any work starts. A real Fat
-            // Man measured 20.6 s of server thread on 1,057 such chunks. Here a claim is only a
-            // registration; callers poll for the chunk anyway.
-            int chunkX = ChunkPos.getX(packed), chunkZ = ChunkPos.getZ(packed);
-            // A chunk still in HBM's own save record is HBM's from before a restart, not someone else's.
-            boolean external = Compat.isChunkForced(level, chunkX, chunkZ)
-                    && !ForcedChunkData.get(level).chunks().contains(packed);
-            if (external) state.borrowed.add(packed);
-            else Compat.updateChunkForced(level, chunkX, chunkZ, true);
+            // A claim is a ticket of HBM's own, not a registration of the level's forced set: a chunk that is
+            // forced too (a /forceload, a GameTest plot) stays forced when this claim goes. The ticket is not a
+            // setChunkForced either, which would generate the chunk on the server thread, per chunk of a fallout disc.
+            Chunks.claimTicking(level, ChunkPos.getX(packed), ChunkPos.getZ(packed));
             ForcedChunkData.get(level).add(packed);
         }
     }
@@ -121,9 +104,7 @@ public final class ChunkLoadingManager {
         int remaining = state.refCounts.addTo(packed, -1) - 1;
         if (remaining <= 0) {
             state.refCounts.remove(packed);
-            if (!state.borrowed.remove(packed)) {
-                Compat.updateChunkForced(level, ChunkPos.getX(packed), ChunkPos.getZ(packed), false);
-            }
+            Chunks.releaseTicking(level, ChunkPos.getX(packed), ChunkPos.getZ(packed));
             ForcedChunkData.get(level).remove(packed);
         }
     }

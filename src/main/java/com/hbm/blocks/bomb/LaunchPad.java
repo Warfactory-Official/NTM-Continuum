@@ -9,9 +9,12 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.bomb.TileEntityLaunchPad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -33,7 +36,8 @@ import org.jspecify.annotations.Nullable;
  * neighbouring <em>block</em> whether that face is a port, so the pad answers through
  * {@link IEnergyConnectorBlock}/{@link IFluidConnectorBlockMK2}.
  */
-public class LaunchPad extends BlockMultiblockMachine implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class LaunchPad extends BlockMultiblockMachine
+        implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public LaunchPad(Properties properties) {
         super(properties);
@@ -42,6 +46,15 @@ public class LaunchPad extends BlockMultiblockMachine implements IBomb, IEnergyC
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityLaunchPad(pos, state);
+    }
+
+
+    @Override
+    @Nullable
+    public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityLaunchPad pad ? pad : null;
     }
 
     @Override

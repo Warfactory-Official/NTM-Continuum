@@ -148,19 +148,8 @@ public class TileEntityPADetector extends TileEntityCooledBase
                     inventory.extractItem(2, 1, false);
                 }
 
-                if (inventory.getStackInSlot(3).isEmpty()) {
-                    inventory.setStackInSlot(3, recipe.output1.copy());
-                } else {
-                    inventory.insertItem(3, recipe.output1.copy(), false);
-                }
-
-                if (recipe.output2 != null) {
-                    if (inventory.getStackInSlot(4).isEmpty()) {
-                        inventory.setStackInSlot(4, recipe.output2.copy());
-                    } else {
-                        inventory.insertItem(4, recipe.output2.copy(), false);
-                    }
-                }
+                addOutput(3, recipe.output1);
+                if (recipe.output2 != null) addOutput(4, recipe.output2);
             }
 
             BlockPos pos = getBlockPos();
@@ -183,6 +172,17 @@ public class TileEntityPADetector extends TileEntityCooledBase
         }
 
         particle.crash(PAState.CRASH_NORECIPE);
+    }
+
+    // The output slots refuse handler inserts, so a stack is grown in place.
+    private void addOutput(int slot, ItemStack output) {
+        ItemStack inSlot = inventory.getStackInSlot(slot);
+        if (inSlot.isEmpty()) {
+            inventory.setStackInSlot(slot, output.copy());
+        } else {
+            inSlot.grow(output.getCount());
+            setChanged();
+        }
     }
 
     public boolean canAccept(ParticleAcceleratorRecipe recipe) {

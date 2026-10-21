@@ -1,6 +1,8 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
+import com.hbm.api.block.IToolable;
+import com.hbm.sound.ModSounds;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.material.Mats;
@@ -11,7 +13,10 @@ import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityFoundryCastingBase;
 import dev.golem.core.world.CompatBlock;
+import com.hbm.items.tool.ItemTooling;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
@@ -31,11 +36,10 @@ import java.util.List;
 /**
  * Base for the casting blocks (1.12.2 {@code FoundryCastingBase}). Interactions: right-click takes the
  * finished item; right-click with a matching-size mold installs it (swapping out the old one);
- * <b>sneak-right-click with an empty hand extracts the mold</b> (replaces the old screwdriver);
- * right-click with a shovel empties the molten content to scraps. The look-overlay shows the installed
+ * the screwdriver extracts the mold; right-click with a shovel empties the molten content to scraps. The look-overlay shows the installed
  * mold + fill state.
  */
-public abstract class FoundryCastingBase extends CompatBlock implements TickingBlock, ICrucibleAcceptor, ILookOverlay {
+public abstract class FoundryCastingBase extends CompatBlock implements TickingBlock, ICrucibleAcceptor, ILookOverlay, IToolable {
 
     protected FoundryCastingBase(Properties properties) {
         super(properties);
@@ -45,6 +49,7 @@ public abstract class FoundryCastingBase extends CompatBlock implements TickingB
 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (player.getMainHandItem().getItem() instanceof ItemTooling) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         TileEntityFoundryCastingBase cast = getTE(level, pos);
@@ -54,14 +59,6 @@ public abstract class FoundryCastingBase extends CompatBlock implements TickingB
         if (!cast.inventory.getStackInSlot(1).isEmpty()) {
             TileEntityFoundryCastingBase.giveOrDrop(level, pos, player, cast.inventory.getStackInSlot(1).copy());
             cast.inventory.setStackInSlot(1, ItemStack.EMPTY);
-            cast.setChanged();
-            return InteractionResult.SUCCESS;
-        }
-
-        // sneak + empty hand: extract the mold (replaces the old screwdriver)
-        if (player.isShiftKeyDown() && !cast.inventory.getStackInSlot(0).isEmpty() && cast.amount == 0) {
-            TileEntityFoundryCastingBase.giveOrDrop(level, pos, player, cast.inventory.getStackInSlot(0).copy());
-            cast.inventory.setStackInSlot(0, ItemStack.EMPTY);
             cast.setChanged();
             return InteractionResult.SUCCESS;
         }
@@ -84,17 +81,11 @@ public abstract class FoundryCastingBase extends CompatBlock implements TickingB
             return InteractionResult.SUCCESS;
         }
 
-        if (heldItem.isEmpty() && player.isShiftKeyDown() && !cast.inventory.getStackInSlot(0).isEmpty() && cast.amount == 0) {
-            TileEntityFoundryCastingBase.giveOrDrop(level, pos, player, cast.inventory.getStackInSlot(0).copy());
-            cast.inventory.setStackInSlot(0, ItemStack.EMPTY);
-            cast.setChanged();
-            return InteractionResult.SUCCESS;
-        }
-
         // insert a mold of the matching size
         Mold mold = ItemMold.getMold(heldItem);
         if (mold != null) {
             if (mold.size == cast.getMoldSize()) {
+                if (!cast.inventory.getStackInSlot(0).isEmpty() && cast.amount > 0) return InteractionResult.SUCCESS;
                 if (!cast.inventory.getStackInSlot(0).isEmpty()) {
                     TileEntityFoundryCastingBase.giveOrDrop(level, pos, player, cast.inventory.getStackInSlot(0).copy());
                 }
@@ -104,7 +95,7 @@ public abstract class FoundryCastingBase extends CompatBlock implements TickingB
                 cast.inventory.setStackInSlot(0, newMold);
                 if (!player.isCreative()) heldItem.shrink(1);
 
-                level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.BLOCKS, 1.5F, 1.0F);
+                level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, ModSounds.UPGRADE_PLUG.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
                 cast.setChanged();
             }
             return InteractionResult.SUCCESS;
@@ -170,5 +161,19 @@ public abstract class FoundryCastingBase extends CompatBlock implements TickingB
             }
         }
         return new ILookOverlay.Data(this.getName().getString(), 0xFF4000, 0x401000, text);
+    }
+
+    /** The screwdriver takes an installed mold out of an empty caster. */
+    @Override
+    public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit, InteractionHand hand, ToolType tool) {
+        if (tool != ToolType.SCREWDRIVER) return false;
+        TileEntityFoundryCastingBase cast = getTE(level, pos);
+        if (cast == null || cast.inventory.getStackInSlot(0).isEmpty() || cast.amount > 0) return false;
+        if (!level.isClientSide()) {
+            TileEntityFoundryCastingBase.giveOrDrop(level, pos, player, cast.inventory.getStackInSlot(0).copy());
+            cast.inventory.setStackInSlot(0, ItemStack.EMPTY);
+            cast.setChanged();
+        }
+        return true;
     }
 }

@@ -145,10 +145,8 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
 
     /** 0..15 comparator output from the fill fraction. */
     public byte getComparatorPower() {
-        long max = getMaxPower();
-        if (max <= 0) return 0;
-        double frac = (double) getPower() / (double) max * 15D;
-        return (byte) Mth.clamp((int) frac + 1, 0, 15);
+        double frac = (double) getPower() / (double) Math.max(getMaxPower(), 1) * 15D;
+        return (byte) Mth.clamp((int) Math.round(frac), 0, 15);
     }
 
     /**

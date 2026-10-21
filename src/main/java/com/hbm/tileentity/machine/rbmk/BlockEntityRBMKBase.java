@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.advancement.DetonationTrigger;
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.sound.ModSounds;
@@ -7,7 +8,7 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.advancement.AwardRegions;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
-import com.hbm.blocks.ModHazardBlocks;
+import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.RBMKLoader;
 import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
@@ -184,10 +185,11 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
     protected void spawnDebris(EntityRBMKDebris.DebrisType type) {
         RandomSource random = level.getRandom();
         EntityRBMKDebris debris = new EntityRBMKDebris(level, worldPosition.getX() + .5D, worldPosition.getY() + 4D, worldPosition.getZ() + .5D, type);
-        double x = random.nextGaussian() * .25D, y = .5D + random.nextDouble() * 1.5D, z = random.nextGaussian() * .25D;
+        double x = random.nextGaussian() * .25D, y = .25D + random.nextDouble() * 1.25D, z = random.nextGaussian() * .25D;
         if (type == EntityRBMKDebris.DebrisType.LID) { x *= .5D; y += .5D; z *= .5D; }
         debris.setDeltaMovement(x, y, z); level.addFreshEntity(debris);
     }
+    protected void spawnDebris(EntityRBMKDebris.DebrisType type, int count) { for (int i = 0; i < count; i++) spawnDebris(type); }
     protected void standardMelt(int reduce) {
         int height = RBMKDials.getColumnHeight(level); reduce = Mth.clamp(reduce, 1, height);
         if (level.getRandom().nextInt(3) == 0) reduce++;
@@ -196,14 +198,18 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
                 : Blocks.AIR.defaultBlockState(), 3);
     }
     public void meltdown() {
-        columns.clear(); floodFill();
+        columns.clear(); columns.add(this); floodFill();
         int minX = worldPosition.getX(), maxX = minX, minZ = worldPosition.getZ(), maxZ = minZ;
         for (BlockEntityRBMKBase column : columns) { minX = Math.min(minX, column.worldPosition.getX()); maxX = Math.max(maxX, column.worldPosition.getX()); minZ = Math.min(minZ, column.worldPosition.getZ()); maxZ = Math.max(maxZ, column.worldPosition.getZ()); }
         final int x0 = minX, x1 = maxX, z0 = minZ, z1 = maxZ;
-        BlockMultiblockCore.withoutTeardown(() -> { for (BlockEntityRBMKBase column : columns) { BlockPos p = column.worldPosition; column.onMelt(Math.min(Math.min(p.getX() - x0, x1 - p.getX()), Math.min(p.getZ() - z0, z1 - p.getZ())) + 1); } });
-        boolean digamma = RBMKBase.digamma;
-        BlockState hot = (digamma ? ModRBMKBlocks.rbmk_debris_digamma : ModRBMKBlocks.rbmk_debris_radiating).get().defaultBlockState();
-        for (BlockEntityRBMKBase column : columns) if (column instanceof BlockEntityRBMKRod && level.getBlockState(column.worldPosition).is(ModHazardBlocks.block_corium.get())) for (BlockPos p : BlockPos.betweenClosed(column.worldPosition.offset(-1, -1, -1), column.worldPosition.offset(1, 1, 1))) if (level.getRandom().nextInt(3) == 0 && (level.getBlockState(p).is(ModRBMKBlocks.rbmk_debris.get()) || level.getBlockState(p).is(ModRBMKBlocks.rbmk_debris_burning.get()))) level.setBlock(p, hot, 3);
+        RBMKBase.dropLids = false;
+        boolean digamma;
+        try {
+            BlockMultiblockCore.withoutTeardown(() -> { for (BlockEntityRBMKBase column : columns) { BlockPos p = column.worldPosition; column.onMelt(Math.min(Math.min(p.getX() - x0, x1 - p.getX()), Math.min(p.getZ() - z0, z1 - p.getZ())) + 1); } });
+            digamma = RBMKBase.digamma;
+            BlockState hot = (digamma ? ModRBMKBlocks.rbmk_debris_digamma : ModRBMKBlocks.rbmk_debris_radiating).get().defaultBlockState();
+            for (BlockEntityRBMKBase column : columns) if (column instanceof BlockEntityRBMKRod && level.getBlockState(column.worldPosition).is(ModFluidNetBlocks.corium_block.get())) for (BlockPos p : BlockPos.betweenClosed(column.worldPosition.offset(-1, -1, -1), column.worldPosition.offset(1, 1, 1))) if (level.getRandom().nextInt(3) == 0 && (level.getBlockState(p).is(ModRBMKBlocks.rbmk_debris.get()) || level.getBlockState(p).is(ModRBMKBlocks.rbmk_debris_burning.get()))) level.setBlock(p, hot, 3);
+        } finally { RBMKBase.dropLids = true; }
         double x = minX + (maxX - minX) / 2D + .5D, z = minZ + (maxZ - minZ) / 2D + .5D;
         ExplosionCreator.composeEffectRBMKMush(level, x, worldPosition.getY() + 1D, z);
         level.playSound(null, x, worldPosition.getY() + 1D, z, ModSounds.RBMK_EXPLOSION.get(), SoundSource.BLOCKS, 50F, 1F);
@@ -250,14 +256,20 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
             if (blockEntity instanceof IOverpressurable overpressurable) overpressurable.explode(server, receiver);
             else {
                 server.setBlock(receiver, Blocks.AIR.defaultBlockState(), 3);
-                server.explode(null, receiver.getX() + .5D, receiver.getY() + .5D, receiver.getZ() + .5D, 5F,
+                Explosions.explode(server, null, receiver.getX() + .5D, receiver.getY() + .5D, receiver.getZ() + .5D, 5F,
                         Level.ExplosionInteraction.NONE);
             }
         }
     }
     private void floodFill() {
-        Queue<BlockPos> queue = new ArrayDeque<>(); queue.add(worldPosition);
-        for (int safety = 50000; !queue.isEmpty() && safety-- > 0;) { BlockPos p = queue.remove(); if (level.getBlockEntity(p) instanceof BlockEntityRBMKBase column && columns.add(column)) for (Direction direction : NEIGHBORS) queue.add(p.relative(direction)); }
+        Queue<BlockPos> queue = new ArrayDeque<>(); Set<BlockPos> seen = new HashSet<>(); queue.add(worldPosition); seen.add(worldPosition);
+        for (int safety = 50000; !queue.isEmpty() && safety-- > 0;) {
+            BlockPos p = queue.remove();
+            BlockEntity at = p.equals(worldPosition) ? this : level.getBlockEntity(p);
+            if (!(at instanceof BlockEntityRBMKBase column)) continue;
+            columns.add(column);
+            for (Direction direction : NEIGHBORS) { BlockPos next = p.relative(direction); if (seen.add(next)) queue.add(next); }
+        }
     }
     @Override protected void loadData(DataIn input) { super.loadData(input); heat = input.getDoubleOr("heat", heat); reasimWater = input.getIntOr("reasimWater", reasimWater); reasimSteam = input.getIntOr("reasimSteam", reasimSteam); }
     @Override protected void saveData(DataOut output) { super.saveData(output); output.putDouble("heat", heat); output.putInt("reasimWater", reasimWater); output.putInt("reasimSteam", reasimSteam); }

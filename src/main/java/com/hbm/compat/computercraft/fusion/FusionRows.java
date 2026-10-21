@@ -8,7 +8,6 @@ import com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
-import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
@@ -27,9 +26,5 @@ public final class FusionRows {
             Peripherals.row(TileEntityFusionBreeder.class, FusionBreederPeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityFusionMHDT.class, FusionMHDTPeripheral::new, Reach.CELLS)
     );
-
-    public static GameTests.Suite tests() {
-        return com.hbm.gametest.computer.FusionPeripheralGameTests.TESTS;
-    }
 }
 //?}

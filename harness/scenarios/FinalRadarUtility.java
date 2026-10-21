@@ -289,8 +289,8 @@ public final class FinalRadarUtility implements Scenario {
         close(c);
         c.cmd("summon hbm:entity_soyuz_capsule " + (X + 26.5) + " " + (Y + 12) + " " + (Z - 9.5));
         c.waitTicks(160);
-        // 1.7 truncates the landing position with (int) casts, which rounds a negative x toward zero
-        int lx = (int) (X + 26.5), lz = (int) (Z - 9.5);
+        // 1.7 floors the landing position
+        int lx = (int) Math.floor(X + 26.5), lz = (int) Math.floor(Z - 9.5);
         Expect.block(c, lx, Y + 1, lz, "hbm:soyuz_capsule");
         String landed = c.blockEntity(lx, Y + 1, lz).toString();
         Expect.that(landed.contains("missile_soyuz"), "the landed capsule holds the spent rocket: " + landed);

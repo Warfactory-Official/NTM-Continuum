@@ -92,7 +92,8 @@ public class ItemBlowtorch extends CompatItem implements IFillableItem {
     @Override
     public int tryFill(FluidType type, int amount, ItemStack stack) {
         if (!acceptsFluid(type, stack) || amount <= 0) return amount;
-        int added = Math.min(amount, MAX_FILL - getFill(stack));
+        // 1.7 takes at most 50 mB per call
+        int added = Math.min(Math.min(amount, 50), MAX_FILL - getFill(stack));
         setFill(stack, getFill(stack) + added);
         return amount - added;
     }
@@ -106,7 +107,8 @@ public class ItemBlowtorch extends CompatItem implements IFillableItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal(String.format(Locale.US, "%,d / %,d mB", getFill(stack), MAX_FILL))
+        tooltip.add(Component.empty().append(Fluids.GAS.getDisplayName())
+                .append(String.format(Locale.US, ": %,d / %,d", getFill(stack), MAX_FILL))
                 .withStyle(ChatFormatting.YELLOW));
     }
 }

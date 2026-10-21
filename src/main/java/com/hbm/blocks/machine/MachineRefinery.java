@@ -138,4 +138,8 @@ public class MachineRefinery extends BlockMultiblockMachine implements IEnergyCo
                 {-1, 0, -1, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+    @Override
+    protected boolean carriesData() {
+        return true;
+    }
 }

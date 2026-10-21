@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
@@ -340,7 +341,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
         y /= rods.size();
         z /= rods.size();
 
-        level.explode(null, x, y, z, 15F, true, Level.ExplosionInteraction.BLOCK);
+        Explosions.explode(level, null, x, y, z, 15F, true, Level.ExplosionInteraction.BLOCK);
     }
 
     /** Client side: the reactor loop plays while fuel is loaded (1.7 {@code updateEntity}'s remote branch). */

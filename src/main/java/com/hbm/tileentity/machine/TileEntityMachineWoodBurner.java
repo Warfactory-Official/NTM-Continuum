@@ -26,11 +26,11 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -46,7 +46,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * output in addition to its fuel slot.
  */
 public class TileEntityMachineWoodBurner extends TileEntityMachineBase
-        implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2 {
+        implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2, WorldlyContainer {
 
     public static final long maxPower = 100_000L;
     public static final ModuleBurnTime burnModule = new ModuleBurnTime().setLogTimeMod(4).setWoodTimeMod(2);
@@ -84,15 +84,15 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
                 ItemStack fuel = te.inventory.getStackInSlot(0);
                 int burn = te.burnModule.getBurnTime(level, fuel);
                 if (burn > 0) {
-                    EnumAshType type = getAshFromFuel(fuel);
+                    EnumAshType type = TileEntityFireboxBase.getAshFromFuel(fuel);
                     if (type == EnumAshType.WOOD) te.ashLevelWood += burn;
                     else if (type == EnumAshType.COAL) te.ashLevelCoal += burn;
-                    else te.ashLevelMisc += burn;
+                    else if (type == EnumAshType.MISC) te.ashLevelMisc += burn;
 
                     int threshold = 2_000;
-                    while (te.processAsh(EnumAshType.WOOD, threshold)) te.ashLevelWood -= threshold;
-                    while (te.processAsh(EnumAshType.COAL, threshold)) te.ashLevelCoal -= threshold;
-                    while (te.processAsh(EnumAshType.MISC, threshold)) te.ashLevelMisc -= threshold;
+                    while (te.processAsh(te.ashLevelWood, EnumAshType.WOOD, threshold)) te.ashLevelWood -= threshold;
+                    while (te.processAsh(te.ashLevelCoal, EnumAshType.COAL, threshold)) te.ashLevelCoal -= threshold;
+                    while (te.processAsh(te.ashLevelMisc, EnumAshType.MISC, threshold)) te.ashLevelMisc -= threshold;
 
                     te.maxBurnTime = te.burnTime = burn;
                     ItemStack remainder = Compat.craftingRemainder(fuel);
@@ -149,29 +149,18 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         return MachineCore.facing(state);
     }
 
-    public static EnumAshType getAshFromFuel(ItemStack stack) {
-        if (stack.isEmpty()) return EnumAshType.MISC;
-        String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
-        if (stack.is(ItemTags.LOGS) || path.contains("wood") || stack.is(ItemTags.PLANKS)) {
-            return EnumAshType.WOOD;
-        }
-        if (path.contains("coal") || path.contains("coke") || path.contains("lignite")) return EnumAshType.COAL;
-        return EnumAshType.MISC;
-    }
-
-    private boolean processAsh(EnumAshType type, int threshold) {
+    private boolean processAsh(int level, EnumAshType type, int threshold) {
+        if (level < threshold) return false;
         ItemStack ash = new ItemStack(ModIngredientItems.ash(type));
-        for (int i = 0; i < 5; i++) {
-            ItemStack existing = inventory.getStackInSlot(i);
-            if (existing.isEmpty()) {
-                inventory.setStackInSlot(i, ash.copy());
-                return true;
-            }
-            if (existing.is(ash.getItem()) && existing.getCount() < existing.getMaxStackSize()) {
-                existing.grow(1);
-                inventory.setStackInSlot(i, existing);
-                return true;
-            }
+        ItemStack existing = inventory.getStackInSlot(1);
+        if (existing.isEmpty()) {
+            inventory.setStackInSlot(1, ash);
+            return true;
+        }
+        if (existing.is(ash.getItem()) && existing.getCount() < existing.getMaxStackSize()) {
+            existing.grow(1);
+            inventory.setStackInSlot(1, existing);
+            return true;
         }
         return false;
     }
@@ -192,7 +181,9 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         return true;
     }
 
-    @Override public int[] getAccessibleSlotsFromSide(int side) { return new int[]{0, 1}; }
+    @Override public int[] getSlotsForFace(Direction side) { return new int[]{0, 1}; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == 0 && isItemValidForSlot(slot, stack); }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == 1; }
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return maxPower; }

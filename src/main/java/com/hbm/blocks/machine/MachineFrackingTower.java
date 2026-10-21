@@ -115,4 +115,8 @@ public class MachineFrackingTower extends BlockMultiblockMachine implements IEne
                 {0, 0, 0, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+    @Override
+    protected boolean carriesData() {
+        return true;
+    }
 }

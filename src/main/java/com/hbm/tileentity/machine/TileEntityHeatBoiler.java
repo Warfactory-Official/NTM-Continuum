@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.tileentity.IFluidCopiable;
 import dev.golem.core.data.Tags;
 
@@ -153,7 +154,7 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
                 // processors and NO BlockAllocator, i.e. it damaged entities but destroyed no blocks. A
                 // block-destroying interaction here blows up the boiler's own cells, giving one self-drop per
                 // destroyed cell ("drops multiple of itself") and, with teardown suppressed, orphans.
-                this.level.explode(null, base.getX() + 0.5D, base.getY() + 2D, base.getZ() + 0.5D, 5F, Level.ExplosionInteraction.NONE);
+                Explosions.explode(this.level, null, base.getX() + 0.5D, base.getY() + 2D, base.getZ() + 0.5D, 5F, Level.ExplosionInteraction.NONE);
             });
         }
     }

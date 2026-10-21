@@ -12,6 +12,7 @@ import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -23,17 +24,11 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 /**
- * Detonator: 1.12.2's {@code ItemDetonator}, and the way a player fires anything by hand.
+ * Shift right-click a bomb block to bind its position, right-click in the air to set it off. For a launch pad
+ * "setting it off" means launching, so this plus a designator is the whole manual launch path.
  *
- * <p><b>Shift</b> right-click a bomb block to bind its position; right-click in the air to set it off.
- * For a launch pad "setting it off" means launching, so this plus a designator is the whole manual
- * launch path. Without it a pad can only be fired by redstone.
- *
- * <p>The bound position is one packed {@code BlockPos} component. Both failure cases keep upstream's
- * chat feedback, which is the only thing
- * that tells a player <em>why</em> nothing happened: "position not set" when the detonator is unbound,
- * and "target incompatible or too far away" when the bound block is not a bomb (a launch pad broken
- * since binding, or a mis-click).
+ * <p>The bound position is one packed {@code BlockPos} component. A bound block that is no longer a bomb (a pad
+ * broken since binding) reports "linked position incompatible or unloaded".
  */
 public class ItemDetonator extends CompatItem {
 
@@ -44,15 +39,15 @@ public class ItemDetonator extends CompatItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("desc.calldet1"));
-        tooltip.add(Component.translatable("desc.calldet2"));
+        tooltip.add(Component.literal("Shift right-click to set position,"));
+        tooltip.add(Component.literal("right-click to detonate!"));
 
         BlockPos bound = ModDataComponents.DETONATOR_TARGET.get(stack).orElse(null);
         if (bound == null) {
-            tooltip.add(Component.translatable("chat.posnoset").withStyle(ChatFormatting.YELLOW));
+            tooltip.add(Component.literal("No position set!").withStyle(ChatFormatting.RED));
         } else {
-            tooltip.add(Component.translatable("chat.possetxyz", bound.getX(), bound.getY(), bound.getZ())
-                    .withStyle(ChatFormatting.GREEN));
+            tooltip.add(Component.literal("Linked to " + bound.getX() + ", " + bound.getY() + ", " + bound.getZ())
+                    .withStyle(ChatFormatting.YELLOW));
         }
     }
 
@@ -61,17 +56,14 @@ public class ItemDetonator extends CompatItem {
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
         if (player == null || !player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
-
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         ModDataComponents.DETONATOR_TARGET.set(context.getItemInHand(), pos);
-
         if (!level.isClientSide()) {
-            player.sendSystemMessage(Component.literal("[")
-                    .append(Component.translatable("chat.posset")).append("]").withStyle(ChatFormatting.DARK_GREEN));
+            player.sendSystemMessage(prefix().append(Component.literal("Position set!").withStyle(ChatFormatting.GREEN)));
         }
         level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BOOP.get(),
-                SoundSource.AMBIENT, 1.0F, 1.0F);
+                SoundSource.PLAYERS, 2.0F, 1.0F);
         return InteractionResult.SUCCESS;
     }
 
@@ -79,40 +71,42 @@ public class ItemDetonator extends CompatItem {
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         BlockPos bound = ModDataComponents.DETONATOR_TARGET.get(stack).orElse(null);
-
         if (bound == null) {
             if (!level.isClientSide()) {
-                player.sendSystemMessage(Component.translatable("chat.posnoseterror").withStyle(ChatFormatting.RED));
+                player.sendSystemMessage(prefix().append(Component.literal("No position set!").withStyle(ChatFormatting.RED)));
             }
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         ServerLevel server = (ServerLevel) level;
         var chunk = server.getChunkSource().getChunkNow(bound.getX() >> 4, bound.getZ() >> 4);
         if (chunk == null) {
             PendingDetonations.queue(server, bound, player.getUUID());
             level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
-                    SoundSource.AMBIENT, 1.0F, 1.0F);
+                    SoundSource.PLAYERS, 1.0F, 1.0F);
             return InteractionResult.SUCCESS;
         }
-
         if (!(chunk.getBlockState(bound).getBlock() instanceof IBomb bomb)) {
-            player.sendSystemMessage(Component.translatable("chat.postoofarerror").withStyle(ChatFormatting.RED));
+            player.sendSystemMessage(prefix().append(Component.translatable(BombReturnCode.ERROR_NO_BOMB.getUnlocalizedMessage())
+                    .withStyle(ChatFormatting.RED)));
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-
         level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
-                SoundSource.AMBIENT, 1.0F, 1.0F);
+                SoundSource.PLAYERS, 1.0F, 1.0F);
         PendingDetonations.handoff(server, bound);
         BombReturnCode result = HbmEvents.detonate(bomb, level, bound, player);
-        // Upstream always reports "detonated"; the return code carries the real answer (a pad with no
-        // designator, no fuel or an unlaunchable missile says so), so it is what gets printed.
-        Component message = result.getUnlocalizedMessage().isEmpty()
-                ? Component.translatable("chat.detonated")
-                : Component.translatable(result.getUnlocalizedMessage());
-        player.sendSystemMessage(Component.literal("[").append(message).append("]")
-                .withStyle(result.wasSuccessful() ? ChatFormatting.DARK_GREEN : ChatFormatting.RED));
+        // A block that answers UNDEFINED has no message of its own; it still fired.
+        String key = result.getUnlocalizedMessage().isEmpty()
+                ? BombReturnCode.DETONATED.getUnlocalizedMessage() : result.getUnlocalizedMessage();
+        player.sendSystemMessage(prefix().append(Component.translatable(key)
+                .withStyle(result.wasSuccessful() || result == BombReturnCode.UNDEFINED
+                        ? ChatFormatting.YELLOW : ChatFormatting.RED)));
         return InteractionResult.SUCCESS;
+    }
+
+    private static MutableComponent prefix() {
+        return Component.literal("[").withStyle(ChatFormatting.DARK_AQUA)
+                .append(Component.translatable("item.hbm.detonator").withStyle(ChatFormatting.DARK_AQUA))
+                .append(Component.literal("] ").withStyle(ChatFormatting.DARK_AQUA));
     }
 }

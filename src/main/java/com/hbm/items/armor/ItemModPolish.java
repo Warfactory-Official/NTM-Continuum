@@ -20,6 +20,7 @@ public final class ItemModPolish extends ItemArmorMod {
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal("5% chance to nullify damage").withStyle(ChatFormatting.BLUE));
+        tooltip.add(Component.empty());
         super.appendCompatHoverText(stack, context, tooltip, flag);
     }
 

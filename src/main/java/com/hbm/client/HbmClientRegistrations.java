@@ -568,19 +568,7 @@ public final class HbmClientRegistrations {
         // 1.7 RenderAccessoryUtility: special players' wings, axe pack and tail, and the HBM capes
         HumanoidLayers.register(SpecialPlayerRenderLayer::new);
         Capes.register(RenderAccessoryUtility::getCloakFromPlayer);
-        SpecialPlayerHarnessQueries.register();
         RenderBobble.preloadSkins(); // 1.12.2 ClientHttpHandler.preinit: skinned bobbleheads
-        ArmorModHarnessQueries.register();
-        StructureHarnessQueries.register(); // harness query hbm_structure: NBT structure starts, placement score, loot state
-        WorldFeatureHarnessQueries.register(); // harness query hbm_worldgen: block counts/finds, biome, meteor scheduler
-        SmallHarnessQueries.register(); // hbm_small: boss bar, rad fog, impact spawn refusals, sulfur columns
-        ReloadedGunHarnessQueries.register(); // hbm_reloaded_guns: gluon gun and jade shotgun client state
-        ComponentHarnessQueries.register(); // harness query hbm_wgc: features/bunker/meteor_dungeon starts, hardcoded piece builds
-        LegacyDungeonHarnessQueries.register(); // harness query hbm_wgd: legacy dungeon starts, placement score, loot/spawners
-        GapsAHarnessQueries.register(); // harness query hbm_gapsa: held stack/attack damage/cells, hurt jolt, amat flashes
-        GapsBHarnessQueries.register(); // harness query hbm_gapsb: boss spawns, reputation, machine damage, structure tiles, radar
-        ForeignFluidHarnessQueries.register(); // harness query hbm_fluidcaps: HBM fluids through the loader fluid capability (19ek-fluids)
-        BlockInfoHarnessQueries.register(); // harness query hbm_block_info: the gauges and tanks Jade is sent
     }
 
     /** Connects the client-owned visuals to the common JetpackHandler without making it import client APIs. */

@@ -346,8 +346,11 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         progress = input.getIntOr("progress", 0);
         processTime = input.getIntOr("processTime", 0);
         for (int i = 0; i < tanks.length; i++) tanks[i].readFromNBT(input, "tank" + i);
-        if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("recipe index", "recipe");
-        String saved = input.getStringOr("recipe", "");
+        String saved = input.getStringOr("recipe", null);
+        if (saved == null) {
+            if (input.getIntOr("recipe", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("recipe index", "recipe");
+            saved = "";
+        }
         if (saved.contains("#") && MixerRecipes.indexOf(tanks[2].getTankType(), saved) < 0) {
             // a save from before the recipes were data names the row by its inputs and occurrence ("hbm:water+-+true#0")
             int index = SavedIds.fromListKey(signatures(tanks[2].getTankType()), saved);

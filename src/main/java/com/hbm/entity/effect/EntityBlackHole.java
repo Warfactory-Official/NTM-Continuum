@@ -1,5 +1,6 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.entity.ModEntities;
 import com.hbm.items.ModItems;
@@ -137,7 +138,7 @@ public class EntityBlackHole extends CompatEntity {
                 if (entity instanceof ItemEntity item && (item.getItem().is(ModItems.flame_pony.get())
                         || item.getItem().is(ModSingularityItems.pellet_antimatter.get()))) {
                     discard();
-                    server.explode(null, getX(), getY(), getZ(), 5F, true,
+                    Explosions.explode(server, null, getX(), getY(), getZ(), 5F, true,
                             Level.ExplosionInteraction.TNT);
                     return;
                 }

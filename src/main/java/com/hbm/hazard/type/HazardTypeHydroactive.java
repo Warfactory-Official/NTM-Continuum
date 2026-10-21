@@ -1,5 +1,6 @@
 package com.hbm.hazard.type;
 
+import dev.golem.core.world.Explosions;
 import java.util.List;
 
 import com.hbm.config.RadiationConfig;
@@ -23,7 +24,7 @@ public class HazardTypeHydroactive implements IHazardType {
 
         if (wet && stack.getCount() > 0) {
             stack.setCount(0);
-            target.level().explode(null, target.getX(), target.getY() + target.getEyeHeight(), target.getZ(),
+            Explosions.explode(target.level(), null, target.getX(), target.getY() + target.getEyeHeight(), target.getZ(),
                     (float) level, false, Level.ExplosionInteraction.TNT);
         }
     }
@@ -36,7 +37,7 @@ public class HazardTypeHydroactive implements IHazardType {
 
         if (item.isInWaterOrRain()) {
             item.discard();
-            item.level().explode(null, item.getX(), item.getY() + item.getBbHeight() * 0.5, item.getZ(),
+            Explosions.explode(item.level(), null, item.getX(), item.getY() + item.getBbHeight() * 0.5, item.getZ(),
                     (float) level, false, Level.ExplosionInteraction.TNT);
         }
     }

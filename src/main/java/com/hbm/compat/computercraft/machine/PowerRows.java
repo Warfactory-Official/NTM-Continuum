@@ -13,7 +13,6 @@ import com.hbm.tileentity.machine.dfc.TileEntityCoreInjector;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCoker;
-import dev.golem.core.gametest.GameTests;
 
 import java.util.List;
 
@@ -35,9 +34,5 @@ public final class PowerRows {
             Peripherals.row(TileEntityMachineCombustionEngine.class, CombustionEnginePeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityMachineCoker.class, CokerPeripheral::new, Reach.CELLS)
     );
-
-    public static GameTests.Suite tests() {
-        return com.hbm.gametest.computer.PowerPeripheralGameTests.TESTS;
-    }
 }
 //?}

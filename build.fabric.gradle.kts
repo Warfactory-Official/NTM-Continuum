@@ -560,7 +560,7 @@ tasks.processResources {
     // FabricClientInit binds and audits every hbm entity renderer at once, so the renderer must be handed over first.
     if (hasHappyGhast) {
         val happyGhastLines = mapOf(
-            "\"com.hbm.platform.fabric.FabricInit\"" to { it: String -> "\"com.hbm.compat.happyghast.HbmHappyGhastFabric\", $it" },
+            "\"com.hbm.platform.fabric.FabricInit\"" to { it: String -> "\"com.hbm.compat.happyghast.HbmHappyGhastFabric\", \"com.hbm.compat.happyghast.HappyGhastGameTestsFabric\", $it" },
             "\"com.hbm.platform.fabric.FabricClientInit\"" to { it: String -> "\"com.hbm.compat.happyghast.HbmHappyGhastFabricClient\", $it" },
         )
         filesMatching("fabric.mod.json") {
@@ -615,6 +615,8 @@ apply(from = rootProject.file("../Golem-Core/gradle/mod/generated-data.gradle.kt
 
 apply(from = rootProject.file("../Golem-Core/gradle/mod/mixin-validation.gradle.kts"))
 
+// The uploaded jar: no GameTests or harness queries (see the script).
+apply(from = rootProject.file("gradle/release-jar.gradle.kts"))
 // Modrinth + CurseForge upload of this node's jar; run every node with the root `publishAllMods`.
 apply(from = rootProject.file("../Golem-Core/gradle/mod/publish.gradle.kts"))
 

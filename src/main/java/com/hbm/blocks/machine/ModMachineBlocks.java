@@ -10,6 +10,7 @@ import com.hbm.blocks.machine.fusion.MachineFusionKlystronCreative;
 import com.hbm.blocks.machine.fusion.MachineFusionMHDT;
 import com.hbm.blocks.machine.fusion.MachineFusionPlasmaForge;
 import com.hbm.blocks.machine.fusion.MachineFusionTorus;
+import com.hbm.items.block.CarriedTankInfo;
 import com.hbm.items.block.EnergyNetBlockItem;
 import com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct;
 import dev.golem.core.world.Compat;
@@ -32,6 +33,7 @@ import com.hbm.blocks.bomb.LaunchPad;
 import dev.golem.core.registry.BlockTag;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
+import com.hbm.registration.CarriedDrops;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Models;
@@ -462,7 +464,7 @@ public final class ModMachineBlocks {
             "machine_fluidtank", MachineFluidTank::new, // resistance: 1.7 setResistance(20) = 60/5 = 12 against explosions
             p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
-            .loot(Loot.self())
+            .loot(CarriedDrops.SURVIVING)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineUF6Tank> machine_uf6_tank = REG.<MachineUF6Tank>block(
@@ -748,7 +750,7 @@ public final class ModMachineBlocks {
             "machine_refinery", MachineRefinery::new, // resistance: 1.7 setResistance(20) = 60/5 = 12 against explosions
             p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
-            .loot(Loot.self())
+            .loot(CarriedDrops.SURVIVING)
             .tag(BlockTag.PICKAXE);
 
     /** Heat Boiler (old id {@code heat_boiler}): the OIL to HOTOIL and water to steam converter. */
@@ -788,14 +790,14 @@ public final class ModMachineBlocks {
             "machine_well", MachineOilWell::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
-            .loot(Loot.self())
+            .loot(CarriedDrops.SURVIVING)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachinePumpjack> machine_pumpjack = REG.<MachinePumpjack>block(
             "machine_pumpjack", MachinePumpjack::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
-            .loot(Loot.self())
+            .loot(CarriedDrops.SURVIVING)
             .tag(BlockTag.PICKAXE);
 
     // Advanced oil machines
@@ -804,7 +806,7 @@ public final class ModMachineBlocks {
             "machine_fracking_tower", MachineFrackingTower::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
-            .loot(Loot.self())
+            .loot(CarriedDrops.SURVIVING)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineVacuumDistill> machine_vacuum_distill = REG.<MachineVacuumDistill>block(
@@ -1299,7 +1301,10 @@ public final class ModMachineBlocks {
          tabItem(machine_waste_drum);
          tabItem(machine_storage_drum);
         tabItem(creative_fluid_source);
-         tabItem(machine_fluidtank);
+        REG.<MachineFluidTank, BlockItem>blockItem(machine_fluidtank,
+                        (block, p) -> new EnergyNetBlockItem(block, p, stack -> CarriedTankInfo.lines(stack, "tank")),
+                        p -> Compat.blockDescription(p))
+                .tab(HbmTab.MACHINES);
          tabItem(machine_uf6_tank);
          tabItem(machine_puf6_tank);
          tabItem(machine_bigasstank);
@@ -1355,7 +1360,11 @@ public final class ModMachineBlocks {
         tabItem(fraction_spacer);
         tabItem(machine_liquefactor);
         tabItem(machine_solidifier);
-        tabItem(machine_refinery);
+        REG.<MachineRefinery, BlockItem>blockItem(machine_refinery,
+                        (block, p) -> new EnergyNetBlockItem(block, p,
+                                stack -> CarriedTankInfo.lines(stack, "tank0", "tank1", "tank2", "tank3", "tank4")),
+                        p -> Compat.blockDescription(p))
+                .tab(HbmTab.MACHINES);
          tabItem(machine_boiler);
          tabItem(machine_industrial_boiler);
         tabItem(heater_oilburner);

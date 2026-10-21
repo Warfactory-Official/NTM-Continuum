@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import dev.golem.core.world.Explosions;
 import com.hbm.entity.effect.EntityMist;
 import com.hbm.inventory.fluid.Fluids;
 import dev.golem.core.world.Compat;
@@ -55,7 +56,7 @@ public class EntityCreeperPhosgene extends EntityCreeperBase {
 
     @Override
     protected void detonate(ServerLevel level) {
-        level.explode(this, getX(), getY() + getBbHeight() / 2, getZ(), 2F, Level.ExplosionInteraction.NONE);
+        Explosions.explode(level, this, getX(), getY() + getBbHeight() / 2, getZ(), 2F, Level.ExplosionInteraction.NONE);
 
         EntityMist mist = new EntityMist(level);
         mist.setType(Fluids.PHOSGENE);

@@ -293,6 +293,26 @@ public final class QMAWLoader {
         return item == null || item == Items.AIR ? null : new ItemStack(item, count);
     }
 
+    /** 1.7 {@code GunFactory.EnumAmmo} in ordinal order: the metadata the manual files name ammo by. */
+    private static final String[] LEGACY_AMMO = {
+            "stone", "stone_ap", "stone_iron", "stone_shot", "m357_bp", "m357_sp",
+            "m357_fmj", "m357_jhp", "m357_ap", "m357_express", "m44_bp", "m44_sp",
+            "m44_fmj", "m44_jhp", "m44_ap", "m44_express", "p22_sp", "p22_fmj",
+            "p22_jhp", "p22_ap", "p9_sp", "p9_fmj", "p9_jhp", "p9_ap",
+            "r556_sp", "r556_fmj", "r556_jhp", "r556_ap", "r762_sp", "r762_fmj",
+            "r762_jhp", "r762_ap", "r762_du", "bmg50_sp", "bmg50_fmj", "bmg50_jhp",
+            "bmg50_ap", "bmg50_du", "b75", "b75_inc", "b75_exp", "g12_bp",
+            "g12_bp_magnum", "g12_bp_slug", "g12", "g12_slug", "g12_flechette", "g12_magnum",
+            "g12_explosive", "g12_phosphorus", "g26_flare", "g26_flare_supply", "g26_flare_weapon", "g40_he",
+            "g40_heat", "g40_demo", "g40_inc", "g40_phosphorus", "rocket_he", "rocket_heat",
+            "rocket_demo", "rocket_inc", "rocket_phosphorus", "flame_diesel", "flame_gas", "flame_napalm",
+            "flame_balefire", "capacitor", "capacitor_overcharge", "capacitor_ir", "tau_uranium", "coil_tungsten",
+            "coil_ferrouranium", "nuke_standard", "nuke_demo", "nuke_high", "nuke_tots", "nuke_hive",
+            "g10", "g10_shrapnel", "g10_du", "g10_slug", "r762_he", "bmg50_he",
+            "g10_explosive", "p45_sp", "p45_fmj", "p45_jhp", "p45_ap", "p45_du",
+            "ct_hook", "ct_mortar", "ct_mortar_charge", "nuke_balefire", "bmg50_sm"
+    };
+
     private static Identifier flattenedId(Identifier oldId, int metadata) {
         String path = oldId.getPath();
         // the metadata families that are one item per type
@@ -301,15 +321,8 @@ public final class QMAWLoader {
             return split == null ? null : Ids.parse(split);
         }
         if (oldId.equals(Ids.of("hbm", "ammo_standard"))) {
-            String[] variants = {
-                    "ammo_standard_m357_bp", "ammo_standard_m357_sp", "ammo_standard_m357_fmj", "ammo_standard_m357_jhp", "ammo_standard_m357_ap", "ammo_standard_m357_express",
-                    "ammo_standard_m44_bp", "ammo_standard_m44_sp", "ammo_standard_m44_fmj", "ammo_standard_m44_jhp", "ammo_standard_m44_ap", "ammo_standard_m44_express",
-                    "ammo_standard_p22_sp", "ammo_standard_p22_fmj", "ammo_standard_p22_jhp", "ammo_standard_p22_ap",
-                    "ammo_standard_p9_sp", "ammo_standard_p9_fmj", "ammo_standard_p9_jhp", "ammo_standard_p9_ap"
-            };
-            if (metadata >= 4 && metadata <= 23) return Ids.of("hbm", variants[metadata - 4]);
-            if (metadata == 75) return Ids.of("hbm", "ammo_standard_nuke_high");
-            return null;
+            return metadata >= 0 && metadata < LEGACY_AMMO.length
+                    ? Ids.of("hbm", "ammo_standard_" + LEGACY_AMMO[metadata]) : null;
         }
         if (oldId.equals(Ids.of("hbm", "rbmk_rod"))) return Ids.of("hbm", "rbmk_fuel_rod");
         if (oldId.equals(Ids.of("hbm", "rbmk_rod_mod"))) return Ids.of("hbm", "rbmk_fuel_rod_moderated");
@@ -318,7 +331,6 @@ public final class QMAWLoader {
         if (oldId.equals(Ids.of("hbm", "wire_dense")) && metadata == 48) return Ids.of("hbm", "wire_dense_bscco");
         if (oldId.equals(Ids.of("hbm", "wire_dense")) && metadata == 7900) return Ids.of("hbm", "wire_dense_gold");
         if (oldId.equals(Ids.of("hbm", "coke"))) return Ids.of("hbm", "coke_coal");
-        if (path.equals("pile_brick")) return null;
         return oldId;
     }
 }

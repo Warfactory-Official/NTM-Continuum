@@ -93,6 +93,17 @@ public final class ModDamageTypes {
                 type("nuclear_blast").message("nuclearBlast").exhaustion(0.1).tags(IS_EXPLOSION),
                 type("revolver_bullet").message("revolverBullet").exhaustion(0.1).tags(IS_PROJECTILE),
                 type("subatomic").exhaustion(0.1),
+                type("euthanized").tags(BYPASSES_ARMOR),
+                type("tau_blast").message("tauBlast").tags(BYPASSES_ARMOR, IS_EXPLOSION),
+                type("electrified"),
+                type("plasma"),
+                type("suicide").projectile(),
+                type("teleporter"),
+                type("subatomic_1").message("subAtomic1").projectile().tags(BYPASSES_ARMOR),
+                type("subatomic_2").message("subAtomic2").projectile().tags(BYPASSES_ARMOR),
+                type("subatomic_3").message("subAtomic3").projectile().tags(BYPASSES_ARMOR),
+                type("subatomic_4").message("subAtomic4").projectile().tags(BYPASSES_ARMOR),
+                type("subatomic_5").message("subAtomic5").projectile().tags(BYPASSES_ARMOR),
                 type("tau").tags(BYPASSES_ARMOR, IS_PROJECTILE),
                 // 1.7 ItemBoltgun: DamageSource.causePlayerDamage(player).setDamageBypassesArmor(), so vanilla's
                 // "was slain by" player message
