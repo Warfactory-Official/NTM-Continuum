@@ -492,7 +492,7 @@ public final class HazardRegistrySource {
 
         // asbestos (the basalt and resource-stone ores were metadata in 1.7)
         frame("asbestos").asbestos(1F).ingot("ingot_asbestos").dust("powder_asbestos").block("block_asbestos")
-                .ore("ore_asbestos", "ore_gneiss_asbestos", "ore_basalt_asbestos", "stone_resource_asbestos");
+                .ore("ore_asbestos", "ore_gneiss_asbestos", "ore_basalt_asbestos", "stone_resource_asbestos", "ore_asbestos_deepslate");
 
         // HAZARDS, MISC
         frame("lithium").hydro(1F).hazNugget().ingot("lithium").dustSmall("powder_lithium_tiny").dust("powder_lithium").block("block_lithium").ore("ore_gneiss_lithium");

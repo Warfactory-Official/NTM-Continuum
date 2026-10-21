@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -87,6 +88,12 @@ public final class OreVeinPlacer {
      */
     public static void placeVein(WorldGenLevel level, RandomSource rand, int x, int y, int z, int numberOfBlocks,
                                  BlockState ore, Predicate<BlockState> target) {
+        placeVein(level, rand, x, y, z, numberOfBlocks, state -> target.test(state) ? ore : null);
+    }
+
+    /** {@link #placeVein} where {@code replace} picks the ore for each host block, or null to leave it. */
+    public static void placeVein(WorldGenLevel level, RandomSource rand, int x, int y, int z, int numberOfBlocks,
+                                 Function<BlockState, BlockState> replace) {
         float f = rand.nextFloat() * (float) Math.PI;
 
         double d0 = x + 8.0F + Mth.sin(f) * numberOfBlocks / 8.0F;
@@ -127,7 +134,8 @@ public final class OreVeinPlacer {
 
                         pos.set(l1, i2, j2);
                         if (!isWritable(level, pos)) continue;
-                        if (target.test(level.getBlockState(pos))) {
+                        BlockState ore = replace.apply(level.getBlockState(pos));
+                        if (ore != null) {
                             level.setBlock(pos, ore, 2 | 16);
                         }
                     }

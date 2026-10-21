@@ -53,7 +53,7 @@ public class ItemSurveyScanner extends CompatItem {
     private static final List<Finding> FINDINGS = new CopyOnWriteArrayList<>(List.of(
             hbm("Found OIL!", ChatFormatting.BLACK, "ore_oil"),
             hbm("Found BEDROCK OIL!", ChatFormatting.BLACK, "ore_bedrock_oil"),
-            hbm("Found COLTAN!", ChatFormatting.GOLD, "ore_coltan"),
+            hbm("Found COLTAN!", ChatFormatting.GOLD, "ore_coltan", "ore_coltan_deepslate"),
             hbm("Found DEPTH ROCK!", ChatFormatting.GRAY, "stone_depth", "stone_depth_nether"),
             hbm("Found SCHIST!", ChatFormatting.DARK_AQUA, "stone_gneiss"),
             hbm("Found AUSTRALIUM!", ChatFormatting.YELLOW, "ore_australium")));

@@ -610,6 +610,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("ore_counts", 200, () -> OreWorldgenGameTests::oreCounts);
     public static final GameTests.Function ORE_SMOLDERING =
             TESTS.function("ore_smoldering", 300, () -> OreWorldgenGameTests::oreSmoldering);
+    public static final GameTests.Function ORE_DEEPSLATE_TWIN =
+            TESTS.function("ore_deepslate_twin", 200, () -> OreWorldgenGameTests::oreDeepslateTwin);
 
     // --- SILEX (implementations live in SilexGameTests) ---
     public static final GameTests.Function SILEX_PROCESS =

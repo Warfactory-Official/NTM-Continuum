@@ -102,15 +102,16 @@ public final class ValueMapGameTests {
     /**
      * SHA-256 of {@link #hazardDump()} (ground contamination on). The storage-drum waste lines are left out of the
      * hash and compared value by value instead. No 1.12.2 CONTAMINATING entries (1.7 has no such hazard type); 1.7's
-     * white phosphorus frame on its ingot and block tags.
+     * white phosphorus frame on its ingot and block tags. The deepslate twins carry their stone ore's lines.
      */
-    static final String HASH_HAZARDS = "f5dbfc5832973f93e14622e0da0553f75eaf2af25e7a1892d8c97d87da663838";
+    static final String HASH_HAZARDS = "b508a730090fbd19bc2225f15133fb9ec685675538e18603aa526ac9496e7f95";
     /**
      * SHA-256 of {@link #armorDump()}, HBM's items only. 1.7 values: NCRPA resistance 1.7, RPA/NCRPA helmets
      * FULL_PACKAGE, the liquidator and PAA sets with their (empty) resistance, the schrabidium set in
-     * checkForHazmat, NCRPA not in checkForHaz2, RPA at 50/0.75 physical, energy rounds not projectiles.
+     * checkForHazmat, NCRPA not in checkForHaz2, RPA at 50/0.75 physical, energy rounds not projectiles. 1.7's
+     * name-based Faraday check also takes the lead and titanium deepslate twins.
      */
-    static final String HASH_ARMOR = "9468336a15507e3adb352f10f3f24845cd0ed2f15d080757b6772f86f4df5a05";
+    static final String HASH_ARMOR = "0d7e388214c6cf63bb2fcb13c2416fa0aefc9905537b7cfadf3c8f33a902d9c4";
     /**
      * SHA-256 of {@link #falloutDump}, with the rules' JSON keys sorted. 1.7 FalloutConfigJSON's solid marks and
      * order, no 1.12 opaque flag or log axis, no snow-block entry, the nether uranium entry.

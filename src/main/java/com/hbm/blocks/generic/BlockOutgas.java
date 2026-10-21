@@ -52,7 +52,8 @@ public class BlockOutgas extends CompatBlock {
                     || this == ModNuclearBlocks.ore_gneiss_uranium.get()
                     || this == ModNuclearBlocks.ore_gneiss_uranium_scorched.get()
                     || this == ModNuclearBlocks.ore_nether_uranium.get()
-                    || this == ModNuclearBlocks.ore_nether_uranium_scorched.get()) {
+                    || this == ModNuclearBlocks.ore_nether_uranium_scorched.get()
+                    || this == ModOreBlocks.ore_uranium_deepslate.get()) {
                 return ModNuclearBlocks.gas_radon.get();
             }
             if (this == ModOutgasBlocks.block_corium_cobble.get()) return ModNuclearBlocks.gas_radon_dense.get();

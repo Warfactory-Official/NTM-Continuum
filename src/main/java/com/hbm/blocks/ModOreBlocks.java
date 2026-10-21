@@ -15,6 +15,7 @@ import com.hbm.blocks.generic.BlockDepthOre;
 import com.hbm.blocks.generic.BlockGasExplosive;
 import com.hbm.blocks.generic.BlockGasFlammable;
 import com.hbm.blocks.generic.BlockNetherCoal;
+import com.hbm.blocks.generic.BlockOutgas;
 import com.hbm.blocks.generic.BlockResourceStone;
 import com.hbm.blocks.generic.BlockSmolder;
 import com.hbm.blocks.generic.BlockStalagmite;
@@ -37,6 +38,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,14 +48,12 @@ import java.util.function.Supplier;
 /**
  * The ore blocks that {@code gen_wave1.py} cannot produce: the four rich {@link BlockCluster}s, the
  * depth-rock family ({@link BlockDepth}/{@link BlockDepthOre}), the six flattened
- * {@link BlockResourceStone} variants, the two burning nether blocks, the four cave spikes, and the two
- * drifting gas pockets.
+ * {@link BlockResourceStone} variants, the two burning nether blocks, the four cave spikes, the two
+ * drifting gas pockets and the deepslate twins of the overworld ores.
  *
- * <p>These are hand-registered because each carries behaviour (custom drop maths, unbreakability,
- * drift/ignition, anchoring) that a generated plain {@code Block} cannot express. Every block here
- * computes its drops in Java (see {@link OreDrops}) and therefore declares {@code noLootTable()}:
- * <b>do not add these ids to the generator's loot-table list</b>. The generator still owns their
- * models, blockstates, lang and mineable-tag entries.
+ * <p>Apart from the deepslate twins and the depth rock, every block here computes its drops in Java (see
+ * {@link OreDrops}) and declares {@code noLootTable()}: <b>do not add these ids to the generator's
+ * loot-table list</b>.
  *
  * <p>The bedrock-ore block also lives here: its block entity and extraction contract are feature-local.
  */
@@ -213,6 +213,35 @@ public final class ModOreBlocks {
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cross("hbm:blocks/stalactite.asbestos"))).states(Variants.simple()))
             .transform(Presets.sprite("hbm:blocks/stalactite.asbestos")).tag(BlockTag.PICKAXE);
 
+    // port: 1.7 has no deepslate; each twin copies its stone ore's drops and tools, with vanilla's deepslate hardness
+    public static final RegistryObject<BlockOutgas> ore_uranium_deepslate = deepslateOre("ore_uranium", 5.0F, 10.0F,
+            p -> new BlockOutgas(p.randomTicks(), true, 20, true), Loot.self())
+            .tag(BlockTag.NEEDS_IRON_TOOL);
+    public static final RegistryObject<Block> ore_thorium_deepslate = deepslateOre("ore_thorium", 5.0F, 10.0F, Loot.self());
+    public static final RegistryObject<Block> ore_titanium_deepslate = deepslateOre("ore_titanium", 5.0F, 10.0F, Loot.self());
+    public static final RegistryObject<Block> ore_sulfur_deepslate = deepslateOre("ore_sulfur", 5.0F, 10.0F,
+            Loot.oreMultiplied("hbm:sulfur", 2, 4));
+    public static final RegistryObject<Block> ore_aluminium_deepslate = deepslateOre("ore_aluminium", 5.0F, 10.0F, Loot.self());
+    public static final RegistryObject<Block> ore_fluorite_deepslate = deepslateOre("ore_fluorite", 5.0F, 10.0F,
+            Loot.oreMultiplied("hbm:fluorite", 2, 4));
+    public static final RegistryObject<Block> ore_niter_deepslate = deepslateOre("ore_niter", 5.0F, 10.0F,
+            Loot.oreMultiplied("hbm:niter", 2, 4));
+    public static final RegistryObject<Block> ore_tungsten_deepslate = deepslateOre("ore_tungsten", 5.0F, 10.0F, Loot.self());
+    public static final RegistryObject<Block> ore_lead_deepslate = deepslateOre("ore_lead", 5.0F, 10.0F, Loot.self());
+    public static final RegistryObject<Block> ore_beryllium_deepslate = deepslateOre("ore_beryllium", 5.0F, 15.0F, Loot.self());
+    public static final RegistryObject<Block> ore_rare_deepslate = deepslateOre("ore_rare", 5.0F, 10.0F,
+            Loot.oreMultiplied("hbm:chunk_ore_rare", 1, 1));
+    public static final RegistryObject<Block> ore_cinnabar_deepslate = deepslateOre("ore_cinnabar", 5.0F, 10.0F,
+            Loot.oreMultiplied("hbm:cinnabar", 1, 1));
+    public static final RegistryObject<Block> ore_cobalt_deepslate = deepslateOre("ore_cobalt", 5.0F, 10.0F,
+            Loot.oreMultiplied("hbm:fragment_cobalt", 4, 9));
+    public static final RegistryObject<Block> ore_lignite_deepslate = deepslateOre("ore_lignite", 5.0F, 15.0F,
+            Loot.oreMultiplied("hbm:lignite", 1, 1));
+    public static final RegistryObject<Block> ore_asbestos_deepslate = deepslateOre("ore_asbestos", 5.0F, 15.0F,
+            Loot.oreMultiplied("hbm:ingot_asbestos", 1, 1));
+    public static final RegistryObject<Block> ore_coltan_deepslate = deepslateOre("ore_coltan", 15.0F, 10.0F,
+            Loot.oreMultiplied("hbm:fragment_coltan", 1, 1));
+
     // Gas pockets
 
     public static final RegistryObject<BlockGasFlammable> gas_flammable =
@@ -260,6 +289,22 @@ public final class ModOreBlocks {
         return reg("stone_resource_" + variant, p -> new BlockResourceStone(p, variant),
                         p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noLootTable())
                 .transform(Presets.cubeAll("hbm:blocks/stone_resource." + variant).viaItemModel())
+                .tag(BlockTag.PICKAXE);
+    }
+
+    private static Reg.Handle<Block> deepslateOre(String ore, float hardness, float resistance, Loot loot) {
+        return deepslateOre(ore, hardness, resistance, Block::new, loot);
+    }
+
+    /** Vanilla's deepslate ores are 1.5 times as hard as their stone ores, with the same resistance. */
+    private static <B extends Block> Reg.Handle<B> deepslateOre(String ore, float hardness, float resistance,
+                                                                Function<BlockBehaviour.Properties, ? extends B> factory,
+                                                                Loot loot) {
+        String id = ore + "_deepslate";
+        Reg.Handle<B> block = reg(id, factory, p -> p.mapColor(MapColor.DEEPSLATE).strength(hardness * 1.5F, resistance)
+                .sound(SoundType.DEEPSLATE).requiresCorrectToolForDrops());
+        return block.transform(Presets.column("hbm:blocks/" + id + "_top", "hbm:blocks/" + id).viaItemModel())
+                .loot(loot)
                 .tag(BlockTag.PICKAXE);
     }
 

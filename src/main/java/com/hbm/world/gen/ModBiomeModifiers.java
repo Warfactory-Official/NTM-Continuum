@@ -45,7 +45,8 @@ import static dev.golem.core.dejson.Features.uniformHeight;
  * the pink tree, which must see the finished trees, goes last at {@code top_layer_modification}.
  *
  * <p><b>Documented deviations from 1.7:</b> ore hosts are {@code #minecraft:base_stone_overworld} instead of plain
- * stone (the old bands reach y 4; the deepslate blend starts at 8); 1.7's {@code +8} decoration offset on flower, hive,
+ * stone (the old bands reach y 4; the deepslate blend starts at 8), and the ores with a deepslate twin also repeat
+ * their band above the world's bottom ({@link #twinVein}); 1.7's {@code +8} decoration offset on flower, hive,
  * meteorite and keyhole columns is not reproduced (the modern decoration grid is already chunk-aligned; the offset only
  * shifted everything by half a chunk and changes no distribution); the vein placer keeps its own {@code +8}.
  */
@@ -136,22 +137,22 @@ public final class ModBiomeModifiers {
         out.add(vein("ore_gneiss_rare", "hbm:ore_gneiss_rare", on, cfgCount(WorldgenKeys.RARE_EARTH, 1), 6, 30, 10, gneiss));
         out.add(vein("ore_gneiss_gas", "hbm:ore_gneiss_gas", on, cfgCount(WorldgenKeys.GAS_SHALE, 3), 10, 30, 10, gneiss));
 
-        out.add(vein("ore_uranium", "hbm:ore_uranium", on, cfgCount(WorldgenKeys.URANIUM, 1), 5, 5, 20, stone));
-        out.add(vein("ore_thorium", "hbm:ore_thorium", on, cfgCount(WorldgenKeys.THORIUM, 1), 5, 5, 25, stone));
-        out.add(vein("ore_titanium", "hbm:ore_titanium", on, cfgCount(WorldgenKeys.TITANIUM, 1), 6, 5, 30, stone));
-        out.add(vein("ore_sulfur", "hbm:ore_sulfur", on, cfgCount(WorldgenKeys.SULFUR, 1), 8, 5, 30, stone));
-        out.add(vein("ore_aluminium", "hbm:ore_aluminium", on, cfgCount(WorldgenKeys.ALUMINIUM, 1), 6, 5, 40, stone));
+        twinVein(out, "ore_uranium", on, cfgCount(WorldgenKeys.URANIUM, 1), 5, 5, 20);
+        twinVein(out, "ore_thorium", on, cfgCount(WorldgenKeys.THORIUM, 1), 5, 5, 25);
+        twinVein(out, "ore_titanium", on, cfgCount(WorldgenKeys.TITANIUM, 1), 6, 5, 30);
+        twinVein(out, "ore_sulfur", on, cfgCount(WorldgenKeys.SULFUR, 1), 8, 5, 30);
+        twinVein(out, "ore_aluminium", on, cfgCount(WorldgenKeys.ALUMINIUM, 1), 6, 5, 40);
         out.add(vein("ore_copper", "hbm:ore_copper", on, cfgCount(WorldgenKeys.COPPER, 1), 6, 5, 45, stone));
-        out.add(vein("ore_fluorite", "hbm:ore_fluorite", on, cfgCount(WorldgenKeys.FLUORITE, 1), 4, 5, 45, stone));
-        out.add(vein("ore_niter", "hbm:ore_niter", on, cfgCount(WorldgenKeys.NITER, 1), 6, 5, 30, stone));
-        out.add(vein("ore_tungsten", "hbm:ore_tungsten", on, cfgCount(WorldgenKeys.TUNGSTEN, 1), 8, 5, 30, stone));
-        out.add(vein("ore_lead", "hbm:ore_lead", on, cfgCount(WorldgenKeys.LEAD, 1), 9, 5, 30, stone));
-        out.add(vein("ore_beryllium", "hbm:ore_beryllium", on, cfgCount(WorldgenKeys.BERYLLIUM, 1), 4, 5, 30, stone));
-        out.add(vein("ore_rare", "hbm:ore_rare", on, cfgCount(WorldgenKeys.RARE_EARTH, 1), 5, 5, 20, stone));
-        out.add(vein("ore_lignite", "hbm:ore_lignite", on, cfgCount(WorldgenKeys.LIGNITE, 1), 24, 35, 25, stone));
-        out.add(vein("ore_asbestos", "hbm:ore_asbestos", on, cfgCount(WorldgenKeys.ASBESTOS, 1), 4, 16, 16, stone));
-        out.add(vein("ore_cinnabar", "hbm:ore_cinnabar", on, cfgCount(WorldgenKeys.CINNABAR, 1), 4, 8, 16, stone));
-        out.add(vein("ore_cobalt", "hbm:ore_cobalt", on, cfgCount(WorldgenKeys.COBALT, 1), 4, 4, 8, stone));
+        twinVein(out, "ore_fluorite", on, cfgCount(WorldgenKeys.FLUORITE, 1), 4, 5, 45);
+        twinVein(out, "ore_niter", on, cfgCount(WorldgenKeys.NITER, 1), 6, 5, 30);
+        twinVein(out, "ore_tungsten", on, cfgCount(WorldgenKeys.TUNGSTEN, 1), 8, 5, 30);
+        twinVein(out, "ore_lead", on, cfgCount(WorldgenKeys.LEAD, 1), 9, 5, 30);
+        twinVein(out, "ore_beryllium", on, cfgCount(WorldgenKeys.BERYLLIUM, 1), 4, 5, 30);
+        twinVein(out, "ore_rare", on, cfgCount(WorldgenKeys.RARE_EARTH, 1), 5, 5, 20);
+        twinVein(out, "ore_lignite", on, cfgCount(WorldgenKeys.LIGNITE, 1), 24, 35, 25);
+        twinVein(out, "ore_asbestos", on, cfgCount(WorldgenKeys.ASBESTOS, 1), 4, 16, 16);
+        twinVein(out, "ore_cinnabar", on, cfgCount(WorldgenKeys.CINNABAR, 1), 4, 8, 16);
+        twinVein(out, "ore_cobalt", on, cfgCount(WorldgenKeys.COBALT, 1), 4, 4, 8);
 
         out.add(vein("cluster_iron", "hbm:cluster_iron", on, cfgCount(WorldgenKeys.IRON_CLUSTER, 1), 6, 15, 45, stone));
         out.add(vein("cluster_titanium", "hbm:cluster_titanium", on, cfgCount(WorldgenKeys.TITANIUM_CLUSTER, 1), 6, 15, 30, stone));
@@ -168,8 +169,8 @@ public final class ModBiomeModifiers {
 
         // 528 coltan: the random scatter (X528_enableColtanSpawning, off by default) and the deposit (its feature reads
         // X528_enableColtanDeposit)
-        out.add(vein("ore_coltan", "hbm:ore_coltan", List.of(cfgSwitch(WorldgenKeys.OVERWORLD_ORES), cfgSwitch(WorldgenKeys.COLTAN_SPAWN)),
-                cfgCount(WorldgenKeys.COLTAN_RATE, 1), 4, 15, 40, stone));
+        twinVein(out, "ore_coltan", List.of(cfgSwitch(WorldgenKeys.OVERWORLD_ORES), cfgSwitch(WorldgenKeys.COLTAN_SPAWN)),
+                cfgCount(WorldgenKeys.COLTAN_RATE, 1), 4, 15, 40);
         out.add(once("coltan_deposit", "coltan_deposit", cfgSwitch(WorldgenKeys.OVERWORLD_ORES)));
         out.add(once("australium", "australium", cfgSwitch(WorldgenKeys.OVERWORLD_ORES)));
 
@@ -231,12 +232,33 @@ public final class ModBiomeModifiers {
     private static String vein(String name, String block, List<JsonObject> gates, JsonObject count, int size, int minY, int variance,
                                JsonObject host) {
         Features.configured(NS, name, NS + ":legacy_ore", Features.ore(host, state(block), size));
+        int maxY = minY + Math.max(variance, 1) - 1;
+        return placedVein(name, name, gates, count, absolute(minY), absolute(maxY));
+    }
+
+    /**
+     * {@link #vein} whose deepslate and tuff become the ore's deepslate twin, plus {@code <name>_deepslate}: the same band
+     * measured from the world's bottom instead of y 0, for the deepslate layer 1.7 never had.
+     */
+    private static void twinVein(List<String> out, String name, List<JsonObject> gates, JsonObject count, int size, int minY,
+                                 int variance) {
+        JsonObject config = Features.ore(Features.tagMatch("minecraft:deepslate_ore_replaceables"),
+                state("hbm:" + name + "_deepslate"), size);
+        config.getAsJsonArray("targets").add(Features.ore(stoneHost(), state("hbm:" + name), size).getAsJsonArray("targets").get(0));
+        Features.configured(NS, name, NS + ":legacy_ore", config);
+        int maxY = minY + Math.max(variance, 1) - 1;
+        out.add(placedVein(name, name, gates, count, absolute(minY), absolute(maxY)));
+        out.add(placedVein(name + "_deepslate", name, gates, count, aboveBottom(minY), aboveBottom(maxY)));
+    }
+
+    private static String placedVein(String name, String configured, List<JsonObject> gates, JsonObject count, JsonObject minY,
+                                     JsonObject maxY) {
         List<JsonObject> placement = new ArrayList<>(gates);
         if (count != null) placement.add(count);
         placement.add(inSquare());
-        placement.add(uniformHeight(absolute(minY), absolute(minY + Math.max(variance, 1) - 1)));
+        placement.add(uniformHeight(minY, maxY));
         placement.add(biome());
-        Features.placed(NS, name, NS + ":" + name, placement.toArray(new JsonObject[0]));
+        Features.placed(NS, name, NS + ":" + configured, placement.toArray(new JsonObject[0]));
         return NS + ":" + name;
     }
 

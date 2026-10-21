@@ -59,7 +59,13 @@ public final class ModMaterialTags {
     /** The tags no registration implies; see the class comment. */
     private static void named() {
         blockTag("ores/uranium", "hbm:ore_uranium", "hbm:ore_uranium_scorched", "hbm:ore_gneiss_uranium",
-                "hbm:ore_gneiss_uranium_scorched", "hbm:ore_nether_uranium", "hbm:ore_nether_uranium_scorched");
+                "hbm:ore_gneiss_uranium_scorched", "hbm:ore_nether_uranium", "hbm:ore_nether_uranium_scorched",
+                "hbm:ore_uranium_deepslate");
+        // a deepslate twin shares its stone ore's tag, so every machine table takes it
+        for (String ore : new String[] {"uranium", "thorium", "titanium", "sulfur", "aluminium", "fluorite", "niter",
+                "tungsten", "lead", "beryllium", "rare", "cinnabar", "cobalt", "lignite", "asbestos", "coltan"}) {
+            Tags.member("item", NS, "ores/" + ore, "hbm:ore_" + ore + "_deepslate");
+        }
         tag("cobblestones", "minecraft:cobblestone");
         tag("cokes", "hbm:coke_coal", "hbm:coke_lignite", "hbm:coke_petroleum");
         tag("concretes", "hbm:concrete", "hbm:concrete_smooth", "hbm:concrete_asbestos", "hbm:ducrete",

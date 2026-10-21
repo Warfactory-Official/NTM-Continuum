@@ -406,6 +406,15 @@ public final class ModCraftingRecipes {
         smelt(NS, "ingot_uranium_2", ItemIds.ore_nether_uranium, ItemIds.ingot_uranium, 12.0);
         smelt(NS, "ingot_uranium_3", ItemIds.ore_nether_uranium_scorched, ItemIds.ingot_uranium, 12.0);
         smelt(NS, "ingot_uranium_4", ItemIds.ore_gneiss_uranium, ItemIds.ingot_uranium, 12.0);
+        // port: the deepslate twins smelt like their stone ores
+        smelt(NS, "chunk_ore_cryolite_deepslate", ItemIds.ore_aluminium_deepslate, ItemIds.chunk_ore_cryolite, 2.5);
+        smelt(NS, "ingot_beryllium_deepslate", ItemIds.ore_beryllium_deepslate, ItemIds.ingot_beryllium, 2.0);
+        smelt(NS, "ingot_cobalt_deepslate", ItemIds.ore_cobalt_deepslate, ItemIds.ingot_cobalt, 2.0);
+        smelt(NS, "ingot_lead_deepslate", ItemIds.ore_lead_deepslate, ItemIds.ingot_lead, 3.0);
+        smelt(NS, "ingot_th232_deepslate", ItemIds.ore_thorium_deepslate, ItemIds.ingot_th232, 3.0);
+        smelt(NS, "ingot_titanium_deepslate", ItemIds.ore_titanium_deepslate, ItemIds.ingot_titanium, 3.0);
+        smelt(NS, "ingot_tungsten_deepslate", ItemIds.ore_tungsten_deepslate, ItemIds.ingot_tungsten, 6.0);
+        smelt(NS, "ingot_uranium_deepslate", ItemIds.ore_uranium_deepslate, ItemIds.ingot_uranium, 6.0);
     }
 
     private static void smelting1() {

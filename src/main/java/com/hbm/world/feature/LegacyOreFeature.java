@@ -17,8 +17,9 @@ import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguratio
  * (see {@code ModBiomeModifiers}), so every ore is its own placed feature and {@code /place feature hbm:<ore>}
  * places exactly one vein.
  *
- * <p>The configuration is vanilla's {@code ore} shape; only the first target is read (every 1.7 vein had exactly one
- * block it replaced), and {@code discard_chance_on_air_exposure} is not a 1.7 idea and is ignored. Vanilla's own
+ * <p>The configuration is vanilla's {@code ore} shape. A host block becomes the state of the first target whose rule
+ * matches it, so an ore with a deepslate twin lists the deepslate rule first. {@code discard_chance_on_air_exposure}
+ * is not a 1.7 idea and is ignored. Vanilla's own
  * {@code ore} feature is not used because its ellipsoid differs from 1.7's (no {@code +8}, a different radius
  * formula), which would move and reshape every vein.
  */
@@ -32,11 +33,15 @@ public class LegacyOreFeature extends Feature<OreConfiguration> {
     public boolean place(FeaturePlaceContext<OreConfiguration> context) {
         OreConfiguration config = context.config();
         if (config.targetStates.isEmpty() || config.size <= 0) return false;
-        OreConfiguration.TargetBlockState target = config.targetStates.get(0);
         RandomSource random = context.random();
         BlockPos origin = context.origin();
         OreVeinPlacer.placeVein(context.level(), random, origin.getX(), origin.getY(), origin.getZ(), config.size,
-                target.state, state -> target.target.test(state, random));
+                state -> {
+                    for (OreConfiguration.TargetBlockState target : config.targetStates) {
+                        if (target.target.test(state, random)) return target.state;
+                    }
+                    return null;
+                });
         return true;
     }
 }

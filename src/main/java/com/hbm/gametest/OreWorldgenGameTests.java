@@ -1,18 +1,22 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.config.WorldConfig;
 import com.hbm.world.feature.CrustColumnFeature;
 import com.hbm.world.feature.DepthDepositPlacer;
 import com.hbm.world.feature.OreVeinPlacer;
+import dev.golem.core.Ids;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 /**
  * GameTests pinning the ore-worldgen port to the 1.12.2 behaviour.
@@ -296,6 +300,52 @@ public final class OreWorldgenGameTests {
                 "No smoldering netherrack formed on the exposed face after 200 attempts");
 
         for (BlockPos pos : region) level.setBlock(pos, air, 2);
+        helper.succeed();
+    }
+
+    /** Veins across a stone/deepslate boundary put the twin only in deepslate; both uranium bands share one vein. */
+    public static void oreDeepslateTwin(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = scratch(helper);
+        int split = origin.getY() + BOX_H / 2;
+        for (BlockPos pos : box(origin)) {
+            level.setBlock(pos, (pos.getY() < split ? Blocks.DEEPSLATE : Blocks.STONE).defaultBlockState(), 2);
+        }
+
+        Holder<PlacedFeature> stoneBand = null;
+        Holder<PlacedFeature> deepBand = null;
+        for (Holder<PlacedFeature> holder : level.getBiome(origin).value().getGenerationSettings().features().get(6)) {
+            String id = holder.unwrapKey().map(key -> Ids.keyId(key).toString()).orElse("");
+            if (id.equals("hbm:ore_uranium")) stoneBand = holder;
+            if (id.equals("hbm:ore_uranium_deepslate")) deepBand = holder;
+        }
+        helper.assertTrue(stoneBand != null && deepBand != null, "hbm:ore_uranium and hbm:ore_uranium_deepslate are not both listed");
+        helper.assertTrue(stoneBand.value().feature().value() == deepBand.value().feature().value(),
+                "the two uranium bands place different veins");
+
+        for (int i = 0; i < 16; i++) {
+            stoneBand.value().feature().value().place(level, level.getChunkSource().getGenerator(),
+                    RandomSource.create(70L + i), new BlockPos(origin.getX() + 4, split, origin.getZ() + 4));
+        }
+        Block ore = ModNuclearBlocks.ore_uranium.get();
+        Block twin = ModOreBlocks.ore_uranium_deepslate.get();
+        int inStone = 0, inDeepslate = 0, misplaced = 0;
+        for (BlockPos pos : box(origin)) {
+            BlockState state = level.getBlockState(pos);
+            boolean deep = pos.getY() < split;
+            if (state.is(ore)) {
+                if (deep) misplaced++;
+                else inStone++;
+            } else if (state.is(twin)) {
+                if (deep) inDeepslate++;
+                else misplaced++;
+            }
+        }
+        helper.assertTrue(misplaced == 0, misplaced + " ore blocks sit in the other host");
+        helper.assertTrue(inStone > 0 && inDeepslate > 0, "veins across the boundary placed " + inStone
+                + " stone and " + inDeepslate + " deepslate ore blocks");
+
+        clear(level, origin);
         helper.succeed();
     }
 

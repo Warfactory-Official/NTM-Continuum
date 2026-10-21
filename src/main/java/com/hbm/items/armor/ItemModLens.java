@@ -57,6 +57,7 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
             {"hbm:ore_oil", 300, "Oil", 0xa0a0a0},
             {"hbm:ore_bedrock_oil", 300, "Bedrock Oil", 0xa0a0a0},
             {"hbm:ore_coltan", 5, "Coltan", 0xa0a000},
+            {"hbm:ore_coltan_deepslate", 5, "Coltan", 0xa0a000}, // port: deepslate twin
             {"hbm:stone_gneiss", 5000, "Schist", 0x8080ff},
             {"hbm:ore_australium", 1000, "Australium", 0xffff00},
             {"minecraft:end_portal_frame", 1, "End Portal", 0x40b080},
