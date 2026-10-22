@@ -31,8 +31,7 @@ val neoforgeFloor = propOrNull("deps.neoforge_floor") ?: neoforgeVersion
 neoForge {
     version = neoforgeVersion
 
-    val at = rootProject.file("src/main/resources/META-INF/accesstransformer.cfg")
-    if (at.exists()) accessTransformers.from(at)
+    accessTransformers.from(rootProject.file("src/main/resources/META-INF/hbm.neoforge.accesstransformer.cfg"))
 
     runs {
         configureEach {
@@ -361,7 +360,12 @@ fun ProcessResources.expandModResources() {
     // Only Forge generates a refmap; naming an absent one leaves the jar pointing at a file it lacks.
     filesMatching("*.mixins.json") { filter { if (it.trimStart().startsWith("\"refmap\"")) null else it } }
     // NeoForge reads only neoforge.mods.toml; the Forge template would ship unexpanded.
-    exclude("fabric.mod.json", "$modId.fabric.mixins.json", "data/$modId/forge/**", "META-INF/mods.toml")
+    exclude("fabric.mod.json", "$modId.fabric.mixins.json", "data/$modId/forge/**", "META-INF/mods.toml",
+        "META-INF/hbm.legacy.accesstransformer.cfg", "META-INF/hbm.neoforge.accesstransformer.cfg", "*.accesswidener")
+    from(rootProject.file("src/main/resources/META-INF/hbm.neoforge.accesstransformer.cfg")) {
+        into("META-INF")
+        rename { "accesstransformer.cfg" }
+    }
 }
 
 tasks.processResources { expandModResources() }

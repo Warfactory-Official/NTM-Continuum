@@ -12,6 +12,8 @@ import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageMono;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.MultiblockCoreIndex;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.ModSecurityItems;
 import com.hbm.items.tool.ItemKeyPin;
@@ -54,13 +56,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 /** Item logistics audit: belts, the crane chain, and the lockable iron, steel and desh crates. */
 public final class RcLogiGameTests {
@@ -494,7 +499,7 @@ public final class RcLogiGameTests {
         });
     }
 
-    /** A cargo elevator raises a mob standing on its platform by its extension. */
+    /** A full round trip holds its rider at both endpoints; every section resolves and drops the whole lift. */
     public static void cargoElevatorCarries(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos core = helper.absolutePos(new BlockPos(4, 1, 4));
@@ -505,16 +510,121 @@ public final class RcLogiGameTests {
         TileEntityCargoElevator lift = GameTestHelpers.blockEntity(helper, new BlockPos(4, 1, 4), TileEntityCargoElevator.class);
         helper.runAfterDelay(10, () -> {
             helper.assertTrue(lift.height == 4, "stacked lifts joined to height " + lift.height);
+            var client = cargoClientView(level);
+            for (int dy = 0; dy < 5; dy++) {
+                for (int dx = -1; dx <= 1; dx++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        var cell = core.offset(dx, dy, dz);
+                        helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(client, cell)),
+                                "client lost the core of section " + cell);
+                        if (!cell.equals(core)) helper.assertTrue(level.getBlockEntity(cell) == null,
+                                "a spliced section kept its block entity at " + cell);
+                    }
+                }
+            }
+            helper.assertTrue(MultiblockSurface.rigidStructureBlocks(level, core).size() == 45,
+                    "the live footprint must contain all five 3x3 courses");
+            helper.assertTrue(lift.getBlockState().getCollisionShape(client, core).bounds().maxY == 5D,
+                    "collision must read the live five-course geometry, not a cached cube");
+            var eye = new Vec3(core.getX() + 0.5D, core.getY() + 2.62D, core.getZ() + 0.5D);
+            var aim = new Vec3(eye.x, core.getY() + 0.99D, eye.z);
+            var queried = core.above(2);
+            var picked = level.getBlockState(queried).getShape(client, queried).clip(eye, aim, queried);
+            helper.assertTrue(picked != null && picked.getBlockPos().equals(core.above()),
+                    "looking down inside the shaft must report the platform's surface cell: " + picked);
+            helper.assertTrue(picked.getLocation().distanceToSqr(Vec3.atCenterOf(picked.getBlockPos())) < 1D,
+                    "the platform hit would be rejected by the server's cell-distance check");
             Mob pig = helper.spawn(EntityType.PIG, new BlockPos(4, 2, 4));
             pig.setNoAi(true);
             double y0 = pig.getY();
-            lift.targetExtension = 3;
-            helper.runAfterDelay(80, () -> {
-                helper.assertTrue(lift.extension == 3D, "platform reached " + lift.extension);
-                helper.assertTrue(pig.getY() - y0 > 2.5D, "the mob rose only " + (pig.getY() - y0));
-                helper.succeed();
+            lift.toggleElevator();
+            helper.runAfterDelay(60, () -> {
+                helper.assertTrue(lift.extension == 4D, "platform reached " + lift.extension);
+                helper.assertTrue(Math.abs(pig.getY() - y0 - 4D) < 0.01D,
+                        "the mob did not stay on the fully extended platform: " + (pig.getY() - y0));
+                helper.assertTrue(lift.getBlockState().getCollisionShape(client, core,
+                                CollisionContext.empty()).bounds().maxY == 5D,
+                        "the moving geometry lost the top of the shaft");
+                lift.toggleElevator();
+                helper.runAfterDelay(60, () -> {
+                    helper.assertTrue(lift.extension == 0D, "platform did not retract: " + lift.extension);
+                    helper.assertTrue(Math.abs(pig.getY() - y0) < 0.01D,
+                            "the mob did not ride down and stay on the platform: " + (pig.getY() - y0));
+                    helper.assertTrue(lift.height == 4, "spliced sections kept growing the shaft");
+                    assertCargoDrops(helper, core, core.offset(1, 3, 0), 5,
+                            GameTestHelpers.mockServerPlayerInLevel(helper));
+                    helper.succeed();
+                });
             });
         });
+    }
+
+    /** Adding one course is atomic when blocked or above the build limit, and a core break returns every course. */
+    public static void cargoElevatorGrowth(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var block = ModMachineBlocks.cargo_elevator.get();
+        var core = helper.absolutePos(new BlockPos(4, 1, 4));
+        var ceiling = core.atY(level.getMinY() + level.getHeight() - 1);
+        MultiblockHandlerXR.placeAssembled(level, core, block, Direction.NORTH);
+        MultiblockHandlerXR.placeAssembled(level, ceiling, block, Direction.NORTH);
+        var player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        var held = new ItemStack(block, 3);
+        player.setItemInHand(InteractionHand.MAIN_HAND, held);
+        var topLift = (TileEntityCargoElevator) level.getBlockEntity(ceiling);
+        player.gameMode.useItemOn(player, level, held, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(ceiling), Direction.UP, ceiling, false));
+        helper.assertTrue(topLift.height == 0 && held.getCount() == 3,
+                "adding above the build limit consumed an elevator or changed the shaft height");
+        level.removeBlock(ceiling, false);
+
+        var lift = (TileEntityCargoElevator) level.getBlockEntity(core);
+        var obstacle = core.offset(1, 1, 0);
+        level.setBlock(obstacle, Blocks.STONE.defaultBlockState(), 3);
+        var hit = new BlockHitResult(Vec3.atCenterOf(core), Direction.UP, core, false);
+        player.gameMode.useItemOn(player, level, held, InteractionHand.MAIN_HAND, hit);
+        helper.assertTrue(lift.height == 0 && held.getCount() == 3, "a blocked course consumed an elevator");
+        helper.assertTrue(level.getBlockState(core.above()).isAir(), "a blocked course was partly placed");
+        level.removeBlock(obstacle, false);
+        player.gameMode.useItemOn(player, level, held, InteractionHand.MAIN_HAND, hit);
+        helper.assertTrue(lift.height == 1 && held.getCount() == 2, "adding a clear course must consume one item");
+        var client = cargoClientView(level);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                var cell = core.offset(dx, 1, dz);
+                helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(level, cell))
+                                && core.equals(MultiblockSurface.coreOfAny(client, cell)),
+                        "the added course has no owner at " + cell);
+            }
+        }
+        assertCargoDrops(helper, core, core, 2, player);
+        helper.succeed();
+    }
+
+    private static BlockGetter cargoClientView(ServerLevel level) {
+        return new BlockGetter() {
+            @Override public BlockEntity getBlockEntity(BlockPos pos) { return level.getBlockEntity(pos); }
+            @Override public BlockState getBlockState(BlockPos pos) { return level.getBlockState(pos); }
+            @Override public FluidState getFluidState(BlockPos pos) { return level.getFluidState(pos); }
+            @Override public int getHeight() { return level.getHeight(); }
+            @Override public int getMinY() { return level.getMinY(); }
+        };
+    }
+
+    private static void assertCargoDrops(GameTestHelper helper, BlockPos core, BlockPos broken, int courses,
+                                         ServerPlayer player) {
+        var level = helper.getLevel();
+        var block = ModMachineBlocks.cargo_elevator.get();
+        var footprint = MultiblockSurface.rigidStructureBlocks(level, core);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND_PICKAXE));
+        helper.assertTrue(player.gameMode.destroyBlock(broken), "survival could not break the elevator");
+        int dropped = level.getEntitiesOfClass(ItemEntity.class, new AABB(core).inflate(4)).stream()
+                .map(ItemEntity::getItem).filter(stack -> stack.is(block.asItem())).mapToInt(ItemStack::getCount).sum();
+        helper.assertTrue(dropped == courses, "breaking " + broken + " returned " + dropped + " of " + courses + " courses");
+        for (var cell : footprint) {
+            helper.assertFalse(level.getBlockState(cell).is(block), "teardown left elevator section " + cell);
+            helper.assertTrue(MultiblockCoreIndex.lookup(level, cell) == Long.MIN_VALUE,
+                    "teardown left ownership at " + cell);
+        }
     }
 
     /** The key kit on a locked crate, mass storage and door makes a counterfeit key that opens that lock. */

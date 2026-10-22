@@ -62,7 +62,7 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
     @Override public int[] getDimensions() { return new int[]{above(), 0, 0, 0, 0, 0}; }
     @Override protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) { int above = above(); for (int y = 1; y <= above; y++) visitor.cell(core.above(y), y == above ? topMask() : MASK_NONE); }
     protected int topMask() { return MASK_NONE; }
-    @Override protected void visitTeardownCells(BlockPos core, Direction facing, CellVisitor visitor) { for (int y = 1; y <= MAX_ABOVE; y++) visitor.cell(core.above(y), MASK_NONE); }
+    @Override protected void visitTeardownCells(ServerLevel level, BlockPos core, Direction facing, CellVisitor visitor) { for (int y = 1; y <= MAX_ABOVE; y++) visitor.cell(core.above(y), MASK_NONE); }
     @Override protected BlockState cellStateFor(int lx, int ly, int lz, Direction facing, int shapeId) { return defaultBlockState().setValue(PART, ly >= above() ? Part.TOP : Part.MIDDLE); }
     @Override public boolean isCellState(BlockState state) { return state.getValue(PART) != Part.CORE; }
     @Override public int getOffset() { return 0; }

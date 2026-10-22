@@ -56,7 +56,7 @@ public final class MultiblockOutline {
     private static VoxelShape machineShape(Level level, BlockPos core, BlockState coreState, BlockMultiblockCore block) {
         List<BlockPos> parts = new ArrayList<>();
         parts.add(core);
-        block.visitPlacedCells(core, coreState.getValue(BlockMultiblockCore.FACING), (cell, mask) -> {
+        block.visitPlacedCells(level, core, coreState.getValue(BlockMultiblockCore.FACING), (cell, mask) -> {
             if (block.isCellOf(level.getBlockState(cell))) parts.add(cell.immutable());
         });
         long states = 1;

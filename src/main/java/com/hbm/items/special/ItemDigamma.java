@@ -1,5 +1,7 @@
 package com.hbm.items.special;
 
+import com.hbm.config.WeaponConfig;
+import com.hbm.entity.effect.EntityQuasar;
 import com.hbm.util.ContaminationUtil;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
@@ -10,16 +12,29 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
-/** The current digamma particle: one inventory dose every tick and the original half-life tooltip. */
+/** Digamma exposure while carried; a grounded particle becomes a quasar, as in 1.7 ItemDigamma. */
 public final class ItemDigamma extends CompatItem {
     private final int digamma;
 
     public ItemDigamma(Properties properties, int digamma) {
         super(properties);
         this.digamma = digamma;
+    }
+
+    public static void tickDropped(ItemEntity entity) {
+        if (!(entity.getItem().getItem() instanceof ItemDigamma) || !entity.onGround()
+                || !(entity.level() instanceof ServerLevel level)) return;
+        if (WeaponConfig.dropSing) {
+            var quasar = new EntityQuasar(level, 5F);
+            quasar.setPos(entity.position());
+            level.addFreshEntity(quasar);
+        }
+        // 1.7 consumes the grounded particle even when quasar spawning is disabled.
+        entity.discard();
     }
 
     @Override

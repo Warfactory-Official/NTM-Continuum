@@ -67,7 +67,8 @@ public final class ItemWasteStorage extends ItemNuclearWaste {
     private final int variant;
 
     public ItemWasteStorage(Properties properties, Family family, String base, int variant) {
-        super(properties);
+        // 1.7 ItemWasteLong inherits ItemNuclearWaste; ItemWasteShort is an ordinary item.
+        super(properties, family == Family.LONG);
         this.family = family;
         this.base = base;
         this.variant = variant;

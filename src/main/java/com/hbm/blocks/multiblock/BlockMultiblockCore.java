@@ -223,24 +223,24 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     public float placementYawSpan() { return 360.0F; }
 
     /**
-     * Every cell this machine occupies (never the core), with the faces that cell exposes. Must be a
-     * function of the core's blockstate alone, or teardown can orphan cells. The position handed to the
-     * visitor is mutable and reused; a caller that keeps it takes a copy.
+     * Every cell this machine currently occupies (never the core). Runtime footprints override this;
+     * fixed machines use their declaration in {@link #visitCells}. The position handed to the visitor
+     * is mutable and reused; a caller that keeps it takes a copy.
      */
-    /** Public spelling of {@link #visitCells} for the falling multiblock's structure query. */
-    public final void visitPlacedCells(BlockPos core, Direction facing, CellVisitor visitor) {
+    public void visitPlacedCells(BlockGetter level, BlockPos core, Direction facing, CellVisitor visitor) {
         visitCells(core, facing, visitor);
     }
 
+    /** State-only geometry used to bake masks and check placement clearance before a core exists. */
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         MultiblockHandlerXR.visitBox(core, getDimensions(), facing, visitor);
     }
 
     /**
-     * The cell set a teardown enumerates. A superset of {@link #visitCells} is allowed where the footprint
+     * The cell set a teardown enumerates. A superset of {@link #visitPlacedCells} is allowed where the footprint
      * is a function of live configuration.
      */
-    protected void visitTeardownCells(BlockPos core, Direction facing, CellVisitor visitor) {
+    protected void visitTeardownCells(ServerLevel level, BlockPos core, Direction facing, CellVisitor visitor) {
         visitCells(core, facing, visitor);
     }
 
@@ -361,7 +361,12 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         return other == this || other instanceof BlockMultiblockCell;
     }
 
-    public final boolean claimsCell(BlockPos core, BlockPos cell, Direction facing) {
+    /** Runtime footprints may resolve their own cells instead of using the finite reverse offsets. */
+    public @Nullable BlockPos findClientCore(BlockGetter level, BlockPos cell) {
+        return MultiblockSurface.findClientCore(level, cell);
+    }
+
+    public boolean claimsCell(BlockGetter level, BlockPos core, BlockPos cell, Direction facing) {
         int dx = cell.getX() - core.getX(), dy = cell.getY() - core.getY(), dz = cell.getZ() - core.getZ();
         return maskAt(MultiblockMaskTable.localX(dx, dy, dz, facing), dy,
                 MultiblockMaskTable.localZ(dx, dy, dz, facing)) != MultiblockMaskTable.NOT_A_CELL;
@@ -672,7 +677,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
                                 net.minecraft.world.level.levelgen.structure.@Nullable BoundingBox clip) {
         CoreIndexScratch scratch = CoreIndexScratch.borrow();
         try {
-            visitCells(core, facing, (pos, mask) -> {
+            visitPlacedCells(level, core, facing, (pos, mask) -> {
                 if (clip != null && !clip.isInside(pos)) return;
                 int dx = pos.getX() - core.getX(), dy = pos.getY() - core.getY(), dz = pos.getZ() - core.getZ();
                 int lx = MultiblockMaskTable.localX(dx, dy, dz, facing), lz = MultiblockMaskTable.localZ(dx, dy, dz, facing);
@@ -717,7 +722,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     private static void demolish(ServerLevel level, BlockPos core, BlockMultiblockCore block, Direction facing, boolean removeCore) {
         withoutTeardown(() -> {
-            block.visitTeardownCells(core, facing, (cell, mask) -> {
+            block.visitTeardownCells(level, core, facing, (cell, mask) -> {
                 if (!block.isCellOf(level.getBlockState(cell)) || MultiblockCoreIndex.lookup(level, cell) != core.asLong()) return;
                 BlockPos at = cell.immutable();
                 level.removeBlock(at, false);

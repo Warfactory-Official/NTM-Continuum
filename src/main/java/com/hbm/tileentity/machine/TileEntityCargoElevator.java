@@ -4,9 +4,9 @@ import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.BlockCargoElevator;
-import com.hbm.blocks.multiblock.MultiblockCoreIndex;
+import com.hbm.blocks.machine.CargoElevatorShape;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
-import net.minecraft.server.level.ServerLevel;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
@@ -22,6 +22,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * 1.7's stacking freight lift. Placing a whole elevator directly beneath an existing one splices the two
@@ -39,6 +41,9 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
     public double prevExtension;
     public double syncExtension;
     private int sync;
+    private int shapeHeight = -1;
+    private double shapeExtension;
+    private VoxelShape shape = Shapes.empty();
 
     public TileEntityCargoElevator(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CARGO_ELEVATOR.get(), pos, state);
@@ -55,6 +60,7 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
             lift.extension = Mth.clamp(lift.extension - SPEED, lift.targetExtension, lift.height);
         }
         lift.extension = Mth.clamp(lift.extension, 0D, lift.height);
+        if (lift.extension != lift.prevExtension) lift.markChanged();
 
         lift.networkPackNT();
         lift.carryRiders(level, pos);
@@ -82,23 +88,33 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
         if (!(level.getBlockEntity(lowerCore) instanceof TileEntityCargoElevator lower)) return false;
 
         lower.height += height + 1;
-        for (int x = pos.getX() - 1; x <= pos.getX() + 1; x++) {
-            for (int z = pos.getZ() - 1; z <= pos.getZ() + 1; z++) {
-                for (int y = pos.getY(); y <= pos.getY() + height; y++) {
-                    BlockPos cell = new BlockPos(x, y, z);
-                    level.setBlock(cell, elevator.defaultBlockState()
-                            .setValue(BlockCargoElevator.CELL, Boolean.TRUE), 3);
-                    if (level instanceof ServerLevel server) {
-                        MultiblockCoreIndex.put(server, cell, lowerCore);
-                    }
-                }
-            }
-        }
-        // 1.7's meta-1 setBlock dropped this tile entity. A state change within one block keeps it, and it would
-        // splice again every tick, growing the lower lift's height without end.
-        level.removeBlockEntity(pos);
+        BlockMultiblockCore.withoutTeardown(() -> {
+            elevator.fillSpace(level, lowerCore, lower.getBlockState().getValue(BlockCargoElevator.FACING));
+            // A same-block state change keeps this entity; leaving it here would splice again every tick.
+            level.removeBlockEntity(pos);
+        });
         lower.markChanged();
         return true;
+    }
+
+    /** The authored guide rails and moving slab, cached in the core's frame until their dimensions change. */
+    public VoxelShape shape() {
+        if (shapeHeight == height && shapeExtension == extension) return shape;
+        shapeHeight = height;
+        shapeExtension = extension;
+        double top = height + 1D;
+        shape = Shapes.empty();
+        var boxes = new AABB[]{
+                new AABB(-1D, 0D, -1D, -0.75D, top, -0.75D),
+                new AABB(-1D, 0D, 1.75D, -0.75D, top, 2D),
+                new AABB(1.75D, 0D, -1D, 2D, top, -0.75D),
+                new AABB(1.75D, 0D, 1.75D, 2D, top, 2D),
+                new AABB(-1D, 0.75D + extension, -1D, 2D, 1D + extension, 2D)};
+        for (var box : boxes) {
+            shape = Shapes.or(shape, Shapes.create(box));
+        }
+        shape = new CargoElevatorShape(shape, boxes, height);
+        return shape;
     }
 
     private void carryRiders(Level level, BlockPos pos) {
@@ -108,7 +124,8 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
         double lower = pos.getY() + 1D + Math.min(extension, prevExtension);
         List<Entity> riders = level.getEntitiesOfClass(Entity.class,
                 new AABB(pos.getX() - 0.99D, lower, pos.getZ() - 0.99D,
-                        pos.getX() + 1.99D, upper, pos.getZ() + 1.99D));
+                        // Entity queries exclude touching faces; a descending rider stands exactly at upper.
+                        pos.getX() + 1.99D, Math.nextUp(upper), pos.getZ() + 1.99D));
 
         for (Entity entity : riders) {
             if (entity instanceof Player && !level.isClientSide()) continue;
