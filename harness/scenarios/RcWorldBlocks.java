@@ -10,7 +10,7 @@ import java.util.List;
 public final class RcWorldBlocks implements Scenario {
 
     private static final String[][] ROWS = {
-            {"ore_uranium", "ore_thorium", "ore_titanium", "ore_sulfur", "ore_aluminium", "ore_copper", "ore_fluorite", "ore_niter",
+            {"ore_uranium", "ore_thorium", "ore_titanium", "ore_sulfur", "ore_aluminium", "ore_fluorite", "ore_niter",
                     "ore_tungsten", "ore_lead", "ore_beryllium", "ore_rare", "ore_lignite", "ore_asbestos", "ore_cinnabar", "ore_cobalt"},
             {"ore_gneiss_iron", "ore_gneiss_gold", "ore_gneiss_uranium", "ore_gneiss_copper", "ore_gneiss_gas", "ore_gneiss_rare",
                     "ore_gneiss_lithium", "ore_gneiss_asbestos", "stone_gneiss", "stone_resource_hematite", "stone_resource_malachite",

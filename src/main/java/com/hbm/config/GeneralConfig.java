@@ -1,6 +1,7 @@
 package com.hbm.config;
 
 import com.hbm.Constants;
+import dev.golem.core.platform.Platform;
 
 
 /**
@@ -15,6 +16,11 @@ public final class GeneralConfig {
     public static boolean enableBomberShortMode = false;
     /** 1.7 {@code 1.18_enableExtendedLogging}: logs detonator use, nuclear explosions, launches, grenades. */
     public static boolean enableExtendedLogging = false;
+
+    /** Port-only diagnostics (nuke and fallout timings, debug wand): with extended logging on, or in a dev run. */
+    public static boolean logDiagnostics() {
+        return enableExtendedLogging || Platform.isDevelopment();
+    }
     /**
      * 1.12.2 {@code 1.33_crucible_max_charges}: how many hits and slices a crucible holds before it needs the tungsten
      * crate's laser again (16; a value of 0 or less falls back to 16, as 1.12.2 did).
@@ -47,6 +53,12 @@ public final class GeneralConfig {
     /** Old {@code 1.26_enableCarbonMonoxide}. */
     public static boolean enableCarbonMonoxide = true;
 
+    /**
+     * Port-only {@code 1.90_enableRawOres}: metal ores drop ntm-next's raw items, which smelt and process at two thirds of
+     * the ore's yield. Off, every ore drops what it did in 1.7. Read at each drop; raw items keep their recipes.
+     */
+    public static boolean enableRawOres = true;
+
     /** Old {@code 1.99_enableExpensiveMode}; selects the alternate Exposure Chamber catalyst. */
     public static boolean enableExpensiveMode = false;
 
@@ -56,7 +68,7 @@ public final class GeneralConfig {
     /**
      * The HE side of the HE:FE exchange ratio. With {@link #energyRatioFe} it says {@code energyRatioHe}
      * HE is worth exactly {@code energyRatioFe} FE, in both directions. The default is 1.7's own
-     * HE&rarr;RF converter rate: {@code TileEntityConverterHeRf.heInput} is 5 against an RF output of 1.
+     * HE-to-RF converter rate, 5 HE against 1 RF.
      * Port-only {@code hbm.cfg} key {@code 9.50_energyRatioHE}, read by {@link MachineConfig#loadFromConfig}; the FE
      * side and {@link #foreignExportReserve} are {@code 9.51} and {@code 9.52}.
      */
@@ -177,6 +189,7 @@ public final class GeneralConfig {
         enableGuideBook = config.get(CATEGORY_GENERAL, "1.37_enableGuideBook", true, "If enabled, gives players the guide book when joining the world for the first time").getBoolean(true);
         preferredOutputMod = CommonConfig.createConfigStringList(config,CATEGORY_GENERAL,"1.42_preferredOutputMod",
                 "The mod which is preferred as output when certain machines autogenerate recipes. Currently used for the shredder", new String[] {Constants.MOD_ID});
+        enableRawOres = config.get(CATEGORY_GENERAL, "1.90_enableRawOres", true, "Metal ores drop raw ore items (smelted or processed at two thirds of the ore's yield). False restores the old drops.").getBoolean(true);
         enableExpensiveMode = config.get(CATEGORY_GENERAL, "1.99_enableExpensiveMode", false, "It does what the name implies.").getBoolean(false);
 
         final String CATEGORY_528 = CommonConfig.CATEGORY_528;

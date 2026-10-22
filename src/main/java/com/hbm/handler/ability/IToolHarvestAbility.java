@@ -159,7 +159,7 @@ public interface IToolHarvestAbility extends IBaseAbility {
         @Override
         public void onHarvestBlock(int level, ServerLevel world, BlockPos pos, ServerPlayer player, BlockState state) {
             ItemStack stack = blockStack(state);
-            ItemStack[] result = CentrifugeRecipes.getOutput(stack);
+            ItemStack[] result = CentrifugeRecipes.getOutput(stack, world.getRandom());
 
             boolean doesCentrifuge = result != null;
 
@@ -187,7 +187,10 @@ public interface IToolHarvestAbility extends IBaseAbility {
 
             harvestBlock(doesCrystallize, world, pos, player);
 
-            if (doesCrystallize) dropAtReference(world, result.output.copy());
+            if (doesCrystallize) {
+                ItemStack made = result.roll(world.getRandom());
+                if (!made.isEmpty()) dropAtReference(world, made);
+            }
         }
     };
 

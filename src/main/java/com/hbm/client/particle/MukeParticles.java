@@ -44,12 +44,8 @@ public final class MukeParticles {
     private static final int WAVE_LIFETIME = 25;
     private static final int FLASH_LIFETIME = 20;
     private static final int FULLBRIGHT = 0xF000F0;
-    private static final int LAYER_FLARE = 0;
-    private static final int LAYER_EXPLOSION = 1;
-    private static final int LAYER_BALEFIRE = 2;
     private static final int CLOUD_FRAMES = 5;
     private static final List<Detonation> ACTIVE = new ArrayList<>();
-    private static final Pool POOL = new Pool();
     private static final Surface SHOCKWAVE_SKIN = Surface.glow(SHOCKWAVE.toString());
     private static final Geometry SHOCKWAVE_SHEET = Quads.named("hbm_muke_shockwave")
             .normal(0F, 1F, 0F)
@@ -64,38 +60,16 @@ public final class MukeParticles {
 
     private MukeParticles() {}
 
-    /**
-     * The billboards of every live detonation, as one pool.
-     *
-     * <p>One pool rather than one per detonation because a visual is a bucket of GPU instances and
-     * the UBO backend only instances a single billboard visual per level; a nuke is also exactly the
-     * moment not to be allocating.
-     */
-    static final class Pool {
-        private Pool() {}
-    }
-
     public static void register() {
         if (initialized) return;
         initialized = true;
         WorldEffects.init();
         ClientTicks.onEndTick(MukeParticles::tick);
-        Billboards.registerPool(Pool.class, List.of(
-                        new Billboards.Layer(FLARE.toString(), Billboards.Mode.SOURCE_ALPHA_ADDITIVE),
-                        new Billboards.Layer(EXPLOSION.toString(), Billboards.Mode.EMISSIVE_TRANSLUCENT,
-                                Billboards.Align.Y_LOCKED),
-                        new Billboards.Layer(EXPLOSION_BF.toString(), Billboards.Mode.EMISSIVE_TRANSLUCENT,
-                                Billboards.Align.Y_LOCKED)),
-                (pool, frame, layers) -> {
-                    for (Detonation detonation : List.copyOf(ACTIVE)) detonation.writeRows(frame, layers);
-                },
-                pool -> ACTIVE.isEmpty());
         WorldEffects.onBegin(camera -> {
             ClientLevel level = Minecraft.getInstance().level;
             if (level == null) return;
             float partial = Frames.partialTick();
-            boolean instanced = Billboards.owns(POOL);
-            for (Detonation detonation : List.copyOf(ACTIVE)) detonation.submit(camera, partial, instanced);
+            for (Detonation detonation : List.copyOf(ACTIVE)) detonation.submit(camera, partial);
         });
         ClientResourceReloads.register(Constants.MOD_ID, "muke_particles", MukeParticles::clear);
     }
@@ -118,13 +92,11 @@ public final class MukeParticles {
         double motion = Tags.getDoubleOr(data, "motion", 0D);
         RandomSource random = client.getRandom();
         ACTIVE.add(new Detonation(client, x, y, z, random.nextGaussian() * motion, 0D, random.nextGaussian() * motion));
-        Billboards.add(client, POOL);
     }
 
     private static void spawn(Level level, double x, double y, double z, boolean tiny, boolean balefire) {
         if (!(level instanceof ClientLevel client)) return;
         ACTIVE.add(new Detonation(client, x, y, z, tiny, balefire));
-        Billboards.add(client, POOL);
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
             player.animateHurt(0F);
@@ -153,8 +125,6 @@ public final class MukeParticles {
 
     private static void clear() {
         ACTIVE.clear();
-        ClientLevel level = Minecraft.getInstance().level;
-        if (level != null) Billboards.remove(level, POOL);
     }
 
     private static final class Detonation {
@@ -255,14 +225,6 @@ public final class MukeParticles {
             }
         }
 
-        private void writeRows(Billboards.Frame frame, Billboards.LayerWriter layers) {
-            float partial = frame.partialTick();
-            if (!tiny && age < FLASH_LIFETIME) writeFlash(layers.layer(LAYER_FLARE), partial);
-            if (!clouds.isEmpty()) {
-                writeClouds(layers.layer(!tiny && balefire ? LAYER_BALEFIRE : LAYER_EXPLOSION), partial);
-            }
-        }
-
         private void writeFlash(Billboards.RowWriter writer, float partial) {
             float flashAge = age + partial;
             float alpha = (1F - flashAge / FLASH_LIFETIME) * 0.5F;
@@ -281,15 +243,13 @@ public final class MukeParticles {
             for (Cloud cloud : List.copyOf(clouds)) cloud.write(writer, partial);
         }
 
-        private void submit(CameraInfo camera, float partial, boolean instanced) {
+        private void submit(CameraInfo camera, float partial) {
             PoseStack pose = new PoseStack();
             pose.translate(x - camera.pos.x, y - camera.pos.y, z - camera.pos.z);
 
             if (age < WAVE_LIFETIME) {
                 Gem.replay(shockwave(), this, pose, WorldEffects.sink(0), FULLBRIGHT);
             }
-            if (instanced) return;
-
             Vector3f right = camera.orientation.transform(new Vector3f(1F, 0F, 0F));
             Vector3f up = camera.orientation.transform(new Vector3f(0F, 1F, 0F));
             if (!tiny && age < FLASH_LIFETIME) {

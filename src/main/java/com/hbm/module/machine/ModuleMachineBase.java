@@ -313,16 +313,7 @@ public abstract class ModuleMachineBase {
                     }
                 }
             }
-            float chance = recipe.getChance(i);
-            if (chance <= 0F) {
-                out = ItemStack.EMPTY;
-            } else if (chance < 1F) {
-                int kept = 0;
-                for (int j = 0; j < out.getCount(); j++) if (random.nextFloat() <= chance) kept++;
-                if (kept <= 0) out = ItemStack.EMPTY;
-                else out.setCount(kept);
-            }
-            outputs[i] = out;
+            outputs[i] = recipe.rollChance(i, out, random);
         }
         return outputs;
     }

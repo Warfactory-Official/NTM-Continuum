@@ -7,7 +7,7 @@ import java.util.Random;
 import net.minecraft.world.phys.Vec3;
 import java.util.Comparator;
 
-/** One shared translation of Torex cloudlets into fallback or instanced billboard rows. */
+/** Torex cloudlets and flare as billboard rows. */
 public final class TorexCloudletRenderData {
 
     private static final Comparator<Cloudlet> CLOUD_SORTER = (first, second) -> {
@@ -17,10 +17,6 @@ public final class TorexCloudletRenderData {
     };
 
     private TorexCloudletRenderData() {}
-
-    public static boolean instancingEnabled() {
-        return !"off".equalsIgnoreCase(System.getProperty("hbm.torex.instancing", "auto"));
-    }
 
     public static void sort(EntityNukeTorex cloud, Vec3 camera) {
         if (cloud.lastRenderSortTick == cloud.tickCount
@@ -38,16 +34,6 @@ public final class TorexCloudletRenderData {
         cloud.lastRenderSortCameraX = camera.x;
         cloud.lastRenderSortCameraY = camera.y;
         cloud.lastRenderSortCameraZ = camera.z;
-    }
-
-    public static void writeInstanced(EntityNukeTorex cloud, Billboards.Frame frame,
-                                      Billboards.LayerWriter layers) {
-        if (!cloud.isClientAnimationReady() || !instancingEnabled()) return;
-        long benchmarkStart = TorexBenchmarkClient.instancedStart(cloud);
-        sort(cloud, frame.cameraPosition());
-        write(cloud, frame.partialTick(), layers.layer(0));
-        TorexBenchmarkClient.instancedEnd(benchmarkStart, cloud.cloudlets.size(), true);
-        writeFlare(cloud, frame.partialTick(), layers.layer(1));
     }
 
     /** 1.7 FULLBRIGHT: the entity's getBrightnessForRender (15728880) lights every cloudlet and flare. */

@@ -27,7 +27,7 @@ import java.util.List;
  *       lighthouse (the logbook in the skeleton's hands); no "not migrated" line for those ids;</li>
  *   <li>pipe wrench linking two anchors: chat, links, one network, the pipe drawn;</li>
  *   <li>the radar map over chunks that are saved but unloaded (seeded world), equal to their saved height maps;</li>
- *   <li>the RF converter seen by the foreign energy system (Team Reborn Energy on Fabric).</li>
+ *   <li>a red cable seen by the foreign energy system (Team Reborn Energy on Fabric).</li>
  * </ol>
  * Each section records PASS/FAIL in items.txt next to the screenshots; the scenario fails if any section failed.
  */
@@ -54,7 +54,7 @@ public final class FinalGapsB implements Scenario {
         step(c, results, "3 tank + refinery explosions, inferno", () -> explosions(c));
         step(c, results, "2 reputation: lantern + karma pedestal", () -> reputation(c));
         step(c, results, "6 pipe wrench linking", () -> pipes(c));
-        step(c, results, "8 RF converter foreign energy", () -> energy(c));
+        step(c, results, "8 cable foreign energy", () -> energy(c));
         step(c, results, "5 structure tile data", () -> structures(c));
         step(c, results, "1 BossSpawnHandler spawns", () -> bossSpawns(c));
         step(c, results, "7 radar over saved unloaded chunks (seeded)", () -> radar(c));
@@ -471,11 +471,11 @@ public final class FinalGapsB implements Scenario {
         Expect.that(chatSince(c, "Pipe anchor is too far away"), "12.0 m: too far for 10 m pipes");
     }
 
-    // ============================================================== 8: RF converter
+    // 8: cable foreign energy
 
     private static void energy(Client c) {
         int ex = X + 20, ez = Z - 20;
-        Fixtures.setBlock(c, ex, Y + 1, ez, "hbm:machine_converter_he_rf");
+        Fixtures.setBlock(c, ex, Y + 1, ez, "hbm:red_cable");
         c.waitTicks(3);
         JsonObject e = q(c, "energy", "x", ex, "y", Y + 1, "z", ez);
         boolean fabric = c.node().contains("fabric");
@@ -483,7 +483,7 @@ public final class FinalGapsB implements Scenario {
             Expect.that(e.get("reborn").getAsBoolean(), "Team Reborn Energy loaded in the Fabric dev game: " + e);
         }
         Expect.that(e.get("supported").getAsBoolean() && e.get("found").getAsBoolean(),
-                "the HE->RF converter is a foreign energy handler (" + (fabric ? "TR Energy" : "FE") + "): " + e);
+                "a red cable is a foreign energy handler (" + (fabric ? "TR Energy" : "FE") + "): " + e);
     }
 
     // ============================================================== 5: structures

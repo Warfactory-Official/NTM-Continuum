@@ -678,18 +678,6 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function AMMO_PARITY_EXTINGUISHER =
             TESTS.function("ammo_parity_extinguisher", 40, () -> AmmoParityGameTests::extinguisherImpacts);
 
-    // --- FEnSU ---
-    public static final GameTests.Function FENSU_NUMERIC =
-            TESTS.function("fensu_numeric", 40, () -> FensuGameTests::numeric);
-    public static final GameTests.Function FENSU_LAYOUT_PORTS =
-            TESTS.function("fensu_layout_ports", 100, 8, () -> FensuGameTests::layoutAndPorts);
-    public static final GameTests.Function FENSU_PERSISTENCE_SYNC =
-            TESTS.function("fensu_persistence_sync", 100, 8, () -> FensuGameTests::persistenceAndSync);
-    public static final GameTests.Function FENSU_ASSETS =
-            TESTS.function("fensu_assets", 40, () -> FensuGameTests::assets);
-    public static final GameTests.Function FENSU_DYE_TAGS =
-            TESTS.function("fensu_dye_tags", 20, () -> FensuGameTests::dyeTags);
-
     // --- standard centrifuge ---
     public static final GameTests.Function CENTRIFUGE_RECIPES =
             TESTS.function("centrifuge_recipes", 20, () -> CentrifugeGameTests::recipes);

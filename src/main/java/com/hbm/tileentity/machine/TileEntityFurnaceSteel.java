@@ -4,6 +4,7 @@ import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.tile.IHeatSource;
+import com.hbm.blocks.RawOres;
 import com.hbm.inventory.container.ContainerFurnaceSteel;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
@@ -128,7 +129,10 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements Men
     protected void addBonus(ItemStack stack, int index) {
         String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
         if (path.startsWith("ore") || path.contains("ore_") || path.endsWith("_ore")) bonus[index] += 25;
-        else if (stack.is(ItemTags.LOGS) || path.contains("log")) bonus[index] += 50;
+        // port: ntm-next's raw ores get the ore bonus at their share of an ore's yield
+        else if (path.startsWith("raw_") && !path.endsWith("_block")) {
+            if (level.getRandom().nextFloat() < RawOres.SHARE) bonus[index] += 25;
+        } else if (stack.is(ItemTags.LOGS) || path.contains("log")) bonus[index] += 50;
         else if (path.contains("tar")) bonus[index] += 50;
     }
 

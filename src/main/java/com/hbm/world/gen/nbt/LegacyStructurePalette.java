@@ -389,6 +389,9 @@ public final class LegacyStructurePalette {
 
         // 1.7 NBTStructure.substitutions ("BOB PATCH"): ore_coal_oil became plain coal ore, metadata kept
         if (hbm.equals("ore_coal_oil")) return Resolved.of(Blocks.COAL_ORE.defaultBlockState());
+        // port: HBM copper ore and storage block fold onto vanilla copper
+        if (hbm.equals("ore_copper")) return Resolved.of(Blocks.COPPER_ORE.defaultBlockState());
+        if (hbm.equals("block_copper")) return Resolved.of(Blocks.COPPER_BLOCK.defaultBlockState());
 
         Rule rule = RULES.get(hbm);
         String id = rule != null && rule.id() != null ? rule.id().apply(meta) : hbm;

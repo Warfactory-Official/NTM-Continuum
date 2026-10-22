@@ -56,8 +56,9 @@ public final class ConfigGameTests {
     public static final GameTests.Function PLACEMENT = TESTS.function(
             "fix8_config_placement_reads_cfg", 20, () -> ConfigGameTests::placement);
 
-    /** Port-only keys: category, key, default. Cables exchange HE with other mods' FE, which 1.7 cables never did. */
+    /** Port-only keys: category, key, default. Cables exchange HE with other mods' FE; ores drop ntm-next's raw items. */
     private static final String[][] PORT_KEYS = {
+            {"01_general", "1.90_enableRawOres", "true"},
             {"09_machines", "9.50_energyRatioHE", "5"},
             {"09_machines", "9.51_energyRatioFE", "1"},
             {"09_machines", "9.52_foreignExportReserve", "0.0"},

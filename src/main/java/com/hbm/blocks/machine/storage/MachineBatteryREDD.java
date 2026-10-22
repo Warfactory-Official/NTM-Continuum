@@ -26,7 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-/** Current FEnSU: the separate 9x5 footprint, six-port BigInteger storage machine. */
+/** FEnSU: the separate 9x5 footprint, six-port BigInteger storage machine. */
 public final class MachineBatteryREDD extends BlockMultiblockMachine implements IEnergyConnectorBlock, WorldlyContainerHolder {
 
     public MachineBatteryREDD(Properties properties) {

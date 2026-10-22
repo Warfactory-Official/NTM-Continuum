@@ -1,8 +1,6 @@
 package com.hbm.blocks;
 
 import com.hbm.Constants;
-import com.hbm.blocks.machine.BlockConverterHeRf;
-import com.hbm.blocks.machine.BlockConverterRfHe;
 import com.hbm.blocks.machine.Charger;
 import com.hbm.blocks.network.PowerCableBox;
 import com.hbm.blocks.network.WireCoated;
@@ -26,8 +24,8 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import java.util.function.UnaryOperator;
 
 /**
- * The energy extras 1.7 kept in {@code ModBlocks}: the boxed and the coated red copper cable, the charging station
- * and the two RF converters. All five are {@code Material.iron} at 5.0 hardness / 10.0 resistance, which in 1.7
+ * The energy extras 1.7 kept in {@code ModBlocks}: the boxed and the coated red copper cable and the charging
+ * station. All three are {@code Material.iron} at 5.0 hardness / 10.0 resistance, which in 1.7
  * needed a pickaxe to drop.
  *
  * <p>{@code red_cable_box} was one block with sizes 0..4 in metadata; it is flattened to
@@ -72,18 +70,11 @@ public final class ModEnergyBedrockBlocks {
             p -> iron().apply(p).noOcclusion().isSuffocating((s, w, pos) -> false).isViewBlocking((s, w, pos) -> false))
             .transform(Presets.rendered(Variants.uniform("facing", "north", "east", "south", "west")).and(IRON))
             .transform(ModEnergyBedrockBlocks::chargerItem);
-    /** The converters: one icon on every face. */
-    public static final RegistryObject<BlockConverterHeRf> machine_converter_he_rf =
-            REG.block("machine_converter_he_rf", BlockConverterHeRf::new, iron()).transform(Presets.cubeAll().and(IRON));
-    public static final RegistryObject<BlockConverterRfHe> machine_converter_rf_he =
-            REG.block("machine_converter_rf_he", BlockConverterRfHe::new, iron()).transform(Presets.cubeAll().and(IRON));
 
     static {
-        // 1.7 ModBlocks order: red_wire_coated, red_cable_box (machineTab) ... converters (machineTab); charger (blockTab)
+        // 1.7 ModBlocks order: red_wire_coated, red_cable_box (machineTab); charger (blockTab)
         item(HbmTab.MACHINES, "red_wire_coated", red_wire_coated);
         for (int size = 0; size < 5; size++) item(HbmTab.MACHINES, "red_cable_box_" + size, red_cable_box[size]);
-        item(HbmTab.MACHINES, "machine_converter_he_rf", machine_converter_he_rf);
-        item(HbmTab.MACHINES, "machine_converter_rf_he", machine_converter_rf_he);
         item(HbmTab.BLOCKS, "charger", charger);
     }
 

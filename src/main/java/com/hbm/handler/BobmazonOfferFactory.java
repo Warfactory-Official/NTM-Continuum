@@ -147,7 +147,7 @@ public final class BobmazonOfferFactory {
 
         add(spc, of("minecraft", "iron_ingot", 64), Requirement.STEEL, 1);
         add(spc, hbm("ingot_steel", 64), Requirement.STEEL, 1);
-        add(spc, hbm("ingot_copper", 64), Requirement.STEEL, 1);
+        add(spc, new ItemStack(Items.COPPER_INGOT, 64), Requirement.STEEL, 1);
         add(spc, hbm("ingot_red_copper", 64), Requirement.STEEL, 1);
         add(spc, hbm("ingot_titanium", 64), Requirement.STEEL, 1);
         add(spc, hbm("ingot_tungsten", 64), Requirement.STEEL, 1);

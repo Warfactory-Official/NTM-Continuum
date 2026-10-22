@@ -215,26 +215,26 @@ public final class ModOreBlocks {
 
     // port: 1.7 has no deepslate; each twin copies its stone ore's drops and tools, with vanilla's deepslate hardness
     public static final RegistryObject<BlockOutgas> ore_uranium_deepslate = deepslateOre("ore_uranium", 5.0F, 10.0F,
-            p -> new BlockOutgas(p.randomTicks(), true, 20, true), Loot.self())
+            p -> new BlockOutgas(p.randomTicks(), true, 20, true), RawOres.drop("hbm:raw_uranium", Loot.self()))
             .tag(BlockTag.NEEDS_IRON_TOOL);
-    public static final RegistryObject<Block> ore_thorium_deepslate = deepslateOre("ore_thorium", 5.0F, 10.0F, Loot.self());
-    public static final RegistryObject<Block> ore_titanium_deepslate = deepslateOre("ore_titanium", 5.0F, 10.0F, Loot.self());
+    public static final RegistryObject<Block> ore_thorium_deepslate = deepslateOre("ore_thorium", 5.0F, 10.0F, RawOres.drop("hbm:raw_thorium", Loot.self()));
+    public static final RegistryObject<Block> ore_titanium_deepslate = deepslateOre("ore_titanium", 5.0F, 10.0F, RawOres.drop("hbm:raw_titanium", Loot.self()));
     public static final RegistryObject<Block> ore_sulfur_deepslate = deepslateOre("ore_sulfur", 5.0F, 10.0F,
             Loot.oreMultiplied("hbm:sulfur", 2, 4));
-    public static final RegistryObject<Block> ore_aluminium_deepslate = deepslateOre("ore_aluminium", 5.0F, 10.0F, Loot.self());
+    public static final RegistryObject<Block> ore_aluminium_deepslate = deepslateOre("ore_aluminium", 5.0F, 10.0F, RawOres.drop("hbm:raw_aluminium", Loot.self()));
     public static final RegistryObject<Block> ore_fluorite_deepslate = deepslateOre("ore_fluorite", 5.0F, 10.0F,
             Loot.oreMultiplied("hbm:fluorite", 2, 4));
     public static final RegistryObject<Block> ore_niter_deepslate = deepslateOre("ore_niter", 5.0F, 10.0F,
             Loot.oreMultiplied("hbm:niter", 2, 4));
-    public static final RegistryObject<Block> ore_tungsten_deepslate = deepslateOre("ore_tungsten", 5.0F, 10.0F, Loot.self());
-    public static final RegistryObject<Block> ore_lead_deepslate = deepslateOre("ore_lead", 5.0F, 10.0F, Loot.self());
-    public static final RegistryObject<Block> ore_beryllium_deepslate = deepslateOre("ore_beryllium", 5.0F, 15.0F, Loot.self());
+    public static final RegistryObject<Block> ore_tungsten_deepslate = deepslateOre("ore_tungsten", 5.0F, 10.0F, RawOres.drop("hbm:raw_tungsten", Loot.self()));
+    public static final RegistryObject<Block> ore_lead_deepslate = deepslateOre("ore_lead", 5.0F, 10.0F, RawOres.drop("hbm:raw_lead", Loot.self()));
+    public static final RegistryObject<Block> ore_beryllium_deepslate = deepslateOre("ore_beryllium", 5.0F, 15.0F, RawOres.drop("hbm:raw_beryllium", Loot.self()));
     public static final RegistryObject<Block> ore_rare_deepslate = deepslateOre("ore_rare", 5.0F, 10.0F,
             Loot.oreMultiplied("hbm:chunk_ore_rare", 1, 1));
     public static final RegistryObject<Block> ore_cinnabar_deepslate = deepslateOre("ore_cinnabar", 5.0F, 10.0F,
             Loot.oreMultiplied("hbm:cinnabar", 1, 1));
     public static final RegistryObject<Block> ore_cobalt_deepslate = deepslateOre("ore_cobalt", 5.0F, 10.0F,
-            Loot.oreMultiplied("hbm:fragment_cobalt", 4, 9));
+            RawOres.drop("hbm:raw_cobalt", Loot.oreMultiplied("hbm:fragment_cobalt", 4, 9)));
     public static final RegistryObject<Block> ore_lignite_deepslate = deepslateOre("ore_lignite", 5.0F, 15.0F,
             Loot.oreMultiplied("hbm:lignite", 1, 1));
     public static final RegistryObject<Block> ore_asbestos_deepslate = deepslateOre("ore_asbestos", 5.0F, 15.0F,

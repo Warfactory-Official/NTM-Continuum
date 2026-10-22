@@ -117,10 +117,6 @@ public final class EnergyBedrockDeclarations {
         // 1.7 CraftingManager
         shaped(NS, "red_wire_coated", "hbm:red_wire_coated", 16, rows("WRW", "RIR", "WRW"),
                 "W", "hbm:plate_polymer", "I", "#c:ingots/red_copper", "R", "#c:wires/red_copper");
-        shaped(NS, "machine_converter_he_rf", "hbm:machine_converter_he_rf", rows("RRR", "WWW", "III"),
-                "R", "hbm:circuit_capacitor", "W", "#c:dusts/redstone", "I", "#c:ingots/steel");
-        shaped(NS, "machine_converter_rf_he", "hbm:machine_converter_rf_he", rows("RRR", "WWW", "III"),
-                "R", "#c:dusts/redstone", "W", "#c:wires/red_copper", "I", "#c:ingots/steel");
         shaped(NS, "charger", "hbm:charger", rows("G", "S", "C"),
                 "G", "minecraft:glowstone_dust", "S", "#c:ingots/steel", "C", "hbm:coil_copper");
         shaped(NS, "charger_16", "hbm:charger", 16, rows("G", "S", "C"),

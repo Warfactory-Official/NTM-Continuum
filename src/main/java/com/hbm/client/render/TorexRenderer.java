@@ -1,6 +1,5 @@
 package com.hbm.client.render;
 
-import com.hbm.client.render.flywheel.FlywheelCompat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
@@ -110,13 +109,10 @@ public class TorexRenderer
         // order is NOT preserved; buckets are the only guarantee.
         //   order 1: cloudlets (depth-write on, so far-water and clouds occlude correctly)
         //   order 2: flare
-        boolean instanced = FlywheelCompat.isTorexBillboardsActive(cloud);
-        if (!instanced) {
-            TorexCloudletRenderData.sort(cloud, camera.pos);
-            submitCloudlets(cloud, poseStack, collector.order(1), camera, partialTicks);
-            if (cloud.tickCount < 101) {
-                submitFlare(cloud, poseStack, collector.order(2), camera, partialTicks);
-            }
+        TorexCloudletRenderData.sort(cloud, camera.pos);
+        submitCloudlets(cloud, poseStack, collector.order(1), camera, partialTicks);
+        if (cloud.tickCount < 101) {
+            submitFlare(cloud, poseStack, collector.order(2), camera, partialTicks);
         }
 
         // 1.7: latch the HUD flash for the first 10 ticks, and the shake once with a 15-tick hurt tilt.

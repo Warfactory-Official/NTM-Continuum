@@ -37,6 +37,11 @@ public final class CentrifugeRecipeHandler extends JEIUniversalHandler<Centrifug
     }
 
     @Override
+    protected float outputChance(CentrifugeRecipes.CentrifugeRecipe recipe, int slot) {
+        return recipe.chance[slot];
+    }
+
+    @Override
     public void draw(CentrifugeRecipes.CentrifugeRecipe recipe, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
         super.draw(recipe, graphics, mouseX, mouseY);
         text(graphics, "200 ticks", 8, 52);

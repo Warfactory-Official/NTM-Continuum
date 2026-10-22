@@ -149,6 +149,15 @@ repositories {
         content { includeGroup("dev.engine-room.flywheel") }
     }
     exclusiveContent {
+        forRepository { maven("https://cursemaven.com") { name = "CurseMaven" } }
+        filter { includeGroup("curse.maven") }
+    }
+    // Golem Core's vendored GemRender for 26.1 Fabric, published to Maven local by vendor/gemrender.
+    exclusiveContent {
+        forRepository { mavenLocal() }
+        filter { includeGroup("com.wf.gemrender") }
+    }
+    exclusiveContent {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
     }
@@ -397,16 +406,16 @@ dependencies {
         }
     }
 
-    // Published Flywheel supplies the older nodes. 26.1 Fabric has no published build and starts Golem
-    // Core's vendored engine instead (switched off with config/golemcore-flywheel.json or
-    // `/flywheel backend off`); every machine keeps its vanilla BER on every node either way.
-    // `-Pflywheel.run=false` leaves the engine jar out of the dev run (compile stays), so the dev client
-    // can be launched as a player without Flywheel would see it: every machine through its vanilla
-    // BER. The instanced visuals are optional; this is how that claim is tested on these nodes.
-    propOrNull("deps.flywheel")?.let { fw ->
-        val cfg = if (obfuscated) "modCompileOnly" else "compileOnly"
-        cfg("dev.engine-room.flywheel:flywheel-fabric-api-$mcVersion:$fw")
-        if (propOrNull("flywheel.run") != "false") devRuntime("dev.engine-room.flywheel:flywheel-fabric-$mcVersion:$fw")
+    // GemRender instances gem-declared machines through Golem Core; every machine keeps its vanilla BER, which draws
+    // whenever GemRender is absent or `/flywheel backend off`. `-Pgemrender.run=false` launches without it, as a
+    // player without GemRender would. 26.1 has no published build: Core's vendor/gemrender jar stands in.
+    if (propOrNull("gemrender.run") != "false") {
+        when (val gem = propOrNull("deps.gemrender")) {
+            null -> {}
+            "vendor" -> devRuntime("com.wf.gemrender:gemrender-fabric-${prop("deps.minecraft")}:0.1.14") { isTransitive = false }
+            else -> devRuntime("curse.maven:gemrender-1735539:$gem")
+        }
+        propOrNull("deps.gemrender_flywheel")?.let { devRuntime("dev.engine-room.flywheel:flywheel-fabric-$mcVersion:$it") }
     }
 
     // Sodium declares `environment: client`, so Fabric loads it only during the client run.
@@ -616,7 +625,7 @@ apply(from = rootProject.file("../Golem-Core/gradle/mod/generated-data.gradle.kt
 apply(from = rootProject.file("../Golem-Core/gradle/mod/mixin-validation.gradle.kts"))
 
 // The uploaded jar: no GameTests or harness queries (see the script).
-apply(from = rootProject.file("gradle/release-jar.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/release-jar.gradle.kts"))
 // Credits and links in the loader metadata, from the mod.* properties.
 apply(from = rootProject.file("../Golem-Core/gradle/mod/mod-metadata.gradle.kts"))
 // Modrinth + CurseForge upload of this node's jar; run every node with the root `publishAllMods`.

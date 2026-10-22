@@ -854,11 +854,6 @@ public final class ObjItemDeclarations {
                 .definition(MachineObjModel.of("hbm:models/machines/fel.obj", "hbm:textures/models/machines/fel.png")
                         .scale(1.0).ty(0.0).yaw(-90.0).guiScale(2.0).rawLegacyTransform()
                         .itemTranslate(1.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -1.0, 0.0)).oversizedInGui().register();
-        Dejson.item(NS, "machine_fensu")
-                // 1.7 ItemRenderLibrary: inv rotate(90, Y) translate(0, -2, 0) scale(2.5)
-                .definition(MachineObjModel.of("hbm:models/machines/fensu.obj", "hbm:textures/models/machines/fensus/fensu_light_blue.png")
-                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(2.5).guiYaw(90.0).rawLegacyTransform()
-                        .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.0, 0.0)).oversizedInGui().register();
         Dejson.item(NS, "machine_flare")
                 // 1.7 ItemRenderLibrary: inv translate(0, -4, 0) scale(2.25); common scale(0.5)
                 .definition(MachineObjModel.of("hbm:models/machines/flare_stack.obj", "hbm:textures/models/machines/flare_stack.png")

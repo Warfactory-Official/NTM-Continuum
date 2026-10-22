@@ -28,7 +28,6 @@ import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
-import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
 import com.hbm.tileentity.machine.storage.TileEntityMachineOrbus;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 import dan200.computercraft.api.peripheral.IPeripheral;
@@ -62,8 +61,6 @@ public final class StoragePeripheralGameTests {
             "cc_fluid_tank_cells", 60, PADDING, () -> StoragePeripheralGameTests::fluidTank);
     public static final GameTests.Function MACHINE_BATTERY = TESTS.function(
             "cc_machine_battery", 40, () -> StoragePeripheralGameTests::machineBattery);
-    public static final GameTests.Function FENSU = TESTS.function(
-            "cc_fensu", 60, PADDING, () -> StoragePeripheralGameTests::fensu);
     public static final GameTests.Function BATTERY_SOCKET = TESTS.function(
             "cc_battery_socket", 60, PADDING, () -> StoragePeripheralGameTests::batterySocket);
     public static final GameTests.Function BATTERY_REDD = TESTS.function(
@@ -146,22 +143,6 @@ public final class StoragePeripheralGameTests {
             helper.assertTrue(PeripheralTestSupport.number(helper, info, 0) == 5000D, "getEnergyInfo power");
             helper.assertTrue(PeripheralTestSupport.number(helper, info, 1) == be.getMaxPower(), "getEnergyInfo max");
             helper.assertTrue(battery.getInfo().length == 2, "1.7 getInfo is power and max only");
-            helper.succeed();
-        });
-    }
-
-    private static void fensu(GameTestHelper helper) {
-        BlockPos core = GameTests.paddedCentre(PADDING, 1);
-        FoldedTestSupport.assemble(helper, ModBatteryBlocks.machine_fensu.get(), core);
-        TileEntityMachineFENSU be = GameTestHelpers.blockEntity(helper, core, TileEntityMachineFENSU.class);
-        be.power = 777L;
-        // 1.7's FEnSU extends the machine battery: the legacy component, not the battery base's
-        MachineBatteryPeripheral<?> fensu = PeripheralTestSupport.expect(helper, core, Direction.UP,
-                MachineBatteryPeripheral.class, "ntm_energy_storage_legacy");
-        helper.runAfterDelay(2, () -> {
-            Object[] info = fensu.getInfo();
-            helper.assertTrue(PeripheralTestSupport.number(helper, info, 0) == 777D, "FEnSU getInfo power");
-            helper.assertTrue(((Number) info[1]).longValue() == TileEntityMachineFENSU.MAX_POWER, "FEnSU getInfo max");
             helper.succeed();
         });
     }

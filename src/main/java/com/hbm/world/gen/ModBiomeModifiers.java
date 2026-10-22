@@ -142,7 +142,6 @@ public final class ModBiomeModifiers {
         twinVein(out, "ore_titanium", on, cfgCount(WorldgenKeys.TITANIUM, 1), 6, 5, 30);
         twinVein(out, "ore_sulfur", on, cfgCount(WorldgenKeys.SULFUR, 1), 8, 5, 30);
         twinVein(out, "ore_aluminium", on, cfgCount(WorldgenKeys.ALUMINIUM, 1), 6, 5, 40);
-        out.add(vein("ore_copper", "hbm:ore_copper", on, cfgCount(WorldgenKeys.COPPER, 1), 6, 5, 45, stone));
         twinVein(out, "ore_fluorite", on, cfgCount(WorldgenKeys.FLUORITE, 1), 4, 5, 45);
         twinVein(out, "ore_niter", on, cfgCount(WorldgenKeys.NITER, 1), 6, 5, 30);
         twinVein(out, "ore_tungsten", on, cfgCount(WorldgenKeys.TUNGSTEN, 1), 8, 5, 30);

@@ -18,7 +18,7 @@ public final class RcWorldOres implements Scenario {
     /** id, 1.7 veins per chunk, vein size. */
     private static final Object[][] ORES = {
             {"ore_uranium", 6, 5}, {"ore_thorium", 7, 5}, {"ore_titanium", 8, 6}, {"ore_sulfur", 5, 8},
-            {"ore_aluminium", 7, 6}, {"ore_copper", 12, 6}, {"ore_fluorite", 6, 4}, {"ore_niter", 6, 6},
+            {"ore_aluminium", 7, 6}, {"ore_fluorite", 6, 4}, {"ore_niter", 6, 6},
             {"ore_tungsten", 10, 8}, {"ore_lead", 6, 9}, {"ore_beryllium", 6, 4}, {"ore_rare", 6, 5},
             {"ore_lignite", 2, 24}, {"ore_asbestos", 4, 4}, {"ore_cinnabar", 1, 4}, {"ore_cobalt", 2, 4},
             {"cluster_iron", 4, 6}, {"cluster_titanium", 2, 6}, {"cluster_aluminium", 3, 6}, {"cluster_copper", 4, 6},

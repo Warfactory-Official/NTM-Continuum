@@ -270,15 +270,16 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                 CrystallizerRecipe result = CrystallizerRecipes.getOutput(stack, Fluids.PEROXIDE);
                 if (result == null) result = CrystallizerRecipes.getOutput(stack, Fluids.SULFURIC_ACID);
                 if (result != null) {
-                    spawnDrop(result.output.copy());
+                    ItemStack made = result.roll(level.getRandom());
+                    if (!made.isEmpty()) spawnDrop(made);
                     normal = false;
                 }
             } else if (hasUpgrade(ModUpgradeItems.upgrade_centrifuge.get())) {
 
-                ItemStack[] result = CentrifugeRecipes.getOutput(stack);
+                ItemStack[] result = CentrifugeRecipes.getOutput(stack, level.getRandom());
                 if (result != null) {
                     for (ItemStack output : result) {
-                        if (output != null) spawnDrop(output.copy());
+                        if (!output.isEmpty()) spawnDrop(output);
                     }
                     normal = false;
                 }

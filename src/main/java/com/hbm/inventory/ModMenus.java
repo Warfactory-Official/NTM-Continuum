@@ -27,7 +27,6 @@ import com.hbm.inventory.container.ContainerMachineArcWelder;
 import com.hbm.inventory.container.ContainerMachineCatalyticReformer;
 import com.hbm.inventory.container.ContainerMachineCoker;
 import com.hbm.inventory.container.ContainerMachineDiesel;
-import com.hbm.inventory.container.ContainerMachineFENSU;
 import com.hbm.inventory.container.ContainerBatteryREDD;
 import com.hbm.inventory.container.ContainerCrate;
 import com.hbm.inventory.container.ContainerMachineAssemblyMachine;
@@ -383,8 +382,6 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<ContainerBatterySocket>> BATTERY_SOCKET =
             REG.menu("machine_battery_socket", () -> Menus.typeWithPos(ContainerBatterySocket::new));
-    public static final RegistryObject<MenuType<ContainerMachineFENSU>> FENSU =
-            REG.menu("machine_fensu", () -> Menus.typeWithPos(ContainerMachineFENSU::new));
     public static final RegistryObject<MenuType<ContainerBatteryREDD>> BATTERY_REDD =
             REG.menu("machine_battery_redd", () -> Menus.typeWithPos(ContainerBatteryREDD::new));
 

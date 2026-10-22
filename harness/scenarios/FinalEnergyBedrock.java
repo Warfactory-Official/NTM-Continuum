@@ -14,8 +14,6 @@ import java.util.List;
  *   <li>every new id in the (survival) inventory, in pages of 36, and a trait tooltip;</li>
  *   <li>a creative generator feeding a battery block through a hand-placed boxcable, coated wire and a thinner
  *       boxcable, read back from the battery's NBT; the cable run photographed;</li>
- *   <li>the HE -> RF -> HE round trip: generator, coated wire, HE->RF converter, RF->HE converter, coated wire,
- *       battery; the converters' RF stores and the far battery's charge read back;</li>
  *   <li>the charging station on a coated wire: a held lead-acid battery fills while the player stands at it, the
  *       clamps photographed extended;</li>
  *   <li>two chain steps in the real machines, through their menus: raw light-metal bedrock ore washed in the ore
@@ -28,8 +26,7 @@ public final class FinalEnergyBedrock implements dev.golem.harness.api.Scenario 
     private static final int G = Y + 1;
 
     static final String[] BLOCK_IDS = {"hbm:red_wire_coated", "hbm:red_cable_box_0", "hbm:red_cable_box_1",
-            "hbm:red_cable_box_2", "hbm:red_cable_box_3", "hbm:red_cable_box_4", "hbm:charger",
-            "hbm:machine_converter_he_rf", "hbm:machine_converter_rf_he"};
+            "hbm:red_cable_box_2", "hbm:red_cable_box_3", "hbm:red_cable_box_4", "hbm:charger"};
     static final String[] GRADES = {"base_roasted", "base_washed", "primary", "primary_roasted", "primary_sulfuric",
             "primary_nosulfuric", "primary_solvent", "primary_nosolvent", "primary_rad", "primary_norad", "primary_first",
             "primary_second", "crumbs", "sulfuric_byproduct", "sulfuric_roasted", "sulfuric_arc", "sulfuric_washed",
@@ -45,7 +42,6 @@ public final class FinalEnergyBedrock implements dev.golem.harness.api.Scenario 
 
         inventory(c);
         cableRun(c);
-        converters(c);
         charger(c);
         chain(c);
 
@@ -104,36 +100,6 @@ public final class FinalEnergyBedrock implements dev.golem.harness.api.Scenario 
         worldShot(c, "10-cable-run", 3.5, G + 3, z - 4.5, 3.5, G + 0.5, z + 0.5);
         worldShot(c, "11-cable-run-close", 5.5, G + 1.6, z - 2.2, 4.5, G + 0.5, z + 1);
         System.out.println("[FinalEnergyBedrock] battery after cable run: " + power + " HE");
-    }
-
-    // --- 3. HE -> RF -> HE -------------------------------------------------------------------------------------
-
-    private static void converters(Client c) {
-        int z = 9, h = G + 1;
-        // 1.7 tryProvide hands HE to adjacent receivers in DOWN, UP, NORTH, SOUTH, WEST, EAST order, and the HE->RF
-        // converter beside it is one: so the far battery sits UNDER the RF->HE converter, where it is served first.
-        Fixtures.setBlock(c, 3, G, z, "hbm:machine_battery_potato");
-        Fixtures.setBlock(c, 0, h, z, "hbm:creative_generator");
-        Fixtures.setBlock(c, 1, h, z, "hbm:red_wire_coated");
-        Fixtures.setBlock(c, 2, h, z, "hbm:machine_converter_he_rf");
-        Fixtures.setBlock(c, 3, h, z, "hbm:machine_converter_rf_he");
-        placeByHand(c, "hbm:machine_converter_he_rf", 6, z); // the item places by hand too
-        placeByHand(c, "hbm:machine_converter_rf_he", 7, z);
-        c.waitTicks(60);
-        String heRf = nbt(c, 2, h, z), rfHe = nbt(c, 3, h, z), battery = nbt(c, 3, G, z);
-        System.out.println("[FinalEnergyBedrock] he_rf " + heRf + " | rf_he " + rfHe + " | battery " + battery);
-        Expect.that(longOf(heRf, "power") > 0, "the HE->RF converter took HE from the net: " + heRf);
-        // RF is the platform energy API on every node: Forge Energy on Forge/NeoForge, Team Reborn Energy on Fabric
-        // (optional there; §19ed-gaps-b item 8, loaded by the Fabric dev runs). So the round trip closes everywhere.
-        Expect.that(longOf(battery, "power") > 0, "HE came back out of the RF->HE converter: " + battery);
-        c.teleport(2.5, G, z - 2.5);
-        c.waitTicks(2);
-        c.lookAt(2.5, h + 0.5, z + 0.5);
-        c.waitTicks(4);
-        c.screenshot("20-converter-he-rf-overlay");
-        c.lookAt(3.5, h + 0.5, z + 0.5);
-        c.waitTicks(4);
-        c.screenshot("21-converter-rf-he-overlay");
     }
 
     // --- 4. the charging station ------------------------------------------------------------------------------

@@ -7,6 +7,7 @@ import static com.hbm.inventory.OreDictManager.CU;
 import static com.hbm.inventory.OreDictManager.GOLD;
 import static com.hbm.inventory.OreDictManager.IRON;
 
+import com.hbm.blocks.RawOres;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.material.MaterialShapes;
@@ -55,6 +56,13 @@ public final class BlastFurnaceTable extends GenericTableSource<GenericRecipe> {
         this.register(new GenericRecipe("blast.steelWithFlux").setDuration(1_200)
                 .inputItems(IRON.ore(), new ComparableStack(ModItems.powder_flux.get()))
                 .outputItems(new ItemStack(ModItems.ingot_steel.get(), 3), slag(2)));
+        // port: ntm-next's raw ores, each output at two thirds of the ore row's
+        this.register(new GenericRecipe("blast.steelFromOre_raw").setDuration(800)
+                .inputItems(RawOres.stack(IRON), new TagStack(KEY_SAND))
+                .outputItems(new ItemStack(ModItems.ingot_steel.get(), 2), slag(2)).outputChances(RawOres.SHARE, RawOres.SHARE));
+        this.register(new GenericRecipe("blast.steelWithFlux_raw").setDuration(1_200)
+                .inputItems(RawOres.stack(IRON), new ComparableStack(ModItems.powder_flux.get()))
+                .outputItems(new ItemStack(ModItems.ingot_steel.get(), 3), slag(2)).outputChances(RawOres.SHARE, RawOres.SHARE));
 
         this.register(new GenericRecipe("blast.mingrade").setDuration(400)
                 .inputItems(CU.ingot(), REDSTONE.dust())
@@ -71,6 +79,10 @@ public final class BlastFurnaceTable extends GenericTableSource<GenericRecipe> {
         this.register(new GenericRecipe("blast.mingradeOre").setDuration(1_200)
                 .inputItems(CU.ore(), REDSTONE.dust().count(6))
                 .outputItems(new ItemStack(ModItems.ingot_red_copper.get(), 6), slag(1)));
+        // port: ntm-next's raw copper
+        this.register(new GenericRecipe("blast.mingradeOre_raw").setDuration(1_200)
+                .inputItems(RawOres.stack(CU), REDSTONE.dust().count(6))
+                .outputItems(new ItemStack(ModItems.ingot_red_copper.get(), 6), slag(1)).outputChances(RawOres.SHARE, RawOres.SHARE));
 
         this.register(new GenericRecipe("blast.meteorSword").setDuration(1_200)
                 .inputItems(CO.ingot(), new ComparableStack(ModAbilityToolItems.meteorite_sword_hardened.get(), 1))

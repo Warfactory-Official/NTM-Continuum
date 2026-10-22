@@ -7,8 +7,7 @@ import dan200.computercraft.api.lua.LuaFunction;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
- * 1.7 {@code TileEntityMachineBattery}'s component {@code ntm_energy_storage_legacy}. 1.7's FEnSU extends that class
- * and answers the same; the port's FEnSU extends the battery base instead, so it has its own row onto this.
+ * 1.7 {@code TileEntityMachineBattery}'s component {@code ntm_energy_storage_legacy}.
  */
 public final class MachineBatteryPeripheral<BE extends BlockEntity & IEnergyHandlerMK2> extends SnapshotPeripheral<BE> {
 

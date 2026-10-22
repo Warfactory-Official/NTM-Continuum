@@ -35,12 +35,16 @@ import dev.golem.core.net.GolemCodec;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.net.GolemPayload;
 import dev.golem.core.net.GolemSync;
+import dev.golem.core.platform.Lifecycle;
+import dev.golem.core.render.Instancing;
 import dev.golem.core.world.Interactions;
 import io.netty.buffer.Unpooled;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -80,6 +84,10 @@ public final class HbmPackets {
         GolemNetwork.declarePlayToClient(BlockEntitySyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(EntityPropsSyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(ImpactSyncPayload.CODEC);
+        GolemNetwork.declarePlayToClient(GemRenderNoticePayload.CODEC);
+        Lifecycle.onPlayerJoin((player, firstTime) -> {
+            if (firstTime) GolemNetwork.sendToPlayer(player, GemRenderNoticePayload.CODEC, new GemRenderNoticePayload());
+        });
         GolemNetwork.declarePlayToClient(PollutionSyncPayload.CODEC);
         GolemNetwork.registerPlayToServer(ControlEventPayload.CODEC,
                 (payload, player) -> handleControl(player, payload));
@@ -182,6 +190,11 @@ public final class HbmPackets {
                 (payload, context) -> handleSync(context.level(), payload));
         GolemNetwork.registerPlayToClient(EntityPropsSyncPayload.CODEC,
                 (payload, context) -> handlePropsSync(context.player(), payload));
+        GolemNetwork.registerPlayToClient(GemRenderNoticePayload.CODEC, (payload, context) -> {
+            if (!Instancing.isAvailable()) {
+                context.player().sendSystemMessage(Component.translatable("hbm.gemrender.missing").withStyle(ChatFormatting.GOLD));
+            }
+        });
         GolemNetwork.registerPlayToClient(ImpactSyncPayload.CODEC, (payload, context) -> {
             // 1.7 PermaSyncHandler.readPacket: the values belong to the level the player is in
             ImpactWorldHandler.lastSyncWorld = context.level();

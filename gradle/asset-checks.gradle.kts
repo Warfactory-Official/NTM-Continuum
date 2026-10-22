@@ -175,18 +175,6 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         guiScale = 3.5,
         itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
-    // icon-P2 (2026-10-01) moved this to 1.7's raw ItemRenderLibrary chain: rotate(90, Y) translate(0, -2, 0) scale(2.5)
-    "machine_fensu" to MachineObjTransformExpectation(
-        1.0, 0.0,
-        obj = "hbm:models/machines/fensu.obj",
-        texture = "hbm:textures/models/machines/fensus/fensu_light_blue.png",
-        directModel = true,
-        rawLegacyTransform = true,
-        guiTranslate = listOf(0.0, -2.0, 0.0),
-        guiScale = 2.5,
-        guiYaw = 90.0,
-        itemTranslate = listOf(0.0, 0.0, 0.0),
-    ),
     "machine_bigasstank" to MachineObjTransformExpectation(
         0.5, 0.0,
         obj = "hbm:models/machines/bigasstank.obj",

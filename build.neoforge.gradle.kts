@@ -104,6 +104,10 @@ repositories {
         content { includeGroup("dev.engine-room.flywheel") }
     }
     exclusiveContent {
+        forRepository { maven("https://cursemaven.com") { name = "CurseMaven" } }
+        filter { includeGroup("curse.maven") }
+    }
+    exclusiveContent {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
     }
@@ -230,14 +234,11 @@ dependencies {
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency. Jade carries mixins, hence `devModJar`.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devModJar("maven.modrinth:jade:$it") }
 
-    // Published Flywheel supplies 1.21.1; the 26.1 node leaves this blank and starts Core's vendored
-    // engine instead (switched off with config/golemcore-flywheel.json or `/flywheel backend off`).
-    // `-Pflywheel.run=false` leaves the engine jar out of the dev run (compile stays), so the dev client
-    // can be launched as a player without Flywheel would see it: every machine through its vanilla
-    // BER. The instanced visuals are optional; this is how that claim is tested on these nodes.
-    propOrNull("deps.flywheel")?.let { fw ->
-        compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-$mcVersion:$fw")
-        if (propOrNull("flywheel.run") != "false") devModJar("dev.engine-room.flywheel:flywheel-neoforge-$mcVersion:$fw")
+    // GemRender (with Flywheel nested or provided) instances gem-declared machines through Golem Core; every machine
+    // keeps its vanilla BER. A mods-folder jar (`devModJar`) so its nested Flywheel and mixin configs load.
+    // `-Pgemrender.run=false` launches without it, as a player without GemRender would.
+    if (propOrNull("gemrender.run") != "false") {
+        propOrNull("deps.gemrender")?.let { devModJar("curse.maven:gemrender-1735539:$it") }
     }
 
     // Sodium declares itself client-side, so it loads only during the client run. It goes on
@@ -393,7 +394,7 @@ apply(from = rootProject.file("../Golem-Core/gradle/mod/generated-data.gradle.kt
 apply(from = rootProject.file("../Golem-Core/gradle/mod/mixin-validation.gradle.kts"))
 
 // The uploaded jar: no GameTests or harness queries (see the script).
-apply(from = rootProject.file("gradle/release-jar.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/release-jar.gradle.kts"))
 // Credits and links in the loader metadata, from the mod.* properties.
 apply(from = rootProject.file("../Golem-Core/gradle/mod/mod-metadata.gradle.kts"))
 // Modrinth + CurseForge upload of this node's jar; run every node with the root `publishAllMods`.

@@ -25,6 +25,7 @@ import net.minecraft.world.item.Item;
  *   <li>{@code lbsm} and {@code lbsm_simple_chemistry}, {@code lbsm_simple_centrifuge}, {@code lbsm_simple_crafting},
  *   {@code lbsm_simple_alloy}, {@code lbsm_unlock_anvil}, {@code lbsm_simple_armor}, {@code lbsm_simple_tool},
  *   {@code lbsm_simple_medicine}</li>
+ *   <li>{@code raw_ores} (port-only {@code 1.90_enableRawOres})</li>
  *   <li>{@code #<tag>}: the item tag has an item (1.7's ore-dictionary compat branches)</li>
  * </ul>
  *
@@ -53,6 +54,8 @@ public final class RecipeConditions {
         FLAGS.put("lbsm_simple_armor", () -> GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleArmorRecipes);
         FLAGS.put("lbsm_simple_tool", () -> GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleToolRecipes);
         FLAGS.put("lbsm_simple_medicine", () -> GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleMedicineRecipes);
+        // port: ntm-next's raw ore drops, read by the ores' loot tables (golemcore:requires)
+        FLAGS.put("raw_ores", () -> GeneralConfig.enableRawOres);
     }
 
     private static boolean registered;

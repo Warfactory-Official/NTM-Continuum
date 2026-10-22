@@ -1,6 +1,7 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.recipes.CrystallizerRecipes.ChanceOutput;
 import com.hbm.inventory.recipes.CrystallizerRecipes.ItemOutput;
 import com.hbm.inventory.recipes.CrystallizerRecipes.Output;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
@@ -12,6 +13,7 @@ import com.hbm.inventory.recipes.loader.TableCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -78,10 +80,13 @@ public final class CentrifugeRecipes {
     public static final class CentrifugeRecipe {
         public final AStack input;
         public final ItemStack[] output;
+        /** Each output's chance; below 1 only for ntm-next's raw ore rows. */
+        public final float[] chance;
 
-        CentrifugeRecipe(AStack input, ItemStack[] output) {
+        CentrifugeRecipe(AStack input, ItemStack[] output, float[] chance) {
             this.input = input;
             this.output = output;
+            this.chance = chance;
         }
     }
 
@@ -102,20 +107,39 @@ public final class CentrifugeRecipes {
             boolean empty = false;
             for (ItemStack stack : output) empty |= stack.isEmpty();
             if (empty) continue; // a tag output whose tag has no item
-            next.add(new CentrifugeRecipe(row.input(), output));
+            float[] chance = new float[output.length];
+            for (int i = 0; i < chance.length; i++) chance[i] = row.outputs().get(i).chance();
+            next.add(new CentrifugeRecipe(row.input(), output, chance));
         }
         current = List.copyOf(next);
     }
 
+    /** Every output of the matching recipe, each in full (what the machine needs room for), or null. */
     public static ItemStack[] getOutput(ItemStack stack) {
+        CentrifugeRecipe recipe = find(stack);
+        if (recipe == null) return null;
+        ItemStack[] result = new ItemStack[recipe.output.length];
+        for (int i = 0; i < result.length; i++) result[i] = recipe.output[i].copy();
+        return result;
+    }
+
+    /** What one operation makes: {@link #getOutput(ItemStack)} with each chance rolled, a lost roll empty. */
+    public static ItemStack[] getOutput(ItemStack stack, RandomSource random) {
+        CentrifugeRecipe recipe = find(stack);
+        if (recipe == null) return null;
+        ItemStack[] result = new ItemStack[recipe.output.length];
+        for (int i = 0; i < result.length; i++) {
+            boolean made = recipe.chance[i] >= 1F || random.nextFloat() < recipe.chance[i];
+            result[i] = made ? recipe.output[i].copy() : ItemStack.EMPTY;
+        }
+        return result;
+    }
+
+    private static CentrifugeRecipe find(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return null;
         register();
         for (CentrifugeRecipe recipe : current) {
-            if (recipe.input.matchesRecipe(stack, true)) {
-                ItemStack[] result = new ItemStack[recipe.output.length];
-                for (int i = 0; i < result.length; i++) result[i] = recipe.output[i].copy();
-                return result;
-            }
+            if (recipe.input.matchesRecipe(stack, true)) return recipe;
         }
         return null;
     }
@@ -127,7 +151,10 @@ public final class CentrifugeRecipes {
     /** The row form of a recipe (for converting a table and for tests). */
     public static Row toRow(CentrifugeRecipe recipe, int order) {
         List<Output> outputs = new ArrayList<>();
-        for (ItemStack stack : recipe.output) outputs.add(new ItemOutput(ItemOut.of(stack)));
+        for (int i = 0; i < recipe.output.length; i++) {
+            ItemOut out = ItemOut.of(recipe.output[i]);
+            outputs.add(recipe.chance[i] < 1F ? new ChanceOutput(out, recipe.chance[i]) : new ItemOutput(out));
+        }
         return new Row(recipe.input, outputs, List.of(), order);
     }
 

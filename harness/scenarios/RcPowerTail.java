@@ -68,10 +68,10 @@ public final class RcPowerTail implements Scenario {
         try {
             c.cmd("fill -16 " + (Y + 1) + " -16 16 " + (Y + 12) + " 16 minecraft:air");
             c.waitTicks(3);
-            Fixtures.placeOnTop(c, "hbm:machine_fensu", 0, Y, 0);
+            Fixtures.placeOnTop(c, "hbm:machine_battery_redd", 0, Y, 0);
             c.waitTicks(10);
             int[] k = findCore(c);
-            c.cmd("data merge block " + k[0] + " " + k[1] + " " + k[2] + " {power:123456789L}");
+            c.cmd("data merge block " + k[0] + " " + k[1] + " " + k[2] + " {power:\"123456789\"}");
             c.waitTicks(10);
             c.cmd("save-all flush");
             c.waitTicks(30);
@@ -81,8 +81,8 @@ public final class RcPowerTail implements Scenario {
             c.waitInWorld(120_000L);
             c.waitTicks(40);
             String nbt = c.blockEntity(k[0], k[1], k[2]).get("nbt").getAsString().replaceAll("\s+", "");
-            System.out.println("[fensu persist] " + nbt.replaceAll(".*(power:[0-9]+L).*", "$1"));
-            if (!nbt.contains("power:123456789L")) failures.add("charged FEnSU lost its charge over save and rejoin: " + nbt);
+            System.out.println("[fensu persist] " + nbt.replaceAll(".*(power:\"[0-9]+\").*", "$1"));
+            if (!nbt.contains("power:\"123456789\"")) failures.add("charged FEnSU lost its charge over save and rejoin: " + nbt);
         } catch (RuntimeException e) {
             failures.add("storagePersist: " + e.getMessage());
         }

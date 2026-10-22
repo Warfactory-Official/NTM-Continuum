@@ -123,7 +123,7 @@ public final class CraftingRecipesGenerated {
         shaped(NS, "drone_request", ItemIds.drone_request, rows("E", "D"),
                 "D", ItemIds.drone_patrol, "E", ItemIds.circuit_chip);
         smelt(NS, "iron_ingot_g1", ItemIds.ore_meteor_iron, VanillaIds.iron_ingot, 10.0, 16);
-        smelt(NS, "ingot_copper_2_g1", ItemIds.ore_meteor_copper, ItemIds.ingot_copper, 10.0, 16);
+        smelt(NS, "ingot_copper_2_g1", ItemIds.ore_meteor_copper, VanillaIds.copper_ingot, 10.0, 16);
         smelt(NS, "chunk_ore_cryolite_1", ItemIds.ore_meteor_aluminium, ItemIds.chunk_ore_cryolite, 10.0, 16);
         smelt(NS, "chunk_ore_rare", ItemIds.ore_meteor_rareearth, ItemIds.chunk_ore_rare, 10.0, 16);
         smelt(NS, "ingot_cobalt_2_g1", ItemIds.ore_meteor_cobalt, ItemIds.ingot_cobalt, 10.0, 4);

@@ -15,7 +15,7 @@ public final class RcPowerGuis implements Scenario {
             "machine_diesel", "machine_combustion_engine", "machine_wood_burner", "machine_rtg_grey", "machine_minirtg",
             "machine_steam_engine", "machine_large_turbine", "machine_industrial_turbine", "machine_chungus",
             "machine_turbofan", "machine_turbine_gas", "machine_battery_socket", "machine_battery_redd",
-            "machine_fensu", "machine_solar_boiler", "machine_industrial_boiler", "heat_boiler", "machine_hephaestus",
+            "machine_solar_boiler", "machine_industrial_boiler", "heat_boiler", "machine_hephaestus",
             "machine_industrial_generator", "machine_lpw2", "tesla", "machine_battery_potato", "machine_lithium_battery",
             "machine_schrabidium_battery", "machine_dineutronium_battery", "capacitor_bus", "machine_capacitor_copper",
             "machine_capacitor_gold", "machine_capacitor_niobium", "capacitor_tantalium", "capacitor_schrabidate",

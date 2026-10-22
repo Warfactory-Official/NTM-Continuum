@@ -4,16 +4,20 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.blocks.ModFallingBlocks;
+import com.hbm.blocks.RawOres;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.fluid.FluidStack;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
+import com.hbm.inventory.recipes.CrystallizerRecipes.ChanceOutput;
 import com.hbm.inventory.recipes.CrystallizerRecipes.ItemOutput;
 import com.hbm.inventory.recipes.CrystallizerRecipes.Output;
 import com.hbm.inventory.recipes.CrystallizerRecipes.Row;
@@ -102,6 +106,22 @@ public final class CrystallizerTable extends RecipeSource<Row> {
         registerRecipe(SA326.ore(),         new CrystallizerRecipe(ModItems.crystal_schrabidium.get(), baseTime).prod(0.05F), sulfur);
         registerRecipe(LI.ore(),            new CrystallizerRecipe(ModItems.crystal_lithium.get(), baseTime).prod(0.05F), sulfur);
         registerRecipe(CO.ore(),            new CrystallizerRecipe(ModItems.crystal_cobalt.get(), baseTime).prod(0.05F), sulfur);
+
+        // port: ntm-next's raw ores, a crystal at two thirds of the ore's chance, time and acid
+        raw(IRON, ModItems.crystal_iron.get(), Fluids.PEROXIDE);
+        raw(GOLD, ModItems.crystal_gold.get(), Fluids.PEROXIDE);
+        raw(CU, ModItems.crystal_copper.get(), Fluids.PEROXIDE);
+        raw(AL, ModItems.crystal_aluminium.get(), Fluids.PEROXIDE);
+        raw(BE, ModItems.crystal_beryllium.get(), Fluids.PEROXIDE);
+        raw(PB, ModItems.crystal_lead.get(), Fluids.PEROXIDE);
+        raw(U, ModItems.crystal_uranium.get(), Fluids.SULFURIC_ACID);
+        raw(TH232, ModItems.crystal_thorium.get(), Fluids.SULFURIC_ACID);
+        raw(PU, ModItems.crystal_plutonium.get(), Fluids.SULFURIC_ACID);
+        raw(TI, ModItems.crystal_titanium.get(), Fluids.SULFURIC_ACID);
+        raw(W, ModItems.crystal_tungsten.get(), Fluids.SULFURIC_ACID);
+        raw(SA326, ModItems.crystal_schrabidium.get(), Fluids.SULFURIC_ACID);
+        raw(LI, ModItems.crystal_lithium.get(), Fluids.SULFURIC_ACID);
+        raw(CO, ModItems.crystal_cobalt.get(), Fluids.SULFURIC_ACID);
 
         registerRecipe(new ComparableStack(ModItems.powder_calcium.get()),           new CrystallizerRecipe(new ItemStack(ModFuelItems.powder_cement.get(), 8), utilityTime).prod(0.1F), new FluidStack(Fluids.REDMUD, 75));
         registerRecipe(MALACHITE.ingot(),   new CrystallizerRecipe(ItemScraps.create(new MaterialStack(Mats.MAT_COPPER, MaterialShapes.INGOT.quantity * 1)), 300).prod(0.1F), new FluidStack(Fluids.SULFURIC_ACID, 250));
@@ -299,6 +319,12 @@ public final class CrystallizerTable extends RecipeSource<Row> {
         AStack counted = recipe.itemAmount == 1 ? input : input.count(recipe.itemAmount);
         register(id(input) + "_" + stack.type.getKey(), new Row(counted, new FluidStack(stack.type, stack.fill), recipe.output,
                 recipe.duration, recipe.productivity, Optional.ofNullable(recipe.requires), nextOrder()));
+    }
+
+    private void raw(NTMMaterial material, Item crystal, FluidType acid) {
+        Output output = new ChanceOutput(ItemOut.of(new ItemStack(crystal)), RawOres.SHARE);
+        registerRecipe(RawOres.stack(material), new CrystallizerRecipe(output, RawOres.share(600)).prod(0.05F),
+                new FluidStack(acid, RawOres.share(500)));
     }
 
     private static String id(AStack input) {

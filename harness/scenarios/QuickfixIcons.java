@@ -19,7 +19,7 @@ public final class QuickfixIcons implements Scenario {
 
     private static final String[] IDS = {
             "gear_large", "machine_boiler_off", "hev_helmet", "ajr_plate", "trenchmaster_boots",
-            "ingot_copper"};
+            "plate_copper"};
 
     @Override
     public void run(Client c) throws Exception {

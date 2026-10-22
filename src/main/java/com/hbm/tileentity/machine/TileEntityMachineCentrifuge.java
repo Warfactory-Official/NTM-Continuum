@@ -122,11 +122,11 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
     }
 
     private void processItem() {
-        ItemStack[] output = CentrifugeRecipes.getOutput(inventory.getStackInSlot(0));
+        ItemStack[] output = CentrifugeRecipes.getOutput(inventory.getStackInSlot(0), level.getRandom());
         if (output == null) return;
 
         for (int i = 0; i < Math.min(4, output.length); i++) {
-            if (output[i] != null) inventory.insertItem(i + 2, output[i], false);
+            if (!output[i].isEmpty()) inventory.insertItem(i + 2, output[i], false);
         }
         inventory.extractItem(0, 1, false);
         setChanged();

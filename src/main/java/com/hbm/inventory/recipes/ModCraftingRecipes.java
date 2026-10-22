@@ -4,6 +4,7 @@ import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
 
+import static dev.golem.core.dejson.Crafting.blast;
 import static dev.golem.core.dejson.Crafting.compress;
 import static dev.golem.core.dejson.Crafting.decompress;
 import static dev.golem.core.dejson.Crafting.smelt;
@@ -12,8 +13,8 @@ import static dev.golem.core.dejson.Crafting.smelt;
  * The hbm recipes whose shape carries no decision, declared through Golem Core's {@code dejson}
  * vocabulary instead of written as JSON.
  *
- * <p>This class stands in for {@value #FILES_REPLACED} recipe files: 192 that pack nine of something into
- * a block, 62 that unpack it again, and 121 furnace recipes. Each is a fixed arrangement around two ids
+ * <p>This class stands in for {@value #FILES_REPLACED} recipe files: 191 that pack nine of something into
+ * a block, 62 that unpack it again, and 120 furnace recipes. Each is a fixed arrangement around two ids
  * and a number: a full three-by-three grid of one ingredient, a single shapeless ingredient making nine,
  * two hundred ticks and an experience value.
  *
@@ -29,7 +30,7 @@ public final class ModCraftingRecipes {
     private static final String NS = "hbm";
 
     /** How many recipe files the declarations below stand in for; quoted in this class's own javadoc. */
-    static final int FILES_REPLACED = 375;
+    static final int FILES_REPLACED = 373;
 
     private static boolean declared;
 
@@ -47,6 +48,28 @@ public final class ModCraftingRecipes {
         rawNuggets();
         smelting0();
         smelting1();
+        rawOres();
+    }
+
+    /** port: ntm-next's raw ores smelt and blast to one of what their ore smelts to. */
+    private static void rawOres() {
+        rawOre("aluminium", ItemIds.chunk_ore_cryolite, 2.5);
+        rawOre("beryllium", ItemIds.ingot_beryllium, 2.0);
+        rawOre("lead", ItemIds.ingot_lead, 3.0);
+        rawOre("thorium", ItemIds.ingot_th232, 3.0);
+        rawOre("titanium", ItemIds.ingot_titanium, 3.0);
+        rawOre("tungsten", ItemIds.ingot_tungsten, 6.0);
+        rawOre("uranium", ItemIds.ingot_uranium, 6.0);
+        rawOre("plutonium", ItemIds.ingot_plutonium, 24.0);
+        rawOre("cobalt", ItemIds.ingot_cobalt, 2.0);
+        rawOre("schrabidium", ItemIds.ingot_schrabidium, 128.0);
+        rawOre("lithium", ItemIds.lithium, 10.0);
+    }
+
+    private static void rawOre(String material, String result, double experience) {
+        String raw = "hbm:raw_" + material;
+        smelt(NS, "smelting/raw_" + material, raw, result, experience);
+        blast(NS, "blasting/raw_" + material, raw, result, experience);
     }
 
     private static void packing0() {
@@ -106,7 +129,6 @@ public final class ModCraftingRecipes {
         compress(NS, "block_cobalt", ItemIds.ingot_cobalt, ItemIds.block_cobalt);
         compress(NS, "block_coltan", ItemIds.fragment_coltan, ItemIds.block_coltan);
         compress(NS, "block_combine_steel", ItemIds.ingot_combine_steel, ItemIds.block_combine_steel);
-        compress(NS, "block_copper", ItemIds.ingot_copper, ItemIds.block_copper);
         compress(NS, "block_desh", ItemIds.ingot_desh, ItemIds.block_desh);
         compress(NS, "block_dineutronium", ItemIds.ingot_dineutronium, ItemIds.block_dineutronium);
         compress(NS, "block_dura_steel", ItemIds.ingot_dura_steel, ItemIds.block_dura_steel);
@@ -176,7 +198,7 @@ public final class ModCraftingRecipes {
         compress(NS, "ingot_beryllium_5", ItemIds.nugget_beryllium, ItemIds.ingot_beryllium);
         compress(NS, "ingot_bismuth_1", ItemIds.nugget_bismuth, ItemIds.ingot_bismuth);
         compress(NS, "ingot_co60", ItemIds.nugget_co60, ItemIds.ingot_co60);
-        compress(NS, "ingot_copper", TagIds.wires_copper, ItemIds.ingot_copper);
+        compress(NS, "ingot_copper", TagIds.wires_copper, VanillaIds.copper_ingot);
         compress(NS, "ingot_dineutronium_1", ItemIds.nugget_dineutronium, ItemIds.ingot_dineutronium);
         compress(NS, "ingot_euphemium_2", ItemIds.nugget_euphemium, ItemIds.ingot_euphemium);
         compress(NS, "ingot_gh336", ItemIds.nugget_gh336, ItemIds.ingot_gh336);
@@ -299,7 +321,7 @@ public final class ModCraftingRecipes {
     /** 1.7 {@code OreDictManager}: every NUGGET autogen material with an ingot gets a 1-to-9 pair with its raw nugget. */
     private static void rawNuggets() {
         String[][] pairs = {
-                {"titanium", ItemIds.ingot_titanium}, {"copper", ItemIds.ingot_copper},
+                {"titanium", ItemIds.ingot_titanium}, {"copper", VanillaIds.copper_ingot},
                 {"tungsten", ItemIds.ingot_tungsten}, {"aluminium", ItemIds.ingot_aluminium},
                 {"boron", ItemIds.ingot_boron}, {"sodium", "hbm:ingot_raw_sodium"},
                 {"strontium", "hbm:ingot_raw_strontium"}, {"lithium", ItemIds.lithium}};
@@ -352,10 +374,9 @@ public final class ModCraftingRecipes {
         smelt(NS, "ingot_cobalt_3", ItemIds.crystal_cobalt, ItemIds.ingot_cobalt, 2.0, 2);
         smelt(NS, "ingot_combine_steel", ItemIds.powder_combine_steel, ItemIds.ingot_combine_steel, 1.0);
         smelt(NS, "ingot_combine_steel_1", ItemIds.combine_scrap, ItemIds.ingot_combine_steel, 1.0);
-        smelt(NS, "ingot_copper_1", ItemIds.ore_copper, ItemIds.ingot_copper, 2.5);
-        smelt(NS, "ingot_copper_2", ItemIds.ore_gneiss_copper, ItemIds.ingot_copper, 5.0);
-        smelt(NS, "ingot_copper_3", ItemIds.powder_copper, ItemIds.ingot_copper, 1.0);
-        smelt(NS, "ingot_copper_4", ItemIds.crystal_copper, ItemIds.ingot_copper, 2.0, 2);
+        smelt(NS, "ingot_copper_2", ItemIds.ore_gneiss_copper, VanillaIds.copper_ingot, 5.0);
+        smelt(NS, "ingot_copper_3", ItemIds.powder_copper, VanillaIds.copper_ingot, 1.0);
+        smelt(NS, "ingot_copper_4", ItemIds.crystal_copper, VanillaIds.copper_ingot, 2.0, 2);
         smelt(NS, "ingot_desh", ItemIds.powder_desh, ItemIds.ingot_desh, 1.0);
         smelt(NS, "ingot_desh_1", ItemIds.arc_electrode_burnt_desh, ItemIds.ingot_desh, 3.0);
         smelt(NS, "ingot_dineutronium", ItemIds.powder_dineutronium, ItemIds.ingot_dineutronium, 5.0);

@@ -1,13 +1,13 @@
 {
 	"name": "Copper",
 	"icon": [
-		"hbm:ingot_copper",
+		"minecraft:copper_ingot",
 		1,
 		0
 	],
 	"trigger": [
 		[
-			"hbm:ingot_copper"
+			"minecraft:copper_ingot"
 		],
 		[
 			"hbm:plate_copper"

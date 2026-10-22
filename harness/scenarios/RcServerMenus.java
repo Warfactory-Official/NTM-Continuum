@@ -49,7 +49,7 @@ public final class RcServerMenus implements Scenario {
             "nuke_man", "nuke_n2", "nuke_boy", "nuke_gadget", "nuke_tsar", "nuke_mike", "machine_zirnox", "watz", "fusion_torus",
             "fusion_breeder", "fusion_klystron", "fusion_plasma_forge", "machine_press", "machine_ammo_press", "machine_epress",
             "machine_electric_furnace_off", "machine_furnace_brick_off", "furnace_iron", "furnace_steel", "machine_shredder",
-            "machine_fluidtank", "machine_uf6_tank", "machine_bigasstank", "machine_battery_socket", "machine_fensu", "machine_battery_redd",
+            "machine_fluidtank", "machine_uf6_tank", "machine_bigasstank", "machine_battery_socket", "machine_battery_redd",
             "anvil_iron", "crate_iron", "crate_steel", "crate_desh", "machine_armor_table", "machine_weapon_table", "mass_storage", "crate_template",
             "launch_pad", "turret_howard", "radio_torch_sender", "radio_torch_reader", "radio_torch_logic", "radio_torch_counter",
             "radio_telex", "network_separator", "barrel_steel", "crane_inserter", "crane_extractor", "fluid_pump", "fluid_valve"};

@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.ModEnergyBedrockBlocks;
 import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
@@ -12,19 +11,14 @@ import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.items.ModBedrockOreItems;
 import com.hbm.items.special.BedrockOreType;
 import com.hbm.items.special.ItemBedrockOreGraded.Grade;
-import com.hbm.tileentity.network.TileEntityConverterHeRf;
-import com.hbm.tileentity.network.TileEntityConverterRfHe;
-import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import java.util.Arrays;
-import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * The bedrock ore grade chain against 1.7 values computed by hand from {@code ItemBedrockOreNew}'s tables, and the
- * two converters' exchange rates for one tick. Registered on {@link BedrockOreGameTests#TESTS}.
+ * The bedrock ore grade chain against 1.7 values computed by hand from {@code ItemBedrockOreNew}'s tables. Registered on {@link BedrockOreGameTests#TESTS}.
  */
 public final class EnergyBedrockGameTests {
 
@@ -32,8 +26,6 @@ public final class EnergyBedrockGameTests {
 
     public static final GameTests.Function CHAIN = BedrockOreGameTests.TESTS.function("bedrock_ore_grade_chain", 20,
             () -> EnergyBedrockGameTests::gradeChain);
-    public static final GameTests.Function CONVERTERS = BedrockOreGameTests.TESTS.function("energy_converter_rates", 20,
-            () -> EnergyBedrockGameTests::converterRates);
 
     public static void init() {}
 
@@ -85,30 +77,6 @@ public final class EnergyBedrockGameTests {
                 && roast.fluidOutput().type == Fluids.VITRIOL && roast.fluidOutput().fill == 50, "roasting");
 
         helper.assertTrue(ShredderRecipes.getShredderResult(ore(Grade.RAD_WASHED)).is(Items.GRAVEL), "shredding");
-        helper.succeed();
-    }
-
-    /** 50 HE buys 10 RF at 5:1; 4 RF buys 10 HE at 2:5, and 1 RF buys 2 (the floor 1.7 had). */
-    public static void converterRates(GameTestHelper helper) {
-        BlockPos a = new BlockPos(1, 1, 1), b = new BlockPos(3, 1, 1);
-        helper.setBlock(a, ModEnergyBedrockBlocks.machine_converter_he_rf.get().defaultBlockState());
-        helper.setBlock(b, ModEnergyBedrockBlocks.machine_converter_rf_he.get().defaultBlockState());
-        TileEntityConverterHeRf heRf = GameTestHelpers.blockEntity(helper, a, TileEntityConverterHeRf.class);
-        TileEntityConverterRfHe rfHe = GameTestHelpers.blockEntity(helper, b, TileEntityConverterRfHe.class);
-        helper.assertTrue(heRf != null && rfHe != null, "no converter block entities");
-
-        heRf.power = 50;
-        TileEntityConverterHeRf.serverTick(helper.getLevel(), helper.absolutePos(a), heRf.getBlockState(), heRf);
-        helper.assertTrue(heRf.stored == 10 && heRf.power == 0, "HE->RF " + heRf.power + " HE / " + heRf.stored + " RF");
-
-        rfHe.receiveRf(4);
-        TileEntityConverterRfHe.serverTick(helper.getLevel(), helper.absolutePos(b), rfHe.getBlockState(), rfHe);
-        helper.assertTrue(rfHe.stored == 0 && rfHe.power == 10, "RF->HE " + rfHe.stored + " RF / " + rfHe.power + " HE");
-
-        rfHe.power = 0;
-        rfHe.receiveRf(1);
-        TileEntityConverterRfHe.serverTick(helper.getLevel(), helper.absolutePos(b), rfHe.getBlockState(), rfHe);
-        helper.assertTrue(rfHe.power == 2, "1 RF gave " + rfHe.power + " HE");
         helper.succeed();
     }
 }

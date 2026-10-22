@@ -1,7 +1,6 @@
 package com.hbm.wiaj.actors;
 
 import com.hbm.Constants;
-import com.hbm.client.render.FensuRenderState;
 import com.hbm.client.render.FoundryRenderHelper;
 import com.hbm.client.render.HbmBlockEntityRenderers;
 import com.hbm.client.render.StirlingRenderState;
@@ -31,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * The bridge from the jar to the port's machine renderers.
  *
  * <p>Upstream the machine TESRs themselves implemented {@link ITileActorRenderer}: {@code RenderStirling},
- * {@code RenderFENSU}, {@code RenderCrucible} and {@code RenderFoundry} each had a {@code renderActor} next
+ * {@code RenderCrucible} and {@code RenderFoundry} each had a {@code renderActor} next
  * to their world path. The port's renderers are declared models ({@link GemBER}) driven by a render state,
  * so an actor here fills that state from its data and replays the very renderer the placed machine uses:
  * same mesh, same parts, same animation channels. Nothing about a machine's look is restated for the jar.
@@ -157,32 +156,8 @@ public final class JarRenderers {
         }
     }
 
-    /** 1.7 {@code RenderFENSU} as an actor: the flywheel spun by the actor's own {@code speed}. */
-    public static class Fensu implements ITileActorRenderer {
-
-        @Override
-        public void renderActor(WorldInAJar world, PoseStack pose, SubmitSink sink, CameraInfo camera, int ticks, float interp, CompoundTag data) {
-            GemBER<BlockEntity, CompatRenderState> renderer = gem(ModBlockEntities.FENSU.get());
-            if (renderer == null) return;
-            FensuRenderState state = (FensuRenderState) renderer.createRenderState();
-            state.yaw = rotationYaw(Tags.getIntOr(data, "rotation", 0));
-            float lastSpin = Tags.getFloatOr(data, "lastSpin", 0F);
-            float spin = Tags.getFloatOr(data, "spin", 0F);
-            state.rotation = lastSpin + (spin - lastSpin) * interp;
-            pose.pushPose();
-            pose.translate(Tags.getDoubleOr(data, "x", 0D), Tags.getDoubleOr(data, "y", 0D), Tags.getDoubleOr(data, "z", 0D));
-            submit(renderer, state, pose, sink, camera);
-            pose.popPose();
-        }
-
-        @Override
-        public void updateActor(int ticks, CompoundTag data) {
-            spin(data);
-        }
-    }
-
     /**
-     * The spin both engines shared upstream, unchanged, including {@code lastSpin} starting from zero
+     * The spin the Stirling engine used upstream, unchanged, including {@code lastSpin} starting from zero
      * rather than from the stored value, so the first tick after a wrap interpolates from {@code -360}.
      */
     private static void spin(CompoundTag data) {

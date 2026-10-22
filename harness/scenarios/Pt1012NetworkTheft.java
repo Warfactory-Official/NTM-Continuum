@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * <ol>
  *   <li>an electric furnace holding 50,000 HE beside an empty input battery on one red cable keeps every HE, and the
  *       battery switched to output then feeds the furnace (the cable is live);</li>
- *   <li>an output battery beside the RF-to-HE converter (a provider only) keeps its charge, the converter takes nothing;</li>
+ *   <li>an output battery beside a diesel generator (a provider only) keeps its charge, the generator takes nothing;</li>
  *   <li>a diesel generator (off) holding 8,000 mB diesel beside an empty input barrel and an empty buffer barrel on one
  *       diesel duct keeps every mB; a foreign extract on its fuel face moves 0 mB while a foreign insert is taken; an
  *       output barrel then fills it (the duct is live).</li>
@@ -39,10 +39,10 @@ public class Pt1012NetworkTheft implements Scenario {
         for (int x = -2; x <= 0; x++) c.cmd("setblock " + x + " " + G + " 0 hbm:red_cable");
         c.cmd("setblock 1 " + G + " 0 hbm:machine_battery{power:0L,redLow:0s,redHigh:0s}");
 
-        // 2. generator side: output battery -- cable x3 -- RF-to-HE converter (provider only)
+        // 2. generator side: output battery -- cable x3 -- diesel generator (provider only)
         c.cmd("setblock -3 " + G + " 3 hbm:machine_battery{power:500000L,redLow:2s,redHigh:2s}");
         for (int x = -2; x <= 0; x++) c.cmd("setblock " + x + " " + G + " 3 hbm:red_cable");
-        c.cmd("setblock 1 " + G + " 3 hbm:machine_converter_rf_he{power:0L}");
+        c.cmd("setblock 1 " + G + " 3 hbm:machine_diesel{powerTime:0L}");
 
         // 3. fluid: diesel generator (off, 8000 mB) -- diesel duct -- input barrel; a buffer barrel on the duct's south
         c.cmd("setblock -3 " + G + " 6 hbm:machine_diesel{fuel:8000,fuel_type:\"hbm:diesel\",isOn:0b}");
@@ -73,8 +73,8 @@ public class Pt1012NetworkTheft implements Scenario {
         Expect.that(furnace == 50000L, "the furnace lost power to the net: " + furnace);
 
         long outputBattery = longOf(nbt(c, -3, G, 3), "power");
-        long converter = longOf(nbt(c, 1, G, 3), "power");
-        Expect.that(converter == 0L, "a provider-only converter took " + converter + " HE from the net");
+        long generator = longOf(nbt(c, 1, G, 3), "powerTime");
+        Expect.that(generator == 0L, "a provider-only generator took " + generator + " HE from the net");
         Expect.that(outputBattery == 500000L, "an output battery was debited with no receiver on the net: " + outputBattery);
 
         long fuel = longOf(nbt(c, -3, G, 6), "fuel");
@@ -93,18 +93,18 @@ public class Pt1012NetworkTheft implements Scenario {
         // positive controls: the same runs do carry from a real provider
         c.cmd("data merge block 1 " + G + " 0 {power:500000L,redLow:2s,redHigh:2s}");
         c.cmd("data merge block -3 " + G + " 3 {power:0L,redLow:0s,redHigh:0s}");
-        c.cmd("data merge block 1 " + G + " 3 {power:1000L}");
+        c.cmd("data merge block 1 " + G + " 3 {powerTime:1000L}");
         c.cmd("data merge block -1 " + G + " 6 {tank:1000,mode:2s}");
         c.waitTicks(60);
         c.screenshot("controls");
         long furnaceAfter = longOf(nbt(c, -3, G, 0), "power");
-        long batteryFromConverter = longOf(nbt(c, -3, G, 3), "power");
+        long batteryFromGenerator = longOf(nbt(c, -3, G, 3), "power");
         long fuelAfter = longOf(nbt(c, -3, G, 6), "fuel");
         Expect.that(furnaceAfter > 50000L, "the output battery never reached the furnace (cable not live): " + furnaceAfter);
-        Expect.that(batteryFromConverter > 0L, "the converter never fed the input battery (cable not live)");
+        Expect.that(batteryFromGenerator > 0L, "the generator never fed the input battery (cable not live)");
         Expect.that(fuelAfter > 8500L, "the output barrel never reached the generator (duct not live): " + fuelAfter);
-        System.out.println("[Pt1012NetworkTheft] furnace " + furnace + " -> " + furnaceAfter + ", converter-fed battery "
-                + batteryFromConverter + ", diesel " + fuel + " -> " + fuelAfter);
+        System.out.println("[Pt1012NetworkTheft] furnace " + furnace + " -> " + furnaceAfter + ", generator-fed battery "
+                + batteryFromGenerator + ", diesel " + fuel + " -> " + fuelAfter);
 
         portRoles(c);
     }

@@ -61,13 +61,7 @@ public final class DisintegrationParticles {
     private static final List<SkeletonPiece> SKELETONS = new ArrayList<>();
     private static final List<Giblet> GIBLETS = new ArrayList<>();
     private static final Map<Integer, Vanish> VANISHED = new HashMap<>();
-    private static final Pool POOL = new Pool();
     private static boolean initialized;
-
-    /** Every live giblet as one pool; the skeleton pieces are meshes and stay on the vanilla pass. */
-    static final class Pool {
-        private Pool() {}
-    }
 
     private DisintegrationParticles() {}
 
@@ -76,17 +70,6 @@ public final class DisintegrationParticles {
         initialized = true;
         WorldEffects.init();
         ClientTicks.onEndTick(DisintegrationParticles::tick);
-        Billboards.registerPool(Pool.class, List.of(
-                        new Billboards.Layer(MEAT.toString(), Billboards.Mode.DEPTH_WRITING_TRANSLUCENT,
-                                Billboards.Uv.ROTATED_180),
-                        new Billboards.Layer(SLIME.toString(), Billboards.Mode.DEPTH_WRITING_TRANSLUCENT,
-                                Billboards.Uv.ROTATED_180),
-                        new Billboards.Layer(METAL.toString(), Billboards.Mode.DEPTH_WRITING_TRANSLUCENT,
-                                Billboards.Uv.ROTATED_180)),
-                (pool, frame, layers) -> {
-                    for (Giblet giblet : List.copyOf(GIBLETS)) giblet.write(layers, frame.partialTick());
-                },
-                pool -> GIBLETS.isEmpty());
         WorldEffects.onBegin(camera -> submit(camera));
         ClientResourceReloads.register(Constants.MOD_ID,
                 "disintegration_particles", () -> { clear(); model = null; declaration = null; });
@@ -118,7 +101,6 @@ public final class DisintegrationParticles {
             GIBLETS.add(new Giblet(x, y, z, rand.nextGaussian() * 0.25D * mult, rand.nextDouble() * mult,
                     rand.nextGaussian() * 0.25D * mult, gibType, rand));
         }
-        Billboards.add(level, POOL);
     }
 
     /** Hides the source entity for the same two-second client presentation window as ClientProxy. */
@@ -153,7 +135,7 @@ public final class DisintegrationParticles {
         if (SKELETONS.isEmpty() && GIBLETS.isEmpty()) return;
         float partial = Frames.partialTick();
         for (SkeletonPiece piece : List.copyOf(SKELETONS)) piece.submit(camera, partial);
-        if (GIBLETS.isEmpty() || Billboards.owns(POOL)) return;
+        if (GIBLETS.isEmpty()) return;
         Vector3f right = camera.orientation.transform(new Vector3f(1F, 0F, 0F));
         Vector3f up = camera.orientation.transform(new Vector3f(0F, 1F, 0F));
         Identifier[] textures = {MEAT, SLIME, METAL};
@@ -192,8 +174,6 @@ public final class DisintegrationParticles {
     private static void clear() {
         SKELETONS.clear();
         GIBLETS.clear();
-        ClientLevel level = Minecraft.getInstance().level;
-        if (level != null) Billboards.remove(level, POOL);
         for (Vanish vanish : VANISHED.values()) vanish.entity.setInvisible(vanish.wasInvisible);
         VANISHED.clear();
     }

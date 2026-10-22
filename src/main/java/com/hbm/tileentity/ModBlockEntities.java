@@ -123,7 +123,6 @@ import com.hbm.blocks.machine.storage.ModBatteryBlocks;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.tileentity.machine.storage.CrateType;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
-import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
 import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
 import com.hbm.tileentity.machine.storage.TileEntityCrate;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
@@ -536,9 +535,6 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityBatterySocket>> BATTERY_SOCKET =
             REG.blockEntity("machine_battery_socket",
                     () -> BlockEntities.serverTicking(TileEntityBatterySocket::new, TileEntityBatterySocket::serverTick, ModBatteryBlocks.machine_battery_socket.get()));
-    public static final RegistryObject<BlockEntityType<TileEntityMachineFENSU>> FENSU =
-            REG.blockEntity("machine_fensu",
-                    () -> BlockEntities.ticking(TileEntityMachineFENSU::new, TileEntityMachineFENSU::clientTick, TileEntityMachineFENSU::serverTick, ModBatteryBlocks.machine_fensu.get()));
     public static final RegistryObject<BlockEntityType<TileEntityBatteryREDD>> BATTERY_REDD =
             REG.blockEntity("machine_battery_redd",
                     () -> BlockEntities.ticking(TileEntityBatteryREDD::new, TileEntityBatteryREDD::clientTick, TileEntityBatteryREDD::serverTick, ModBatteryBlocks.machine_battery_redd.get()));

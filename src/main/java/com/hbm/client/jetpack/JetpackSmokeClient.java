@@ -8,6 +8,7 @@ import dev.golem.core.Ids;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.net.GolemNetwork;
+import dev.golem.core.platform.Platform;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
@@ -27,7 +28,7 @@ public final class JetpackSmokeClient {
     private JetpackSmokeClient() {}
 
     public static void register() {
-        if (System.getenv("HBM_JETPACK_SMOKE") == null) return;
+        if (!Platform.isDevelopment() || System.getenv("HBM_JETPACK_SMOKE") == null) return;
         ClientTicks.onEndTick(JetpackSmokeClient::tick);
     }
 

@@ -21,6 +21,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -56,12 +57,20 @@ public final class CrystallizerRecipes {
     private CrystallizerRecipes() {}
 
     /** What a row makes. */
-    public sealed interface Output permits ItemOutput, ScrapsOutput, TagOutput {
+    public sealed interface Output permits ItemOutput, ChanceOutput, ScrapsOutput, TagOutput {
         /** The stack, built when the table is indexed; empty when it cannot be made (an empty tag). */
         ItemStack stack();
+
+        /** The chance the stack is made at all, rolled once per operation. */
+        default float chance() { return 1F; }
     }
 
     public record ItemOutput(ItemOut item) implements Output {
+        public ItemStack stack() { return item.stack(); }
+    }
+
+    /** port: an item made with {@code chance} ({@code {"item", "chance"}}), for ntm-next's raw ore rows. */
+    public record ChanceOutput(ItemOut item, float chance) implements Output {
         public ItemStack stack() { return item.stack(); }
     }
 
@@ -82,14 +91,23 @@ public final class CrystallizerRecipes {
             MaterialCodecs.STACK.fieldOf("scraps").forGetter(ScrapsOutput::scraps)
     ).apply(i, ScrapsOutput::new));
 
+    private static final Codec<ChanceOutput> CHANCE_OUTPUT = RecordCodecBuilder.create(i -> i.group(
+            GenericRecipeCodec.ITEM_OUT.fieldOf("item").forGetter(ChanceOutput::item),
+            Codec.FLOAT.fieldOf("chance").forGetter(ChanceOutput::chance)
+    ).apply(i, ChanceOutput::new));
+
     private static final Codec<TagOutput> TAG_OUTPUT = RecordCodecBuilder.create(i -> i.group(
             TagKey.codec(Registries.ITEM).fieldOf("tag").forGetter(TagOutput::tag),
             Codec.INT.optionalFieldOf("count", 1).forGetter(TagOutput::count)
     ).apply(i, TagOutput::new));
 
-    public static final Codec<Output> OUTPUT = Codec.either(GenericRecipeCodec.ITEM_OUT, Codec.either(SCRAPS_OUTPUT, TAG_OUTPUT))
+    private static final Codec<Output> PLAIN_OUTPUT = Codec.either(GenericRecipeCodec.ITEM_OUT, Codec.either(SCRAPS_OUTPUT, TAG_OUTPUT))
             .xmap(either -> either.<Output>map(ItemOutput::new, special -> special.<Output>map(s -> s, t -> t)),
                     CrystallizerRecipes::split);
+
+    public static final Codec<Output> OUTPUT = Codec.either(CHANCE_OUTPUT, PLAIN_OUTPUT)
+            .xmap(either -> either.<Output>map(c -> c, o -> o),
+                    output -> output instanceof ChanceOutput chance ? Either.left(chance) : Either.right(output));
 
     private static Either<ItemOut, Either<ScrapsOutput, TagOutput>> split(Output output) {
         if (output instanceof ItemOutput item) return Either.left(item.item());
@@ -135,14 +153,23 @@ public final class CrystallizerRecipes {
         public final int duration;
         public final float productivity; // Carried only. The old TE never read it (EFFECT upgrades did).
         public final ItemStack output;
+        /** The chance {@link #output} is made; below 1 only for ntm-next's raw ore rows. */
+        public final float chance;
 
-        CrystallizerRecipe(AStack input, FluidType fluid, int acidAmount, int duration, float productivity, ItemStack output) {
+        CrystallizerRecipe(AStack input, FluidType fluid, int acidAmount, int duration, float productivity, ItemStack output,
+                           float chance) {
             this.input = input;
             this.fluid = fluid;
             this.acidAmount = acidAmount;
             this.duration = duration;
             this.productivity = productivity;
             this.output = output;
+            this.chance = chance;
+        }
+
+        /** A copy of {@link #output}, or empty when the chance roll fails. */
+        public ItemStack roll(RandomSource random) {
+            return chance >= 1F || random.nextFloat() < chance ? output.copy() : ItemStack.EMPTY;
         }
     }
 
@@ -156,7 +183,8 @@ public final class CrystallizerRecipes {
             if (row.requires().isPresent() && firstInTag(row.requires().get()) == null) continue;
             ItemStack output = row.output().stack();
             if (output.isEmpty()) continue;
-            next.add(new CrystallizerRecipe(row.input(), row.acid().type, row.acid().fill, row.duration(), row.productivity(), output));
+            next.add(new CrystallizerRecipe(row.input(), row.acid().type, row.acid().fill, row.duration(), row.productivity(), output,
+                    row.output().chance()));
         }
         recipes = List.copyOf(next);
     }
@@ -195,6 +223,7 @@ public final class CrystallizerRecipes {
     public static Row toRow(CrystallizerRecipe recipe, int order) {
         Output output = recipe.output.getItem() == ModMachineItems.scraps.get()
                 ? new ScrapsOutput(ItemScraps.getMats(recipe.output))
+                : recipe.chance < 1F ? new ChanceOutput(ItemOut.of(recipe.output), recipe.chance)
                 : new ItemOutput(ItemOut.of(recipe.output));
         return new Row(recipe.input, new FluidStack(recipe.fluid, recipe.acidAmount), output, recipe.duration,
                 recipe.productivity, Optional.empty(), order);
@@ -203,7 +232,8 @@ public final class CrystallizerRecipes {
     /** One line per recipe, for comparing a converted table with its source. */
     public static String describe(CrystallizerRecipe recipe) {
         return RecipeText.describe(recipe.input) + " + " + recipe.fluid.getKey() + "x" + recipe.acidAmount + " -> "
-                + RecipeText.describe(recipe.output) + " t=" + recipe.duration + " p=" + recipe.productivity
+                + RecipeText.describe(recipe.output) + (recipe.chance < 1F ? " c=" + recipe.chance : "")
+                + " t=" + recipe.duration + " p=" + recipe.productivity
                 + (ItemStacks.sameItemAndData(recipe.output, new ItemStack(recipe.output.getItem(), recipe.output.getCount()))
                         ? "" : " (data)");
     }

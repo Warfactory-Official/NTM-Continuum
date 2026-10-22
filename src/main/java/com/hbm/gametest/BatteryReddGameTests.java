@@ -39,7 +39,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/** Focused contracts for the current machine_battery_redd FEnSU. */
+/** Focused contracts for the machine_battery_redd FEnSU. */
 public final class BatteryReddGameTests {
 
     private static final BigInteger ABOVE_LONG = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.valueOf(12345L));
@@ -183,9 +183,7 @@ public final class BatteryReddGameTests {
     }
 
     public static void itemModels(GameTestHelper helper) {
-        // FEnSU and BAT9000 follow 1.7's raw ItemRenderLibrary chain
-        assertItemModel(helper, "machine_fensu", "hbm:models/machines/fensu.obj",
-                "hbm:textures/models/machines/fensus/fensu_light_blue.png", 1.0D, 0D, false, null, true);
+        // BAT9000 follows 1.7's raw ItemRenderLibrary chain
         assertItemModel(helper, "machine_bigasstank", "hbm:models/machines/bigasstank.obj",
                 "hbm:textures/models/machines/bigasstank.png", 0.5D, 0D, false, null, true);
         assertItemModel(helper, "machine_bat9000", "hbm:models/machines/bat9000.obj",

@@ -1,6 +1,7 @@
 package com.hbm.items.tool;
 
 import com.hbm.Constants;
+import com.hbm.config.GeneralConfig;
 import com.hbm.main.StructureManager;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
@@ -48,7 +49,9 @@ public class ItemWandD extends CompatItem {
             // 1.7 world.getHeightValue: the first block above the column's highest light-blocking block
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
 
-            Constants.LOG.info("[wand_d] crane build requested at {} {} {}", pos.getX(), y, pos.getZ());
+            if (GeneralConfig.logDiagnostics()) {
+                Constants.LOG.info("[wand_d] crane build requested at {} {} {}", pos.getX(), y, pos.getZ());
+            }
             StructureManager.crane.build(level, pos.getX(), y, pos.getZ());
         }
 

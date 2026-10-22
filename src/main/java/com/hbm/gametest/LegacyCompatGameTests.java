@@ -72,7 +72,7 @@ public final class LegacyCompatGameTests {
      * this smelts in a real furnace so the assertion covers the recipe, the serializer and the output slot.
      */
     public static void smeltingKeepsResultCount(GameTestHelper helper) {
-        assertSmelt(helper, 1, "ore_meteor_copper", "ingot_copper", 16);
+        assertSmelt(helper, 1, "ore_meteor_copper", "minecraft:copper_ingot", 16);
         assertSmelt(helper, 3, "crystal_diamond", null, 2);
         assertSmelt(helper, 5, "crystal_sulfur", "sulfur", 6);
         helper.succeed();
@@ -84,7 +84,8 @@ public final class LegacyCompatGameTests {
         AbstractFurnaceBlockEntity furnace = GameTestHelpers.blockEntity(
                 helper, rel, AbstractFurnaceBlockEntity.class);
         Item in = BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, input));
-        Item out = output == null ? Items.DIAMOND : BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, output));
+        Item out = output == null ? Items.DIAMOND : BuiltInRegistries.ITEM.getValue(
+                output.contains(":") ? Ids.parse(output) : Ids.of(Constants.MOD_ID, output));
         // The recipe itself, before the furnace: a count lost here is lost for every consumer of the recipe.
         ItemStack recipeResult = Recipes.smeltingResult(helper.getLevel(), new ItemStack(in))
                 .orElse(ItemStack.EMPTY);

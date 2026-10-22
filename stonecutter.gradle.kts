@@ -39,12 +39,6 @@ stonecutter parameters {
     // True only where the node declares KubeJS coordinates (an optional peer; dev.golem.core.kubejs in Golem Core).
     constants["kubejs"] = !(node.project.findProperty("deps.kubejs") as String?).isNullOrBlank()
 
-    // Same shape for Flywheel, and false on both 26.1 nodes because the engine publishes no 26.1
-    // build. That is not the same as having no engine there: Golem Core vendors a port of it for
-    // both 26.1 nodes, which FlywheelCompat reaches through an entry point that exists on every node.
-    // This constant means "built against the published dev.engine_room artifact" and nothing more.
-    constants["flywheel"] = !(node.project.findProperty("deps.flywheel") as String?).isNullOrBlank()
-
     // Mechanical renames, declared 26.1 -> older because 26.1 is this port's source of truth.
     replacements {
         // Id construction changed twice across the supported range. Keep it behind Golem Core so

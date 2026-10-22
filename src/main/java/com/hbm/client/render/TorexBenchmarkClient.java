@@ -4,7 +4,7 @@ import com.hbm.Constants;
 import com.hbm.entity.effect.EntityNukeTorex;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.platform.Platform;
-import dev.golem.core.render.Billboards;
+import dev.golem.core.render.WorldEffects;
 import java.util.Arrays;
 import java.util.Locale;
 import net.minecraft.client.CameraType;
@@ -22,7 +22,6 @@ public final class TorexBenchmarkClient {
     private static final int TIMEOUT_TICKS = 20 * 60;
     private static final long[] FRAME_NANOS = new long[32_768];
     private static final long[] FALLBACK_NANOS = new long[32_768];
-    private static final long[] INSTANCED_NANOS = new long[32_768];
     private static boolean sent;
     private static boolean finished;
     private static boolean captured;
@@ -30,13 +29,12 @@ public final class TorexBenchmarkClient {
     private static int elapsedTicks;
     private static int frameSamples;
     private static int fallbackSamples;
-    private static int instancedSamples;
+    private static int frameId;
     private static int lastFrameId = Integer.MIN_VALUE;
     private static long cloudletSum;
     private static int cloudletMin = Integer.MAX_VALUE;
     private static int cloudletMax;
     private static long fallbackVertices;
-    private static long instancedRows;
     private static Integer previousFrameLimit;
     private static Integer previousFov;
     private static Boolean previousVsync;
@@ -52,6 +50,8 @@ public final class TorexBenchmarkClient {
     public static void register() {
         if (ENABLED && Platform.isDevelopment()) {
             ClientTicks.onEndTick(TorexBenchmarkClient::tick);
+            WorldEffects.init();
+            WorldEffects.onBegin(camera -> frameId++);
         }
     }
 
@@ -139,7 +139,6 @@ public final class TorexBenchmarkClient {
             finish();
             return;
         }
-        int frameId = Billboards.frameId();
         if (frameId == lastFrameId) return;
         lastFrameId = frameId;
         if (frameSamples < FRAME_NANOS.length) {
@@ -165,33 +164,16 @@ public final class TorexBenchmarkClient {
         fallbackVertices += (long) cloudlets * 4L;
     }
 
-    public static long instancedStart(EntityNukeTorex cloud) {
-        return ENABLED && !finished && cloud.tickCount >= SAMPLE_START_AGE
-                && cloud.tickCount < SAMPLE_END_AGE ? System.nanoTime() : 0L;
-    }
-
-    public static void instancedEnd(long started, int cloudlets, boolean active) {
-        if (started == 0L || !active) return;
-        if (instancedSamples < INSTANCED_NANOS.length) {
-            INSTANCED_NANOS[instancedSamples++] = System.nanoTime() - started;
-        }
-        instancedRows += cloudlets;
-    }
-
     private static void finish() {
         if (finished) return;
         finished = true;
-        String mode = instancedSamples > 0 ? "instanced" : "fallback";
-        Constants.LOG.info("[TOREX-BENCH] mode={} frames={} frame_ms[p50={},p95={},p99={}] "
-                        + "cloudlets[min={},mean={},max={}] fallback_us[p50={},p95={},p99={}] vertices={} "
-                        + "instance_us[p50={},p95={},p99={}] rows={}", mode,
+        Constants.LOG.info("[TOREX-BENCH] frames={} frame_ms[p50={},p95={},p99={}] "
+                        + "cloudlets[min={},mean={},max={}] fallback_us[p50={},p95={},p99={}] vertices={}",
                 frameSamples, millis(FRAME_NANOS, frameSamples, 0.50), millis(FRAME_NANOS, frameSamples, 0.95),
                 millis(FRAME_NANOS, frameSamples, 0.99), cloudletMin,
                 frameSamples == 0 ? 0 : cloudletSum / frameSamples, cloudletMax,
                 micros(FALLBACK_NANOS, fallbackSamples, 0.50), micros(FALLBACK_NANOS, fallbackSamples, 0.95),
-                micros(FALLBACK_NANOS, fallbackSamples, 0.99), fallbackVertices,
-                micros(INSTANCED_NANOS, instancedSamples, 0.50), micros(INSTANCED_NANOS, instancedSamples, 0.95),
-                micros(INSTANCED_NANOS, instancedSamples, 0.99), instancedRows);
+                micros(FALLBACK_NANOS, fallbackSamples, 0.99), fallbackVertices);
     }
 
     private static String millis(long[] samples, int count, double percentile) {

@@ -37,7 +37,7 @@ public final class BlastFurnaceGameTests {
 
     public static void recipes(GameTestHelper helper) {
         BlastFurnaceRecipesNT.INSTANCE.registerRecipes();
-        helper.assertTrue(BlastFurnaceRecipesNT.INSTANCE.recipeOrderedList.size() == 15, // 12 + meteorSword/meteor/starmetal (ability tool family)
+        helper.assertTrue(BlastFurnaceRecipesNT.INSTANCE.recipeOrderedList.size() == 18, // 12, meteorSword/meteor/starmetal, 3 raw ore rows
                 "Blast furnace recipe count changed: " + BlastFurnaceRecipesNT.INSTANCE.recipeOrderedList.size());
         GenericRecipe steel = BlastFurnaceRecipesNT.INSTANCE.getRecipe(new ItemStack(Items.IRON_INGOT, 2),
                 new ItemStack(Items.SAND));

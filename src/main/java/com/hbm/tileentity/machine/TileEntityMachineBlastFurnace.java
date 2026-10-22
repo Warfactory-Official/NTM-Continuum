@@ -181,9 +181,10 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
         // consumed until every output slot has already been proven able to accept its complete result.
         for (int i = 0; i < recipe.outputItem.length; i++) {
             int slot = 3 + i;
-            ItemStack out = recipe.outputItem[i];
+            ItemStack out = recipe.rollChance(i, recipe.outputItem[i].copy(), level.getRandom());
+            if (out.isEmpty()) continue;
             ItemStack existing = inventory.getStackInSlot(slot);
-            if (existing.isEmpty()) inventory.setStackInSlot(slot, out.copy());
+            if (existing.isEmpty()) inventory.setStackInSlot(slot, out);
             else {
                 ItemStack grown = existing.copy();
                 grown.grow(out.getCount());

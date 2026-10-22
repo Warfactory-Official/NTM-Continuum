@@ -10,12 +10,11 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.energymk2.PowerGraph;
 import com.hbm.api.energymk2.PowerNetwork;
-import com.hbm.blocks.ModEnergyBedrockBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.capability.MachineCaps;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
+import com.hbm.tileentity.machine.TileEntityMachineDiesel;
 import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
-import com.hbm.tileentity.network.TileEntityConverterRfHe;
 import com.hbm.uninos.graph.Distribution;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
@@ -427,29 +426,29 @@ public final class PowerNetworkGameTests {
     }
 
     /**
-     * The other half of the same 1.7 rule: a provider that is not a receiver (here the RF-to-HE converter) never takes
-     * power from a net, so an output battery keeps its charge; the converter itself still feeds an input battery.
+     * The other half of the same 1.7 rule: a provider that is not a receiver (here a diesel generator) never takes
+     * power from a net, so an output battery keeps its charge; the generator itself still feeds an input battery.
      */
     private static void generatorNotFilled(GameTestHelper helper) {
         Rig rig = new Rig(helper, GENERATOR_Z);
         rig.cables(CABLE_FROM, CABLE_FROM + 2);
         TileEntityMachineBattery battery = rig.battery(CABLE_FROM - 1, GENERATOR_Z, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
-        TileEntityConverterRfHe converter = rig.converter(CABLE_FROM + 3, GENERATOR_Z);
+        TileEntityMachineDiesel generator = rig.diesel(CABLE_FROM + 3, GENERATOR_Z);
 
         helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
             for (int pass = 0; pass < 8; pass++) {
                 rig.tickBatteries();
                 rig.round();
             }
-            helper.assertTrue(converter.power == 0L, "A provider-only machine took " + converter.power + " HE from the net");
+            helper.assertTrue(generator.power == 0L, "A provider-only machine took " + generator.power + " HE from the net");
             helper.assertTrue(battery.power == SPEED, "An output battery was debited with no receiver on the net: " + battery.power);
 
             battery.redLow = (short) TileEntityMachineBattery.MODE_INPUT;
             battery.redHigh = (short) TileEntityMachineBattery.MODE_INPUT;
             battery.power = 0L;
-            converter.power = 1_000L;
+            generator.power = 1_000L;
             rig.settle();
-            helper.assertTrue(battery.power > 0L, "The converter never fed the input battery; " + rig.state());
+            helper.assertTrue(battery.power > 0L, "The generator never fed the input battery; " + rig.state());
             helper.succeed();
         });
     }
@@ -593,13 +592,13 @@ public final class PowerNetworkGameTests {
             return furnace;
         }
 
-        TileEntityConverterRfHe converter(int x, int z) {
+        TileEntityMachineDiesel diesel(int x, int z) {
             BlockPos pos = helper.absolutePos(new BlockPos(x, 1, z));
-            level.setBlock(pos, ModEnergyBedrockBlocks.machine_converter_rf_he.get().defaultBlockState(), 3);
-            TileEntityConverterRfHe converter = (TileEntityConverterRfHe) level.getBlockEntity(pos);
-            helper.assertTrue(converter != null, "A converter block entity failed to appear at " + pos);
-            converter.power = 0L;
-            return converter;
+            level.setBlock(pos, ModMachineBlocks.machine_diesel.get().defaultBlockState(), 3);
+            TileEntityMachineDiesel diesel = (TileEntityMachineDiesel) level.getBlockEntity(pos);
+            helper.assertTrue(diesel != null, "A diesel generator block entity failed to appear at " + pos);
+            diesel.power = 0L;
+            return diesel;
         }
 
         /**

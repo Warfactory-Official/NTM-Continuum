@@ -9,7 +9,6 @@ import com.hbm.tileentity.machine.TileEntityMachineGiantTank;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
-import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
 import com.hbm.tileentity.machine.storage.TileEntityMachineOrbus;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
 
@@ -26,10 +25,8 @@ public final class StorageRows {
             Peripherals.row(TileEntityMachineOrbus.class, BarrelPeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityMachineGiantTank.class, BarrelPeripheral::new, Reach.CELLS),
             Peripherals.row(TileEntityMachineFluidTank.class, MachineFluidTankPeripheral::new, Reach.CELLS),
-            // 1.7 MachineBattery and MachineFENSU: no makeExtra cells (the tiered batteries are machine batteries)
+            // 1.7 MachineBattery: no makeExtra cells (the tiered batteries are machine batteries)
             Peripherals.row(TileEntityMachineBattery.class, MachineBatteryPeripheral<TileEntityMachineBattery>::new,
-                    Reach.BLOCK),
-            Peripherals.row(TileEntityMachineFENSU.class, MachineBatteryPeripheral<TileEntityMachineFENSU>::new,
                     Reach.BLOCK),
             // 1.7 socket and REDD: makeExtra power proxies
             Peripherals.row(TileEntityBatterySocket.class, BatterySocketPeripheral::new, Reach.CELLS),

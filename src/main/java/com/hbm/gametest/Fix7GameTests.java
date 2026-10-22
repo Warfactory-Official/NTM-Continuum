@@ -30,6 +30,7 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 import java.util.Map;
+import net.minecraft.world.item.Items;
 
 /**
  * Spawn eggs, natural spawns, radiation transforms and the 1.7
@@ -183,9 +184,9 @@ public final class Fix7GameTests {
         // expectation n/250 = 1000 (sigma ~31.6) and n/200 = 1250 (sigma ~35.3); accept +-5 sigma
         within(helper, skeletonCounts, ModItems.key_red_cracked.get(), 1000, 160, "skeleton key_red_cracked");
         within(helper, skeletonCounts, ModItems.launch_code_piece.get(), 1000, 160, "skeleton launch_code_piece");
-        helper.assertTrue(!skeletonCounts.containsKey(ModItems.ingot_copper.get()), "skeletons drop no zombie ingots");
+        helper.assertTrue(!skeletonCounts.containsKey(Items.COPPER_INGOT), "skeletons drop no zombie ingots");
         within(helper, zombieCounts, ModItems.key_red_cracked.get(), 1000, 160, "zombie key_red_cracked");
-        within(helper, zombieCounts, ModItems.ingot_copper.get(), 1250, 180, "zombie copper");
+        within(helper, zombieCounts, Items.COPPER_INGOT, 1250, 180, "zombie copper");
         within(helper, zombieCounts, ModItems.ingot_aluminium.get(), 1250, 180, "zombie aluminium");
         within(helper, zombieCounts, ModItems.ingot_titanium.get(), 1250, 180, "zombie titanium");
         helper.succeed();

@@ -21,7 +21,6 @@ public final class RcCullSweep implements Scenario {
 
     private static final String[][] MACHINES = {
             {"machine_chungus", "" + (X - 24), "" + ROW_A},
-            {"machine_fensu", "" + (X - 12), "" + ROW_A},
             {"machine_industrial_turbine", "" + X, "" + ROW_A},
             {"machine_steam_engine", "" + (X + 12), "" + ROW_A},
             {"machine_battery_socket", "" + (X + 24), "" + ROW_A},

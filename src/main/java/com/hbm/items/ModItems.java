@@ -12,6 +12,7 @@ import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Slots;
 import dev.golem.core.registry.DeferredRegister;
+import dev.golem.core.registry.ItemTag;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
@@ -34,6 +35,11 @@ public final class ModItems {
 
     private static Reg.Handle<Item> item(String name, HbmTab tab, UnaryOperator<Item.Properties> props) {
         return REG.simpleItem(name, props).tab(tab);
+    }
+
+    private static Reg.Handle<Item> raw(String material) {
+        return item("raw_" + material, HbmTab.MATERIALS).transform(Presets.sprite())
+                .tag(ItemTag.of("c:raw_materials/" + material));
     }
 
     private static Reg.Handle<ItemCustomLore> lore(String name, HbmTab tab) {
@@ -78,7 +84,6 @@ public final class ModItems {
     public static final RegistryObject<Item> stick_c4 = item("stick_c4", HbmTab.WEAPONS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_steel = item("ingot_steel", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_titanium = item("ingot_titanium", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<Item> ingot_copper = item("ingot_copper", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_red_copper = item("ingot_red_copper", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_tungsten = item("ingot_tungsten", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_aluminium = item("ingot_aluminium", HbmTab.MATERIALS).transform(Presets.sprite());
@@ -89,6 +94,18 @@ public final class ModItems {
     public static final RegistryObject<Item> ingot_technetium = item("ingot_technetium", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_tcalloy = item("ingot_tcalloy", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_tungsten_carbide = item("ingot_tungsten_carbide", HbmTab.MATERIALS).transform(Presets.sprite());
+    // port: ntm-next's raw ores, what the ores drop while hbm.cfg's raw ore option is on
+    public static final RegistryObject<Item> raw_aluminium = raw("aluminium");
+    public static final RegistryObject<Item> raw_beryllium = raw("beryllium");
+    public static final RegistryObject<Item> raw_lead = raw("lead");
+    public static final RegistryObject<Item> raw_thorium = raw("thorium");
+    public static final RegistryObject<Item> raw_titanium = raw("titanium");
+    public static final RegistryObject<Item> raw_tungsten = raw("tungsten");
+    public static final RegistryObject<Item> raw_uranium = raw("uranium");
+    public static final RegistryObject<Item> raw_plutonium = raw("plutonium");
+    public static final RegistryObject<Item> raw_cobalt = raw("cobalt");
+    public static final RegistryObject<Item> raw_schrabidium = raw("schrabidium");
+    public static final RegistryObject<Item> raw_lithium = raw("lithium");
     public static final RegistryObject<Item> ingot_cdalloy = item("ingot_cdalloy", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_ferrouranium = item("ingot_ferrouranium", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_cadmium = item("ingot_cadmium", HbmTab.MATERIALS).transform(Presets.sprite());

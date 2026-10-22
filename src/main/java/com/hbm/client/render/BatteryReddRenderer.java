@@ -24,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Random;
 
-/** Faithful current FEnSU renderer: Base/Wheel/Lights plus the additive plasma and legacy zaps. */
+/** FEnSU renderer: Base/Wheel/Lights plus the additive plasma and legacy zaps. */
 public final class BatteryReddRenderer extends GemBER<TileEntityBatteryREDD, BatteryReddRenderState> {
 
     private static final int FULLBRIGHT = 0xF000F0;

@@ -7,7 +7,7 @@ import dev.golem.harness.api.Fixtures;
 import dev.golem.harness.api.Scenario;
 
 /**
- * How many of MachineFps's eleven machines the frustum culls when the camera faces them and when it faces away
+ * How many of MachineFps's ten machines the frustum culls when the camera faces them and when it faces away
  * (26.1 only: the query reads the renderer's shouldRender, which the other eras expose without a camera).
  */
 public final class RcCullCount implements Scenario {
@@ -19,7 +19,6 @@ public final class RcCullCount implements Scenario {
 
     private static final String[][] MACHINES = {
             {"machine_chungus", "" + (X - 24), "" + Z},
-            {"machine_fensu", "" + (X - 12), "" + Z},
             {"machine_industrial_turbine", "" + X, "" + Z},
             {"machine_steam_engine", "" + (X + 12), "" + Z},
             {"machine_battery_socket", "" + (X + 24), "" + Z},

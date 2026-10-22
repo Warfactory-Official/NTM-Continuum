@@ -39,8 +39,7 @@ public final class LookOverlayGameTests {
             "com.hbm.blocks.machine.fusion.MachineFusionBoiler",
             "com.hbm.blocks.machine.fusion.MachineFusionBreeder",
             "com.hbm.blocks.machine.fusion.MachineFusionMHDT",
-            "com.hbm.blocks.machine.storage.MachineBatterySocket",
-            "com.hbm.blocks.machine.storage.MachineFENSU");
+            "com.hbm.blocks.machine.storage.MachineBatterySocket");
 
     private LookOverlayGameTests() {}
 

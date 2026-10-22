@@ -33,7 +33,6 @@ import com.hbm.client.render.armor.ArmorRenderLayer;
 import com.hbm.client.render.armor.ArmorRenderers;
 import com.hbm.client.render.armor.WornModelRenderLayer;
 import com.hbm.client.render.entity.EntityRenderSmokeClient;
-import com.hbm.client.render.flywheel.FlywheelCompat;
 import com.hbm.client.render.projectile.TracerRegistry;
 import com.hbm.client.render.util.RenderAccessoryUtility;
 import com.hbm.client.render.util.SpecialPlayerRenderLayer;
@@ -84,7 +83,6 @@ import com.hbm.inventory.gui.GUITurretMobFilter;
 import com.hbm.inventory.gui.GUIWeaponTable;
 import com.hbm.inventory.gui.GUIBatterySocket;
 import com.hbm.inventory.gui.GUIBatteryREDD;
-import com.hbm.inventory.gui.GUIMachineFENSU;
 import com.hbm.inventory.gui.GUICrate;
 import com.hbm.inventory.gui.GUICrystallizer;
 import com.hbm.inventory.gui.GUICentrifuge;
@@ -296,7 +294,6 @@ public final class HbmClientRegistrations {
          sink.register(ModMenus.F6_TANK.get(), GUIF6Tank::new);
          sink.register(ModMenus.GIANT_TANK.get(), GUIMachineGiantTank::new);
          sink.register(ModMenus.BATTERY_SOCKET.get(), GUIBatterySocket::new);
-         sink.register(ModMenus.FENSU.get(), GUIMachineFENSU::new);
          sink.register(ModMenus.BATTERY_REDD.get(), GUIBatteryREDD::new);
          sink.register(ModMenus.CRATE.get(), GUICrate::new);
          // the ntm-next entity port's vehicle menus
@@ -461,26 +458,18 @@ public final class HbmClientRegistrations {
         RtgClientRegistrations.registerRenderer(blockEntities);
         HbmEntityRenderers.verifyCoverage(bound);
 
-        // Every instanced visual is optional acceleration beside an already-registered vanilla BER.
-        if (FlywheelCompat.isSupportedOnThisVersion()) {
-            FlywheelCompat.registerVisuals();
-        }
-
     }
 
     /**
-     * The instancing engine's own count, on the F3 screen.
-     *
-     * <p>An instanced and a vanilla draw are pixel-identical when both are right, so the only way to tell a working
-     * engine from one that silently received nothing is to count what it holds: models against models drawn, and
-     * draws against parts (many copies of a machine should cost one draw).
+     * GemRender's count of what it holds, on the F3 screen: an instanced and a vanilla draw look the same, so a
+     * working engine is told from one that received nothing by models owned against models declared.
      */
     public static void installDebugLines() {
         DebugLines.register(Constants.MOD_ID, "gemrender", out -> {
             Instancing.Report report = Instancing.report();
             out.accept("gemrender: " + report.backend() + ", " + report.owning() + "/" + report.visuals()
                     + " models (" + report.animated() + " animated, " + report.moving() + " moving), "
-                    + report.instances() + " parts, " + report.draws() + " draws");
+                    + report.instances() + " parts in " + report.buckets() + " meshes");
             out.accept("gemrender: " + report.writes() + " transforms written, " + report.skipped()
                     + " parts skipped");
             int fallen = report.visuals() - report.healthy();

@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Client-side manager for the current FEnSU's speed-dependent fensuHum loop. */
+/** Client-side manager for the FEnSU's speed-dependent fensuHum loop. */
 public final class FensuSoundHandler {
 
     private FensuSoundHandler() {}

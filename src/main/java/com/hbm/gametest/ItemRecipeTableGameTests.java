@@ -85,12 +85,13 @@ public final class ItemRecipeTableGameTests {
      * Each table's line count and SHA-256 of its joined lines, taken from the Java tables before they
      * became files (HBM_DUMP_TABLES; the annihilator in 528 mode, every other table in the default config).
      * ammo_press, anvil_construction, arc_welder and lemegeton use 1.7 ore names as tags and KEY_SAND as c:sands.
+     * anvil_construction and anvil_smithing name the vanilla copper ingot (HBM has no copper ingot of its own).
      */
     static final Map<String, String> EXPECTED = Map.ofEntries(
             Map.entry("ammo_press", "90 f3b1dc99e5c2d40f1a32b812ecbea4bc44e7075459ad59ddc2b77734e84c3f0f"),
             Map.entry("annihilator", "16 a2044a6681862dd49d8faba5337d651bb5a51172410b85b2082c32f3daab89cf"),
-            Map.entry("anvil_construction", "257 4629454acca75d17791bdaf635bd0fa9027267b1007c6ed2c2bb82488523da6b"),
-            Map.entry("anvil_smithing", "58 4857b00883d23717a58cf66396c5df282b5ee6874c383124f2386a74ae275a48"),
+            Map.entry("anvil_construction", "257 56e38aa612500799ba7b27272483ff363358ff7b9525e4f8b45290a972f857f0"),
+            Map.entry("anvil_smithing", "58 5655dfc0e8f89caeec8e0bfc8cd0ce463ef4ea6f218c31f082db49fa3d9076f4"),
             Map.entry("arc_welder", "42 2f80a4b8cd70720cb08d1b0f07623a727ad6f944c17380a68fdf24df65ccda48"),
             Map.entry("breeder", "31 daa249b6c8178775c166e81ac9ef0726914016ea50786592d7e65ce0586ea789"),
             Map.entry("combination", "53 8912926677d5f8a3a57d79ac5d94149055293364f004d6ebeade26aaeceae866"),

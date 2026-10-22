@@ -1,7 +1,6 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
-import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemRBMKPellet;
@@ -15,10 +14,8 @@ import dev.golem.core.data.ItemContents;
 import dev.golem.core.data.ModelData;
 import dev.golem.core.world.ItemStacks;
 import java.util.List;
-import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 
 import java.math.BigInteger;
@@ -105,16 +102,6 @@ public final class ModDataComponents {
     public static final GolemComponent<String> BLUEPRINT_POOL = GolemComponent.string(Constants.MOD_ID, "blueprint_pool");
     /** Registry id of the item represented by a broken precision-assembler output. */
     public static final GolemComponent<String> BROKEN_ITEM = GolemComponent.string(Constants.MOD_ID, "broken_item");
-    /** Internal energy carried by a dropped FEnSU machine block. */
-    public static final GolemComponent<Long> FENSU_POWER = GolemComponent.longValue(Constants.MOD_ID, "fensu_power");
-    /** Dye colour carried by a dropped FEnSU machine block, by {@code DyeColor} name (never an ordinal). */
-    public static final GolemComponent<String> FENSU_COLOR = GolemComponent.of(Constants.MOD_ID, "fensu_color", () -> SavedIds.NAME_CODEC);
-    /** Unpowered redstone mode carried by a dropped FEnSU machine block. */
-    public static final GolemComponent<Integer> FENSU_RED_LOW = GolemComponent.integer(Constants.MOD_ID, "fensu_red_low");
-    /** Powered redstone mode carried by a dropped FEnSU machine block. */
-    public static final GolemComponent<Integer> FENSU_RED_HIGH = GolemComponent.integer(Constants.MOD_ID, "fensu_red_high");
-    /** Network priority carried by a dropped FEnSU machine block, by enum name (never an ordinal). */
-    public static final GolemComponent<String> FENSU_PRIORITY = GolemComponent.of(Constants.MOD_ID, "fensu_priority", () -> SavedIds.NAME_CODEC);
     /** Arbitrary power carried by a dropped machine_battery_redd block; decimal encoding avoids a long cap. */
     public static final GolemComponent<BigInteger> BATTERY_REDD_POWER = GolemComponent.of(
             Constants.MOD_ID, "battery_redd_power", Codec.STRING.xmap(BigInteger::new, BigInteger::toString));
@@ -232,26 +219,6 @@ public final class ModDataComponents {
     public static void blueprintPool(ItemStack stack, String value) { BLUEPRINT_POOL.set(stack, value); }
     public static String brokenItem(ItemStack stack) { return BROKEN_ITEM.getOr(stack, null); }
     public static void brokenItem(ItemStack stack, String value) { BROKEN_ITEM.set(stack, value); }
-    public static long fensuPower(ItemStack stack) { return FENSU_POWER.getOr(stack, 0L); }
-    public static void fensuPower(ItemStack stack, long value) { FENSU_POWER.set(stack, value); }
-    public static DyeColor fensuColor(ItemStack stack, DyeColor defaultValue) {
-        return SavedIds.byName(DyeColor.class, FENSU_COLOR.getOr(stack, defaultValue.name()), defaultValue);
-    }
-    public static void setFensuColor(ItemStack stack, DyeColor value) {
-        FENSU_COLOR.set(stack, value.name().toLowerCase(Locale.ROOT));
-    }
-    public static int fensuRedLow(ItemStack stack, int defaultValue) { return FENSU_RED_LOW.getOr(stack, defaultValue); }
-    public static void setFensuRedLow(ItemStack stack, int value) { FENSU_RED_LOW.set(stack, value); }
-    public static int fensuRedHigh(ItemStack stack, int defaultValue) { return FENSU_RED_HIGH.getOr(stack, defaultValue); }
-    public static void setFensuRedHigh(ItemStack stack, int value) { FENSU_RED_HIGH.set(stack, value); }
-    public static IEnergyReceiverMK2.ConnectionPriority fensuPriority(ItemStack stack,
-            IEnergyReceiverMK2.ConnectionPriority defaultValue) {
-        return SavedIds.byName(IEnergyReceiverMK2.ConnectionPriority.class,
-                FENSU_PRIORITY.getOr(stack, defaultValue.name()), defaultValue);
-    }
-    public static void setFensuPriority(ItemStack stack, IEnergyReceiverMK2.ConnectionPriority value) {
-        FENSU_PRIORITY.set(stack, value.name().toLowerCase(Locale.ROOT));
-    }
     public static BigInteger batteryReddPower(ItemStack stack) {
         return BATTERY_REDD_POWER.getOr(stack, BigInteger.ZERO);
     }

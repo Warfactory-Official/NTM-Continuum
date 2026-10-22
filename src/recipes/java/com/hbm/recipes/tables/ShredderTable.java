@@ -264,6 +264,8 @@ public final class ShredderTable extends RecipeSource<Row> {
         setRecipe(Items.DEEPSLATE_DIAMOND_ORE, new ItemStack(ModFallingBlocks.gravel_diamond.get(), 2));
         setRecipe(Items.DEEPSLATE, new ItemStack(Items.GRAVEL));
         setRecipe(Items.COBBLED_DEEPSLATE, new ItemStack(Items.GRAVEL));
+        // port: ntm-next's raw aluminium grinds like its ore; the other raw ores go through the raw_materials sweep
+        setRecipe(ModItems.raw_aluminium.get(), ModIntermediateItems.chunk(EnumChunkType.CRYOLITE, 2));
     }
 
     /** 1.7 {@code ShredderRecipes.setRecipe}: the first row of an input wins. */

@@ -113,7 +113,7 @@ public final class ModTagDeclarations {
                 "hbm:block_waste_painted", "hbm:block_waste_vitrified", "hbm:block_yellowcake",
                 // the rest of 1.7's beacon bases: every BlockBeaconable and every BlockHazard().makeBeaconable() storage block
                 "hbm:block_aluminium", "hbm:block_beryllium", "hbm:block_boron", "hbm:block_cobalt", "hbm:block_combine_steel",
-                "hbm:block_copper", "hbm:block_desh", "hbm:block_dineutronium", "hbm:block_dura_steel", "hbm:block_euphemium",
+                "hbm:block_desh", "hbm:block_dineutronium", "hbm:block_dura_steel", "hbm:block_euphemium",
                 "hbm:block_fluorite", "hbm:block_lead", "hbm:block_magnetized_tungsten", "hbm:block_mox_fuel",
                 "hbm:block_neptunium", "hbm:block_niter", "hbm:block_plutonium", "hbm:block_plutonium_fuel",
                 "hbm:block_polonium", "hbm:block_pu238", "hbm:block_pu239", "hbm:block_pu240", "hbm:block_pu_mix",

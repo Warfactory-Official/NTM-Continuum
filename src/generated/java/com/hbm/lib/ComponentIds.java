@@ -48,11 +48,6 @@ public final class ComponentIds {
     public static final String detonator_positions = "hbm:detonator_positions";
     public static final String detonator_target = "hbm:detonator_target";
     public static final String drone_linker_position = "hbm:drone_linker_position";
-    public static final String fensu_color = "hbm:fensu_color";
-    public static final String fensu_power = "hbm:fensu_power";
-    public static final String fensu_priority = "hbm:fensu_priority";
-    public static final String fensu_red_high = "hbm:fensu_red_high";
-    public static final String fensu_red_low = "hbm:fensu_red_low";
     public static final String fluid = "hbm:fluid";
     public static final String fluid_amount = "hbm:fluid_amount";
     public static final String fluid_multi = "hbm:fluid_multi";

@@ -155,8 +155,11 @@ public final class Fix4GameTests {
         ore(helper, "hbm:ore_niter", "hbm:niter", 2, 4, true);
         ore(helper, "hbm:ore_sulfur", "hbm:sulfur", 2, 4, true);
         ore(helper, "hbm:ore_cinnabar", "hbm:cinnabar", 1, 1, true);
-        ore(helper, "hbm:ore_cobalt", "hbm:fragment_cobalt", 4, 9, true);
-        ore(helper, "hbm:ore_nether_cobalt", "hbm:fragment_cobalt", 5, 12, true);
+        // the cobalt ores drop raw cobalt while hbm.cfg's raw ore option is on
+        RawOreGameTests.legacyDrops(() -> {
+            ore(helper, "hbm:ore_cobalt", "hbm:fragment_cobalt", 4, 9, true);
+            ore(helper, "hbm:ore_nether_cobalt", "hbm:fragment_cobalt", 5, 12, true);
+        });
         ore(helper, "hbm:ore_coltan", "hbm:fragment_coltan", 1, 1, true);
         ore(helper, "hbm:waste_planks", "minecraft:charcoal", 1, 1, true);
         ore(helper, "hbm:frozen_dirt", "minecraft:snowball", 1, 1, true);

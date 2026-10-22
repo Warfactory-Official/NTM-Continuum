@@ -127,7 +127,7 @@ public class ItemStarterKit extends CompatItem {
                 l.add(hbm("stamp_titanium_flat", 1));
                 l.add(hbm("ingot_steel", 64));
                 l.add(hbm("ingot_lead", 64));
-                l.add(hbm("ingot_copper", 64));
+                l.add(mc("copper_ingot", 64));
                 l.add(hbm("gas_mask_m65", 1));
                 l.add(hbm("geiger_counter", 1));
             }
@@ -135,7 +135,7 @@ public class ItemStarterKit extends CompatItem {
                 l.add(hbm("powder_yellowcake", 64));
                 l.add(hbm("powder_plutonium", 64));
                 l.add(hbm("ingot_steel", 64));
-                l.add(hbm("ingot_copper", 64));
+                l.add(mc("copper_ingot", 64));
                 l.add(hbm("ingot_tungsten", 64));
                 l.add(hbm("ingot_lead", 64));
                 l.add(hbm("ingot_polymer", 64));
@@ -212,8 +212,6 @@ public class ItemStarterKit extends CompatItem {
                 l.add(hbm("machine_battery_socket", 4));
                 // 1.7 battery_pack:BATTERY_LEAD
                 l.add(hbm("battery_lead", 4));
-                l.add(hbm("machine_converter_he_rf", 1));
-                l.add(hbm("machine_converter_rf_he", 1));
             }
             case GADGET -> {
                 l.add(hbm("nuke_gadget", 1));

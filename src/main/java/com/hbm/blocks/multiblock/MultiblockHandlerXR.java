@@ -100,7 +100,7 @@ public final class MultiblockHandlerXR {
      * The silhouette translated into a cell's frame and NOT rotated, as 1.7 {@code BlockDummyable#getShape}
      * moves the authored boxes by the core offset and leaves their orientation alone, so a machine whose
      * box is not rotationally symmetric keeps the same hitbox at all four facings. A machine that wants
-     * its box to turn with it says so, as the FEnSU does.
+     * its box to turn with it says so.
      */
     public static VoxelShape boundingSilhouette(List<AABB> bounding, int dx, int dy, int dz) {
         return boundingSilhouette(bounding, Direction.SOUTH, dx, dy, dz);

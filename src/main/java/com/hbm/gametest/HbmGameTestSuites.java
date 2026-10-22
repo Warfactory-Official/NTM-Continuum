@@ -45,6 +45,7 @@ public final class HbmGameTestSuites {
             list.add(TilePortGameTests.TESTS);
             list.add(PortBenchGameTests.TESTS);
             list.add(Fix4GameTests.TESTS);
+            list.add(RawOreGameTests.TESTS);
             list.add(Fix5GameTests.TESTS);
             list.add(Fix1BGameTests.TESTS);
             list.add(Fix3GameTests.TESTS);
@@ -140,6 +141,7 @@ public final class HbmGameTestSuites {
         TilePortGameTests.init();
         PortBenchGameTests.init();
         Fix4GameTests.init();
+        RawOreGameTests.init();
         Fix5GameTests.init();
         Fix1BGameTests.init();
         Fix3GameTests.init();

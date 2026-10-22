@@ -36,6 +36,11 @@ public abstract class JEIUniversalHandler<T> extends HbmRecipeCategory<T> {
     /** One entry per output slot. */
     protected abstract List<List<ItemStack>> outputs(T recipe);
 
+    /** The chance output slot {@code slot} is made; below 1 it gets 1.7's red percentage line. */
+    protected float outputChance(T recipe, int slot) {
+        return 1F;
+    }
+
     @Override
     public void setRecipe(SlotLayout builder, T recipe) {
         List<List<ItemStack>> in = inputs(recipe);
@@ -50,8 +55,13 @@ public abstract class JEIUniversalHandler<T> extends HbmRecipeCategory<T> {
 
         int[][] outPos = getOutputCoords(out.size());
         for (int i = 0; i < out.size(); i++) {
-            builder.addSlot(Role.OUTPUT, outPos[i][0], outPos[i][1])
+            var slot = builder.addSlot(Role.OUTPUT, outPos[i][0], outPos[i][1])
                     .addItemStacks(out.get(i)).setBackground(slotFrame, -1, -1);
+            float chance = outputChance(recipe, i);
+            if (chance < 1F) {
+                String percent = CustomMachineRecipeHandler.chanceText(chance);
+                slot.addTooltipCallback((shown, tooltip) -> tooltip.add(Component.literal(percent).withStyle(ChatFormatting.RED)));
+            }
         }
 
         List<ItemStack> machine = machine(recipe);

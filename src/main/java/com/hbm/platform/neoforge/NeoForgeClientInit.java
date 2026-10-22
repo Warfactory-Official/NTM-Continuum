@@ -40,9 +40,6 @@ public final class NeoForgeClientInit {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
                 (net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
                         com.hbm.client.gun.GunSmokeClient.onDisconnect());
-        // The vendored 26.1 engine is a library and must be subscribed from the constructor: two of
-        // its listeners are mod-bus registry events. No-op where the engine is a mod, or absent.
-        com.hbm.client.render.flywheel.FlywheelCompat.startEngine();
         com.hbm.client.particle.HbmParticleHandlers.register();
         com.hbm.client.particle.SingularityParticleHandlers.register();
         // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and

@@ -39,7 +39,7 @@ public final class FinalWorldFeatures implements Scenario {
     /** Overworld stone ores: block, 1.7 veins per chunk, size. */
     static final Object[][] STONE_ORES = {
             {"hbm:ore_uranium", 7, 5}, {"hbm:ore_thorium", 7, 5}, {"hbm:ore_titanium", 8, 6}, {"hbm:ore_sulfur", 5, 8},
-            {"hbm:ore_aluminium", 7, 6}, {"hbm:ore_copper", 12, 6}, {"hbm:ore_fluorite", 6, 4}, {"hbm:ore_niter", 6, 6},
+            {"hbm:ore_aluminium", 7, 6}, {"hbm:ore_fluorite", 6, 4}, {"hbm:ore_niter", 6, 6},
             {"hbm:ore_tungsten", 10, 8}, {"hbm:ore_lead", 6, 9}, {"hbm:ore_beryllium", 6, 4}, {"hbm:ore_rare", 6, 5},
             {"hbm:ore_lignite", 2, 24}, {"hbm:ore_asbestos", 2, 4}, {"hbm:ore_cinnabar", 1, 4}, {"hbm:ore_cobalt", 2, 4},
             {"hbm:cluster_iron", 4, 6}, {"hbm:cluster_titanium", 2, 6}, {"hbm:cluster_aluminium", 3, 6}, {"hbm:cluster_copper", 4, 6},

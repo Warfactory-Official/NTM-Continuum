@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import net.minecraft.world.item.Items;
 
 /**
  * The mob parts of 1.7 {@code ModEventHandler}: the rest of {@code onEntityDeath} (radiation reset,
@@ -95,7 +96,7 @@ public final class ModEventHandlerMobs {
         // 1.7 EntityZombie also covers zombie pigmen and zombie villagers; the modern Zombie class covers them and the
         // husk and drowned.
         if (entity instanceof Zombie) {
-            if (rng.nextInt(200) == 0) drops.add(ModItems.ingot_copper.get());
+            if (rng.nextInt(200) == 0) drops.add(Items.COPPER_INGOT);
             if (rng.nextInt(200) == 0) drops.add(ModItems.ingot_aluminium.get());
             if (rng.nextInt(200) == 0) drops.add(ModItems.ingot_titanium.get());
         }

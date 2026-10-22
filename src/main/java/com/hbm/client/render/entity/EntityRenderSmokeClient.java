@@ -3,6 +3,7 @@ package com.hbm.client.render.entity;
 import com.hbm.Constants;
 import com.hbm.commands.EntityRenderSmoke;
 import dev.golem.core.client.ClientTicks;
+import dev.golem.core.platform.Platform;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -32,7 +33,7 @@ public final class EntityRenderSmokeClient {
     private EntityRenderSmokeClient() {}
 
     public static void register() {
-        if (System.getenv("HBM_ENTITY_SMOKE") == null) return;
+        if (!Platform.isDevelopment() || System.getenv("HBM_ENTITY_SMOKE") == null) return;
         ClientTicks.onEndTick(EntityRenderSmokeClient::tick);
     }
 

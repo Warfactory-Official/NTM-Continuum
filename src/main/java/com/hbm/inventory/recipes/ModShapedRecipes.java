@@ -25,7 +25,7 @@ public final class ModShapedRecipes {
     private static final String NS = "hbm";
 
     /** How many recipe files these declarations stand in for; quoted in the javadoc above. */
-    static final int FILES_REPLACED = 918;
+    static final int FILES_REPLACED = 917;
 
     private static boolean declared;
 
@@ -883,7 +883,6 @@ public final class ModShapedRecipes {
         shaped(NS, "ingot_cobalt_5", ItemIds.ingot_cobalt, 9, rows("#"), "#", ItemIds.block_cobalt);
         shaped(NS, "ingot_combine_steel_2", ItemIds.ingot_combine_steel, 9, rows("#"),
                 "#", ItemIds.block_combine_steel);
-        shaped(NS, "ingot_copper_5", ItemIds.ingot_copper, 9, rows("#"), "#", ItemIds.block_copper);
         shaped(NS, "ingot_desh_2", ItemIds.ingot_desh, 9, rows("#"), "#", ItemIds.block_desh);
         shaped(NS, "ingot_dura_steel_1", ItemIds.ingot_dura_steel, 9, rows("#"), "#", ItemIds.block_dura_steel);
         shaped(NS, "ingot_euphemium_1", ItemIds.ingot_euphemium, 9, rows("#"), "#", ItemIds.block_euphemium);

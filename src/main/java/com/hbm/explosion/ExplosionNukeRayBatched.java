@@ -2,6 +2,7 @@ package com.hbm.explosion;
 
 import com.hbm.Constants;
 import com.hbm.config.BombConfig;
+import com.hbm.config.GeneralConfig;
 import com.hbm.interfaces.IExplosionRay;
 import com.hbm.util.ChunkCarver;
 import dev.golem.core.world.Chunks;
@@ -227,7 +228,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         submitReadyResumeJobs();
 
         rayPipelineTicks++;
-        if (rayPipelineTicks % 200 == 0) {
+        if (GeneralConfig.logDiagnostics() && rayPipelineTicks % 200 == 0) {
             Constants.LOG.info("[NUKE] ray pipeline waiting: {} waiter chunks, {} unclaimed misses, "
                             + "{} awaiting chunks, {} ready batches, {} running batches, max pass {}",
                     waitingRays.size(), missedChunks.size(), awaitingChunks.size(),
@@ -925,7 +926,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      * slow ray phase after the fact, and the numbers are what any performance change has to move.
      */
     private void logSummary() {
-        if (logged) return;
+        if (logged || !GeneralConfig.logDiagnostics()) return;
         logged = true;
         long total = System.currentTimeMillis() - createdAt;
         Constants.LOG.info("[NUKE] r={} done in {} ms wall: chunks {} ms server + {} ms async wait over {} ticks "

@@ -12,9 +12,8 @@ import java.util.List;
 /**
  * Proves that every gem-declared machine draws with the instancing engine and without it.
  *
- * <p>Eleven machines stand in two rows (one Torex-free scene): the four the report names — FEnSU,
- * industrial turbine, steam engine, Chungus — two batteries (the socket cradle and the current FEnSU
- * bank), and five others including animated ones (assembly machine, chemical plant, pumpjack, Stirling,
+ * <p>Ten machines stand in two rows (one Torex-free scene): the industrial turbine, steam engine and
+ * Chungus, two batteries (the socket cradle and the FEnSU bank), and five others including animated ones (assembly machine, chemical plant, pumpjack, Stirling,
  * fluid tank). Each core is placed with {@code /setblock}, so its block entity sits at a known position.
  *
  * <p>Pixels cannot tell an instanced draw from a vanilla one, so the scenario asks Core's {@code gem}
@@ -24,15 +23,14 @@ import java.util.List;
  * {@code RF_EXPECT} says which state the client was started in:
  *
  * <ul>
- *   <li>{@code instanced} — 26.1 with the vendored engine on. Every core must be owned and skipped. The
- *       scenario then runs {@code /flywheel backend off}, requires every core to be replayed and none
- *       owned, screenshots, and switches back with {@code /flywheel backend DEFAULT}.</li>
- *   <li>{@code vanilla} — 26.1 with the backend off in {@code config/golemcore-flywheel.json}, or
- *       1.21.1 without the Flywheel jar. No core may be owned, and every core must be replayed.</li>
- *   <li>{@code published} — 1.20.1/1.21.1 with published Flywheel on its default backend.</li>
+ *   <li>{@code instanced}: GemRender installed, backend on. Every core must be owned and skipped. The scenario
+ *       then runs {@code /flywheel backend off}, requires every core to be replayed and none owned, screenshots,
+ *       and switches back with {@code /flywheel backend DEFAULT}.</li>
+ *   <li>{@code vanilla}: a dev run with {@code -Pgemrender.run=false}, or the backend off in Flywheel's config.
+ *       No core may be owned, and every core must be replayed.</li>
  * </ul>
  *
- * <p>Screenshots are named the same in every state, so the three runs' folders compare file by file.
+ * <p>Screenshots are named the same in every state, so runs' folders compare file by file.
  */
 public final class RenderFallback implements Scenario {
 
@@ -47,7 +45,6 @@ public final class RenderFallback implements Scenario {
 
     private static final List<Machine> MACHINES = List.of(
             new Machine("machine_chungus", X - 24, ROW_A),
-            new Machine("machine_fensu", X - 12, ROW_A),
             new Machine("machine_industrial_turbine", X, ROW_A),
             new Machine("machine_steam_engine", X + 12, ROW_A),
             new Machine("machine_battery_socket", X + 24, ROW_A),
@@ -106,13 +103,7 @@ public final class RenderFallback implements Scenario {
 
             shots(c, "");
             JsonObject report = measure(c);
-            // auto: Core's engine visualizing -> instanced. Without it, a core can only be owned by the published Flywheel
-            // jar (1.20.1/1.21.1 when it is on the run's mods), so any owned core there selects "published", whose check
-            // still requires every core owned; none owned selects "vanilla". (2026-10-01: auto had no published branch and
-            // failed all four legacy nodes, which run with published Flywheel.)
-            String mode = expect.equals("auto")
-                    ? (visualizing ? "instanced" : anyOwned(report) && !"indirect".equals(backend) ? "published" : "vanilla")
-                    : expect;
+            String mode = expect.equals("auto") ? (visualizing ? "instanced" : "vanilla") : expect;
             check(report, mode);
 
             if (mode.equals("instanced")) {
@@ -206,13 +197,6 @@ public final class RenderFallback implements Scenario {
         return c.query("gem", params);
     }
 
-    private static boolean anyOwned(JsonObject report) {
-        for (var e : report.getAsJsonArray("positions")) {
-            if (e.getAsJsonObject().get("owned").getAsBoolean()) return true;
-        }
-        return false;
-    }
-
     private static void check(JsonObject report, String mode) {
         List<String> wrong = new ArrayList<>();
         JsonArray positions = report.getAsJsonArray("positions");
@@ -226,7 +210,7 @@ public final class RenderFallback implements Scenario {
                 case "vanilla" -> {
                     if (owned || skipped != 0 || replayed < 10) wrong.add(id + " " + p);
                 }
-                case "instanced", "published" -> {
+                case "instanced" -> {
                     // A visual writes its instances on its first frame, so a few early replays are
                     // allowed; after that the vanilla submit must leave the declared model alone.
                     if (!owned || skipped < 10) wrong.add(id + " " + p);

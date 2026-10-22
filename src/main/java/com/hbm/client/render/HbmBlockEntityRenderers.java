@@ -424,9 +424,7 @@ public final class HbmBlockEntityRenderers {
 
          // Battery socket: draws the cradle + the inserted battery (per-variant texture).
          regGem(sink, ModBlockEntities.BATTERY_SOCKET.get(), BatterySocketRenderer::new);
-          // FEnSU: colored body + X-axis flywheel, with its lights submitted fullbright.
-          regGem(sink, ModBlockEntities.FENSU.get(), FensuRenderer::new);
-          // Current FEnSU: the separate fensu2 flywheel bank, including additive plasma and zaps.
+          // FEnSU: the fensu2 flywheel bank, including additive plasma and zaps.
           regGem(sink, ModBlockEntities.BATTERY_REDD.get(), BatteryReddRenderer::new);
 
         // Crucible: basin OBJ + molten pool surface + the two pour streams.
@@ -556,11 +554,7 @@ public final class HbmBlockEntityRenderers {
         GEM_DECLARED.add(new GemDeclared<>(type, shared));
     }
 
-    /**
-     * Every gem-declared block entity, kept so the published Flywheel on the older nodes can bind the
-     * same declarations; Core's {@link Visuals} binds only the vendored engine, and naming the published
-     * one is the consumer's business, not the library's.
-     */
+    /** Every gem-declared block entity with its shared renderer, for code that draws the same models elsewhere. */
     public record GemDeclared<T extends BlockEntity, S extends CompatRenderState>(
             BlockEntityType<T> type, Supplier<GemBER<T, S>> renderer) {}
 

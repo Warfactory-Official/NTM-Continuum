@@ -75,7 +75,7 @@ public final class ModNuclearBlocks {
         return REG.block(id, p -> new BlockOutgas(p, true, rate, true),
                         p -> p.strength(hardness, 10F).sound(SoundType.STONE).requiresCorrectToolForDrops().randomTicks())
                 .transform(Presets.cubeAll().viaItemModel())
-                .loot(Loot.self());
+                .loot(RawOres.drop("hbm:raw_uranium", Loot.self()));
     }
 
     static {

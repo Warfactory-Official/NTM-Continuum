@@ -37,6 +37,11 @@ public class CrystallizerRecipeHandler extends JEIUniversalHandler<CrystallizerR
     }
 
     @Override
+    protected float outputChance(CrystallizerRecipes.CrystallizerRecipe recipe, int slot) {
+        return recipe.chance;
+    }
+
+    @Override
     public void draw(CrystallizerRecipes.CrystallizerRecipe recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
         super.draw(recipe, g, mouseX, mouseY);
         int productivity = (int) (recipe.productivity * 100);

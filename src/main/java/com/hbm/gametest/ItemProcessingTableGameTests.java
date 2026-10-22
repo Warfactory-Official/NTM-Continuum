@@ -144,17 +144,18 @@ public final class ItemProcessingTableGameTests {
         }
     }
 
-    // Pins are SHA-256 hashes of each table's key-sorted JSON (CanonicalJson), in 1.7's line order.
+    // Pins are SHA-256 hashes of each table's key-sorted JSON (CanonicalJson), in 1.7's line order, with ntm-next's
+    // raw ore rows (material distribution, centrifuge, crystallizer, shredder) after their ore's row.
     private static final String EXPECTED_CRUCIBLE =
             "13:16a916835a5adb64587bf5a8f085f4704b659f6a3541e82ca15865530fdef281";
     private static final String EXPECTED_MATERIAL_DISTRIBUTION =
-            "43:8d8d6efeb499f2297406b4b922a29f241ac800c4e8fc250f51c1325f15ff7e1b";
+            "54:9ccdf0a9ebc7982f724a54afe2b1d83cab32895bd39aa5a4334ce141aab66700";
     private static final String EXPECTED_ARC_FURNACE =
             "79:27f6f8737eeccb2f41680fb8fce5ab0530ff1bd96f931769ad6a1739b78c985e";
     private static final String EXPECTED_CENTRIFUGE =
-            "160:44469901e1139890ce7fed11002cc24d422c0accd6e15a4ab5abaa6b69163f1d";
+            "179:05edb92a12e60a6837b8945e425869fb08c470ba0a4f70d15bd6c3901aa8f6ee";
     private static final String EXPECTED_CRYSTALLIZER =
-            "332:f745e5b993ab246eb88b1c87b33333958f6531e2aec4f905f1cb46803d27f4ed";
+            "346:d7177e57e99bb7a3f2ba972e9b1e24a43feea582c4b8a44b78f2165281f621e1";
     private static final String EXPECTED_CYCLOTRON =
             "42:5050b64e4c5dcf8c8e758f87ee0eb121119ce386210b824af548970cbfc5dbf3";
     private static final String EXPECTED_ELECTROLYSER_METAL =
@@ -164,5 +165,5 @@ public final class ItemProcessingTableGameTests {
     private static final String EXPECTED_SILEX =
             "301:634886440f7395c720d7d6eeff14121453885f1b6ad55841af19f1ac13c0b46f";
     private static final String EXPECTED_SHREDDER =
-            "332:9e3f172ce71624b33c1d49185a10988fcb5852464a7febe8f9960cd32e728431";
+            "333:be4443000a813f22bc26d1d09d97ec6d3466d256ebc5af2845624d08c9972163";
 }

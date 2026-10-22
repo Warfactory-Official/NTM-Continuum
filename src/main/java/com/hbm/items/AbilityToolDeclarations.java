@@ -40,7 +40,7 @@ public final class AbilityToolDeclarations {
         Tags.item(NS, "repairs/desh", ItemIds.ingot_desh);
         Tags.item(NS, "repairs/bismuth", ItemIds.ingot_bismuth);
         Tags.item(NS, "repairs/chlorophyte", ItemIds.powder_chlorophyte);
-        Tags.item(NS, "repairs/copper", ItemIds.ingot_copper);
+        Tags.item(NS, "repairs/copper", VanillaIds.copper_ingot);
         Tags.item(NS, "repairs/cobalt_ingot", ItemIds.ingot_cobalt);
         Tags.item(NS, "repairs/starmetal_ingot", ItemIds.ingot_starmetal);
 

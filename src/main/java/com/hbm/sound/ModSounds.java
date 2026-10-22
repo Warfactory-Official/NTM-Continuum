@@ -69,7 +69,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> VICE = register("item.vice");
     public static final RegistryObject<SoundEvent> GUN_SMACK = register("weapon.fire.smack");
     public static final RegistryObject<SoundEvent> GUN_STAB = register("weapon.fire.stab");
-    /** Looping hum of the current BigInteger FEnSU. */
+    /** Looping hum of the FEnSU. */
     public static final RegistryObject<SoundEvent> FENSU_HUM = REG.register(Registries.SOUND_EVENT, "block.fensu_hum",
             () -> SoundEvent.createFixedRangeEvent(
                     Ids.of(Constants.MOD_ID, "block.fensu_hum"), 25F));

@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.math.BigInteger;
 
-/** The exact two-slot current FEnSU menu: charge at 26,53 and discharge at 80,53. */
+/** The two-slot FEnSU menu: charge at 26,53 and discharge at 80,53. */
 public final class ContainerBatteryREDD extends AbstractContainerMenu {
 
     public static final int MACHINE_SLOTS = 2;

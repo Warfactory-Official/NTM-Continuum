@@ -25,6 +25,7 @@ import com.hbm.blocks.generic.BlockFallout;
 import com.hbm.config.BombConfig;
 import com.hbm.config.FalloutConfig;
 import com.hbm.config.FalloutConfig.FalloutEntry;
+import com.hbm.config.GeneralConfig;
 import com.hbm.mixin.FireBlockAccessor;
 import com.hbm.util.ChunkCarver;
 import com.hbm.world.biome.ModBiomes;
@@ -465,7 +466,7 @@ public class EntityFalloutRain extends CompatEntity {
      * is slow" cannot be told apart from "the chunk loading behind the fallout is slow".
      */
     private void logSummary() {
-        if (logged) return;
+        if (logged || !GeneralConfig.logDiagnostics()) return;
         logged = true;
         long total = System.currentTimeMillis() - createdAt;
         Constants.LOG.info("[FALLOUT] scale={} done in {} ms wall over {} ticks: chunks {} ms "

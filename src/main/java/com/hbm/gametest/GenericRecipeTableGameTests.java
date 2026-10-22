@@ -109,10 +109,10 @@ public final class GenericRecipeTableGameTests {
         EXPECTED_COUNTS.put("assembly_machine.ex_no528", 631);
         EXPECTED_COUNTS.put("assembly_machine.noex_528", 621);
         EXPECTED_COUNTS.put("assembly_machine.ex_528", 621);
-        EXPECTED_COUNTS.put("blast_furnace.noex_no528", 15);
-        EXPECTED_COUNTS.put("blast_furnace.ex_no528", 15);
-        EXPECTED_COUNTS.put("blast_furnace.noex_528", 15);
-        EXPECTED_COUNTS.put("blast_furnace.ex_528", 15);
+        EXPECTED_COUNTS.put("blast_furnace.noex_no528", 18);
+        EXPECTED_COUNTS.put("blast_furnace.ex_no528", 18);
+        EXPECTED_COUNTS.put("blast_furnace.noex_528", 18);
+        EXPECTED_COUNTS.put("blast_furnace.ex_528", 18);
         EXPECTED_COUNTS.put("difurnace.noex_no528", 13);
         EXPECTED_COUNTS.put("difurnace.ex_no528", 13);
         EXPECTED_COUNTS.put("difurnace.noex_528", 13);

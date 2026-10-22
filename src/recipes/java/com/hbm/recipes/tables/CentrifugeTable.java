@@ -2,11 +2,14 @@ package com.hbm.recipes.tables;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModDecoContent;
+import com.hbm.blocks.RawOres;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.inventory.recipes.CentrifugeRecipes.Row;
+import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.inventory.recipes.CrystallizerRecipes.ChanceOutput;
 import com.hbm.inventory.recipes.CrystallizerRecipes.ItemOutput;
 import com.hbm.inventory.recipes.CrystallizerRecipes.Output;
 import com.hbm.inventory.recipes.CrystallizerRecipes.TagOutput;
@@ -79,14 +82,14 @@ public final class CentrifugeTable extends RecipeSource<Row> {
                 new ItemStack(ModFuelItems.powder_lignite.get(), 2),
                 new ItemStack(Items.GRAVEL, 1) });
 
-        put(IRON.ore(), new ItemStack[] {
+        ore(IRON, new ItemStack[] {
                 new ItemStack(ModItems.powder_iron.get(), 1),
                 new ItemStack(ModItems.powder_iron.get(), 1),
                 new ItemStack(ModItems.powder_iron.get(), 1),
                 new ItemStack(Items.GRAVEL, 1) });
 
         lbs(() ->
-            put(GOLD.ore(), new ItemStack[] {
+            ore(GOLD, new ItemStack[] {
                     lbs ? new ItemStack(ModItems.powder_gold.get(), 2) : new ItemStack(ModItems.powder_gold.get(), 1),
                     new ItemStack(ModItems.powder_gold.get(), 1),
                     lbs ? new ItemStack(ModItems.nugget_bismuth.get(), 1) : new ItemStack(ModItems.powder_gold.get(), 1),
@@ -105,7 +108,7 @@ public final class CentrifugeTable extends RecipeSource<Row> {
                 new ItemStack(Items.GRAVEL, 1) });
 
         lbs(() ->
-            put(TI.ore(), new ItemStack[] {
+            ore(TI, new ItemStack[] {
                     lbs ? new ItemStack(ModItems.powder_titanium.get(), 2) : new ItemStack(ModItems.powder_titanium.get(), 1),
                     lbs ? ModIntermediateItems.chunk(EnumChunkType.ILMENITE, 4) : ModIntermediateItems.chunk(EnumChunkType.ILMENITE, 2),
                     new ItemStack(ModItems.powder_iron.get(), 1),
@@ -119,33 +122,33 @@ public final class CentrifugeTable extends RecipeSource<Row> {
                 new ItemStack(Items.NETHERRACK, 1) });
 
         lbs(() ->
-            put(W.ore(), new ItemStack[] {
+            ore(W, new ItemStack[] {
                     lbs ? new ItemStack(ModItems.powder_tungsten.get(), 2) : new ItemStack(ModItems.powder_tungsten.get(), 1),
                     new ItemStack(ModItems.powder_tungsten.get(), 1),
                     new ItemStack(ModItems.powder_iron.get(), 1),
                     new ItemStack(Items.GRAVEL, 1) }));
 
         lbs(() ->
-            put(CU.ore(), new ItemStack[] {
+            ore(CU, new ItemStack[] {
                     lbs ? new ItemStack(ModItems.powder_copper.get(), 2) : new ItemStack(ModItems.powder_copper.get(), 1),
                     new ItemStack(ModItems.powder_copper.get(), 1),
                     new ItemStack(ModItems.powder_gold.get(), 1),
                     new ItemStack(Items.GRAVEL, 1) }));
 
-        put(AL.ore(), new ItemStack[] {
+        ore(AL, new ItemStack[] {
                 ModIntermediateItems.chunk(EnumChunkType.CRYOLITE, 2),
                 new ItemStack(ModItems.powder_titanium.get(), 1),
                 new ItemStack(ModItems.powder_iron.get(), 1),
                 new ItemStack(Items.GRAVEL, 1) });
 
         lbs(() ->
-            put(PB.ore(), new ItemStack[] {
+            ore(PB, new ItemStack[] {
                     lbs ? new ItemStack(ModItems.powder_lead.get(), 2) : new ItemStack(ModItems.powder_lead.get(), 1),
                     lbs ? new ItemStack(ModItems.nugget_bismuth.get(), 1) : new ItemStack(ModItems.powder_lead.get(), 1),
                     new ItemStack(ModItems.powder_gold.get(), 1),
                     new ItemStack(Items.GRAVEL, 1) }));
 
-        put(SA326.ore(), new ItemStack[] {
+        ore(SA326, new ItemStack[] {
                 new ItemStack(ModItems.powder_schrabidium.get(), 1),
                 new ItemStack(ModItems.powder_schrabidium.get(), 1),
                 new ItemStack(ModItems.nugget_solinium.get(), 1),
@@ -157,26 +160,26 @@ public final class CentrifugeTable extends RecipeSource<Row> {
                 new ItemStack(ModItems.nugget_zirconium.get(), 1),
                 new ItemStack(Items.GRAVEL, 1) });
 
-        put(PU.ore(), new ItemStack[] {
+        ore(PU, new ItemStack[] {
                 new ItemStack(ModItems.powder_plutonium.get(), 1),
                 new ItemStack(ModItems.powder_plutonium.get(), 1),
                 new ItemStack(ModItems.nugget_polonium.get(), 3),
                 new ItemStack(Items.GRAVEL, 1) });
 
         lbs(() ->
-            put(U.ore(), new ItemStack[] {
+            ore(U, new ItemStack[] {
                     lbs ? new ItemStack(ModItems.powder_uranium.get(), 2) : new ItemStack(ModItems.powder_uranium.get(), 1),
                     lbs ? new ItemStack(ModItems.nugget_technetium.get(), 2) : new ItemStack(ModItems.powder_uranium.get(), 1),
                     lbs ? new ItemStack(ModItems.nugget_ra226.get(), 2) : new ItemStack(ModItems.nugget_ra226.get(), 1),
                     new ItemStack(Items.GRAVEL, 1) }));
 
-        put(TH232.ore(), new ItemStack[] {
+        ore(TH232, new ItemStack[] {
                 new ItemStack(ModItems.powder_thorium.get(), 1),
                 new ItemStack(ModItems.powder_thorium.get(), 1),
                 new ItemStack(ModItems.powder_uranium.get(), 1),
                 new ItemStack(Items.GRAVEL, 1) });
 
-        put(BE.ore(), new ItemStack[] {
+        ore(BE, new ItemStack[] {
                 new ItemStack(ModItems.powder_beryllium.get(), 1),
                 new ItemStack(ModItems.powder_beryllium.get(), 1),
                 new ItemStack(ModItems.powder_emerald.get(), 1),
@@ -219,7 +222,7 @@ public final class CentrifugeTable extends RecipeSource<Row> {
                 new ItemStack(ModItems.ingot_phosphorus.get()),
                 new ItemStack(Items.NETHERRACK) });
 
-        put(CO.ore(), new ItemStack[] {
+        ore(CO, new ItemStack[] {
                 new ItemStack(ModItems.powder_cobalt.get(), 2),
                 new ItemStack(ModItems.powder_iron.get(), 1),
                 new ItemStack(ModItems.powder_copper.get(), 1),
@@ -342,6 +345,14 @@ public final class CentrifugeTable extends RecipeSource<Row> {
         lbs = false;
         requires = List.of();
         suffix = "";
+    }
+
+    /** 1.7's ore row, then (port) ntm-next's raw row: the same outputs, each made at {@link RawOres#SHARE}. */
+    private void ore(NTMMaterial material, ItemStack[] outputs) {
+        put(material.ore(), outputs);
+        List<Output> raw = new ArrayList<>();
+        for (ItemStack stack : outputs) raw.add(new ChanceOutput(ItemOut.of(stack), RawOres.SHARE));
+        put(RawOres.stack(material), raw.toArray(Output[]::new));
     }
 
     /** 1.7 {@code recipes.put(input, outputs)}. */

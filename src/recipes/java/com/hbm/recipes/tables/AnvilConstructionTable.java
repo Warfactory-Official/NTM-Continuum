@@ -639,7 +639,7 @@ public final class AnvilConstructionTable extends RecipeSource<ConstructionRow> 
                 new ComparableStack(ModMachineBlocks.heater_firebox.get().asItem()),
                 new AnvilOutput[] {
                         new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 8)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 6))
+                        new AnvilOutput(new ItemStack(Items.COPPER_INGOT, 6))
                 }
         ).setTier(2));
 
@@ -647,7 +647,7 @@ public final class AnvilConstructionTable extends RecipeSource<ConstructionRow> 
                 new ComparableStack(ModMachineBlocks.heater_oven.get().asItem()),
                 new AnvilOutput[] {
                         new AnvilOutput(new ItemStack(ModItems.ingot_firebrick.get(), 16)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8))
+                        new AnvilOutput(new ItemStack(Items.COPPER_INGOT, 8))
                 }
         ).setTier(2));
 
@@ -655,7 +655,7 @@ public final class AnvilConstructionTable extends RecipeSource<ConstructionRow> 
                 new CogStack(ModMachineBlocks.machine_stirling.get().asItem(), true), // 1.7 machine_stirling metadata 0, with its gear
                 new AnvilOutput[] {
                         new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 6)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8)),
+                        new AnvilOutput(new ItemStack(Items.COPPER_INGOT, 8)),
                         new AnvilOutput(new ItemStack(ModItems.coil_copper.get(), 4)),
                         new AnvilOutput(new ItemStack(ModGearItems.gear_large.get(), 1)),
 
@@ -665,7 +665,7 @@ public final class AnvilConstructionTable extends RecipeSource<ConstructionRow> 
                 new CogStack(ModMachineBlocks.machine_stirling.get().asItem(), false), // 1.7 metadata 1, the gear taken out
                 new AnvilOutput[] {
                         new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 6)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8)),
+                        new AnvilOutput(new ItemStack(Items.COPPER_INGOT, 8)),
                         new AnvilOutput(new ItemStack(ModItems.coil_copper.get(), 4)),
 
                 }
@@ -675,7 +675,7 @@ public final class AnvilConstructionTable extends RecipeSource<ConstructionRow> 
                 new AnvilOutput[] {
                         new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 16)),
                         new AnvilOutput(new ItemStack(ModItems.ingot_beryllium.get(), 6)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 4)),
+                        new AnvilOutput(new ItemStack(Items.COPPER_INGOT, 4)),
                         new AnvilOutput(new ItemStack(ModItems.coil_gold.get(), 8)),
                         new AnvilOutput(ModGearItems.gear(1)),
 
@@ -693,7 +693,7 @@ public final class AnvilConstructionTable extends RecipeSource<ConstructionRow> 
                 new ComparableStack(ModGearItems.gear_large.get()),
                 new AnvilOutput[] {
                         new AnvilOutput(new ItemStack(ModItems.plate_iron.get(), 8)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 1)),
+                        new AnvilOutput(new ItemStack(Items.COPPER_INGOT, 1)),
 
                 }
         ).setTier(2));
@@ -702,7 +702,7 @@ public final class AnvilConstructionTable extends RecipeSource<ConstructionRow> 
                 new AnvilOutput[] {
                         new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 16)),
                         new AnvilOutput(new ItemStack(ModItems.ingot_beryllium.get(), 6)),
-                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 4)),
+                        new AnvilOutput(new ItemStack(Items.COPPER_INGOT, 4)),
                         new AnvilOutput(new ItemStack(ModItems.coil_gold.get(), 8)),
 
                 }

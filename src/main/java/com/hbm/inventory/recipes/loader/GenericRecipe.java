@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -290,6 +291,18 @@ public class GenericRecipe {
     public float getChance(int index) {
         if (outputChance == null || index >= outputChance.length) return 1F;
         return Math.max(0F, Math.min(outputChance[index], 1F));
+    }
+
+    /** {@code stack} after output {@code index}'s chance, rolled once per item (1.7 {@code ChanceOutput.collapse}). */
+    public ItemStack rollChance(int index, ItemStack stack, RandomSource random) {
+        float chance = getChance(index);
+        if (chance >= 1F) return stack;
+        if (chance <= 0F) return ItemStack.EMPTY;
+        int kept = 0;
+        for (int j = 0; j < stack.getCount(); j++) if (random.nextFloat() <= chance) kept++;
+        if (kept <= 0) return ItemStack.EMPTY;
+        stack.setCount(kept);
+        return stack;
     }
 
     public boolean isPooled() { return blueprintPools != null; }

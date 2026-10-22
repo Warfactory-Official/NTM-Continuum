@@ -329,7 +329,7 @@ final class ModMaterialTagsGenerated {
         tag("ingots/borax", "hbm:ingot_raw_borax");
         tag("ingots/carbon", "hbm:ingot_graphite");
         tag("ingots/coltan", "hbm:fragment_coltan");
-        tag("ingots/copper", "hbm:ingot_copper", "minecraft:copper_ingot");
+        tag("ingots/copper", "minecraft:copper_ingot");
         tag("ingots/gold", "minecraft:gold_ingot");
         tag("ingots/iron", "minecraft:iron_ingot");
         tag("ingots/latex", "hbm:ingot_biorubber");
@@ -355,7 +355,7 @@ final class ModMaterialTagsGenerated {
         tag("ores/cinnabar", "hbm:ore_cinnabar", "hbm:ore_depth_cinnabar");
         tag("ores/coal", "#minecraft:coal_ores", "hbm:ore_nether_coal");
         tag("ores/cobalt", "hbm:ore_cobalt", "hbm:ore_nether_cobalt");
-        tag("ores/copper", "#minecraft:copper_ores", "hbm:ore_copper", "hbm:ore_gneiss_copper");
+        tag("ores/copper", "#minecraft:copper_ores", "hbm:ore_gneiss_copper");
         tag("ores/diamond", "#minecraft:diamond_ores", "hbm:gravel_diamond", "hbm:ore_sellafield_diamond");
         tag("ores/emerald", "#minecraft:emerald_ores", "hbm:ore_sellafield_emerald");
         tag("ores/gold", "#minecraft:gold_ores", "hbm:ore_gneiss_gold");
@@ -396,7 +396,7 @@ final class ModMaterialTagsGenerated {
         tag("storage_blocks/any_plastic", "#c:storage_blocks/bakelite", "#c:storage_blocks/polymer");
         tag("storage_blocks/carbon", "hbm:block_graphite");
         tag("storage_blocks/coal", "minecraft:coal_block");
-        tag("storage_blocks/copper", "hbm:block_copper", "minecraft:copper_block");
+        tag("storage_blocks/copper", "minecraft:copper_block");
         tag("storage_blocks/diamond", "minecraft:diamond_block");
         tag("storage_blocks/emerald", "minecraft:emerald_block");
         tag("storage_blocks/gold", "minecraft:gold_block");

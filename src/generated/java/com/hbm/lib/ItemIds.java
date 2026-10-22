@@ -623,7 +623,6 @@ public final class ItemIds {
     public static final String block_coke_petroleum = "hbm:block_coke_petroleum";
     public static final String block_coltan = "hbm:block_coltan";
     public static final String block_combine_steel = "hbm:block_combine_steel";
-    public static final String block_copper = "hbm:block_copper";
     public static final String block_corium = "hbm:block_corium";
     public static final String block_corium_cobble = "hbm:block_corium_cobble";
     public static final String block_desh = "hbm:block_desh";
@@ -1983,7 +1982,6 @@ public final class ItemIds {
     public static final String ingot_co60 = "hbm:ingot_co60";
     public static final String ingot_cobalt = "hbm:ingot_cobalt";
     public static final String ingot_combine_steel = "hbm:ingot_combine_steel";
-    public static final String ingot_copper = "hbm:ingot_copper";
     public static final String ingot_daffergon = "hbm:ingot_daffergon";
     public static final String ingot_desh = "hbm:ingot_desh";
     public static final String ingot_dineutronium = "hbm:ingot_dineutronium";
@@ -2216,8 +2214,6 @@ public final class ItemIds {
     public static final String machine_condenser = "hbm:machine_condenser";
     public static final String machine_condenser_powered = "hbm:machine_condenser_powered";
     public static final String machine_controller = "hbm:machine_controller";
-    public static final String machine_converter_he_rf = "hbm:machine_converter_he_rf";
-    public static final String machine_converter_rf_he = "hbm:machine_converter_rf_he";
     public static final String machine_conveyor_press = "hbm:machine_conveyor_press";
     public static final String machine_crucible = "hbm:machine_crucible";
     public static final String machine_crystallizer = "hbm:machine_crystallizer";
@@ -2237,7 +2233,6 @@ public final class ItemIds {
     public static final String machine_excavator = "hbm:machine_excavator";
     public static final String machine_exposure_chamber = "hbm:machine_exposure_chamber";
     public static final String machine_fel = "hbm:machine_fel";
-    public static final String machine_fensu = "hbm:machine_fensu";
     public static final String machine_flare = "hbm:machine_flare";
     public static final String machine_fluidtank = "hbm:machine_fluidtank";
     public static final String machine_forcefield = "hbm:machine_forcefield";
@@ -2784,7 +2779,6 @@ public final class ItemIds {
     public static final String ore_cobalt_deepslate = "hbm:ore_cobalt_deepslate";
     public static final String ore_coltan = "hbm:ore_coltan";
     public static final String ore_coltan_deepslate = "hbm:ore_coltan_deepslate";
-    public static final String ore_copper = "hbm:ore_copper";
     public static final String ore_density_scanner = "hbm:ore_density_scanner";
     public static final String ore_depth_borax = "hbm:ore_depth_borax";
     public static final String ore_depth_cinnabar = "hbm:ore_depth_cinnabar";
@@ -3412,6 +3406,17 @@ public final class ItemIds {
     public static final String rail_narrow_straight = "hbm:rail_narrow_straight";
     public static final String rail_wood = "hbm:rail_wood";
     public static final String rangefinder = "hbm:rangefinder";
+    public static final String raw_aluminium = "hbm:raw_aluminium";
+    public static final String raw_beryllium = "hbm:raw_beryllium";
+    public static final String raw_cobalt = "hbm:raw_cobalt";
+    public static final String raw_lead = "hbm:raw_lead";
+    public static final String raw_lithium = "hbm:raw_lithium";
+    public static final String raw_plutonium = "hbm:raw_plutonium";
+    public static final String raw_schrabidium = "hbm:raw_schrabidium";
+    public static final String raw_thorium = "hbm:raw_thorium";
+    public static final String raw_titanium = "hbm:raw_titanium";
+    public static final String raw_tungsten = "hbm:raw_tungsten";
+    public static final String raw_uranium = "hbm:raw_uranium";
     public static final String rbmk_absorber = "hbm:rbmk_absorber";
     public static final String rbmk_autoloader = "hbm:rbmk_autoloader";
     public static final String rbmk_blank = "hbm:rbmk_blank";

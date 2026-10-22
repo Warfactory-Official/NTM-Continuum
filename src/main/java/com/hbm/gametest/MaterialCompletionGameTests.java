@@ -398,8 +398,8 @@ public final class MaterialCompletionGameTests {
         // three tag-gated compat recipes stay absent without another mod), + the rebar -> concrete rebar recipe, + the etched meteorite sword,
         // + 1.7's bedrock-ore washing/acid grades: 37 per ore type (2 washed, 2 sulfuric, 3 solvent, 4 rad,
         // 3+3+3 byproduct washes, 8 hydrogen, 8 chlorine, 1 slop crumb recovery) over the six types.
-        // + the 23 plastic-scrap -> circuit-piece recipes (1.7 :126, fix phase 3)
-        int crystallizerExpected = 82 + 1 + 1 + 23 + 37 * BedrockOreType.VALUES.length;
+        // + the 23 plastic-scrap -> circuit-piece recipes (1.7 :126), + ntm-next's 14 raw ore rows
+        int crystallizerExpected = 82 + 1 + 1 + 23 + 14 + 37 * BedrockOreType.VALUES.length;
         helper.assertTrue(CrystallizerRecipes.recipes.size() == crystallizerExpected,
                 "Crystallizer catalogue must contain exactly " + crystallizerExpected
                         + " dependency-complete defaults, found " + CrystallizerRecipes.recipes.size());

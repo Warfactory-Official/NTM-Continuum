@@ -1,6 +1,7 @@
 package com.hbm.recipes.tables;
 
 import com.hbm.blocks.ModOreBlocks;
+import com.hbm.blocks.RawOres;
 import com.hbm.inventory.material.MaterialDistribution;
 import com.hbm.inventory.material.MaterialDistribution.Row;
 import com.hbm.inventory.material.MaterialShapes;
@@ -71,20 +72,20 @@ public final class MaterialDistributionTable extends RecipeSource<Row> {
         registerEntry(ModIntermediateItems.chunk(EnumChunkType.CRYOLITE), MAT_ALUMINIUM, q(INGOT, 1), MAT_SODIUM, q(INGOT, 1));
         //actual ores
         // 1.7 skips these four when GregTech 6 is loaded, which never runs alongside the port
-        registerOre(MAT_IRON.tag(ORE), MAT_IRON, q(INGOT, 2), MAT_TITANIUM, q(NUGGET, 3), MAT_STONE, quart());
-        registerOre(MAT_TITANIUM.tag(ORE), MAT_TITANIUM, q(INGOT, 2), MAT_IRON, q(NUGGET, 3), MAT_STONE, quart());
-        registerOre(MAT_TUNGSTEN.tag(ORE), MAT_TUNGSTEN, q(INGOT, 2), MAT_STONE, quart());
-        registerOre(MAT_ALUMINIUM.tag(ORE), MAT_ALUMINIUM, q(INGOT, 2), MAT_SODIUM, q(NUGGET, 3), MAT_STONE, quart());
+        ore(MAT_IRON, MAT_IRON, q(INGOT, 2), MAT_TITANIUM, q(NUGGET, 3), MAT_STONE, quart());
+        ore(MAT_TITANIUM, MAT_TITANIUM, q(INGOT, 2), MAT_IRON, q(NUGGET, 3), MAT_STONE, quart());
+        ore(MAT_TUNGSTEN, MAT_TUNGSTEN, q(INGOT, 2), MAT_STONE, quart());
+        ore(MAT_ALUMINIUM, MAT_ALUMINIUM, q(INGOT, 2), MAT_SODIUM, q(NUGGET, 3), MAT_STONE, quart());
 
         registerOre(MAT_COAL.tag(ORE), MAT_CARBON, q(GEM, 3), MAT_STONE, quart());
-        registerOre(MAT_GOLD.tag(ORE), MAT_GOLD, q(INGOT, 2), MAT_LEAD, q(NUGGET, 3), MAT_STONE, quart());
-        registerOre(MAT_URANIUM.tag(ORE), MAT_URANIUM, q(INGOT, 2), MAT_LEAD, q(NUGGET, 3), MAT_STONE, quart());
+        ore(MAT_GOLD, MAT_GOLD, q(INGOT, 2), MAT_LEAD, q(NUGGET, 3), MAT_STONE, quart());
+        ore(MAT_URANIUM, MAT_URANIUM, q(INGOT, 2), MAT_LEAD, q(NUGGET, 3), MAT_STONE, quart());
         // 1.7 loops every thorium ore name (TH232.all(ONLY_ORE)); the port has the one tag
-        registerOre(MAT_THORIUM.tag(ORE), MAT_THORIUM, q(INGOT, 2), MAT_URANIUM, q(NUGGET, 3), MAT_STONE, quart());
-        registerOre(MAT_COPPER.tag(ORE), MAT_COPPER, q(INGOT, 2), MAT_STONE, quart());
-        registerOre(MAT_LEAD.tag(ORE), MAT_LEAD, q(INGOT, 2), MAT_GOLD, q(NUGGET, 1), MAT_STONE, quart());
-        registerOre(MAT_BERYLLIUM.tag(ORE), MAT_BERYLLIUM, q(INGOT, 2), MAT_STONE, quart());
-        registerOre(MAT_COBALT.tag(ORE), MAT_COBALT, q(INGOT, 1), MAT_STONE, quart());
+        ore(MAT_THORIUM, MAT_THORIUM, q(INGOT, 2), MAT_URANIUM, q(NUGGET, 3), MAT_STONE, quart());
+        ore(MAT_COPPER, MAT_COPPER, q(INGOT, 2), MAT_STONE, quart());
+        ore(MAT_LEAD, MAT_LEAD, q(INGOT, 2), MAT_GOLD, q(NUGGET, 1), MAT_STONE, quart());
+        ore(MAT_BERYLLIUM, MAT_BERYLLIUM, q(INGOT, 2), MAT_STONE, quart());
+        ore(MAT_COBALT, MAT_COBALT, q(INGOT, 1), MAT_STONE, quart());
         registerOre(MAT_REDSTONE.tag(ORE), MAT_REDSTONE, q(INGOT, 4), MAT_STONE, quart());
 
         registerOre(MAT_HEMATITE.tag(ORE), MAT_HEMATITE, q(INGOT, 1));
@@ -104,6 +105,22 @@ public final class MaterialDistributionTable extends RecipeSource<Row> {
         var id = BuiltInRegistries.ITEM.getKey(key);
         String name = id.getNamespace().equals("hbm") ? id.getPath() : id.getNamespace() + "_" + id.getPath();
         register(name, new Row(Either.right(key), stacks(matDef)));
+    }
+
+    /**
+     * 1.7's row for {@code material}'s ore, then (port) ntm-next's raw row: each amount at {@link RawOres#SHARE}, the first
+     * never below the one ingot a raw item smelts to.
+     */
+    private void ore(NTMMaterial material, Object... matDef) {
+        registerOre(material.tag(ORE), matDef);
+        List<MaterialStack> raw = stacks(matDef);
+        for (int i = 0; i < raw.size(); i++) {
+            int amount = RawOres.share(raw.get(i).amount);
+            if (i == 0) amount = Math.max(amount, q(INGOT, 1));
+            raw.set(i, new MaterialStack(raw.get(i).material, amount));
+        }
+        TagKey<Item> tag = RawOres.tag(material);
+        register("tag_" + tag.location().getPath().replace('/', '_'), new Row(Either.left(tag), raw));
     }
 
     /** 1.7 {@code registerOre(oreName, material, amount, ...)}; the id is {@code tag_} and the tag path. */

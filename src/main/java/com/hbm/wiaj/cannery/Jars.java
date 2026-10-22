@@ -40,7 +40,6 @@ public class Jars {
         put("hbm:machine_stirling", new CanneryStirling());
         put("hbm:machine_stirling_steel", new CanneryStirling());
         put("hbm:machine_gascent", new CanneryCentrifuge());
-        put("hbm:machine_fensu", new CanneryFEnSU());
         put("hbm:machine_fel", new CannerySILEX());
         put("hbm:machine_silex", new CannerySILEX());
         put("hbm:foundry_channel", new CanneryFoundryChannel());

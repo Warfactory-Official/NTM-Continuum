@@ -5,6 +5,7 @@ import com.hbm.advancement.AwardRegions;
 import com.hbm.advancement.DetonationTrigger;
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.api.environment.Environment;
+import com.hbm.config.GeneralConfig;
 import com.hbm.saveddata.satellites.SatelliteDetector;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.Tags;
@@ -173,7 +174,7 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
                 discard();
                 return;
             }
-            Constants.LOG.info("[NUKE] blast entity finished at tick {}", tickCount);
+            if (GeneralConfig.logDiagnostics()) Constants.LOG.info("[NUKE] blast entity finished at tick {}", tickCount);
             if (fallout) {
                 EntityFalloutRain rain = new EntityFalloutRain(ModEntities.FALLOUT_RAIN.get(), level());
                 rain.setPos(getX(), getY(), getZ());

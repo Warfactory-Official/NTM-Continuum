@@ -4,7 +4,6 @@ import dev.golem.core.registry.BlockTag;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.items.machine.ItemBatteryREDD;
-import com.hbm.items.machine.ItemFENSU;
 import dev.golem.core.world.Compat;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -16,9 +15,9 @@ import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Variants;
 
 /**
- * Hand-registered energy-storage machine blocks (the battery socket; future: capacitor banks, FENSU,
- * etc.). Separate from the generated {@link com.hbm.blocks.ModBlocks} and the general
- * {@link com.hbm.blocks.machine.ModMachineBlocks} so codegen never clobbers them.
+ * Hand-registered energy-storage machine blocks (the battery socket and the FEnSU). Separate from the generated
+ * {@link com.hbm.blocks.ModBlocks} and the general {@link com.hbm.blocks.machine.ModMachineBlocks} so codegen
+ * never clobbers them.
  */
 public final class ModBatteryBlocks {
 
@@ -39,13 +38,6 @@ public final class ModBatteryBlocks {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
-    public static final RegistryObject<MachineFENSU> machine_fensu = REG.<MachineFENSU>block(
-            "machine_fensu", MachineFENSU::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.STONE).noOcclusion()
-                    .isSuffocating((state, world, pos) -> false)
-                    .isViewBlocking((state, world, pos) -> false))
-            .transform(FOLDED).tag(BlockTag.PICKAXE);
-
     public static final RegistryObject<MachineBatteryREDD> machine_battery_redd = REG.<MachineBatteryREDD>block(
             "machine_battery_redd", MachineBatteryREDD::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
@@ -57,8 +49,6 @@ public final class ModBatteryBlocks {
 
     static {
         REG.blockItem(machine_battery_socket).tab(HbmTab.MACHINES);
-        REG.<MachineFENSU, ItemFENSU>blockItem(machine_fensu, ItemFENSU::new, Compat::blockDescription)
-                .tab(HbmTab.MACHINES);
         REG.<MachineBatteryREDD, ItemBatteryREDD>blockItem(machine_battery_redd, ItemBatteryREDD::new,
                         Compat::blockDescription)
                 .tab(HbmTab.MACHINES);

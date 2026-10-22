@@ -20,7 +20,6 @@ public final class WiajCanneries implements Scenario {
     private static final String[][] CANNERIES = {
             {"hbm:machine_gascent", "centrifuge"},
             {"hbm:heater_firebox", "firebox"},
-            {"hbm:machine_fensu", "fensu"},
     };
 
     /** The other five: opened and forwarded through every scene, a screenshot per step. */

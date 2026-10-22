@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A fixed set of camera views of MachineFps's eleven machines with the instancing engine off, saved as
+ * A fixed set of camera views of MachineFps's ten machines with the instancing engine off, saved as
  * screenshots so a run with culling off and a run with it on can be compared pixel by pixel
  * (port-tools/cull_compare.py). Needs one run per mode; the scene has no moving parts.
  */
@@ -22,7 +22,6 @@ public final class RcCullShots implements Scenario {
 
     private static final String[][] MACHINES = {
             {"machine_chungus", "" + (X - 24), "" + ROW_A},
-            {"machine_fensu", "" + (X - 12), "" + ROW_A},
             {"machine_industrial_turbine", "" + X, "" + ROW_A},
             {"machine_steam_engine", "" + (X + 12), "" + ROW_A},
             {"machine_battery_socket", "" + (X + 24), "" + ROW_A},

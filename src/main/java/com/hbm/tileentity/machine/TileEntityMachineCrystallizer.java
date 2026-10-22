@@ -153,11 +153,12 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
     }
 
     private void processItem(CrystallizerRecipe recipe) {
+        ItemStack made = recipe.roll(level.getRandom());
         ItemStack out = inventory.getStackInSlot(2);
         if (out.isEmpty()) {
-            inventory.setStackInSlot(2, recipe.output.copy());
+            inventory.setStackInSlot(2, made);
         } else {
-            out.grow(recipe.output.getCount());
+            out.grow(made.getCount());
         }
         tank.setFill(tank.getFill() - getRequiredAcid(recipe.acidAmount));
 

@@ -12,7 +12,7 @@ import java.util.List;
  *
  * <p>Not a pass/fail check: it reports four numbers in chat and the report so a "machines in view tank the frame
  * rate" claim can be measured instead of eyeballed. Run with {@code up --show} (an iconified window is capped at
- * 10 fps) and one client, so the two are not sharing the GPU. The scene is RenderFallback's eleven machines.
+ * 10 fps) and one client, so the two are not sharing the GPU. The scene is RenderFallback's ten machines.
  */
 public final class MachineFps implements Scenario {
 
@@ -25,7 +25,6 @@ public final class MachineFps implements Scenario {
 
     private static final String[][] MACHINES = {
             {"machine_chungus", "" + (X - 24), "" + ROW_A},
-            {"machine_fensu", "" + (X - 12), "" + ROW_A},
             {"machine_industrial_turbine", "" + X, "" + ROW_A},
             {"machine_steam_engine", "" + (X + 12), "" + ROW_A},
             {"machine_battery_socket", "" + (X + 24), "" + ROW_A},
