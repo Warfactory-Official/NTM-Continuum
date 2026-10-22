@@ -1,3 +1,4 @@
+import com.google.gson.JsonObject;
 import dev.golem.harness.api.Client;
 import dev.golem.harness.api.Fixtures;
 import dev.golem.harness.api.Scenario;
@@ -5,7 +6,7 @@ import dev.golem.harness.api.Scenario;
 /**
  * Player report: multiblock machines (turbofan, ZIRNOX, derrick) are invisible on a Create Aeronautics ship while
  * single blocks draw. Places them by hand on an iron deck, assembles the deck with {@code /sable assemble} and screenshots
- * before and after, for comparison. Needs Sable in the run ({@code ORG_GRADLE_PROJECT_sable.run=true}, 1.21.1 nodes).
+ * before and after, then held in the air and turned, for comparison. Needs Sable in the run ({@code ORG_GRADLE_PROJECT_sable.run=true}, 1.21.1 nodes).
  */
 public final class SableShipMachines implements Scenario {
 
@@ -43,5 +44,19 @@ public final class SableShipMachines implements Scenario {
         c.lookAt(0.5, D + 2, 9.5);
         c.waitTicks(40);
         c.screenshot("20-on-ship");
+
+        // held in the air and turned, then turned again every few ticks, filmed from the side
+        c.cmd("sable paused true");
+        c.teleport(0.5, D + 6, -10.5);
+        for (int i = 0; i < 20; i++) {
+            int angle = (i / 4) * 15;
+            c.cmd("sable teleport @e 0.5 " + (D + 4) + " 9.5 " + angle + " 0");
+            c.lookAt(0.5, D + 5, 9.5);
+            c.waitTicks(1);
+            c.screenshot(String.format("3%02d-turned-%d", i, angle));
+        }
+        c.cmd("sable paused false");
+        c.query("gem", new JsonObject());
+        System.out.println("[SableShip] gem " + c.query("gem", new JsonObject()));
     }
 }

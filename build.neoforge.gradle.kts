@@ -234,11 +234,21 @@ dependencies {
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency. Jade carries mixins, hence `devModJar`.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devModJar("maven.modrinth:jade:$it") }
 
+    // Mo' Bends, client dev runs only (`-Pmobends.run=true`), with the Architectury API it requires. HBM's armour follows
+    // its bent skeleton through Golem Core (dev.golem.core.render.BodyAnimations); nothing here compiles against it.
+    if (propOrNull("mobends.run") == "true") {
+        propOrNull("deps.mobends_run")?.let { devModJar("maven.modrinth:mo-bends-unofficial-modern-port:$it") { isTransitive = false } }
+        propOrNull("deps.mobends_architectury")?.let { devModJar("maven.modrinth:architectury-api:$it") { isTransitive = false } }
+    }
+
     // GemRender (with Flywheel nested or provided) instances gem-declared machines through Golem Core; every machine
     // keeps its vanilla BER. A mods-folder jar (`devModJar`) so its nested Flywheel and mixin configs load.
     // `-Pgemrender.run=false` launches without it, as a player without GemRender would.
+    // `-Pgemrender.jar=<path>` runs a local GemRender build instead of the CurseForge file.
     if (propOrNull("gemrender.run") != "false") {
-        propOrNull("deps.gemrender")?.let { devModJar("curse.maven:gemrender-1735539:$it") }
+        val localGem = propOrNull("gemrender.jar")
+        if (localGem != null) devModJar(files(localGem))
+        else propOrNull("deps.gemrender")?.let { devModJar("curse.maven:gemrender-1735539:$it") }
     }
 
     // Sodium declares itself client-side, so it loads only during the client run. It goes on

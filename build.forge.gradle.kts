@@ -175,6 +175,12 @@ dependencies {
     // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { modRuntimeOnly("maven.modrinth:jade:$it") }
+    // Mo' Bends, client dev runs only (`-Pmobends.run=true`), with the Architectury API it requires. HBM's armour follows
+    // its bent skeleton through Golem Core (dev.golem.core.render.BodyAnimations); nothing here compiles against it.
+    if (propOrNull("mobends.run") == "true") {
+        propOrNull("deps.mobends_run")?.let { modRuntimeOnly("maven.modrinth:mo-bends-unofficial-modern-port:$it") { isTransitive = false } }
+        propOrNull("deps.mobends_architectury")?.let { modRuntimeOnly("dev.architectury:architectury-forge:$it") { isTransitive = false } }
+    }
     propOrNull("deps.embeddium")?.let { modRuntimeOnly("maven.modrinth:embeddium:$it") }
     // Iris (Oculus on Forge 1.20.1) for testing under shader packs: `-Pshaders.run=true` puts it in the client run.
     // Client-side, dev runtime only, never compiled against or published; off by default so the standard runs
