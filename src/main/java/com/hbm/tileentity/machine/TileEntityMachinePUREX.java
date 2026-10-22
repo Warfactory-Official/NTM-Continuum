@@ -242,7 +242,6 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
 
     // --- menu + recipe selection ---
 
-    @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_purex"); }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) { return new ContainerMachinePUREX(id, inv, this); }
     @Override public void receiveControl(CompoundTag data) {
         if (Tags.getIntOr(data, "index", -1) == 0) {

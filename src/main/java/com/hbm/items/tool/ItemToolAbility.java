@@ -3,11 +3,13 @@ package com.hbm.items.tool;
 import com.hbm.Constants;
 import com.hbm.api.item.IDepthRockTool;
 import com.hbm.blocks.ModDungeonBlocks;
+import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.handler.ability.AvailableAbilities;
 import com.hbm.handler.ability.IBaseAbility;
 import com.hbm.handler.ability.IToolAreaAbility;
 import com.hbm.handler.ability.IToolHarvestAbility;
 import com.hbm.handler.ability.ToolPreset;
+import com.hbm.items.IKeybindReceiver;
 import com.hbm.packet.PlayerInformPayload;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.data.Tags;
@@ -46,6 +48,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 1.7 {@code ItemToolAbility}: a tool whose selected preset rewrites what mining does: which blocks come
@@ -57,7 +62,7 @@ import java.util.List;
  * at the same point of the server's destroy sequence and likewise stops the vanilla break when it answers
  * false. Presets live in the stack under {@link #ABILITY_CONFIG}, in 1.7's NBT layout.
  */
-public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, HeldItemState {
+public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, HeldItemState, IKeybindReceiver {
 
     /** 1.7 stored {@code ability} and {@code abilityPresets} in the stack tag; this compound holds both. */
     public static final GolemComponent<CompoundTag> ABILITY_CONFIG =
@@ -441,21 +446,43 @@ public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, H
 
     // --- cycling ---
 
+    /** Players whose cycle key is not bound to Use; the client reports it, and predicts it locally. */
+    private static final Set<UUID> CYCLE_REBOUND = ConcurrentHashMap.newKeySet();
+
+    public static void setCycleRebound(Player player, boolean rebound) {
+        if (rebound) CYCLE_REBOUND.add(player.getUUID());
+        else CYCLE_REBOUND.remove(player.getUUID());
+    }
+
     /**
      * 1.7 cycled on the ability key, which defaults to the use button, and left the click alone when the
      * aimed block had its own activation. Modern vanilla already offers the item only the clicks no block
-     * consumed, so right-clicking air or an inert block cycles, sneaking goes back to the first preset.
+     * consumed, so with the key on Use, right-clicking air or an inert block cycles and sneaking resets.
      */
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
+        if (CYCLE_REBOUND.contains(player.getUUID())) return InteractionResult.TRY_WITH_EMPTY_HAND;
         return cycle(level, player, player.getItemInHand(hand));
     }
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
-        if (player == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (player == null || CYCLE_REBOUND.contains(player.getUUID())) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
         return cycle(context.getLevel(), player, context.getItemInHand());
+    }
+
+    @Override
+    public boolean canHandleKeybind(Player player, ItemStack stack, EnumKeybind keybind) {
+        return keybind == EnumKeybind.ABILITY_CYCLE && stack == player.getMainHandItem();
+    }
+
+    // port: a rebound key cycles whatever block is aimed at; 1.7 skipped blocks overriding onBlockActivated
+    @Override
+    public void handleKeybind(Player player, ItemStack stack, EnumKeybind keybind, boolean newState) {
+        if (newState) cycle(player.level(), player, stack);
     }
 
     protected InteractionResult cycle(Level world, Player player, ItemStack stack) {

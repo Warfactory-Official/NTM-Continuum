@@ -1159,6 +1159,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_firing_routes", 20, () -> GunGameTests::gunFiringRoutes);
     public static final GameTests.Function GUN_MOB_HELD_KEYBINDS =
             TESTS.function("gun_mob_held_keybinds", 100, () -> GunGameTests::gunMobHeldKeybinds);
+    public static final GameTests.Function GUN_FLAMER_FUEL =
+            TESTS.function("gun_flamer_fuel", 20, () -> GunGameTests::gunFlamerFuel);
     public static final GameTests.Function MINING_PICKAXE_EFFECTIVE =
             TESTS.function("mining_pickaxe_effective", 20, () -> MiningToolGameTests::pickaxeEffective);
     public static final GameTests.Function MINING_BREAK_SPEED =

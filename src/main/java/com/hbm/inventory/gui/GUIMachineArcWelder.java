@@ -70,10 +70,7 @@ public class GUIMachineArcWelder extends CompatContainerScreen<ContainerMachineA
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        TileEntityMachineArcWelder welder = menu.getWelder();
-        Component label = welder != null && welder.hasCustomName()
-                ? Component.literal(welder.getName()) : title;
-        GuiDraw.text(graphics, font, label, imageWidth / 2 - font.width(label) / 2 - 18,
+        GuiDraw.text(graphics, font, title, imageWidth / 2 - font.width(title) / 2 - 18,
                 6, 0x404040, false);
         GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 96 + 2, 0x404040, false);
     }

@@ -227,11 +227,6 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     // MenuProvider
 
     @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_epress");
-    }
-
-    @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineEPress(containerId, playerInventory, this);
     }

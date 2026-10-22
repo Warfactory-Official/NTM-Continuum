@@ -64,6 +64,7 @@ public class MagazineBelt implements IMagazine<BulletConfig> {
             if (type.matchesAmmo(slot)) {
                 int used = Math.min(amount, slot.getCount());
                 inventory.removeItem(i, used);
+                IMagazine.handleAmmoBag(inventory, type, used);
                 amount -= used;
             }
             if (slot.getItem() instanceof ItemAmmoBag bag) {
@@ -73,6 +74,7 @@ public class MagazineBelt implements IMagazine<BulletConfig> {
                     if (!type.matchesAmmo(nested)) continue;
                     int used = Math.min(amount, bag.isInfinite() ? 9_999 : nested.getCount());
                     if (!bag.isInfinite()) contents.extractItem(j, used, false);
+                    IMagazine.handleAmmoBag(inventory, type, used);
                     amount -= used;
                 }
             }

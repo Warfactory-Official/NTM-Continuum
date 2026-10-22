@@ -59,6 +59,8 @@ public final class HbmJeiRecipeTypes {
     public static final ViewerType<GenericRecipe> PLASMA_FORGE = type("plasma_forge", GenericRecipe.class);
     /** 1.7 {@code SpaceAssemblerHandler} ("ntmSpaceAssembler"). */
     public static final ViewerType<GenericRecipe> SPACE_ASSEMBLER = type("space_assembler", GenericRecipe.class);
+    /** 1.7 {@code BlastFurnaceHandler} ("ntmBlastFurnace"). */
+    public static final ViewerType<GenericRecipe> BLAST_FURNACE = type("blast_furnace", GenericRecipe.class);
     public static final ViewerType<GenericRecipe> MIXER = type("mixer", GenericRecipe.class);
     public static final ViewerType<GenericRecipe> EXPOSURE_CHAMBER = type("exposure_chamber", GenericRecipe.class);
     public static final ViewerType<ArcFurnaceRecipes.ArcFurnaceRecipe> ARC_FURNACE_SOLID =

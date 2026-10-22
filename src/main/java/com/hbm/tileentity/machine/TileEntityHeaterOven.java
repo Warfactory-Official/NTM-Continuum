@@ -7,7 +7,6 @@ import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -82,11 +81,6 @@ public class TileEntityHeaterOven extends TileEntityFireboxBase {
     @Override
     public int getMaxHeat() {
         return maxHeatEnergy;
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.heater_oven");
     }
 
     @Override

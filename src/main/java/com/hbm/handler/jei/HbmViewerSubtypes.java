@@ -3,11 +3,11 @@ package com.hbm.handler.jei;
 import com.hbm.blocks.ModCustomMachineBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModEntityItems;
 import com.hbm.items.ModFluidItems;
 import com.hbm.items.ModJetpackDependencyItems;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemRBMKPellet;
-import dev.golem.core.data.ModelData;
 import dev.golem.core.viewer.Subtypes;
 import java.util.List;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -39,12 +39,12 @@ public final class HbmViewerSubtypes {
                 ModDataComponents.FLUID);
         reg.components(ModFluidItems.fluid_bucket.get(),
                 ModDataComponents.FLUID);
-        reg.components(ModFluidItems.fluid_icon.get(),
-                ModDataComponents.FLUID, ModDataComponents.FLUID_AMOUNT, ModDataComponents.FLUID_PRESSURE);
-        reg.interpreter(ModMachineItems.scraps.get(), stack ->
-                ModDataComponents.MATERIAL.get(stack).orElse("") + "|"
-                        + ModDataComponents.MAT_AMOUNT.get(stack).map(String::valueOf).orElse("") + "|"
-                        + ModelData.flag(stack) + "|" + ModelData.color(stack, -1));
+        reg.components(ModEntityItems.disperser_canister.get(), ModDataComponents.FLUID);
+        reg.components(ModEntityItems.glyphid_gland.get(), ModDataComponents.FLUID);
+        reg.components(ModEntityItems.grenade_universal.get(), ModDataComponents.GRENADE);
+        // 1.7 NEI matched by metadata alone: any amount, pressure or liquid flag finds the fluid's or material's recipes.
+        reg.components(ModFluidItems.fluid_icon.get(), ModDataComponents.FLUID);
+        reg.components(ModMachineItems.scraps.get(), ModDataComponents.MATERIAL);
         // The 1.7 metadata families are one item per type; only the items that keep one id
         // with a typed state still need a subtype interpreter.
         for (Item item : BuiltInRegistries.ITEM) {

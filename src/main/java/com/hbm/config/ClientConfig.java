@@ -46,6 +46,9 @@ public final class ClientConfig extends RunningConfig {
     /** 1.7 {@code COOLING_TOWER_PARTICLES}: the cooling towers' client steam. */
     public static boolean COOLING_TOWER_PARTICLES = true;
 
+    /** 1.7 {@code NEI_HIDE_SECRETS}: leaves the secret guns, ammo and items out of the recipe viewers' lists. */
+    public static boolean NEI_HIDE_SECRETS = true;
+
     public static final Map<String, ConfigWrapper<?>> configMap = new LinkedHashMap<>();
 
     private static final String FILE = "hbmClient.json";
@@ -75,7 +78,7 @@ public final class ClientConfig extends RunningConfig {
         configMap.put("NUKE_HUD_SHAKE", ConfigWrapper.bound(() -> NUKE_HUD_SHAKE, v -> NUKE_HUD_SHAKE = v));
         // 1.7: !Compat.isModLoaded(Compat.MOD_ANG); Angelica does not exist on these loaders
         configMap.put("RENDER_REEDS", ConfigWrapper.bound(() -> RENDER_REEDS, v -> RENDER_REEDS = v));
-        configMap.put("NEI_HIDE_SECRETS", new ConfigWrapper<>(true));
+        configMap.put("NEI_HIDE_SECRETS", ConfigWrapper.bound(() -> NEI_HIDE_SECRETS, v -> NEI_HIDE_SECRETS = v));
         configMap.put("COOLING_TOWER_PARTICLES", ConfigWrapper.bound(() -> COOLING_TOWER_PARTICLES, v -> COOLING_TOWER_PARTICLES = v));
         configMap.put("RENDER_REBAR_SIMPLE", new ConfigWrapper<>(false));
         configMap.put("RENDER_HELIOSTAT_BEAM_LIMIT", new ConfigWrapper<>(250));

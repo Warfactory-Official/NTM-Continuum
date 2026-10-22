@@ -30,6 +30,8 @@ public final class ReloadedGunGameTests {
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function GLUON_BEAM =
             TESTS.function("reloaded_gun_gluon_beam", 60, () -> ReloadedGunGameTests::gluonBeam);
+    public static final GameTests.Function GLUON_AMMO =
+            TESTS.function("reloaded_gun_gluon_ammo", 40, () -> ReloadedGunGameTests::gluonAmmo);
     public static final GameTests.Function JADE_SHOT =
             TESTS.function("reloaded_gun_jade_shot", 20, () -> ReloadedGunGameTests::jadeShot);
     public static final GameTests.Function JADE_RELOAD =
@@ -38,8 +40,8 @@ public final class ReloadedGunGameTests {
     public static void init() {}
 
     /**
-     * Trigger held with tau ammo: the gun flags itself firing, takes two rounds on a day tick divisible by 5 and none
-     * on another, and takes 2 health a tick off the zombie in front until it is gone. Released, the flag clears.
+     * Trigger held with tau ammo: the gun flags itself firing and takes 2 health a tick off the zombie in front until
+     * it is gone. Released, the flag clears.
      */
     public static void gluonBeam(GameTestHelper helper) {
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
@@ -65,7 +67,6 @@ public final class ReloadedGunGameTests {
             gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.GUN_PRIMARY, true);
             gun.serverTick(stack, helper.getLevel(), player, true);
             helper.assertTrue(ItemGunEgon.getIsFiring(stack), "the held trigger did not set the firing flag");
-            helper.assertTrue(rounds(player) == 62, "a day tick divisible by 5 took " + (64 - rounds(player)) + " rounds, not 2");
             helper.assertTrue(Math.abs(zombie.getHealth() - (startHealth - 2F)) < 1.0E-4F,
                     "the beam took " + (startHealth - zombie.getHealth()) + " health, not 2");
 
@@ -73,7 +74,6 @@ public final class ReloadedGunGameTests {
             for (int i = 0; i < 20 && zombie.isAlive() && !zombie.isRemoved(); i++) {
                 gun.serverTick(stack, helper.getLevel(), player, true);
             }
-            helper.assertTrue(rounds(player) == 62, "a day tick not divisible by 5 took rounds");
             helper.assertTrue(zombie.isRemoved(), "the zombie was not taken apart by the beam");
 
             gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.GUN_PRIMARY, false);
@@ -83,6 +83,34 @@ public final class ReloadedGunGameTests {
             TimeOfDay.set(helper.getLevel(), savedTime);
         }
         helper.succeed();
+    }
+
+    /** 10 game ticks of beam on a stopped day clock spend 4 rounds: two on each game tick divisible by 5. */
+    public static void gluonAmmo(GameTestHelper helper) {
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
+        player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
+        player.setXRot(-90F);
+        ItemStack stack = new ItemStack(ModGunItems.gun_egon.get());
+        ItemGunEgon gun = (ItemGunEgon) stack.getItem();
+        player.setItemSlot(EquipmentSlot.MAINHAND, stack);
+        player.getInventory().add(new ItemStack(ModAmmoItems.tau_uranium.get(), 64));
+
+        long savedTime = TimeOfDay.get(helper.getLevel());
+        gun.serverTick(stack, helper.getLevel(), player, true);
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.GUN_PRIMARY, true);
+        for (int tick = 1; tick <= 10; tick++) {
+            helper.runAfterDelay(tick, () -> {
+                TimeOfDay.set(helper.getLevel(), 1001L);
+                gun.serverTick(stack, helper.getLevel(), player, true);
+            });
+        }
+        helper.runAfterDelay(11, () -> {
+            TimeOfDay.set(helper.getLevel(), savedTime);
+            helper.assertTrue(ItemGunEgon.getIsFiring(stack), "the held trigger did not keep the beam on");
+            helper.assertTrue(rounds(player) == 60, "10 ticks of beam spent " + (64 - rounds(player)) + " rounds, not 4");
+            helper.succeed();
+        });
     }
 
     private static int rounds(Player player) {

@@ -15,6 +15,7 @@ import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
+import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
@@ -387,6 +388,41 @@ public final class GunGameTests {
                 "firing should spend exactly one round");
         helper.assertTrue(ItemGunBaseNT.getState(stack, 0) == GunState.COOLDOWN,
                 "the gun should be cooling down after a shot");
+        helper.succeed();
+    }
+
+    /** One canister fills the 300-round tank; a held trigger spends a round on the press and one every tick after. */
+    public static void gunFlamerFuel(GameTestHelper helper) {
+        Player player = player(helper);
+        player.setXRot(-90F);
+        ItemStack stack = armed(helper, player, ModGunItems.gun_flamer.get(), ModAmmoItems.flame_diesel.get(), 2);
+        ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
+
+        gun.serverTick(stack, helper.getLevel(), player, false);
+        helper.assertTrue(!ItemGunBaseNT.getIsEquipped(stack) && ItemGunBaseNT.getLastAnim(stack, 0) == GunAnimation.CYCLE,
+                "a put-away flamer must read CYCLE and not equipped");
+        gun.serverTick(stack, helper.getLevel(), player, true);
+        helper.assertTrue(ItemGunBaseNT.getIsEquipped(stack) && ItemGunBaseNT.getLastAnim(stack, 0) == GunAnimation.EQUIP,
+                "the first held tick must equip and draw together");
+        draw(helper, player, stack);
+
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.RELOAD, true);
+        tick(helper, player, stack, 120);
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.RELOAD, false);
+        int loaded = mag(stack).getAmount(stack, player.getInventory());
+        helper.assertTrue(loaded == 300, "one canister should fill the tank to 300, was " + loaded);
+        helper.assertTrue(player.getInventory().countItem(ModAmmoItems.flame_diesel.get()) == 1,
+                "the reload should use exactly one canister");
+        helper.assertTrue(ItemGunBaseNT.getState(stack, 0) == GunState.IDLE, "the flamer should be idle after the reload");
+
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.GUN_PRIMARY, true);
+        tick(helper, player, stack, 20);
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.GUN_PRIMARY, false);
+        int left = mag(stack).getAmount(stack, player.getInventory());
+        helper.assertTrue(left == 279, "21 ticks of fire should leave 279 rounds, left " + left);
+        for (EntityBulletBaseMK4 flame : bullets(helper, player)) {
+            if (flame.thrower == player) flame.discard();
+        }
         helper.succeed();
     }
 

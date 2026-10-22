@@ -2,6 +2,7 @@ package com.hbm.api.fluidmk2;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
 import com.hbm.tileentity.MachineCore;
+import com.hbm.capability.ForeignFluidReceiver;
 import com.hbm.capability.MachineCaps;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -18,6 +19,7 @@ import com.hbm.uninos.PortNet;
 import com.hbm.uninos.PortNode;
 import com.hbm.uninos.PortNodes;
 import com.hbm.uninos.networkproviders.FluidNetProvider;
+import dev.golem.core.fluid.FluidView;
 import dev.golem.core.platform.Lifecycle;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -72,7 +74,7 @@ public final class FluidNetwork {
                 for (FluidType type : data.types()) {
                     if (userAt(level, neighbour, faceOrdinal, type) != null) return LevelNodeGraph.Probe.PRESENT;
                 }
-                return LevelNodeGraph.Probe.ABSENT;
+                return foreignAt(level, neighbour, faceOrdinal) != null ? LevelNodeGraph.Probe.PRESENT : LevelNodeGraph.Probe.ABSENT;
             };
 
     private FluidNetwork() {}
@@ -145,6 +147,11 @@ public final class FluidNetwork {
                     BlockPos at = neighbourOf(node.posKey, d);
                     if (!resident(level, at)) continue;
                     BlockEntity be = userAt(level, at, d, type);
+                    FluidView foreign = be == null ? foreignAt(level, at, d) : null;
+                    if (foreign != null) {
+                        gather.offerForeign(net, foreign, type);
+                        continue;
+                    }
                     if (be == null) {
                         // A face on a smoke net is present for ANY of its smokes: a chimney taking only SMOKE is
                         // no reason to re-probe the face on the SMOKE_LEADED pass. Stale only when no carried fluid finds it.
@@ -252,6 +259,12 @@ public final class FluidNetwork {
         return null;
     }
 
+    /** Another mod's fluid handler on the far side of a duct face, never the cell's own pseudo-face. */
+    private static @Nullable FluidView foreignAt(ServerLevel level, BlockPos pos, int faceOrdinal) {
+        if (faceOrdinal == EdgeFaces.SELF) return null;
+        return ForeignFluidReceiver.viewAt(level, pos, DIRS[faceOrdinal].getOpposite());
+    }
+
     private static final FluidType[] NO_TYPES = new FluidType[0];
 
     /**
@@ -311,6 +324,8 @@ public final class FluidNetwork {
         /** Users are deduplicated per role, so a machine whose intake and outlet face the same net keeps both. */
         final ReferenceOpenHashSet<IFluidUserMK2> seenProviding = new ReferenceOpenHashSet<>();
         final ReferenceOpenHashSet<IFluidUserMK2> seenReceiving = new ReferenceOpenHashSet<>();
+        /** Foreign handlers by identity, so a tank touching two duct faces is one receiver. */
+        final ReferenceOpenHashSet<Object> seenForeign = new ReferenceOpenHashSet<>();
 
         Gather() {
             for (int p = 0; p < PRESSURES; p++) {
@@ -357,6 +372,16 @@ public final class FluidNetwork {
             }
         }
 
+        void offerForeign(PortNet<?> net, FluidView view, FluidType type) {
+            if (!seenForeign.add(view.handlerIdentity())) return;
+            ForeignFluidReceiver receiver = ForeignFluidReceiver.of(view);
+            long required = receiver.getDemand(type, 0);
+            if (required <= 0L) return;
+            net.receiverEntries.add(receiver);
+            receivers[0][receiver.getFluidPriority().ordinal()].add(new Distribution.Share<>(receiver, required));
+            demand[0][receiver.getFluidPriority().ordinal()] += required;
+        }
+
         /** A port's role holder, each role once per round, as 1.7's {@code NodeNet} entry sets were. */
         void offerPort(PortNet<?> net, Object owner, FluidType type, boolean provide) {
             if (!(owner instanceof IFluidUserMK2 user) || !user.isLoaded()) return;
@@ -401,6 +426,7 @@ public final class FluidNetwork {
         void clear() {
             seenProviding.clear();
             seenReceiving.clear();
+            seenForeign.clear();
             for (int p = 0; p < PRESSURES; p++) {
                 providers[p].clear();
                 supply[p] = 0L;

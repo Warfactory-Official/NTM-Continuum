@@ -8,7 +8,6 @@ import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -27,16 +26,11 @@ public class ItemDisperser extends ItemFluidTank {
 
     private final Kind kind;
     private final String base;
-    private final Identifier icon;
-    private final Identifier overlayIcon;
 
-    public ItemDisperser(Item.Properties properties, int capacity, String base, Kind kind, Identifier icon,
-                         Identifier overlayIcon) {
+    public ItemDisperser(Item.Properties properties, int capacity, String base, Kind kind) {
         super(properties, capacity, base);
         this.kind = kind;
         this.base = base;
-        this.icon = icon;
-        this.overlayIcon = overlayIcon;
     }
 
     /** The fluid this stack carries ({@code Fluids.NONE} when empty). */
@@ -111,16 +105,7 @@ public class ItemDisperser extends ItemFluidTank {
     }
 
     /**
-     * 1.7 getIconFromDamageForRenderPass: pass 0 the body, pass 1 the fluid-tinted overlay; bare sprite names, no item/ prefix.
-     */
-    public Identifier iconTexture(int pass) {
-        return pass == 1 ? overlayIcon : icon;
-    }
-
-    /**
      * 1.7 branched on {@code this == ModItems.disperser_canister}; the port carries the distinction explicitly.
      */
     public enum Kind {CANISTER, GLAND}
-
-    // The passes ARE the model layers; the gland's overlay is the identifier's.
 }

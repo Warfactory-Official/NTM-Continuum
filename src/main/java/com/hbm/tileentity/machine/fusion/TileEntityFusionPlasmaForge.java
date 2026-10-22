@@ -30,7 +30,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -107,7 +106,6 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
     }
 
     @Override public String getDefaultName() { return "container.machinePlasmaForge"; }
-    @Override public Component getDisplayName() { return Component.translatable("block.hbm.fusion_plasma_forge"); }
     @Override public boolean receivesFusionPower() { return true; }
 
     @Override

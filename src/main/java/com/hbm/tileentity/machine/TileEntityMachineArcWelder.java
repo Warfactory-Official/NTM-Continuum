@@ -250,8 +250,6 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
         return upgrades;
     }
 
-    @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_arc_welder"); }
-
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineArcWelder(containerId, playerInventory, this);

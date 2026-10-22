@@ -419,12 +419,6 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     }
 
     @Override
-    public Component getDisplayName() {
-        return hasCustomName() ? Component.literal(getName())
-                : Component.translatable("block.hbm.machine_assembly_factory");
-    }
-
-    @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineAssemblyFactory(containerId, playerInventory, this);
     }

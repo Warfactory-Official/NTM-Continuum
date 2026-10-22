@@ -288,7 +288,7 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineWasteDrum> machine_waste_drum = REG.<MachineWasteDrum>block(
             "machine_waste_drum", MachineWasteDrum::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
-            .model(d -> d.models(Models.cubeAll("hbm:blocks/machine_transformer")).states(Variants.simple()).blockItemDirect())
+            .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/waste_drum", "hbm:blocks/waste_drum_side", "hbm:blocks/waste_drum")).states(Variants.simple()).blockItemDirect())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineStorageDrum> machine_storage_drum = REG.<MachineStorageDrum>block(

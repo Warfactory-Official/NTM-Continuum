@@ -36,6 +36,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.CompatEnchantments;
 import dev.golem.core.world.ItemStacks;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -148,7 +149,8 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
         int radiusLevel = te.upgradeManager.getLevel(UpgradeType.EFFECT);
 
         var type = te.getInstalledDrill();
-        if (te.enableDrill && type != null && te.power >= te.getPowerConsumption()) {
+        // port: never on a moving structure (Sable), where it would dig out the structure's own plot
+        if (te.enableDrill && type != null && te.power >= te.getPowerConsumption() && !SubLevels.isOnSubLevel(level, pos)) {
 
             te.operational = true;
             te.power -= te.getPowerConsumption();

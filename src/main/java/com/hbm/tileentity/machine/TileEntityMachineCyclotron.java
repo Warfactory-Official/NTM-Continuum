@@ -297,8 +297,6 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
         return upgrades;
     }
 
-    @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_cyclotron"); }
-
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineCyclotron(containerId, playerInventory, this);

@@ -1,7 +1,9 @@
 package com.hbm.compat.sable;
 
 import com.hbm.Constants;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModConveyorBlocks;
+import com.hbm.blocks.ModOilBlocks;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.blocks.network.BlockConveyorBase;
 import com.hbm.entity.item.EntityMovingItem;
@@ -23,9 +25,11 @@ import com.hbm.items.ModMissileItems;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
+import com.hbm.tileentity.machine.oil.TileEntityOilDrillBase;
 import com.hbm.tileentity.network.TileEntityPylonBase;
 import com.hbm.blocks.ModRadarUtilityBlocks;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.world.Chunks;
 import dev.golem.core.world.SubLevels;
 import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
@@ -41,6 +45,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -71,6 +76,42 @@ final class SableGameTests {
         TESTS.function("sable_launch_and_radar", 40, () -> SableGameTests::launchAndRadar);
         TESTS.function("sable_conveyor_items", 120, () -> SableGameTests::conveyorItems);
         TESTS.function("sable_turret_on_turned_ship", 120, () -> SableGameTests::turretOnTurnedShip);
+        TESTS.function("sable_assemble_one_cell", 40, () -> SableGameTests::assembleOneCell);
+        TESTS.function("sable_derrick_idle_on_ship", 200, () -> SableGameTests::derrickIdleOnShip);
+        TESTS.function("sable_block_masses_by_hardness", 40, () -> SableGameTests::blockMassesByHardness);
+    }
+
+    /** Iron block is the unit; reinforced stone (hardness 15) weighs 3, a centrifuge (5) 1 per solid part. */
+    private static void blockMassesByHardness(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos ironPos = fixture(helper, 8);
+        level.setBlock(ironPos, Blocks.IRON_BLOCK.defaultBlockState(), 3);
+        double iron = assemble(level, ironPos, Set.of(ironPos)).getMassTracker().getMass();
+        helper.assertTrue(iron > 0, "the iron block weighs nothing: " + iron);
+
+        BlockPos stonePos = fixture(helper, 9);
+        BlockState stone = ModBlocks.reinforced_stone.get().defaultBlockState();
+        level.setBlock(stonePos, stone, 3);
+        double stoneMass = assemble(level, stonePos, Set.of(stonePos)).getMassTracker().getMass();
+        assertMass(helper, "reinforced stone", stoneMass, iron * 15.0 / 5.0);
+
+        BlockPos core = fixture(helper, 10);
+        BlockMultiblockCore centrifuge = ModMachineBlocks.machine_centrifuge.get();
+        level.setBlock(core, centrifuge.defaultBlockState().setValue(BlockMultiblockCore.FACING, Direction.NORTH), 3);
+        centrifuge.fillSpace(level, core, Direction.NORTH);
+        Set<BlockPos> parts = new LinkedHashSet<>(MultiblockParts.partsWith(level, core));
+        int solid = 0;
+        for (BlockPos part : parts) {
+            if (!level.getBlockState(part).getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).isEmpty()) solid++;
+        }
+        helper.assertTrue(solid > 0, "the centrifuge has no solid part");
+        double machineMass = assemble(level, core, parts).getMassTracker().getMass();
+        assertMass(helper, "the centrifuge (" + solid + " solid parts)", machineMass, iron * solid);
+        helper.succeed();
+    }
+
+    private static void assertMass(GameTestHelper helper, String what, double mass, double expected) {
+        helper.assertTrue(Math.abs(mass - expected) < 1e-6 * expected, what + " weighs " + mass + " kpg, not " + expected);
     }
 
     /**
@@ -266,6 +307,74 @@ final class SableGameTests {
         assertNoDrops(helper, level, core, plotCore);
         clear(level, core);
         helper.succeed();
+    }
+
+    /**
+     * Simulated's physics assembler gathers from one block, so it can hand Sable a single cell of a machine. The whole
+     * centrifuge must go: every part leaves the world, the carried core keeps its 7 iron ore and its indexed cells, and
+     * nothing drops (a lone carried cell broke into a second machine).
+     */
+    private static void assembleOneCell(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos core = fixture(helper, 5);
+        BlockMultiblockCore centrifuge = ModMachineBlocks.machine_centrifuge.get();
+        level.setBlock(core, centrifuge.defaultBlockState().setValue(BlockMultiblockCore.FACING, Direction.NORTH), 3);
+        centrifuge.fillSpace(level, core, Direction.NORTH);
+        TileEntityMachineCentrifuge machine = (TileEntityMachineCentrifuge) level.getBlockEntity(core);
+        helper.assertTrue(machine != null, "no centrifuge at the core");
+        machine.inventory.setStackInSlot(0, new ItemStack(Items.IRON_ORE, 7));
+
+        List<BlockPos> parts = new ArrayList<>(MultiblockParts.partsWith(level, core));
+        BlockPos cell = parts.stream().filter(pos -> !pos.equals(core)).findFirst().orElse(null);
+        helper.assertTrue(cell != null, "the centrifuge resolved no cells");
+
+        ServerSubLevel sub = assemble(level, cell, Set.of(cell));
+        SubLevelAssemblyHelper.AssemblyTransform up = new SubLevelAssemblyHelper.AssemblyTransform(
+                cell, sub.getPlot().getCenterBlock(), 0, Rotation.NONE, level);
+        for (BlockPos part : parts) {
+            helper.assertTrue(level.getBlockState(part).isAir(), "part " + part + " stayed in the world");
+        }
+        checkMachine(helper, level, up.apply(core), Direction.NORTH, parts.size(), "after assembling one cell");
+        assertNoDrops(helper, level, core, up.apply(core));
+        helper.succeed();
+    }
+
+    /**
+     * A powered oil derrick drills a pipe column under itself, which on a sub-level grows through the plot. Two
+     * derricks, one left in the world and one assembled: after three drill cycles the world one has a pipe below it
+     * and the carried one has none and still holds its power.
+     */
+    private static void derrickIdleOnShip(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        // the derrick drills down to y 5 (as 1.7), so not in the GameTest plot; its fixture chunk is claimed to tick
+        BlockPos grounded = derrick(level, fixture(helper, 7));
+        Chunks.claimTicking(level, grounded.getX() >> 4, grounded.getZ() >> 4);
+        BlockPos core = derrick(level, fixture(helper, 6));
+        ServerSubLevel sub = assemble(level, core, new LinkedHashSet<>(MultiblockParts.partsWith(level, core)));
+        BlockPos plotCore = new SubLevelAssemblyHelper.AssemblyTransform(
+                core, sub.getPlot().getCenterBlock(), 0, Rotation.NONE, level).apply(core);
+        helper.assertTrue(level.getBlockEntity(plotCore) instanceof TileEntityOilDrillBase, "no derrick on the sub-level");
+
+        helper.runAfterDelay(160, () -> {
+            helper.assertTrue(level.getBlockState(grounded.below()).is(ModOilBlocks.oil_pipe.get()),
+                    "the derrick in the world drilled no pipe: " + level.getBlockState(grounded.below()));
+            Chunks.releaseTicking(level, grounded.getX() >> 4, grounded.getZ() >> 4);
+            helper.assertTrue(!level.getBlockState(plotCore.below()).is(ModOilBlocks.oil_pipe.get()),
+                    "the derrick on the sub-level drilled a pipe into its plot");
+            TileEntityOilDrillBase carried = (TileEntityOilDrillBase) level.getBlockEntity(plotCore);
+            helper.assertTrue(carried.power == carried.getMaxPower(), "the carried derrick used power: " + carried.power);
+            clear(level, grounded);
+            helper.succeed();
+        });
+    }
+
+    private static BlockPos derrick(ServerLevel level, BlockPos core) {
+        BlockMultiblockCore well = ModMachineBlocks.machine_well.get();
+        level.setBlock(core, well.defaultBlockState().setValue(BlockMultiblockCore.FACING, Direction.NORTH), 3);
+        well.fillSpace(level, core, Direction.NORTH);
+        TileEntityOilDrillBase drill = (TileEntityOilDrillBase) level.getBlockEntity(core);
+        drill.power = drill.getMaxPower();
+        return core;
     }
 
     private static void checkMachine(GameTestHelper helper, ServerLevel level, BlockPos core, Direction facing,

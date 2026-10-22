@@ -5,10 +5,13 @@ import dev.golem.core.viewer.Role;
 import dev.golem.core.viewer.SlotLayout;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.FluidStack;
+import com.hbm.inventory.recipes.FusionRecipe;
+import com.hbm.inventory.recipes.PlasmaForgeRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.machine.ItemBlueprints;
+import com.hbm.util.BobMathUtil;
 import dev.golem.core.viewer.ViewerType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -35,6 +38,19 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
     protected final Drawable slotFrame;    // gui_nei 5,87 18x18
     protected final Drawable machinePill;  // gui_nei 59,87 18x36 (arrow above, machine below)
     protected final Drawable blueprintPill; // gui_nei 77,87 18x50 (blueprint, arrow, machine)
+    private Extras extras = Extras.NONE;
+
+    /** The lower-right stat lines of 1.7's {@code printNEIExtras}, which 1.7 picks by recipe class. */
+    public enum Extras {
+        NONE,
+        /** {@code GenericRecipeNoPower}: duration only. */
+        DURATION,
+        /** {@code GenericRecipe}: duration and HE/t. */
+        POWER,
+        /** {@code FusionRecipe} (Ky/t), {@code PlasmaForgeRecipe} (TU/t): HE/t alternates with ignition each second. */
+        IGNITION,
+        PUREX
+    }
 
     public JEIGenericRecipeHandler(ViewerType<GenericRecipe> type, Component title,
                                    GenericRecipes recipeSet, ItemStack... machines) {
@@ -44,6 +60,11 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
         this.slotFrame = Drawable.texture(tex("gui_nei.png"), 5, 87, 18, 18);
         this.machinePill = Drawable.texture(tex("gui_nei.png"), 59, 87, 18, 36);
         this.blueprintPill = Drawable.texture(tex("gui_nei.png"), 77, 87, 18, 50);
+    }
+
+    public JEIGenericRecipeHandler extras(Extras extras) {
+        this.extras = extras;
+        return this;
     }
 
     /** The recipes to register for this category: the machine's whole ordered list, minus empties. */
@@ -149,6 +170,29 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
         } else {
             blueprintPill.draw(g, 74 + xOffset(recipe), 7);
         }
+        drawExtras(recipe, g);
+    }
+
+    private void drawExtras(GenericRecipe recipe, GuiGraphicsExtractor g) {
+        if (extras == Extras.NONE) return;
+        int side = 164;
+        String duration = BobMathUtil.getShortNumber(recipe.duration) + " ticks";
+        String consumption = BobMathUtil.getShortNumber(recipe.power) + "HE/t";
+        if (extras == Extras.PUREX) {
+            String line = duration + "   " + consumption;
+            text(g, line, side - textWidth(line), 57, 0x306030);
+            return;
+        }
+        text(g, duration, side - textWidth(duration), 45);
+        if (extras == Extras.DURATION) return;
+        if (extras == Extras.POWER || System.currentTimeMillis() % 2000 < 1000) {
+            text(g, consumption, side - textWidth(consumption), 57);
+            return;
+        }
+        String temp = recipe instanceof FusionRecipe fusion
+                ? BobMathUtil.getShortNumber(fusion.ignitionTemp) + "Ky/t"
+                : BobMathUtil.getShortNumber(((PlasmaForgeRecipe) recipe).ignitionTemp) + "TU/t";
+        text(g, temp, side - textWidth(temp), 57, 0xa000a0);
     }
 
     // The 1.12.2 JEIGenericRecipeHandler coordinate tables (item positions; the frame draws at -1,-1).

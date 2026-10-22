@@ -21,7 +21,6 @@ import com.hbm.util.ContaminationUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -318,8 +317,6 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
     }
 
     public long getPowerScaled(long i) { return (power * i) / maxPower; }
-
-    @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_fel"); }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {

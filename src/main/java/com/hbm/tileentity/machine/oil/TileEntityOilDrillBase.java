@@ -18,6 +18,7 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import com.hbm.util.TickPhase;
 import java.util.HashMap;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -105,7 +106,9 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.getMaxPower());
 
-        if (te.power >= te.getPowerReqEff()
+        // port: on a moving structure (Sable) the pipe column would grow through the structure's own plot
+        if (!SubLevels.isOnSubLevel(level, pos)
+                && te.power >= te.getPowerReqEff()
                 && te.tanks[0].getFill() < te.tanks[0].getMaxFill()
                 && te.tanks[1].getFill() < te.tanks[1].getMaxFill()) {
 

@@ -23,7 +23,7 @@ import com.hbm.items.weapon.grenade.ItemGrenadeFilling;
 import com.hbm.items.weapon.grenade.ItemGrenadeFuze;
 import com.hbm.items.weapon.grenade.ItemGrenadeShell;
 import com.hbm.items.weapon.grenade.ItemGrenadeUniversal;
-import com.hbm.lib.Library;
+import dev.golem.core.dejson.Tints;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.Item;
@@ -126,15 +126,13 @@ public final class ModEntityItems {
 
     // Dispersers (1.7 ModItems:3881; the empty canister/gland items already exist in ModItems)
     public static final RegistryObject<ItemDisperser> disperser_canister = REG.item("disperser_canister",
-                    p -> new ItemDisperser(p, 2000, "disperser_canister", ItemDisperser.Kind.CANISTER,
-                            Library.id("disperser_canister_empty"), Library.id("disperser_canister_overlay")),
-                    p -> p)
-            .transform(Presets.sprite());
+                    p -> new ItemDisperser(p, 2000, "disperser_canister", ItemDisperser.Kind.CANISTER), p -> p)
+            .transform(Presets.sprite("hbm:items/disperser_canister", "hbm:items/disperser_canister_overlay")
+                    .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
     public static final RegistryObject<ItemDisperser> glyphid_gland = REG.item("glyphid_gland",
-                    p -> new ItemDisperser(p, 4000, "glyphid_gland", ItemDisperser.Kind.GLAND,
-                            Library.id("glyphid_gland_empty"), Library.id("fluid_identifier_overlay")),
-                    p -> p)
-            .transform(Presets.sprite());
+                    p -> new ItemDisperser(p, 4000, "glyphid_gland", ItemDisperser.Kind.GLAND), p -> p)
+            .transform(Presets.sprite("hbm:items/glyphid_gland", "hbm:items/fluid_identifier_overlay")
+                    .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
 
     static {
         // 1.7 put both in the weapon tab, one full stack per ItemDisperser.getSubItems fluid.

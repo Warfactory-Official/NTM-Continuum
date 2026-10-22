@@ -271,8 +271,6 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
                 && menu.getMixer() == this && menu.stillValid(player);
     }
 
-    @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_mixer"); }
-
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMixer(containerId, playerInventory, this);

@@ -56,7 +56,12 @@ public abstract class HbmRecipeCategory<T> extends ViewerCategory<T> {
 
     /** Draws a dark stat string exactly like the old handlers' {@code fontRenderer.drawString(s, x, y, 0x404040)}. */
     protected static void text(GuiGraphicsExtractor g, String s, int x, int y) {
-        GuiDraw.text(g, Minecraft.getInstance().font, s, x, y, 0xFF404040, false);
+        text(g, s, x, y, 0x404040);
+    }
+
+    /** {@code fontRenderer.drawString(s, x, y, rgb)}: 1.7 colours have no alpha byte. */
+    protected static void text(GuiGraphicsExtractor g, String s, int x, int y, int rgb) {
+        GuiDraw.text(g, Minecraft.getInstance().font, s, x, y, 0xFF000000 | rgb, false);
     }
 
     protected static int textWidth(String s) {

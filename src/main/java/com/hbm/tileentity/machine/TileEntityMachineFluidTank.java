@@ -40,7 +40,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
@@ -379,11 +378,6 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     }
 
     // MenuProvider
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_fluidtank");
-    }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {

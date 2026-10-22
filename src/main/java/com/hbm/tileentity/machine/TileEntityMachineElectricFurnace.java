@@ -231,11 +231,6 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
     // MenuProvider
 
     @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_electric_furnace_off");
-    }
-
-    @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineElectricFurnace(containerId, playerInventory, this);
     }

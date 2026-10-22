@@ -444,10 +444,6 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
         return null;
     }
 
-    @Override public Component getDisplayName() {
-        return hasCustomName() ? Component.literal(getName())
-                : Component.translatable("block.hbm.machine_chemical_factory");
-    }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new ContainerMachineChemicalFactory(id, inventory, this);
     }

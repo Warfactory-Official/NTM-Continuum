@@ -30,7 +30,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
@@ -243,7 +242,6 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
         return Math.max(tanks[1].getFill() * 50L / tanks[1].getMaxFill(), 8L);
     }
 
-    @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_blast_furnace"); }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new ContainerBlastFurnace(id, inventory, this);
     }

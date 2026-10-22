@@ -3,11 +3,13 @@ package com.hbm.client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.client.render.RenderInfoSystem;
+import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.handler.ability.IBaseAbility;
 import com.hbm.handler.ability.IToolAreaAbility;
 import com.hbm.handler.ability.ToolPreset;
 import com.hbm.inventory.gui.GUIScreenToolAbility;
 import com.hbm.items.tool.ItemToolAbility;
+import com.hbm.packet.KeybindPayload;
 import com.hbm.packet.PlayerInformPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.golem.core.client.ClientTicks;
@@ -23,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Client half of the ability tool family: the ability-alt key that opens the preset editor, the info HUD
- * (1.7 {@code RenderInfoSystem}) that shows preset changes, the area-ability indicator beside the
+ * Client half of the ability tool family: the cycle key, the ability-alt key that opens the preset editor,
+ * the info HUD (1.7 {@code RenderInfoSystem}) that shows preset changes, the area-ability indicator beside the
  * crosshair (1.7 {@code ItemToolAbility.renderHUD}), and the inform packet.
  */
 public final class AbilityToolClientRegistrations {
@@ -33,7 +35,12 @@ public final class AbilityToolClientRegistrations {
 
     /** 1.7 {@code HbmKeybinds.abilityAlt}, left Alt by default. */
     public static KeyMappings.Mapping abilityAltKey;
+    /** 1.7 {@code HbmKeybinds.abilityCycle}, the use button by default. */
+    public static KeyMappings.Mapping abilityCycleKey;
     private static boolean lastAlt;
+    private static boolean lastCycle;
+    /** Null until reported in the current world, so every join tells the server once. */
+    private static Boolean lastRebound;
 
     /** 1.7 {@code ClientConfig.TOOL_HUD_INDICATOR_X/Y}, both 0 by default. */
     public static int toolHudIndicatorX = 0;
@@ -49,6 +56,7 @@ public final class AbilityToolClientRegistrations {
     }
 
     public static void registerKeys() {
+        abilityCycleKey = KeyMappings.register("hbm", "key.hbm.ability", InputConstants.Type.MOUSE, 1, "hbm");
         abilityAltKey = KeyMappings.register("hbm", "key.hbm.abilityAlt", InputConstants.KEY_LALT, "hbm");
         ClientTicks.onEndTick(AbilityToolClientRegistrations::tick);
         HarnessQueryRegistry.register("hbm_info", (mc, params) -> {
@@ -83,6 +91,30 @@ public final class AbilityToolClientRegistrations {
             }
         }
         lastAlt = alt;
+        tickCycle(mc);
+    }
+
+    /** On Use the item's use click cycles; bound elsewhere, the key's edges go to the server instead. */
+    private static void tickCycle(Minecraft mc) {
+        if (mc.player == null || mc.level == null) {
+            lastRebound = null;
+            lastCycle = false;
+            return;
+        }
+        boolean rebound = !abilityCycleKey.same(mc.options.keyUse);
+        if (lastRebound == null || lastRebound != rebound) {
+            ItemToolAbility.setCycleRebound(mc.player, rebound);
+            send(EnumKeybind.ABILITY_CYCLE_REBOUND, rebound);
+            lastRebound = rebound;
+        }
+        boolean cycle = rebound && mc.screen == null && abilityCycleKey.isHeld()
+                && mc.player.getMainHandItem().getItem() instanceof ItemToolAbility;
+        if (cycle != lastCycle) send(EnumKeybind.ABILITY_CYCLE, cycle);
+        lastCycle = cycle;
+    }
+
+    private static void send(EnumKeybind keybind, boolean state) {
+        GolemNetwork.sendToServer(KeybindPayload.CODEC, new KeybindPayload(keybind.ordinal(), state));
     }
 
     /** 1.7 {@code ItemToolAbility.renderHUD}: the area ability's icon, inverted like the crosshair. */

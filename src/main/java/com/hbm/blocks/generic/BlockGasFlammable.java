@@ -2,6 +2,10 @@ package com.hbm.blocks.generic;
 
 import com.hbm.config.GeneralConfig;
 import dev.golem.core.world.CompatBlock;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -48,6 +52,12 @@ public class BlockGasFlammable extends CompatBlock {
 
     public BlockGasFlammable(Properties properties) {
         super(properties);
+    }
+
+    /** 1.7 {@code canCollideCheck} false: the crosshair passes through a gas, so it has no outline. */
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Shapes.empty();
     }
 
     /** 1.7 {@code BlockGasBase.randomDisplayTick} (1.7's flammable gas is a BlockGasBase): the ash-glasses cloud. */

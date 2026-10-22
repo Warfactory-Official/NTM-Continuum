@@ -29,10 +29,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -175,8 +175,8 @@ public final class FluidNetworkGameTests {
 
     /**
      * A sneak-click with a fluid identifier retypes the whole connected run of the clicked pipe's old type, and
-     * stops at a pipe of another type. The spread lives in the item: vanilla never hands a sneak-click with an
-     * item in hand to the block.
+     * stops at a pipe of another type. It goes through the server's own use path, where the sneak bypass hands the
+     * click to the duct.
      */
     private static void identifierSpread(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -187,14 +187,13 @@ public final class FluidNetworkGameTests {
         BlockPos other = first.east(3);
         ((TileEntityFluidDuctNT) level.getBlockEntity(other)).setFluidType(Fluids.DIESEL);
 
-        var player = GameTestHelpers.mockPlayer(helper, GameType.CREATIVE);
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
         ItemStack stack = ItemFluidId.make(Fluids.WATER);
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         player.setShiftKeyDown(true);
         var hit = new BlockHitResult(Vec3.atCenterOf(first),
                 Direction.UP, first, false);
-        stack.getItem().useOn(new UseOnContext(level, player,
-                InteractionHand.MAIN_HAND, stack, hit));
+        player.gameMode.useItemOn(player, level, stack, InteractionHand.MAIN_HAND, hit);
 
         for (int i = 0; i < 3; i++) {
             helper.assertTrue(((TileEntityFluidDuctNT) level.getBlockEntity(first.east(i))).getFluidType() == Fluids.WATER,

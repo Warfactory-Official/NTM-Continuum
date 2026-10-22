@@ -14,7 +14,6 @@ import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
@@ -265,11 +264,6 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
     public boolean isProcessing() { return progress > 0; }
 
     // MenuProvider
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_shredder");
-    }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {

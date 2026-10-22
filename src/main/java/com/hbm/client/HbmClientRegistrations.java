@@ -23,6 +23,7 @@ import com.hbm.client.render.HbmBlockColors;
 import com.hbm.client.render.HbmBlockEntityRenderers;
 import com.hbm.client.render.HbmEntityRenderers;
 import com.hbm.blocks.machine.rbmk.RBMKGauge;
+import com.hbm.client.render.MultiblockOutline;
 import com.hbm.client.render.MultiblockPlacementHighlight;
 import com.hbm.client.render.RenderBobble;
 import com.hbm.client.render.RenderDecoBlockAlt;
@@ -618,6 +619,7 @@ public final class HbmClientRegistrations {
         ConveyorPreviewRenderer.init();
         // 1.7 BlockDummyable.drawPlacementHighlight: the held multiblock's footprint outline, green/red.
         MultiblockPlacementHighlight.init();
+        MultiblockOutline.init(); // ntm-next: the hovered machine is outlined whole
         // 1.7 RenderNTMSkyboxImpact / RenderNTMSkyboxChainloader and the tick that installs them (1.31_enableSkyboxes).
         NTMSkyboxes.register();
         SmogFog.register(); // 1.7 ModEventHandlerRenderer smog (POL_03/06/07)

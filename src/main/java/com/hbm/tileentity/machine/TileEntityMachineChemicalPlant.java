@@ -92,7 +92,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
 
     @Override
     public String getDefaultName() {
-        return "container.machine_chemical_plant";
+        return "container.machineChemicalPlant";
     }
 
     // --- server: power + fluids + processing ---
@@ -234,11 +234,6 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     }
 
     // --- MenuProvider ---
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_chemical_plant");
-    }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {

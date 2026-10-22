@@ -68,7 +68,7 @@ import java.util.Set;
  *       role, as for a duct ({@link PortNodes#allows}).</li>
  * </ul>
  *
- * <p>HBM's own duct network is unchanged: it does not reach foreign tanks, and ducts are not exposed.
+ * <p>Ducts are not exposed; a duct net delivers into foreign tanks through {@link ForeignFluidReceiver}.
  */
 public final class ForeignFluids {
 

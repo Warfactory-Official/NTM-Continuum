@@ -3,6 +3,10 @@ package com.hbm.blocks.generic;
 import com.hbm.items.ModArmorSetBItems;
 import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.world.CompatBlock;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -44,6 +48,12 @@ public abstract class BlockGasBase extends CompatBlock {
 
     protected BlockGasBase(Properties properties) {
         super(properties);
+    }
+
+    /** 1.7 {@code canCollideCheck} false: the crosshair passes through a gas, so it has no outline. */
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Shapes.empty();
     }
 
     /** 1.7 {@code BlockGasBase(r, g, b)}: the cloud colour the ash glasses reveal. Call from the constructor. */

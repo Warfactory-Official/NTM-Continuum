@@ -19,6 +19,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -68,9 +69,10 @@ public class GUIMachinePlasmaForge extends CompatContainerScreen<ContainerMachin
         drawTank(graphics, forge.inputTank, x + 80, y + 18);
         if (recipe != null && recipe.inputItem != null) {
             for (int i = 0; i < Math.min(recipe.inputItem.length, 12); i++) {
-                if (menu.slots.get(3 + i).hasItem()) continue;
-                int sx = 8 + (i % 3) * 18;
-                int sy = 18 + (i / 3) * 18;
+                Slot slot = menu.slots.get(3 + i);
+                if (slot.hasItem()) continue;
+                int sx = slot.x;
+                int sy = slot.y;
                 GuiDraw.item(graphics, recipe.inputItem[i].getCyclingDisplayStack(), x + sx, y + sy);
                 GuiDraw.blit(graphics, TEXTURE, x + sx, y + sy, sx, sy, 16, 16, 256, 256, 0x80FFFFFF);
             }

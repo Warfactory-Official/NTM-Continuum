@@ -2,24 +2,15 @@ package com.hbm.blocks.machine;
 
 import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.items.machine.IItemFluidId;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineBigAssTank;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The legacy 9x9x5 Big Ass Tank multiblock. */
@@ -42,22 +33,6 @@ public class MachineBigAssTank extends MachineGiantTank {
     @Override
     public int getOffset() {
         return 6;
-    }
-
-    @Override
-    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
-                                          InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (!player.isShiftKeyDown() || !(stack.getItem() instanceof IItemFluidId identifier)) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
-        }
-        if (!level.isClientSide() && MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineBigAssTank tank) {
-            var type = identifier.getType(level, tank.getBlockPos().getX(), tank.getBlockPos().getY(),
-                    tank.getBlockPos().getZ(), stack);
-            tank.setTankType(type);
-            player.sendSystemMessage(Component.literal("Changed type to ")
-                    .withStyle(ChatFormatting.YELLOW).append(type.getDisplayName()).append("!"));
-        }
-        return InteractionResult.SUCCESS;
     }
 
     /** 1.7: the four cross arms and the two long spurs the intake caps sit on. */

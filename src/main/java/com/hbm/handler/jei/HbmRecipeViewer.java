@@ -36,6 +36,7 @@ import com.hbm.inventory.gui.GUIPADetector;
 import com.hbm.inventory.gui.GUIPASource;
 import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
+import com.hbm.inventory.recipes.BlastFurnaceRecipesNT;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
@@ -65,15 +66,22 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
 import com.hbm.items.ModStorageDrumItems;
 import com.hbm.items.machine.ItemFluidIcon;
+import com.hbm.config.ClientConfig;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.main.MainRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import dev.golem.core.data.ModelData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import com.hbm.blocks.ModSatelliteBlocks;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
+import com.hbm.handler.jei.JEIGenericRecipeHandler.Extras;
 import dev.golem.core.viewer.TransferAction;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import dev.golem.core.viewer.ViewerPlugin;
@@ -104,6 +112,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
     private static JEIGenericRecipeHandler fusionBreeder;
     private static JEIGenericRecipeHandler plasmaForge;
     private static JEIGenericRecipeHandler spaceAssembler;
+    private static JEIGenericRecipeHandler blastFurnace;
     private static PressRecipeHandler press;
     private static AmmoPressRecipeHandler ammoPress;
     private static SolderingStationRecipeHandler soldering;
@@ -162,37 +171,75 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         reg.addItemStacks(icons);
     }
 
+    /** 1.7 {@code NEIConfig}'s {@code API.hideItem} list; ids 1.7 had that the port folded away are skipped. */
+    private static final Set<String> HIDDEN = Set.of(
+            "machine_electric_furnace_on", "machine_difurnace_on", "machine_rtg_furnace_on", "reinforced_lamp_on",
+            "statue_elb_f", "euphemium_kit", "bobmazon_hidden", "book_lore",
+            "dummy_block_blast", "dummy_port_compact_launcher", "dummy_port_launch_table",
+            "dummy_plate_compact_launcher", "dummy_plate_launch_table",
+            "pink_log", "pink_planks", "pink_slab", "pink_double_slab", "pink_stairs",
+            "spotlight_incandescent_off", "spotlight_fluoro_off", "spotlight_halogen_off", "spotlight_beam",
+            "conveyor", "conveyor_chute", "conveyor_lift", "conveyor_express", "conveyor_double", "conveyor_triple",
+            "coal_eternal");
+    private static final Set<String> HIDDEN_UNLESS_POLAROID_11 = Set.of("book_secret", "book_of_", "burnt_bark",
+            "ams_core_thingy");
+
+    @Override
+    public void hidden(Ingredients reg) {
+        boolean secrets = ClientConfig.NEI_HIDE_SECRETS;
+        List<ItemStack> hidden = new ArrayList<>();
+        for (Item item : BuiltInRegistries.ITEM) {
+            var id = BuiltInRegistries.ITEM.getKey(item);
+            if (!id.getNamespace().equals(Constants.MOD_ID)) continue;
+            String path = id.getPath();
+            // 1.7 hid brick_forgotten and brick_forgotten_lock at every meta; each meta is its own id here.
+            boolean hide = HIDDEN.contains(path) || path.startsWith("brick_forgotten")
+                    || MainRegistry.polaroidID != 11 && HIDDEN_UNLESS_POLAROID_11.contains(path)
+                    || secrets && (ItemGunBaseNT.secrets.contains(item)
+                            || path.startsWith("ammo_secret_") || path.startsWith("item_secret_"));
+            if (hide) hidden.add(new ItemStack(item));
+        }
+        reg.addItemStacks(hidden);
+    }
+
     @Override
     public void categories(Categories reg) {
         assembly = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.ASSEMBLY_MACHINE,
-                title("assembly_machine"), AssemblyMachineRecipes.INSTANCE, stack(ModMachineBlocks.machine_assembly_machine.get()));
+                title("assembly_machine"), AssemblyMachineRecipes.INSTANCE, stack(ModMachineBlocks.machine_assembly_machine.get()))
+                .extras(Extras.POWER);
         precisionAssembler = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.PRECISION_ASSEMBLER,
-                title("precass"), PrecAssRecipes.INSTANCE, stack(ModMachineBlocks.machine_precass.get()));
+                title("precass"), PrecAssRecipes.INSTANCE, stack(ModMachineBlocks.machine_precass.get())).extras(Extras.POWER);
         chemplant = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.CHEMICAL_PLANT,
-                title("chemical_plant"), ChemicalPlantRecipes.INSTANCE, stack(ModMachineBlocks.machine_chemical_plant.get()));
+                title("chemical_plant"), ChemicalPlantRecipes.INSTANCE, stack(ModMachineBlocks.machine_chemical_plant.get()))
+                .extras(Extras.POWER);
         mixer = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.MIXER,
                 title("mixer"), MixerRecipes.INSTANCE, stack(ModMachineBlocks.machine_mixer.get()));
         exposure = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.EXPOSURE_CHAMBER,
                 title("exposure_chamber"), ExposureChamberRecipes.INSTANCE,
                 stack(ModMachineBlocks.machine_exposure_chamber.get()));
         purex = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.PUREX,
-                title("purex"), PUREXRecipes.INSTANCE, stack(ModMachineBlocks.machine_purex.get()));
+                title("purex"), PUREXRecipes.INSTANCE, stack(ModMachineBlocks.machine_purex.get())).extras(Extras.PUREX);
         rockMill = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.ROCK_MILL,
-                Component.translatable("block.hbm.machine_rockmill"), RockMillRecipes.INSTANCE, stack(ModMachineBlocks.machine_rockmill.get()));
+                Component.translatable("block.hbm.machine_rockmill"), RockMillRecipes.INSTANCE, stack(ModMachineBlocks.machine_rockmill.get()))
+                .extras(Extras.POWER);
         superComputer = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.SUPERCOMPUTER,
-                Component.translatable("block.hbm.machine_supercomputer"), SuperComputerRecipes.INSTANCE, stack(ModMachineBlocks.machine_supercomputer.get()));
+                Component.translatable("block.hbm.machine_supercomputer"), SuperComputerRecipes.INSTANCE, stack(ModMachineBlocks.machine_supercomputer.get()))
+                .extras(Extras.POWER);
         fusion = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.FUSION,
                 title("fusion"), FusionRecipes.INSTANCE,
-                stack(ModMachineBlocks.fusion_torus.get()));
+                stack(ModMachineBlocks.fusion_torus.get())).extras(Extras.IGNITION);
         fusionBreeder = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.FUSION_BREEDER,
                 title("fusionbreeder"), FluidBreederRecipes.INSTANCE,
                 stack(ModMachineBlocks.fusion_breeder.get()));
         ItemStack zeroG = ModSatelliteItems.satellite.stack(EnumSatType.SCIENCE_ASSEMBLER);
         spaceAssembler = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.SPACE_ASSEMBLER,
-                zeroG.getHoverName(), SpaceAssemblerRecipes.INSTANCE, zeroG);
+                zeroG.getHoverName(), SpaceAssemblerRecipes.INSTANCE, zeroG).extras(Extras.DURATION);
         plasmaForge = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.PLASMA_FORGE,
                 title("plasma_forge"), PlasmaForgeRecipes.INSTANCE,
-                stack(ModMachineBlocks.fusion_plasma_forge.get()));
+                stack(ModMachineBlocks.fusion_plasma_forge.get())).extras(Extras.IGNITION);
+        blastFurnace = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.BLAST_FURNACE,
+                Component.translatable("block.hbm.machine_blast_furnace"), BlastFurnaceRecipesNT.INSTANCE,
+                stack(ModMachineBlocks.machine_blast_furnace.get())).extras(Extras.DURATION);
          press = new PressRecipeHandler(HbmJeiRecipeTypes.PRESS, title("press"),
                  stack(ModMachineBlocks.machine_press.get()));
          ammoPress = new AmmoPressRecipeHandler(HbmJeiRecipeTypes.AMMO_PRESS, title("ammo_press"),
@@ -282,7 +329,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         rotaryFurnace = new RotaryFurnaceRecipeHandler(HbmJeiRecipeTypes.ROTARY_FURNACE,
                 title("rotary_furnace"), stack(ModProductionBlocks.MACHINE_ROTARY_FURNACE.get()));
 
-          reg.add(assembly, precisionAssembler, chemplant, mixer, exposure, purex, rockMill, superComputer, fusion, fusionBreeder, plasmaForge, spaceAssembler, press, ammoPress, soldering, crystallizer, centrifuge, cyclotron, particleAccelerator, gasCentrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
+          reg.add(assembly, precisionAssembler, chemplant, mixer, exposure, purex, rockMill, superComputer, fusion, fusionBreeder, plasmaForge, spaceAssembler, blastFurnace, press, ammoPress, soldering, crystallizer, centrifuge, cyclotron, particleAccelerator, gasCentrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
                  electrolyserFluid, electrolyserMetal, refinery, fractioning, liquefaction, solidification, boiling, cooling,
                  vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor, storageDrum, fuelPool,
                  arcWelder, arcFurnaceSolid, arcFurnaceFluid, diFurnace, rotaryFurnace,
@@ -329,6 +376,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         reg.add(HbmJeiRecipeTypes.FUSION_BREEDER, fusionBreeder.buildRecipes());
         reg.add(HbmJeiRecipeTypes.PLASMA_FORGE, plasmaForge.buildRecipes());
         reg.add(HbmJeiRecipeTypes.SPACE_ASSEMBLER, spaceAssembler.buildRecipes());
+        reg.add(HbmJeiRecipeTypes.BLAST_FURNACE, blastFurnace.buildRecipes());
          reg.add(HbmJeiRecipeTypes.PRESS, PressRecipes.getRecipes());
          reg.add(HbmJeiRecipeTypes.AMMO_PRESS, AmmoPressRecipes.getRecipes());
         reg.add(HbmJeiRecipeTypes.SOLDERING_STATION, SolderingRecipes.recipes);
@@ -504,6 +552,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         reg.add(HbmJeiRecipeTypes.FUSION_BREEDER,
                 stack(ModMachineBlocks.fusion_breeder.get()));
         reg.add(HbmJeiRecipeTypes.PLASMA_FORGE, stack(ModMachineBlocks.fusion_plasma_forge.get()));
+        reg.add(HbmJeiRecipeTypes.BLAST_FURNACE, stack(ModMachineBlocks.machine_blast_furnace.get()));
          reg.add(HbmJeiRecipeTypes.PRESS, stack(ModMachineBlocks.machine_press.get()), stack(ModMachineBlocks.machine_epress.get()));
          reg.add(HbmJeiRecipeTypes.AMMO_PRESS,
                  stack(ModMachineBlocks.machine_ammo_press.get()));

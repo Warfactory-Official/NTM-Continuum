@@ -315,8 +315,6 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
 
     // MenuProvider
 
-    @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_crystallizer"); }
-
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerCrystallizer(containerId, playerInventory, this);

@@ -387,6 +387,8 @@ public class ItemGunBaseNT extends CompatItem implements IKeybindReceiver {
     /** Resets one hand's button state and plays its draw animation. */
     public void onEquip(Player player, ItemStack stack, InteractionHand hand) {
         for (int i = 0; i < configs_DNA.length; i++) {
+            // 1.7: a draw started less than 5 ticks ago is not restarted, and keeps its buttons
+            if (getLastAnim(stack, i) == GunAnimation.EQUIP && getAnimTimer(stack, i) < 5) continue;
             playAnimation(player, stack, GunAnimation.EQUIP, hand, i);
             setPrimary(stack, i, false);
             setSecondary(stack, i, false);

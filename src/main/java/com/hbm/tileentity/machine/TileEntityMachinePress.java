@@ -16,7 +16,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -214,11 +213,6 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     }
 
     // MenuProvider
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_press");
-    }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {

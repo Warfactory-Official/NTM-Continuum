@@ -31,7 +31,7 @@ import java.util.Optional;
 
 /**
  * 1.12.2 {@code ItemGunEgon}, the gluon gun: while the trigger is held and at least two rounds are in the inventory the
- * beam is on. Every fifth tick of the day clock takes two rounds; every tick the beam, wobbling by
+ * beam is on. Every fifth game tick takes two rounds; every tick the beam, wobbling by
  * {@link #getBeamDirectionOffset}, takes up to 2 health straight off the first living thing it meets within 50 blocks.
  *
  * <p>The gun never fires a round through the receiver: its config has no primary press handler, so the trigger only
@@ -55,9 +55,8 @@ public class ItemGunEgon extends ItemGunBaseNT {
         if (getPrimary(stack, 0) && mag.getAmount(stack, player.getInventory()) >= 2) {
             setIsFiring(stack, true);
             long time = TimeOfDay.get(level);
-            // 1.12 read World.getWorldTime(), the day clock: with the daylight cycle off the beam stops wobbling and
-            // the ammo is taken every tick or never, depending on where the clock stopped.
-            if (time % 5 == 0) mag.useUpAmmo(stack, player.getInventory(), 2);
+            // port: 1.12 counted on the day clock, so a stopped daylight cycle took ammo every tick or never
+            if (level.getGameTime() % 5 == 0) mag.useUpAmmo(stack, player.getInventory(), 2);
             float[] angles = getBeamDirectionOffset(time + 1);
             Vec3 look = changeByAngle(player.getViewVector(1F), angles[0], angles[1]);
             Hit hit = trace(level, player, look, 1F);

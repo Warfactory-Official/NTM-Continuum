@@ -18,6 +18,7 @@ public final class HbmHarnessQueries {
         GapsBHarnessQueries.register();
         ForeignFluidHarnessQueries.register();
         BlockInfoHarnessQueries.register();
+        MultiblockOutlineHarnessQueries.register();
         RbmkConsoleHarnessQueries.register();
         MeleeKitHarnessQueries.register();
         GapsCHarnessQueries.register();

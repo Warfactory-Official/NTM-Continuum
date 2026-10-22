@@ -1006,7 +1006,7 @@ public final class ObjItemDeclarations {
                 .definition(MachineObjModel.of("hbm:models/machines/supercomputer.obj", "hbm:textures/models/machines/supercomputer.png").scale(0.5)
                         .ty(0.0).yaw(90.0).guiScale(2.5).rawLegacyTransform().itemTranslate(-1.0, 0.0, 0.0)
                         .itemPreTranslate(0.0, 0.0, 0.0).guiTranslate(0.0, -2.5, 0.0)
-                        .partTextures("Lights", "hbm:textures/models/machines/supercomputer_scan.png")).oversizedInGui().register();
+                        .partTextures("Computer", "hbm:textures/models/machines/supercomputer.png", "Lights", "hbm:textures/models/machines/supercomputer_scan.png")).oversizedInGui().register();
         Dejson.item(NS, "machine_tape_drive")
                 // 1.7 RenderTapeDrive: inv translate(0, -3, 0) scale(5); common scale(2), the frame only
                 .definition(MachineObjModel.of("hbm:models/machines/tape_drive.obj", "hbm:textures/models/machines/tape_drive.png").scale(2.0)

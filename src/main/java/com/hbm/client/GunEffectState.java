@@ -95,6 +95,8 @@ public final class GunEffectState {
                 && ItemGunStinger.getLockonProgress(stack) > 0 && !ItemGunBaseNT.getIsLockedOn(stack)) {
             updateLoop(minecraft.player, ModGunSounds.LOCKON.get(), 1F, 1F);
         } else if ((stack.getItem() instanceof ItemGunChemthrower || isFlamer(stack))
+                // a put-away gun reads CYCLE, with a clock of 0 when new, until the server draws it
+                && ItemGunBaseNT.getIsEquipped(stack)
                 && ItemGunBaseNT.getLastAnim(stack, 0) == GunAnimation.CYCLE
                 && ItemGunBaseNT.getAnimTimer(stack, 0) < 5) {
             updateLoop(minecraft.player, ModGunSounds.FIRE_FLAMER_LOOP.get(), 1F, 1F);

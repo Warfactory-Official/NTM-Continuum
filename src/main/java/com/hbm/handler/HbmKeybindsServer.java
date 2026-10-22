@@ -2,6 +2,7 @@ package com.hbm.handler;
 
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.items.IKeybindReceiver;
+import com.hbm.items.tool.ItemToolAbility;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -36,5 +37,6 @@ public class HbmKeybindsServer {
         }
         if (keybind == EnumKeybind.DASH) ArmorDashHandler.setKeyPressed(player, state);
         if (keybind == EnumKeybind.TOGGLE_MAGNET) MagnetToggleHandler.setKeyPressed(player, state); // G-C
+        if (keybind == EnumKeybind.ABILITY_CYCLE_REBOUND) ItemToolAbility.setCycleRebound(player, state);
     }
 }

@@ -4,7 +4,6 @@ import com.hbm.inventory.container.ContainerFirebox;
 import com.hbm.module.ModuleBurnTime;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -67,11 +66,6 @@ public class TileEntityHeaterFirebox extends TileEntityFireboxBase {
     }
 
     // --- MenuProvider ---
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.heater_firebox");
-    }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {

@@ -350,7 +350,6 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         return upgrades;
     }
 
-    @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_electrolyser"); }
     @Override public boolean hasPermission(Player player) { return stillValid(player); }
     @Override public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineElectrolyser(containerId, playerInventory, this, lastSelectedGUI != 0);

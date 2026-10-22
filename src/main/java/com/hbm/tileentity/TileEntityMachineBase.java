@@ -42,6 +42,11 @@ public abstract class TileEntityMachineBase extends TileEntityInventoryBase {
         this.customName = name;
     }
 
+    /** The GUI title as 1.7 draws it: the custom name, else the translated container key. */
+    public Component getDisplayName() {
+        return hasCustomName() ? Component.literal(customName) : Component.translatable(getDefaultName());
+    }
+
     @Override
     protected Component collectCarriedName() {
         return hasCustomName() ? Component.literal(customName) : null;

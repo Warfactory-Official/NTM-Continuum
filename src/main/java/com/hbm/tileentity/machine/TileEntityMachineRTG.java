@@ -79,7 +79,7 @@ public class TileEntityMachineRTG extends TileEntityInventoryBase
 
     @Override
     public Component getDisplayName() {
-        return Component.literal("RT Generator");
+        return Component.translatable("container.rtg");
     }
 
     @Override

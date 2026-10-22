@@ -24,10 +24,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * deepslate, so an overworld deposit takes deepslate as well (the same host {@code MapGenBedrockOil} and the bedrock
  * ore's depth-rock cap use). Without it only the bedrock cells of the sphere would be replaced.
  *
- * <p><b>Y rebasing (deviation):</b> upstream clamped to {@code 1 <= y <= 126} and centred deposits at
- * {@code y = 0..2}, which were the floor and ceiling of a 1.12 world. 26.1's overworld floor is −64 and
- * the nether roof is still 127, so the y band is expressed relative to {@link WorldGenLevel#getMinY()}
- * and the guard uses the level's real bounds, the same adjustment {@code MapGenBedrockOil} makes.
+ * <p>1.7 clamps to {@code 1 <= y <= 126}, so the bottom bedrock layer and the nether roof's top layer survive
+ * and a deposit never opens the world to the void. The band is kept relative to {@link WorldGenLevel#getMinY()}.
  */
 public final class DepthDepositPlacer {
 
@@ -75,8 +73,8 @@ public final class DepthDepositPlacer {
     public static void generateSphere(WorldGenLevel level, RandomSource rand, int cx, int cy, int cz,
                                       int size, double fill, BlockState ore, BlockState genTarget, BlockState filler) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        int floor = level.getMinY();
-        int ceiling = level.getMaxY();
+        int floor = level.getMinY() + 1;
+        int ceiling = Math.min(level.getMaxY(), level.getMinY() + 126);
 
         for (int ix = cx - size; ix <= cx + size; ix++) {
             int dx = ix - cx;

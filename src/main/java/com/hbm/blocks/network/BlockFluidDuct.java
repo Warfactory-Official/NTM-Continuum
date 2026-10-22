@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.capability.ForeignFluidReceiver;
 import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.blocks.IAnalyzable;
@@ -125,7 +126,8 @@ public class BlockFluidDuct extends CompatBlock implements TickingBlock, SimpleW
     private static boolean canConnectTo(BlockGetter level, BlockPos pos, Direction dir) {
         BlockPos neighbour = pos.relative(dir);
         ForgeDirection ductSide = ForgeDirection.getOrientation(dir);
-        return Library.canConnectFluid(level, neighbour, ductSide, ductType(level, pos));
+        return Library.canConnectFluid(level, neighbour, ductSide, ductType(level, pos))
+                || ForeignFluidReceiver.exposes(level, neighbour, dir.getOpposite());
     }
 
     private static FluidType ductType(BlockGetter level, BlockPos pos) {

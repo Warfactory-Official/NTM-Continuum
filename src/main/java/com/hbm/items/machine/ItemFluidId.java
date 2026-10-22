@@ -1,23 +1,16 @@
 package com.hbm.items.machine;
 
-import com.hbm.blocks.network.BlockFluidDuct;
-import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.tileentity.network.TileEntityFluidValve;
 import dev.golem.core.data.ModelData;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -26,10 +19,11 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /**
- * A fluid identifier: stamps a tank/duct with one fixed {@link FluidType} (right-click a duct or drop it
- * in a tank's identifier slot). One registered item carries the fluid in {@link ModDataComponents#FLUID}, and
- * the creative menu shows one variant per fluid (see {@link ModMachineItems}), as the 1.12.2
- * {@code ItemFluidIDMulti} listed one metadata subtype per fluid.
+ * A fluid identifier: stamps a tank/duct with one fixed {@link FluidType} (click a duct, sneak-click a barrel or
+ * tank, or drop it in a tank's identifier slot). The blocks handle the click, as for 1.7's multi identifier.
+ * One registered item carries the fluid in {@link ModDataComponents#FLUID}, and the creative menu shows one
+ * variant per fluid (see {@link ModMachineItems}), as the 1.12.2 {@code ItemFluidIDMulti} listed one metadata
+ * subtype per fluid.
  *
  * <p>Icon: the base {@code fluid_identifier_multi} sprite under a {@code fluid_identifier_overlay} tinted
  * by the fluid colour (stored in the vanilla {@code custom_model_data} colour list, read by the item-model
@@ -52,33 +46,6 @@ public class ItemFluidId extends CompatItem implements IItemFluidId {
         ModDataComponents.fluid(stack, fluid);
         ModelData.setColor(stack, fluid.getColor());
         return stack;
-    }
-
-    /**
-     * Sneak-click on a duct or valve: retype the connected pipe network of the clicked pipe's old type (up to 256
-     * pipes), the 1.7 sneaking behaviour. Vanilla never passes a sneak-click with an item in hand to the block, so
-     * {@code BlockFluidDuct.onUseItem} only ever sees plain clicks; the spread runs here instead, as ntm-next's
-     * {@code FluidIdentifierItem.useOn} does it.
-     */
-    @Override
-    public InteractionResult useOn(UseOnContext context) {
-        Player player = context.getPlayer();
-        Level level = context.getLevel();
-        if (player == null || !player.isShiftKeyDown()) return super.useOn(context);
-        var pos = context.getClickedPos();
-        var entity = level.getBlockEntity(pos);
-        FluidType before;
-        if (entity instanceof TileEntityFluidDuctNT duct) before = duct.getFluidType();
-        else if (entity instanceof TileEntityFluidValve valve) before = valve.getFluidType();
-        else return super.useOn(context);
-        if (level.isClientSide()) return InteractionResult.SUCCESS;
-        FluidType hand = getFluid(context.getItemInHand());
-        if (hand != before) {
-            BlockFluidDuct.spreadType(level, pos, hand, before, 256);
-            player.sendSystemMessage(Component.literal("Duct fluid: ").append(hand.getDisplayName())
-                    .withStyle(ChatFormatting.AQUA));
-        }
-        return InteractionResult.SUCCESS;
     }
 
     /**

@@ -94,7 +94,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
 
     @Override
     public String getDefaultName() {
-        return "container.machine_assembly_machine";
+        return "container.machineAssemblyMachine";
     }
 
     @Override
@@ -213,11 +213,6 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{inputTank, outputTank}; }
 
     // --- MenuProvider ---
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_assembly_machine");
-    }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {

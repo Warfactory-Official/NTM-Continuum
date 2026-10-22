@@ -25,7 +25,6 @@ import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
@@ -311,11 +310,6 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
 
                 new DirPos(x - rot.offsetX, y, z - rot.offsetZ, rot.getOpposite()),
                 new DirPos(x - rot.offsetX - dir.offsetX, y, z - rot.offsetZ - dir.offsetZ, rot.getOpposite())};
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_battery_socket");
     }
 
     @Override

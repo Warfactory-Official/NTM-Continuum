@@ -41,10 +41,11 @@ public class GUICrucible extends CompatContainerScreen<ContainerCrucible> {
         super(menu, playerInventory, title, 176, 214);
     }
 
-    /** The 1.12.2 GUI drew no title (the texture carries it), only the player-inventory label. */
+    /** 1.7: white title centred at y=6, inventory at (8, ySize-96+2). */
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
+        GuiDraw.text(graphics, this.font, this.title, this.imageWidth / 2 - this.font.width(this.title) / 2, 6, 0xffffff, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, this.imageHeight - 96 + 2, -12566464, false);
     }
 
     @Override

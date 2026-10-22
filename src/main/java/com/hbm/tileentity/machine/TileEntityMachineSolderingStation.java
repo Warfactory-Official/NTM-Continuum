@@ -82,7 +82,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
 
     @Override
     public String getDefaultName() {
-        return "container.machine_soldering_station";
+        return "container.machineSolderingStation";
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineSolderingStation te) {
@@ -259,8 +259,6 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 
     // MenuProvider
-
-    @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_soldering_station"); }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {

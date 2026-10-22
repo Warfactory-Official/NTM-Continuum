@@ -1,4 +1,5 @@
 {
+  "parent": "minecraft:block/thin_block",
   "textures": {
     "particle": "hbm:blocks/ash",
     "texture": "hbm:blocks/ash"

@@ -4,10 +4,15 @@ import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.tileentity.machine.TileEntityMachineGiantTank;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +29,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
-/** Common block-level connector, comparator, and interaction behavior for the two barrel variants. */
+/** Common block-level connector, comparator, and interaction behavior for the Big Ass Tank and the BAT-9000. */
 public abstract class MachineGiantTank extends BlockMultiblockMachine
         implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
@@ -76,6 +81,23 @@ public abstract class MachineGiantTank extends BlockMultiblockMachine
     protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
         return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineGiantTank tank
                 ? tank.tankNew.getRedstoneComparatorPower() : 0;
+    }
+
+    /** 1.7 {@code onBlockActivated}: a sneak-click with a fluid identifier sets the tank's type. */
+    @Override
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
+                                          InteractionHand hand, ItemStack stack, BlockHitResult hit) {
+        if (!player.isShiftKeyDown() || !(stack.getItem() instanceof IItemFluidId identifier)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        if (!level.isClientSide() && MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineGiantTank tank) {
+            BlockPos core = tank.getBlockPos();
+            FluidType type = identifier.getType(level, core.getX(), core.getY(), core.getZ(), stack);
+            tank.setTankType(type);
+            player.sendSystemMessage(Component.literal("Changed type to ")
+                    .withStyle(ChatFormatting.YELLOW).append(type.getDisplayName()).append("!"));
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override

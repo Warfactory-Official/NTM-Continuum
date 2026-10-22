@@ -7,7 +7,6 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -93,11 +92,6 @@ public class TileEntityWasteDrum extends TileEntityMachineBase implements Worldl
             return ItemRBMKRod.getCoreHeat(stack) < 50 && ItemRBMKRod.getHullHeat(stack) < 50;
         }
         return !FuelPoolRecipes.isHot(stack);
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_waste_drum");
     }
 
     @Override

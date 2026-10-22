@@ -33,7 +33,11 @@ public class HbmKeybinds {
         /** 1.7 {@code DASH} (left Shift): the bismuth suit's dash. */
         DASH,
         /** 1.7 {@code TOGGLE_MAGNET} (Z): the lodestone/magnet armour modules on and off. */
-        TOGGLE_MAGNET;
+        TOGGLE_MAGNET,
+        /** 1.7 {@code ABILITY_CYCLE}: sent only while the cycle key is not Use, which cycles through the item. */
+        ABILITY_CYCLE,
+        /** Held while the cycle key is not bound to Use, so the use click stops cycling. */
+        ABILITY_CYCLE_REBOUND;
 
         public static final EnumKeybind[] VALUES = values();
 

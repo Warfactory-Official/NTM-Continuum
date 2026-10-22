@@ -17,6 +17,7 @@ public final class HbmSableIntegration {
     public static void setup() {
         SubLevels.addMoveListener(CarriedBlocks::afterMove);
         SubLevels.addStructureResolver(MultiblockParts::partsWith);
-        Constants.LOG.info("Sable present: HBM blocks follow sub-level assembly, splitting and disassembly");
+        SubLevels.addMassRule(BlockMasses::inIronBlocks);
+        Constants.LOG.info("Sable present: HBM blocks follow sub-level assembly, splitting and disassembly, and weigh by hardness");
     }
 }

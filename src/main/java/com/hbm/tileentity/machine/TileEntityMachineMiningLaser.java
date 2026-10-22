@@ -32,6 +32,7 @@ import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.InventoryUtil;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -135,7 +136,8 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         te.lastTargetY = te.targetY;
         te.lastTargetZ = te.targetZ;
 
-        if (te.isOn) {
+        // port: never on a moving structure (Sable), where it would mine the structure's own plot
+        if (te.isOn && !SubLevels.isOnSubLevel(level, pos)) {
 
             te.upgradeManager.checkSlots(te.inventory, 1, 8);
             int cycles = 1 + te.upgradeManager.getLevel(UpgradeType.OVERDRIVE);
@@ -580,11 +582,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
     }
 
     // MenuProvider
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_mining_laser");
-    }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {

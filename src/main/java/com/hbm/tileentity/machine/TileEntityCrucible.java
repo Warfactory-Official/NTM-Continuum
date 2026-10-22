@@ -21,7 +21,6 @@ import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -485,10 +484,6 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     }
 
 
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_crucible");
-    }
 
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
