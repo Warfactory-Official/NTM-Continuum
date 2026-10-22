@@ -15,6 +15,7 @@ import com.hbm.items.ModAbilityToolItems;
 import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModIngredientItems.PlateFuelType;
 import com.hbm.items.ModPwrItems;
+import com.hbm.items.ModStorageDrumItems;
 import com.hbm.items.machine.EnumWatzType;
 import com.hbm.items.machine.ItemBreedingRod.BreedingRodType;
 import com.hbm.items.machine.ItemBreedingRod.RodSize;
@@ -47,6 +48,9 @@ import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKRod;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.BlockEntities;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.IntConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,6 +59,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -644,16 +649,46 @@ public final class RcNuke2GameTests {
             helper.assertTrue(FuelPoolRecipes.isHot(rod) && FuelPoolRecipes.cool(rod).is(ModPwrItems.depleted(fuel)),
                     "hot PWR rod " + fuel + " cools to its depleted form");
         }
-        ItemEntity entity = new ItemEntity(helper.getLevel(), helper.absolutePos(new BlockPos(1, 2, 1)).getX() + 0.5,
-                helper.absolutePos(new BlockPos(1, 2, 1)).getY(), helper.absolutePos(new BlockPos(1, 2, 1)).getZ() + 0.5, hot.copy());
-        helper.getLevel().addFreshEntity(entity);
-        helper.assertTrue(entity.isInvulnerable(), "dropped waste must be invulnerable");
-        ItemEntity ordinary = new ItemEntity(helper.getLevel(), helper.absolutePos(new BlockPos(2, 2, 1)).getX() + 0.5,
-                helper.absolutePos(new BlockPos(2, 2, 1)).getY(), helper.absolutePos(new BlockPos(2, 2, 1)).getZ() + 0.5, new ItemStack(Items.STICK));
-        helper.getLevel().addFreshEntity(ordinary);
-        helper.assertFalse(ordinary.isInvulnerable(), "an ordinary drop stays vulnerable");
-        entity.discard();
-        ordinary.discard();
+        // 1.7 ItemNuclearWaste and ItemWasteLong protect their drops; ItemWasteShort extends plain Item.
+        var cases = new LinkedHashMap<>(Map.<Item, Boolean>of(
+                ModItems.trinitite.get(), true,
+                ModItems.nuclear_waste.get(), true,
+                ModItems.nuclear_waste_tiny.get(), true,
+                ModItems.nuclear_waste_vitrified.get(), true,
+                ModItems.nuclear_waste_vitrified_tiny.get(), true,
+                hot.getItem(), true,
+                Items.STICK, false));
+        var families = Map.of(
+                ModStorageDrumItems.nuclear_waste_long, true,
+                ModStorageDrumItems.nuclear_waste_long_tiny, true,
+                ModStorageDrumItems.nuclear_waste_long_depleted, true,
+                ModStorageDrumItems.nuclear_waste_long_depleted_tiny, true,
+                ModStorageDrumItems.nuclear_waste_short, false,
+                ModStorageDrumItems.nuclear_waste_short_tiny, false,
+                ModStorageDrumItems.nuclear_waste_short_depleted, false,
+                ModStorageDrumItems.nuclear_waste_short_depleted_tiny, false);
+        for (var test : families.entrySet()) {
+            for (var variant = 0; variant < test.getKey().size(); variant++) {
+                cases.put(test.getKey().get(variant), test.getValue());
+            }
+        }
+        var failures = new ArrayList<String>();
+        var pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        for (var test : cases.entrySet()) {
+            var entity = new ItemEntity(helper.getLevel(), pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5,
+                    new ItemStack(test.getKey()));
+            helper.getLevel().addFreshEntity(entity);
+            try {
+                if (entity.isInvulnerable() != test.getValue()
+                        || (entity.getAge() == Short.MIN_VALUE) != test.getValue()) {
+                    failures.add(test.getKey() + ": expected protection=" + test.getValue()
+                            + ", invulnerable=" + entity.isInvulnerable() + ", age=" + entity.getAge());
+                }
+            } finally {
+                entity.discard();
+            }
+        }
+        helper.assertTrue(failures.isEmpty(), "waste drop protection mismatches: " + failures);
         helper.succeed();
     }
 

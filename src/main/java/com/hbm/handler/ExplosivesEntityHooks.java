@@ -3,6 +3,7 @@ package com.hbm.handler;
 import com.hbm.items.armor.ArmorHat;
 import com.hbm.items.armor.ItemModObsidian;
 import com.hbm.items.special.ItemDrop;
+import com.hbm.items.special.ItemDigamma;
 import com.hbm.items.special.ItemRag;
 import com.hbm.items.weapon.WeaponizedCell;
 import net.minecraft.world.entity.Entity;
@@ -12,9 +13,7 @@ import com.hbm.items.armor.ItemModDefuser;
 import com.hbm.items.tool.ItemDropDetonator;
 
 /**
- * The per-entity server tick the loaders forward for this family: the two dropped detonators
- * (1.7 {@code ItemDrop.onEntityItemUpdate}), obsidian-skinned dropped armor, and the creepers the golden
- * wire cutter defused (its module update itself runs from {@code ArmorModEvents}).
+ * Dropped-item behaviors and defused creepers, forwarded by each loader's server entity tick.
  */
 public final class ExplosivesEntityHooks {
     private ExplosivesEntityHooks() {}
@@ -27,6 +26,7 @@ public final class ExplosivesEntityHooks {
             ItemModObsidian.protectDropped(item);
             ArmorHat.tickDropped(item); // 1.7 ArmorHat.onEntityItemUpdate: setDead
             ItemDrop.tickDropped(item); // 1.7 ItemDrop.onEntityItemUpdate: beta setDead
+            ItemDigamma.tickDropped(item);
             ItemRag.tickDropped(item); // 1.7 ItemRag.onEntityItemUpdate: cloth in water -> damp
             return;
         }

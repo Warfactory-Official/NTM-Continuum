@@ -3,9 +3,12 @@ package com.hbm.gametest;
 import com.hbm.Constants;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModHazardBlocks;
+import com.hbm.config.WeaponConfig;
+import com.hbm.handler.ExplosivesEntityHooks;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityBlackHole;
 import com.hbm.entity.effect.EntityRagingVortex;
+import com.hbm.entity.effect.EntityQuasar;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.blocks.machine.MachineCyclotron;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -22,6 +25,7 @@ import com.hbm.api.fluidmk2.FluidNetwork;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
+import com.hbm.items.ModRBMKItems;
 import com.hbm.items.ModSingularityItems;
 import com.hbm.items.ModSelfchargerItems;
 import com.hbm.items.gear.ArmorFSBPowered;
@@ -45,6 +49,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
@@ -54,6 +59,9 @@ import net.minecraft.world.phys.Vec3;
 public final class SingularityGameTests {
     private SingularityGameTests() {}
 
+    private static final int DROP_PADDING = 25;
+    private static final int DIGAMMA_PADDING = 76;
+
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function REGISTRATION_AND_RECIPES =
             TESTS.function("singularity_registration_and_recipes", 20, () -> SingularityGameTests::registrationAndRecipes);
@@ -61,6 +69,12 @@ public final class SingularityGameTests {
             TESTS.function("singularity_cell", 20, () -> SingularityGameTests::cell);
     public static final GameTests.Function DROP =
             TESTS.function("singularity_drop", 20, () -> SingularityGameTests::drop);
+    public static final GameTests.Function DROP_TICK =
+            TESTS.function("singularity_drop_tick", 40, DROP_PADDING, () -> SingularityGameTests::dropTick);
+    public static final GameTests.Function DIGAMMA_DROP_TICK =
+            TESTS.function("digamma_drop_tick", 40, DIGAMMA_PADDING, () -> SingularityGameTests::digammaDropTick);
+    public static final GameTests.Function DIGAMMA_DROP_GATES =
+            TESTS.function("digamma_drop_gates", 40, DIGAMMA_PADDING, () -> SingularityGameTests::digammaDropGates);
     public static final GameTests.Function FORMULAS =
             TESTS.function("singularity_formulas", 20, () -> SingularityGameTests::formulas);
     public static final GameTests.Function FLUID_PRODUCTION =
@@ -199,6 +213,72 @@ public final class SingularityGameTests {
                         + ", size=" + (fields.isEmpty() ? "none" : fields.get(0).getSize())
                         + ", onGround=" + drop.onGround() + ", removed=" + drop.isRemoved() + ")");
         helper.succeed();
+    }
+
+    public static void dropTick(GameTestHelper helper) {
+        droppedField(helper, ModSingularityItems.black_hole.get(), EntityBlackHole.class, 1.5F);
+    }
+
+    public static void digammaDropTick(GameTestHelper helper) {
+        droppedField(helper, ModRBMKItems.particle_digamma.get(), EntityQuasar.class, 5F);
+    }
+
+    public static void digammaDropGates(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var origin = helper.absolutePos(GameTests.paddedCentre(0, 3));
+        var bounds = new AABB(origin).inflate(3);
+        var drop = new ItemEntity(level, origin.getX() + 0.5, origin.getY(), origin.getZ() + 0.5,
+                new ItemStack(ModRBMKItems.particle_digamma.get()));
+        level.addFreshEntity(drop);
+        var enabled = WeaponConfig.dropSing;
+        try {
+            WeaponConfig.dropSing = true;
+            drop.setRemainingFireTicks(100);
+            ExplosivesEntityHooks.tick(drop);
+            helper.assertTrue(!drop.isRemoved() && level.getEntitiesOfClass(EntityQuasar.class, bounds).isEmpty(),
+                    "an airborne digamma particle must not trigger, even while burning");
+            drop.setOnGround(true);
+            WeaponConfig.dropSing = false;
+            ExplosivesEntityHooks.tick(drop);
+            helper.assertTrue(drop.isRemoved() && level.getEntitiesOfClass(EntityQuasar.class, bounds).isEmpty(),
+                    "disabling singularity drops must consume the grounded particle without spawning a quasar");
+            helper.succeed();
+        } finally {
+            WeaponConfig.dropSing = enabled;
+            drop.discard();
+        }
+    }
+
+    private static void droppedField(GameTestHelper helper, Item item,
+                                     Class<? extends EntityBlackHole> fieldType, float size) {
+        helper.assertTrue(WeaponConfig.dropSing, "singularity drops must be enabled for this test");
+        // Stay in the legacy runners' forced chunks and above 26.1's one-block test enclosure.
+        var origin = helper.absolutePos(GameTests.paddedCentre(0, 3));
+        helper.getLevel().setBlockAndUpdate(origin.below(), Blocks.BEDROCK.defaultBlockState());
+        var drop = new ItemEntity(helper.getLevel(), origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D,
+                new ItemStack(item));
+        drop.setDeltaMovement(Vec3.ZERO);
+        helper.assertTrue(helper.getLevel().noCollision(drop, drop.getBoundingBox()),
+                "the dropped-item probe must start outside the test enclosure");
+        helper.getLevel().addFreshEntity(drop);
+        // Let the level land and tick the item: invoking the handler here would bypass the loader hook.
+        helper.runAfterDelay(10, () -> {
+            var fields = helper.getLevel().getEntitiesOfClass(fieldType,
+                    new AABB(origin).inflate(3));
+            try {
+                helper.assertTrue(drop.getRemovalReason() == Entity.RemovalReason.DISCARDED,
+                        item + " was not consumed by world ticking"
+                        + " (onGround=" + drop.onGround() + ", ticks=" + drop.tickCount
+                        + ", removal=" + drop.getRemovalReason() + ", fields=" + fields.size() + ")");
+                helper.assertTrue(fields.size() == 1 && fields.get(0).getSize() == size,
+                        item + " did not create a size-" + size + " field (fields=" + fields.size()
+                                + ", size=" + (fields.isEmpty() ? "none" : fields.get(0).getSize()) + ")");
+                helper.succeed();
+            } finally {
+                drop.discard();
+                fields.forEach(Entity::discard);
+            }
+        });
     }
 
     public static void formulas(GameTestHelper helper) {
