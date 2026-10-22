@@ -152,11 +152,6 @@ repositories {
         forRepository { maven("https://cursemaven.com") { name = "CurseMaven" } }
         filter { includeGroup("curse.maven") }
     }
-    // Golem Core's vendored GemRender for 26.1 Fabric, published to Maven local by vendor/gemrender.
-    exclusiveContent {
-        forRepository { mavenLocal() }
-        filter { includeGroup("com.wf.gemrender") }
-    }
     exclusiveContent {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
@@ -408,11 +403,11 @@ dependencies {
 
     // GemRender instances gem-declared machines through Golem Core; every machine keeps its vanilla BER, which draws
     // whenever GemRender is absent or `/flywheel backend off`. `-Pgemrender.run=false` launches without it, as a
-    // player without GemRender would. 26.1 has no published build: Core's vendor/gemrender jar stands in.
+    // player without GemRender would. 26.1 has no published build: Golem Core's runtime classpath carries its vendored one.
     if (propOrNull("gemrender.run") != "false") {
         when (val gem = propOrNull("deps.gemrender")) {
             null -> {}
-            "vendor" -> devRuntime("com.wf.gemrender:gemrender-fabric-${prop("deps.minecraft")}:0.1.14") { isTransitive = false }
+            "vendor" -> {}
             else -> devRuntime("curse.maven:gemrender-1735539:$gem")
         }
         propOrNull("deps.gemrender_flywheel")?.let { devRuntime("dev.engine-room.flywheel:flywheel-fabric-$mcVersion:$it") }
