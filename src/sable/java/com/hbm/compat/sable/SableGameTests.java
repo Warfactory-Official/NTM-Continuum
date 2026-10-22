@@ -18,6 +18,10 @@ import org.joml.Vector3d;
 import com.hbm.api.energymk2.PowerGraph;
 import com.hbm.blocks.ModEnergyNetBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.machine.dfc.CoreComponent;
+import com.hbm.blocks.machine.dfc.ModDFCBlocks;
+import com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter;
+import com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.entity.missile.EntityMissileBaseNT;
@@ -79,6 +83,7 @@ final class SableGameTests {
         TESTS.function("sable_assemble_one_cell", 40, () -> SableGameTests::assembleOneCell);
         TESTS.function("sable_derrick_idle_on_ship", 200, () -> SableGameTests::derrickIdleOnShip);
         TESTS.function("sable_block_masses_by_hardness", 40, () -> SableGameTests::blockMassesByHardness);
+        TESTS.function("sable_dfc_beam", 200, () -> SableGameTests::dfcBeam);
     }
 
     /** Iron block is the unit; reinforced stone (hardness 15) weighs 3, a centrifuge (5) 1 per solid part. */
@@ -375,6 +380,55 @@ final class SableGameTests {
         TileEntityOilDrillBase drill = (TileEntityOilDrillBase) level.getBlockEntity(core);
         drill.power = drill.getMaxPower();
         return core;
+    }
+
+    /**
+     * A DFC emitter firing into a receiver four blocks east: one pair in the world (its chunk claimed to tick), one pair
+     * assembled with its deck onto a sub-level. Both receivers must take the beam's energy.
+     */
+    private static void dfcBeam(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos grounded = dfcPair(level, fixture(helper, 11));
+        Chunks.claimTicking(level, grounded.getX() >> 4, grounded.getZ() >> 4);
+        BlockPos emitter = dfcPair(level, fixture(helper, 12));
+        // on an iron deck: Sable splits a sub-level wherever its solid blocks stop touching
+        Set<BlockPos> ship = new LinkedHashSet<>(List.of(emitter, emitter.east(4)));
+        for (int dx = 0; dx <= 4; dx++) {
+            BlockPos deck = emitter.offset(dx, -1, 0);
+            level.setBlock(deck, Blocks.IRON_BLOCK.defaultBlockState(), 3);
+            ship.add(deck);
+        }
+        ServerSubLevel sub = assemble(level, emitter, ship);
+        BlockPos plotReceiver = new SubLevelAssemblyHelper.AssemblyTransform(
+                emitter, sub.getPlot().getCenterBlock(), 0, Rotation.NONE, level).apply(emitter.east(4));
+
+        helper.runAfterDelay(60, () -> {
+            long world = ((TileEntityCoreReceiver) level.getBlockEntity(grounded.east(4))).prevJoules;
+            BlockPos plotEmitter = plotReceiver.west(4);
+            helper.assertTrue(level.getBlockEntity(plotReceiver) instanceof TileEntityCoreReceiver,
+                    "no receiver on the sub-level: " + level.getBlockState(plotReceiver) + ", emitter cell "
+                            + level.getBlockState(plotEmitter) + " " + level.getBlockEntity(plotEmitter));
+            long carried = ((TileEntityCoreReceiver) level.getBlockEntity(plotReceiver)).prevJoules;
+            Chunks.releaseTicking(level, grounded.getX() >> 4, grounded.getZ() >> 4);
+            helper.assertTrue(world > 0, "the receiver in the world got no energy");
+            helper.assertTrue(carried > 0, "the receiver on the sub-level got no energy (world: " + world + ")");
+            clear(level, grounded);
+            helper.succeed();
+        });
+    }
+
+    /** An emitter at {@code pos} facing east, on and powered, and a receiver four blocks east facing it. */
+    private static BlockPos dfcPair(ServerLevel level, BlockPos pos) {
+        level.setBlock(pos, ModDFCBlocks.dfc_emitter.get().defaultBlockState().setValue(CoreComponent.FACING, Direction.EAST), 3);
+        level.setBlock(pos.east(4), ModDFCBlocks.dfc_receiver.get().defaultBlockState().setValue(CoreComponent.FACING, Direction.WEST), 3);
+        TileEntityCoreEmitter emitter = (TileEntityCoreEmitter) level.getBlockEntity(pos);
+        emitter.tank.setFill(emitter.tank.getMaxFill());
+        emitter.power = Long.MAX_VALUE / 4;
+        emitter.watts = 100;
+        emitter.isOn = true;
+        TileEntityCoreReceiver receiver = (TileEntityCoreReceiver) level.getBlockEntity(pos.east(4));
+        receiver.tank.setFill(receiver.tank.getMaxFill());
+        return pos;
     }
 
     private static void checkMachine(GameTestHelper helper, ServerLevel level, BlockPos core, Direction facing,
