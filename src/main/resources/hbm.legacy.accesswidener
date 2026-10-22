@@ -5,3 +5,11 @@ accessWidener v2 named
 # Fabric node needs this. Golem Core states the same widening for its own CompatMinecart; a transitive
 # widening does not reach this compile, so the consumer states it too.
 extendable method net/minecraft/world/entity/vehicle/AbstractMinecart getDropItem ()Lnet/minecraft/world/item/Item;
+
+# CargoElevatorShape keeps the original voxel geometry and reports the actual surface cell when picking.
+accessible field net/minecraft/world/phys/shapes/VoxelShape shape Lnet/minecraft/world/phys/shapes/DiscreteVoxelShape;
+accessible method net/minecraft/world/phys/shapes/VoxelShape getCoords (Lnet/minecraft/core/Direction$Axis;)Lit/unimi/dsi/fastutil/doubles/DoubleList;
+accessible method net/minecraft/world/phys/shapes/ArrayVoxelShape getCoords (Lnet/minecraft/core/Direction$Axis;)Lit/unimi/dsi/fastutil/doubles/DoubleList;
+accessible method net/minecraft/world/phys/shapes/CubeVoxelShape getCoords (Lnet/minecraft/core/Direction$Axis;)Lit/unimi/dsi/fastutil/doubles/DoubleList;
+accessible method net/minecraft/world/phys/shapes/SliceShape getCoords (Lnet/minecraft/core/Direction$Axis;)Lit/unimi/dsi/fastutil/doubles/DoubleList;
+accessible method net/minecraft/world/phys/shapes/ArrayVoxelShape <init> (Lnet/minecraft/world/phys/shapes/DiscreteVoxelShape;Lit/unimi/dsi/fastutil/doubles/DoubleList;Lit/unimi/dsi/fastutil/doubles/DoubleList;Lit/unimi/dsi/fastutil/doubles/DoubleList;)V

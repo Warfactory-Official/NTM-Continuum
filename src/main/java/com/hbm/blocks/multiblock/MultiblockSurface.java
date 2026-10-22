@@ -71,6 +71,15 @@ public final class MultiblockSurface {
         BlockPos hint = clientCoreHint;
         if (hint != null && claimsSafely(level, hint, cell, bounded && !withinReach(hint, cell))) return hint;
 
+        var block = level.getBlockState(cell).getBlock();
+        var core = block instanceof BlockMultiblockCore machine
+                ? machine.findClientCore(level, cell) : findClientCore(level, cell);
+        if (core != null) clientCoreHint = core;
+        return core;
+    }
+
+    static @Nullable BlockPos findClientCore(BlockGetter level, BlockPos cell) {
+        boolean bounded = !(level instanceof Level);
         long[] candidates = clientCandidates;
         if (candidates == null) candidates = clientCandidates = buildClientCandidates();
         BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos();
@@ -78,15 +87,13 @@ public final class MultiblockSurface {
             probe.set(cell.getX() + BlockPos.getX(delta), cell.getY() + BlockPos.getY(delta),
                     cell.getZ() + BlockPos.getZ(delta));
             if (!claimsSafely(level, probe, cell, bounded && reach(delta) > REGION_REACH)) continue;
-            BlockPos core = probe.immutable();
-            clientCoreHint = core;
-            return core;
+            return probe.immutable();
         }
         return null;
     }
 
     /** How far around a queried position a section-compile region can always read (one section minus the cell). */
-    private static final int REGION_REACH = 15;
+    public static final int REGION_REACH = 15;
 
     private static int reach(long delta) {
         return Math.max(Math.abs(BlockPos.getX(delta)), Math.max(Math.abs(BlockPos.getY(delta)), Math.abs(BlockPos.getZ(delta))));
@@ -113,7 +120,8 @@ public final class MultiblockSurface {
     public static boolean coreClaims(BlockGetter level, BlockPos core, BlockPos cell) {
         BlockState state = level.getBlockState(core);
         BlockMultiblockCore block = foldedCore(state);
-        return block != null && block.claimsCell(core, cell, state.getValue(BlockMultiblockCore.FACING));
+        return block != null && block.isCellOf(level.getBlockState(cell))
+                && block.claimsCell(level, core, cell, state.getValue(BlockMultiblockCore.FACING));
     }
 
     private static long[] buildClientCandidates() {
@@ -207,7 +215,7 @@ public final class MultiblockSurface {
         out.add(core.immutable());
         long corePacked = core.asLong();
         ServerLevel server = level instanceof ServerLevel s ? s : null;
-        block.visitPlacedCells(core, state.getValue(BlockMultiblockCore.FACING), (pos, mask) -> {
+        block.visitPlacedCells(level, core, state.getValue(BlockMultiblockCore.FACING), (pos, mask) -> {
             if (server != null) {
                 long recorded = MultiblockCoreIndex.lookup(server, pos);
                 if (recorded != Long.MIN_VALUE && recorded != corePacked) return;

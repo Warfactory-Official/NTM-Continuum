@@ -15,6 +15,7 @@
     "license": "${mod_license}",
     "icon": "assets/${mod_id}/icon.png",
     "environment": "*",
+    "accessWidener": "hbm.accesswidener",
     "entrypoints": {
         "golemcore:entry": [
             "com.hbm.gametest.GameTestEntry",

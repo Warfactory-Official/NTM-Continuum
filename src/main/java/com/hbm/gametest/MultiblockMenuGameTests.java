@@ -111,7 +111,7 @@ public final class MultiblockMenuGameTests {
                     + level.getBlockState(clickedAbs));
             helper.assertFalse(core.equals(clickedAbs), "the clicked position must be a cell");
             Direction facing = level.getBlockState(core).getValue(BlockMultiblockCore.FACING);
-            block.visitPlacedCells(core, facing, (pos, mask) -> cells.add(pos.immutable()));
+            block.visitPlacedCells(level, core, facing, (pos, mask) -> cells.add(pos.immutable()));
             helper.assertTrue(level.getBlockEntity(core) != null, "the core must carry the console's block entity");
             for (BlockPos cell : cells) {
                 helper.assertTrue(level.getBlockState(cell).is(block) && block.isCellState(level.getBlockState(cell)),

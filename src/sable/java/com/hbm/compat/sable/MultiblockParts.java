@@ -26,7 +26,7 @@ final class MultiblockParts {
         if (block == null) return List.of();
         List<BlockPos> parts = new ArrayList<>();
         parts.add(core.immutable());
-        block.visitPlacedCells(core, coreState.getValue(BlockMultiblockCore.FACING), (cell, mask) -> {
+        block.visitPlacedCells(level, core, coreState.getValue(BlockMultiblockCore.FACING), (cell, mask) -> {
             if (block.isCellOf(level.getBlockState(cell)) && core.equals(MultiblockSurface.coreOfCell(level, cell))) {
                 parts.add(cell.immutable());
             }

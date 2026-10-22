@@ -22,6 +22,7 @@ sourceSets["main"].java {
 
 legacyForge {
     version = prop("deps.forge")
+    accessTransformers.from(rootProject.file("src/main/resources/META-INF/hbm.legacy.accesstransformer.cfg"))
     runs {
         configureEach {
             systemProperty("forge.enabledGameTestNamespaces", modId)
@@ -239,8 +240,14 @@ tasks.processResources {
     filesMatching(listOf("META-INF/mods.toml", "pack.mcmeta", "*.mixins.json")) { expand(props) }
     exclude(
         "fabric.mod.json", "$modId.fabric.mixins.json", "META-INF/neoforge.mods.toml",
+        "META-INF/accesstransformer.cfg", "META-INF/hbm.legacy.accesstransformer.cfg",
+        "META-INF/hbm.neoforge.accesstransformer.cfg", "*.accesswidener",
         "data/$modId/neoforge/**", "data/neoforge/**",
     )
+    from(rootProject.file("src/main/resources/META-INF/hbm.legacy.accesstransformer.cfg")) {
+        into("META-INF")
+        rename { "accesstransformer.cfg" }
+    }
 }
 
 tasks.jar {

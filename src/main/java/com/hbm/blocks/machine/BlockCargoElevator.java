@@ -3,7 +3,6 @@ package com.hbm.blocks.machine;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockCoreIndex;
 import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityCargoElevator;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +16,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -42,6 +38,8 @@ import org.jspecify.annotations.Nullable;
  */
 public class BlockCargoElevator extends BlockMultiblockMachine {
 
+    private static final int[] DIMENSIONS = {0, 0, 1, 1, 1, 1};
+
     public BlockCargoElevator(Properties properties) {
         super(properties);
     }
@@ -53,7 +51,7 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
 
     @Override
     public int[] getDimensions() {
-        return new int[]{0, 0, 1, 1, 1, 1};
+        return DIMENSIONS;
     }
 
     @Override
@@ -61,23 +59,61 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
         return 1;
     }
 
-    /**
-     * The lift grows a course at a time, so its real extent is live configuration, not a function of the core's
-     * state. Teardown may use a superset, and the demolition guards every cell on the index, so overshooting the
-     * column costs a lookup and claims nothing foreign.
-     */
-    private static final int MAX_COURSES = 384;
+    @Override
+    public void visitPlacedCells(BlockGetter level, BlockPos core, Direction facing, CellVisitor visitor) {
+        int height = level.getBlockEntity(core) instanceof TileEntityCargoElevator lift ? lift.height : 0;
+        visitCourses(core, height, visitor);
+    }
 
     @Override
-    protected void visitTeardownCells(BlockPos core, Direction facing, CellVisitor visitor) {
-        for (int dy = 0; dy <= MAX_COURSES; dy++) {
+    protected void visitTeardownCells(ServerLevel level, BlockPos core, Direction facing, CellVisitor visitor) {
+        // The removed core's entity may already be gone. Demolition checks the index before removing any cell.
+        visitCourses(core, level.getMinY() + level.getHeight() - 1 - core.getY(), visitor);
+    }
+
+    private static void visitCourses(BlockPos core, int height, CellVisitor visitor) {
+        var cell = new BlockPos.MutableBlockPos();
+        for (int dy = 0; dy <= height; dy++) {
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dz = -1; dz <= 1; dz++) {
                     if (dx == 0 && dy == 0 && dz == 0) continue;
-                    visitor.cell(core.offset(dx, dy, dz), MASK_NONE);
+                    visitor.cell(cell.setWithOffset(core, dx, dy, dz), MASK_NONE);
                 }
             }
         }
+    }
+
+    @Override
+    public boolean claimsCell(BlockGetter level, BlockPos core, BlockPos cell, Direction facing) {
+        int dy = cell.getY() - core.getY();
+        return dy >= 0 && Math.abs(cell.getX() - core.getX()) <= 1 && Math.abs(cell.getZ() - core.getZ()) <= 1
+                && level.getBlockState(cell).is(this)
+                && level.getBlockEntity(core) instanceof TileEntityCargoElevator lift && dy <= lift.height;
+    }
+
+    @Override
+    public @Nullable BlockPos findClientCore(BlockGetter level, BlockPos cell) {
+        int floor = level.getMinY();
+        if (!(level instanceof Level)) floor = Math.max(floor, cell.getY() - MultiblockSurface.REGION_REACH);
+        var probe = new BlockPos.MutableBlockPos();
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                probe.setWithOffset(cell, dx, 0, dz);
+                var state = level.getBlockState(probe);
+                while (state.is(this) && state.getValue(CELL) && probe.getY() > floor) {
+                    probe.move(Direction.DOWN);
+                    state = level.getBlockState(probe);
+                }
+                if (state.is(this) && !state.getValue(CELL)
+                        && claimsCell(level, probe, cell, state.getValue(FACING))) return probe.immutable();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected boolean carriesData() {
+        return true;
     }
 
     @Override
@@ -97,22 +133,7 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
             return Shapes.block();
         }
 
-        double dx = core.getX() - pos.getX();
-        double dy = core.getY() - pos.getY();
-        double dz = core.getZ() - pos.getZ();
-        double top = lift.height + 1;
-        double platform = lift.extension;
-
-        VoxelShape shape = Shapes.empty();
-        for (AABB box : new AABB[]{
-                new AABB(-1D, 0D, -1D, -0.75D, top, -0.75D),
-                new AABB(-1D, 0D, 1.75D, -0.75D, top, 2D),
-                new AABB(1.75D, 0D, -1D, 2D, top, -0.75D),
-                new AABB(1.75D, 0D, 1.75D, 2D, top, 2D),
-                new AABB(-1D, 0.75D + platform, -1D, 2D, 1D + platform, 2D)}) {
-            shape = Shapes.or(shape, Shapes.create(box.move(dx, dy, dz)));
-        }
-        return shape;
+        return lift.shape().move(core.getX() - pos.getX(), core.getY() - pos.getY(), core.getZ() - pos.getZ());
     }
 
     @Override
@@ -150,6 +171,7 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
     private void addCourse(Level level, BlockPos core, TileEntityCargoElevator lift, Player player,
                            ItemStack stack) {
         int top = core.getY() + lift.height + 1;
+        if (level.isOutsideBuildHeight(top)) return;
         for (int x = core.getX() - 1; x <= core.getX() + 1; x++) {
             for (int z = core.getZ() - 1; z <= core.getZ() + 1; z++) {
                 BlockPos target = new BlockPos(x, top, z);
@@ -171,6 +193,7 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        if (state.getValue(CELL)) return List.of();
         BlockEntity entity = params.getOptionalParameter(
                 LootContextParams.BLOCK_ENTITY);
         if (!(entity instanceof TileEntityCargoElevator lift)) return super.getDrops(state, params);

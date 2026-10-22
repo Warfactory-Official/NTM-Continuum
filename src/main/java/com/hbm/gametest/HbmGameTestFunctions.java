@@ -1442,6 +1442,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("rc_logi_pneumatic_import_export", 400, 16, () -> RcLogiGameTests::pneumaticImportExport);
     public static final GameTests.Function RC_LOGI_ELEVATOR =
             TESTS.function("rc_logi_cargo_elevator_carries", 200, 16, () -> RcLogiGameTests::cargoElevatorCarries);
+    public static final GameTests.Function RC_LOGI_ELEVATOR_GROWTH =
+            TESTS.function("rc_logi_cargo_elevator_growth", 40, 16, () -> RcLogiGameTests::cargoElevatorGrowth);
 
     public static final GameTests.Function RC_LOGI_KEY_KIT =
             TESTS.function("rc_logi_key_kit", 40, 16, () -> RcLogiGameTests::keyKitCopiesLocks);

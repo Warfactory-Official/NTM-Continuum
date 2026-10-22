@@ -480,13 +480,15 @@ dependencies {
     }
 }
 
+// Unobfuscated Minecraft uses the official namespace; older Loom nodes use named mappings. The
+// 1.20.1 file also exposes AbstractMinecart.getDropItem, which no longer exists on the newer nodes.
+val accessWidenerName = if (!obfuscated) "$modId.accesswidener"
+    else if (mcVersion.startsWith("1.21")) "$modId.legacy-1.21.accesswidener"
+    else "$modId.legacy.accesswidener"
+val allAccessWideners = listOf("$modId.accesswidener", "$modId.legacy-1.21.accesswidener", "$modId.legacy.accesswidener")
+
 loom {
-    // 1.20.1 vanilla hides AbstractMinecart.getDropItem from any subclass outside its package; every other
-    // node either patches it (Forge) or moved it (1.21+), so the widening is stated per era, not globally.
-    val awName = if (obfuscated && mcVersion.startsWith("1.20")) "$modId.legacy.accesswidener"
-    else "$modId.accesswidener"
-    val aw = rootProject.file("src/main/resources/$awName")
-    if (aw.exists()) accessWidenerPath = aw
+    accessWidenerPath = rootProject.file("src/main/resources/$accessWidenerName")
 
     runs {
         named("client") {
@@ -546,6 +548,10 @@ tasks.processResources {
     )
     inputs.properties(props)
     filesMatching(listOf("fabric.mod.json", "pack.mcmeta", "*.mixins.json")) { expand(props) }
+    filesMatching("fabric.mod.json") {
+        filter { it.replace("$modId.accesswidener", accessWidenerName) }
+    }
+    exclude(allAccessWideners.filter { it != accessWidenerName })
     // Only Forge generates a refmap; naming an absent one leaves the jar pointing at a file it lacks.
     filesMatching("*.mixins.json") { filter { if (it.trimStart().startsWith("\"refmap\"")) null else it } }
     // The Sable integration's entry points, only on nodes that declare Sable. Appended by line rather than templated,
@@ -578,6 +584,7 @@ tasks.processResources {
     // `data/neoforge/**` is the NeoForge-namespaced data maps (furnace fuels), which Fabric supplies
     // through FuelRegistry/FuelValueEvents instead — excluded so the jar carries no inert files.
     exclude("META-INF/mods.toml", "META-INF/neoforge.mods.toml", "META-INF/accesstransformer.cfg",
+        "META-INF/hbm.legacy.accesstransformer.cfg", "META-INF/hbm.neoforge.accesstransformer.cfg",
         "data/$modId/neoforge/**", "data/$modId/forge/**", "data/neoforge/**")
 }
 
