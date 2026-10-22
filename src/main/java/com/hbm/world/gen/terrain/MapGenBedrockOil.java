@@ -7,6 +7,7 @@ import com.hbm.blocks.generic.BlockDeadPlant;
 import com.hbm.blocks.generic.BlockNTMFlower;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,8 +23,8 @@ import java.util.Random;
  * {@code ore_bedrock_oil}, then blights 50 gaussian (sigma 5) surface spots: dead or (1 in 10) oily dirt, a cadmium
  * willow one time in fifty and a dead plant one time in twenty on top, dirty sand, cracked stone. Range 4.
  *
- * <p>1.7's floor was stone and bedrock at y 0..4; the modern floor is bedrock and deepslate at the dimension's lowest
- * five layers, so those are the hosts here.
+ * <p>1.7's floor was stone and bedrock at y 0..4; the modern floor is bedrock and deepslate (TerraFirmaCraft: its own
+ * rock) at the dimension's lowest five layers, so bedrock and {@code #minecraft:base_stone_overworld} are the hosts.
  */
 public class MapGenBedrockOil extends MapGenFeature {
 
@@ -55,7 +56,7 @@ public class MapGenBedrockOil extends MapGenFeature {
                 for (int y = 0; y < 5; y++) {
                     pos.set((chunkX << 4) + bx, floor + y, (chunkZ << 4) + bz);
                     BlockState state = level.getBlockState(pos);
-                    if (!state.is(Blocks.STONE) && !state.is(Blocks.DEEPSLATE) && !state.is(Blocks.BEDROCK)) continue;
+                    if (!state.is(BlockTags.BASE_STONE_OVERWORLD) && !state.is(Blocks.BEDROCK)) continue;
                     int x = xCoord + bx;
                     int z = zCoord + bz;
                     if (Math.abs(x) < 5 && Math.abs(z) < 5 && Math.abs(x) + Math.abs(y) + Math.abs(z) <= 6) {

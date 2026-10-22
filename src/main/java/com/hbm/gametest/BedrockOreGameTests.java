@@ -88,7 +88,8 @@ public final class BedrockOreGameTests {
             for (int dz = -3; dz <= 3; dz++) {
                 helper.getLevel().setBlock(origin.offset(dx, 0, dz), Blocks.BEDROCK.defaultBlockState(), 2);
                 helper.getLevel().setBlock(origin.offset(dx, 1, dz), Blocks.STONE.defaultBlockState(), 2);
-                helper.getLevel().setBlock(origin.offset(dx, 2, dz), Blocks.STONE.defaultBlockState(), 2);
+                // any #base_stone_overworld takes the cap (TerraFirmaCraft's floor is its own rock)
+                helper.getLevel().setBlock(origin.offset(dx, 2, dz), Blocks.GRANITE.defaultBlockState(), 2);
             }
         }
 

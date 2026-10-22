@@ -57,6 +57,42 @@ public final class ModBiomeModifiers {
     /** How many data files the declarations stand in for; checked by {@code DejsonGameTests}. */
     static final int FILES_REPLACED = 18;
 
+    // TerraFirmaCraft 3.x and 4.x biomes: none is tagged overworld, but the floor is vanilla bedrock, so they get the
+    // bedrock ore and oil
+    private static final String[] TFC_BIOMES = {
+            "tfc:active_shield_volcano", "tfc:ancient_shield_volcano", "tfc:badlands", "tfc:burren_badlands",
+            "tfc:burren_badlands_tall", "tfc:burren_plains", "tfc:burren_plateau", "tfc:burren_roche_moutonee",
+            "tfc:buttes", "tfc:canyons", "tfc:cenote_canyons", "tfc:cenote_highlands", "tfc:cenote_hills",
+            "tfc:cenote_plains", "tfc:cenote_plateau", "tfc:cenote_rolling_hills", "tfc:coastal_dunes",
+            "tfc:collisional_mountains", "tfc:deep_ocean", "tfc:deep_ocean_atolls", "tfc:deep_ocean_trench",
+            "tfc:doline_canyons", "tfc:doline_highlands", "tfc:doline_hills", "tfc:doline_plains", "tfc:doline_plateau",
+            "tfc:doline_rolling_hills", "tfc:dormant_shield_volcano", "tfc:drumlins", "tfc:dune_sea", "tfc:embayments",
+            "tfc:extinct_shield_volcano", "tfc:extreme_doline_mountains", "tfc:extreme_doline_plateau",
+            "tfc:glacially_carved_mountains", "tfc:glacially_carved_oceanic_mountains",
+            "tfc:glacially_carved_volcanic_mountains", "tfc:glacially_carved_volcanic_oceanic_mountains",
+            "tfc:glaciated_mountains", "tfc:glaciated_oceanic_mountains", "tfc:glaciated_shield_volcano",
+            "tfc:glaciated_volcanic_mountains", "tfc:glaciated_volcanic_oceanic_mountains", "tfc:grassy_dunes",
+            "tfc:guano_island", "tfc:highlands", "tfc:hills", "tfc:hoodoos", "tfc:ice_sheet", "tfc:ice_sheet_edge",
+            "tfc:ice_sheet_mountains", "tfc:ice_sheet_mountains_edge", "tfc:ice_sheet_oceanic",
+            "tfc:ice_sheet_oceanic_mountains", "tfc:ice_sheet_oceanic_mountains_edge", "tfc:ice_sheet_shield_volcano",
+            "tfc:ice_sheet_shore", "tfc:ice_sheet_tuyas", "tfc:ice_sheet_tuyas_edge",
+            "tfc:ice_sheet_volcanic_mountains", "tfc:ice_sheet_volcanic_oceanic_mountains", "tfc:inverted_badlands",
+            "tfc:inverted_patterned_ground", "tfc:knob_and_kettle", "tfc:lake", "tfc:low_canyons", "tfc:lowlands",
+            "tfc:meltwater_lake", "tfc:mesas", "tfc:mountain_lake", "tfc:mountains", "tfc:mud_flats", "tfc:ocean",
+            "tfc:ocean_atolls", "tfc:ocean_reef", "tfc:ocean_ridge", "tfc:oceanic_mountain_lake",
+            "tfc:oceanic_mountains", "tfc:oceanic_volcanic_arc", "tfc:old_mountain_lake", "tfc:old_mountains",
+            "tfc:old_shield_volcano_shore", "tfc:patterned_ground", "tfc:plains", "tfc:plateau", "tfc:plateau_lake",
+            "tfc:plateau_wide", "tfc:rift_lake", "tfc:rift_valley", "tfc:river", "tfc:river_valley",
+            "tfc:rocky_plateau", "tfc:rocky_shores", "tfc:rolling_hills", "tfc:salt_flats", "tfc:salt_marsh",
+            "tfc:sea_stacks", "tfc:setback_cliffs", "tfc:shield_volcano_shore", "tfc:shilin_canyons",
+            "tfc:shilin_highlands", "tfc:shilin_hills", "tfc:shilin_plains", "tfc:shilin_plateau", "tfc:shore",
+            "tfc:stair_step_canyons", "tfc:stone_circles", "tfc:subglacial_lake", "tfc:sunken_shield_volcano",
+            "tfc:terrace_lower", "tfc:terrace_upper", "tfc:tidal_flats", "tfc:tower_karst_bay",
+            "tfc:tower_karst_canyons", "tfc:tower_karst_highlands", "tfc:tower_karst_hills", "tfc:tower_karst_lake",
+            "tfc:tower_karst_plains", "tfc:tuyas", "tfc:volcanic_island", "tfc:volcanic_mountain_islands",
+            "tfc:volcanic_mountain_lake", "tfc:volcanic_mountains", "tfc:volcanic_oceanic_mountain_lake",
+            "tfc:volcanic_oceanic_mountains", "tfc:whorled_canyons"};
+
     private static boolean declared;
 
     private ModBiomeModifiers() {}
@@ -89,6 +125,10 @@ public final class ModBiomeModifiers {
         String tikite = vein("ore_tikite", "hbm:ore_tikite", List.of(cfgSwitch(WorldgenKeys.END_ORES)), cfgCount(WorldgenKeys.END_TIKITE, 1), 6, 0, 127,
                 blockHost("minecraft:end_stone"));
         addFeatures(NS, "end_ores", "#minecraft:is_end", List.of(tikite), UNDERGROUND_ORES);
+
+        String deposits = "#" + NS + ":has_feature/bedrock_deposits";
+        addFeatures(NS, "bedrock_deposits_oil", deposits, "#minecraft:is_overworld", List.of(NS + ":bedrock_oil"), RAW_GENERATION);
+        addFeatures(NS, "bedrock_deposits_ore", deposits, "#minecraft:is_overworld", List.of(NS + ":bedrock_ore"), UNDERGROUND_ORES);
 
         surface();
     }
@@ -339,6 +379,7 @@ public final class ModBiomeModifiers {
         Features.biomeTag(NS, "has_feature/foxglove", new String[] {"minecraft:forest", "minecraft:flower_forest",
                 "minecraft:birch_forest", "minecraft:old_growth_birch_forest", "minecraft:dark_forest"}, "minecraft:pale_garden");
         Features.biomeTag(NS, "has_feature/nightshade", new String[] {"minecraft:dark_forest"}, "minecraft:pale_garden");
+        Features.biomeTag(NS, "has_feature/bedrock_deposits", new String[0], TFC_BIOMES);
     }
 
     /** 1.7 {@code HbmWorldGen.generateSurface}, the surface half. */

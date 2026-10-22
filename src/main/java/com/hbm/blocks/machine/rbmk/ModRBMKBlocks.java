@@ -163,7 +163,7 @@ public final class ModRBMKBlocks {
             .tag(BlockTag.PICKAXE);
     /** Its block model is authored; the item is the 1.7 inventory icon (slab + terminal OBJ). 1.7 RBMKTerminal has no drop override, so it drops itself. */
     public static final RegistryObject<RBMKTerminal> rbmk_terminal = nonColumn("rbmk_terminal", RBMKTerminal::new)
-            .transform(Presets.statesOnly(Variants.facing()))
+            .transform(Presets.statesOnly(EAST_MODEL))
             // 1.7 RBMKTerminal.renderInventoryBlock: the mini-panel slab plus terminal.obj
             .transform(panelItem("terminal", "hbm:textures/models/network/terminal.png", "rbmk_terminal"))
             .loot(Loot.self())

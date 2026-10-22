@@ -60,11 +60,10 @@ public final class RBMKTerminalRenderer extends GemBER<BlockEntityRBMKTerminal, 
         state.yaw = yaw(terminal.getBlockState().getValue(RBMKMiniPanelBase.FACING));
         state.color = terminal.doesRepeat ? 0xFFFF8000 : 0xFF00FF00;
 
-        boolean open = ScreenRBMKTerminal.editing(terminal);
+        state.caret = ScreenRBMKTerminal.editing(terminal);
         for (int i = 0; i < LINES; i++) {
             String label = i == 0 ? ScreenRBMKTerminal.workingLine(terminal) : terminal.history[i - 1];
-            if (label == null) label = "";
-            state.line[i] = clip(i == 0 || !label.isEmpty(), label, i == 0 && open);
+            state.label[i] = label == null ? "" : label;
         }
     }
 
@@ -98,7 +97,9 @@ public final class RBMKTerminalRenderer extends GemBER<BlockEntityRBMKTerminal, 
             pose.pushPose();
             pose.scale(scale, -scale, scale);
             pose.mulPose(Axis.YP.rotationDegrees(90F));
-            sink.submitText(pose, font, 0, -font.lineHeight / 2F, state.line[i], false,
+            // measured on the render thread, not in extract: measuring a glyph first uploads its texture
+            FormattedCharSequence line = clip(i == 0 || !state.label[i].isEmpty(), state.label[i], i == 0 && state.caret);
+            sink.submitText(pose, font, 0, -font.lineHeight / 2F, line, false,
                     Font.DisplayMode.NORMAL, 0xF000F0, state.color, 0);
             pose.popPose();
         }
@@ -115,7 +116,8 @@ public final class RBMKTerminalRenderer extends GemBER<BlockEntityRBMKTerminal, 
     }
 
     public static final class State extends CompatRenderState {
-        final FormattedCharSequence[] line = new FormattedCharSequence[LINES];
+        final String[] label = new String[LINES];
+        boolean caret;
         float yaw;
         int color;
     }

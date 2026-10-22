@@ -9,6 +9,7 @@ import com.hbm.items.special.ItemBedrockOreBase;
 import com.hbm.tileentity.BedrockOreBlockEntity;
 import it.unimi.dsi.fastutil.HashCommon;
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -122,9 +123,9 @@ public final class BedrockOreFeature {
                 for (int dy = 1; dy < 7; dy++) {
                     pos.set(x, origin.getY() + dy, z);
                     BlockState state = level.getBlockState(pos);
-                    // 1.7 replaced stone here; at the modern world floor that stone is deepslate
+                    // 1.7 replaced stone here; at the modern world floor that stone is deepslate, or TerraFirmaCraft's rock
                     if ((dy < 3 || state.is(Blocks.BEDROCK))
-                            && (state.is(Blocks.STONE) || state.is(Blocks.DEEPSLATE) || state.is(Blocks.BEDROCK))) {
+                            && (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Blocks.BEDROCK))) {
                         level.setBlock(pos, deposit.depthRock().defaultBlockState(), 2);
                     }
                 }
