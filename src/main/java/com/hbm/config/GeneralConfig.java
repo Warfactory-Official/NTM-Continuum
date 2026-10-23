@@ -136,7 +136,7 @@ public final class GeneralConfig {
     public static boolean enable528NetherBurn = false;
     /** 1.7 {@code X528_enable528PressurizedRecipes}: pressurised chemical plant inputs (528 mode only; recipe flag {@code enable_528_pressurized}). */
     public static boolean enable528PressurizedRecipes = false;
-    /** 1.7 {@code X528_enable528ExplosiveEnergistics}: AE2 blocks explode (528 mode only; no AE2 here). */
+    /** 1.7 {@code X528_enable528ExplosiveEnergistics}: right-clicked AE2 blocks explode (528 mode only). */
     public static boolean enable528ExplosiveEnergistics = false;
     /** 1.7 {@code X528_enable528MachineGravity}: large machines need a foundation (528 mode only; tilting not ported). */
     public static boolean enable528MachineGravity = false;

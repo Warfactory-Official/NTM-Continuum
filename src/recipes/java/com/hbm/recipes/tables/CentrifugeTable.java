@@ -279,6 +279,12 @@ public final class CentrifugeTable extends RecipeSource<Row> {
                 new TagOutput(quartz, 2),
                 new TagOutput(quartz, 2),
                 new TagOutput(quartz, 2) });
+        // port: AE2 has no certus ore any more, so its mature clusters stand in, as in ntm-next
+        put(new TagStack(TagKey.create(Registries.ITEM, Ids.of("hbm", "certus_quartz_clusters"))), new Output[] {
+                new TagOutput(quartz, 2),
+                new TagOutput(quartz, 2),
+                new TagOutput(quartz, 2),
+                new TagOutput(quartz, 2) });
         requires = List.of();
 
         put(new ComparableStack(Items.BLAZE_ROD), new ItemStack[] {new ItemStack(Items.BLAZE_POWDER, 1), new ItemStack(Items.BLAZE_POWDER, 1), new ItemStack(ModFuelItems.powder_fire.get(), 1), new ItemStack(ModFuelItems.powder_fire.get(), 1) });

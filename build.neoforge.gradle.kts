@@ -172,17 +172,19 @@ tasks.matching { it.name == "runClient" || it.name == "prepareClientRun" }.confi
 val ccServerMod: Configuration by configurations.creating
 val sableServerMod: Configuration by configurations.creating
 val kubejsServerMod: Configuration by configurations.creating
+val ae2ServerMod: Configuration by configurations.creating
 for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestServer")) {
     val modsDir = layout.projectDirectory.dir("runs/$run/mods")
     val sync = tasks.register("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
-        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run, -Pkubejs.run)."
-        inputs.files(ccServerMod, sableServerMod, kubejsServerMod)
+        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run, -Pkubejs.run, -Pae2.run)."
+        inputs.files(ccServerMod, sableServerMod, kubejsServerMod, ae2ServerMod)
         outputs.dir(modsDir)
         doLast {
             project.sync {
                 from(ccServerMod)
                 from(sableServerMod)
                 from(kubejsServerMod)
+                from(ae2ServerMod)
                 into(modsDir)
             }
         }
@@ -232,6 +234,15 @@ dependencies {
     // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency. Jade carries mixins, hence `devModJar`.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devModJar("maven.modrinth:jade:$it") }
+
+    // Applied Energistics 2 and its required GuideME, dev runs only (`-Pae2.run=true`): HBM's machines reach AE2's
+    // pattern providers through Golem Core's dev.golem.core.autocraft, so HBM has no AE2 dependency. Both carry mixins.
+    if (propOrNull("ae2.run") == "true") {
+        for (conf in listOf(devModJar, ae2ServerMod)) {
+            propOrNull("deps.ae2")?.let { add(conf.name, "maven.modrinth:ae2:$it") { isTransitive = false } }
+            propOrNull("deps.ae2_guideme")?.let { add(conf.name, "maven.modrinth:guideme:$it") { isTransitive = false } }
+        }
+    }
 
     // Mo' Bends, client dev runs only (`-Pmobends.run=true`), with the Architectury API it requires. HBM's armour follows
     // its bent skeleton through Golem Core (dev.golem.core.render.BodyAnimations); nothing here compiles against it.

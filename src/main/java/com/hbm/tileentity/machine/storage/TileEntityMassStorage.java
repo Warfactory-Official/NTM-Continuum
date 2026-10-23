@@ -179,6 +179,61 @@ public class TileEntityMassStorage extends TileEntityCrateBase implements IRORVa
         return true;
     }
 
+    /** 1.7: the stockpile plus matching input and output stacks, as AE2 storage buses see it. */
+    public int getTotalStockpile() {
+        ItemStack type = getFilterType();
+        if (type.isEmpty()) return 0;
+        int result = stockpile;
+        ItemStack in = inventory.getStackInSlot(INPUT_SLOT);
+        if (ItemStacks.sameItemAndData(type, in)) result += in.getCount();
+        ItemStack out = inventory.getStackInSlot(OUTPUT_SLOT);
+        if (ItemStacks.sameItemAndData(type, out)) result += out.getCount();
+        return result;
+    }
+
+    /** Returns the remainder that did not fit; with {@code actually} false only predicts it. */
+    public int increaseTotalStockpile(int amount, boolean actually) {
+        return changeTotalStockpile(amount, actually, +1);
+    }
+
+    /** Returns the remainder that could not be taken; with {@code actually} false only predicts it. */
+    public int decreaseTotalStockpile(int amount, boolean actually) {
+        return changeTotalStockpile(amount, actually, -1);
+    }
+
+    private int changeTotalStockpile(int amount, boolean actually, int sign) {
+        ItemStack type = getFilterType();
+        if (type.isEmpty()) return amount;
+
+        int stockpileAvail = sign > 0 ? capacity - stockpile : stockpile;
+        if (amount > 0 && stockpileAvail > 0) {
+            int deposit = Math.min(amount, stockpileAvail);
+            if (actually) stockpile += sign * deposit;
+            amount -= deposit;
+        }
+        amount = changeSlot(INPUT_SLOT, type, amount, actually, sign);
+        amount = changeSlot(OUTPUT_SLOT, type, amount, actually, sign);
+        if (actually) setChanged();
+        return amount;
+    }
+
+    private int changeSlot(int slot, ItemStack type, int amount, boolean actually, int sign) {
+        ItemStack stack = inventory.getStackInSlot(slot);
+        int avail = 0;
+        if (ItemStacks.sameItemAndData(type, stack)) {
+            avail = sign > 0 ? stack.getMaxStackSize() - stack.getCount() : stack.getCount();
+        } else if (stack.isEmpty()) {
+            avail = sign > 0 ? type.getMaxStackSize() : 0;
+        }
+        if (amount <= 0 || avail <= 0) return amount;
+        int moved = Math.min(amount, avail);
+        if (actually) {
+            int count = (stack.isEmpty() ? 0 : stack.getCount()) + sign * moved;
+            inventory.setStackInSlot(slot, count == 0 ? ItemStack.EMPTY : ItemStacks.copyWithCount(type, count));
+        }
+        return amount - moved;
+    }
+
     /** 1.7 {@code quickExtract}: one full stack of the filtered type, or empty when output is off or the stockpile is short. */
     public ItemStack quickExtract() {
         ItemStack type = getFilterType();

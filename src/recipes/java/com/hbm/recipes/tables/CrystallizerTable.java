@@ -266,6 +266,9 @@ public final class CrystallizerTable extends RecipeSource<Row> {
         // 1.7 copies the first crystalCertusQuartz stack, 12 of it, when there is one
         TagKey<Item> quartz = tag("gems/certus_quartz");
         registerRecipe(ore("certus_quartz"), new CrystallizerRecipe(new TagOutput(quartz, 12), baseTime).requires(quartz));
+        // port: AE2 has no certus ore any more, so its mature clusters stand in, as in ntm-next
+        registerRecipe(new TagStack(TagKey.create(Registries.ITEM, Ids.of("hbm", "certus_quartz_clusters"))),
+                new CrystallizerRecipe(new TagOutput(quartz, 12), baseTime).requires(quartz));
 
         /// COMPAT WHITE PHOSPHORUS DUST ///
         TagKey<Item> dustWhitePhosphorus = tag("dusts/white_phosphorus");

@@ -16,6 +16,7 @@ import com.hbm.hazard.type.HazardTypeRadiation;
 import com.hbm.hazard.type.HazardTypeToxic;
 import com.hbm.hazard.type.IHazardType;
 import com.hbm.hazard.transformer.HazardTransformerCustom;
+import com.hbm.hazard.transformer.HazardTransformerRadiationME;
 import com.hbm.hazard.transformer.HazardTransformerRadiationNBT;
 import com.hbm.hazard.transformer.HazardTransformerZirnox;
 import com.hbm.hazard.transformer.IHazardTransformer;
@@ -142,7 +143,8 @@ public class HazardRegistry {
             if (spec != null) entries.addAll(spec.toData().entries);
         }));
         // 1.7 HazardRegistry:350-355 (the MK2 pile rods) are item entries of hbm:hazards: one item per rod type here.
-        // RadiationContainer is added by ModUtilityToolContent; ForgeFluid / RadiationME have no port counterpart.
+        HazardSystem.trafos.add(new HazardTransformerRadiationME());
+        // RadiationContainer is added by ModUtilityToolContent; ForgeFluid has no port counterpart.
     }
 
     // The item and material hazards that 1.7 registered here ({@code registerItems}, the OreDictManager hazard frames,

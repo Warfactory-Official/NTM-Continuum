@@ -8,8 +8,8 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Stack-sensitive hazard rewriting (runs on every lookup, before/after the registered data is
- * collected). Ported from the fork's {@code IHazardTransformer}. The ForgeFluid/ME/Container
- * transformers are deferred with their systems.
+ * collected). Ported from the fork's {@code IHazardTransformer}. The ForgeFluid transformer is
+ * deferred with its system.
  *
  * <p>Both phases default to doing nothing, so a transformer that only cares about one of them is a
  * lambda: {@link #post} for the usual case (nothing downstream can clear what it adds, because
