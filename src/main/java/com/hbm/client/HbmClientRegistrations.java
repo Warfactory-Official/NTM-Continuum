@@ -602,6 +602,7 @@ public final class HbmClientRegistrations {
         BlockTraitTooltips.register();
         StandardInfo.setShiftHeldPoll(CanneryClient::shiftHeld);
         GunRecoil.register();
+        LampLights.register();
         GrenadeUniversalClient.register(); // 1.7 ItemGrenadeUniversal.onUpdate's client half (arm swing)
         CraneKeybindHandler.register();
         UtilityToolClientRegistrations.installKeybinds();

@@ -7,6 +7,8 @@ fun prop(name: String): String = property(name) as String
 fun propOrNull(name: String): String? = (findProperty(name) as String?)?.takeIf { it.isNotBlank() }
 
 val mcVersion = stonecutter.current.version
+apply(from = rootProject.file("../Golem-Core/gradle/mod/gemrender-local.gradle.kts"))
+val localGemRender = extra.properties["golem.gemrender.local"]
 val javaVersion = prop("java_version").toInt()
 val modId = prop("mod.id")
 
@@ -254,10 +256,11 @@ dependencies {
     // GemRender (with Flywheel nested or provided) instances gem-declared machines through Golem Core; every machine
     // keeps its vanilla BER. A mods-folder jar (`devModJar`) so its nested Flywheel and mixin configs load.
     // `-Pgemrender.run=false` launches without it, as a player without GemRender would.
-    // `-Pgemrender.jar=<path>` runs a local GemRender build instead of the CurseForge file.
+    // `-Pgemrender.jar=<path>` runs that GemRender jar instead; `gemrender.dir` is Golem Core's gemrender-local script.
     if (propOrNull("gemrender.run") != "false") {
-        val localGem = propOrNull("gemrender.jar")
-        if (localGem != null) devModJar(files(localGem))
+        val gemJar = propOrNull("gemrender.jar")
+        if (gemJar != null) devModJar(files(gemJar))
+        else if (localGemRender != null) devModJar(localGemRender)
         else propOrNull("deps.gemrender")?.let { devModJar("curse.maven:gemrender-1735539:$it") }
     }
 

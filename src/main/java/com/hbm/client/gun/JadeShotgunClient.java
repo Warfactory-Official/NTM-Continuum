@@ -60,6 +60,8 @@ public final class JadeShotgunClient {
     /** For the harness: shots seen and smoke quads submitted since start. */
     public static int shotsSeen;
     public static int smokeDraws;
+    /** The game time of the local player's last shot: the muzzle lights for that tick. */
+    public static long lastShotTime = Long.MIN_VALUE;
 
     private JadeShotgunClient() {}
 
@@ -110,6 +112,7 @@ public final class JadeShotgunClient {
         LocalPlayer player = mc.player;
         if (player == null || mc.level == null) return;
         shotsSeen++;
+        lastShotTime = mc.level.getGameTime();
         if (mc.options.getCameraType().isFirstPerson()) verticalVelocity = 10F;
         float partial = Frames.partialTick();
         Vec3 start = new Vec3(-0.28, -0.1, 2).xRot(-(float) Math.toRadians(player.getXRot()))

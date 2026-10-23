@@ -26,9 +26,8 @@ import net.minecraft.world.level.Level;
  *
  * <p>The lamp follows the player's HUD toggle ({@code enableHUD}, the head toggle key): the server mirrors it into
  * the stack's {@code isOn} flag, playing the flint-and-steel click (pitch 1.5) when it lights and a fizz (0.5,
- * pitch 2) when it goes out, and the worn model draws the flame fullbright while it is set. 1.7 then pushed block
- * light into the client's light map along the look ray every other tick; the modern light engine has no client-side
- * write, so that dynamic light is not ported.
+ * pitch 2) when it goes out, and the worn model draws the flame fullbright while it is set. The lamp itself is
+ * {@code LampLights}.
  */
 public class ArmorNo9 extends ArmorModel implements IAttackHandler, IDamageHandler {
 

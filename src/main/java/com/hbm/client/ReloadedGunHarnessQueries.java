@@ -24,6 +24,7 @@ public final class ReloadedGunHarnessQueries {
 
     public static void register() {
         HarnessQueryRegistry.register("hbm_reloaded_guns", ReloadedGunHarnessQueries::query);
+        HarnessQueryRegistry.register("hbm_lamp_lights", (mc, params) -> LampLights.query());
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {

@@ -24,9 +24,17 @@ side = "BOTH"
 [[dependencies.${mod_id}]]
 modId = "golemcore"
 mandatory = true
-versionRange = "[1.0.0,)"
+versionRange = "[1.0.1,)"
 ordering = "AFTER"
 side = "BOTH"
+
+# GemRender 0.1.14 has no lights here and 0.1.17 crashes with Embeddium.
+[[dependencies.${mod_id}]]
+modId = "gemrender"
+mandatory = false
+versionRange = "(,0.1.14),(0.1.14,0.1.17),(0.1.17,)"
+ordering = "NONE"
+side = "CLIENT"
 
 [[dependencies.${mod_id}]]
 modId = "minecraft"

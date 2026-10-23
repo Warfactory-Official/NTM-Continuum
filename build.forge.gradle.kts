@@ -7,6 +7,8 @@ fun prop(name: String): String = property(name) as String
 fun propOrNull(name: String): String? = (findProperty(name) as String?)?.takeIf { it.isNotBlank() }
 
 val mcVersion = stonecutter.current.version
+apply(from = rootProject.file("../Golem-Core/gradle/mod/gemrender-local.gradle.kts"))
+val localGemRender = extra.properties["golem.gemrender.local"]
 val javaVersion = prop("java_version").toInt()
 val modId = prop("mod.id")
 
@@ -168,7 +170,8 @@ dependencies {
     // GemRender (with Flywheel nested) instances gem-declared machines through Golem Core; every machine keeps its
     // vanilla BER. `-Pgemrender.run=false` launches without it, as a player without GemRender would.
     if (propOrNull("gemrender.run") != "false") {
-        propOrNull("deps.gemrender")?.let { modRuntimeOnly("curse.maven:gemrender-1735539:$it") }
+        if (localGemRender != null) modRuntimeOnly(localGemRender)
+        else propOrNull("deps.gemrender")?.let { modRuntimeOnly("curse.maven:gemrender-1735539:$it") }
     }
 
     // Embeddium is the Forge port of Sodium — Sodium itself ships no Forge build, so this is the

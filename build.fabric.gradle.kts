@@ -122,6 +122,8 @@ fun computerCraftLibraries(): FileCollection =
         ?: emptyList<File>())
 
 val mcVersion = stonecutter.current.version
+apply(from = rootProject.file("../Golem-Core/gradle/mod/gemrender-local.gradle.kts"))
+val localGemRender = extra.properties["golem.gemrender.local"]
 val javaVersion = prop("java_version").toInt()
 val modId = prop("mod.id")
 
@@ -403,13 +405,11 @@ dependencies {
 
     // GemRender instances gem-declared machines through Golem Core; every machine keeps its vanilla BER, which draws
     // whenever GemRender is absent or `/flywheel backend off`. `-Pgemrender.run=false` launches without it, as a
-    // player without GemRender would. 26.1 has no published build: Golem Core's runtime classpath carries its vendored one.
+    // player without GemRender would. Its 1.x Fabric jars nest Flywheel, but a Loom dev run does not load a dependency's
+    // nested jars, so Flywheel (the nested version) is added beside it.
     if (propOrNull("gemrender.run") != "false") {
-        when (val gem = propOrNull("deps.gemrender")) {
-            null -> {}
-            "vendor" -> {}
-            else -> devRuntime("curse.maven:gemrender-1735539:$gem")
-        }
+        if (localGemRender != null) devRuntime(localGemRender)
+        else propOrNull("deps.gemrender")?.let { devRuntime("curse.maven:gemrender-1735539:$it") }
         propOrNull("deps.gemrender_flywheel")?.let { devRuntime("dev.engine-room.flywheel:flywheel-fabric-$mcVersion:$it") }
     }
 
