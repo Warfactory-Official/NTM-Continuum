@@ -174,10 +174,10 @@ public final class GunItemDeclarations {
         ItemRendererDeclarations.model("gun_egon", "egon", "teisr_bare");
         ItemRendererDeclarations.model("gun_jshotgun", "jshotgun", "teisr_bare");
         // port: 1.12.2 CraftingManager's jade shotgun, a gun 1.7 does not have. Its two Uboiniks are 1.7's double-barrel
-        // shotgun and its spinning light is the halogen floodlight.
+        // shotgun, its advanced rifle mechanism is 1.7's weapon steel mechanism and its spinning light is the halogen floodlight.
         shaped(NS, "gun_jshotgun", "hbm:gun_jshotgun", rows("LPP", "SSW", "PPD"),
                 "L", ItemIds.spotlight_halogen, "P", TagIds.plates_steel, "S", ItemIds.gun_double_barrel,
-                "W", ItemIds.mechanism_rifle_2, "D", TagIds.dyes_green);
+                "W", TagIds.mechanisms_weaponsteel, "D", TagIds.dyes_green);
         Dejson.item(NS, "gun_tau")
                 .definition(gun("hbm:item/gun_obj_base", "tau")).oversizedInGui().register();
         Dejson.item(NS, "gun_tesla_cannon")
