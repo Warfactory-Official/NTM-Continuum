@@ -86,7 +86,13 @@ public class BlockBobble extends BlockTrinket {
         LEAFIA("りー (Ri/Leafia)", "Leafia", "Custom Control Panel shenanigans$and porting (such as RoR panels) since 2026", "Control panel #1 sniffer$Also 1.12.2 sniffer$$This was the best I could model", false, "BOARD_BLANK"),
         HACKER6329("Hacker6329", "Hacker6329", "Partially fillable fluid barrels and some fixes.", "\"movblock i told you my v2 system wasn't the issue.\"", true, "CARD_BOARD",
                 ShadyUtil.Hacker6329),
-        EOS("EOS", "EOS", "Ported some stuff. Refactor code", "string[0] = EOS;", true, "MEM_16K_A", ShadyUtil.EOS);
+        EOS("EOS", "EOS", "Ported some stuff. Refactor code", "string[0] = EOS;", true, "MEM_16K_A", ShadyUtil.EOS),
+        GOLEM("TheOriginalGolem", "TheOriginalGolem", "NTM: Continuum, Boxy,$helped with multiple Warfactory projects, And Previously Maintained The 1.12 Reloaded Port.", "mixin hell", true, "CPU_CACHE",
+                ShadyUtil.Golem),
+        NORWOOD("MrNorwood", "MrNorwood", "NTM:CE, involved in both NTM: NEXT and NTM: Continuum,$and the Warfactory project as a whole.", "\"NTM sucks, Notch is fat, and Warfactory won.\"", true, "CPU_CLOCK",
+                ShadyUtil.MrNorwood),
+        SILENTYETI("SilentYeti", "SilentYeti", "Warfactory Media Manager, did some porting on NTM:CE,$rebalanced Glider Jetpack, #1 playtester", "\"My Shrine will stand in Memory of my Glory\"", true, "CPU_REGISTER",
+                ShadyUtil.SilentYeti);
 
         public static final BobbleType[] VALUES = values();
 
