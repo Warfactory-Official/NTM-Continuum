@@ -56,6 +56,7 @@ import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.blocks.material.MaterialCompletionRegistrations;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.capability.ForeignFluids;
+import com.hbm.capability.ForeignItems;
 import com.hbm.compat.HbmBlockInfo;
 import com.hbm.compat.computercraft.ComputerCraft;
 import com.hbm.handler.ae2.AE2CompatHandler;
@@ -402,6 +403,8 @@ public final class MainRegistry {
         NTMToolHandler.register();
         // Machines and container items on the loaders' fluid capabilities.
         ForeignFluids.register();
+        // Machine and crate contents as a read-only view for other mods' viewers
+        ForeignItems.register();
         // 1.7's OpenComputers components as CC: Tweaked peripherals, when CC is loaded
         ComputerCraft.init();
         // AE2 pattern providers push jobs into the recipe machines, when AE2 is loaded

@@ -1842,6 +1842,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("chemical_mist_on_mist", 40, 8, () -> ChemicalImpactGameTests::mistOnMist);
     public static final GameTests.Function CHEMICAL_ARMOUR_UNBREAKING =
             TESTS.function("chemical_armour_unbreaking", 40, 8, () -> ChemicalImpactGameTests::unbreaking);
+    public static final GameTests.Function FOREIGN_ITEMS_READ_ONLY_VIEW =
+            TESTS.function("foreign_items_read_only_view", 20, () -> ForeignItemsGameTests::readOnlyView);
 
     public static void init() {}
 
