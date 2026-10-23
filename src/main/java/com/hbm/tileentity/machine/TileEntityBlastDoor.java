@@ -15,6 +15,8 @@ import com.hbm.blocks.ModDoorBlocks;
 import com.hbm.blocks.machine.DummyBlockBlast;
 import com.hbm.sound.ModDoorSounds;
 import com.hbm.tileentity.ModDoorBlockEntities;
+import com.hbm.handler.radiation.RadiationSystemNT;
+import net.minecraft.server.level.ServerLevel;
 
 /**
  * Port of 1.7.10 {@code TileEntityBlastDoor}: the old six-high blast door. The leaf is six dummy
@@ -125,6 +127,12 @@ public class TileEntityBlastDoor extends TileEntityLockableBase {
         }
     }
 
+    /** 1.12.2 {@code markSectionsForRebuild}: the door seals only while closed, so its column re-partitions. */
+    private void markRadiation() {
+        if (!(level instanceof ServerLevel server)) return;
+        for (int i = 0; i <= 5; i++) RadiationSystemNT.markSectionForRebuild(server, worldPosition.above(i));
+    }
+
     private void playSound(SoundEvent sound, float volume, float pitch) {
         if (level == null) return;
         level.playSound(null, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), sound, SoundSource.BLOCKS, volume, pitch);
@@ -135,6 +143,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase {
             toggleSerial++;
             isOpening = true;
             state = 1;
+            markRadiation();
             playSound(ModSounds.REACTOR_START.get(), 0.5F, 0.75F);
         }
     }
@@ -155,6 +164,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase {
 
     public void finishClose() {
         state = 0;
+        markRadiation();
         playSound(ModDoorSounds.REACTOR_STOP.get(), 0.5F, 1.0F);
     }
 

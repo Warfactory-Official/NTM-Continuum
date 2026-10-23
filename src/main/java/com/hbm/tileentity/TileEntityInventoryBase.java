@@ -46,6 +46,12 @@ public abstract class TileEntityInventoryBase extends TileEntityLoadedBase imple
             public boolean isItemValid(int slot, ItemStack stack) {
                 return TileEntityInventoryBase.this.isItemValidForSlot(slot, stack);
             }
+
+            /** 1.7 {@code getInventoryStackLimit}, for automation and other mods as well as the GUI. */
+            @Override
+            public int getSlotLimit(int slot) {
+                return Math.min(super.getSlotLimit(slot), TileEntityInventoryBase.this.getMaxStackSize());
+            }
         };
     }
 

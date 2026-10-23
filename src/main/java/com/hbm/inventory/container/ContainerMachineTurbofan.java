@@ -1,7 +1,6 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModMenus;
-import com.hbm.items.ModItems;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
@@ -70,12 +69,12 @@ public class ContainerMachineTurbofan extends AbstractContainerMenu {
             int invStart = MACHINE_SLOTS, invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (Library.isMachineUpgrade(stack) || (fan != null && stack.is(ModItems.flame_pony.get()))) {
-                if (!moveItemStackTo(stack, 2, 3, false)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!moveItemStackTo(stack, 4, 5, false)) return ItemStack.EMPTY;
+            } else if (Library.isMachineUpgrade(stack)) {
+                if (!moveItemStackTo(stack, 2, 3, false)) return ItemStack.EMPTY;
             } else if (!moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();
         }

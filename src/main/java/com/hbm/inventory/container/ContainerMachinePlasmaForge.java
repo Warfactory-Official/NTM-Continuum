@@ -2,8 +2,6 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
-import com.hbm.inventory.RecipesCommon;
-import com.hbm.inventory.recipes.PlasmaForgeRecipe;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge;
@@ -118,14 +116,9 @@ public class ContainerMachinePlasmaForge extends AbstractContainerMenu {
         } else if (source.getItem() instanceof ItemBlueprints) {
             if (!moveItemStackTo(source, TileEntityFusionPlasmaForge.SLOT_BLUEPRINT,
                     TileEntityFusionPlasmaForge.SLOT_BLUEPRINT + 1, false)) return ItemStack.EMPTY;
-        } else if (matchesRecipeInput(source)) {
-            if (!moveItemStackTo(source, TileEntityFusionPlasmaForge.FIRST_INPUT,
-                    TileEntityFusionPlasmaForge.SLOT_OUTPUT, false)) {
-                moveBetweenPlayerSections(source, index);
-            }
         } else if (!moveItemStackTo(source, TileEntityFusionPlasmaForge.SLOT_BOOSTER,
                 TileEntityFusionPlasmaForge.SLOT_OUTPUT, false)) {
-            moveBetweenPlayerSections(source, index);
+            return ItemStack.EMPTY;
         }
 
         if (source.getCount() == originalCount) return ItemStack.EMPTY;
@@ -138,26 +131,6 @@ public class ContainerMachinePlasmaForge extends AbstractContainerMenu {
 
         slot.onTake(player, result.copyWithCount(movedCount));
         return result;
-    }
-
-    private void moveBetweenPlayerSections(ItemStack source, int index) {
-        if (index < PLAYER_INV_START + 27) {
-            moveItemStackTo(source, PLAYER_INV_START + 27, PLAYER_INV_END, false);
-        } else {
-            moveItemStackTo(source, PLAYER_INV_START, PLAYER_INV_START + 27, false);
-        }
-    }
-
-    private boolean matchesRecipeInput(ItemStack stack) {
-        if (forge == null) return false;
-        PlasmaForgeRecipe recipe =
-                forge.plasmaModule.getRecipe() instanceof PlasmaForgeRecipe plasma
-                        ? plasma : null;
-        if (recipe == null || recipe.inputItem == null) return false;
-        for (RecipesCommon.AStack input : recipe.inputItem) {
-            if (input != null && input.matchesRecipe(stack, true)) return true;
-        }
-        return false;
     }
 
     /** Modern equivalent of the legacy SlotCraftingOutput. */

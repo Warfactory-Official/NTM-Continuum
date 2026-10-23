@@ -79,10 +79,10 @@ public class ContainerPyroOven extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
-            } else if (Library.isMachineUpgrade(stack)) {
-                if (!this.moveItemStackTo(stack, 4, 6, false)) return ItemStack.EMPTY;
             } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
+            } else if (Library.isMachineUpgrade(stack)) {
+                if (!this.moveItemStackTo(stack, 4, 6, false)) return ItemStack.EMPTY;
             } else {
                 if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
             }

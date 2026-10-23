@@ -64,11 +64,11 @@ public final class ModConveyorBlocks {
     private static final Preset SELF_PICKAXE = handle -> handle.loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     private static final UnaryOperator<BlockBehaviour.Properties> BELT =
-            p -> p.strength(2.0F, 2.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion();
+            p -> p.strength(2.0F, 1.2F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion();
     private static final UnaryOperator<BlockBehaviour.Properties> CRANE =
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
     private static final UnaryOperator<BlockBehaviour.Properties> CRANE_OPEN =
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion();
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion();
 
     // belts: no creative tab in 1.7, the wand is their item
     public static final RegistryObject<BlockConveyor> CONVEYOR = REG.block("conveyor", BlockConveyor::new, BELT)

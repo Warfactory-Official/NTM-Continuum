@@ -32,7 +32,7 @@ public class BlockEntityRBMKOutlet extends TileEntityMachineBase implements IFlu
         if (RBMKDials.getReasimBoilers(level)) for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos adjacent = worldPosition.relative(direction);
             if (!(level.getBlockState(adjacent).getBlock() instanceof RBMKBase)) continue;
-            BlockPos core = MultiblockSurface.coreOfCell(level, adjacent);
+            BlockPos core = MultiblockSurface.coreOfAny(level, adjacent);
             if (core == null || !(level.getBlockEntity(core) instanceof BlockEntityRBMKBase column)) continue;
             int moved = Math.min(steam.getMaxFill() - steam.getFill(), column.reasimSteam);
             if (moved > 0) { column.reasimSteam -= moved; steam.setFill(steam.getFill() + moved); column.markChanged(); markChanged(); }

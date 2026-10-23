@@ -25,7 +25,7 @@ public final class ModWeaponTableBlocks {
     public static final RegistryObject<BlockWeaponTable> MACHINE_WEAPON_TABLE = REG.<BlockWeaponTable>block(
                     "machine_weapon_table", BlockWeaponTable::new,
                     // 1.7 Material.iron, setHardness(5.0F).setResistance(10.0F): drops only to a pickaxe.
-                    p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
+                    p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL))
             // The block model is authored (models/block/machine_weapon_table.json, a gun_table cube_bottom_top).
             .transform(Presets.statesOnly(Variants.simple()))
             .loot(Loot.self())

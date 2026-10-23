@@ -43,7 +43,7 @@ public final class ModEnergyBedrockBlocks {
     private static final Preset IRON = handle -> handle.loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     private static UnaryOperator<BlockBehaviour.Properties> iron() {
-        return p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
+        return p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
     }
 
     @SuppressWarnings("unchecked")

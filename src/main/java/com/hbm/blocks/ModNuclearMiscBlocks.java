@@ -51,22 +51,22 @@ public final class ModNuclearMiscBlocks {
     /** 1.7: {@code Material.iron}, hardness 10, resistance 10. */
     public static final RegistryObject<MachineRadiolysis> MACHINE_RADIOLYSIS = REG.block(
             "machine_radiolysis", MachineRadiolysis::new,
-            p -> p.strength(10.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(10.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOLDED_MACHINE);
     /** 1.7 {@code machine_reactor_breeding}, registry id {@code machine_reactor}. */
     public static final RegistryObject<MachineReactorBreeding> MACHINE_REACTOR_BREEDING = REG.block(
             "machine_reactor", MachineReactorBreeding::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOLDED_MACHINE);
     /** 1.7 {@code reactor_research}, registry id {@code machine_reactor_small}. */
     public static final RegistryObject<ReactorResearch> REACTOR_RESEARCH = REG.block(
             "machine_reactor_small", ReactorResearch::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOLDED_MACHINE);
     /** 1.7 icons: top for up/down, front on the facing, back opposite, side elsewhere. */
     public static final RegistryObject<MachineReactorControl> MACHINE_CONTROLLER = REG.block(
             "machine_controller", MachineReactorControl::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.shape(Models.parented("minecraft:block/cube", Slots.of("particle", "hbm:blocks/machine_controller_side")
                             .and("up", "hbm:blocks/machine_controller_top").and("down", "hbm:blocks/machine_controller_top")
                             .and("north", "hbm:blocks/machine_controller").and("south", "hbm:blocks/machine_controller_back")

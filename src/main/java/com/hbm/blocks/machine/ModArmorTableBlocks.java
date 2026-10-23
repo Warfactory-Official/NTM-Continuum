@@ -26,7 +26,7 @@ public final class ModArmorTableBlocks {
     public static final RegistryObject<BlockArmorTable> ARMOR_TABLE = REG.<BlockArmorTable>block(
             "machine_armor_table", BlockArmorTable::new,
             // 1.7 BlockArmorTable(Material.iron) has no drop override: it drops itself, pickaxe-harvested.
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/armor_table_bottom", "hbm:blocks/armor_table_side", "hbm:blocks/armor_table_top")).states(Variants.simple()).blockItemDirect())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);

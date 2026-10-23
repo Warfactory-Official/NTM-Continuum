@@ -1,11 +1,8 @@
 package com.hbm.inventory.container;
 
-import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
-import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineElectrolyser;
 import dev.golem.core.gui.Menus;
@@ -20,7 +17,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
@@ -130,16 +126,14 @@ public final class ContainerMachineElectrolyser extends AbstractContainerMenu {
             result = stack.copy();
             if (index < machineSlotCount) {
                 if (!moveItemStackTo(stack, machineSlotCount, machineSlotCount + 36, true)) return ItemStack.EMPTY;
-            } else if (metal && ElectrolyserMetalRecipes.getRecipe(stack) != null) {
-                if (!moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
-            } else if (!metal && stack.getItem() instanceof IItemFluidId) {
-                if (!moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
             } else if (Library.isMachineUpgrade(stack)) {
                 if (!moveItemStackTo(stack, 1, 3, false)) return ItemStack.EMPTY;
-            } else if (!metal && isFluidContainer(stack)) {
-                if (!moveItemStackTo(stack, 5, 6, false) && !moveItemStackTo(stack, 7, 11, false)) return ItemStack.EMPTY;
+            } else if (metal) {
+                if (!moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
+            } else if (stack.getItem() instanceof IItemFluidId) {
+                if (!moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             } else {
                 return ItemStack.EMPTY;
             }
@@ -158,11 +152,5 @@ public final class ContainerMachineElectrolyser extends AbstractContainerMenu {
         electrolyser.lastSelectedGUI = targetMetal ? 1 : 0;
         Menus.openWithPos(serverPlayer, electrolyser, electrolyser.getBlockPos());
         return true;
-    }
-
-    private static boolean isFluidContainer(ItemStack stack) {
-        return stack.getItem() instanceof IFillableItem
-                || stack.getItem() instanceof ItemFluidBucket
-                || stack.is(Items.BUCKET);
     }
 }

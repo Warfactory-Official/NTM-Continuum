@@ -83,7 +83,8 @@ public class TileEntityWasteDrum extends TileEntityMachineBase implements Worldl
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return isItemValidForSlot(slot, stack);
+        // a hopper merges into a filled slot past the stack limit, and cooling turns a whole stack into one item
+        return isItemValidForSlot(slot, stack) && inventory.getStackInSlot(slot).isEmpty();
     }
 
     @Override

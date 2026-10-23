@@ -519,6 +519,14 @@ public final class HazardRegistrySource {
         frame("xe135").rad(xe135).hot(10F).dustSmall("powder_xe135_tiny").dust("powder_xe135");
         frame("cs137").rad(cs137).hot(3F).hydro(3F).dustSmall("powder_cs137_tiny").dust("powder_cs137");
         frame("at209").rad(at209).hot(20F).dust("powder_at209");
+
+        // port: 1.12.2-only items keep their 1.12.2 frames' hazards (1.7 has no item for these shapes)
+        frame(null).rad(co60).hot(1F).dustSmall("powder_co60_tiny");
+        frame(null).rad(au198).hot(5F).dustSmall("powder_au198_tiny");
+        frame(null).rad(pb209).blinding(50F).hot(7F).dust("powder_pb209").dustSmall("powder_pb209_tiny");
+        frame(null).rad(i131).hot(1F).ingot("ingot_i131");
+        frame(null).rad(at209).hot(20F).dustSmall("powder_at209_tiny");
+        register("crystal_asbestos", makeData(ASBESTOS_, 1F * crystal));
     }
 
     private static Frame frame(String tagName) {

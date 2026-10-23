@@ -86,9 +86,7 @@ public class ContainerFusionKlystron extends AbstractContainerMenu {
             if (!this.moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, true)) return ItemStack.EMPTY;
         } else if (Library.isBattery(stack)) {
             if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
-        } else if (index < PLAYER_INV_START + 27) {
-            if (!this.moveItemStackTo(stack, PLAYER_INV_START + 27, PLAYER_INV_END, false)) return ItemStack.EMPTY;
-        } else if (!this.moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_START + 27, false)) {
+        } else {
             return ItemStack.EMPTY;
         }
 

@@ -97,7 +97,7 @@ public final class ModDFCBlocks {
 
     private static BlockBehaviour.Properties machine(
             BlockBehaviour.Properties p) {
-        return p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion();
+        return p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion();
     }
 
     /** Class-load hook so the registers are populated during bootstrap. */

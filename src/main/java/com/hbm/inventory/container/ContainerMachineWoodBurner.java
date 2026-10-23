@@ -86,6 +86,7 @@ public class ContainerMachineWoodBurner extends AbstractContainerMenu {
             result = stack.copy();
             if (index < MACHINE_SLOTS) {
                 if (!moveItemStackTo(stack, MACHINE_SLOTS, MACHINE_SLOTS + 36, true)) return ItemStack.EMPTY;
+                slot.onQuickCraft(stack, result);
             } else if (burner != null && Library.isBattery(stack)) {
                 if (!moveItemStackTo(stack, 5, 6, false)) return ItemStack.EMPTY;
             } else if (stack.getItem() instanceof IItemFluidId) {

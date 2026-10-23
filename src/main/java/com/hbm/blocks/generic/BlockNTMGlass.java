@@ -21,7 +21,7 @@ import java.util.List;
  * {@code true} for all of them, so the rest are silk-touch-only. {@code isRadResistant}, the
  * {@code IRadResistantBlock} marker used by the chunk radiation engine, is carried through.
  */
-public class BlockNTMGlass extends Block implements IRadResistantBlock {
+public class BlockNTMGlass extends BlockRadResistant {
 
     private final boolean radResistant;
 

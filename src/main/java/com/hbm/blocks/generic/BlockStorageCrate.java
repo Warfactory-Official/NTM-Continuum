@@ -26,6 +26,10 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
+import com.hbm.handler.radiation.RadiationSystemNT;
+import com.hbm.interfaces.IRadResistantBlock;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.BlockGetter;
 
 /**
  * 1.7 {@code BlockStorageCrate} for its two lockable crates, the tungsten crate and the safe (the iron, steel
@@ -38,7 +42,7 @@ import org.jspecify.annotations.Nullable;
  * <p>{@link #HOT} is 1.7's metadata 1 on the tungsten crate: set while a laser keeps it heated. Placement faced
  * the crate towards the player (1.7 metadata 2..5); the safe shows its door on that face.
  */
-public class BlockStorageCrate extends CarriedBlock implements TickingBlock {
+public class BlockStorageCrate extends CarriedBlock implements TickingBlock, IRadResistantBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty HOT = BooleanProperty.create("hot");
@@ -55,6 +59,26 @@ public class BlockStorageCrate extends CarriedBlock implements TickingBlock {
 
     public Kind kind() {
         return kind;
+    }
+
+    /** 1.12.2 {@code BlockStorageCrateRadResistant}: the tungsten crate seals radiation, the safe does not. */
+    @Override
+    public boolean isRadResistant(BlockGetter level, BlockPos pos) {
+        return kind == Kind.TUNGSTEN;
+    }
+
+    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (kind == Kind.TUNGSTEN && level instanceof ServerLevel server && !state.is(oldState.getBlock())) {
+            RadiationSystemNT.markSectionForRebuild(server, pos);
+        }
+    }
+
+    @Override
+    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
+        super.onBlockRemoved(state, level, pos, movedByPiston);
+        if (kind == Kind.TUNGSTEN && level instanceof ServerLevel server) RadiationSystemNT.markSectionForRebuild(server, pos);
     }
 
     @Override

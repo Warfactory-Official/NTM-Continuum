@@ -50,14 +50,14 @@ public final class ModPwrBlocks {
     /** An orientable cube: its front on the facing side over the blank casing. */
     public static final RegistryObject<MachinePWRController> PWR_CONTROLLER = REG.block(
             "pwr_controller", MachinePWRController::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.orientable("hbm:blocks/pwr_controller", "hbm:blocks/pwr_casing_blank",
                     "hbm:blocks/pwr_casing_blank").states(Variants.facing()))
             .transform(PART);
     /** The assembled shell picks {@code pwr_block} or {@code pwr_casing_port} by its {@code port} flag; no item, no drop. */
     public static final RegistryObject<BlockPWR> PWR_BLOCK = REG.block(
             "pwr_block", BlockPWR::new,
-            p -> p.strength(15.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(15.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.shape(Models.group()
                             .and("", Models.cubeAll("hbm:blocks/pwr_block"))
                             .and("_port", Models.cubeAll("hbm:blocks/pwr_casing_port")))
@@ -80,7 +80,7 @@ public final class ModPwrBlocks {
 
     private static Reg.Handle<Block> part(String name) {
         return REG.simpleBlock(name,
-                (BlockBehaviour.Properties p) -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+                (BlockBehaviour.Properties p) -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
     }
 
     /** 1.7 ITooltipProvider blocks: the item shows {@code addStandardInfo}. */

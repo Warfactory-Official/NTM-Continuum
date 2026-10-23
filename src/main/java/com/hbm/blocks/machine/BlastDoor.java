@@ -25,6 +25,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 import com.hbm.tileentity.machine.TileEntityBlastDoor;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
+import com.hbm.interfaces.IRadResistantBlock;
+import net.minecraft.world.level.BlockGetter;
 
 /**
  * Port of 1.7.10 {@code BlastDoor}: the old one-wide, six-high sliding blast door. The core is the
@@ -32,7 +34,7 @@ import com.hbm.tileentity.machine.TileEntityLockableBase;
  * values (2 for a north/south-facing player, 3 for east/west), which is the {@link #AXIS} the leaf
  * spans.
  */
-public class BlastDoor extends CompatBlock implements TickingBlock, IBomb {
+public class BlastDoor extends CompatBlock implements TickingBlock, IBomb, IRadResistantBlock {
 
     /** {@code X} is the original's meta 2 (the renderer turns a further 90 degrees), {@code Z} is meta 3. */
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
@@ -128,5 +130,11 @@ public class BlastDoor extends CompatBlock implements TickingBlock, IBomb {
                 te.placeDummy(pos.above(5), false) &&
                 te.placeDummy(pos.above(6), false)))
             level.destroyBlock(pos, true);
+    }
+
+    /** 1.12.2: the blast door seals radiation only while closed. */
+    @Override
+    public boolean isRadResistant(BlockGetter level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof TileEntityBlastDoor door && door.state == 0;
     }
 }

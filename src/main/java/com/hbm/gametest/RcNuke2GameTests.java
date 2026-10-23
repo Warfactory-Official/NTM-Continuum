@@ -611,7 +611,7 @@ public final class RcNuke2GameTests {
         ItemRBMKRod.setHullHeat(rod, 1000D);
         rodDrum.inventory.setStackInSlot(0, rod);
         helper.assertFalse(rodDrum.canTakeItemThroughFace(0, rod, Direction.DOWN), "a 1000 degree rod must not leave the drum");
-        helper.assertTrue(dry.canPlaceItemThroughFace(0, rod, Direction.UP), "rods go in");
+        helper.assertTrue(rodDrum.canPlaceItemThroughFace(1, rod, Direction.UP), "rods go into an empty slot");
         helper.assertFalse(dry.canTakeItemThroughFace(0, dry.inventory.getStackInSlot(0), Direction.DOWN), "hot waste does not leave");
 
         double[] hull = {1000D};

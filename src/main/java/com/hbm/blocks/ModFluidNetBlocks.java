@@ -114,11 +114,11 @@ public final class ModFluidNetBlocks {
     });
 
     private static final UnaryOperator<BlockBehaviour.Properties> PIPE =
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops();
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops();
     private static final UnaryOperator<BlockBehaviour.Properties> STEEL =
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
     private static final UnaryOperator<BlockBehaviour.Properties> EFFECT_BARREL =
-            p -> p.strength(0.5F, 2.5F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops(); // 1.7 Material.iron
+            p -> p.strength(0.5F, 1.5F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops(); // 1.7 Material.iron
 
     // --- ducts ---
 
@@ -152,30 +152,30 @@ public final class ModFluidNetBlocks {
     public static final RegistryObject<FluidPump> fluid_pump = REG.block("fluid_pump", FluidPump::new, PIPE)
             .transform(Presets.rendered(Variants.uniform("facing", "north", "east", "south", "west")).and(SELF_PICKAXE));
     public static final RegistryObject<FlowControlPump> flow_control_pump = REG.block("flow_control_pump", FlowControlPump::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops()
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops()
                     .isSuffocating((state, world, pos) -> false).isViewBlocking((state, world, pos) -> false))
             .transform(FOLDED);
 
     // --- storage barrels ---
 
     public static final RegistryObject<BlockFluidBarrel> barrel_plastic = REG.block("barrel_plastic",
-            p -> new BlockFluidBarrel(p, 12000, "barrel_plastic", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.STONE).noOcclusion())
+            p -> new BlockFluidBarrel(p, 12000, "barrel_plastic", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 3.0F).sound(SoundType.STONE).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFluidBarrel> barrel_corroded = REG.block("barrel_corroded",
-            p -> new BlockFluidBarrel(p, 16000, "barrel_corroded", true), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new BlockFluidBarrel(p, 16000, "barrel_corroded", true), p -> p.requiresCorrectToolForDrops().strength(2.0F, 3.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFluidBarrel> barrel_steel = REG.block("barrel_steel",
-            p -> new BlockFluidBarrel(p, 16000, "barrel_steel", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new BlockFluidBarrel(p, 16000, "barrel_steel", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 3.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFluidBarrel> barrel_tcalloy = REG.block("barrel_tcalloy",
-            p -> new BlockFluidBarrel(p, 24000, "barrel_tcalloy", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new BlockFluidBarrel(p, 24000, "barrel_tcalloy", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 3.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFluidBarrel> barrel_antimatter = REG.block("barrel_antimatter",
-            p -> new BlockFluidBarrel(p, 16000, "barrel_antimatter", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new BlockFluidBarrel(p, 16000, "barrel_antimatter", false), p -> p.requiresCorrectToolForDrops().strength(2.0F, 3.0F).sound(SoundType.METAL).noOcclusion())
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.container("minecraft:custom_data", "minecraft:custom_name")).tag(BlockTag.PICKAXE);
 
@@ -197,7 +197,7 @@ public final class ModFluidNetBlocks {
     // --- foundry storage basin ---
 
     public static final RegistryObject<FoundryTank> foundry_tank = REG.block("foundry_tank", FoundryTank::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.STONE).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOUNDRY_TANK_STATES.and(SELF_PICKAXE));
 
     // --- fluid blocks (1.7 blocks/fluid): Golem Core world fluids, declared in ModWorldFluids ---

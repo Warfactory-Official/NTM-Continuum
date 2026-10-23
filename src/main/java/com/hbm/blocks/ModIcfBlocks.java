@@ -60,28 +60,28 @@ public final class ModIcfBlocks {
 
     // 1.7: struct_icf_core, setLightLevel(1F), 5.0/10.0, isOpaqueCube false
     public static final RegistryObject<BlockICFStruct> struct_icf_core = REG.block("struct_icf_core",
-            BlockICFStruct::new, p -> iron(5.0F, 10.0F).apply(p).lightLevel(s -> 15).noOcclusion())
+            BlockICFStruct::new, p -> iron(5.0F, 6.0F).apply(p).lightLevel(s -> 15).noOcclusion())
             .transform(Presets.cubeAll().states(Variants.uniform("facing", "north", "east", "south", "west")).and(SELF));
     // 1.7: machine_icf_press, icf, icf_component, icf_controller, icf_laser_component all 5.0/60.0
     // 1.7: the pellet maker's machine_icf_press_top on both ends
     public static final RegistryObject<MachineICFPress> machine_icf_press =
-            REG.block("machine_icf_press", MachineICFPress::new, iron(5.0F, 60.0F))
+            REG.block("machine_icf_press", MachineICFPress::new, iron(5.0F, 36.0F))
                     .transform(Presets.column("hbm:blocks/machine_icf_press_top", "hbm:blocks/machine_icf_press_side").and(SELF));
     // The reactor itself is drawn by its renderer; its item is 1.7's ItemRenderBase.
     public static final RegistryObject<MachineICF> icf =
-            REG.block("icf", MachineICF::new, rendered(5.0F, 60.0F))
+            REG.block("icf", MachineICF::new, rendered(5.0F, 36.0F))
                     .transform(Presets.rendered(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
                             Variants.uniform("cell", "false", "true"))).and(SELF))
                     .transform(ModIcfBlocks::icfItem);
     // 1.7: icf_controller on its front over icf_casing
     public static final RegistryObject<MachineICFController> icf_controller =
-            REG.block("icf_controller", MachineICFController::new, iron(5.0F, 60.0F))
+            REG.block("icf_controller", MachineICFController::new, iron(5.0F, 36.0F))
                     .transform(Presets.orientable("hbm:blocks/icf_controller", "hbm:blocks/icf_casing", "hbm:blocks/icf_casing")
                             .states(Variants.facing()).and(SELF));
     /** 1.7: 5.0/10.0, no creative tab, drops nothing; only a controller's assembly places it. */
     // The assembled shell draws icf_block or icf_block_port (1.7's connected-texture variants are not ported).
     public static final RegistryObject<BlockICF> icf_block =
-            REG.block("icf_block", BlockICF::new, iron(5.0F, 10.0F))
+            REG.block("icf_block", BlockICF::new, iron(5.0F, 6.0F))
                     .transform(Presets.shape(Models.group()
                                     .and("", Models.cubeAll("hbm:blocks/icf_block"))
                                     .and("_port", Models.cubeAll("hbm:blocks/icf_block_port")))
@@ -123,12 +123,12 @@ public final class ModIcfBlocks {
     }
 
     private static RegistryObject<BlockToolConvertible> component(String name, String texture) {
-        return REG.block(name, BlockToolConvertible::new, iron(5.0F, 60.0F))
+        return REG.block(name, BlockToolConvertible::new, iron(5.0F, 36.0F))
                 .transform(Presets.cubeAll("hbm:blocks/" + texture).and(SELF));
     }
 
     private static RegistryObject<CompatBlock> laser(String name, Presets.BlockModel model) {
-        return REG.block(name, CompatBlock::new, iron(5.0F, 60.0F)).transform(model.and(SELF));
+        return REG.block(name, CompatBlock::new, iron(5.0F, 36.0F)).transform(model.and(SELF));
     }
 
     private static void item(String name, RegistryObject<? extends Block> block) {

@@ -99,13 +99,13 @@ public class ContainerMachineCyclotron extends AbstractContainerMenu {
             result = stack.copy();
             if (index < MACHINE_SLOTS) {
                 if (!moveItemStackTo(stack, MACHINE_SLOTS, MACHINE_SLOTS + 36, true)) return ItemStack.EMPTY;
-            } else if (CyclotronRecipes.isAnyParticle(stack)) {
-                if (!moveItemStackTo(stack, 0, 3, false)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
-                if (!moveItemStackTo(stack, 9, 10, false)) return ItemStack.EMPTY;
+                if (!moveItemStackTo(stack, 9, 10, true)) return ItemStack.EMPTY;
             } else if (Library.isMachineUpgrade(stack)) {
-                if (!moveItemStackTo(stack, 10, 12, false)) return ItemStack.EMPTY;
-            } else if (!moveItemStackTo(stack, 3, 6, false)) {
+                if (!moveItemStackTo(stack, 10, 11, true) && !moveItemStackTo(stack, 11, 12, true)) return ItemStack.EMPTY;
+            } else if (CyclotronRecipes.isAnyParticle(stack)) {
+                if (!moveItemStackTo(stack, 0, 3, true)) return ItemStack.EMPTY;
+            } else if (!moveItemStackTo(stack, 3, 6, true)) {
                 return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

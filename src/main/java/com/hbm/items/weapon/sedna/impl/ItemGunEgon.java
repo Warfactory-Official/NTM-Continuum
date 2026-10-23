@@ -3,6 +3,7 @@ package com.hbm.items.weapon.sedna.impl;
 import com.hbm.items.weapon.MobSlicer;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.packet.SpecialDeathPayload;
@@ -11,7 +12,9 @@ import dev.golem.core.world.Compat;
 import dev.golem.core.world.TimeOfDay;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -27,6 +30,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -44,6 +48,13 @@ public class ItemGunEgon extends ItemGunBaseNT {
 
     public ItemGunEgon(Properties properties, WeaponQuality quality, GunConfig... configs) {
         super(properties, quality, configs);
+    }
+
+    /** The receiver never fires, so its base damage is 0; the beam's own damage instead. */
+    @Override
+    protected void addDamageInfo(ItemStack stack, Receiver receiver, IMagazine<?> magazine, Container inventory,
+                                 List<Component> tooltip) {
+        tooltip.add(Component.translatable("gui.weapon.egonDamage"));
     }
 
     @Override

@@ -46,7 +46,7 @@ public final class MaterialCompletionRegistrations {
     public static final RegistryObject<BlockConcreteColored> CONCRETE_COLORED = REG.block(
             "concrete_colored", BlockConcreteColored::new,
             p -> p.mapColor(state -> state.getValue(BlockConcreteColored.COLOR).getMapColor())
-                    .strength(15.0F, 140.0F).sound(SoundType.STONE).requiresCorrectToolForDrops())
+                    .strength(15.0F, 84.0F).sound(SoundType.STONE).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.group()
                     .and("_black", Models.cubeAll("hbm:blocks/concrete_black"))
                     .and("_blue", Models.cubeAll("hbm:blocks/concrete_blue"))
@@ -68,7 +68,7 @@ public final class MaterialCompletionRegistrations {
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockConcreteColoredExt> CONCRETE_COLORED_EXT = REG.block(
             "concrete_colored_ext", BlockConcreteColoredExt::new,
-            p -> p.strength(15.0F, 140.0F).sound(SoundType.STONE).requiresCorrectToolForDrops())
+            p -> p.strength(15.0F, 84.0F).sound(SoundType.STONE).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.group()
                     .and("_bronze", Models.cubeAll("hbm:blocks/concrete_colored_ext.bronze"))
                     .and("_hazard", Models.cubeAll("hbm:blocks/concrete_colored_ext.hazard"))
@@ -88,7 +88,7 @@ public final class MaterialCompletionRegistrations {
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockLightstone> LIGHTSTONE = REG.block(
             "lightstone", BlockLightstone::new,
-            p -> p.strength(20.0F, 20.0F).sound(SoundType.STONE).requiresCorrectToolForDrops())
+            p -> p.strength(20.0F, 9.0F).sound(SoundType.STONE).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.group()
                     .and("_bricks", Models.cubeAll("hbm:blocks/lightstone.bricks"))
                     .and("_bricks_chiseled", Models.parented("minecraft:block/cube", Slots.of("up", "hbm:blocks/lightstone.bricks_chiseled.top")
@@ -115,9 +115,9 @@ public final class MaterialCompletionRegistrations {
     public static final List<RegistryObject<Block>> CONCRETE_COLORED_EXT_STAIRS = stairs(
             "concrete_colored_ext_stairs", CONCRETE_COLORED_EXT, 8, 15.0F, 94.0F);
     public static final RegistryObject<Block> LIGHTSTONE_TILE_STAIRS = stair(
-            "lightstone_tile_stairs", LIGHTSTONE, lightstoneStairTexture(false), 15.0F, 20.0F);
+            "lightstone_tile_stairs", LIGHTSTONE, lightstoneStairTexture(false), 15.0F, 12.0F);
     public static final RegistryObject<Block> LIGHTSTONE_BRICKS_STAIRS = stair(
-            "lightstone_bricks_stairs", LIGHTSTONE, lightstoneStairTexture(true), 15.0F, 20.0F);
+            "lightstone_bricks_stairs", LIGHTSTONE, lightstoneStairTexture(true), 15.0F, 12.0F);
 
     /** {@link BlockConcreteColoredExt.EnumConcreteType}'s names in metadata order (the enum is not touched here). */
     private static final String[] EXT_NAMES = {"machine", "machine_stripe", "indigo", "purple", "pink", "hazard", "sand",

@@ -66,6 +66,8 @@ import com.hbm.blocks.machine.SpotlightModular;
 import com.hbm.items.block.DecoBlockItem;
 import com.hbm.sound.ModDecoSounds;
 import com.hbm.tileentity.ModDecoBlockEntities;
+import com.hbm.blocks.generic.BlockRadResistant;
+import com.hbm.blocks.generic.BlockRadResistantPillar;
 
 /**
  * The structural / decorative block family of 1.7 HBM that the generated {@code ModBlocks} does not
@@ -162,38 +164,38 @@ public final class ModDecoContent {
 
     // Rotatable pillars (BlockRotatablePillar)
     public static final RegistryObject<RotatedPillarBlock> block_schrabidium_cluster = pillar("block_schrabidium_cluster",
-            p -> p.strength(5.0F, 60000.0F).requiresCorrectToolForDrops(), i -> i.rarity(Rarity.RARE))
+            p -> p.strength(5.0F, 36000.0F).requiresCorrectToolForDrops(), i -> i.rarity(Rarity.RARE))
             .transform(pillarModel("block_schrabidium_cluster_top", "block_schrabidium_cluster_side")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<RotatedPillarBlock> block_euphemium_cluster = pillar("block_euphemium_cluster",
-            p -> p.strength(5.0F, 60000.0F).requiresCorrectToolForDrops(), UnaryOperator.identity())
+            p -> p.strength(5.0F, 36000.0F).requiresCorrectToolForDrops(), UnaryOperator.identity())
             .transform(pillarModel("block_euphemium_cluster_top", "block_euphemium_cluster_side")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<RotatedPillarBlock> block_insulator = pillar("block_insulator",
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.WOOL), UnaryOperator.identity())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.WOOL), UnaryOperator.identity())
             .transform(pillarModel("block_insulator_top", "block_insulator_side"));
     public static final RegistryObject<RotatedPillarBlock> block_fiberglass = pillar("block_fiberglass",
-            p -> p.strength(5.0F, 15.0F).sound(SoundType.WOOL), UnaryOperator.identity())
+            p -> p.strength(5.0F, 9.0F).sound(SoundType.WOOL), UnaryOperator.identity())
             .transform(pillarModel("block_fiberglass_top", "block_fiberglass_side"));
     public static final RegistryObject<RotatedPillarBlock> block_tritium = pillar("block_tritium",
-            p -> p.strength(3.0F, 2.0F).sound(SoundType.GLASS), UnaryOperator.identity())
+            p -> p.strength(3.0F, 1.2F).sound(SoundType.GLASS), UnaryOperator.identity())
             .transform(pillarModel("block_tritium_top", "block_tritium_side"));
-    public static final RegistryObject<RotatedPillarBlock> concrete_pillar = pillar("concrete_pillar",
-            p -> p.strength(15.0F, 180.0F).requiresCorrectToolForDrops(), UnaryOperator.identity())
+    public static final RegistryObject<BlockRadResistantPillar> concrete_pillar = pillar("concrete_pillar", BlockRadResistantPillar::new,
+            p -> p.strength(15.0F, 108.0F).requiresCorrectToolForDrops(), UnaryOperator.identity())
             .transform(pillarModel("concrete_pillar_top", "concrete_pillar_side")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<RotatedPillarBlock> meteor_pillar = pillar("meteor_pillar",
-            p -> p.strength(15.0F, 360.0F).requiresCorrectToolForDrops(), UnaryOperator.identity())
+            p -> p.strength(15.0F, 216.0F).requiresCorrectToolForDrops(), UnaryOperator.identity())
             .transform(pillarModel("meteor_pillar_top", "meteor_pillar")).tag(BlockTag.PICKAXE);
 
     // Lamps (a lit block drops, and is picked as, its unlit twin)
-    public static final RegistryObject<Block> reinforced_light = plain("reinforced_light", Block::new,
-            p -> p.strength(15.0F, 80.0F).lightLevel(s -> 15).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
+    public static final RegistryObject<BlockRadResistant> reinforced_light = plain("reinforced_light", BlockRadResistant::new,
+            p -> p.strength(15.0F, 48.0F).lightLevel(s -> 15).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(CUBE).tag(BlockTag.PICKAXE);
     public static final RegistryObject<ReinforcedLamp> reinforced_lamp_off = REG.block("reinforced_lamp_off",
                     p -> new ReinforcedLamp(p, false, () -> ModDecoContent.reinforced_lamp_off.get(), () -> ModDecoContent.reinforced_lamp_on.get()),
-                    p -> p.strength(15.0F, 80.0F).requiresCorrectToolForDrops())
+                    p -> p.strength(15.0F, 48.0F).requiresCorrectToolForDrops())
             .transform(CUBE).tag(BlockTag.PICKAXE);
     public static final RegistryObject<ReinforcedLamp> reinforced_lamp_on = REG.block("reinforced_lamp_on",
                     p -> new ReinforcedLamp(p, true, () -> ModDecoContent.reinforced_lamp_off.get(), () -> ModDecoContent.reinforced_lamp_on.get()),
-                    p -> p.strength(15.0F, 80.0F).lightLevel(s -> 15).requiresCorrectToolForDrops())
+                    p -> p.strength(15.0F, 48.0F).lightLevel(s -> 15).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll()).loot(Loot.only("hbm:reinforced_lamp_off")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<TritiumLamp> lamp_tritium_green_off = tritiumLamp("lamp_tritium_green_off", false, SpotlightBeams.META_GREEN,
             () -> ModDecoContent.lamp_tritium_green_off.get(), () -> ModDecoContent.lamp_tritium_green_on.get())
@@ -263,7 +265,7 @@ public final class ModDecoContent {
             .loot(Loot.nothing());
     /** The powered floodlight (Material.iron, 5/10; renderer-drawn facing x flip, item icon authored) and the bare light block its rays end in. */
     public static final RegistryObject<Floodlight> floodlight = plain("floodlight", Floodlight::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops()
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops()
                     .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false), HbmTab.BLOCKS)
             .transform(Presets.rendered(Variants.product(Variants.uniform("facing", "down", "up", "north", "south", "west", "east"),
                     Variants.uniform("flip", "false", "true"))))
@@ -275,7 +277,7 @@ public final class ModDecoContent {
             .loot(Loot.nothing());
 
     private static BlockBehaviour.Properties beamProperties(BlockBehaviour.Properties p) {
-        return p.strength(-1.0F, 1_000_000.0F).lightLevel(s -> 15).noCollision().noOcclusion().replaceable()
+        return p.strength(-1.0F, 600_000.0F).lightLevel(s -> 15).noCollision().noOcclusion().replaceable()
                 .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false).noLootTable();
     }
 
@@ -286,7 +288,7 @@ public final class ModDecoContent {
      * set only by the keyhole rooms.
      */
     public static final RegistryObject<BlockRedBrick> brick_red = REG.block("brick_red", BlockRedBrick::new,
-                    p -> p.requiresCorrectToolForDrops().strength(0.0F, 10_000.0F))
+                    p -> p.requiresCorrectToolForDrops().strength(0.0F, 6000.0F))
             .model(d -> d.models(Models.group()
                             .and("", Models.parented("minecraft:block/cube", Slots.of("particle", "hbm:blocks/brick_base")
                                     .and("down", "hbm:blocks/brick_base").and("up", "hbm:blocks/brick_base")
@@ -299,15 +301,15 @@ public final class ModDecoContent {
             // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
             .loot(Loot.silkTouchOnly()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockWriting> brick_concrete_marked = plain("brick_concrete_marked", BlockWriting::new,
-            p -> p.strength(15.0F, 160.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
+            p -> p.strength(15.0F, 96.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(Presets.cubeBottomTop("hbm:blocks/brick_concrete", "hbm:blocks/brick_concrete_marked", "hbm:blocks/brick_concrete"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> brick_ducrete = noSpawn("brick_ducrete", 15.0F, 750.0F)
+    public static final RegistryObject<BlockRadResistant> brick_ducrete = noSpawn("brick_ducrete", BlockRadResistant::new, 15.0F, 450.0F)
             .transform(CUBE).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> reinforced_ducrete = noSpawn("reinforced_ducrete", 20.0F, 1000.0F)
+    public static final RegistryObject<BlockRadResistant> reinforced_ducrete = noSpawn("reinforced_ducrete", BlockRadResistant::new, 20.0F, 600.0F)
             .transform(CUBE).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> concrete_rebar = noSpawn("concrete_rebar", 50.0F, 240.0F)
+    public static final RegistryObject<Block> concrete_rebar = noSpawn("concrete_rebar", 50.0F, 144.0F)
             .transform(CUBE).tag(BlockTag.PICKAXE);
     public static final RegistryObject<HbmStairBlock> brick_ducrete_stairs = stairs("brick_ducrete_stairs", brick_ducrete,
                     p -> p.strength(15.0F, 750.0F).requiresCorrectToolForDrops())
@@ -316,7 +318,7 @@ public final class ModDecoContent {
             .tag(BlockTag.PICKAXE);
     /** Über concrete: damage 0-9 pristine, 10-11 m0, 12-13 m1, 14 m2, 15 m3 (1.7 getIcon). */
     public static final RegistryObject<BlockUberConcrete> concrete_super = plain("concrete_super", BlockUberConcrete::new,
-            p -> p.strength(150.0F, 1000.0F).randomTicks().requiresCorrectToolForDrops(), HbmTab.BLOCKS)
+            p -> p.strength(150.0F, 600.0F).randomTicks().requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .model(d -> d.models(Models.group()
                             .and("", Models.cubeAll("hbm:blocks/concrete_super"))
                             .and("_m0", Models.cubeAll("hbm:blocks/concrete_super_m0"))
@@ -328,35 +330,35 @@ public final class ModDecoContent {
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockFallingBase> concrete_super_broken = plain("concrete_super_broken", BlockFallingBase::new,
-            p -> p.strength(10.0F, 20.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
+            p -> p.strength(10.0F, 12.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(CUBE).tag(BlockTag.PICKAXE);
 
     // Asphalt (BlockSpeedy x1.5)
     public static final RegistryObject<BlockSpeedy> asphalt = plain("asphalt", p -> new BlockSpeedy(p, 1.5),
-            p -> p.strength(15.0F, 120.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS, SPEEDY)
+            p -> p.strength(15.0F, 72.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS, SPEEDY)
             .transform(CUBE).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSpeedy> asphalt_light = plain("asphalt_light", p -> new BlockSpeedy(p, 1.5),
-            p -> p.strength(15.0F, 120.0F).lightLevel(s -> 15).requiresCorrectToolForDrops(), HbmTab.BLOCKS, SPEEDY)
+            p -> p.strength(15.0F, 72.0F).lightLevel(s -> 15).requiresCorrectToolForDrops(), HbmTab.BLOCKS, SPEEDY)
             .transform(CUBE).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSpeedy.Stairs> asphalt_stairs = REG.block("asphalt_stairs",
                     p -> new BlockSpeedy.Stairs(asphalt.get().defaultBlockState(), p, 1.5),
-                    p -> p.strength(15.0F, 120.0F).requiresCorrectToolForDrops())
+                    p -> p.strength(15.0F, 72.0F).requiresCorrectToolForDrops())
             .transform(Presets.shape(Models.stairsAll("hbm:blocks/asphalt")).states(Variants.stairs()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     /** The asphalt entry of the old {@code concrete_slab} multi-slab. */
     public static final RegistryObject<BlockSpeedy.Slab> asphalt_slab = REG.block("asphalt_slab", BlockSpeedy.Slab::new,
-                    p -> p.strength(15.0F, 120.0F).requiresCorrectToolForDrops())
+                    p -> p.strength(15.0F, 72.0F).requiresCorrectToolForDrops())
             .transform(Presets.shape(Models.slabAll("hbm:blocks/asphalt")).states(Variants.slab()))
             .loot(Loot.slab())
             .tag(BlockTag.PICKAXE);
 
     // Vinyl tile / platemetal (flattened enum blocks; the dotted 1.7 texture names are kept)
     public static final RegistryObject<Block> vinyl_tile_large = plain("vinyl_tile_large", Block::new,
-            p -> p.strength(10.0F, 60.0F).sound(SoundType.GLASS).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
+            p -> p.strength(10.0F, 36.0F).sound(SoundType.GLASS).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(Presets.cubeAll("hbm:blocks/vinyl_tile.large")).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> vinyl_tile_small = plain("vinyl_tile_small", Block::new,
-            p -> p.strength(10.0F, 60.0F).sound(SoundType.GLASS).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
+            p -> p.strength(10.0F, 36.0F).sound(SoundType.GLASS).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(Presets.cubeAll("hbm:blocks/vinyl_tile.small")).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final Map<String, RegistryObject<Block>> platemetal = new LinkedHashMap<>();
 
@@ -373,12 +375,12 @@ public final class ModDecoContent {
     public static final RegistryObject<BlockDepth> depth_tiles = depth("depth_tiles", 10.0F);
     public static final RegistryObject<BlockDepth> depth_nether_brick = depth("depth_nether_brick", 10.0F);
     public static final RegistryObject<BlockDepth> depth_nether_tiles = depth("depth_nether_tiles", 10.0F);
-    public static final RegistryObject<BlockDepth> depth_dnt = depth("depth_dnt", 60000.0F);
+    public static final RegistryObject<BlockDepth> depth_dnt = depth("depth_dnt", 36000.0F);
 
     // Steel odds and ends
     /** Item grate: the ten authored steel_grate heights, re-skinned with the wide top. */
     public static final RegistryObject<BlockGrateWide> steel_grate_wide = plain("steel_grate_wide", BlockGrateWide::new,
-            p -> p.strength(2.0F, 5.0F).sound(Sounds.GRATE_SOUND).noOcclusion().requiresCorrectToolForDrops()
+            p -> p.strength(2.0F, 3.0F).sound(Sounds.GRATE_SOUND).noOcclusion().requiresCorrectToolForDrops()
                     .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false), HbmTab.BLOCKS, GRATE_WIDE)
             .model(d -> d.models(grateWideModels())
                     .states(Variants.select("height", "0", "0", "1", "1", "2", "2", "3", "3", "4", "4",
@@ -388,7 +390,7 @@ public final class ModDecoContent {
             .tag(BlockTag.PICKAXE);
     // panes: multipart blockstates and models are authored; only the flat item and the loot are declared
     public static final RegistryObject<BlockNTMGlassPane> reinforced_glass_pane = plain("reinforced_glass_pane", BlockNTMGlassPane::new,
-            p -> p.requiresCorrectToolForDrops().strength(2.0F, 25.0F).sound(SoundType.GLASS).noOcclusion(), HbmTab.BLOCKS)
+            p -> p.requiresCorrectToolForDrops().strength(2.0F, 15.0F).sound(SoundType.GLASS).noOcclusion(), HbmTab.BLOCKS)
             .transform(Presets.sprite("hbm:blocks/reinforced_glass_pane"))
             // 1.7 BlockNTMGlassPane passes "drops itself = false" to BlockPane, whose getItemDropped is then null
             // (doesDrop only fed quantityDropped); BlockPane.canSilkHarvest() is true. Same for the laminate pane.
@@ -396,14 +398,14 @@ public final class ModDecoContent {
             .tag(BlockTag.PICKAXE)
             .andThen(handle -> glassPaneStates());
     public static final RegistryObject<BlockNTMGlassPane> reinforced_laminate_pane = plain("reinforced_laminate_pane", BlockNTMGlassPane::new,
-            p -> p.strength(15.0F, 300.0F).sound(SoundType.GLASS).noOcclusion().requiresCorrectToolForDrops(), HbmTab.BLOCKS) // 1.7 Material.rock
+            p -> p.strength(15.0F, 180.0F).sound(SoundType.GLASS).noOcclusion().requiresCorrectToolForDrops(), HbmTab.BLOCKS) // 1.7 Material.rock
             .transform(Presets.sprite("hbm:blocks/reinforced_laminate_pane"))
             .loot(Loot.silkTouchOnly())
             .tag(BlockTag.PICKAXE)
             .andThen(handle -> laminatePaneStates());
     /** Chain: hanging cross or flat wall plane, "end" icon when nothing holds it from below. */
     public static final RegistryObject<BlockChain> dungeon_chain = plain("dungeon_chain", BlockChain::new,
-            p -> p.strength(0.25F, 2.0F).noOcclusion().noCollision().requiresCorrectToolForDrops(), HbmTab.BLOCKS) // 1.7: no setStepSound -> default stone
+            p -> p.strength(0.25F, 1.2F).noOcclusion().noCollision().requiresCorrectToolForDrops(), HbmTab.BLOCKS) // 1.7: no setStepSound -> default stone
             .model(d -> d.models(Models.group()
                             .and("", Models.parented("hbm:block/template_chain", Slots.of("chain", "hbm:blocks/chain")))
                             .and("_end", Models.parented("hbm:block/template_chain", Slots.of("chain", "hbm:blocks/chain_end")))
@@ -439,43 +441,43 @@ public final class ModDecoContent {
 
     // Loot crates
     public static final RegistryObject<BlockCrate> crate_weapon = plain("crate_weapon", p -> new BlockCrate(p, BlockCrate.Kind.WEAPON),
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.WOOD), HbmTab.CONSUMABLES)
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.WOOD), HbmTab.CONSUMABLES)
             .transform(CUBE).tag(BlockTag.AXE);
     public static final RegistryObject<BlockCrate> crate_lead = plain("crate_lead", p -> new BlockCrate(p, BlockCrate.Kind.LEAD),
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES)
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES)
             .transform(CUBE).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockCrate> crate_metal = plain("crate_metal", p -> new BlockCrate(p, BlockCrate.Kind.METAL),
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES)
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES)
             .transform(CUBE).tag(BlockTag.PICKAXE);
     /** The red crate has no creative tab in 1.7. */
     public static final RegistryObject<BlockCrate> crate_red = plain("crate_red", p -> new BlockCrate(p, BlockCrate.Kind.RED),
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), null)
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), null)
             .transform(CUBE).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockAmmoCrate> crate_ammo = plain("crate_ammo", BlockAmmoCrate::new,
-            p -> p.strength(1.0F, 2.5F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES)
+            p -> p.strength(1.0F, 1.5F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES)
             .transform(Presets.cubeBottomTop("hbm:blocks/crate_ammo_bottom", "hbm:blocks/crate_ammo_side", "hbm:blocks/crate_ammo_top"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockJungleCrate> crate_jungle = plain("crate_jungle", BlockJungleCrate::new,
-            p -> p.strength(1.0F, 2.5F).sound(SoundType.STONE).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES) // 1.7 Material.rock
+            p -> p.strength(1.0F, 1.5F).sound(SoundType.STONE).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES) // 1.7 Material.rock
             .transform(CUBE).tag(BlockTag.PICKAXE);
 
     // OBJ-drawn decorations (invisible block + TileEntityDecoModel + DecoModelRenderer)
-    public static final RegistryObject<DecoModelBlock> steel_poles = model("steel_poles", DecoModelBlock.Pole::new, 5.0F, 15.0F, true);
-    public static final RegistryObject<DecoModelBlock> pole_top = model("pole_top", DecoModelBlock.Kind.TOP, 5.0F, 15.0F, true);
+    public static final RegistryObject<DecoModelBlock> steel_poles = model("steel_poles", DecoModelBlock.Pole::new, 5.0F, 9.0F, true);
+    public static final RegistryObject<DecoModelBlock> pole_top = model("pole_top", DecoModelBlock.Kind.TOP, 5.0F, 9.0F, true);
     /** 1.7 render type -1 with no item renderer: the item is the block's flat {@code deco_satellite_receiver} icon. */
-    public static final RegistryObject<DecoModelBlock> pole_satellite_receiver = model("pole_satellite_receiver", DecoModelBlock.Kind.SATELLITE, 5.0F, 15.0F, true)
+    public static final RegistryObject<DecoModelBlock> pole_satellite_receiver = model("pole_satellite_receiver", DecoModelBlock.Kind.SATELLITE, 5.0F, 9.0F, true)
             .transform(Presets.sprite("hbm:blocks/deco_satellite_receiver"));
-    public static final RegistryObject<DecoModelBlock> tape_recorder = model("tape_recorder", DecoModelBlock.Kind.TAPE_RECORDER, 5.0F, 15.0F, true);
+    public static final RegistryObject<DecoModelBlock> tape_recorder = model("tape_recorder", DecoModelBlock.Kind.TAPE_RECORDER, 5.0F, 9.0F, true);
     /** BlockDecoToaster subtypes (Material.iron, 5/10), flattened. */
-    public static final RegistryObject<DecoModelBlock> deco_toaster_iron = model("deco_toaster_iron", DecoModelBlock.Kind.TOASTER_IRON, 5.0F, 10.0F, true);
-    public static final RegistryObject<DecoModelBlock> deco_toaster_steel = model("deco_toaster_steel", DecoModelBlock.Kind.TOASTER_STEEL, 5.0F, 10.0F, true);
-    public static final RegistryObject<DecoModelBlock> deco_toaster_wood = model("deco_toaster_wood", DecoModelBlock.Kind.TOASTER_WOOD, 5.0F, 10.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_toaster_iron = model("deco_toaster_iron", DecoModelBlock.Kind.TOASTER_IRON, 5.0F, 6.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_toaster_steel = model("deco_toaster_steel", DecoModelBlock.Kind.TOASTER_STEEL, 5.0F, 6.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_toaster_wood = model("deco_toaster_wood", DecoModelBlock.Kind.TOASTER_WOOD, 5.0F, 6.0F, true);
     /** BlockDecoCRT subtypes (Material.iron, 5/10), flattened. */
-    public static final RegistryObject<DecoModelBlock> deco_crt_clean = model("deco_crt_clean", DecoModelBlock.Kind.CRT_CLEAN, 5.0F, 10.0F, true);
-    public static final RegistryObject<DecoModelBlock> deco_crt_broken = model("deco_crt_broken", DecoModelBlock.Kind.CRT_BROKEN, 5.0F, 10.0F, true);
-    public static final RegistryObject<DecoModelBlock> deco_crt_blinking = model("deco_crt_blinking", DecoModelBlock.Kind.CRT_BLINKING, 5.0F, 10.0F, true);
-    public static final RegistryObject<DecoModelBlock> deco_crt_bsod = model("deco_crt_bsod", DecoModelBlock.Kind.CRT_BSOD, 5.0F, 10.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_crt_clean = model("deco_crt_clean", DecoModelBlock.Kind.CRT_CLEAN, 5.0F, 6.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_crt_broken = model("deco_crt_broken", DecoModelBlock.Kind.CRT_BROKEN, 5.0F, 6.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_crt_blinking = model("deco_crt_blinking", DecoModelBlock.Kind.CRT_BLINKING, 5.0F, 6.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_crt_bsod = model("deco_crt_bsod", DecoModelBlock.Kind.CRT_BSOD, 5.0F, 6.0F, true);
     /** BlockDecoModel(DecoComputerEnum.IBM_300PL) (Material.iron, 5/10), flattened. */
     public static final RegistryObject<DecoModelBlock> deco_computer_ibm_300pl = model("deco_computer_ibm_300pl", DecoModelBlock.Kind.COMPUTER, 5.0F, 10.0F, true);
 
@@ -559,7 +561,7 @@ public final class ModDecoContent {
 
     private static Reg.Handle<DecoPipe> pipe(String id, DecoPipe.Style style, String top, String side) {
         Reg.Handle<DecoPipe> block = REG.block(id, p -> new DecoPipe(p, style),
-                p -> p.strength(2.0F, 5.0F).sound(Sounds.GRATE_SOUND).noOcclusion().requiresCorrectToolForDrops());
+                p -> p.strength(2.0F, 3.0F).sound(Sounds.GRATE_SOUND).noOcclusion().requiresCorrectToolForDrops());
         REG.item(id, (Item.Properties p) -> new DecoBlockItem(block.get(), Compat.blockDescription(p), List.of(PURELY_DECORATIVE)))
                 .tab(HbmTab.BLOCKS);
         return block
@@ -572,7 +574,13 @@ public final class ModDecoContent {
 
     private static Reg.Handle<RotatedPillarBlock> pillar(String id, UnaryOperator<BlockBehaviour.Properties> props,
                                                          UnaryOperator<Item.Properties> itemProps) {
-        Reg.Handle<RotatedPillarBlock> block = REG.block(id, RotatedPillarBlock::new, props);
+        return pillar(id, RotatedPillarBlock::new, props, itemProps);
+    }
+
+    private static <B extends Block> Reg.Handle<B> pillar(String id, Function<BlockBehaviour.Properties, B> factory,
+                                                          UnaryOperator<BlockBehaviour.Properties> props,
+                                                          UnaryOperator<Item.Properties> itemProps) {
+        Reg.Handle<B> block = REG.block(id, factory, props);
         REG.blockItem(block, p -> itemProps.apply(Compat.blockDescription(p))).tab(HbmTab.BLOCKS);
         return block;
     }
@@ -592,7 +600,7 @@ public final class ModDecoContent {
                 ? p -> new SpotlightModular(p, beamLength, type, on, off, onBlock)
                 : p -> new Spotlight(p, beamLength, type, on, off, onBlock);
         Reg.Handle<Spotlight> block = REG.block(id, factory,
-                p -> p.strength(0.5F, 0.0F).sound(SoundType.METAL).noOcclusion().noCollision().requiresCorrectToolForDrops()
+                p -> p.strength(0.5F).sound(SoundType.METAL).noOcclusion().noCollision().requiresCorrectToolForDrops()
                         .lightLevel(s -> on ? 15 : 0).isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false)
                         .dynamicShape());
         if (on) {
@@ -602,7 +610,12 @@ public final class ModDecoContent {
     }
 
     private static Reg.Handle<Block> noSpawn(String id, float hardness, float resistance) {
-        return plain(id, Block::new, p -> p.strength(hardness, resistance).requiresCorrectToolForDrops()
+        return noSpawn(id, Block::new, hardness, resistance);
+    }
+
+    private static <B extends Block> Reg.Handle<B> noSpawn(String id, Function<BlockBehaviour.Properties, B> factory,
+                                                           float hardness, float resistance) {
+        return plain(id, factory, p -> p.strength(hardness, resistance).requiresCorrectToolForDrops()
                 .isValidSpawn((state, level, pos, type) -> false), HbmTab.BLOCKS, NO_SPAWN);
     }
 

@@ -160,7 +160,8 @@ public final class CyclotronGameTests {
 
         player.getInventory().setItem(9, new ItemStack(ModItems.part_lithium.get()));
         ItemStack moved = menu.quickMoveStack(player, ContainerMachineCyclotron.MACHINE_SLOTS);
-        helper.assertTrue(!moved.isEmpty() && cyclotron.inventory.getStackInSlot(0).is(ModItems.part_lithium.get()),
+        // 1.7 merges particles in reverse, so the last particle slot fills first
+        helper.assertTrue(!moved.isEmpty() && cyclotron.inventory.getStackInSlot(2).is(ModItems.part_lithium.get()),
                 "quick-move did not route a particle into the cyclotron");
         helper.succeed();
     }

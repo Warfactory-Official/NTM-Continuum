@@ -20,13 +20,14 @@ import com.hbm.blocks.ModDoorBlocks;
 import com.hbm.tileentity.machine.TileEntityBlastDoor;
 import com.hbm.tileentity.machine.TileEntityBlastDoorDummy;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
+import com.hbm.interfaces.IRadResistantBlock;
 
 /**
  * Port of 1.7.10 {@code DummyBlockBlast}: the invisible leaf blocks of the old blast door. Breaking
  * one breaks the door (unless the door itself is retracting it), and clicking or detonating one acts
  * on the door it points at.
  */
-public class DummyBlockBlast extends CompatBlock implements TickingBlock, IBomb {
+public class DummyBlockBlast extends CompatBlock implements TickingBlock, IBomb, IRadResistantBlock {
 
     public static boolean safeBreak = false;
 
@@ -85,5 +86,12 @@ public class DummyBlockBlast extends CompatBlock implements TickingBlock, IBomb 
             return BombReturnCode.ERROR_INCOMPATIBLE;
         }
         return BombReturnCode.UNDEFINED;
+    }
+
+    /** 1.12.2: a cell of the blast door seals while its door is closed. */
+    @Override
+    public boolean isRadResistant(BlockGetter level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof TileEntityBlastDoorDummy dummy
+                && level.getBlockEntity(dummy.target) instanceof TileEntityBlastDoor door && door.state == 0;
     }
 }

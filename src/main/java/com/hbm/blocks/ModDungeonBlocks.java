@@ -122,7 +122,7 @@ public final class ModDungeonBlocks {
             cube("nr_planks"));
     public static final RegistryObject<BlockForgottenBrick> brick_forgotten_nullroom_stone = forgotten("brick_forgotten_nullroom_stone", BlockForgottenBrick.Variant.NULLROOM_STONE,
             cube("nr_stone"));
-    public static final RegistryObject<BlockForgottenLock> brick_forgotten_lock = block("brick_forgotten_lock", BlockForgottenLock::new, unbreakable(666_666F), null)
+    public static final RegistryObject<BlockForgottenLock> brick_forgotten_lock = block("brick_forgotten_lock", BlockForgottenLock::new, unbreakable(400000F), null)
             .transform(column("hbm:blocks/brick_forgotten_top", "hbm:blocks/brick_forgotten_lock")).loot(Loot.nothing());
     public static final RegistryObject<BlockForgottenLock> brick_forgotten_lock_bw = block("brick_forgotten_lock_bw", BlockForgottenLock::new, unbreakable(666_666F), null)
             .transform(column("hbm:blocks/brick_forgotten_bw_top", "hbm:blocks/brick_forgotten_bw_lock")).loot(Loot.nothing());
@@ -130,22 +130,22 @@ public final class ModDungeonBlocks {
             .transform(column("hbm:blocks/playground/nullstone_demo_1_wip", "hbm:blocks/playground/nullstone_demo_2_wip")).loot(Loot.nothing());
 
     private static RegistryObject<BlockForgottenBrick> forgotten(String id, BlockForgottenBrick.Variant variant, Preset model) {
-        return block(id, p -> new BlockForgottenBrick(p, variant), unbreakable(666_666F), null)
+        return block(id, p -> new BlockForgottenBrick(p, variant), unbreakable(400_000F), null)
                 .transform(model)
                 .loot(Loot.nothing());
     }
 
     // Jungle temple (Material.rock, 15 / 360, block tab)
-    public static final RegistryObject<FragileBrick> brick_jungle_fragile = block("brick_jungle_fragile", FragileBrick::new, rock(15.0F, 360.0F), HbmTab.BLOCKS)
+    public static final RegistryObject<FragileBrick> brick_jungle_fragile = block("brick_jungle_fragile", FragileBrick::new, rock(15.0F, 216.0F), HbmTab.BLOCKS)
             .transform(cube("brick_jungle_fragile")).loot(Loot.silkTouchOnly()).tag(BlockTag.PICKAXE); // 1.7 FragileBrick: nothing, silk keeps it
     public static final RegistryObject<Block> brick_jungle_lava = block("brick_jungle_lava", Block::new,
-            p -> rock(15.0F, 360.0F).apply(p).lightLevel(s -> 5), HbmTab.BLOCKS)
+            p -> rock(15.0F, 216.0F).apply(p).lightLevel(s -> 5), HbmTab.BLOCKS)
             .transform(cube("brick_jungle_lava")).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockJungleOre> brick_jungle_ooze = block("brick_jungle_ooze",
-            p -> new BlockJungleOre(p, BlockJungleOre.Kind.OOZE), p -> rock(15.0F, 360.0F).apply(p).lightLevel(s -> 5), HbmTab.BLOCKS)
+            p -> new BlockJungleOre(p, BlockJungleOre.Kind.OOZE), p -> rock(15.0F, 216.0F).apply(p).lightLevel(s -> 5), HbmTab.BLOCKS)
             .transform(cube("brick_jungle_ooze")).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockJungleOre> brick_jungle_mystic = block("brick_jungle_mystic",
-            p -> new BlockJungleOre(p, BlockJungleOre.Kind.MYSTIC), p -> rock(15.0F, 360.0F).apply(p).lightLevel(s -> 5), HbmTab.BLOCKS)
+            p -> new BlockJungleOre(p, BlockJungleOre.Kind.MYSTIC), p -> rock(15.0F, 216.0F).apply(p).lightLevel(s -> 5), HbmTab.BLOCKS)
             .transform(cube("brick_jungle_mystic")).loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     public static final List<RegistryObject<? extends TrappedBrick>> TRAPS = new ArrayList<>();
@@ -156,7 +156,7 @@ public final class ModDungeonBlocks {
             // 1.7 TrappedBrick had no damageDropped: every trap drops metadata 0, the falling-rocks trap
             Reg.Handle<TrappedBrick> block = REG.<TrappedBrick>block(trap.id(),
                             p -> trap.type == TrappedBrick.TrapType.DETECTOR ? new TrappedBrick.Detector(p, trap) : new TrappedBrick(p, trap),
-                            rock(15.0F, 360.0F))
+                            rock(15.0F, 216.0F))
                     .transform(cube("brick_jungle_trap"))
                     .loot(Loot.only("hbm:brick_jungle_trap_falling_rocks"))
                     .tag(BlockTag.PICKAXE);
@@ -167,7 +167,7 @@ public final class ModDungeonBlocks {
         for (int i = 0; i < 16; i++) {
             final int glyph = i;
             String id = "brick_jungle_glyph_" + i;
-            RegistryObject<BlockGlyph> block = REG.block(id, p -> new BlockGlyph(p, glyph), rock(15.0F, 360.0F))
+            RegistryObject<BlockGlyph> block = REG.block(id, p -> new BlockGlyph(p, glyph), rock(15.0F, 216.0F))
                     .transform(column("hbm:blocks/brick_jungle", "hbm:blocks/brick_jungle_glyph_" + i))
                     .loot(Loot.self())
                     .tag(BlockTag.PICKAXE);
@@ -177,7 +177,7 @@ public final class ModDungeonBlocks {
         }
     }
 
-    public static final RegistryObject<BlockBallsSpawner> brick_jungle_circle = block("brick_jungle_circle", BlockBallsSpawner::new, rock(15.0F, 360.0F), HbmTab.BLOCKS)
+    public static final RegistryObject<BlockBallsSpawner> brick_jungle_circle = block("brick_jungle_circle", BlockBallsSpawner::new, rock(15.0F, 216.0F), HbmTab.BLOCKS)
             .transform(cube("brick_jungle_circle")).loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     // Hidden structure blocks (no creative tab)
@@ -188,7 +188,7 @@ public final class ModDungeonBlocks {
             // 1.7 BlockKeyhole extends BlockStone, which drops cobblestone
             .loot(Loot.only("minecraft:cobblestone")).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockRedBrickKeyhole> stone_keyhole_meta = block("stone_keyhole_meta", BlockRedBrickKeyhole::new,
-            p -> p.requiresCorrectToolForDrops().strength(0.0F, 10_000.0F).sound(SoundType.STONE), null)
+            p -> p.requiresCorrectToolForDrops().strength(0.0F, 6000.0F).sound(SoundType.STONE), null)
             .model(d -> d.models(Models.group()
                             .and("", Models.parented("minecraft:block/cube", Slots.of("particle", "hbm:blocks/brick_base")
                                     .and("down", "hbm:blocks/brick_base").and("up", "hbm:blocks/brick_base")
@@ -201,13 +201,13 @@ public final class ModDungeonBlocks {
             .loot(Loot.silkTouchOnly()).tag(BlockTag.PICKAXE);
     /** 1.7 RenderPedestal: foot 0..0.25, head 0.75..1, column 0.125..0.875 between. */
     public static final RegistryObject<BlockPedestal> pedestal = block("pedestal", BlockPedestal::new,
-            p -> rock(2.0F, 10.0F).apply(p).noOcclusion(), null)
+            p -> rock(2.0F, 6.0F).apply(p).noOcclusion(), null)
             .transform(Presets.shape(elements("hbm:blocks/pedestal_top", "hbm:blocks/pedestal_top", "hbm:blocks/pedestal_side", false,
                     box(0, 0, 0, 16, 4, 16), box(0, 12, 0, 16, 16, 16), box(2, 4, 2, 14, 12, 14))))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSkeletonHolder> skeleton_holder = block("skeleton_holder", BlockSkeletonHolder::new,
-            p -> rock(2.0F, 10.0F).apply(p).noOcclusion(), null)
+            p -> rock(2.0F, 6.0F).apply(p).noOcclusion(), null)
             .transform(Presets.rendered(DUMMY, Variants.uniform("facing", "north", "east", "south", "west")))
             .transform(Presets.sprite("minecraft:block/soul_sand"))
             .loot(Loot.self())
@@ -225,7 +225,7 @@ public final class ModDungeonBlocks {
             .transform(Presets.sprite("hbm:blocks/block_rust"))
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE);
-    public static final RegistryObject<DungeonSpawner> dungeon_spawner = block("dungeon_spawner", DungeonSpawner::new, unbreakable(500_000.0F), null)
+    public static final RegistryObject<DungeonSpawner> dungeon_spawner = block("dungeon_spawner", DungeonSpawner::new, unbreakable(300_000.0F), null)
             .transform(cube("dungeon_spawner"))
             .loot(Loot.nothing());
     // both drawn by RenderLogicBlock (the invisible one by nothing); the model is their particle and item
@@ -253,7 +253,7 @@ public final class ModDungeonBlocks {
     /** The vanilla {@code rail} blockstate and models over this rail's textures, on the cutout layer; a vanilla rail. */
     private static <R extends RailGeneric> Reg.Handle<R> rail(String id, Function<BlockBehaviour.Properties, R> factory,
                                                               String straight, String turned) {
-        Reg.Handle<R> block = REG.block(id, factory, p -> p.strength(5.0F, 10.0F).noCollision());
+        Reg.Handle<R> block = REG.block(id, factory, p -> p.strength(5.0F, 6.0F).noCollision());
         REG.item(id, p -> new RailBlockItem(block.get(), p), Compat::blockDescription).tab(HbmTab.MACHINES)
                 .tag(ItemTag.of("minecraft:rails"));
         IDS.add(id);
@@ -275,7 +275,7 @@ public final class ModDungeonBlocks {
 
     // Rebar (Material.iron, 15 / 20, block tab)
     public static final RegistryObject<BlockRebar> rebar = block("rebar", BlockRebar::new,
-            p -> p.strength(15.0F, 20.0F).sound(SoundType.STONE).noOcclusion().requiresCorrectToolForDrops()
+            p -> p.strength(15.0F, 12.0F).sound(SoundType.STONE).noOcclusion().requiresCorrectToolForDrops()
                     .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false), HbmTab.BLOCKS)
             .transform(Presets.shape(Models.renderType("minecraft:cutout", rebarModel())))
             .loot(Loot.self())

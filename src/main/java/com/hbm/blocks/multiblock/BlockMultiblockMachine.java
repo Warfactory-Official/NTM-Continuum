@@ -23,6 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.BiConsumer;
+import com.hbm.tileentity.TileEntityProxyCell;
 
 /**
  * A folded core whose cells are its own block, told apart by {@link #CELL}: what a 1.7
@@ -65,7 +66,7 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
     }
 
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return state.getValue(CELL) ? null : createCoreBlockEntity(pos, state);
+        return state.getValue(CELL) ? TileEntityProxyCell.at(pos, state) : createCoreBlockEntity(pos, state);
     }
 
     protected abstract BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state);

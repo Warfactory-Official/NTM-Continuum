@@ -52,22 +52,22 @@ public final class ModProduction2Blocks {
     /** 1.7: Material.iron, hardness 5, resistance 100, machineTab. */
     public static final RegistryObject<MachineExcavator> MACHINE_EXCAVATOR = REG.block(
             "machine_excavator", MachineExcavator::new,
-            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 60.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOLDED);
     /** 1.7: hardness 5, resistance 10, machineTab. */
     public static final RegistryObject<MachineOreSlopper> MACHINE_ORE_SLOPPER = REG.block(
             "machine_ore_slopper", MachineOreSlopper::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOLDED);
     /** 1.7: hardness 5, resistance 10, machineTab. */
     public static final RegistryObject<MachineAnnihilator> MACHINE_ANNIHILATOR = REG.block(
             "machine_annihilator", MachineAnnihilator::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOLDED);
     /** 1.7: the dead "Old Boiler" decoration block, no tab, hardness 5, resistance 10. */
     public static final RegistryObject<MachineBoiler> MACHINE_BOILER_OFF = REG.block(
             "machine_boiler_off", MachineBoiler::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             // 1.7 MachineBoiler icons: top/bottom = machine_boiler_base, front = machine_boiler_front, else machine_boiler_side.
             .transform(Presets.orientable("hbm:blocks/machine_boiler_front", "hbm:blocks/machine_boiler_side",
                     "hbm:blocks/machine_boiler_base").states(Variants.facing()))
@@ -77,7 +77,7 @@ public final class ModProduction2Blocks {
     /** 1.7: the deprecated RTG furnace; the {@code _on} block becomes {@code LIT} (light level 1.0F = 15 when lit). */
     public static final RegistryObject<MachineRtgFurnace> MACHINE_RTG_FURNACE = REG.block(
             "machine_rtg_furnace_off", MachineRtgFurnace::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
                     .lightLevel(state -> state.getValue(MachineRtgFurnace.LIT) ? 15 : 0))
             // 1.7 MachineRtgFurnace icons: top/bottom = machine_rtg_furnace_base_alt, front = machine_rtg_furnace_off_alt / _on_alt, side = machine_rtg_furnace_side_alt.
             .transform(Presets.shape(Models.group()
@@ -90,7 +90,7 @@ public final class ModProduction2Blocks {
     /** 1.7: the deprecated nuclear blast furnace, machineTab; {@code _on} is {@code LIT}. */
     public static final RegistryObject<MachineDiFurnaceRTG> MACHINE_DIFURNACE_RTG = REG.block(
             "machine_difurnace_rtg_off", MachineDiFurnaceRTG::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
                     .lightLevel(state -> state.getValue(MachineDiFurnaceRTG.LIT) ? 15 : 0))
             // 1.7 MachineDiFurnaceRTG icons: top = rtg_difurnace_top_off/_on, front = rtg_difurnace_front_off/_on, side and bottom = machine_rtg_furnace_side_alt.
             .transform(Presets.shape(Models.group()

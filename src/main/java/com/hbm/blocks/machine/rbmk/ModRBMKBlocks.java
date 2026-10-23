@@ -186,7 +186,7 @@ public final class ModRBMKBlocks {
             .transform(PANEL).transform(panelItem("indicator", "hbm:textures/models/network/indicator.png", "rbmk_indicator"));
     /** 1.7: Material.iron, hardness 50, resistance 60; a folded nine-tall column drawn by its renderer. */
     public static final RegistryObject<RBMKAutoloader> rbmk_autoloader = REG.block("rbmk_autoloader", RBMKAutoloader::new,
-            p -> p.strength(50F, 60F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
+            p -> p.strength(50F, 36F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
                     .isSuffocating((state, world, pos) -> false).isViewBlocking((state, world, pos) -> false))
             .transform(Presets.rendered(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
                     Variants.uniform("cell", "false", "true"))))
@@ -194,7 +194,7 @@ public final class ModRBMKBlocks {
             .tag(BlockTag.PICKAXE)
             .transform(ModRBMKBlocks::autoloaderItem);
     public static final RegistryObject<RBMKLoader> rbmk_loader = REG.block("rbmk_loader", RBMKLoader::new,
-            p -> p.strength(50F, 60F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(50F, 36F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -210,7 +210,7 @@ public final class ModRBMKBlocks {
             .tag(BlockTag.PICKAXE);
     /** Current graphite storage block, required by the moderator and modified-control recipes. */
     public static final RegistryObject<Block> block_graphite = REG.<Block>block("block_graphite", BlockGraphite::new,
-            p -> p.mapColor(MapColor.COLOR_BLACK).strength(5F, 10F).sound(SoundType.STONE).requiresCorrectToolForDrops())
+            p -> p.mapColor(MapColor.COLOR_BLACK).strength(5F, 6F).sound(SoundType.STONE).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);
@@ -226,11 +226,11 @@ public final class ModRBMKBlocks {
             .transform(layers("sand_boron_layer", "hbm:block/sand_boron"))
             .icon(d -> d.shares("hbm:block/sand_boron_layer_height2"));
 
-    private static <B extends Block> Reg.Handle<B> column(String id, Function<BlockBehaviour.Properties, B> factory, boolean fuel) { return REG.block(id, factory, p -> p.strength(3F, 30F).requiresCorrectToolForDrops()); }
-    private static <B extends Block> Reg.Handle<B> peripheral(String id, Function<BlockBehaviour.Properties, B> factory) { return REG.block(id, factory, p -> p.strength(50F, 60F).sound(SoundType.METAL).requiresCorrectToolForDrops()); }
-    private static <B extends Block> Reg.Handle<B> nonColumn(String id, Function<BlockBehaviour.Properties, B> factory) { return REG.block(id, factory, p -> p.strength(3F, 30F).requiresCorrectToolForDrops().noOcclusion()); }
+    private static <B extends Block> Reg.Handle<B> column(String id, Function<BlockBehaviour.Properties, B> factory, boolean fuel) { return REG.block(id, factory, p -> p.strength(3F, 18F).requiresCorrectToolForDrops()); }
+    private static <B extends Block> Reg.Handle<B> peripheral(String id, Function<BlockBehaviour.Properties, B> factory) { return REG.block(id, factory, p -> p.strength(50F, 36F).sound(SoundType.METAL).requiresCorrectToolForDrops()); }
+    private static <B extends Block> Reg.Handle<B> nonColumn(String id, Function<BlockBehaviour.Properties, B> factory) { return REG.block(id, factory, p -> p.strength(3F, 18F).requiresCorrectToolForDrops().noOcclusion()); }
     private static <B extends Block> Reg.Handle<B> debris(String id, Function<BlockBehaviour.Properties, B> factory) {
-        return REG.block(id, factory, p -> p.strength(50F, 600F).requiresCorrectToolForDrops().noOcclusion())
+        return REG.block(id, factory, p -> p.strength(50F, 360F).requiresCorrectToolForDrops().noOcclusion())
                 .transform(Presets.cubeAll("hbm:blocks/rbmk/" + id).noItem())
                 .loot(Loot.selfAlways());
     }

@@ -105,11 +105,11 @@ public final class ModExplosivesBlocks {
 
     // --- solid plastic explosive: Material.tnt, metal sound, hardness 2, resistance 2 ---
     public static final RegistryObject<BlockPlasticExplosive> block_semtex = REG.block("block_semtex",
-                    BlockPlasticExplosive::new, p -> p.strength(2.0F, 2.0F).sound(SoundType.METAL))
+                    BlockPlasticExplosive::new, p -> p.strength(2.0F, 1.2F).sound(SoundType.METAL))
             .transform(plastic("hbm:blocks/block_semtex"))
             .loot(Loot.self());
     public static final RegistryObject<BlockPlasticExplosive> block_c4 = REG.block("block_c4",
-                    BlockPlasticExplosive::new, p -> p.strength(2.0F, 2.0F).sound(SoundType.METAL))
+                    BlockPlasticExplosive::new, p -> p.strength(2.0F, 1.2F).sound(SoundType.METAL))
             .transform(plastic("hbm:blocks/block_c4"))
             .loot(Loot.self());
 
@@ -138,17 +138,17 @@ public final class ModExplosivesBlocks {
     // --- multi purpose bomb: Material.iron, resistance 200 (hardness left at 0 upstream); renderer-drawn,
     // 1.7 facing metadata 2..5 ---
     public static final RegistryObject<BombMulti> bomb_multi = REG.block("bomb_multi", BombMulti::new,
-                    p -> p.strength(0.0F, 200.0F).requiresCorrectToolForDrops().noOcclusion())
+                    p -> p.strength(0.0F, 120.0F).requiresCorrectToolForDrops().noOcclusion())
             .transform(Presets.rendered(Variants.uniformRange("facing", 2, 5)))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     private static BlockBehaviour.Properties mine(BlockBehaviour.Properties p) {
-        return p.strength(1.0F, 5.0F).noOcclusion().noLootTable();
+        return p.strength(1.0F).noOcclusion().noLootTable();
     }
 
     private static BlockBehaviour.Properties charge(BlockBehaviour.Properties p) {
-        return p.strength(0.0F, 1.0F).noOcclusion().noLootTable();
+        return p.strength(0.0F, 0.6F).noOcclusion().noLootTable();
     }
 
     private static BlockBehaviour.Properties det(BlockBehaviour.Properties p) {

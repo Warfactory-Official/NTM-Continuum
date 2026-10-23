@@ -33,14 +33,14 @@ public final class ModBatteryBlocks {
 
     public static final RegistryObject<MachineBatterySocket> machine_battery_socket = REG.<MachineBatterySocket>block(
             "machine_battery_socket", MachineBatterySocket::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineBatteryREDD> machine_battery_redd = REG.<MachineBatteryREDD>block(
             "machine_battery_redd", MachineBatteryREDD::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
                     .isSuffocating((state, world, pos) -> false)
                     .isViewBlocking((state, world, pos) -> false))
             .transform(FOLDED)

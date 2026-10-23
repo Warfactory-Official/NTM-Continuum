@@ -35,7 +35,7 @@ public final class ModOilBlocks {
 
     /** Live oil deposit, old {@code BlockNTMOre(OreEnum.OIL)}, hardness 5, resistance 10. */
     public static final RegistryObject<BlockOilDeposit> ore_oil = REG.block("ore_oil",
-            BlockOilDeposit::new, p -> p.strength(5.0F, 10.0F).requiresCorrectToolForDrops())
+            BlockOilDeposit::new, p -> p.strength(5.0F, 6.0F).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll())
             // 1.7 BlockOre: one oil_tar (crude) on the multiplying fortune curve; canSilkHarvest is false for ore_oil
             .loot(Loot.dropsMultiplied("hbm:oil_tar_crude", 1, 1))
@@ -46,7 +46,7 @@ public final class ModOilBlocks {
      * plain opaque cube without a tile entity, so 1.7's default {@code canSilkHarvest} lets silk touch keep it.
      */
     public static final RegistryObject<Block> oil_pipe = REG.block("oil_pipe",
-            Block::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
+            Block::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL))
             .transform(Presets.cubeAll())
             .loot(Loot.silkTouchOnly())
             .tag(BlockTag.PICKAXE);

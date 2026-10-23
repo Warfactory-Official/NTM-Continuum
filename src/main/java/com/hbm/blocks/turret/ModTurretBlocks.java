@@ -48,39 +48,39 @@ public final class ModTurretBlocks {
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretChekhov> turret_chekhov = REG.block(
-            "turret_chekhov", TurretChekhov::new, ModTurretBlocks::turretProperties)
+            "turret_chekhov", TurretChekhov::new, p -> turretProperties(p, 6.0F))
             .transform(TURRET)
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretFriendly> turret_friendly = REG.block(
-            "turret_friendly", TurretFriendly::new, ModTurretBlocks::turretProperties)
+            "turret_friendly", TurretFriendly::new, p -> turretProperties(p, 6.0F))
             .transform(TURRET)
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretSentry> turret_sentry = REG.block(
-            "turret_sentry", TurretSentry::new, ModTurretBlocks::turretProperties)
+            "turret_sentry", TurretSentry::new, p -> turretProperties(p, 3.0F))
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretSentryDamaged> turret_sentry_damaged = REG.block(
-            "turret_sentry_damaged", TurretSentryDamaged::new, ModTurretBlocks::turretProperties)
+            "turret_sentry_damaged", TurretSentryDamaged::new, p -> turretProperties(p, 3.0F))
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretHoward> turret_howard = REG.block(
-            "turret_howard", TurretHoward::new, ModTurretBlocks::turretProperties)
+            "turret_howard", TurretHoward::new, p -> turretProperties(p, 36.0F))
             .transform(TURRET)
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretHowardDamaged> turret_howard_damaged = REG.block(
-            "turret_howard_damaged", TurretHowardDamaged::new, ModTurretBlocks::turretProperties)
+            "turret_howard_damaged", TurretHowardDamaged::new, p -> turretProperties(p, 360.0F))
             // 1.7 TurretHowardDamaged.getItemDropped returns null: the wreck drops nothing (TURRET would add a self drop)
             .transform(Presets.rendered(Variants.uniform("facing", "north", "east", "south", "west")))
             .loot(Loot.nothing())
@@ -88,43 +88,43 @@ public final class ModTurretBlocks {
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretTauon> turret_tauon = REG.block(
-            "turret_tauon", TurretTauon::new, ModTurretBlocks::turretProperties)
+            "turret_tauon", TurretTauon::new, p -> turretProperties(p, 36.0F))
             .transform(TURRET)
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretMaxwell> turret_maxwell = REG.block(
-            "turret_maxwell", TurretMaxwell::new, ModTurretBlocks::turretProperties)
+            "turret_maxwell", TurretMaxwell::new, p -> turretProperties(p, 36.0F))
             .transform(TURRET)
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretJeremy> turret_jeremy = REG.block(
-            "turret_jeremy", TurretJeremy::new, ModTurretBlocks::turretProperties)
+            "turret_jeremy", TurretJeremy::new, p -> turretProperties(p, 360.0F))
             .transform(TURRET)
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretRichard> turret_richard = REG.block(
-            "turret_richard", TurretRichard::new, ModTurretBlocks::turretProperties)
+            "turret_richard", TurretRichard::new, p -> turretProperties(p, 360.0F))
             .transform(TURRET)
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretFritz> turret_fritz = REG.block(
-            "turret_fritz", TurretFritz::new, ModTurretBlocks::turretProperties)
+            "turret_fritz", TurretFritz::new, p -> turretProperties(p, 6.0F))
             .transform(TURRET)
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretHIMARS> turret_himars = REG.block(
-            "turret_himars", TurretHIMARS::new, ModTurretBlocks::turretProperties)
+            "turret_himars", TurretHIMARS::new, p -> turretProperties(p, 360.0F))
             .transform(TURRET)
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
 
     public static final RegistryObject<TurretArty> turret_arty = REG.block(
-            "turret_arty", TurretArty::new, ModTurretBlocks::turretProperties)
+            "turret_arty", TurretArty::new, p -> turretProperties(p, 360.0F))
             .transform(TURRET)
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
@@ -152,8 +152,8 @@ public final class ModTurretBlocks {
     }
 
     private static BlockBehaviour.Properties turretProperties(
-            BlockBehaviour.Properties p) {
-        return p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
+            BlockBehaviour.Properties p, float resistance) {
+        return p.strength(5.0F, resistance).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
                 .isSuffocating((state, world, pos) -> false)
                 .isViewBlocking((state, world, pos) -> false);
     }

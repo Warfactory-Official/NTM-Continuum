@@ -130,6 +130,20 @@ public class ItemGunBaseNT extends CompatItem implements IKeybindReceiver {
     private static final DecimalFormat FORMAT_DMG = new DecimalFormat("#.##",
             DecimalFormatSymbols.getInstance(Locale.US));
 
+    /** The original {@code addInformation}'s base damage and damage-with-ammo lines for one receiver. */
+    protected void addDamageInfo(ItemStack stack, Receiver receiver, IMagazine<?> magazine, Container inventory,
+                                 List<Component> tooltip) {
+        float damage = receiver.getBaseDamage(stack);
+        tooltip.add(Component.translatable("gui.weapon.baseDamage").append(": " + FORMAT_DMG.format(damage)));
+        if (magazine.getType(stack, inventory) instanceof BulletConfig bullet) {
+            int minimum = (int) (bullet.projectilesMin * receiver.getSplitProjectiles(stack));
+            int maximum = (int) (bullet.projectilesMax * receiver.getSplitProjectiles(stack));
+            tooltip.add(Component.translatable("gui.weapon.damageWithAmmo")
+                    .append(": " + FORMAT_DMG.format(damage * bullet.damageMult)
+                            + (minimum > 1 ? (" x" + (minimum != maximum ? (minimum + "-" + maximum) : minimum)) : "")));
+        }
+    }
+
     /** The original {@code addInformation}: one diagnostic block per receiver configuration, then the quality line. */
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
@@ -154,15 +168,7 @@ public class ItemGunBaseNT extends CompatItem implements IKeybindReceiver {
                             .append(icon == null || icon.isEmpty() ? Component.empty() : icon.getHoverName())
                             .append(" " + state));
                 }
-                float damage = receiver.getBaseDamage(stack);
-                tooltip.add(Component.translatable("gui.weapon.baseDamage").append(": " + FORMAT_DMG.format(damage)));
-                if (magazine.getType(stack, inventory) instanceof BulletConfig bullet) {
-                    int minimum = (int) (bullet.projectilesMin * receiver.getSplitProjectiles(stack));
-                    int maximum = (int) (bullet.projectilesMax * receiver.getSplitProjectiles(stack));
-                    tooltip.add(Component.translatable("gui.weapon.damageWithAmmo")
-                            .append(": " + FORMAT_DMG.format(damage * bullet.damageMult)
-                                    + (minimum > 1 ? (" x" + (minimum != maximum ? (minimum + "-" + maximum) : minimum)) : "")));
-                }
+                addDamageInfo(stack, receiver, magazine, inventory, tooltip);
             }
             float maximum = config.getDurability(stack);
             if (maximum > 0) {

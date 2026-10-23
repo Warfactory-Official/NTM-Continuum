@@ -47,7 +47,7 @@ public final class ScreenRBMKTerminal extends CompatScreen {
         line = new EditBox(font, 0, 0, 0, 0, Component.empty());
         line.setMaxLength(50);
         line.setBordered(false);
-        addRenderableWidget(line);
+        addWidget(line); // 1.7 never draws its text field: the typed line shows on the terminal face
         setInitialFocus(line);
     }
 
@@ -64,9 +64,18 @@ public final class ScreenRBMKTerminal extends CompatScreen {
                 "start <cmd> - Continuously send signal over selected channel",
                 "stop - Stop continuous sending",
                 "clear - Delete command history"};
+        GuiDraw.pushMatrix(graphics);
+        GuiDraw.scale(graphics, 0.5F, 0.5F);
         for (int i = 0; i < legend.length; i++) {
-            GuiDraw.text(graphics, font, legend[i], 1, 1 + i * 5, 0xFFFFFFFF, false);
+            GuiDraw.text(graphics, font, legend[i], 2, 2 + i * 10, 0xFFFFFF, false);
         }
+        GuiDraw.popMatrix(graphics);
+    }
+
+    /** 1.7 draws no default background: the scrollback on the terminal's face stays readable. */
+    @Override
+    protected boolean menuBackground() {
+        return false;
     }
 
     @Override

@@ -27,33 +27,33 @@ public final class ModOutgasBlocks {
     private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
     public static final RegistryObject<BlockOutgas> brick_asbestos = block("brick_asbestos", HbmTab.BLOCKS,
-            20, false, p -> p.requiresCorrectToolForDrops().strength(15.0F, 40.0F).sound(SoundType.STONE))
+            20, false, p -> p.requiresCorrectToolForDrops().strength(15.0F, 600.0F).sound(SoundType.STONE))
             .transform(Presets.cubeAll())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockOutgas> tile_lab_broken = block("tile_lab_broken", HbmTab.BLOCKS,
-            40, false, p -> p.requiresCorrectToolForDrops().strength(1.0F, 20.0F).sound(SoundType.STONE))
+            40, false, p -> p.requiresCorrectToolForDrops().strength(1.0F, 12.0F).sound(SoundType.STONE))
             .transform(Presets.cubeAll())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);
     // 1.7 Material.cloth: the two asbestos blocks drop without a pickaxe, unlike the brick and tile.
     public static final RegistryObject<BlockOutgas> deco_asbestos = block("deco_asbestos", HbmTab.BLOCKS,
-            40, false, p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE))
+            40, false, p -> p.strength(5.0F, 6.0F).sound(SoundType.STONE))
             .transform(Presets.cubeAll())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockOutgas> block_asbestos = block("block_asbestos", HbmTab.BLOCKS,
-            4, false, p -> p.strength(10.0F, 10.0F).sound(SoundType.STONE))
+            4, false, p -> p.strength(10.0F, 9.0F).sound(SoundType.STONE))
             .transform(Presets.cubeAll())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockOutgas> block_corium_cobble = block("block_corium_cobble", HbmTab.RESOURCES,
-            1, true, p -> p.requiresCorrectToolForDrops().strength(100.0F, 6000.0F).sound(SoundType.STONE))
+            1, true, p -> p.requiresCorrectToolForDrops().strength(100.0F, 3600.0F).sound(SoundType.STONE))
             .transform(Presets.cubeAll())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockOutgas> ancient_scrap = block("ancient_scrap", HbmTab.RESOURCES,
-            1, true, p -> p.requiresCorrectToolForDrops().strength(100.0F, 6000.0F).sound(SoundType.STONE))
+            1, true, p -> p.requiresCorrectToolForDrops().strength(100.0F, 3600.0F).sound(SoundType.STONE))
             .transform(Presets.cubeAll())
             .loot(Loot.selfAlways())
             .tag(BlockTag.PICKAXE);

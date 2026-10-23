@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.inventory.SlotCraftingOutput;
+import com.hbm.items.machine.ItemMachineUpgrade;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -99,7 +101,11 @@ public class ContainerCentrifuge extends AbstractContainerMenu {
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
                 slot.onQuickCraft(stack, result); // 1.7 slot.onSlotChange: SlotCraftingOutput counts the shift-click
-            } else if (!this.moveItemStackTo(stack, 0, MACHINE_SLOTS, false)) {
+            } else if (result.getItem() instanceof IBatteryItem) {
+                if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
+            } else if (result.getItem() instanceof ItemMachineUpgrade) {
+                if (!this.moveItemStackTo(stack, 6, 8, false)) return ItemStack.EMPTY;
+            } else if (!this.moveItemStackTo(stack, 0, 1, false)) {
                 return ItemStack.EMPTY;
             }
 

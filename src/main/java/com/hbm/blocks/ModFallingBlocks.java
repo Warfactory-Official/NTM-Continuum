@@ -35,7 +35,7 @@ public final class ModFallingBlocks {
 
     /** Shredding obsidian / obsidian bricks yields this. */
     public static final RegistryObject<BlockFallingBase> gravel_obsidian =
-            falling("gravel_obsidian", 5.0F, 20.0F, () -> SoundType.GRAVEL, HbmTab.RESOURCES, true)
+            falling("gravel_obsidian", 5.0F, 12.0F, () -> SoundType.GRAVEL, HbmTab.RESOURCES, true)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -66,7 +66,7 @@ public final class ModFallingBlocks {
             .tag(BlockTag.SHOVEL);
 
     /** Tar sand, the oil-sand-bubble worldgen block; liquefies into BITUMEN (old {@code ModBlocks.ore_oil_sand}). */
-    public static final RegistryObject<BlockFallingBase> ore_oil_sand = falling("ore_oil_sand", 0.5F, 1.0F, () -> SoundType.SAND)
+    public static final RegistryObject<BlockFallingBase> ore_oil_sand = falling("ore_oil_sand", 0.5F, 0.6F, () -> SoundType.SAND)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
@@ -79,12 +79,12 @@ public final class ModFallingBlocks {
 
     // --- remaining plain BlockFallingBase registrations ---
     public static final RegistryObject<BlockFallingBase> block_scrap =
-            falling("block_scrap", 2.5F, 5.0F, () -> SoundType.GRAVEL, HbmTab.BLOCKS)
+            falling("block_scrap", 2.5F, 3.0F, () -> SoundType.GRAVEL, HbmTab.BLOCKS)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockFallingBase> block_electrical_scrap =
-            falling("block_electrical_scrap", 2.5F, 5.0F, () -> SoundType.METAL, HbmTab.BLOCKS, true)
+            falling("block_electrical_scrap", 2.5F, 3.0F, () -> SoundType.METAL, HbmTab.BLOCKS, true)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -94,7 +94,7 @@ public final class ModFallingBlocks {
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockFallingBase> block_red_phosphorus =
-            falling("block_red_phosphorus", 5.0F, 10.0F, () -> SoundType.SAND, HbmTab.BLOCKS)
+            falling("block_red_phosphorus", 5.0F, 6.0F, () -> SoundType.SAND, HbmTab.BLOCKS)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
@@ -115,7 +115,7 @@ public final class ModFallingBlocks {
             .tag(BlockTag.SHOVEL);
 
     /** Digamma ash, laid under every cell a DRX laser burns through (old {@code BlockHazardFalling}). */
-    public static final RegistryObject<BlockFallingBase> ash_digamma = falling("ash_digamma", 0.5F, 150.0F, () -> SoundType.SAND)
+    public static final RegistryObject<BlockFallingBase> ash_digamma = falling("ash_digamma", 0.5F, 90.0F, () -> SoundType.SAND)
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);

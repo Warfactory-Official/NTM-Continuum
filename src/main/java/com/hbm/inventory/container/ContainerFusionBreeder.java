@@ -96,11 +96,7 @@ public class ContainerFusionBreeder extends AbstractContainerMenu {
             } else {
                 return ItemStack.EMPTY;
             }
-        } else if (this.machine.canPlaceItem(1, stack)) {
-            if (!moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
-        } else if (index < PLAYER_INV_START + 27) {
-            if (!moveItemStackTo(stack, PLAYER_INV_START + 27, PLAYER_INV_END, false)) return ItemStack.EMPTY;
-        } else if (!moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_START + 27, false)) {
+        } else if (!moveItemStackTo(stack, 1, 2, false)) {
             return ItemStack.EMPTY;
         }
 

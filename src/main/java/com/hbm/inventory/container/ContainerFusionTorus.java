@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.items.ModMachineItems;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
 import dev.golem.core.world.Compat;
@@ -91,14 +92,12 @@ public class ContainerFusionTorus extends AbstractContainerMenu {
         result = stack.copy();
         if (index < MACHINE_SLOTS) {
             if (!this.moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, true)) return ItemStack.EMPTY;
+        } else if (stack.is(ModMachineItems.blueprints.get())) {
+            if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
         } else if (Library.isBattery(stack)) {
             if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
-        } else if (!this.moveItemStackTo(stack, 1, 2, false)) {
-            if (index < PLAYER_INV_START + 27) {
-                if (!this.moveItemStackTo(stack, PLAYER_INV_START + 27, PLAYER_INV_END, false)) return ItemStack.EMPTY;
-            } else if (!this.moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_START + 27, false)) {
-                return ItemStack.EMPTY;
-            }
+        } else {
+            return ItemStack.EMPTY;
         }
 
         if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

@@ -224,7 +224,7 @@ public class BlockEntityCraneConsole extends TileEntityMachineBase implements IR
         Block block = level.getBlockState(pos).getBlock();
         if (!(block instanceof RBMKBase)) return null;
 
-        BlockPos core = MultiblockSurface.coreOfCell(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof BlockEntityRBMKBase column ? column : null;
     }
 

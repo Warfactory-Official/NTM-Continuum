@@ -33,7 +33,7 @@ public class BlockEntityRBMKInlet extends TileEntityMachineBase implements IFlui
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos adjacent = worldPosition.relative(direction);
             if (!(level.getBlockState(adjacent).getBlock() instanceof RBMKBase)) continue;
-            BlockPos core = MultiblockSurface.coreOfCell(level, adjacent);
+            BlockPos core = MultiblockSurface.coreOfAny(level, adjacent);
             if (core == null || !(level.getBlockEntity(core) instanceof BlockEntityRBMKBase column)) continue;
             int moved = Math.min(BlockEntityRBMKBase.maxWater - column.reasimWater, water.getFill());
             if (moved > 0) { column.reasimWater += moved; water.setFill(water.getFill() - moved); column.markChanged(); markChanged(); }

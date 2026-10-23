@@ -39,6 +39,8 @@ import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Ingredients;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.Container;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
@@ -47,6 +49,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.List;
+import com.hbm.blocks.ModBlocks;
+import com.hbm.items.ModEntityItems;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import dev.golem.core.gametest.GameTestHelpers;
 
 /**
  * Machine recipe tables restored to 1.7. Expected
@@ -75,6 +85,13 @@ public final class Fix3GameTests {
     public static final GameTests.Function FUEL_POOL =
             TESTS.function("fix3_fuel_pool", 20, () -> Fix3GameTests::fuelPool);
 
+    public static final GameTests.Function QUICK_MOVE_ROUTING =
+            TESTS.function("fix3_quick_move_battery_slot", 20, 16, () -> Fix3GameTests::quickMoveRouting);
+    public static final GameTests.Function WASTE_DRUM_ONE_ITEM =
+            TESTS.function("fix3_waste_drum_one_item", 140, () -> Fix3GameTests::wasteDrumOneItem);
+    public static final GameTests.Function ANY_GROUP_ORDER =
+            TESTS.function("fix3_any_group_order", 20, () -> Fix3GameTests::anyGroupOrder);
+
     public static void init() {}
 
     private static Item item(String id) {
@@ -89,6 +106,77 @@ public final class Fix3GameTests {
         List<Item> items = Ingredients.tagItems(tag);
         helper.assertTrue(!items.isEmpty(), "tag " + tag + " is empty");
         return new ItemStack(items.get(0));
+    }
+
+    /** Shift-click routes as 1.7: a battery to the battery slot, anything else past it (into the inputs where valid). */
+    public static void quickMoveRouting(GameTestHelper helper) {
+        BlockPos epress = new BlockPos(12, 1, 2), centrifuge = new BlockPos(12, 1, 8);
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_assembly_machine.get(), new BlockPos(3, 1, 3));
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_chemical_plant.get(), new BlockPos(3, 1, 9));
+        helper.setBlock(epress, ModMachineBlocks.machine_epress.get().defaultBlockState());
+        helper.setBlock(centrifuge, ModMachineBlocks.machine_centrifuge.get().defaultBlockState());
+        ItemStack ingot = of("minecraft:iron_ingot");
+        routes(helper, new BlockPos(3, 1, 3), 0, -1, -1, ingot);
+        routes(helper, new BlockPos(3, 1, 9), 0, -1, -1, ingot);
+        routes(helper, epress, 0, 2, 2, ingot);
+        routes(helper, centrifuge, 1, 0, 0, new ItemStack(ModBlocks.ore_rare.get()));
+        helper.succeed();
+    }
+
+    private static void routes(GameTestHelper helper, BlockPos at, int battery, int inputFrom, int inputTo, ItemStack plain) {
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        BlockEntity be = helper.getLevel().getBlockEntity(helper.absolutePos(at));
+        AbstractContainerMenu menu = ((MenuProvider) be).createMenu(0, player.getInventory(), player);
+        int first = menu.slots.size() - 36;
+        String name = be.getClass().getSimpleName();
+        player.getInventory().setItem(9, plain.copy());
+        menu.quickMoveStack(player, first);
+        helper.assertTrue(menu.getSlot(battery).getItem().isEmpty(), name + ": " + plain + " went into the battery slot");
+        boolean placed = inputFrom < 0;
+        for (int i = inputFrom; i >= 0 && i <= inputTo; i++) placed |= menu.getSlot(i).getItem().is(plain.getItem());
+        helper.assertTrue(placed, name + ": " + plain + " did not reach slots " + inputFrom + ".." + inputTo);
+        player.getInventory().setItem(9, ItemStack.EMPTY);
+        player.getInventory().setItem(9, new ItemStack(ModEntityItems.battery_creative.get()));
+        menu.quickMoveStack(player, first);
+        helper.assertTrue(menu.getSlot(battery).getItem().is(ModEntityItems.battery_creative.get()),
+                name + ": the battery did not reach slot " + battery);
+    }
+
+    /** A drum slot holds one item through the item handler and under a hopper, so cooling never voids a stack. */
+    public static void wasteDrumOneItem(GameTestHelper helper) {
+        BlockPos at = new BlockPos(1, 1, 1);
+        helper.setBlock(at, ModMachineBlocks.machine_waste_drum.get().defaultBlockState());
+        TileEntityWasteDrum drum = (TileEntityWasteDrum) helper.getLevel().getBlockEntity(helper.absolutePos(at));
+        Item waste = item("hbm:waste_plate_u235");
+        ItemStack rest = drum.inventory.insertItem(0, ItemDepletedFuel.makeHot(waste, 5), false);
+        helper.assertTrue(drum.inventory.getStackInSlot(0).getCount() == 1 && rest.getCount() == 4,
+                "the handler put " + drum.inventory.getStackInSlot(0).getCount() + " into one drum slot");
+
+        helper.setBlock(at.above(), Blocks.HOPPER.defaultBlockState());
+        Container hopper = (Container) helper.getLevel().getBlockEntity(helper.absolutePos(at.above()));
+        hopper.setItem(0, ItemDepletedFuel.makeHot(waste, 20));
+        helper.runAfterDelay(130, () -> {
+            int inDrum = 0;
+            for (int slot = 0; slot < drum.getContainerSize(); slot++) {
+                int count = drum.getItem(slot).getCount();
+                helper.assertTrue(count <= 1, "drum slot " + slot + " holds " + count);
+                inDrum += count;
+            }
+            int inHopper = hopper.getItem(0).getCount();
+            helper.assertTrue(inDrum == 12 && inDrum + inHopper == 21, "drum " + inDrum + " + hopper " + inHopper + ", expected 12 + 9");
+            helper.succeed();
+        });
+    }
+
+    /** 1.7's DictGroups list their first material first, and recipe viewers show the first member. */
+    public static void anyGroupOrder(GameTestHelper helper) {
+        String[][] firsts = {{"c:ingots/any_resistant_alloy", "hbm:ingot_tcalloy"},
+                {"c:ingots/any_plastic", "hbm:ingot_polymer"}, {"c:ingots/any_bismoid_bronze", "hbm:ingot_bismuth_bronze"}};
+        for (String[] first : firsts) {
+            ItemStack shown = tag(helper, first[0]);
+            helper.assertTrue(shown.is(item(first[1])), first[0] + " shows " + shown + " first, 1.7 shows " + first[1]);
+        }
+        helper.succeed();
     }
 
     private static boolean is(ItemStack stack, String id, int count) {

@@ -2,7 +2,9 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.items.machine.ItemStamp;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -88,10 +90,9 @@ public class ContainerMachinePress extends AbstractContainerMenu {
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
             } else {
-                // player inv -> machine (skip output slot 3)
-                if (!this.moveItemStackTo(stack, 0, 3, false) && !this.moveItemStackTo(stack, 4, MACHINE_SLOTS, false)) {
-                    return ItemStack.EMPTY;
-                }
+                int target = Compat.burnDuration(player.level(), stack) > 0 ? 0 : stack.getItem() instanceof ItemStamp ? 1 : 2;
+                if (!this.moveItemStackTo(stack, target, target + 1, false)
+                        && !this.moveItemStackTo(stack, 4, MACHINE_SLOTS, false)) return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

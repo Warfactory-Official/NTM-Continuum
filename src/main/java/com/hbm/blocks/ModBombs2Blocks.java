@@ -49,7 +49,7 @@ public final class ModBombs2Blocks {
 
     /** {@code Material.iron}, 5.0F / 200.0F; the TESR-drawn ones add noOcclusion so the invisible block does not cull. */
     private static final UnaryOperator<BlockBehaviour.Properties> BOMB =
-            p -> p.strength(5.0F, 200.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
+            p -> p.strength(5.0F, 120.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
     private static final UnaryOperator<BlockBehaviour.Properties> RENDERED_BOMB =
             p -> BOMB.apply(p).noOcclusion();
 
@@ -86,22 +86,22 @@ public final class ModBombs2Blocks {
     // 1.7 BlockOre: frozen_dirt and frozen_planks drop one snowball on the multiplying fortune curve; silk touch
     // keeps the block.
     public static final RegistryObject<Block> frozen_dirt = REG.<Block>block("frozen_dirt", Block::new,
-                    p -> p.strength(0.5F, 2.5F).sound(SoundType.GLASS))
+                    p -> p.strength(0.5F, 1.5F).sound(SoundType.GLASS))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:snowball", 1, 1));
     // 1.7 WasteEarth icons: the block's own top, frozen dirt underneath, the grass side around.
     // 1.7 WasteEarth.getItemDropped: frozen_grass drops one snowball (silk touch keeps the block).
     public static final RegistryObject<BlockFrozenGrass> frozen_grass = REG.block("frozen_grass", BlockFrozenGrass::new,
-                    p -> p.strength(0.5F, 2.5F).sound(SoundType.GLASS))
+                    p -> p.strength(0.5F, 1.5F).sound(SoundType.GLASS))
             .transform(Presets.cubeBottomTop("hbm:blocks/frozen_dirt", "hbm:blocks/frozen_grass_side",
                     "hbm:blocks/frozen_grass_top"))
             .loot(Loot.oreNoFortune("minecraft:snowball", 1, 1));
     // 1.7 WasteLog: 2 + rand(3) snowballs, silk touch keeps the block.
     public static final RegistryObject<RotatedPillarBlock> frozen_log = REG.block("frozen_log", RotatedPillarBlock::new,
-                    p -> p.strength(0.5F, 2.5F).sound(SoundType.GLASS))
+                    p -> p.strength(0.5F, 1.5F).sound(SoundType.GLASS))
             .transform(Presets.column("hbm:blocks/frozen_log_top", "hbm:blocks/frozen_log").states(Variants.axis()))
             .loot(Loot.oreNoFortune("minecraft:snowball", 2, 4)).tag(BlockTag.AXE);
     public static final RegistryObject<Block> frozen_planks = REG.<Block>block("frozen_planks", Block::new,
-                    p -> p.strength(0.5F, 2.5F).sound(SoundType.GLASS))
+                    p -> p.strength(0.5F, 1.5F).sound(SoundType.GLASS))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:snowball", 1, 1)).tag(BlockTag.AXE);
 
     static {

@@ -372,6 +372,14 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityWatz>> WATZ =
             REG.blockEntity("watz",
                     () -> BlockEntities.serverTicking(TileEntityWatz::new, TileEntityWatz::serverTick, ModMachineBlocks.watz.get()));
+    /** The cells of the AE2-reachable multiblocks, on loaders whose AE2 needs a block entity there. */
+    public static final RegistryObject<BlockEntityType<TileEntityProxyCell>> PROXY_CELL =
+            REG.blockEntity("proxy_cell",
+                    () -> BlockEntities.type(TileEntityProxyCell::new, ModMachineBlocks.machine_assembly_machine.get(),
+                            ModMachineBlocks.machine_precass.get(), ModMachineBlocks.machine_chemical_plant.get(),
+                            ModMachineBlocks.machine_rockmill.get(), ModMachineBlocks.machine_purex.get(),
+                            ModMachineBlocks.fusion_torus.get(), ModMachineBlocks.fusion_plasma_forge.get(),
+                            ModMachineBlocks.machine_arc_furnace.get()));
     public static final RegistryObject<BlockEntityType<TileEntityWatzPump>> WATZ_PUMP =
             REG.blockEntity("watz_pump",
                     () -> BlockEntities.type(TileEntityWatzPump::new, ModMachineBlocks.watz_pump.get()));

@@ -1,6 +1,12 @@
 package com.hbm.blocks.generic;
 
 import net.minecraft.world.level.block.IronBarsBlock;
+import com.hbm.handler.radiation.RadiationSystemNT;
+import com.hbm.interfaces.IRadResistantBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * 1.7 {@code BlockNTMGlassPane}: a glass pane that also joins onto the HBM glass blocks. Vanilla's pane
@@ -10,9 +16,15 @@ import net.minecraft.world.level.block.IronBarsBlock;
  * {@code false} as vanilla {@code BlockPane}'s "drops itself" flag (so {@code getItemDropped} is null
  * whatever {@code doesDrop} says) and {@code BlockPane.canSilkHarvest()} is true.
  */
-public class BlockNTMGlassPane extends IronBarsBlock {
+public class BlockNTMGlassPane extends IronBarsBlock implements IRadResistantBlock {
 
     public BlockNTMGlassPane(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (level instanceof ServerLevel server && !state.is(oldState.getBlock())) RadiationSystemNT.markSectionForRebuild(server, pos);
     }
 }

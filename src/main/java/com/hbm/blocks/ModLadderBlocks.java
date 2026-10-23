@@ -100,7 +100,7 @@ public final class ModLadderBlocks {
     private static Reg.Handle<BlockNTMLadder> ladder(String id, boolean top) {
         Reg.Handle<BlockNTMLadder> block = REG.block(id,
                 p -> new BlockNTMLadder(p, top),
-                p -> p.strength(0.25F, 2.0F).sound(SoundType.LADDER).noOcclusion());
+                p -> p.strength(0.25F, 1.2F).sound(SoundType.LADDER).noOcclusion());
         Reg.Handle<BlockItem> item = REG.blockItem(block, Compat::blockDescription);
         ModTabs.addTo(HbmTab.BLOCKS, item);
         return block;

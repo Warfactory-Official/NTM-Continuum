@@ -104,7 +104,7 @@ public final class ModWorldFluids {
      */
     public static BlockBehaviour.Properties properties(
             BlockBehaviour.Properties p, WorldFluids.Handle fluid, boolean replaceable) {
-        p = FluidBlock.properties(p, fluid).strength(100.0F, 500.0F);
+        p = FluidBlock.properties(p, fluid).strength(100.0F, 300.0F);
         return replaceable ? p.replaceable() : p;
     }
 

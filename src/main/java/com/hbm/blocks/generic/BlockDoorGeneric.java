@@ -34,6 +34,8 @@ import com.hbm.tileentity.DoorDecl;
 import com.hbm.tileentity.TileEntityDoorGeneric;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
 import com.hbm.util.DoorRotation;
+import com.hbm.handler.radiation.RadiationSystemNT;
+import com.hbm.interfaces.IRadResistantBlock;
 
 /**
  * Port of 1.7.10 {@code BlockDoorGeneric}: a folded multiblock whose geometry, timing and sounds are
@@ -42,13 +44,41 @@ import com.hbm.util.DoorRotation;
  * {@link DoorDecl#getBlockBound} in the door's own frame, so an open door is walkable exactly where
  * the original was.
  */
-public class BlockDoorGeneric extends BlockMultiblockMachine implements IBomb, IToolable {
+public class BlockDoorGeneric extends BlockMultiblockMachine implements IBomb, IToolable, IRadResistantBlock {
 
     /** 1.7's {@code hasExtra(meta)}: this cell has been cleared by the moving door. */
     public static final BooleanProperty OPEN = BooleanProperty.create("open");
 
     public final DoorDecl type;
     private final ConcurrentHashMap<Long, VoxelShape> doorShapes = new ConcurrentHashMap<>();
+
+    /** 1.12.2 {@code BlockDoorGeneric.isRadResistant}: these doors seal radiation while closed. */
+    private boolean sealsRadiation;
+
+    public BlockDoorGeneric sealsRadiation() {
+        this.sealsRadiation = true;
+        return this;
+    }
+
+    @Override
+    public boolean isRadResistant(BlockGetter level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        return sealsRadiation && state.getBlock() == this && !state.getValue(OPEN);
+    }
+
+    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (sealsRadiation && level instanceof ServerLevel server && !state.is(oldState.getBlock())) {
+            RadiationSystemNT.markSectionForRebuild(server, pos);
+        }
+    }
+
+    @Override
+    protected void removedAt(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        super.removedAt(state, level, pos, movedByPiston);
+        if (sealsRadiation) RadiationSystemNT.markSectionForRebuild(level, pos);
+    }
 
     public BlockDoorGeneric(Properties properties, DoorDecl type) {
         super(properties);
@@ -98,12 +128,14 @@ public class BlockDoorGeneric extends BlockMultiblockMachine implements IBomb, I
         BlockState state = level.getBlockState(pos);
         if (state.getBlock() != this || !state.getValue(CELL) || state.getValue(OPEN)) return;
         level.setBlock(pos, state.setValue(OPEN, Boolean.TRUE), 3);
+        if (sealsRadiation && level instanceof ServerLevel server) RadiationSystemNT.markSectionForRebuild(server, pos);
     }
 
     public void removeExtra(Level level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         if (state.getBlock() != this || !state.getValue(CELL) || !state.getValue(OPEN)) return;
         level.setBlock(pos, state.setValue(OPEN, Boolean.FALSE), 3);
+        if (sealsRadiation && level instanceof ServerLevel server) RadiationSystemNT.markSectionForRebuild(server, pos);
     }
 
     public boolean hasExtra(BlockState state) {

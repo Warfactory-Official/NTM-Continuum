@@ -53,6 +53,8 @@ public final class Hazard17GameTests {
             HazardGameTests.TESTS.function("radaway_17", 60, () -> Hazard17GameTests::radaway17);
     public static final GameTests.Function LUNG_DISEASE_17 =
             HazardGameTests.TESTS.function("lung_disease_17", 60, 4, () -> Hazard17GameTests::lungDisease17);
+    public static final GameTests.Function HAZARD_REGISTRY_1122_ONLY =
+            HazardGameTests.TESTS.function("hazard_registry_1122_only", 20, () -> Hazard17GameTests::hazardRegistry1122Only);
     public static final GameTests.Function HAZARD_REGISTRY_DUMP =
             HazardGameTests.TESTS.function("hazard_registry_dump", 20, () -> Hazard17GameTests::hazardRegistryDump);
 
@@ -134,6 +136,20 @@ public final class Hazard17GameTests {
         helper.assertTrue(Math.abs(HazmatRegistry.getResistance(new ItemStack(Items.IRON_CHESTPLATE)) - 0.0225 * 0.4) < 1e-9,
                 "iron chestplate resistance must be 0.0225 * 0.4");
         helper.assertTrue(ArmorUtil.isFaradayArmor(new ItemStack(item("t51_plate"))), "T-51 counts as Faraday armour");
+        helper.succeed();
+    }
+
+    /** Items 1.7 has no shape for carry their 1.12.2 frame's hazards at that shape's strength. */
+    public static void hazardRegistry1122Only(GameTestHelper helper) {
+        expect(helper, "powder_pb209", HazardRegistry.RADIATION, HazardRegistry.pb209 * HazardRegistry.powder);
+        expect(helper, "powder_pb209", HazardRegistry.BLINDING, 50.0 * HazardRegistry.powder);
+        expect(helper, "powder_pb209_tiny", HazardRegistry.RADIATION, HazardRegistry.pb209 * HazardRegistry.powder_tiny);
+        expect(helper, "powder_pb209_tiny", HazardRegistry.HOT, 7.0 * HazardRegistry.powder_tiny);
+        expect(helper, "powder_au198_tiny", HazardRegistry.RADIATION, HazardRegistry.au198 * HazardRegistry.powder_tiny);
+        expect(helper, "powder_co60_tiny", HazardRegistry.RADIATION, HazardRegistry.co60 * HazardRegistry.powder_tiny);
+        expect(helper, "powder_at209_tiny", HazardRegistry.RADIATION, HazardRegistry.at209 * HazardRegistry.powder_tiny);
+        expect(helper, "ingot_i131", HazardRegistry.RADIATION, HazardRegistry.i131 * HazardRegistry.ingot);
+        expect(helper, "crystal_asbestos", HazardRegistry.ASBESTOS, HazardRegistry.crystal);
         helper.succeed();
     }
 

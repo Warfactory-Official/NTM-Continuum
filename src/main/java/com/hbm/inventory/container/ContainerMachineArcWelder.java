@@ -100,7 +100,7 @@ public class ContainerMachineArcWelder extends AbstractContainerMenu {
                 if (!moveItemStackTo(stack, 5, 6, false)) return ItemStack.EMPTY;
             } else if (Library.isMachineUpgrade(stack)) {
                 if (!moveItemStackTo(stack, 6, 8, false)) return ItemStack.EMPTY;
-            } else if (!moveItemStackTo(stack, 0, 4, false)) {
+            } else if (!moveItemStackTo(stack, 0, 3, false)) {
                 return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

@@ -3,6 +3,8 @@ package com.hbm.inventory.container;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.items.machine.ItemMachineUpgrade;
+import com.hbm.items.machine.ItemStamp;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineEPress;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -84,12 +86,14 @@ public class ContainerMachineEPress extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
+            } else if (Library.isBattery(stack)) {
+                if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
             } else if (stack.getItem() instanceof ItemMachineUpgrade) {
-                // upgrades go straight to the upgrade slot (the 1.12.2 transferStackInSlot routing)
                 if (!this.moveItemStackTo(stack, 4, 5, false)) return ItemStack.EMPTY;
-            } else {
-                // player inv -> machine: battery (0), stamp (1), input (2); skip output (3)
-                if (!this.moveItemStackTo(stack, 0, 3, false)) return ItemStack.EMPTY;
+            } else if (stack.getItem() instanceof ItemStamp) {
+                if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
+            } else if (!this.moveItemStackTo(stack, 2, 3, false)) {
+                return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

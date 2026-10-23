@@ -103,9 +103,9 @@ public final class ValueMapGameTests {
      * SHA-256 of {@link #hazardDump()} (ground contamination on). The storage-drum waste lines are left out of the
      * hash and compared value by value instead. No 1.12.2 CONTAMINATING entries (1.7 has no such hazard type); 1.7's
      * white phosphorus frame on its ingot and block tags. The deepslate twins carry their stone ore's lines; the raw ores
-     * their ore's hazards at ore strength.
+     * their ore's hazards at ore strength; the 1.12.2-only powders, I-131 ingot and asbestos crystal their 1.12.2 frames'.
      */
-    static final String HASH_HAZARDS = "097fba811340e6b3c08718e67053a78306790ee76888eeaf585f36c745cd536d";
+    static final String HASH_HAZARDS = "7a5a727f51627ce85945d26c7c3b6ffaee40909d740093dbfe3569910e15c56e";
     /**
      * SHA-256 of {@link #armorDump()}, HBM's items only. 1.7 values: NCRPA resistance 1.7, RPA/NCRPA helmets
      * FULL_PACKAGE, the liquidator and PAA sets with their (empty) resistance, the schrabidium set in

@@ -112,23 +112,16 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
 
         ItemStack source = slot.getItem();
         ItemStack original = source.copy();
-        if (index < MODULE_SLOTS) {
-            if (!moveItemStackTo(source, PLAYER_START, PLAYER_END, true)) return ItemStack.EMPTY;
-        } else if (index == ARMOR_SLOT) {
-            if (!moveItemStackTo(source, PLAYER_START, PLAYER_END, true)) return ItemStack.EMPTY;
-        } else if (index < PLAYER_START) {
-            if (!moveItemStackTo(source, PLAYER_START, PLAYER_END, true)) return ItemStack.EMPTY;
+        if (index <= ARMOR_SLOT) {
+            // 1.7: the armour piece goes onto the player first, modules straight into the inventory
+            if (index != ARMOR_SLOT || !moveItemStackTo(source, EQUIPMENT_START, PLAYER_START, false))
+                if (!moveItemStackTo(source, PLAYER_START, PLAYER_END, true)) return ItemStack.EMPTY;
         } else if (Armors.isArmor(source) && !(source.getItem() instanceof JetpackBase)) {
             if (!moveItemStackTo(source, ARMOR_SLOT, ARMOR_SLOT + 1, false)) return ItemStack.EMPTY;
         } else {
             int moduleSlot = ArmorModHandler.getModuleSlot(source);
-            if (moduleSlot >= 0 && moduleSlot < MODULE_SLOTS && slots.get(moduleSlot).mayPlace(source)) {
-                if (!moveItemStackTo(source, moduleSlot, moduleSlot + 1, false)) return ItemStack.EMPTY;
-            } else if (index < PLAYER_START + 27) {
-                if (!moveItemStackTo(source, PLAYER_START + 27, PLAYER_END, false)) return ItemStack.EMPTY;
-            } else if (!moveItemStackTo(source, PLAYER_START, PLAYER_START + 27, false)) {
-                return ItemStack.EMPTY;
-            }
+            if (moduleSlot < 0 || moduleSlot >= MODULE_SLOTS || !slots.get(moduleSlot).mayPlace(source)) return ItemStack.EMPTY;
+            if (!moveItemStackTo(source, moduleSlot, moduleSlot + 1, false)) return ItemStack.EMPTY;
         }
 
         if (source.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

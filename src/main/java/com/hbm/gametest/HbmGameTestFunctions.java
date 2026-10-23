@@ -824,6 +824,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("rc_nuke_dials_column_height", 60, 12, () -> RbmkDialGameTests::columnHeight);
     public static final GameTests.Function RC_NUKE_PWR_HEAT =
             TESTS.function("rc_nuke_pwr_heat", 60, 8, () -> PwrGameTests::heatAndMeltdown);
+    public static final GameTests.Function RC_NUKE_REASIM_BOILER =
+            TESTS.function("rc_nuke_reasim_boiler_steam", 60, () -> RcNukeGameTests::reasimBoilerSteam);
 
     // --- reactors audit, round two: long runs against 1.7 numbers ---
     public static final GameTests.Function RC_NUKE2_FUSION_TABLE =

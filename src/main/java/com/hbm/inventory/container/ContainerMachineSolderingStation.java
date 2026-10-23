@@ -3,6 +3,10 @@ package com.hbm.inventory.container;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.recipes.SolderingRecipes;
+import com.hbm.items.machine.IItemFluidId;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineSolderingStation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -95,8 +99,18 @@ public class ContainerMachineSolderingStation extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
+            } else if (Library.isBattery(stack)) {
+                if (!this.moveItemStackTo(stack, 7, 8, false)) return ItemStack.EMPTY;
+            } else if (stack.getItem() instanceof IItemFluidId) {
+                if (!this.moveItemStackTo(stack, 8, 9, false)) return ItemStack.EMPTY;
+            } else if (Library.isMachineUpgrade(stack)) {
+                if (!this.moveItemStackTo(stack, 9, 11, false)) return ItemStack.EMPTY;
             } else {
-                if (!this.moveItemStackTo(stack, 0, MACHINE_SLOTS, false)) return ItemStack.EMPTY;
+                // 1.7 tries every matching ingredient group, then always returns nothing
+                for (AStack t : SolderingRecipes.toppings) if (t.matchesRecipe(stack, false) && !this.moveItemStackTo(stack, 0, 3, false)) return ItemStack.EMPTY;
+                for (AStack t : SolderingRecipes.pcb) if (t.matchesRecipe(stack, false) && !this.moveItemStackTo(stack, 3, 5, false)) return ItemStack.EMPTY;
+                for (AStack t : SolderingRecipes.solder) if (t.matchesRecipe(stack, false) && !this.moveItemStackTo(stack, 5, 6, false)) return ItemStack.EMPTY;
+                return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

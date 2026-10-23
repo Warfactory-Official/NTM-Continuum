@@ -64,34 +64,34 @@ public final class ModRadarUtilityBlocks {
     }
 
     public static final RegistryObject<MachineRadar> machine_radar =
-            REG.block("machine_radar", MachineRadar::new, rendered(5.0F, 10.0F))
+            REG.block("machine_radar", MachineRadar::new, rendered(5.0F, 6.0F))
                     .transform(Presets.rendered(Variants.simple()).and(SELF_PICKAXE));
     public static final RegistryObject<MachineRadarLarge> machine_radar_large =
-            REG.block("machine_radar_large", MachineRadarLarge::new, rendered(5.0F, 10.0F))
+            REG.block("machine_radar_large", MachineRadarLarge::new, rendered(5.0F, 6.0F))
                     .transform(FOLDED.and(SELF_PICKAXE));
     public static final RegistryObject<MachineRadarScreen> radar_screen =
-            REG.block("radar_screen", MachineRadarScreen::new, rendered(5.0F, 10.0F))
+            REG.block("radar_screen", MachineRadarScreen::new, rendered(5.0F, 6.0F))
                     .transform(FOLDED.and(SELF_PICKAXE));
     public static final RegistryObject<MachineForceField> machine_forcefield =
-            REG.block("machine_forcefield", MachineForceField::new, rendered(5.0F, 100.0F))
+            REG.block("machine_forcefield", MachineForceField::new, rendered(5.0F, 60.0F))
                     .transform(Presets.rendered(Variants.simple()).and(SELF_PICKAXE));
     public static final RegistryObject<MachineTeleporter> machine_teleporter =
-            REG.block("machine_teleporter", MachineTeleporter::new, iron(5.0F, 10.0F))
+            REG.block("machine_teleporter", MachineTeleporter::new, iron(5.0F, 6.0F))
                     // 1.7 icons: teleporter_top/_bottom/_side
                     .transform(Presets.cubeBottomTop("hbm:blocks/teleporter_bottom", "hbm:blocks/teleporter_side",
                             "hbm:blocks/teleporter_top").and(SELF_PICKAXE));
     public static final RegistryObject<CompatBlock> teleanchor =
-            REG.block("teleanchor", CompatBlock::new, iron(5.0F, 10.0F))
+            REG.block("teleanchor", CompatBlock::new, iron(5.0F, 6.0F))
                     // the anchor's bottom is its side
                     .transform(Presets.cubeBottomTop("hbm:blocks/tele_anchor_side", "hbm:blocks/tele_anchor_side",
                             "hbm:blocks/tele_anchor_top").and(SELF_PICKAXE));
     public static final RegistryObject<MachineOrbus> machine_orbus =
-            REG.block("machine_orbus", MachineOrbus::new, rendered(5.0F, 10.0F))
+            REG.block("machine_orbus", MachineOrbus::new, rendered(5.0F, 6.0F))
                     .transform(FOLDED)
                     .loot(CarriedDrops.ALWAYS)
                     .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSeal> seal_controller =
-            REG.block("seal_controller", BlockSeal::new, iron(10.0F, 100.0F))
+            REG.block("seal_controller", BlockSeal::new, iron(10.0F, 60.0F))
                     // 1.7 BlockSeal.getIcon: seal_frame everywhere but the one face that looks at the placer
                     .transform(Presets.orientable("hbm:blocks/seal_controller", "hbm:blocks/seal_frame", "hbm:blocks/seal_frame")
                             .states(Variants.product(Variants.facing(), Variants.uniform("powered", "false", "true")))
@@ -99,11 +99,11 @@ public final class ModRadarUtilityBlocks {
     /** 1.7: hardness and resistance {@code Float.POSITIVE_INFINITY} - unbreakable and blast-proof. */
     public static final RegistryObject<BlockHatch> seal_hatch =
             REG.block("seal_hatch", BlockHatch::new,
-                    p -> p.strength(-1.0F, 3600000.0F).sound(SoundType.METAL))
+                    p -> p.strength(-1.0F, Float.POSITIVE_INFINITY).sound(SoundType.METAL))
                     .transform(Presets.cubeAll("hbm:blocks/seal_hatch_3"))
                     .loot(Loot.nothing());
     public static final RegistryObject<SoyuzCapsule> soyuz_capsule =
-            REG.block("soyuz_capsule", SoyuzCapsule::new, rendered(5.0F, 10.0F))
+            REG.block("soyuz_capsule", SoyuzCapsule::new, rendered(5.0F, 6.0F))
                     .transform(Presets.rendered(Variants.uniform("rusted", "false", "true")).and(SELF_PICKAXE));
 
     static {

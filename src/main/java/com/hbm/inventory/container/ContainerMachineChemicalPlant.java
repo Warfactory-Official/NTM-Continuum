@@ -1,6 +1,8 @@
 package com.hbm.inventory.container;
 
+import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.inventory.SlotCraftingOutput;
+import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -100,14 +102,14 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof ItemMachineUpgrade) {
-                // upgrades go straight to the upgrade slots (the 1.12.2 transferStackInSlot routing)
+            } else if (result.getItem() instanceof IBatteryItem) {
+                if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
+            } else if (result.getItem() instanceof ItemBlueprints) {
+                if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
+            } else if (result.getItem() instanceof ItemMachineUpgrade) {
                 if (!this.moveItemStackTo(stack, 2, 4, false)) return ItemStack.EMPTY;
-            } else {
-                // player inv -> machine: only the insertable slots (battery/template/upgrades/item-in/bucket-in)
-                if (!this.moveItemStackTo(stack, 0, 7, false)
-                        && !this.moveItemStackTo(stack, 10, 13, false)
-                        && !this.moveItemStackTo(stack, 16, 19, false)) return ItemStack.EMPTY;
+            } else if (!this.moveItemStackTo(stack, 4, 7, false)) {
+                return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

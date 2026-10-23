@@ -78,7 +78,7 @@ public final class ModFalloutBlocks {
             .loot(Loot.oreNoFortune("minecraft:dirt", 1, 1))
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<Block> waste_trinitite = block("waste_trinitite", Block::new,
-            p -> p.strength(0.5F, 2.5F).sound(SoundType.SAND))
+            p -> p.strength(0.5F, 1.5F).sound(SoundType.SAND))
             // 1.7 BlockTrinitite: four icons picked per position (getIcon(world, x, y, z) hashes the coordinates);
             // the modern spelling of a position-picked texture is a four-model weighted variant pool.
             .model(d -> d.models(Models.group().and("_0", Models.cubeAll("hbm:blocks/waste_trinitite_0")).and("_1", Models.cubeAll("hbm:blocks/waste_trinitite_1")).and("_2", Models.cubeAll("hbm:blocks/waste_trinitite_2")).and("_3", Models.cubeAll("hbm:blocks/waste_trinitite_3"))).states(Variants.pool(4)))
@@ -87,7 +87,7 @@ public final class ModFalloutBlocks {
             .loot(Loot.oreNoFortune("hbm:trinitite", 1, 1))
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<Block> waste_trinitite_red = block("waste_trinitite_red", Block::new,
-            p -> p.strength(0.5F, 2.5F).sound(SoundType.SAND))
+            p -> p.strength(0.5F, 1.5F).sound(SoundType.SAND))
             // 1.7 BlockTrinitite: four icons picked per position (getIcon(world, x, y, z) hashes the coordinates);
             // the modern spelling of a position-picked texture is a four-model weighted variant pool.
             .model(d -> d.models(Models.group().and("_0", Models.cubeAll("hbm:blocks/waste_trinitite_red_0")).and("_1", Models.cubeAll("hbm:blocks/waste_trinitite_red_1")).and("_2", Models.cubeAll("hbm:blocks/waste_trinitite_red_2")).and("_3", Models.cubeAll("hbm:blocks/waste_trinitite_red_3"))).states(Variants.pool(4)))
@@ -96,7 +96,7 @@ public final class ModFalloutBlocks {
             .loot(Loot.oreNoFortune("hbm:trinitite", 1, 1))
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<RotatedPillarBlock> waste_log = block("waste_log", RotatedPillarBlock::new,
-            p -> p.strength(5.0F, 2.5F).sound(SoundType.WOOD))
+            p -> p.strength(5.0F, 1.5F).sound(SoundType.WOOD))
             .model(d -> d.models(Models.column("hbm:blocks/waste_log_top", "hbm:blocks/waste_log_side")).states(Variants.axis()).blockItem())
             // 1.7 WasteLog: 2-4 charcoal (Items.coal, damageDropped 1), no fortune; one break in 1,000 drops a single
             // burnt_bark instead; silk touch keeps the log
@@ -105,50 +105,50 @@ public final class ModFalloutBlocks {
     /** 1.7 {@code WasteLeaves}: decays into falling leaf layers, sheds dead leaves, drops nothing (no silk touch). */
     public static final RegistryObject<BlockWasteLeaves> waste_leaves = block("waste_leaves",
             BlockWasteLeaves::new,
-            p -> p.strength(0.3F, 0.3F).sound(SoundType.GRASS).noOcclusion().randomTicks())
+            p -> p.strength(0.3F, 0.1F).sound(SoundType.GRASS).noOcclusion().randomTicks())
             .transform(Presets.shape(Models.renderType("minecraft:cutout_mipped", Models.cubeAll("hbm:blocks/waste_leaves"))).viaItemModel())
             .loot(Loot.nothing())
             .tag(BlockTag.HOE);
 
     // Sellafite (SHADE 0..9, tinted client-side via HbmBlockColors)
     public static final RegistryObject<BlockSellafieldSlaked> sellafield_slaked = sellafield("sellafield_slaked",
-            0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
+            0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 5.0F))
             .model(d -> d.models(Models.group().and("_0", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked"))).and("_1", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_1"))).and("_2", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_2"))).and("_3", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_3")))).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/sellafield_slaked_0")))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSellafieldSlaked> sellafield_bedrock = sellafield("sellafield_bedrock",
-            0, p -> p.strength(-1.0F, 6_000_000.0F))
+            0, p -> p.strength(-1.0F, 3600000.0F))
             .model(d -> d.models(Models.group().and("_0", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked"))).and("_1", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_1"))).and("_2", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_2"))).and("_3", Models.parented("hbm:block/tinted_cube_all", Slots.of("all", "hbm:blocks/sellafield_slaked_3")))).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/sellafield_bedrock_0")));
     // 1.7 BlockSellafieldOre: diamond / emerald / radgem x1 on the multiplying fortune curve; a plain cube without
     // a tile entity, so silk touch gives the ore back. The other two drop themselves.
     public static final RegistryObject<BlockSellafieldSlaked> ore_sellafield_diamond = sellafield("ore_sellafield_diamond",
-            3, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
+            3, p -> p.requiresCorrectToolForDrops().strength(5.0F, 5.0F))
             .model(d -> d.models(sellafieldOre("hbm:blocks/ore_overlay_diamond")).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/ore_sellafield_diamond_0")))
             .loot(Loot.oreMultiplied("minecraft:diamond", 1, 1))
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSellafieldSlaked> ore_sellafield_emerald = sellafield("ore_sellafield_emerald",
-            3, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
+            3, p -> p.requiresCorrectToolForDrops().strength(5.0F, 5.0F))
             .model(d -> d.models(sellafieldOre("hbm:blocks/ore_overlay_emerald")).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/ore_sellafield_emerald_0")))
             .loot(Loot.oreMultiplied("minecraft:emerald", 1, 1))
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSellafieldSlaked> ore_sellafield_radgem = sellafield("ore_sellafield_radgem",
-            3, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
+            3, p -> p.requiresCorrectToolForDrops().strength(5.0F, 5.0F))
             .model(d -> d.models(sellafieldOre("hbm:blocks/ore_overlay_radgem")).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/ore_sellafield_radgem_0")))
             .loot(Loot.oreMultiplied("hbm:gem_rad", 1, 1))
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSellafieldSlaked> ore_sellafield_schrabidium = sellafield("ore_sellafield_schrabidium",
-            0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
+            0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 5.0F))
             .model(d -> d.models(sellafieldOre("hbm:blocks/ore_overlay_schrabidium")).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/ore_sellafield_schrabidium_0")))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSellafieldSlaked> ore_sellafield_uranium_scorched = sellafield("ore_sellafield_uranium_scorched",
-            0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
+            0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 5.0F))
             .model(d -> d.models(sellafieldOre("hbm:blocks/ore_overlay_uranium_scorched")).states(Variants.product(Variants.uniformRange("shade", 0, 9), Variants.pool(4))))
             .icon(d -> d.models(Models.blockItem("hbm:block/ore_sellafield_uranium_scorched_0")))
             .loot(Loot.self())

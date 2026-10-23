@@ -124,19 +124,19 @@ public final class ModDecoCrateBlocks {
     // Crates
     /** 1.7 {@code crate}: the supply crate, wood 5/10, consumable tab; a crowbar spills random supplies. */
     public static final RegistryObject<BlockCrate> crate = REG.block("crate",
-                    p -> new BlockCrate(p, BlockCrate.Kind.SUPPLY), p -> p.strength(5.0F, 10.0F).sound(SoundType.WOOD))
+                    p -> new BlockCrate(p, BlockCrate.Kind.SUPPLY), p -> p.strength(5.0F, 6.0F).sound(SoundType.WOOD))
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.AXE);
     /** The conserve crate: renderer-drawn; its OBJ item is typed data in {@link DecoCrateDeclarations}. */
     public static final RegistryObject<BlockCanCrate> crate_can = REG.block("crate_can", BlockCanCrate::new,
-                    rendered(p -> p.strength(1.0F, 2.5F).sound(SoundType.WOOD)))
+                    rendered(p -> p.strength(1.0F, 1.5F).sound(SoundType.WOOD)))
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.AXE);
     /** 1.7 BlockStorageCrate.getIcon: the top icon on top and bottom, the side icon all round. */
     public static final RegistryObject<BlockStorageCrate> crate_tungsten = REG.block("crate_tungsten",
-                    p -> new BlockStorageCrate(p, BlockStorageCrate.Kind.TUNGSTEN), iron(7.5F, 300.0F))
+                    p -> new BlockStorageCrate(p, BlockStorageCrate.Kind.TUNGSTEN), iron(7.5F, 180.0F))
             .transform(Presets.cubeBottomTop("hbm:blocks/crate_tungsten_top", "hbm:blocks/crate_tungsten_side",
                             "hbm:blocks/crate_tungsten_top")
                     .states(Variants.product(HORIZONTAL, Variants.uniform("hot", "false", "true")))
@@ -145,14 +145,14 @@ public final class ModDecoCrateBlocks {
             .tag(BlockTag.PICKAXE);
     /** The safe door is on the face it was placed towards. */
     public static final RegistryObject<BlockStorageCrate> safe = REG.block("safe",
-                    p -> new BlockStorageCrate(p, BlockStorageCrate.Kind.SAFE), iron(7.5F, 10000.0F))
+                    p -> new BlockStorageCrate(p, BlockStorageCrate.Kind.SAFE), iron(7.5F, 6000.0F))
             .transform(Presets.orientable("hbm:blocks/safe_front", "hbm:blocks/safe_side", "hbm:blocks/safe_side")
                     .states(Variants.product(Variants.facing(), Variants.uniform("hot", "false", "true")))
                     .viaItemModel())
             .loot(Loot.container("minecraft:container", "minecraft:custom_data", "minecraft:custom_name"))
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockDecoContainer> filing_cabinet = REG.block("filing_cabinet",
-                    BlockDecoContainer::new, rendered(iron(10.0F, 15.0F)))
+                    BlockDecoContainer::new, rendered(iron(10.0F, 9.0F)))
             .transform(Presets.rendered(Variants.product(HORIZONTAL, Variants.uniform("type", "green", "steel"))))
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE);
@@ -170,30 +170,30 @@ public final class ModDecoCrateBlocks {
                     rendered(p -> p.strength(0.0F, 0.0F).sound(SoundType.GLASS)))
             .transform(ROTATING_PROP);
     public static final RegistryObject<BlockVendingMachine> vending_machine = REG.block("vending_machine",
-                    BlockVendingMachine::new, rendered(iron(5.0F, 10.0F)))
+                    BlockVendingMachine::new, rendered(iron(5.0F, 6.0F)))
             .transform(Presets.rendered(Variants.product(HORIZONTAL, Variants.uniform("cell", "false", "true"),
                     Variants.uniform("snacks", "false", "true"))))
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<PinkCloudBroadcaster> broadcaster_pc = REG.block("broadcaster_pc",
-                    PinkCloudBroadcaster::new, rendered(iron(5.0F, 15.0F)))
+                    PinkCloudBroadcaster::new, rendered(iron(5.0F, 9.0F)))
             .transform(flatIconBox(HORIZONTAL));
     public static final RegistryObject<Radiobox> radiobox = REG.block("radiobox", Radiobox::new,
-                    rendered(iron(5.0F, 10.0F)))
+                    rendered(iron(5.0F, 6.0F)))
             .transform(flatIconBox(Variants.product(HORIZONTAL, Variants.uniform("enabled", "false", "true"))));
     public static final RegistryObject<RadioRec> radiorec = REG.block("radiorec", RadioRec::new,
-                    rendered(iron(5.0F, 10.0F)))
+                    rendered(iron(5.0F, 6.0F)))
             .transform(flatIconBox(HORIZONTAL));
     /** 1.7 isOpaqueCube false: a full cube that does not hide its neighbours. */
     public static final RegistryObject<BlockEmitter> deco_emitter = REG.block("deco_emitter", BlockEmitter::new,
-                    p -> iron(5.0F, 20.0F).apply(p).noOcclusion())
+                    p -> iron(5.0F, 12.0F).apply(p).noOcclusion())
             .transform(Presets.cubeAll("hbm:blocks/emitter")
                     .states(Variants.uniform("facing", "down", "up", "north", "south", "west", "east")).noItem())
             .transform(Presets.shares("hbm:block/deco_emitter"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<PartEmitter> part_emitter = REG.block("part_emitter", PartEmitter::new,
-                    iron(5.0F, 20.0F))
+                    iron(5.0F, 12.0F))
             .transform(Presets.cubeAll("hbm:blocks/part_top").noItem())
             .transform(Presets.shares("hbm:block/part_emitter"))
             .loot(Loot.self())
@@ -237,7 +237,7 @@ public final class ModDecoCrateBlocks {
         for (BlockWoodStructure.EnumWoodStructure type : BlockWoodStructure.EnumWoodStructure.values()) {
             // the element models and multipart blockstate (their joins) are authored; the item shows the block model
             Reg.Handle<BlockWoodStructure> wood = REG.block(woodId(type), p -> new BlockWoodStructure(p, type),
-                            p -> p.strength(5.0F, 15.0F).sound(SoundType.WOOD).noOcclusion().ignitedByLava())
+                            p -> p.strength(5.0F, 9.0F).sound(SoundType.WOOD).noOcclusion().ignitedByLava())
                     .transform(Presets.shares("hbm:block/" + woodId(type)))
                     .loot(Loot.self())
                     .tag(BlockTag.AXE);
@@ -256,7 +256,7 @@ public final class ModDecoCrateBlocks {
     static {
         for (BlockAbsorber.EnumAbsorberTier tier : BlockAbsorber.EnumAbsorberTier.values()) {
             ABSORBERS.put(tier, REG.block(absorberId(tier), p -> new BlockAbsorber(p, tier),
-                            p -> iron(5.0F, 10.0F).apply(p).randomTicks())
+                            p -> iron(5.0F, 6.0F).apply(p).randomTicks())
                     .transform(Presets.cubeAll("hbm:blocks/" + ABSORBER_TEXTURES[tier.ordinal()]).viaItemModel())
                     .loot(Loot.self())
                     .tag(BlockTag.PICKAXE));
@@ -287,7 +287,7 @@ public final class ModDecoCrateBlocks {
             .icon(d -> d.models(Models.blockItem("hbm:block/glyphid_spawner_normal")))
             .loot(Loot.nothing());
     public static final RegistryObject<MachineFieldDisturber> field_disturber = REG.block("field_disturber",
-                    MachineFieldDisturber::new, iron(5.0F, 200.0F))
+                    MachineFieldDisturber::new, iron(5.0F, 120.0F))
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -401,7 +401,7 @@ public final class ModDecoCrateBlocks {
 
     /** A dense coil: one texture all round, its item showing the block model; drops itself, pickaxe. */
     private static Reg.Handle<BlockHadronCoil> coil(String id, int factor) {
-        return REG.block(id, p -> new BlockHadronCoil(p, factor), iron(5.0F, 10.0F))
+        return REG.block(id, p -> new BlockHadronCoil(p, factor), iron(5.0F, 6.0F))
                 .transform(Presets.cubeAll().noItem())
                 .transform(Presets.shares("hbm:block/" + id))
                 .loot(Loot.self())

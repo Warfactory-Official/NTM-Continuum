@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import com.hbm.tileentity.TileEntityProxyCell;
 
 /**
  * Applied Energistics 2: pattern providers push jobs into the recipe machines 1.12.2 opened to it, and storage buses
@@ -54,7 +55,7 @@ public final class AE2CompatHandler {
     /** The block entity a network reaches at {@code pos}: its own, or a proxy cell's core. */
     public static @Nullable BlockEntity owner(ServerLevel level, BlockPos pos, BlockState state, @Nullable BlockEntity be,
                                               @Nullable Direction side) {
-        if (be != null) return be.isRemoved() ? null : be;
+        if (be != null && !(be instanceof TileEntityProxyCell)) return be.isRemoved() ? null : be;
         if (!MultiblockSurface.isFoldedCell(state)) return null;
         BlockPos core = MultiblockSurface.coreOfCell(level, pos);
         BlockEntity owner = core == null ? null : level.getBlockEntity(core);

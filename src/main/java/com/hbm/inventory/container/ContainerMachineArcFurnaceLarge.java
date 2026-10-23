@@ -99,13 +99,13 @@ public class ContainerMachineArcFurnaceLarge extends AbstractContainerMenu {
             result = stack.copy();
             if (index < MACHINE_SLOTS) {
                 if (!this.moveItemStackTo(stack, MACHINE_SLOTS, MACHINE_SLOTS + 36, true)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof ItemArcElectrode) {
-                if (!this.moveItemStackTo(stack, 0, 3, false)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
+            } else if (stack.getItem() instanceof ItemArcElectrode) {
+                if (!this.moveItemStackTo(stack, 0, 3, false)) return ItemStack.EMPTY;
             } else if (stack.getItem() instanceof ItemMachineUpgrade) {
                 if (!this.moveItemStackTo(stack, 4, 5, false)) return ItemStack.EMPTY;
-            } else if (!this.moveItemStackTo(stack, 5, 30, false)) {
+            } else if (!this.moveItemStackTo(stack, 25, 30, false)) {
                 return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

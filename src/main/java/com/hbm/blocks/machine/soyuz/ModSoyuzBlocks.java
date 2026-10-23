@@ -43,13 +43,13 @@ public final class ModSoyuzBlocks {
     /** Drops nothing: placed by hand it forms the complex at once, and breaking it takes the complex apart. */
     public static final RegistryObject<SoyuzLauncher> soyuz_launcher = REG.block(
             "soyuz_launcher", SoyuzLauncher::new,
-            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(Presets.shape(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/soyuz_launcher"))).noItem())
             .loot(Loot.nothing()).tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<SoyuzStruct> struct_soyuz_core = REG.block(
             "struct_soyuz_core", SoyuzStruct::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll().noItem())
             .loot(Loot.self()).tag(BlockTag.PICKAXE);
 

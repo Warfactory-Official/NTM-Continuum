@@ -46,7 +46,7 @@ public final class ModBombBlocks {
 
     /** Taint residue: a hard, spreading block with a shallow collision box. */
     public static final RegistryObject<BlockTaint> taint = REG.block("taint", BlockTaint::new,
-                    p -> p.requiresCorrectToolForDrops().mapColor(MapColor.COLOR_GRAY).strength(15.0F, 10.0F).sound(SoundType.METAL)
+                    p -> p.requiresCorrectToolForDrops().mapColor(MapColor.COLOR_GRAY).strength(15.0F, 6.0F).sound(SoundType.METAL)
                             .randomTicks())
             .transform(Presets.cubeAll().states(Variants.uniformRange("taintage", 0, 15)).viaItemModel())
             // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
@@ -74,13 +74,13 @@ public final class ModBombBlocks {
 
     /** Digamma flame: light 15, blast resistance 150, eternal, and it never spreads. */
     public static final RegistryObject<BlockDigammaFlame> fire_digamma = REG.block("fire_digamma",
-                    BlockDigammaFlame::new, p -> p.strength(0.0F, 150.0F).lightLevel(s -> 15).noCollision()
-                            .noLootTable().replaceable().instabreak())
+                    BlockDigammaFlame::new, p -> p.lightLevel(s -> 15).noCollision()
+                            .noLootTable().replaceable().instabreak().explosionResistance(90.0F))
             .transform(Presets.statesOnly("hbm:block/fire_digamma_floor", Variants.simple()));
 
     /** Digamma matter: unbreakable, blast resistance 18,000,000, spreads seven generations then dies. */
     public static final RegistryObject<BlockDigammaMatter> digamma_matter = REG.block("digamma_matter",
-                    BlockDigammaMatter::new, p -> p.strength(-1.0F, 18_000_000.0F).noCollision()
+                    BlockDigammaMatter::new, p -> p.strength(-1.0F, 10800000.0F).noCollision()
                             .noOcclusion().noLootTable())
             .transform(Presets.shape(Models.renderType("minecraft:translucent",
                             Models.cubeAll("hbm:blocks/digamma_matter")))
@@ -90,43 +90,43 @@ public final class ModBombBlocks {
                     "nuke_man", NukeMan::new,
                     // INVISIBLE render (drawn by a BlockEntityRenderer) -> noOcclusion so it doesn't cull
                     // neighbours or render a missing model.
-                    p -> p.strength(5.0F, 6000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+                    p -> p.strength(5.0F, 120.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_BOMB)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<NukeN2> nuke_n2 = REG.block(
                     "nuke_n2", NukeN2::new,
-                    p -> p.strength(5.0F, 6000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+                    p -> p.strength(5.0F, 120.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_BOMB)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<NukeBoy> nuke_boy = REG.block(
                     "nuke_boy", NukeBoy::new,
-                    p -> p.strength(5.0F, 6000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+                    p -> p.strength(5.0F, 120.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_BOMB)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<NukeGadget> nuke_gadget = REG.block(
                     "nuke_gadget", NukeGadget::new,
-                    p -> p.strength(5.0F, 6000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+                    p -> p.strength(5.0F, 120.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_BOMB)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<NukeTsar> nuke_tsar = REG.block(
                     "nuke_tsar", NukeTsar::new,
-                    p -> p.strength(5.0F, 6000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+                    p -> p.strength(5.0F, 120.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_BOMB)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<NukeMike> nuke_mike = REG.block(
                     "nuke_mike", NukeMike::new,
-                    p -> p.strength(5.0F, 6000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+                    p -> p.strength(5.0F, 120.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_BOMB)
             .tag(BlockTag.PICKAXE);
 
     /** The firework battery. 1.7 sets resistance only, leaving the default 1.0 hardness. */
     public static final RegistryObject<BlockFireworks> fireworks = REG.block(
-                    "fireworks", BlockFireworks::new, p -> p.requiresCorrectToolForDrops().strength(1.0F, 5.0F).sound(SoundType.METAL))
+                    "fireworks", BlockFireworks::new, p -> p.requiresCorrectToolForDrops().strength(1.0F, 3.0F).sound(SoundType.METAL))
             .transform(Presets.cubeBottomTop("hbm:blocks/fireworks_bottom", "hbm:blocks/fireworks_side",
                     "hbm:blocks/fireworks_top"))
             .loot(Loot.selfAlways()).tag(BlockTag.PICKAXE);

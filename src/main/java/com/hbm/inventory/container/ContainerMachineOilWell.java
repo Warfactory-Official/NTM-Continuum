@@ -101,12 +101,10 @@ public class ContainerMachineOilWell extends AbstractContainerMenu {
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
             } else if (Library.isMachineUpgrade(stack)) {
-                if (!this.moveItemStackTo(stack, 5, 7, false)) return ItemStack.EMPTY;
-            } else if (Library.isBattery(stack)) {
-                if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
+                if (!this.moveItemStackTo(stack, 5, 7, true)) return ItemStack.EMPTY;
             } else {
-                // fluid containers go to the oil load slot, then the gas load slot (old TransferStrategy rules)
-                if (!this.moveItemStackTo(stack, 1, 2, false)
+                // 1.7: battery and oil container share one range; slot validity sorts them
+                if (!this.moveItemStackTo(stack, 0, 2, false)
                         && !this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

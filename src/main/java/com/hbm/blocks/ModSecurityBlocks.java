@@ -59,27 +59,27 @@ public final class ModSecurityBlocks {
 
     /** OBJ-drawn: the blockstate is the empty placeholder, the BER draws the mesh. */
     public static final RegistryObject<Spikes> spikes = REG.block("spikes", Spikes::new,
-                    p -> p.strength(2.5F, 5.0F).noOcclusion().requiresCorrectToolForDrops())
+                    p -> p.strength(2.5F, 3.0F).noOcclusion().requiresCorrectToolForDrops())
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     /** BlockNoDrop: getItemDropped returns null. */
     public static final RegistryObject<Block> barricade = REG.block("barricade", Block::new,
-                    p -> p.strength(1.0F, 2.5F).sound(SoundType.SAND))
+                    p -> p.strength(1.0F, 1.5F).sound(SoundType.SAND))
             .transform(Presets.cubeAll())
             .loot(Loot.silkTouchOnly()) // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
             .tag(BlockTag.SHOVEL);
 
     /** 1.7.10 ItemBlockBase for the fence: a flat sprite of the block icon (fence_metal / fence_metal_post). */
     public static final RegistryObject<BlockMetalFence> fence_metal = REG.block("fence_metal",
-                    p -> new BlockMetalFence(p, false), p -> p.strength(15.0F, 0.25F).noOcclusion().requiresCorrectToolForDrops())
+                    p -> new BlockMetalFence(p, false), p -> p.strength(15.0F, 0.15F).noOcclusion().requiresCorrectToolForDrops())
             .transform(Presets.sprite("hbm:blocks/fence_metal"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .andThen(handle -> fenceMetalStates());
     public static final RegistryObject<BlockMetalFence> fence_metal_post = REG.block("fence_metal_post",
-                    p -> new BlockMetalFence(p, true), p -> p.strength(15.0F, 0.25F).noOcclusion().requiresCorrectToolForDrops())
+                    p -> new BlockMetalFence(p, true), p -> p.strength(15.0F, 0.15F).noOcclusion().requiresCorrectToolForDrops())
             .transform(Presets.sprite("hbm:blocks/fence_metal_post"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
@@ -87,14 +87,14 @@ public final class ModSecurityBlocks {
 
     /** The old renderInventoryBlock drew a post and two rails; that is the authored wood_barrier_inventory model. */
     public static final RegistryObject<BlockBarrier> wood_barrier = REG.block("wood_barrier", BlockBarrier::new,
-                    p -> p.strength(5.0F, 15.0F).sound(SoundType.WOOD).noOcclusion())
+                    p -> p.strength(5.0F, 9.0F).sound(SoundType.WOOD).noOcclusion())
             .icon(d -> d.models(Models.blockItem("hbm:block/wood_barrier_inventory")))
             .loot(Loot.self())
             .tag(BlockTag.AXE)
             .andThen(handle -> woodBarrierStates());
 
     public static final RegistryObject<MachineKeyForge> machine_keyforge = REG.block("machine_keyforge",
-                    MachineKeyForge::new, p -> p.strength(5.0F, 10.0F).requiresCorrectToolForDrops())
+                    MachineKeyForge::new, p -> p.strength(5.0F, 6.0F).requiresCorrectToolForDrops())
             .transform(Presets.cubeBottomTop("hbm:blocks/machine_keyforge_bottom", "hbm:blocks/machine_keyforge_side",
                     "hbm:blocks/machine_keyforge_top"))
             .loot(Loot.self())
@@ -118,7 +118,7 @@ public final class ModSecurityBlocks {
     /** OBJ-drawn: the blockstate is the empty placeholder, the BER draws the mesh. */
     private static RegistryObject<BarbedWire> wire(BarbedWire.Kind kind) {
         return REG.block(kind.texture, p -> new BarbedWire(p, kind),
-                        p -> p.strength(5.0F, 10.0F).noOcclusion().requiresCorrectToolForDrops())
+                        p -> p.strength(5.0F, 6.0F).noOcclusion().requiresCorrectToolForDrops())
                 .transform(Presets.rendered(Variants.uniform("facing", "north", "east", "south", "west")))
                 .loot(Loot.self())
                 .tag(BlockTag.PICKAXE);

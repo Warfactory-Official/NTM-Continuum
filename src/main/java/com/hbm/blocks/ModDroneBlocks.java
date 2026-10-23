@@ -49,27 +49,27 @@ public final class ModDroneBlocks {
 
     public static final RegistryObject<DroneWaypoint> DRONE_WAYPOINT = REG.block(
             "drone_waypoint", DroneWaypoint::new,
-            p -> p.strength(0.1F, 10.0F).sound(SoundType.WOOD).noCollision().noOcclusion())
+            p -> p.strength(0.1F, 6.0F).sound(SoundType.WOOD).noCollision().noOcclusion())
             .transform(WAYPOINT);
     public static final RegistryObject<DroneCrate> DRONE_CRATE = REG.block(
             "drone_crate", DroneCrate::new,
-            p -> p.strength(0.1F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(0.1F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(CRATE); // 1.7 Material.iron
     public static final RegistryObject<DroneWaypointRequest> DRONE_WAYPOINT_REQUEST = REG.block(
             "drone_waypoint_request", DroneWaypointRequest::new,
-            p -> p.strength(0.1F, 10.0F).sound(SoundType.WOOD).noCollision().noOcclusion())
+            p -> p.strength(0.1F, 6.0F).sound(SoundType.WOOD).noCollision().noOcclusion())
             .transform(WAYPOINT);
     public static final RegistryObject<DroneDock> DRONE_DOCK = REG.block(
             "drone_dock", p -> new DroneDock(p, DroneDock.Type.DOCK),
-            p -> p.strength(0.1F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(0.1F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(CRATE); // 1.7 Material.iron
     public static final RegistryObject<DroneDock> DRONE_CRATE_PROVIDER = REG.block(
             "drone_crate_provider", p -> new DroneDock(p, DroneDock.Type.PROVIDER),
-            p -> p.strength(0.1F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(0.1F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(CRATE); // 1.7 Material.iron
     public static final RegistryObject<DroneDock> DRONE_CRATE_REQUESTER = REG.block(
             "drone_crate_requester", p -> new DroneDock(p, DroneDock.Type.REQUESTER),
-            p -> p.strength(0.1F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(0.1F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(CRATE); // 1.7 Material.iron
 
     static {

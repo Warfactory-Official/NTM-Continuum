@@ -93,37 +93,43 @@ public final class ModDoorBlocks {
      * The declaration is read only when the block is built ({@code DoorDecl} needs a running game).
      */
     private static Reg.Handle<BlockDoorGeneric> door(String name, Supplier<DoorDecl> decl, float hardness, float resistance) {
-        return REG.block(name, p -> new BlockDoorGeneric(p, decl.get()),
+        return door(name, decl, hardness, resistance, false);
+    }
+
+    /** {@code seals}: closed, the door is a radiation wall (1.12.2's sealing doors). */
+    private static Reg.Handle<BlockDoorGeneric> door(String name, Supplier<DoorDecl> decl, float hardness, float resistance,
+                                                     boolean seals) {
+        return REG.block(name, p -> seals ? new BlockDoorGeneric(p, decl.get()).sealsRadiation() : new BlockDoorGeneric(p, decl.get()),
                         p -> dummyable(p.strength(hardness, resistance).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion().dynamicShape()))
                 .transform(GENERIC_DOOR);
     }
 
-    public static final RegistryObject<BlockDoorGeneric> VAULT_DOOR = door("vault_door", () -> DoorDecl.VAULT_DOOR, 10.0F, 1_000.0F);
+    public static final RegistryObject<BlockDoorGeneric> VAULT_DOOR = door("vault_door", () -> DoorDecl.VAULT_DOOR, 10.0F, 600.0F, true);
     public static final RegistryObject<BlastDoor> BLAST_DOOR = REG.block("blast_door", BlastDoor::new,
-                    p -> dummyable(p.strength(10.0F, 1_000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+                    p -> dummyable(p.strength(10.0F, 600.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(Presets.rendered(EMPTY, Variants.uniform("axis", "x", "z")))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<DummyBlockBlast> DUMMY_BLOCK_BLAST = REG.block("dummy_block_blast", DummyBlockBlast::new,
-                    p -> dummyable(p.strength(10.0F, 10_000.0F).sound(SoundType.METAL).noOcclusion()))
+                    p -> dummyable(p.strength(10.0F, 6000.0F).sound(SoundType.METAL).noOcclusion()))
             .transform(Presets.rendered(EMPTY, Variants.simple()))
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE);
-    public static final RegistryObject<BlockDoorGeneric> SLIDING_BLAST_DOOR = door("sliding_blast_door", () -> DoorDecl.SLIDE_DOOR, 10.0F, 750.0F);
-    public static final RegistryObject<BlockDoorGeneric> FIRE_DOOR = door("fire_door", () -> DoorDecl.FIRE_DOOR, 10.0F, 1_000.0F);
+    public static final RegistryObject<BlockDoorGeneric> SLIDING_BLAST_DOOR = door("sliding_blast_door", () -> DoorDecl.SLIDE_DOOR, 10.0F, 450.0F);
+    public static final RegistryObject<BlockDoorGeneric> FIRE_DOOR = door("fire_door", () -> DoorDecl.FIRE_DOOR, 10.0F, 600.0F, true);
     /** 1.7 setBlockTextureName("hbm:transition_seal"): the seal's inventory icon is that flat block sprite. */
-    public static final RegistryObject<BlockDoorGeneric> TRANSITION_SEAL = door("transition_seal", () -> DoorDecl.TRANSITION_SEAL, 10.0F, 1_000.0F)
+    public static final RegistryObject<BlockDoorGeneric> TRANSITION_SEAL = door("transition_seal", () -> DoorDecl.TRANSITION_SEAL, 10.0F, 600.0F, true)
             .transform(Presets.sprite("hbm:blocks/transition_seal"));
-    public static final RegistryObject<BlockDoorGeneric> SILO_HATCH = door("silo_hatch", () -> DoorDecl.SILO_HATCH, 10.0F, 100.0F);
-    public static final RegistryObject<BlockDoorGeneric> SILO_HATCH_LARGE = door("silo_hatch_large", () -> DoorDecl.SILO_HATCH_LARGE, 10.0F, 100.0F);
-    public static final RegistryObject<BlockDoorGeneric> SECURE_ACCESS_DOOR = door("secure_access_door", () -> DoorDecl.SECURE_ACCESS_DOOR, 20.0F, 2_000.0F);
-    public static final RegistryObject<BlockDoorGeneric> LARGE_VEHICLE_DOOR = door("large_vehicle_door", () -> DoorDecl.LARGE_VEHICLE_DOOR, 10.0F, 1_000.0F);
-    public static final RegistryObject<BlockDoorGeneric> QE_CONTAINMENT = door("qe_containment", () -> DoorDecl.QE_CONTAINMENT, 10.0F, 1_000.0F);
-    public static final RegistryObject<BlockDoorGeneric> QE_SLIDING_DOOR = door("qe_sliding_door", () -> DoorDecl.QE_SLIDING, 10.0F, 1_000.0F);
-    public static final RegistryObject<BlockDoorGeneric> ROUND_AIRLOCK_DOOR = door("round_airlock_door", () -> DoorDecl.ROUND_AIRLOCK_DOOR, 10.0F, 1_000.0F);
-    public static final RegistryObject<BlockDoorGeneric> SLIDING_SEAL_DOOR = door("sliding_seal_door", () -> DoorDecl.SLIDING_SEAL_DOOR, 10.0F, 1_000.0F);
-    public static final RegistryObject<BlockDoorGeneric> WATER_DOOR = door("water_door", () -> DoorDecl.WATER_DOOR, 5.0F, 50.0F);
-    public static final RegistryObject<BlockDoorGeneric> CARGO_DOOR = door("cargo_door", () -> DoorDecl.CARGO_DOOR, 5.0F, 50.0F);
+    public static final RegistryObject<BlockDoorGeneric> SILO_HATCH = door("silo_hatch", () -> DoorDecl.SILO_HATCH, 10.0F, 60.0F);
+    public static final RegistryObject<BlockDoorGeneric> SILO_HATCH_LARGE = door("silo_hatch_large", () -> DoorDecl.SILO_HATCH_LARGE, 10.0F, 60.0F);
+    public static final RegistryObject<BlockDoorGeneric> SECURE_ACCESS_DOOR = door("secure_access_door", () -> DoorDecl.SECURE_ACCESS_DOOR, 20.0F, 1200.0F, true);
+    public static final RegistryObject<BlockDoorGeneric> LARGE_VEHICLE_DOOR = door("large_vehicle_door", () -> DoorDecl.LARGE_VEHICLE_DOOR, 10.0F, 600.0F, true);
+    public static final RegistryObject<BlockDoorGeneric> QE_CONTAINMENT = door("qe_containment", () -> DoorDecl.QE_CONTAINMENT, 10.0F, 600.0F, true);
+    public static final RegistryObject<BlockDoorGeneric> QE_SLIDING_DOOR = door("qe_sliding_door", () -> DoorDecl.QE_SLIDING, 10.0F, 600.0F);
+    public static final RegistryObject<BlockDoorGeneric> ROUND_AIRLOCK_DOOR = door("round_airlock_door", () -> DoorDecl.ROUND_AIRLOCK_DOOR, 10.0F, 600.0F, true);
+    public static final RegistryObject<BlockDoorGeneric> SLIDING_SEAL_DOOR = door("sliding_seal_door", () -> DoorDecl.SLIDING_SEAL_DOOR, 10.0F, 600.0F);
+    public static final RegistryObject<BlockDoorGeneric> WATER_DOOR = door("water_door", () -> DoorDecl.WATER_DOOR, 5.0F, 30.0F);
+    public static final RegistryObject<BlockDoorGeneric> CARGO_DOOR = door("cargo_door", () -> DoorDecl.CARGO_DOOR, 5.0F, 30.0F);
 
     /**
      * A vanilla-style mod door over the original's {@code _lower}/{@code _upper} sprites; the lower half alone
@@ -150,14 +156,14 @@ public final class ModDoorBlocks {
                 .tag(BlockTag.PICKAXE);
     }
 
-    public static final RegistryObject<DoorBlock> DOOR_METAL = modDoor("door_metal", 5.0F, 5.0F);
-    public static final RegistryObject<DoorBlock> DOOR_OFFICE = modDoor("door_office", 10.0F, 10.0F);
-    public static final RegistryObject<DoorBlock> DOOR_BUNKER = modDoor("door_bunker", 10.0F, 100.0F);
-    public static final RegistryObject<DoorBlock> DOOR_RED = modDoor("door_red", 10.0F, 100.0F);
+    public static final RegistryObject<DoorBlock> DOOR_METAL = modDoor("door_metal", 5.0F, 3.0F);
+    public static final RegistryObject<DoorBlock> DOOR_OFFICE = modDoor("door_office", 10.0F, 6.0F);
+    public static final RegistryObject<DoorBlock> DOOR_BUNKER = modDoor("door_bunker", 10.0F, 60.0F);
+    public static final RegistryObject<DoorBlock> DOOR_RED = modDoor("door_red", 10.0F, 60.0F);
 
     public static final RegistryObject<TrapDoorBlock> TRAPDOOR_STEEL = REG.<TrapDoorBlock>block("trapdoor_steel",
                     p -> BlockSets.trapdoor(Sets.MOD_DOOR_TYPE, p),
-                    p -> p.requiresCorrectToolForDrops().strength(3.0F, 8.0F).sound(SoundType.METAL).noOcclusion())
+                    p -> p.requiresCorrectToolForDrops().strength(3.0F, 4.8F).sound(SoundType.METAL).noOcclusion())
             .model(d -> d.models(Models.group()
                             .and("_bottom", Models.renderType("minecraft:cutout", Models.parented("minecraft:block/template_trapdoor_bottom", Slots.of("texture", "hbm:blocks/trapdoor_steel"))))
                             .and("_top", Models.renderType("minecraft:cutout", Models.parented("minecraft:block/template_trapdoor_top", Slots.of("texture", "hbm:blocks/trapdoor_steel"))))

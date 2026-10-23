@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.function.Supplier;
 
 /** 1.7 {@code ReinforcedLamp}: the two-block redstone lamp (off/on) without the tritium beam. */
-public class ReinforcedLamp extends CompatBlock {
+public class ReinforcedLamp extends BlockRadResistant {
 
     private final boolean isOn;
     private final Supplier<Block> off;

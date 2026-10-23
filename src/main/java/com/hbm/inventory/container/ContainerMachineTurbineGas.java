@@ -82,12 +82,12 @@ public class ContainerMachineTurbineGas extends AbstractContainerMenu {
             if (index < invStart) {
                 if (!moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
-                if (!moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
+                if (!moveItemStackTo(stack, 0, 1, true)) return ItemStack.EMPTY;
             } else if (stack.getItem() instanceof IItemFluidId identifier
                     && FluidCombustion.getCombustible(identifier.getType(player.level(), 0, 0, 0, stack)) != null
                     && FluidCombustion.getCombustible(identifier.getType(player.level(), 0, 0, 0, stack)).grade()
                     == FluidCombustion.FuelGrade.GAS) {
-                if (!moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
+                if (!moveItemStackTo(stack, 1, 2, true)) return ItemStack.EMPTY;
             } else return ItemStack.EMPTY;
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();
         }

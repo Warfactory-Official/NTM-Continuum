@@ -39,7 +39,7 @@ public final class ModStorageBlocks {
 
     public static final RegistryObject<BlockCrate> crate_iron = REG.<BlockCrate>block(
             "crate_iron", p -> new BlockCrate(p, CrateType.IRON),
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/crate_iron_top", "hbm:blocks/crate_iron_side", "hbm:blocks/crate_iron_top"))
                     .states(Variants.facing())
                     .blockItem())
@@ -48,7 +48,7 @@ public final class ModStorageBlocks {
 
     public static final RegistryObject<BlockCrate> crate_steel = REG.<BlockCrate>block(
             "crate_steel", p -> new BlockCrate(p, CrateType.STEEL),
-            p -> p.strength(5.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/crate_steel_top", "hbm:blocks/crate_steel_side", "hbm:blocks/crate_steel_top"))
                     .states(Variants.facing())
                     .blockItem())
@@ -57,7 +57,7 @@ public final class ModStorageBlocks {
 
     public static final RegistryObject<BlockCrate> crate_desh = REG.<BlockCrate>block(
             "crate_desh", p -> new BlockCrate(p, CrateType.DESH),
-            p -> p.strength(7.5F, 300.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(7.5F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/crate_desh_top", "hbm:blocks/crate_desh_side", "hbm:blocks/crate_desh_top"))
                     .states(Variants.facing())
                     .blockItem())
@@ -67,7 +67,7 @@ public final class ModStorageBlocks {
     /** 1.7 ModBlocks.crate_supply: wood, 1.0/2.5, missile tab; placed by EntityParachuteCrate. */
     public static final RegistryObject<BlockCrateSupply> crate_supply = REG.<BlockCrateSupply>block(
             "crate_supply", BlockCrateSupply::new,
-            p -> p.strength(1.0F, 2.5F).sound(SoundType.WOOD).noOcclusion().ignitedByLava())
+            p -> p.strength(1.0F, 1.5F).sound(SoundType.WOOD).noOcclusion().ignitedByLava())
             .transform(RENDERED_SIMPLE).tag(BlockTag.AXE);
 
     public static final RegistryObject<BlockMassStorage> mass_storage_wood = massStorage(MassStorageType.WOOD);
@@ -107,7 +107,7 @@ public final class ModStorageBlocks {
 
     private static RegistryObject<BlockMassStorage> massStorage(MassStorageType type) {
         return REG.<BlockMassStorage>block(type.id, p -> new BlockMassStorage(p, type),
-                        p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+                        p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
                 .model(d -> massStorageModel(d, type.id))
                 .loot(Loot.container("minecraft:container", "minecraft:custom_data", "minecraft:custom_name"))
                 .tag(BlockTag.PICKAXE);

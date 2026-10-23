@@ -98,21 +98,21 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineSatLink> machine_satlink = REG.<MachineSatLink>block(
             "machine_satlink", MachineSatLink::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .model(d -> d.models(Models.cubeAll("hbm:blocks/machine_satlinker_side")).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<BlockMachineBattery> machine_battery = REG.<BlockMachineBattery>block(
             "machine_battery", BlockMachineBattery::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.cubeAll("hbm:blocks/battery_side_alt")).states(Variants.simple()).blockItemDirect())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineRadGen> machine_radgen = REG.<MachineRadGen>block(
             "machine_radgen", MachineRadGen::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -128,7 +128,7 @@ public final class ModMachineBlocks {
             .loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineRTG> machine_rtg_grey = REG.<MachineRTG>block(
             "machine_rtg_grey", MachineRTG::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion())
             .transform(RENDERED_SIMPLE)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -142,7 +142,7 @@ public final class ModMachineBlocks {
             }, p -> Compat.blockDescription(p));
     public static final RegistryObject<RadSensor> radsensor = REG.<RadSensor>block(
             "radsensor", RadSensor::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL))
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL))
             .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/radsensor", "hbm:blocks/radsensor_side", "hbm:blocks/radsensor"))
                     .states(Variants.simple())
                     .blockItemDirect())
@@ -156,7 +156,7 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<BlockCargoElevator> cargo_elevator = REG.<BlockCargoElevator>block(
             "cargo_elevator", BlockCargoElevator::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().dynamicShape())
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().dynamicShape())
             .model(d -> d.models(Models.parented("minecraft:block/block", Slots.of("particle", "hbm:blocks/block_steel")))
                     .states(Variants.simple())).tag(BlockTag.PICKAXE);
 
@@ -169,7 +169,7 @@ public final class ModMachineBlocks {
     public static final RegistryObject<GeigerCounter> geiger = REG.<GeigerCounter>block(
             "geiger", GeigerCounter::new,
             // 1.7 GeigerCounter(Material.iron): no drop override, so it drops itself, pickaxe-harvested.
-            p -> p.strength(15.0F, 0.25F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(15.0F, 0.15F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_FACING)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -178,7 +178,7 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<BlockCable> red_cable = REG.<BlockCable>block(
             "red_cable", BlockCable::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion())
             .loot(Loot.self())
             .andThen(h -> States.multipart(h.namespace(), h.path())
                     .part(new Variant("hbm:block/machine_dummy_empty"))
@@ -194,25 +194,25 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineLargeTurbine> machine_large_turbine = REG.<MachineLargeTurbine>block(
             "machine_large_turbine", MachineLargeTurbine::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineTurbineGas> machine_turbine_gas = REG.<MachineTurbineGas>block(
             "machine_turbine_gas", MachineTurbineGas::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineTurbofan> machine_turbofan = REG.<MachineTurbofan>block(
             "machine_turbofan", MachineTurbofan::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineSteamEngine> machine_steam_engine = REG.<MachineSteamEngine>block(
             "machine_steam_engine", MachineSteamEngine::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -230,41 +230,41 @@ public final class ModMachineBlocks {
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineStirling> machine_stirling = REG.<MachineStirling>block(
             "machine_stirling", MachineStirling::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineStirling> machine_stirling_steel = REG.<MachineStirling>block(
             "machine_stirling_steel", MachineStirling::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineStirling> machine_stirling_creative = REG.<MachineStirling>block(
             "machine_stirling_creative", MachineStirling::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineIndustrialTurbine> machine_industrial_turbine = REG.<MachineIndustrialTurbine>block(
             "machine_industrial_turbine", MachineIndustrialTurbine::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCondenser> machine_condenser = REG.<MachineCondenser>block(
             "machine_condenser", MachineCondenser::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.cubeAll("hbm:blocks/condenser")).states(Variants.simple()).blockItemDirect())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<MachineCondenserPowered> machine_condenser_powered = REG.<MachineCondenserPowered>block(
             "machine_condenser_powered", MachineCondenserPowered::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineZirnox> machine_zirnox = REG.<MachineZirnox>block(
             "machine_zirnox", MachineZirnox::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
@@ -272,7 +272,7 @@ public final class ModMachineBlocks {
     /** Accident-only replacement for a melted-down ZIRNOX; has no block item. */
     public static final RegistryObject<MachineZirnoxDestroyed> zirnox_destroyed = REG.<MachineZirnoxDestroyed>block(
             "zirnox_destroyed", MachineZirnoxDestroyed::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 480.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .loot(Loot.stacks("hbm:concrete_smooth", 6, "hbm:pipe_steel", 4, "hbm:steel_grate", 2, "hbm:debris_metal", 6, "hbm:debris_graphite", 2, "hbm:falloutitem", 4))
             .tag(BlockTag.PICKAXE)
             .andThen(h -> States.variants(h.namespace(), h.path())
@@ -287,13 +287,13 @@ public final class ModMachineBlocks {
                     .register());
     public static final RegistryObject<MachineWasteDrum> machine_waste_drum = REG.<MachineWasteDrum>block(
             "machine_waste_drum", MachineWasteDrum::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/waste_drum", "hbm:blocks/waste_drum_side", "hbm:blocks/waste_drum")).states(Variants.simple()).blockItemDirect())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineStorageDrum> machine_storage_drum = REG.<MachineStorageDrum>block(
             "machine_storage_drum", MachineStorageDrum::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion()
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion()
                     .isSuffocating((state, level, pos) -> false)
                     .isViewBlocking((state, level, pos) -> false))
             .transform(RENDERED_SIMPLE)
@@ -306,7 +306,7 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<BlockToolConvertible> watz_casing = REG.<BlockToolConvertible>block(
             "watz_casing", BlockToolConvertible::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
@@ -321,7 +321,7 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<BlockToolConvertible> fusion_component = REG.<BlockToolConvertible>block(
             "fusion_component", BlockToolConvertible::new,
-            p -> p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.cubeAll())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
@@ -351,14 +351,14 @@ public final class ModMachineBlocks {
     /** The Watz reactor itself has no block item: it only ever assembles from a struct core. */
     public static final RegistryObject<Watz> watz = REG.<Watz>block(
             "watz", Watz::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<WatzPump> watz_pump = REG.<WatzPump>block(
             "watz_pump", WatzPump::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
@@ -370,7 +370,7 @@ public final class ModMachineBlocks {
      */
     public static final RegistryObject<MachineFusionTorus> fusion_torus = REG.<MachineFusionTorus>block(
             "fusion_torus", MachineFusionTorus::new,
-            p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 36.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
@@ -379,55 +379,55 @@ public final class ModMachineBlocks {
     // The fusion family: what feeds the torus and what consumes its plasma.
     public static final RegistryObject<MachineFusionCoupler> fusion_coupler = REG.<MachineFusionCoupler>block(
             "fusion_coupler", MachineFusionCoupler::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 36.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<MachineFusionCollector> fusion_collector = REG.<MachineFusionCollector>block(
             "fusion_collector", MachineFusionCollector::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 36.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<MachineFusionKlystron> fusion_klystron = REG.<MachineFusionKlystron>block(
             "fusion_klystron", MachineFusionKlystron::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 36.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<MachineFusionKlystronCreative> fusion_klystron_creative = REG.<MachineFusionKlystronCreative>block(
             "fusion_klystron_creative", MachineFusionKlystronCreative::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 36.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<MachineFusionBoiler> fusion_boiler = REG.<MachineFusionBoiler>block(
             "fusion_boiler", MachineFusionBoiler::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 36.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<MachineFusionBreeder> fusion_breeder = REG.<MachineFusionBreeder>block(
             "fusion_breeder", MachineFusionBreeder::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 36.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineFusionMHDT> fusion_mhdt = REG.<MachineFusionMHDT>block(
             "fusion_mhdt", MachineFusionMHDT::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 36.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
             .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<MachineFusionPlasmaForge> fusion_plasma_forge = REG.<MachineFusionPlasmaForge>block(
             "fusion_plasma_forge", MachineFusionPlasmaForge::new,
-            p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 36.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -436,7 +436,7 @@ public final class ModMachineBlocks {
     public static final RegistryObject<BlockStruct> struct_watz_core = REG.<BlockStruct>block(
             "struct_watz_core",
             p -> new BlockStruct(p, TileEntityWatzStruct::new, () -> ModBlockEntities.STRUCT_WATZ_CORE.get()),
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).lightLevel(state -> 15))
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).lightLevel(state -> 15))
             .transform(Presets.cubeAll())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
@@ -445,7 +445,7 @@ public final class ModMachineBlocks {
             "struct_torus_core",
             p -> new BlockStruct(p, TileEntityFusionTorusStruct::new,
                     () -> ModBlockEntities.STRUCT_TORUS_CORE.get()),
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).lightLevel(state -> 15))
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).lightLevel(state -> 15))
             .transform(Presets.cubeAll())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE)
@@ -469,30 +469,30 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineUF6Tank> machine_uf6_tank = REG.<MachineUF6Tank>block(
             "machine_uf6_tank", MachineUF6Tank::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.nothing()) // 1.7 MachineUF6Tank.getItemDropped returns null
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachinePuF6Tank> machine_puf6_tank = REG.<MachinePuF6Tank>block(
             "machine_puf6_tank", MachinePuF6Tank::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.nothing()) // 1.7 MachinePuF6Tank.getItemDropped returns null
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineBigAssTank> machine_bigasstank = REG.<MachineBigAssTank>block(
             "machine_bigasstank", MachineBigAssTank::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineBigAssTank9000> machine_bat9000 = REG.<MachineBigAssTank9000>block(
             "machine_bat9000", MachineBigAssTank9000::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<FluidValve> fluid_valve = REG.<FluidValve>block(
             "fluid_valve", FluidValve::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.group()
                     .and("_off", Models.cubeAll("hbm:blocks/fluid_valve_off"))
                     .and("_on", Models.cubeAll("hbm:blocks/fluid_valve_on")))
@@ -504,7 +504,7 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineDrain> machine_drain = REG.<MachineDrain>block(
             "machine_drain", MachineDrain::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -513,7 +513,7 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineElectricFurnace> machine_electric_furnace_off = REG.<MachineElectricFurnace>block(
             "machine_electric_furnace_off", MachineElectricFurnace::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .loot(Loot.self())
             .andThen(h -> States.variants(h.namespace(), h.path())
                     .variant("facing=north,lit=false", new Variant("hbm:block/machine_electric_furnace_off"))
@@ -532,7 +532,7 @@ public final class ModMachineBlocks {
             "machine_furnace_brick_off", MachineFurnaceBrick::new,
             // 1.7 MachineBrickFurnace(Material.iron) has no drop override: it drops itself (the lit 1.7 block
             // dropped the lit item; the port folds both into one block with a lit state, so it drops this one).
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops())
             .andThen(h -> States.variants(h.namespace(), h.path())
                     .variant("facing=north,lit=false", new Variant("hbm:block/machine_furnace_brick_off"))
                     .variant("facing=east,lit=false", new Variant("hbm:block/machine_furnace_brick_off", 0, 90, false))
@@ -548,13 +548,13 @@ public final class ModMachineBlocks {
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineFurnaceIron> furnace_iron = REG.<MachineFurnaceIron>block(
             "furnace_iron", MachineFurnaceIron::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineFurnaceSteel> furnace_steel = REG.<MachineFurnaceSteel>block(
             "furnace_steel", MachineFurnaceSteel::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -562,7 +562,7 @@ public final class ModMachineBlocks {
     /** Shredder: a plain JSON-model cube (no BER), unlike the multiblocks below. */
     public static final RegistryObject<MachineShredder> machine_shredder = REG.<MachineShredder>block(
             "machine_shredder", MachineShredder::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.parented("minecraft:block/cube", Slots.of("down", "hbm:blocks/machine_shredder_bottom_alt")
                     .and("up", "hbm:blocks/machine_shredder_top_alt")
                     .and("north", "hbm:blocks/machine_shredder_front_alt")
@@ -578,107 +578,107 @@ public final class ModMachineBlocks {
     // Folded multiblock machines: invisible core+cell blocks drawn by a BlockEntityRenderer.
     public static final RegistryObject<MachineEPress> machine_epress = REG.<MachineEPress>block(
             "machine_epress", MachineEPress::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachinePress> machine_press = REG.<MachinePress>block(
             "machine_press", MachinePress::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineAmmoPress> machine_ammo_press = REG.<MachineAmmoPress>block(
             "machine_ammo_press", MachineAmmoPress::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineSawmill> machine_sawmill = REG.<MachineSawmill>block(
             "machine_sawmill", MachineSawmill::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineAssemblyMachine> machine_assembly_machine = REG.<MachineAssemblyMachine>block(
             "machine_assembly_machine", MachineAssemblyMachine::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineAssemblyFactory> machine_assembly_factory = REG.<MachineAssemblyFactory>block(
             "machine_assembly_factory", MachineAssemblyFactory::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachinePrecAss> machine_precass = REG.<MachinePrecAss>block(
             "machine_precass", MachinePrecAss::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineChemicalPlant> machine_chemical_plant = REG.<MachineChemicalPlant>block(
             "machine_chemical_plant", MachineChemicalPlant::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineChemicalFactory> machine_chemical_factory = REG.<MachineChemicalFactory>block(
             "machine_chemical_factory", MachineChemicalFactory::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineElectrolyser> machine_electrolyser = REG.<MachineElectrolyser>block(
             "machine_electrolyser", MachineElectrolyser::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineMixer> machine_mixer = REG.<MachineMixer>block(
             "machine_mixer", MachineMixer::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineExposureChamber> machine_exposure_chamber = REG.<MachineExposureChamber>block(
             "machine_exposure_chamber", MachineExposureChamber::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineBlastFurnace> machine_blast_furnace = REG.<MachineBlastFurnace>block(
             "machine_blast_furnace", MachineBlastFurnace::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachinePUREX> machine_purex = REG.<MachinePUREX>block(
             "machine_purex", MachinePUREX::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineRockMill> machine_rockmill = REG.<MachineRockMill>block(
             "machine_rockmill", MachineRockMill::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineSuperComputer> machine_supercomputer = REG.<MachineSuperComputer>block(
             "machine_supercomputer", MachineSuperComputer::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineTapeDrive> machine_tape_drive = REG.<MachineTapeDrive>block(
             "machine_tape_drive", MachineTapeDrive::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_FACING)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -686,7 +686,7 @@ public final class ModMachineBlocks {
     /** Diesel Generator: burns combustible fluids into HE. */
     public static final RegistryObject<MachineDiesel> machine_diesel = REG.<MachineDiesel>block(
             "machine_diesel", MachineDiesel::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_FACING)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -694,7 +694,7 @@ public final class ModMachineBlocks {
     /** Flare Stack: vents or burns gas for power; 12-tall 3×3 tower. */
     public static final RegistryObject<MachineGasFlare> machine_flare = REG.<MachineGasFlare>block(
             "machine_flare", MachineGasFlare::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -702,13 +702,13 @@ public final class ModMachineBlocks {
     /** Brick and industrial chimneys: take the smoke ducted to them and vent it high up. */
     public static final RegistryObject<MachineChimneyBrick> chimney_brick = REG.<MachineChimneyBrick>block(
             "chimney_brick", MachineChimneyBrick::new,
-            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineChimneyIndustrial> chimney_industrial = REG.<MachineChimneyIndustrial>block(
             "chimney_industrial", MachineChimneyIndustrial::new,
-            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -716,7 +716,7 @@ public final class ModMachineBlocks {
     /** Fractioning Tower: splits a hot fraction into two; stacks 3 apart via the spacer. */
     public static final RegistryObject<MachineFractionTower> machine_fraction_tower = REG.<MachineFractionTower>block(
             "machine_fraction_tower", MachineFractionTower::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -724,7 +724,7 @@ public final class ModMachineBlocks {
     /** Fractioning Tower Separator: a logic-less spacer raising the tower stack. */
     public static final RegistryObject<FractionSpacer> fraction_spacer = REG.<FractionSpacer>block(
             "fraction_spacer", FractionSpacer::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -732,7 +732,7 @@ public final class ModMachineBlocks {
     /** Liquefactor: items to fluid. */
     public static final RegistryObject<MachineLiquefactor> machine_liquefactor = REG.<MachineLiquefactor>block(
             "machine_liquefactor", MachineLiquefactor::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -740,7 +740,7 @@ public final class ModMachineBlocks {
     /** Solidifier: fluid to items. */
     public static final RegistryObject<MachineSolidifier> machine_solidifier = REG.<MachineSolidifier>block(
             "machine_solidifier", MachineSolidifier::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -756,7 +756,7 @@ public final class ModMachineBlocks {
     /** Heat Boiler (old id {@code heat_boiler}): the OIL to HOTOIL and water to steam converter. */
     public static final RegistryObject<MachineHeatBoiler> machine_boiler = REG.<MachineHeatBoiler>block(
             "heat_boiler", MachineHeatBoiler::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -764,7 +764,7 @@ public final class ModMachineBlocks {
     /** Industrial heat boiler: the five-port, high-capacity variant. */
     public static final RegistryObject<MachineHeatBoilerIndustrial> machine_industrial_boiler = REG.<MachineHeatBoilerIndustrial>block(
             "machine_industrial_boiler", MachineHeatBoilerIndustrial::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -772,7 +772,7 @@ public final class ModMachineBlocks {
     /** Fluid Burner: burns flammable fluids into an IHeatSource reservoir. */
     public static final RegistryObject<HeaterOilburner> heater_oilburner = REG.<HeaterOilburner>block(
             "heater_oilburner", HeaterOilburner::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -780,7 +780,7 @@ public final class ModMachineBlocks {
     /** Wood Burner: solid fuel or WOODOIL generator with a 100k HE buffer. */
     public static final RegistryObject<MachineWoodBurner> machine_wood_burner = REG.<MachineWoodBurner>block(
             "machine_wood_burner", MachineWoodBurner::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -788,14 +788,14 @@ public final class ModMachineBlocks {
     // Extraction drills
     public static final RegistryObject<MachineOilWell> machine_well = REG.<MachineOilWell>block(
             "machine_well", MachineOilWell::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(CarriedDrops.SURVIVING)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachinePumpjack> machine_pumpjack = REG.<MachinePumpjack>block(
             "machine_pumpjack", MachinePumpjack::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(CarriedDrops.SURVIVING)
             .tag(BlockTag.PICKAXE);
@@ -804,42 +804,42 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineFrackingTower> machine_fracking_tower = REG.<MachineFrackingTower>block(
             "machine_fracking_tower", MachineFrackingTower::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(CarriedDrops.SURVIVING)
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineVacuumDistill> machine_vacuum_distill = REG.<MachineVacuumDistill>block(
             "machine_vacuum_distill", MachineVacuumDistill::new,
-            p -> dummyable(p.strength(5.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineCatalyticReformer> machine_catalytic_reformer = REG.<MachineCatalyticReformer>block(
             "machine_catalytic_reformer", MachineCatalyticReformer::new,
-            p -> dummyable(p.strength(5.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineCatalyticCracker> machine_catalytic_cracker = REG.<MachineCatalyticCracker>block(
             "machine_catalytic_cracker", MachineCatalyticCracker::new,
-            p -> dummyable(p.strength(5.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineHydrotreater> machine_hydrotreater = REG.<MachineHydrotreater>block(
             "machine_hydrotreater", MachineHydrotreater::new,
-            p -> dummyable(p.strength(5.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineCoker> machine_coker = REG.<MachineCoker>block(
             "machine_coker", MachineCoker::new,
-            p -> dummyable(p.strength(5.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -853,28 +853,28 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachinePyroOven> machine_pyrooven = REG.<MachinePyroOven>block(
             "machine_pyrooven", MachinePyroOven::new,
-            p -> dummyable(p.strength(5.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineAutosaw> machine_autosaw = REG.<MachineAutosaw>block(
             "machine_autosaw", MachineAutosaw::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion())
             .transform(RENDERED_SIMPLE)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineCombustionEngine> machine_combustion_engine = REG.<MachineCombustionEngine>block(
             "machine_combustion_engine", MachineCombustionEngine::new,
-            p -> dummyable(p.strength(5.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<BlockRefueler> refueler = REG.<BlockRefueler>block(
             "refueler", BlockRefueler::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_FACING)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -882,26 +882,26 @@ public final class ModMachineBlocks {
     /** Compressor: raises fluid pressure; the gate the vacuum refinery (OIL @2) + hydrotreater (H @1) need. */
     public static final RegistryObject<MachineCompressor> machine_compressor = REG.<MachineCompressor>block(
             "machine_compressor", MachineCompressor::new,
-            p -> dummyable(p.strength(10.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(10.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineTowerSmall> machine_tower_small = REG.<MachineTowerSmall>block(
             "machine_tower_small", MachineTowerSmall::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 20.0F).sound(SoundType.METAL).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion())
             .transform(RENDERED_SIMPLE)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineTowerLarge> machine_tower_large = REG.<MachineTowerLarge>block(
             "machine_tower_large", MachineTowerLarge::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 20.0F).sound(SoundType.METAL).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion())
             .transform(RENDERED_SIMPLE)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockDecon> decon = REG.<BlockDecon>block(
             "decon", BlockDecon::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 20.0F).sound(SoundType.METAL).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion())
             .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/decon_side", "hbm:blocks/decon_side",
                             "hbm:blocks/decon_top"))
                     .states(Variants.simple())
@@ -912,13 +912,13 @@ public final class ModMachineBlocks {
     /** Solar boiler and the mirrors that heat it. */
     public static final RegistryObject<MachineSolarBoiler> machine_solar_boiler = REG.<MachineSolarBoiler>block(
             "machine_solar_boiler", MachineSolarBoiler::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<SolarMirror> solar_mirror = REG.<SolarMirror>block(
             "solar_mirror", SolarMirror::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(RENDERED_SIMPLE)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -926,13 +926,13 @@ public final class ModMachineBlocks {
     /** Compact pressure compressor; same processing/menu path, with the old six-port ring footprint. */
     public static final RegistryObject<MachineCompressorCompact> machine_compressor_compact = REG.<MachineCompressorCompact>block(
             "machine_compressor_compact", MachineCompressorCompact::new,
-            p -> dummyable(p.strength(10.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(10.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self()).tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineSolderingStation> machine_soldering_station = REG.<MachineSolderingStation>block(
             "machine_soldering_station", MachineSolderingStation::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -940,21 +940,21 @@ public final class ModMachineBlocks {
     /** Large arc furnace. */
     public static final RegistryObject<MachineArcFurnaceLarge> machine_arc_furnace = REG.<MachineArcFurnaceLarge>block(
             "machine_arc_furnace", MachineArcFurnaceLarge::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineArcWelder> machine_arc_welder = REG.<MachineArcWelder>block(
             "machine_arc_welder", MachineArcWelder::new,
-            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 18.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineIntake> machine_intake = REG.<MachineIntake>block(
             "machine_intake", p -> new MachineIntake(p, () -> ModBlockEntities.MACHINE_INTAKE.get()),
-            p -> dummyable(p.strength(10.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(10.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY))
                     .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"), Variants.uniform("cell", "false", "true"))))
             .loot(Loot.self())
@@ -962,7 +962,7 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineFan> fan = REG.<MachineFan>block(
             "fan", p -> new MachineFan(p, () -> ModBlockEntities.MACHINE_FAN.get()),
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY))
                     .states(Variants.uniform("facing", "down", "up", "north", "south", "west", "east")))
             .loot(Loot.self())
@@ -970,7 +970,7 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineCrystallizer> machine_crystallizer = REG.<MachineCrystallizer>block(
             "machine_crystallizer", MachineCrystallizer::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -978,13 +978,13 @@ public final class ModMachineBlocks {
     /** Standard item centrifuge: a 1×1×4 tower with four output streams. */
     public static final RegistryObject<MachineCentrifuge> machine_centrifuge = REG.<MachineCentrifuge>block(
             "machine_centrifuge", MachineCentrifuge::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCyclotron> machine_cyclotron = REG.<MachineCyclotron>block(
             "machine_cyclotron", MachineCyclotron::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -992,14 +992,14 @@ public final class ModMachineBlocks {
     /** Gas centrifuge: a dedicated four-block cascade machine for UF6/PUF6/WATZ. */
     public static final RegistryObject<MachineGasCent> machine_gascent = REG.<MachineGasCent>block(
             "machine_gascent", MachineGasCent::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineDeuteriumExtractor> machine_deuterium_extractor = REG.<MachineDeuteriumExtractor>block(
             "machine_deuterium_extractor", MachineDeuteriumExtractor::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.cubeBottomTop("hbm:blocks/machine_deuterium_extractor_bottom", "hbm:blocks/machine_deuterium_extractor_side", "hbm:blocks/machine_deuterium_extractor_top"))
                     .states(Variants.simple())
                     .blockItemDirect())
@@ -1007,7 +1007,7 @@ public final class ModMachineBlocks {
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineDeuteriumTower> machine_deuterium_tower = REG.<MachineDeuteriumTower>block(
             "machine_deuterium_tower", MachineDeuteriumTower::new,
-            p -> dummyable(p.strength(10.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(10.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -1015,7 +1015,7 @@ public final class ModMachineBlocks {
     /** SILEX: the laser isotope separation chamber. Fluid-only (peroxide); the laser supplies the energy. */
     public static final RegistryObject<MachineSILEX> machine_silex = REG.<MachineSILEX>block(
             "machine_silex", MachineSILEX::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -1023,7 +1023,7 @@ public final class ModMachineBlocks {
     /** Free Electron Laser: the SILEX's power source. Energy only; no fluids, no internal recipes. */
     public static final RegistryObject<MachineFEL> machine_fel = REG.<MachineFEL>block(
             "machine_fel", MachineFEL::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -1032,14 +1032,14 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineCrucible> machine_crucible = REG.<MachineCrucible>block(
             "machine_crucible", MachineCrucible::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<FoundryChannel> foundry_channel = REG.<FoundryChannel>block(
             "foundry_channel", FoundryChannel::new,
-            p -> p.strength(2.0F, 4.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(2.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion())
             .loot(Loot.self())
             .andThen(h -> States.variants(h.namespace(), h.path())
                     .variant("meta=0", new Variant("hbm:block/foundry_channel_center"))
@@ -1064,7 +1064,7 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<FoundryMold> foundry_mold = REG.<FoundryMold>block(
             "foundry_mold", FoundryMold::new,
-            p -> p.strength(2.0F, 4.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(2.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(Presets.statesOnly(Variants.simple()))
             .loot(Loot.self())
             .icon(d -> d.shares("hbm:block/foundry_mold"))
@@ -1072,28 +1072,28 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<FoundryBasin> foundry_basin = REG.<FoundryBasin>block(
             "foundry_basin", FoundryBasin::new,
-            p -> p.strength(2.0F, 4.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(2.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_SIMPLE)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<FoundryOutlet> foundry_outlet = REG.<FoundryOutlet>block(
             "foundry_outlet", FoundryOutlet::new,
-            p -> p.strength(2.0F, 4.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(2.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_FACING)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<FoundrySlagtap> foundry_slagtap = REG.<FoundrySlagtap>block(
             "foundry_slagtap", FoundrySlagtap::new,
-            p -> p.strength(2.0F, 4.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(2.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion())
             .transform(RENDERED_FACING)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineStrandCaster> machine_strand_caster = REG.<MachineStrandCaster>block(
             "machine_strand_caster", MachineStrandCaster::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -1101,7 +1101,7 @@ public final class ModMachineBlocks {
     /** The fuel-fired DiFurnace: one registered block; LIT replaces the old _off/_on block swap. */
     public static final RegistryObject<MachineDiFurnace> machine_difurnace_off = REG.<MachineDiFurnace>block(
             "machine_difurnace_off", MachineDiFurnace::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
                     .lightLevel(state -> state.getValue(MachineDiFurnace.LIT) ? 1 : 0))
             .loot(Loot.self())
             .andThen(h -> States.variants(h.namespace(), h.path())
@@ -1126,7 +1126,7 @@ public final class ModMachineBlocks {
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineDiFurnaceExtension> machine_difurnace_ext = REG.<MachineDiFurnaceExtension>block(
             "machine_difurnace_ext", MachineDiFurnaceExtension::new,
-            p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.STONE).noOcclusion()))
+            p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.STONE).noOcclusion()))
             .transform(RENDERED_SIMPLE)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -1134,14 +1134,14 @@ public final class ModMachineBlocks {
     /** Dynamic slag: the world waste pile the slagtap deposits (no block item). */
     public static final RegistryObject<BlockDynamicSlag> slag = REG.<BlockDynamicSlag>block(
             "slag", BlockDynamicSlag::new,
-            p -> p.requiresCorrectToolForDrops().strength(1.0F, 2.0F).sound(SoundType.METAL).noOcclusion())
+            p -> p.requiresCorrectToolForDrops().strength(1.0F, 6.0F).sound(SoundType.METAL).noOcclusion())
             .transform(RENDERED_SIMPLE).tag(BlockTag.PICKAXE);
 
     // Foundry heat sources
 
     public static final RegistryObject<HeaterFirebox> heater_firebox = REG.<HeaterFirebox>block(
             "heater_firebox", HeaterFirebox::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -1149,49 +1149,49 @@ public final class ModMachineBlocks {
     /** Collects the ash of the heater above it. */
     public static final RegistryObject<MachineAshpit> machine_ashpit = REG.<MachineAshpit>block(
             "machine_ashpit", MachineAshpit::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<HeaterOven> heater_oven = REG.<HeaterOven>block(
             "heater_oven", HeaterOven::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<HeaterElectric> heater_electric = REG.<HeaterElectric>block(
             "heater_electric", HeaterElectric::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<HeaterHeatex> heater_heatex = REG.<HeaterHeatex>block(
             "heater_heatex", HeaterHeatex::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<LaunchPad> launch_pad = REG.<LaunchPad>block(
             "launch_pad", LaunchPad::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<LaunchpadSoyuz> launchpad_soyuz = REG.<LaunchpadSoyuz>block(
             "launchpad_soyuz", LaunchpadSoyuz::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<LaunchpadLambda> launchpad_lambda = REG.<LaunchpadLambda>block(
             "launchpad_lambda", LaunchpadLambda::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -1200,7 +1200,7 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineMiningLaser> machine_mining_laser = REG.<MachineMiningLaser>block(
             "machine_mining_laser", MachineMiningLaser::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(FOLDED)
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -1209,7 +1209,7 @@ public final class ModMachineBlocks {
      * connected/baked model. Registered here, not in the generated ModBlocks, because {@code BlockSandbags}
      * isn't a BlockBase and the codegen doesn't parse it. */
     public static final RegistryObject<Block> sandbags = REG.<Block>block(
-            "sandbags", Block::new, p -> p.strength(5.0F, 30.0F))
+            "sandbags", Block::new, p -> p.strength(5.0F, 18.0F))
             .transform(Presets.cubeAll().noItem())
             // the 1.7 inventory icon: BlockSandbags' 0.75-wide box in the 3D block-item pose
             .transform(Presets.shares("hbm:item/sandbags_inventory"))
@@ -1217,27 +1217,27 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<BlockPASource> pa_source = REG.<BlockPASource>block(
             "pa_source", BlockPASource::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(PA_PART).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockPABeamline> pa_beamline = REG.<BlockPABeamline>block(
             "pa_beamline", BlockPABeamline::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(PA_PART).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockPARFC> pa_rfc = REG.<BlockPARFC>block(
             "pa_rfc", BlockPARFC::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(PA_PART).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockPAQuadrupole> pa_quadrupole = REG.<BlockPAQuadrupole>block(
             "pa_quadrupole", BlockPAQuadrupole::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(PA_PART).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockPADipole> pa_dipole = REG.<BlockPADipole>block(
             "pa_dipole", BlockPADipole::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(PA_PART).tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockPADetector> pa_detector = REG.<BlockPADetector>block(
             "pa_detector", BlockPADetector::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
+            p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
             .transform(PA_PART).tag(BlockTag.PICKAXE);
 
     static {
@@ -1422,42 +1422,42 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<RadioTorchSender> radio_torch_sender = REG.block(
             "radio_torch_sender", RadioTorchSender::new,
-            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+            properties -> properties.strength(0.1F, 6.0F).sound(SoundType.WOOD)
                     .noCollision().noOcclusion())
             .transform(radioSwitching("rtty_sender_off", "rtty_sender_on"));
     public static final RegistryObject<RadioTorchReceiver> radio_torch_receiver = REG.block(
             "radio_torch_receiver", RadioTorchReceiver::new,
-            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+            properties -> properties.strength(0.1F, 6.0F).sound(SoundType.WOOD)
                     .noCollision().noOcclusion())
             .transform(radioSwitching("rtty_rec_off", "rtty_rec_on"));
     public static final RegistryObject<RadioTorchReader> radio_torch_reader = REG.block(
             "radio_torch_reader", RadioTorchReader::new,
-            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+            properties -> properties.strength(0.1F, 6.0F).sound(SoundType.WOOD)
                     .noCollision().noOcclusion())
             .transform(radioSteady("rtty_reader"));
     public static final RegistryObject<RadioTorchLogic> radio_torch_logic = REG.block(
             "radio_torch_logic", RadioTorchLogic::new,
-            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+            properties -> properties.strength(0.1F, 6.0F).sound(SoundType.WOOD)
                     .noCollision().noOcclusion())
             .transform(radioSwitching("rtty_logic_off", "rtty_logic_on"));
     public static final RegistryObject<RadioTorchCounter> radio_torch_counter = REG.block(
             "radio_torch_counter", RadioTorchCounter::new,
-            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+            properties -> properties.strength(0.1F, 6.0F).sound(SoundType.WOOD)
                     .noCollision().noOcclusion())
             .transform(radioSteady("rtty_counter"));
     public static final RegistryObject<RadioTorchController> radio_torch_controller = REG.block(
             "radio_torch_controller", RadioTorchController::new,
-            properties -> properties.strength(0.1F, 10.0F).sound(SoundType.WOOD)
+            properties -> properties.strength(0.1F, 6.0F).sound(SoundType.WOOD)
                     .noCollision().noOcclusion())
             .transform(radioSteady("rtty_controller"));
     public static final RegistryObject<RadioTelex> radio_telex = REG.block(
             "radio_telex", RadioTelex::new,
-            properties -> properties.strength(3.0F, 10.0F).sound(SoundType.WOOD).noOcclusion())
+            properties -> properties.strength(3.0F, 6.0F).sound(SoundType.WOOD).noOcclusion())
             .transform(FOLDED)
             .loot(Loot.self()).tag(BlockTag.AXE);
     public static final RegistryObject<RadioAUTOCAL> radio_autocal = REG.block(
             "radio_autocal", RadioAUTOCAL::new,
-            properties -> properties.requiresCorrectToolForDrops().strength(3.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            properties -> properties.requiresCorrectToolForDrops().strength(3.0F, 6.0F).sound(SoundType.METAL).noOcclusion())
             .transform(FOLDED)
             .loot(Loot.self()).tag(BlockTag.PICKAXE);
 

@@ -62,6 +62,7 @@ import com.hbm.blocks.generic.BlockSellafield;
 import com.hbm.blocks.generic.BlockTallPlant;
 import com.hbm.blocks.generic.BlockTerrainEarth;
 import com.hbm.blocks.generic.BlockVent;
+import com.hbm.blocks.generic.BlockRadResistant;
 
 /**
  * The natural, terrain and hazard blocks of 1.7's {@code ModBlocks} not registered elsewhere:
@@ -236,13 +237,13 @@ public final class ModTerrainBlocks {
 
     /** 1.7 {@code BlockPorous}: {@code BlockStone} with hardness 1.5 / resistance 30. */
     public static final RegistryObject<BlockPorous> stone_porous = block("stone_porous", BlockPorous::new,
-            p -> p.strength(1.5F, 30.0F).sound(SoundType.STONE).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
+            p -> p.strength(1.5F, 18.0F).sound(SoundType.STONE).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(Presets.cubeAll("hbm:blocks/stone_porous"))
             .loot(Loot.nothing()) // cobblestone / silk-touch stone in Java
             .tag(BlockTag.PICKAXE);
     /** {@code setLightLevel(0.75F)} = 11; hardness 15, resistance 360, random-ticked. */
     public static final RegistryObject<BlockMeteorMolten> block_meteor_molten = block("block_meteor_molten", BlockMeteorMolten::new,
-            p -> p.strength(15.0F, 360.0F).sound(SoundType.STONE).lightLevel(s -> 11).requiresCorrectToolForDrops().randomTicks(), HbmTab.BLOCKS)
+            p -> p.strength(15.0F, 216.0F).sound(SoundType.STONE).lightLevel(s -> 11).requiresCorrectToolForDrops().randomTicks(), HbmTab.BLOCKS)
             .transform(Presets.cubeAll("hbm:blocks/meteor_cobble_molten"))
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE);
@@ -259,7 +260,7 @@ public final class ModTerrainBlocks {
             for (BlockVolcano.Mode mode : BlockVolcano.Mode.values()) {
                 String id = mode.id(rad);
                 Reg.Handle<BlockVolcano> core = REG.block(id, p -> new BlockVolcano(p, mode, rad),
-                                p -> p.strength(-1.0F, 10_000F)) // 1.7: no setStepSound -> default stone
+                                p -> p.strength(-1.0F, 6_000F)) // 1.7: no setStepSound -> default stone
                         .transform(Presets.cubeAll(rad ? "hbm:blocks/volcano_rad_core" : "hbm:blocks/volcano_core"))
                         .loot(Loot.self());
                 RegistryObject<BlockVolcano.VolcanoItem> item = REG.item(id,
@@ -329,13 +330,13 @@ public final class ModTerrainBlocks {
     // Material and storage blocks
 
     public static final RegistryObject<BlockBeaconable> block_tcalloy = block("block_tcalloy", BlockBeaconable::new,
-            p -> p.strength(5.0F, 70.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
+            p -> p.strength(5.0F, 42.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(cube("hbm:blocks/block_tcalloy"));
     public static final RegistryObject<BlockBeaconable> block_cdalloy = block("block_cdalloy", BlockBeaconable::new,
-            p -> p.strength(5.0F, 70.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
+            p -> p.strength(5.0F, 42.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(cube("hbm:blocks/block_cdalloy"));
-    public static final RegistryObject<BlockBeaconable> block_australium = block("block_australium", BlockBeaconable::new,
-            p -> p.strength(5.0F, 10.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS) // 1.7: no setStepSound -> default stone
+    public static final RegistryObject<BlockRadResistant> block_australium = block("block_australium", BlockRadResistant::new,
+            p -> p.strength(5.0F, 6.0F).requiresCorrectToolForDrops(), HbmTab.BLOCKS) // 1.7: no setStepSound -> default stone
             .transform(cube("hbm:blocks/block_australium"));
 
     static {
@@ -348,7 +349,7 @@ public final class ModTerrainBlocks {
     }
 
     public static final RegistryObject<BlockLithium> block_lithium = block("block_lithium", BlockLithium::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.BLOCKS)
             .transform(cube("hbm:blocks/block_lithium"));
 
     public static final RegistryObject<BlockNuclearWaste> block_waste = waste("block_waste");
@@ -356,7 +357,7 @@ public final class ModTerrainBlocks {
     public static final RegistryObject<BlockNuclearWaste> block_waste_vitrified = waste("block_waste_vitrified");
 
     public static final RegistryObject<BlockHazardFalling> block_yellowcake = block("block_yellowcake", BlockHazardFalling::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.SAND), HbmTab.BLOCKS)
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.SAND), HbmTab.BLOCKS)
             .transform(Presets.cubeAll("hbm:blocks/block_yellowcake"))
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
@@ -372,7 +373,7 @@ public final class ModTerrainBlocks {
     public static final RegistryObject<BlockVent> vent_cloud = vent("vent_cloud", BlockVent.Kind.CLOUD);
     public static final RegistryObject<BlockVent> vent_pink_cloud = vent("vent_pink_cloud", BlockVent.Kind.PINK_CLOUD);
     public static final RegistryObject<BlockChlorineSeal> vent_chlorine_seal = block("vent_chlorine_seal", BlockChlorineSeal::new,
-            p -> p.strength(5.0F, 10.0F).requiresCorrectToolForDrops(), HbmTab.MACHINES) // 1.7: default stone sound
+            p -> p.strength(5.0F, 6.0F).requiresCorrectToolForDrops(), HbmTab.MACHINES) // 1.7: default stone sound
             .transform(Presets.cubeBottomTop("hbm:blocks/vent_chlorine_seal_side", "hbm:blocks/vent_chlorine_seal_side", "hbm:blocks/vent_chlorine_seal_top"))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -409,7 +410,7 @@ public final class ModTerrainBlocks {
     }
 
     private static BlockBehaviour.Properties stoneOre(BlockBehaviour.Properties p) {
-        return p.strength(5.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops();
+        return p.strength(5.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops();
     }
 
     /** Old {@code BlockGasBase}: hardness 0, no collision, no occlusion, replaceable, random-ticked (as ModOreBlocks). */
@@ -430,13 +431,13 @@ public final class ModTerrainBlocks {
 
     private static RegistryObject<BlockNuclearWaste> waste(String id) {
         return block(id, BlockNuclearWaste::new,
-                p -> p.strength(5.0F, 10.0F).requiresCorrectToolForDrops().randomTicks(), HbmTab.BLOCKS) // 1.7: default stone sound
+                p -> p.strength(5.0F, 6.0F).requiresCorrectToolForDrops().randomTicks(), HbmTab.BLOCKS) // 1.7: default stone sound
                 .transform(cube("hbm:blocks/" + id));
     }
 
     private static RegistryObject<BlockVent> vent(String id, BlockVent.Kind kind) {
         return block(id, p -> new BlockVent(p, kind),
-                p -> p.strength(5.0F, 10.0F).requiresCorrectToolForDrops(), HbmTab.MACHINES) // 1.7: default stone sound
+                p -> p.strength(5.0F, 6.0F).requiresCorrectToolForDrops(), HbmTab.MACHINES) // 1.7: default stone sound
                 .transform(Presets.column("hbm:blocks/vent_blank", "hbm:blocks/" + id))
                 .loot(Loot.nothing())
                 .tag(BlockTag.PICKAXE);

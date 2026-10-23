@@ -143,15 +143,12 @@ public final class PlasmaForgeContainerGameTests {
                             .getItem() instanceof ItemBlueprints,
                     "A blueprint must shift-click into the blueprint slot");
 
+            // 1.7 has no hotbar/main-inventory fallback: an item the forge refuses stays where it is
             player.getInventory().setItem(13, new ItemStack(Items.STONE));
             moved = menu.quickMoveStack(player, ContainerMachinePlasmaForge.MACHINE_SLOTS + 4);
-            helper.assertTrue(!moved.isEmpty() && player.getInventory().getItem(0).is(Items.STONE),
-                    "An unroutable main-inventory stack must fall back to the hotbar");
-
-            player.getInventory().setItem(0, new ItemStack(Items.STONE));
-            moved = menu.quickMoveStack(player, ContainerMachinePlasmaForge.MACHINE_SLOTS + 27);
-            helper.assertTrue(!moved.isEmpty() && player.getInventory().getItem(9).is(Items.STONE),
-                    "An unroutable hotbar stack must fall back to the main inventory");
+            helper.assertTrue(moved.isEmpty() && player.getInventory().getItem(13).is(Items.STONE),
+                    "An unroutable stack must stay in its slot");
+            player.getInventory().setItem(13, ItemStack.EMPTY);
 
             int craftedBefore = player.getStats().getValue(Stats.ITEM_CRAFTED.get(Items.IRON_INGOT));
             forge.setItem(TileEntityFusionPlasmaForge.SLOT_OUTPUT, new ItemStack(Items.IRON_INGOT, 2));

@@ -49,6 +49,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import com.hbm.tileentity.TileEntityProxyCell;
 
 /** AE2 pattern jobs into the recipe machines, through the neutral plan; the AE2 lookup itself only when AE2 is loaded. */
 public final class AE2GameTests {
@@ -123,12 +124,13 @@ public final class AE2GameTests {
 
         int reached = 0;
         for (BlockPos pos : BlockPos.betweenClosed(coreAbs.offset(-2, 0, -2), coreAbs.offset(2, 2, 2))) {
-            if (pos.equals(coreAbs) || level.getBlockEntity(pos) != null) continue;
+            BlockEntity cellEntity = level.getBlockEntity(pos);
+            if (pos.equals(coreAbs) || cellEntity != null && !(cellEntity instanceof TileEntityProxyCell)) continue;
             for (Direction side : Direction.values()) {
-                BlockEntity found = AE2CompatHandler.owner(level, pos, level.getBlockState(pos), null, side);
+                BlockEntity found = AE2CompatHandler.owner(level, pos, level.getBlockState(pos), cellEntity, side);
                 if (found == null) continue;
                 helper.assertTrue(found == machine, "A cell answered for another machine at " + pos);
-                if (CraftingMachines.available() && CraftingMachines.reachesBlocksWithoutBlockEntity()) {
+                if (CraftingMachines.available()) {
                     helper.assertTrue(CraftingMachines.exposed(level, pos.immutable(), side),
                             "AE2's own lookup does not see the machine at " + pos + " " + side);
                 }

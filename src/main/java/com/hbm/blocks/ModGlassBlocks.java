@@ -39,7 +39,7 @@ public final class ModGlassBlocks {
      */
     public static final RegistryObject<BlockNTMGlass> glass_quartz = REG.block("glass_quartz",
             p -> new BlockNTMGlass(p, false),
-            p -> p.strength(1.0F, 40.0F).sound(SoundType.GLASS).noOcclusion().isSuffocating((s, l, pos) -> false)
+            p -> p.strength(1.0F, 24.0F).sound(SoundType.GLASS).noOcclusion().isSuffocating((s, l, pos) -> false)
                     .isViewBlocking((s, l, pos) -> false))
             .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_quartz"))).states(Variants.simple()).blockItem())
             .loot(Loot.self())
@@ -54,12 +54,12 @@ public final class ModGlassBlocks {
             .loot(Loot.silkTouchOnly());
 
     public static final RegistryObject<BlockNTMGlass> reinforced_glass = glass("reinforced_glass", false, true,
-            0.3F, 25.0F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
+            0.3F, 15.0F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
             .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/reinforced_glass"))).states(Variants.simple()).blockItem())
             .loot(Loot.silkTouchOnly()) // 1.7 BlockNTMGlass: doesDrop = false, canSilkHarvest() = true
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> reinforced_laminate = glass("reinforced_laminate", true, true,
-            15.0F, 300.0F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
+            15.0F, 180.0F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
             .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/reinforced_laminate"))).states(Variants.simple()).blockItem())
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);

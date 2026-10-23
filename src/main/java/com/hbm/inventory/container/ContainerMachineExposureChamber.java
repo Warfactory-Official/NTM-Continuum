@@ -95,12 +95,12 @@ public class ContainerMachineExposureChamber extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (Library.isBattery(stack)) {
-                if (!moveItemStackTo(stack, 4, 5, false)) return ItemStack.EMPTY;
             } else if (Library.isMachineUpgrade(stack)) {
                 if (!moveItemStackTo(stack, 5, 7, false)) return ItemStack.EMPTY;
+            } else if (Library.isBattery(stack)) {
+                if (!moveItemStackTo(stack, 4, 5, false)) return ItemStack.EMPTY;
             } else {
-                if (!moveItemStackTo(stack, 0, 4, false)) return ItemStack.EMPTY;
+                if (!moveItemStackTo(stack, 0, 3, false)) return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

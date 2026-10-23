@@ -3,6 +3,7 @@ package com.hbm.inventory.container;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityFEL;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -92,9 +93,11 @@ public class ContainerFEL extends AbstractContainerMenu {
             int invStart = MACHINE_SLOTS;
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
-                if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else {
-                if (!this.moveItemStackTo(stack, 0, MACHINE_SLOTS, false)) return ItemStack.EMPTY;
+                if (!this.moveItemStackTo(stack, invStart, invEnd, false)) return ItemStack.EMPTY;
+            } else if (Library.isBattery(stack)) {
+                if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
+            } else if (!this.moveItemStackTo(stack, 1, 2, false)) {
+                return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

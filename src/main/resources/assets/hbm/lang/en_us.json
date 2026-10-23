@@ -4588,6 +4588,7 @@
   "gui.weapon.ammo": "Ammo",
   "gui.weapon.baseDamage": "Base Damage",
   "gui.weapon.damageWithAmmo": "Damage with current ammo",
+  "gui.weapon.egonDamage": "Damage: 2 per tick, ignores armor",
   "gui.weapon.condition": "Condition",
   "gui.weapon.accepts": "Accepts",
   "gui.weapon.quality.aside": "Standard Arsenal",

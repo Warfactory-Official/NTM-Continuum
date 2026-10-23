@@ -105,7 +105,7 @@ public final class ModOreBlocks {
 
     /** Infinite floor deposit carrying resource, acid, tier, colour and shape state. */
     public static final RegistryObject<BlockBedrockOre> ore_bedrock_block = reg("ore_bedrock_block",
-            BlockBedrockOre::new, p -> p.strength(-1.0F, 3_600_000.0F).sound(SoundType.STONE)
+            BlockBedrockOre::new, p -> p.strength(-1.0F, 2160000.0F).sound(SoundType.STONE)
                     .noLootTable().isValidSpawn((state, level, pos, type) -> false))
             .transform(Presets.cubeAll())
             .tag(BlockTag.PICKAXE);
@@ -182,14 +182,14 @@ public final class ModOreBlocks {
 
     /** Light 10/15, hardness 0.4. An outgas block upstream, so mining it in the nether leaves CO. */
     public static final RegistryObject<BlockNetherCoal> ore_nether_coal = reg("ore_nether_coal",
-            BlockNetherCoal::new, p -> p.strength(0.4F, 10.0F).sound(SoundType.STONE).lightLevel(s -> 10)
+            BlockNetherCoal::new, p -> p.strength(0.4F, 6.0F).sound(SoundType.STONE).lightLevel(s -> 10)
                     .requiresCorrectToolForDrops().randomTicks().noLootTable())
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
 
     /** Light 15, hardness 0.4. */
     public static final RegistryObject<BlockSmolder> ore_nether_smoldering = reg("ore_nether_smoldering",
-            BlockSmolder::new, p -> p.strength(0.4F, 10.0F).sound(SoundType.STONE).lightLevel(s -> 15)
+            BlockSmolder::new, p -> p.strength(0.4F, 6.0F).sound(SoundType.STONE).lightLevel(s -> 15)
                     .requiresCorrectToolForDrops().noLootTable())
             .transform(Presets.cubeAll().viaItemModel())
             .tag(BlockTag.PICKAXE);
@@ -214,7 +214,7 @@ public final class ModOreBlocks {
             .transform(Presets.sprite("hbm:blocks/stalactite.asbestos")).tag(BlockTag.PICKAXE);
 
     // port: 1.7 has no deepslate; each twin copies its stone ore's drops and tools, with vanilla's deepslate hardness
-    public static final RegistryObject<BlockOutgas> ore_uranium_deepslate = deepslateOre("ore_uranium", 5.0F, 10.0F,
+    public static final RegistryObject<BlockOutgas> ore_uranium_deepslate = deepslateOre("ore_uranium", 5.0F, 6.0F,
             p -> new BlockOutgas(p.randomTicks(), true, 20, true), RawOres.drop("hbm:raw_uranium", Loot.self()))
             .tag(BlockTag.NEEDS_IRON_TOOL);
     public static final RegistryObject<Block> ore_thorium_deepslate = deepslateOre("ore_thorium", 5.0F, 10.0F, RawOres.drop("hbm:raw_thorium", Loot.self()));
@@ -263,7 +263,7 @@ public final class ModOreBlocks {
 
     private static Reg.Handle<BlockCluster> cluster(String id, Supplier<Item> drop) {
         return reg(id, p -> new BlockCluster(p, () -> new ItemStack(drop.get())),
-                p -> p.strength(5.0F, 35.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noLootTable());
+                p -> p.strength(5.0F, 9.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noLootTable());
     }
 
     /** 1.7 {@code BlockDepth} has no drop override: broken by a depth-rock tool (or blown up) it drops itself. */

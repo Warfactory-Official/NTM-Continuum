@@ -45,27 +45,27 @@ public final class ModPowerGenBlocks {
     /** 1.7: {@code Material.iron}, hardness 5, resistance 10, machineTab, {@code block_steel} icon. */
     public static final RegistryObject<MachineChungus> MACHINE_CHUNGUS = REG.block(
             "machine_chungus", MachineChungus::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOLDED_MACHINE);
     /** 1.7: hardness 5, resistance 100. */
     public static final RegistryObject<MachineLPW2> MACHINE_LPW2 = REG.block(
             "machine_lpw2", MachineLPW2::new,
-            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 60.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOLDED_MACHINE);
     /** 1.7: hardness 10, resistance 10, {@code block_steel_machine} icon. */
     public static final RegistryObject<MachineHephaestus> MACHINE_HEPHAESTUS = REG.block(
             "machine_hephaestus", MachineHephaestus::new,
-            p -> p.strength(10.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(10.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOLDED_MACHINE);
     /** 1.7: hardness 5, resistance 10, vanilla {@code gold_block} icon (never seen: the block is renderer-drawn). */
     public static final RegistryObject<MachineIGenerator> MACHINE_INDUSTRIAL_GENERATOR = REG.block(
             "machine_industrial_generator", MachineIGenerator::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(FOLDED_MACHINE);
     /** 1.7: {@code Material.iron}, hardness 5, resistance 10; icons block_steel on top and bottom, machine_siren on the sides. */
     public static final RegistryObject<MachineSiren> MACHINE_SIREN = REG.block(
             "machine_siren", MachineSiren::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.cubeBottomTop("hbm:blocks/block_steel", "hbm:blocks/machine_siren",
                     "hbm:blocks/block_steel"))
             .loot(Loot.self())

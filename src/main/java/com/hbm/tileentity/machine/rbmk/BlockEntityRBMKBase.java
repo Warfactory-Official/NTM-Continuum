@@ -244,7 +244,7 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
                     if (pipes.add(neighbor.asLong())) queue.add(neighbor);
                 } else if (server.getBlockEntity(neighbor) instanceof IFluidReceiverMK2) receivers.add(neighbor.immutable());
                 else {
-                    BlockPos core = MultiblockSurface.coreOfCell(server, neighbor);
+                    BlockPos core = MultiblockSurface.coreOfAny(server, neighbor);
                     if (core != null && server.getBlockEntity(core) instanceof IFluidReceiverMK2) receivers.add(core);
                 }
             }

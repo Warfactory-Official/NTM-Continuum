@@ -56,7 +56,7 @@ public final class ModSteelBlocks {
     };
 
     public static final RegistryObject<BlockGrate> steel_grate = REG.block("steel_grate", BlockGrate::new,
-            p -> p.requiresCorrectToolForDrops().strength(2.0F, 5.0F).sound(Sounds.GRATE_SOUND).noOcclusion()
+            p -> p.requiresCorrectToolForDrops().strength(2.0F, 3.0F).sound(Sounds.GRATE_SOUND).noOcclusion()
                     .isSuffocating((state, level, pos) -> false)
                     .isViewBlocking((state, level, pos) -> false))
             .model(d -> d.statesOnly().states(Variants.select("height", GRATE_HEIGHTS)))
@@ -65,7 +65,7 @@ public final class ModSteelBlocks {
             .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<BlockScaffold> steel_scaffold = REG.block("steel_scaffold", BlockScaffold::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 15.0F).sound(SoundType.STONE).noOcclusion()
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 9.0F).sound(SoundType.STONE).noOcclusion()
                     .isSuffocating((state, level, pos) -> false)
                     .isViewBlocking((state, level, pos) -> false))
             .model(d -> d.statesOnly().states(Variants.product(Variants.uniform("orient", "horizontal_north_south", "horizontal_east_west", "vertical_north_south", "vertical_east_west"), Variants.uniform("variant", "steel", "red", "white", "yellow"))))

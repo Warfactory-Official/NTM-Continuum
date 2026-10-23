@@ -28,6 +28,8 @@ import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKControlAuto;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKControlManual;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKCooler;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKHeater;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKInlet;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKOutlet;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKRod;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -485,5 +487,30 @@ public final class RcNukeGameTests {
         helper.assertTrue(rod.inventory.getStackInSlot(0).is(ModRBMKItems.rbmk_fuel_ueu.get()) && !crane.hasItemLoaded(),
                 "the crane sets the rod back");
         helper.succeed();
+    }
+
+    /**
+     * The ReaSim boiler dial: the inlet beside a column's base fills it, the hot column boils, and the outlet beside
+     * the base collects the steam (1.7 findCore answers for the core block too).
+     */
+    public static void reasimBoilerSteam(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        boolean old = RBMKDials.REASIM_BOILERS.get(level);
+        RBMKDials.REASIM_BOILERS.set(level.getServer(), true);
+        BlockPos column = new BlockPos(2, 1, 2);
+        helper.setBlock(column, ModRBMKBlocks.rbmk_blank.get().defaultBlockState());
+        helper.setBlock(column.west(), ModRBMKBlocks.rbmk_steam_inlet.get().defaultBlockState());
+        helper.setBlock(column.east(), ModRBMKBlocks.rbmk_steam_outlet.get().defaultBlockState());
+        BlockEntityRBMKBase base = GameTestHelpers.blockEntity(helper, column, BlockEntityRBMKBase.class);
+        BlockEntityRBMKInlet inlet = GameTestHelpers.blockEntity(helper, column.west(), BlockEntityRBMKInlet.class);
+        BlockEntityRBMKOutlet outlet = GameTestHelpers.blockEntity(helper, column.east(), BlockEntityRBMKOutlet.class);
+        inlet.water.setFill(4_000);
+        helper.runAfterDelay(40, () -> {
+            RBMKDials.REASIM_BOILERS.set(level.getServer(), old);
+            helper.assertTrue(outlet.steam.getFill() > 0, "the outlet collected no steam (column water " + base.reasimWater
+                    + ", steam " + base.reasimSteam + ", heat " + base.heat + ")");
+            helper.succeed();
+        });
+        helper.onEachTick(() -> base.heat = Math.max(base.heat, 1_500D));
     }
 }

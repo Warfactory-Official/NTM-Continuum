@@ -42,7 +42,7 @@ public final class ModCustomMissileBlocks {
     private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
     private static final UnaryOperator<BlockBehaviour.Properties> IRON =
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
     /** Renderer-drawn machines: the block model is empty, so nothing may cull or suffocate against it. */
     private static final UnaryOperator<BlockBehaviour.Properties> RENDERED =
             p -> IRON.apply(p).noOcclusion().isSuffocating((s, w, pos) -> false).isViewBlocking((s, w, pos) -> false);

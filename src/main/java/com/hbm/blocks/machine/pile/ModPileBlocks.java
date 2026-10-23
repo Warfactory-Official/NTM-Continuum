@@ -41,7 +41,7 @@ public final class ModPileBlocks {
     /** A per-face cube: pile_brick_top on both ends, the brick front/back and its side on east and west. */
     public static final RegistryObject<BlockPileBrick> pile_brick = REG.block(
             "pile_brick", BlockPileBrick::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().ignitedByLava())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().ignitedByLava())
             .transform(Presets.shape(Models.parented("minecraft:block/cube", Slots
                     .of("up", "hbm:blocks/pile_brick_top", "down", "hbm:blocks/pile_brick_top")
                     .and("north", "hbm:blocks/pile_brick").and("south", "hbm:blocks/pile_brick")
@@ -54,7 +54,7 @@ public final class ModPileBlocks {
      */
     public static final RegistryObject<BlockPile> pile_block = REG.block(
             "pile_block", BlockPile::new,
-            p -> p.strength(15.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(15.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .model(d -> d.models(Models.group()
                             .and("", Models.cubeBottomTop("hbm:blocks/pile_block_top", "hbm:blocks/pile_block", "hbm:blocks/pile_block_top"))
                             .and("_core", Models.cubeBottomTop("hbm:blocks/pile_block_top", "hbm:blocks/pile_block_core", "hbm:blocks/pile_block_top"))
@@ -68,7 +68,7 @@ public final class ModPileBlocks {
     /** The three docking devices: one invisible block (renderer-drawn) across twelve meta values; item is OBJ. */
     public static final RegistryObject<BlockPileDevice> pile_device = REG.block(
             "pile_device", BlockPileDevice::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
             .transform(Presets.statesOnly(Variants.uniformRange("meta", 0, 11)))
             // the drop is the device's own item (pile_loader/_vent/_control, BlockPileDevice.getDrops)
             .loot(Loot.nothing()).tag(BlockTag.PICKAXE);

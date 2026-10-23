@@ -32,7 +32,7 @@ public final class ModSatelliteBlocks {
 
     public static final RegistryObject<MachineSatLinker> machine_satlinker =
             REG.block("machine_satlinker", MachineSatLinker::new,
-                    p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+                    p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
                     // 1.7 MachineSatLinker.getIcon: machine_satlinker_top on top AND bottom, _side around
                     .transform(Presets.cubeBottomTop("hbm:blocks/machine_satlinker_top", "hbm:blocks/machine_satlinker_side",
                             "hbm:blocks/machine_satlinker_top"))
@@ -41,7 +41,7 @@ public final class ModSatelliteBlocks {
     /** Renderer-drawn: the block model is empty, so nothing may cull or suffocate against it. */
     public static final RegistryObject<MachineSatDock> sat_dock =
             REG.block("sat_dock", MachineSatDock::new,
-                    p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
+                    p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
                             .isSuffocating((s, w, pos) -> false).isViewBlocking((s, w, pos) -> false))
                     .transform(Presets.rendered(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
                             Variants.uniform("cell", "false", "true"))))

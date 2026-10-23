@@ -4,7 +4,17 @@ import com.hbm.Constants;
 import com.hbm.handler.radiation.RadiationPayload;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import dev.golem.core.gametest.GameTests;
+import com.hbm.blocks.ModHazardBlocks;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.Direction;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.blocks.generic.BlockDoorGeneric;
+import com.hbm.blocks.ModDoorBlocks;
+import com.hbm.blocks.ModGlassBlocks;
+import com.hbm.blocks.ModDecoContent;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -29,6 +39,18 @@ public final class RadiationPersistenceGameTests {
     public static final GameTests.Function SURVIVES_ROUND_TRIP = TESTS.function(
             "radiation_survives_an_untouched_chunk_round_trip", 60,
             () -> RadiationPersistenceGameTests::radiationSurvivesAnUntouchedRoundTrip);
+
+    public static final GameTests.Function LEAD_WALL = TESTS.function(
+            "radiation_lead_box_holds", 200, 8, () -> h -> boxHolds(h, ModHazardBlocks.block_lead.get()));
+    public static final GameTests.Function CONCRETE_WALL = TESTS.function(
+            "radiation_concrete_box_holds", 200, 8, () -> h -> boxHolds(h, ModHazardBlocks.brick_concrete.get()));
+
+    public static final GameTests.Function PILLAR_WALL = TESTS.function(
+            "radiation_pillar_box_holds", 200, 8, () -> h -> boxHolds(h, ModDecoContent.concrete_pillar.get()));
+    public static final GameTests.Function GLASS_WALL_REBUILD = TESTS.function(
+            "radiation_glass_box_rebuilds", 200, 8, () -> RadiationPersistenceGameTests::glassBoxRebuilds);
+    public static final GameTests.Function DOOR_SEALS_CLOSED = TESTS.function(
+            "radiation_fire_door_seals_closed", 20, 16, () -> RadiationPersistenceGameTests::fireDoorSealsClosed);
 
     public static void init() {}
 
@@ -124,5 +146,49 @@ public final class RadiationPersistenceGameTests {
         RadiationSystemNT.onChunkUnloaded(level, chunk);
         RadiationSystemNT.flushForSave(level, true);
         RadiationSystemNT.onChunkLoaded(level, chunk);
+    }
+
+    /**
+     * A hollow 5 x 5 x 5 box with radiation set at its centre: rad-resistant walls are pocket walls, so the cell just
+     * outside stays clean. A stone control box cannot run beside these: its radiation reaches the neighbouring plots.
+     */
+    private static void boxHolds(GameTestHelper helper, Block wall) {
+        ServerLevel level = helper.getLevel();
+        BlockPos min = helper.absolutePos(new BlockPos(2, 1, 2));
+        for (BlockPos pos : BlockPos.betweenClosed(min, min.offset(4, 4, 4))) {
+            boolean shell = pos.getX() == min.getX() || pos.getX() == min.getX() + 4 || pos.getY() == min.getY()
+                    || pos.getY() == min.getY() + 4 || pos.getZ() == min.getZ() || pos.getZ() == min.getZ() + 4;
+            level.setBlock(pos, shell ? wall.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
+        }
+        BlockPos centre = min.offset(2, 2, 2), outside = min.offset(6, 2, 2);
+        helper.runAfterDelay(5, () -> RadiationSystemNT.setRadForCoord(level, centre, 1000D));
+        helper.runAfterDelay(180, () -> {
+            double in = RadiationSystemNT.getRadForCoord(level, centre), out = RadiationSystemNT.getRadForCoord(level, outside);
+            helper.assertTrue(in > 0D, "the box lost all its radiation");
+            helper.assertTrue(out < TOLERANCE, wall + " let " + out + " RAD out (inside " + in + ")");
+            helper.succeed();
+        });
+    }
+
+    /** Walls placed after the section was built: the glass must ask for a rebuild, or the room leaks. */
+    private static void glassBoxRebuilds(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        RadiationSystemNT.setRadForCoord(level, helper.absolutePos(new BlockPos(4, 3, 4)), 0D);
+        boxHolds(helper, ModGlassBlocks.reinforced_glass.get());
+    }
+
+    /** A sealing door's cells are walls while closed and stop being walls as the door clears them. */
+    private static void fireDoorSealsClosed(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos core = helper.absolutePos(new BlockPos(6, 1, 6));
+        BlockDoorGeneric door = ModDoorBlocks.FIRE_DOOR.get();
+        MultiblockHandlerXR.placeAssembled(level, core, door, Direction.NORTH);
+        BlockPos cell = BlockPos.betweenClosedStream(new AABB(core).inflate(3)).map(BlockPos::immutable)
+                .filter(p -> level.getBlockState(p).getBlock() == door && level.getBlockState(p).getValue(BlockDoorGeneric.CELL))
+                .findFirst().orElseThrow();
+        helper.assertTrue(door.isRadResistant(level, cell), "a closed fire door cell does not seal");
+        door.makeExtra(level, cell);
+        helper.assertFalse(door.isRadResistant(level, cell), "an opened fire door cell still seals");
+        helper.succeed();
     }
 }

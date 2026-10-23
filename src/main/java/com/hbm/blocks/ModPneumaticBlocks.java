@@ -55,45 +55,45 @@ public final class ModPneumaticBlocks {
 
     public static final RegistryObject<PneumoTube> PNEUMATIC_TUBE = REG.block(
             "pneumatic_tube", PneumoTube::new,
-            p -> p.strength(2.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(2.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(DRAWN_TUBE);
     public static final RegistryObject<PneumoTubePaintableBlock> PNEUMATIC_TUBE_PAINTABLE = REG.block(
             "pneumatic_tube_paintable", PneumoTubePaintableBlock::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.shape(Models.renderType("minecraft:cutout",
                     Models.cubeAll("hbm:blocks/pneumatic_tube_paintable"))).noItem())
             .loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<PneumoStorageAccess> PNEUMATIC_STORAGE_ACCESS = REG.block(
             "pneumatic_storage_access", PneumoStorageAccess::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(Presets.orientable("hbm:blocks/pneumatic_storage_access_front",
                     "hbm:blocks/pneumatic_storage_access", "hbm:blocks/pneumatic_storage_access").states(Variants.facingAll()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<PneumoStorageClutter> PNEUMATIC_STORAGE_CLUTTER = REG.block(
             "pneumatic_storage_clutter", PneumoStorageClutter::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(STORAGE_CUBE)
             .loot(Loot.container("minecraft:custom_name", "minecraft:container"));
     public static final RegistryObject<PneumoStorageMono> PNEUMATIC_STORAGE_MONO = REG.block(
             "pneumatic_storage_mono", PneumoStorageMono::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(STORAGE_CUBE)
             .loot(Loot.container("minecraft:container", "minecraft:custom_data", "minecraft:custom_name"));
     public static final RegistryObject<PneumoStorageImporter> PNEUMATIC_STORAGE_IMPORTER = REG.block(
             "pneumatic_storage_importer", PneumoStorageImporter::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(STORAGE_CUBE)
             .loot(Loot.self());
     public static final RegistryObject<PneumoStorageExporter> PNEUMATIC_STORAGE_EXPORTER = REG.block(
             "pneumatic_storage_exporter", PneumoStorageExporter::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
             .transform(STORAGE_CUBE)
             .loot(Loot.self());
 
     public static final RegistryObject<PneumoPipeAnchor> PIPE_ANCHOR_PNEUMATIC = REG.block(
             "pipe_anchor_pneumatic", PneumoPipeAnchor::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .andThen(handle -> {
                 States.MultipartFile file = States.multipart(handle.namespace(), handle.path());
                 for (String facing : new String[]{"down", "up", "north", "south", "west", "east"}) {
