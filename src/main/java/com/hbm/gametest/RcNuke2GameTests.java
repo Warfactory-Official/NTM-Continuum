@@ -53,6 +53,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.IntConsumer;
 import net.minecraft.core.BlockPos;
+import java.util.List;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -1001,5 +1005,24 @@ public final class RcNuke2GameTests {
             roundTrip(helper, intake, "intake");
             helper.succeed();
         });
+    }
+
+    /** Placing the Watz item builds the reactor and drops none of the kit its core returns when broken. */
+    public static void watzPlacesWithoutDrops(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        ItemStack stack = new ItemStack(ModMachineBlocks.watz.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        BlockPos ground = helper.absolutePos(new BlockPos(8, 1, 8));
+        level.setBlock(ground, Blocks.STONE.defaultBlockState(), 3);
+        player.gameMode.useItemOn(player, level, stack, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(ground), Direction.UP, ground, false));
+
+        AABB area = new AABB(ground).inflate(8);
+        boolean built = BlockPos.betweenClosedStream(area).anyMatch(p -> level.getBlockEntity(p) instanceof TileEntityWatz);
+        helper.assertTrue(built, "the Watz item placed no reactor");
+        List<ItemEntity> drops = level.getEntitiesOfClass(ItemEntity.class, area);
+        helper.assertTrue(drops.isEmpty(), "placing the Watz dropped " + drops.stream().map(ItemEntity::getItem).toList());
+        helper.succeed();
     }
 }

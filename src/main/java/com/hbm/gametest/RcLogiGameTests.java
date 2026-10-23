@@ -213,6 +213,25 @@ public final class RcLogiGameTests {
         helper.succeed();
     }
 
+    /** A survival pickaxe break removes the crate before its drops, and the dropped crate still carries its contents. */
+    public static void crateKeepsContentsOnPlayerBreak(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND_PICKAXE));
+        BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
+        level.setBlock(pos, ModStorageBlocks.crate_iron.get().defaultBlockState(), 3);
+        TileEntityCrate crate = (TileEntityCrate) level.getBlockEntity(pos);
+        crate.setItem(5, new ItemStack(Items.DIAMOND, 7));
+
+        player.gameMode.destroyBlock(pos);
+        ItemStack carried = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2)).stream().map(ItemEntity::getItem)
+                .filter(s -> s.is(ModStorageBlocks.crate_iron.get().asItem())).findFirst().orElse(ItemStack.EMPTY);
+        helper.assertFalse(carried.isEmpty(), "no crate item dropped");
+        ItemStack slot = ItemStacks.carriedItems(carried, "inventory", 36).get(5);
+        helper.assertTrue(slot.is(Items.DIAMOND) && slot.getCount() == 7, "the crate item carries " + slot + " in slot 5, expected 7 diamonds");
+        helper.succeed();
+    }
+
     /** A padlock used on a generic door locks it instead of toggling it; only the matching key opens it. */
     public static void doorPadlockAndKey(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();

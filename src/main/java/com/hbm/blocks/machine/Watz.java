@@ -36,8 +36,7 @@ import org.jspecify.annotations.Nullable;
  * upstream. Nine cells are promoted to ports: the four arm tips at core level and at +2, plus the
  * centre-top cell.
  *
- * <p>Unlike most machines this block has no item: it only comes into being by building the shape
- * around a {@code struct_watz_core} and letting it assemble.
+ * <p>Survival builds it by assembling the shape around a {@code struct_watz_core}; its item places it whole.
  */
 public class Watz extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
@@ -72,13 +71,13 @@ public class Watz extends BlockMultiblockMachine implements IFluidConnectorBlock
     }
 
     /**
-     * Upstream's hand-rolled drop table: breaking the core returns the whole build. It is code rather
-     * than a loot table because the reactor is assembled in world and has no block item of its own.
+     * Upstream's hand-rolled drop table: breaking the core returns the whole build. Not when placement clears the
+     * block its item put down ({@link #isSafeRem}).
      */
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         // Not while a sub-level system carries the reactor: it lives on at the new position and must not drop its kit.
-        if (!level.isClientSide() && !state.getValue(CELL) && drop && !SubLevels.isMoving(level)) {
+        if (!level.isClientSide() && !state.getValue(CELL) && drop && !isSafeRem() && !SubLevels.isMoving(level)) {
             drop(level, pos, new ItemStack(ModMachineBlocks.watz_casing_tooled.get(), 48));
             for (int i = 0; i < 3; i++) {
                 drop(level, pos, new ItemStack(ModAutogenItems.get(MaterialShapes.BOLT, Mats.MAT_DURA), 64));

@@ -864,6 +864,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("rc_nuke2_intake", 100, 12, () -> RcNuke2GameTests::intakeRun);
     public static final GameTests.Function RC_NUKE2_PWR_HOPPER =
             TESTS.function("rc_nuke2_pwr_hopper", 200, 8, () -> RcNuke2GameTests::pwrHopper);
+    public static final GameTests.Function RC_NUKE2_WATZ_PLACE =
+            TESTS.function("rc_nuke2_watz_place", 20, 16, () -> RcNuke2GameTests::watzPlacesWithoutDrops);
 
     // --- production machines (group A) ---
 
@@ -1412,6 +1414,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("rc_logi_crane_chain", 400, 16, () -> RcLogiGameTests::craneChain);
     public static final GameTests.Function RC_LOGI_CRATE_LOCKABLE =
             TESTS.function("rc_logi_crate_lockable", 40, 16, () -> RcLogiGameTests::crateLockable);
+    public static final GameTests.Function RC_LOGI_CRATE_PLAYER_BREAK =
+            TESTS.function("rc_logi_crate_player_break", 20, () -> RcLogiGameTests::crateKeepsContentsOnPlayerBreak);
 
     public static final GameTests.Function RC_LOGI_DOOR_PADLOCK =
             TESTS.function("rc_logi_door_padlock", 40, 16, () -> RcLogiGameTests::doorPadlockAndKey);

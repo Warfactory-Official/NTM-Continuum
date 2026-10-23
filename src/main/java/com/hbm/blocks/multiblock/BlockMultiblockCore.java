@@ -97,6 +97,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     public static final int PASSIVE_DOMAINS = 3;
 
     private static final ThreadLocal<Boolean> BUSY = ThreadLocal.withInitial(() -> false);
+    private static final ThreadLocal<Boolean> SAFE_REM = ThreadLocal.withInitial(() -> false);
 
     /**
      * 1.7's {@code BlockDummyable} was no opaque cube, so its constructor gave core and dummies light opacity 0: sky
@@ -123,6 +124,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     }
 
     public static boolean isBusy() { return BUSY.get(); }
+
+    /** 1.7 {@code safeRem}: true while {@link #setPlacedBy} clears the block its item placed, which is no machine yet. */
+    public static boolean isSafeRem() { return SAFE_REM.get(); }
 
     /** Suppresses removal-triggered teardown while a batch replaces folded cells. */
     public static void withoutTeardown(Runnable action) {
@@ -624,7 +628,12 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     @Override public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         if (!(placer instanceof Player player)) return;
-        withoutTeardown(() -> level.removeBlock(pos, false));
+        SAFE_REM.set(true);
+        try {
+            withoutTeardown(() -> level.removeBlock(pos, false));
+        } finally {
+            SAFE_REM.set(false);
+        }
         PlacedFace clicked = PLACED_FACE.get();
         PLACED_FACE.remove();
         Direction face = clicked != null && clicked.pos().equals(pos) ? clicked.face() : Direction.UP;
