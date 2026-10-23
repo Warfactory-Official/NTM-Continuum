@@ -32,11 +32,14 @@ public final class ModRBMKItems {
     public static final Map<RegistryObject<ItemRBMKRod>, RegistryObject<ItemRBMKPellet>> PELLETS = new LinkedHashMap<>();
 
     public static final RegistryObject<ItemRBMKLid> rbmk_lid = REG.item("rbmk_lid", (Item.Properties p) -> new ItemRBMKLid(p, RBMKBase.Lid.CONCRETE))
-            .transform(Presets.sprite());
+            .transform(Presets.sprite())
+            .tab(HbmTab.CONTROL);
     public static final RegistryObject<ItemRBMKLid> rbmk_lid_glass = REG.item("rbmk_lid_glass", (Item.Properties p) -> new ItemRBMKLid(p, RBMKBase.Lid.GLASS))
-            .transform(Presets.sprite());
+            .transform(Presets.sprite())
+            .tab(HbmTab.CONTROL);
     public static final RegistryObject<ItemRBMKTool> rbmk_tool = REG.item("rbmk_tool", ItemRBMKTool::new, p -> p.stacksTo(1))
-            .transform(Presets.sprite());
+            .transform(Presets.sprite())
+            .tab(HbmTab.CONSUMABLES);
     public static final RegistryObject<ItemDigamma> particle_digamma = REG.item("particle_digamma",
             p -> new ItemDigamma(p, 60), p -> p.craftRemainder(ModItems.particle_empty.get()))
             .transform(Presets.sprite())

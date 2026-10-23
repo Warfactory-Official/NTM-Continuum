@@ -4,6 +4,8 @@ import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.RBMKLoader;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.creativetabs.HbmTab;
+import com.hbm.creativetabs.ModTabs;
 import com.hbm.handler.neutron.NeutronHandler;
 import com.hbm.handler.neutron.NeutronNodeWorld;
 import com.hbm.inventory.recipes.RBMKFuelDisassemblyRecipe;
@@ -44,6 +46,11 @@ public final class RBMKGameTests {
         checkId(helper, ModRBMKItems.rbmk_lid_glass.get(), "rbmk_lid_glass");
         checkId(helper, ModRBMKItems.particle_digamma.get(), "particle_digamma");
         checkId(helper, ModRBMKItems.rbmk_fuel_drx.get(), "rbmk_fuel_drx");
+        var control = ModTabs.CONTENTS.get(ModTabs.get(HbmTab.CONTROL).getKey());
+        helper.assertTrue(control.contains(ModRBMKItems.rbmk_lid) && control.contains(ModRBMKItems.rbmk_lid_glass),
+                "Both RBMK lids are listed in the control tab, as in 1.7");
+        helper.assertTrue(ModTabs.CONTENTS.get(ModTabs.get(HbmTab.CONSUMABLES).getKey()).contains(ModRBMKItems.rbmk_tool),
+                "The RBMK tool is listed in the consumables tab, as in 1.7");
 
         ItemRBMKRod drx = ModRBMKItems.rbmk_fuel_drx.get();
         helper.assertTrue(drx.pelletItem() == ModRBMKItems.pelletFor(drx),
