@@ -18,6 +18,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -88,9 +89,30 @@ public final class Pt1012ArmorGameTests {
         helper.assertTrue(player.tryToStartFallFlying() && player.isFallFlying(),
                 "vanilla's start check (tryToStartFallFlying) refused the elytra chestplate");
 
-        helper.assertTrue(Gliders.wearNow(player), "no glide source wore");
+        player.setDeltaMovement(player.getLookAngle().scale(0.2D));
+        double unboostedSpeed = player.getDeltaMovement().lengthSqr();
+        FireworkRocketEntity rocket = new FireworkRocketEntity(helper.getLevel(), new ItemStack(Items.FIREWORK_ROCKET), player);
+        rocket.tick();
+        helper.assertTrue(player.getDeltaMovement().lengthSqr() > unboostedSpeed,
+                "a firework did not accelerate the gliding elytra-module wearer");
+        rocket.discard();
+
+        for (int tick = 0; tick < 40; tick++) {
+            helper.assertTrue(Gliders.flightTick(player, tick), "glide source stopped at flight tick " + (tick + 1));
+            int damage = ArmorModHandler.installedElytra(player.getItemBySlot(EquipmentSlot.CHEST)).getDamageValue();
+            helper.assertTrue(damage == (tick + 1) / 20,
+                    "stored elytra damage " + damage + " at flight tick " + (tick + 1));
+        }
+        // Real living ticks exercise the loader hook (wearNow on 26.1), including vanilla's cadence.
+        player.setPos(player.getX(), player.getY() + 100D, player.getZ());
+        for (int tick = 0; tick < 40; tick++) {
+            player.tick();
+            helper.assertTrue(player.isFallFlying(), "player stopped gliding at living tick " + (tick + 1));
+            int damage = ArmorModHandler.installedElytra(player.getItemBySlot(EquipmentSlot.CHEST)).getDamageValue();
+            helper.assertTrue(damage == 2 + (tick + 1) / 20,
+                    "stored elytra damage " + damage + " at living tick " + (tick + 1));
+        }
         ItemStack stored = ArmorModHandler.installedElytra(player.getItemBySlot(EquipmentSlot.CHEST));
-        helper.assertTrue(stored.getDamageValue() == 1, "stored elytra damage " + stored.getDamageValue());
 
         // vanilla stops one point short of breaking; so does the module, and the elytra comes back out intact
         stored.setDamageValue(stored.getMaxDamage() - 1);

@@ -50,3 +50,5 @@ Requires Golem Core 1.0.1. Use GemRender 0.1.18. Older versions are refused.
 ## 1.0.0
 
 Initial release
+
+- Install a normal elytra in a chestplate at the armor modification table to glide and use firework boosts while wearing armor. The stored elytra keeps its durability and wears during flight.
