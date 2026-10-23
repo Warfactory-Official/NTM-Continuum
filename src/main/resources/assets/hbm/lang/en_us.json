@@ -2326,6 +2326,8 @@
   "subtitles.item.geiger": "Geiger counter clicks",
   "subtitles.item.techBleep": "Gadget bleeps",
   "subtitles.item.upgradePlug": "Upgrade installed",
+  "trait.blastres": "Blast Resistance: %s",
+  "trait.radshield": "Radiation Shielding",
   "trait.asbestos": "Asbestos",
   "trait.blinding": "Blinding",
   "trait.coal": "Coal Dust",

@@ -1847,6 +1847,8 @@
   "cannery.willow.8": "很快，这种植物就会重新开始生长，如果泥土被油泥取代，就会长出更多的叶子。叶子可以用酸化机加工成镉粉。",
   "cannery.willow.9": "使用自动锯可以自动收割柳叶，它只会打碎准备收割的植物。",
   "key.hbm.reload": "装弹",
+  "trait.blastres": "爆炸抗性: %s",
+  "trait.radshield": "辐射屏蔽",
   "trait.asbestos": "石棉",
   "trait.blinding": "致盲",
   "trait.coal": "煤尘",

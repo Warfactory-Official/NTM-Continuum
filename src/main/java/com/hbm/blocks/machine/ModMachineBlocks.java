@@ -195,25 +195,25 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineLargeTurbine> machine_large_turbine = REG.<MachineLargeTurbine>block(
             "machine_large_turbine", MachineLargeTurbine::new,
             p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
-            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
+            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.of("particle", "hbm:blocks/machine_large_turbine"))).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineTurbineGas> machine_turbine_gas = REG.<MachineTurbineGas>block(
             "machine_turbine_gas", MachineTurbineGas::new,
             p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
-            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
+            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.of("particle", "hbm:blocks/block_steel"))).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineTurbofan> machine_turbofan = REG.<MachineTurbofan>block(
             "machine_turbofan", MachineTurbofan::new,
             p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
-            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
+            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.of("particle", "hbm:blocks/block_steel"))).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineSteamEngine> machine_steam_engine = REG.<MachineSteamEngine>block(
             "machine_steam_engine", MachineSteamEngine::new,
             p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
-            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
+            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.of("particle", "hbm:blocks/block_steel"))).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachinePump> machine_pump_electric = REG.<MachinePump>block(
@@ -246,7 +246,7 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineIndustrialTurbine> machine_industrial_turbine = REG.<MachineIndustrialTurbine>block(
             "machine_industrial_turbine", MachineIndustrialTurbine::new,
             p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
-            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY)).states(Variants.simple()))
+            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.of("particle", "hbm:blocks/block_steel"))).states(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCondenser> machine_condenser = REG.<MachineCondenser>block(
@@ -955,7 +955,7 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineIntake> machine_intake = REG.<MachineIntake>block(
             "machine_intake", p -> new MachineIntake(p, () -> ModBlockEntities.MACHINE_INTAKE.get()),
             p -> dummyable(p.strength(10.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()))
-            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY))
+            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.of("particle", "hbm:blocks/block_steel_machine")))
                     .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"), Variants.uniform("cell", "false", "true"))))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);
@@ -963,7 +963,7 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineFan> fan = REG.<MachineFan>block(
             "fan", p -> new MachineFan(p, () -> ModBlockEntities.MACHINE_FAN.get()),
             p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
-            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.EMPTY))
+            .model(d -> d.models(Models.parented("minecraft:block/air", Slots.of("particle", "hbm:blocks/block_steel")))
                     .states(Variants.uniform("facing", "down", "up", "north", "south", "west", "east")))
             .loot(Loot.self())
             .tag(BlockTag.PICKAXE);

@@ -13,4 +13,9 @@ public interface IRadResistantBlock {
     default boolean isRadResistant(BlockGetter level, BlockPos pos) {
         return true;
     }
+
+    /** Whether the item shows 1.12.2's "[Radiation Shielding]" line; doors and blast doors seal only when closed. */
+    default boolean isRadShielding() {
+        return true;
+    }
 }

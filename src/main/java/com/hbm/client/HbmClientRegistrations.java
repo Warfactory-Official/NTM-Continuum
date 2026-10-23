@@ -599,6 +599,7 @@ public final class HbmClientRegistrations {
         QMAWClient.register();
         CanneryClient.register(); // 1.7 WIAJ presentations: Left Shift + QMAW key on a hovered item
         ArmorModTooltips.register();
+        BlockTraitTooltips.register();
         StandardInfo.setShiftHeldPoll(CanneryClient::shiftHeld);
         GunRecoil.register();
         GrenadeUniversalClient.register(); // 1.7 ItemGrenadeUniversal.onUpdate's client half (arm swing)

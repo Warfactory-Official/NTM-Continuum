@@ -1741,6 +1741,8 @@
   "cannery.silex": "Лазер на вільних електронах (FEL) та Камера лазерного розділення ізотопів (SILEX)",
   "cannery.willow": "Гірчична верба",
   "key.hbm.reload": "Перезарядити",
+  "trait.blastres": "Вибухостійкість: %s",
+  "trait.radshield": "Радіаційний захист",
   "trait.asbestos": "Азбест",
   "trait.blinding": "Засліплення",
   "trait.coal": "Вугільний пил",

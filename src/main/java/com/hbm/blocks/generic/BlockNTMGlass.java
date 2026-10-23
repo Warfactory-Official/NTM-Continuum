@@ -35,6 +35,11 @@ public class BlockNTMGlass extends BlockRadResistant {
         return radResistant;
     }
 
+    @Override
+    public boolean isRadShielding() {
+        return radResistant;
+    }
+
     /**
      * 1.7 {@code BlockBreakable(name, material, false)}: a face against the same glass is not drawn, so a wall reads
      * as one pane (and the connected-texture border only shows on its outside).

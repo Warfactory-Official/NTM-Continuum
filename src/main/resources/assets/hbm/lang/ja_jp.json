@@ -1708,6 +1708,8 @@
   "cannery.firebox.2": "火室上部の銅接点からは熱が放出される。底面に同様の接点を備えた装置を上に置くことで熱を伝えることが出来る。",
   "cannery.firebox.3": "熱が消費されず熱バッファが満杯になると、燃料の消費を抑えるために火室の動作が停止する。",
   "cannery.firebox.4": "そうした機械の一つに熱を直接電力に変換するスターリングエンジンがある。",
+  "trait.blastres": "爆発耐性 %s",
+  "trait.radshield": "放射線遮蔽",
   "trait.asbestos": "アスベスト",
   "trait.blinding": "盲目",
   "trait.coal": "炭塵",

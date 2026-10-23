@@ -1607,6 +1607,8 @@
   "cannery.stirling.2": "Die Hitze die maximal verwendet werden kann ist limitiert, Übergeschwindigkeit kann zu katastrophalen Fehlfunktionen führen.",
   "cannery.stirling.3": "Die verbesserte Version kann wesentlich mehr Hitze aufnehmen, ohne kaputt zu werden.",
   "key.hbm.reload": "Nachladen",
+  "trait.blastres": "Explosionswiderstand: %s",
+  "trait.radshield": "Strahlenschutz",
   "trait.asbestos": "Asbest",
   "trait.blinding": "Blendend",
   "trait.coal": "Kohlestaub",

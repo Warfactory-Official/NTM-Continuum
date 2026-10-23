@@ -304,6 +304,8 @@ public final class JetpackClientVisuals {
                 clientLevel.addParticle(ParticleTypes.SMOKE, position.x, position.y,
                         position.z, smokeVelocity.x, smokeVelocity.y, smokeVelocity.z);
             }
+            Vec3 thrust = mode == JetpackHandler.EXHAUST_REGULAR ? new Vec3(0D, -1D, 0D) : look.scale(-1D).normalize();
+            if (Particles.quality() == Particles.Quality.ALL) spawnKickup(clientLevel, base, thrust);
         } else {
             float red = mode == JetpackHandler.EXHAUST_BJ ? 0.8F : 0.01F;
             float green = mode == JetpackHandler.EXHAUST_BJ ? 0.5F : 1F;
@@ -313,12 +315,13 @@ public final class JetpackClientVisuals {
                 Particles.dust(clientLevel, position.x, position.y, position.z, red, green, blue,
                         1F, player.getDeltaMovement().x, player.getDeltaMovement().y, player.getDeltaMovement().z);
             }
-            if (Particles.quality() == Particles.Quality.ALL) spawnKickup(clientLevel, player, base);
+            if (Particles.quality() == Particles.Quality.ALL) spawnKickup(clientLevel, base, new Vec3(0D, -1D, 0D));
         }
     }
 
-    private static void spawnKickup(ClientLevel level, Player player, Vec3 origin) {
-        Vec3 target = origin.add(0D, -10D, 0D);
+    /** 1.7 casts 10 blocks along the thrust and kicks up dust only off a block's top face. */
+    private static void spawnKickup(ClientLevel level, Vec3 origin, Vec3 thrust) {
+        Vec3 target = origin.add(thrust.scale(10D));
         BlockHitResult hit = Compat.clip(level, origin, target,
                 ClipContext.Block.COLLIDER,
                 ClipContext.Fluid.NONE);

@@ -64,6 +64,11 @@ public class BlockStorageCrate extends CarriedBlock implements TickingBlock, IRa
     /** 1.12.2 {@code BlockStorageCrateRadResistant}: the tungsten crate seals radiation, the safe does not. */
     @Override
     public boolean isRadResistant(BlockGetter level, BlockPos pos) {
+        return isRadShielding();
+    }
+
+    @Override
+    public boolean isRadShielding() {
         return kind == Kind.TUNGSTEN;
     }
 

@@ -8,6 +8,7 @@ import com.hbm.interfaces.IBomb.BombReturnCode;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.SubLevels;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -67,7 +68,8 @@ public class ItemLaserDetonator extends CompatItem {
                         .withStyle(ChatFormatting.RED));
             }
         } else {
-            Vec3 vec = new Vec3(pos.getX() + 0.5 - player.getX(), pos.getY() + 0.5 - player.getY(), pos.getZ() + 0.5 - player.getZ());
+            // A block on a Sable sub-level has its grid position far from where it is seen.
+            Vec3 vec = SubLevels.toWorld(level, pos).subtract(player.position());
             double len = Math.min(vec.length(), 15D);
             vec = vec.normalize();
             for (int i = 0; i < len; i++) {

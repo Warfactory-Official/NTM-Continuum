@@ -61,6 +61,11 @@ public class BlockDoorGeneric extends BlockMultiblockMachine implements IBomb, I
     }
 
     @Override
+    public boolean isRadShielding() {
+        return sealsRadiation;
+    }
+
+    @Override
     public boolean isRadResistant(BlockGetter level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         return sealsRadiation && state.getBlock() == this && !state.getValue(OPEN);
