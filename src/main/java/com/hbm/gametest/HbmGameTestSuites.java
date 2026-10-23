@@ -85,6 +85,7 @@ public final class HbmGameTestSuites {
             list.add(ReloadedGunGameTests.TESTS);
             list.add(RadioGameTests.TESTS);
             list.add(CounterControllerGameTests.TESTS);
+            list.add(AE2GameTests.TESTS);
             list.add(TelexGameTests.TESTS);
             list.add(AutocalGameTests.TESTS);
             list.add(RadioProviderGameTests.TESTS);
@@ -181,6 +182,7 @@ public final class HbmGameTestSuites {
         ReloadedGunGameTests.init();
         RadioGameTests.init();
         CounterControllerGameTests.init();
+        AE2GameTests.init();
         TelexGameTests.init();
         FlywheelGameTests.init();
         AutocalGameTests.init();

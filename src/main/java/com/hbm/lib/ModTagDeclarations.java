@@ -39,6 +39,13 @@ public final class ModTagDeclarations {
                 .register();
         Tags.of("block", "hbm", "fleija_immune")
                 .register();
+        Tags.of("item", "hbm", "certus_quartz_clusters")
+                .optional("ae2:quartz_cluster")
+                .register();
+        // 1.20.1 AE2 tags its crystals only as forge:gems/certus_quartz or c:certus_quartz
+        Tags.of("item", "c", "gems/certus_quartz")
+                .optional("ae2:certus_quartz_crystal")
+                .register();
         Tags.of("block", "hbm", "meteorite_replaceable")
                 .optional("hbm:block_meteor_molten", "hbm:ore_meteor_iron", "hbm:ore_meteor_copper",
                         "hbm:ore_meteor_aluminium", "hbm:ore_meteor_rareearth", "hbm:ore_meteor_cobalt", "hbm:block_meteor",

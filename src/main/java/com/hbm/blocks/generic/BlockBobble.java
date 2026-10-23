@@ -81,8 +81,8 @@ public class BlockBobble extends BlockTrinket {
         MELLOW("MELLOWARPEGGIATION", "Mellow", "NBT Structures, industrial lighting, animation tools", "Make something cool now, ask for permission later.", true, "CARD_PROCESSOR"),
         ABEL("Abel1502", "Abel1502", "Abilities GUI, optimizations and many QoL improvements", "NANTO SUBARASHII", true, "CPU_REGISTER"),
         // 1.12.2 additions, in its order; three wear their person's real skin
-        MOVBLOCK("movblock", "movblock", "Threaded MK5 and some part of 1.12.2 Community Edition", "In three dimensions!", true, "CPU_LOGIC",
-                ShadyUtil.movblock),
+        MOVBLOCK("movblock", "movblock", "NTM NEXT, threaded nuke, threaded chunk radiation,$inventory hazards delta tracking,$blockentity-less multiblock, nodegraph;$part of NTM CE and NTM-Continuum",
+                "In three dimensions!", true, "CPU_LOGIC", ShadyUtil.movblock),
         LEAFIA("りー (Ri/Leafia)", "Leafia", "Custom Control Panel shenanigans$and porting (such as RoR panels) since 2026", "Control panel #1 sniffer$Also 1.12.2 sniffer$$This was the best I could model", false, "BOARD_BLANK"),
         HACKER6329("Hacker6329", "Hacker6329", "Partially fillable fluid barrels and some fixes.", "\"movblock i told you my v2 system wasn't the issue.\"", true, "CARD_BOARD",
                 ShadyUtil.Hacker6329),

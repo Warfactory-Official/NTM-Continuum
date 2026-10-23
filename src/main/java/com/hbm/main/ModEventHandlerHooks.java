@@ -2,7 +2,12 @@ package com.hbm.main;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModTerrainBlocks;
+import com.hbm.config.GeneralConfig;
 import com.hbm.config.RadiationConfig;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth;
+import com.hbm.explosion.vanillant.standard.ExplosionEffectWeapon;
+import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.items.ModDataComponents;
@@ -10,11 +15,13 @@ import com.hbm.lib.ModDamageSources;
 import com.hbm.packet.PollutionSyncPayload;
 import com.hbm.potion.ModEffects;
 import com.hbm.util.ArmorRegistry;
+import dev.golem.core.autocraft.CraftingMachines;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.platform.Lifecycle;
 import dev.golem.core.world.BlockBreaks;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.Effects;
+import dev.golem.core.world.ItemFirstUse;
 import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.ItemUses;
 import dev.golem.core.world.Sleeps;
@@ -25,9 +32,12 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -35,6 +45,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * The 1.7 event handlers that needed a hook the port did not have, each on a neutral Golem Core
@@ -45,7 +56,8 @@ import net.minecraft.world.level.block.state.BlockState;
  *       the gneiss achievement is the {@code hbm:stratum} advancement's own criterion - Core {@link BlockBreaks};</li>
  *   <li>{@code PollutionHandler.rampantTargetSetter} ({@code PlayerSleepInBedEvent}) - Core {@link Sleeps};</li>
  *   <li>{@code PollutionHandler.rampantScoutPopulator} ({@code WorldEvent.PotentialSpawns}) -
- *       Core {@link Spawns#onPotentialSpawns}.</li>
+ *       Core {@link Spawns#onPotentialSpawns};</li>
+ *   <li>{@code ModEventHandler.onPlayerInteract}'s 528 explosive energistics - Core {@link ItemFirstUse}.</li>
  * </ul>
  */
 public final class ModEventHandlerHooks {
@@ -61,6 +73,7 @@ public final class ModEventHandlerHooks {
         BlockBreaks.onBreak(ModEventHandlerHooks::onBlockBreak);
         Sleeps.onSleepAttempt((player, pos) -> PollutionHandler.rampantTargetSetter(pos));
         Spawns.onPotentialSpawns((level, category, pos) -> PollutionHandler.rampantScoutPopulator(level, pos));
+        ItemFirstUse.registerBlockClick(ModEventHandlerHooks::explosiveEnergistics);
         Lifecycle.onServerTick(ModEventHandlerHooks::syncPollution);
         Lifecycle.onServerStopping(server -> SENT_POLLUTION.clear());
     }
@@ -82,6 +95,24 @@ public final class ModEventHandlerHooks {
             GolemNetwork.sendToPlayer(player, PollutionSyncPayload.CODEC,
                     new PollutionSyncPayload(now[0], now[1], now[2], now[3]));
         }
+    }
+
+    /** 1.7 {@code onPlayerInteract}: in 528 mode, right-clicking any AE2 block blows it up. */
+    public static InteractionResult explosiveEnergistics(Player player, InteractionHand hand, BlockHitResult hit) {
+        if (!GeneralConfig.enable528ExplosiveEnergistics || !(player.level() instanceof ServerLevel level)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        BlockPos pos = hit.getBlockPos();
+        if (!BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).getBlock()).getNamespace().equals(CraftingMachines.AE2)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        level.destroyBlock(pos, false);
+        ExplosionVNT vnt = new ExplosionVNT(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, null);
+        vnt.setEntityProcessor(new EntityProcessorCrossSmooth(1, 20).setupPiercing(5, 0.2F));
+        vnt.setPlayerProcessor(new PlayerProcessorStandard());
+        vnt.setSFX(new ExplosionEffectWeapon(10, 2.5F, 1F));
+        vnt.explode();
+        return InteractionResult.SUCCESS;
     }
 
     /** 1.7 {@code onFoodEaten}: a player finished eating a food laced on the anvil. */

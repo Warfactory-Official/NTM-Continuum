@@ -324,6 +324,79 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         return false;
     }
 
+    /** 1.7: what is left of {@code is} once AE2 fills the electrode slots and the grid; unmodulated it only predicts. */
+    public ItemStack distributeInput(ItemStack is, boolean modulate) {
+        is = is.copy();
+        if (is.isEmpty()) return ItemStack.EMPTY;
+        if (is.getItem() instanceof ItemArcElectrode) {
+            for (int i = 0; i < 3; i++) {
+                if (inventory.getStackInSlot(i).isEmpty()) {
+                    ItemStack split = is.split(1);
+                    if (modulate) inventory.setStackInSlot(i, split);
+                }
+                if (is.isEmpty()) return ItemStack.EMPTY;
+            }
+            return is;
+        }
+        ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(is, liquidMode, level);
+        if (recipe == null) return is;
+        int maxStackSize = liquidMode ? 64 : recipe.solidOutput.getMaxStackSize() / recipe.solidOutput.getCount();
+        maxStackSize = Math.min(maxStackSize, Math.min(is.getMaxStackSize(), getMaxInputSize()));
+        for (int i = 5; i < 25; i++) {
+            ItemStack slot = inventory.getStackInSlot(i);
+            if (slot.isEmpty()) {
+                if (is.getCount() <= maxStackSize) {
+                    if (modulate) inventory.setStackInSlot(i, is);
+                    return ItemStack.EMPTY;
+                }
+                ItemStack split = is.split(maxStackSize);
+                if (modulate) inventory.setStackInSlot(i, split);
+            } else if (ItemStacks.sameItemAndData(is, slot) && slot.getCount() < maxStackSize) {
+                int room = maxStackSize - slot.getCount();
+                if (is.getCount() <= room) {
+                    if (modulate) inventory.setStackInSlot(i, ItemStacks.copyWithCount(slot, slot.getCount() + is.getCount()));
+                    return ItemStack.EMPTY;
+                }
+                is.shrink(room);
+                if (modulate) inventory.setStackInSlot(i, ItemStacks.copyWithCount(slot, maxStackSize));
+            }
+        }
+        return is;
+    }
+
+    /** 1.7: the part of {@code is} AE2 may take, burnt electrodes from 0..2 and finished items from the grid. */
+    public ItemStack collectRequested(ItemStack is, boolean modulate) {
+        int req = is.getCount();
+        if (req == 0) return ItemStack.EMPTY;
+        if (!(is.getItem() instanceof ItemArcElectrode)) {
+            for (int i = 0; i < 3 && req > 0; i++) req = take(i, is, req, modulate);
+        }
+        if (ArcFurnaceRecipes.getOutput(is, liquidMode, level) == null) {
+            for (int i = 5; i < 25 && req > 0; i++) req = take(i, is, req, modulate);
+        }
+        return req == is.getCount() ? ItemStack.EMPTY : ItemStacks.copyWithCount(is, is.getCount() - req);
+    }
+
+    private int take(int slot, ItemStack is, int req, boolean modulate) {
+        ItemStack stack = inventory.getStackInSlot(slot);
+        if (stack.isEmpty() || !ItemStacks.sameItemAndData(is, stack)) return req;
+        int taken = Math.min(req, stack.getCount());
+        if (modulate) {
+            inventory.setStackInSlot(slot, taken == stack.getCount() ? ItemStack.EMPTY
+                    : ItemStacks.copyWithCount(stack, stack.getCount() - taken));
+        }
+        return req - taken;
+    }
+
+    /** 1.7: the stack AE2 lists for {@code slot}, never fresh electrodes, the lid slots or unprocessed grid input. */
+    public ItemStack getAvailableItemFromSlot(int slot) {
+        ItemStack stack = inventory.getStackInSlot(slot);
+        if (stack.isEmpty() || slot == 3 || slot == 4) return ItemStack.EMPTY;
+        if (slot < 3 && stack.getItem() instanceof ItemArcElectrode) return ItemStack.EMPTY;
+        if (slot > 4 && ArcFurnaceRecipes.getOutput(stack, liquidMode, level) != null) return ItemStack.EMPTY;
+        return stack;
+    }
+
     public boolean hasElectrodes() {
         for (int slot = 0; slot < 3; slot++) {
             if (!(inventory.getStackInSlot(slot).getItem() instanceof ItemArcElectrode)) return false;

@@ -58,6 +58,7 @@ import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.capability.ForeignFluids;
 import com.hbm.compat.HbmBlockInfo;
 import com.hbm.compat.computercraft.ComputerCraft;
+import com.hbm.handler.ae2.AE2CompatHandler;
 import com.hbm.config.BombConfig;
 import com.hbm.config.Configuration;
 import com.hbm.config.GeneralConfig;
@@ -403,6 +404,8 @@ public final class MainRegistry {
         ForeignFluids.register();
         // 1.7's OpenComputers components as CC: Tweaked peripherals, when CC is loaded
         ComputerCraft.init();
+        // AE2 pattern providers push jobs into the recipe machines, when AE2 is loaded
+        AE2CompatHandler.init();
         // Buffers, tanks and multiblock cores in a block-info overlay (Jade), when one is loaded
         HbmBlockInfo.init();
     }

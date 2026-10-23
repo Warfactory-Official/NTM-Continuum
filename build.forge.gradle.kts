@@ -176,6 +176,12 @@ dependencies {
     // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { modRuntimeOnly("maven.modrinth:jade:$it") }
+    // Applied Energistics 2 and its required GuideME, dev runs only (`-Pae2.run=true`), through Golem Core's
+    // dev.golem.core.autocraft; HBM has no AE2 dependency.
+    if (propOrNull("ae2.run") == "true") {
+        propOrNull("deps.ae2")?.let { modRuntimeOnly("maven.modrinth:ae2:$it") { isTransitive = false } }
+        propOrNull("deps.ae2_guideme")?.let { modRuntimeOnly("maven.modrinth:guideme:$it") { isTransitive = false } }
+    }
     // Mo' Bends, client dev runs only (`-Pmobends.run=true`), with the Architectury API it requires. HBM's armour follows
     // its bent skeleton through Golem Core (dev.golem.core.render.BodyAnimations); nothing here compiles against it.
     if (propOrNull("mobends.run") == "true") {
