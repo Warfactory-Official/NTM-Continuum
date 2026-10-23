@@ -87,7 +87,7 @@ public class BlockBobble extends BlockTrinket {
         HACKER6329("Hacker6329", "Hacker6329", "Partially fillable fluid barrels and some fixes.", "\"movblock i told you my v2 system wasn't the issue.\"", true, "CARD_BOARD",
                 ShadyUtil.Hacker6329),
         EOS("EOS", "EOS", "Ported some stuff. Refactor code", "string[0] = EOS;", true, "MEM_16K_A", ShadyUtil.EOS),
-        GOLEM("TheOriginalGolem", "TheOriginalGolem", "NTM: Continuum, Boxy,$helped with multiple Warfactory projects, And Previously Maintained The 1.12 Reloaded Port.", "mixin hell", true, "CPU_CACHE",
+        GOLEM("TheOriginalGolem", "TheOriginalGolem", "NTM: Continuum, Boxy, various other warfactory projects,$previously maintained the 1.12 reloaded port.", "mixin hell", true, "CPU_CACHE",
                 ShadyUtil.Golem),
         NORWOOD("MrNorwood", "MrNorwood", "NTM:CE, involved in both NTM: NEXT and NTM: Continuum,$and the Warfactory project as a whole.", "\"NTM sucks, Notch is fat, and Warfactory won.\"", true, "CPU_CLOCK",
                 ShadyUtil.MrNorwood),
