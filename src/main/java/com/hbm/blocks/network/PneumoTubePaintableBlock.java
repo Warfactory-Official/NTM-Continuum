@@ -29,15 +29,14 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import com.hbm.api.block.IPneumaticConnector;
-import com.hbm.client.render.PneumoTubePaintableRenderer;
 import com.hbm.tileentity.network.TileEntityPneumoTubePaintable;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
 
 /**
  * 1.7 {@code PneumoTubePaintableBlock}: a tube inside a full cube that camouflages as any right-clicked full
  * block. It draws no arms; the tubes beside it reach it as an {@link IPneumaticConnector}. 1.7 drew it as a
- * two-pass full cube (the camo or plain face, then the in/out overlay unless meta 1 disabled it); the block is
- * invisible here and {@code PneumoTubePaintableRenderer} draws both passes.
+ * two-pass full cube (the camo or plain face, then the in/out overlay unless meta 1 disabled it); both passes are
+ * its block model here, the camo and overlays added where it stands.
  */
 public class PneumoTubePaintableBlock extends CompatBlock
         implements TickingBlock, IToolable, IFluidConnectorBlockMK2, IPneumaticConnector {
@@ -63,7 +62,7 @@ public class PneumoTubePaintableBlock extends CompatBlock
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE; // drawn by PneumoTubePaintableRenderer
+        return RenderShape.MODEL; // camo and port overlays are added where it stands (Disguises)
     }
 
     @Override

@@ -45,14 +45,13 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 import com.hbm.api.block.IPneumaticConnector;
-import com.hbm.client.render.PneumoTubeRenderer;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
 
 /**
  * 1.7 {@code com.hbm.blocks.network.pneumatic.PneumoTube}. The block state holds one bit per face for the tube
  * arms ({@code canConnectTo}: a neighbouring tube or pneumatic block); the nozzles (insertion/ejection faces and
- * {@code canConnectToAir}) ride the block entity, which the renderer reads. 1.7 drew it with an ISBRH; the
- * block is invisible here and {@code PneumoTubeRenderer} draws the same boxes.
+ * {@code canConnectToAir}) ride the block entity. 1.7 drew it with an ISBRH; the same boxes are its chunk model
+ * here ({@code PneumoTubeModel}).
  */
 public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, IFluidConnectorBlockMK2 {
 
@@ -171,7 +170,7 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE; // drawn by PneumoTubeRenderer
+        return RenderShape.MODEL; // the tube's boxes are added to its chunk model (PneumoTubeModel)
     }
 
     @Override

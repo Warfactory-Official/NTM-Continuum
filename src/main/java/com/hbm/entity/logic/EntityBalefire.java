@@ -7,6 +7,7 @@ import dev.golem.core.data.Tags;
 import com.hbm.config.GeneralConfig;
 import com.hbm.explosion.ExplosionBalefire;
 import com.hbm.explosion.ExplosionNukeGeneric;
+import com.hbm.explosion.SubLevelBlasts;
 import dev.golem.core.hook.Hook;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.resources.Identifier;
@@ -66,6 +67,7 @@ public class EntityBalefire extends EntityExplosionChunkloading {
 
             exp = new ExplosionBalefire((int) getX(), (int) getY(), (int) getZ(), level(), this.destructionRange);
             exp.variant = ExplosionBalefire.variant(this.variant);
+            SubLevelBlasts.crater(level(), position(), destructionRange);
 
             this.did = true;
         }

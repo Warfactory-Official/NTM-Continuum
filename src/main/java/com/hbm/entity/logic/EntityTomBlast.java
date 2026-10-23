@@ -7,6 +7,7 @@ import dev.golem.core.data.Tags;
 import com.hbm.config.GeneralConfig;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.explosion.ExplosionTom;
+import com.hbm.explosion.SubLevelBlasts;
 import com.hbm.saveddata.TomSaveData;
 
 import net.minecraft.server.level.ServerLevel;
@@ -75,6 +76,7 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
 
             exp = new ExplosionTom((int) this.getX(), (int) this.getY(), (int) this.getZ(), level(),
                     this.destructionRange);
+            SubLevelBlasts.crater(level(), position(), destructionRange);
 
             // hbm-space marked the body as impacted here (CBT_Impact); addons listen on Environment.IMPACT
             if (level() instanceof ServerLevel server) {

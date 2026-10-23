@@ -10,6 +10,7 @@ import com.hbm.tileentity.network.RequestNetwork.Demand;
 import com.hbm.tileentity.network.RequestNetwork.OfferNode;
 import com.hbm.tileentity.network.RequestNetwork.PathNode;
 import com.hbm.tileentity.network.RequestNetwork.RequestNode;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -119,7 +120,8 @@ public class TileEntityDroneDock extends TileEntityRequestNetwork implements IDr
         }
 
         EntityRequestDrone drone = new EntityRequestDrone(server);
-        drone.setPos(worldPosition.getX() + 0.5, worldPosition.getY() + 1, worldPosition.getZ() + 0.5);
+        drone.setPos(SubLevels.toWorld(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1,
+                worldPosition.getZ() + 0.5));
 
         // write programming
         for (PathNode node : toOffer) drone.program.add(new Step.Goto(node.pos));

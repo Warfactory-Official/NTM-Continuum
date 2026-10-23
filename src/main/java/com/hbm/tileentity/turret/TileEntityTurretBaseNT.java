@@ -238,7 +238,28 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
     }
 
     protected void alignTurret() {
-        turnTowards(tPos);
+        turnTowards(leadTarget(tPos));
+    }
+
+    /** port: on moving sub-levels (Create Aeronautics), ahead by the relative velocity over the shot's flight time. */
+    protected Vec3 leadTarget(Vec3 at) {
+        if (target == null) return at;
+        Vec3 relative = SubLevels.carriedVelocity(target).subtract(platformVelocity());
+        if (relative.lengthSqr() == 0D) return at;
+        BulletConfig config = getFirstConfigLoaded();
+        if (config == null || config.velocity <= 0F) return at;
+        return at.add(relative.scale(at.distanceTo(getTurretPos()) / config.velocity));
+    }
+
+    /** World velocity in blocks per tick of the sub-level the turret stands on; zero off one. */
+    protected Vec3 platformVelocity() {
+        return SubLevels.velocity(level, Vec3.atCenterOf(worldPosition));
+    }
+
+    /** Adds a projectile fired from the turret, carrying the velocity of the sub-level the turret stands on. */
+    protected void fire(Entity projectile) {
+        if (onSubLevel()) projectile.setDeltaMovement(projectile.getDeltaMovement().add(platformVelocity()));
+        level.addFreshEntity(projectile);
     }
 
     public void turnTowards(Vec3 ent) {
@@ -511,7 +532,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         EntityBulletBaseMK4 projectile = new EntityBulletBaseMK4(level, bullet, getBaseDamage(), bullet.spread,
                 worldYaw(), worldPitch());
         projectile.setPos(tip.x, tip.y, tip.z);
-        level.addFreshEntity(projectile);
+        fire(projectile);
 
         if (usesCasings() && casingDelay() > 0) casingDelay = casingDelay();
     }

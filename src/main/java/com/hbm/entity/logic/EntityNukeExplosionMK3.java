@@ -15,6 +15,7 @@ import com.hbm.explosion.ExplosionFleija;
 import com.hbm.explosion.ExplosionHurtUtil;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.explosion.ExplosionSolinium;
+import com.hbm.explosion.SubLevelBlasts;
 import com.hbm.sound.ModSounds;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -128,6 +129,7 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
                         getX(), getY(), getZ(), destructionRange);
 
             initExplosion();
+            SubLevelBlasts.crater(level(), position(), destructionRange);
             SatelliteDetector.reportEvent(level(), SatelliteDetector.DURATION_HIGH,
                     SatelliteDetector.BurstIntensity.HIGH, getX(), getZ());
             this.did = true;

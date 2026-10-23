@@ -39,7 +39,9 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import com.hbm.tileentity.TilePort.PortDef;
@@ -142,8 +144,15 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
         double blz = Math.min(z, z + dir.offsetZ * reach) + 0.2;
         double buz = Math.max(z, z + dir.offsetZ * reach) + 0.8;
 
-        List<LivingEntity> list = level.getEntitiesOfClass(LivingEntity.class, new AABB(blx, bly, blz, bux, buy, buz));
+        AABB beam = new AABB(blx, bly, blz, bux, buy, buz);
+        boolean carried = SubLevels.isOnSubLevel(level, worldPosition);
+        Vec3 start = SubLevels.toWorld(level, x + 0.5, y + 1, z + 0.5);
+        Vec3 end = SubLevels.toWorld(level, x + 0.5 + dir.offsetX * reach, y + 1 + dir.offsetY * reach,
+                z + 0.5 + dir.offsetZ * reach);
+        List<LivingEntity> list = level.getEntitiesOfClass(LivingEntity.class, SubLevels.toWorld(level, beam));
         for (LivingEntity entity : list) {
+            // On a turned sub-level the world box around the beam is wider than the beam itself.
+            if (carried && entity.getBoundingBox().inflate(0.3).clip(start, end).isEmpty()) continue;
             mode.beamEffect.apply(entity); // 1.7's switch: one effect per wavelength (EnumWavelengths)
         }
     }
@@ -154,10 +163,11 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
         int felMeta = MachineCore.facingOrdinal(getBlockState(), 2);
 
         for (int i = 3; i < RANGE; i++) {
-            BlockPos beam = new BlockPos(worldPosition.getX() + dir.offsetX * i,
+            BeamHit hit = meet(level, new BlockPos(worldPosition.getX() + dir.offsetX * i,
                     worldPosition.getY() + 1,
-                    worldPosition.getZ() + dir.offsetZ * i);
-            BlockState b = level.getBlockState(beam);
+                    worldPosition.getZ() + dir.offsetZ * i), dir);
+            BlockPos beam = hit.pos();
+            BlockState b = hit.state();
 
             // The SILEX check comes FIRST. Upstream relied on the chamber being Material.IRON (opaque)
             // to reach this branch, but the port renders every multiblock cell as INVISIBLE with
@@ -166,11 +176,13 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
             if (b.is(ModMachineBlocks.machine_silex.get())) {
                 // Upstream looks up the BE one block FURTHER along the beam and at the FEL's own y:
                 // which is exactly where a SILEX core sits, since the beam grazes its y+1 dummy.
-                BlockPos silexPos = new BlockPos(beam.getX() + dir.offsetX, worldPosition.getY(),
-                        beam.getZ() + dir.offsetZ);
+                BlockPos silexPos = new BlockPos(beam.getX() + hit.along().offsetX, beam.getY() - 1,
+                        beam.getZ() + hit.along().offsetZ);
                 if (level.getBlockEntity(silexPos) instanceof TileEntitySILEX silex) {
                     int silexMeta = MachineCore.facingOrdinal(silex.getBlockState(), 2);
-                    if (rotationIsValid(silexMeta, felMeta) && i >= 5 && !silexSpacing) {
+                    boolean aligned = hit.square()
+                            && rotationIsValid(silexMeta, hit.along() == dir ? felMeta : hit.along().ordinal());
+                    if (aligned && i >= 5 && !silexSpacing) {
                         if (silex.mode != this.mode) {
                             silex.mode = this.mode;
                             this.missingValidSilex = false;
@@ -201,6 +213,46 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
             burn(level, beam, b);
             break;
         }
+    }
+
+    /** A block the beam meets: its position in its own block grid and the beam's nearest axis there. */
+    private record BeamHit(BlockPos pos, BlockState state, ForgeDirection along, boolean square) {}
+
+    /** port: the laser's own grid first, then the world and other moving sub-levels (Create Aeronautics) there. */
+    private BeamHit meet(Level level, BlockPos beam, ForgeDirection dir) {
+        BeamHit own = new BeamHit(beam, level.getBlockState(beam), dir, true);
+        if (stopsBeam(level, own)) return own;
+
+        Vec3 at = SubLevels.toWorld(level, Vec3.atCenterOf(beam));
+        Vec3 worldDir = SubLevels.toWorldDirection(level, worldPosition,
+                new Vec3(dir.offsetX, dir.offsetY, dir.offsetZ));
+        if (SubLevels.isOnSubLevel(level, worldPosition)) {
+            BlockPos world = BlockPos.containing(at);
+            BeamHit hit = axisHit(world, level.getBlockState(world), worldDir);
+            if (stopsBeam(level, hit)) return hit;
+        }
+        for (SubLevels.Local local : SubLevels.intoSubLevels(level, at, 0.5)) {
+            BlockPos pos = BlockPos.containing(local.point());
+            if (pos.equals(beam)) continue;
+            BeamHit hit = axisHit(pos, level.getBlockState(pos), SubLevels.toLocalDirection(level, pos, worldDir));
+            if (stopsBeam(level, hit)) return hit;
+        }
+        return own;
+    }
+
+    /** The horizontal axis nearest {@code direction}; square when within 10 degrees of it. */
+    private static BeamHit axisHit(BlockPos pos, BlockState state, Vec3 direction) {
+        Vec3 unit = direction.normalize();
+        ForgeDirection along = Math.abs(unit.x) > Math.abs(unit.z)
+                ? (unit.x > 0 ? ForgeDirection.EAST : ForgeDirection.WEST)
+                : (unit.z > 0 ? ForgeDirection.SOUTH : ForgeDirection.NORTH);
+        boolean square = Math.max(Math.abs(unit.x), Math.abs(unit.z)) >= Math.cos(Math.toRadians(10));
+        return new BeamHit(pos, state, along, square);
+    }
+
+    private static boolean stopsBeam(Level level, BeamHit hit) {
+        return hit.state().is(ModMachineBlocks.machine_silex.get()) || isOpaque(hit.state(), level, hit.pos())
+                || hit.state().is(Blocks.TNT);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.hbm.tileentity.network;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.entity.item.EntityDeliveryDrone;
+import com.hbm.entity.item.EntityDroneBase;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
@@ -29,7 +30,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 import com.hbm.inventory.container.ContainerDroneCrate;
 import com.hbm.packet.DroneLinePayload;
@@ -99,9 +99,7 @@ public class TileEntityDroneCrate extends TileEntityMachineBase
 
         if (next != null) {
             BlockPos pos = getCoord();
-            for (EntityDeliveryDrone drone : server.getEntitiesOfClass(EntityDeliveryDrone.class, new AABB(pos))) {
-                if (drone.getDeltaMovement().length() >= 0.05) continue;
-
+            for (EntityDeliveryDrone drone : EntityDroneBase.restingAt(server, EntityDeliveryDrone.class, pos, 0.05)) {
                 drone.setTarget(next.getX() + 0.5, next.getY(), next.getZ() + 0.5);
 
                 if (sendingMode && itemType) loadItems(server, drone);

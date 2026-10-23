@@ -60,7 +60,7 @@ import java.util.Map;
 /**
  * HBM's solid fluid duct: a connecting fluid conductor backed by {@link TileEntityFluidDuctNT}. Six
  * {@link BooleanProperty} connection flags drive the {@code pipe_neo.obj} model (via
- * {@link com.hbm.client.render.NeoDuctRenderer}), exactly like the power cable's
+ * {@link com.hbm.client.render.NeoDuctModel}), exactly like the power cable's
  * {@code cable_neo.obj}. Conduction is a cell of the level's fluid graph, which the block entity keeps
  * in step with the type it carries; these flags are purely the visual/collision shape.
  *
@@ -106,8 +106,8 @@ public class BlockFluidDuct extends CompatBlock implements TickingBlock, SimpleW
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        // Drawn by NeoDuctRenderer (the real pipe_neo.obj), so the block model itself is invisible.
-        return RenderShape.INVISIBLE;
+        // the real pipe_neo.obj or the box duct, added to the chunk model where it stands (NeoDuctModel, BoxDuctModel)
+        return RenderShape.MODEL;
     }
 
     @Override
@@ -248,7 +248,7 @@ public class BlockFluidDuct extends CompatBlock implements TickingBlock, SimpleW
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        // The hitbox must match what NeoDuctRenderer.selectParts DRAWS, not just the raw connection
+        // The hitbox must match what NeoDuctModel.selectParts DRAWS, not just the raw connection
         // flags: a duct with a single connection on one axis (or none) renders a full straight pipe (both
         // arms of that axis), so the hitbox has to cover the opposite arm too, otherwise the visible far
         // arm has no collision ("straight but not connected on one side" click‑through).

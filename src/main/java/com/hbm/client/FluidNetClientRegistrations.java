@@ -9,15 +9,9 @@ import com.hbm.inventory.ModFluidNetMenus;
 import com.hbm.blocks.network.FlowControlPump;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.tileentity.network.TileEntityBarrelDeco;
-import com.hbm.tileentity.network.TileEntityFluidDuctVariant;
 import com.hbm.tileentity.network.TileEntityFluidPump;
-import com.hbm.tileentity.network.TileEntityPipeExhaust;
-import com.hbm.tileentity.network.TileEntityPipeGauge;
 import com.hbm.client.render.BarrelRenderer;
-import com.hbm.client.render.BoxDuctRenderer;
-import com.hbm.client.render.CubeDuctOverlayRenderer;
 import com.hbm.client.render.FoundryTankRenderer;
-import com.hbm.client.render.NeoDuctRenderer;
 import com.hbm.client.render.RenderFlowControlPump;
 import com.hbm.inventory.gui.GUIBarrel;
 import com.hbm.inventory.gui.GUIPump;
@@ -35,11 +29,6 @@ public final class FluidNetClientRegistrations {
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {
-        HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.DUCT.get(), NeoDuctRenderer<TileEntityFluidDuctVariant>::new);
-        HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.BOX.get(), BoxDuctRenderer<TileEntityFluidDuctVariant>::new);
-        HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.EXHAUST.get(), BoxDuctRenderer<TileEntityPipeExhaust>::new);
-        HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.PAINTABLE.get(), () -> new CubeDuctOverlayRenderer<TileEntityFluidDuctVariant>(false));
-        HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.GAUGE.get(), () -> new CubeDuctOverlayRenderer<TileEntityPipeGauge>(true));
         HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.BARREL.get(), BarrelRenderer<TileEntityBarrel>::new);
         HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.BARREL_DECO.get(), BarrelRenderer<TileEntityBarrelDeco>::new);
         HbmBlockEntityRenderers.regGem(sink, ModFluidNetBlockEntities.FOUNDRY_TANK.get(), FoundryTankRenderer::new);

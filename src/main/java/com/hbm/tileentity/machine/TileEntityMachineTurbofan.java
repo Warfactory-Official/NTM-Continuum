@@ -32,6 +32,7 @@ import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.SubLevels;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -66,6 +67,8 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, MenuProvider, IRORValueProvider {
 
     public static final long MAX_POWER = 1_000_000L;
+    /** port: thrust on a moving sub-level in iron-block weights (the fan weighs 63), scaled by afterburners. */
+    public static final double THRUST = 100D;
     public final FluidTankNTM tank = new FluidTankNTM(Fluids.KEROSENE, 24_000);
     public final FluidTankNTM blood = new FluidTankNTM(Fluids.BLOOD, 24_000);
     public long power;
@@ -132,7 +135,10 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
 
         fan.power = Library.chargeItemsFromTE(fan.inventory, 3, fan.power, fan.power);
 
-        if (burnValue > 0 && amountToBurn > 0) fan.applyExhaust(level, amountToBurn);
+        if (burnValue > 0 && amountToBurn > 0) {
+            fan.applyExhaust(level, amountToBurn);
+            fan.thrust(level);
+        }
         fan.power = Math.min(fan.power, MAX_POWER);
         fan.networkPackNT();
     }
@@ -157,9 +163,9 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
             for (int i = 0; i < 2; i++) {
                 double speed = 2 + rand.nextDouble() * 3;
                 double deviation = rand.nextGaussian() * 0.2;
-                EntityEffects.gasFlame(level, worldPosition.getX() + 0.5 - dir.offsetX * (3 - i), worldPosition.getY() + 1.5,
+                gasFlame(level, worldPosition.getX() + 0.5 - dir.offsetX * (3 - i), worldPosition.getY() + 1.5,
                         worldPosition.getZ() + 0.5 - dir.offsetZ * (3 - i), -dir.offsetX * speed + deviation, 0,
-                        -dir.offsetZ * speed + deviation, 8F, 150D);
+                        -dir.offsetZ * speed + deviation, 8F);
             }
         }
         if (afterburner > 90 && rand.nextInt(30) == 0) {
@@ -168,11 +174,11 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         }
         if (afterburner > 90) {
             // 1.7 subtracts the Z offset along dir but adds it along rot
-            EntityEffects.gasFlame(level,
+            gasFlame(level,
                     worldPosition.getX() + 0.5 + dir.offsetX * (rand.nextDouble() * 4 - 2) + rot.offsetX * (rand.nextDouble() * 2 - 1),
                     worldPosition.getY() + 1 + rand.nextDouble() * 2,
                     worldPosition.getZ() + 0.5 - dir.offsetZ * (rand.nextDouble() * 4 - 2) + rot.offsetZ * (rand.nextDouble() * 2 - 1),
-                    0, 0.1 * rand.nextDouble(), 0, 4F, 150D);
+                    0, 0.1 * rand.nextDouble(), 0, 4F);
         }
         affectBox(level, exhaustBox(dir, rot, -3.5D, -19.5D, 1.5D), entity -> {
             if (afterburner > 0) {
@@ -195,12 +201,31 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         });
     }
 
-    private static void push(Entity entity, ForgeDirection dir) {
-        entity.setDeltaMovement(entity.getDeltaMovement().add(-dir.offsetX * 0.2D, 0D, -dir.offsetZ * 0.2D));
+    private void push(Entity entity, ForgeDirection dir) {
+        Vec3 push = new Vec3(-dir.offsetX * 0.2D, 0D, -dir.offsetZ * 0.2D);
+        entity.setDeltaMovement(entity.getDeltaMovement().add(SubLevels.toWorldDirection(level, worldPosition, push)));
     }
 
+    /** On a moving sub-level the boxes, flames and pushes are where the fan is seen, and it pushes the structure. */
     private void affectBox(Level level, AABB box, Consumer<Entity> action) {
-        for (Entity entity : level.getEntitiesOfClass(Entity.class, box)) action.accept(entity);
+        for (Entity entity : level.getEntitiesOfClass(Entity.class, SubLevels.toWorld(level, box))) {
+            action.accept(entity);
+        }
+    }
+
+    private void gasFlame(Level level, double x, double y, double z, double motionX, double motionY, double motionZ,
+                          float scale) {
+        Vec3 at = SubLevels.toWorld(level, x, y, z);
+        Vec3 motion = SubLevels.toWorldDirection(level, worldPosition, new Vec3(motionX, motionY, motionZ));
+        EntityEffects.gasFlame(level, at.x, at.y, at.z, motion.x, motion.y, motion.z, scale, 150D);
+    }
+
+    private void thrust(Level level) {
+        if (!SubLevels.isOnSubLevel(level, worldPosition)) return;
+        ForgeDirection dir = getFacing().getRotation(ForgeDirection.UP);
+        Vec3 forward = SubLevels.toWorldDirection(level, worldPosition, new Vec3(dir.offsetX, 0D, dir.offsetZ));
+        double force = THRUST * (1D + Math.min(afterburner / 3D, 4D));
+        SubLevels.push(level, Vec3.atCenterOf(worldPosition).add(0D, 1D, 0D), forward.scale(force));
     }
 
     private AABB exhaustBox(ForgeDirection dir, ForgeDirection rot, double start, double end, double width) {

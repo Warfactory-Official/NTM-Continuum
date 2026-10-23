@@ -17,6 +17,7 @@ import com.hbm.entity.effect.EntityFalloutRain;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.entity.logic.EntityChunkLoader;
 import com.hbm.explosion.ExplosionNukeRayBatched;
+import com.hbm.explosion.SubLevelBlasts;
 import com.hbm.interfaces.IExplosionRay;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
@@ -163,6 +164,7 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
             explosion.setDetonator(detonator);
             SatelliteDetector.reportEvent(level(), SatelliteDetector.DURATION_HIGH,
                     SatelliteDetector.BurstIntensity.HIGH, getX(), getZ());
+            SubLevelBlasts.crater(level(), position(), radius);
             initialized = true;
         }
 

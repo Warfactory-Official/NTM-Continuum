@@ -10,7 +10,6 @@ import dev.golem.core.Ids;
 import com.hbm.tileentity.ModEnergyNetBlockEntities;
 import net.minecraft.client.Minecraft;
 import com.hbm.client.render.RenderCableDiode;
-import com.hbm.client.render.RenderCablePaintable;
 import com.hbm.client.render.RenderConnector;
 import com.hbm.client.render.RenderHEVBattery;
 import com.hbm.client.render.RenderPylon;
@@ -38,7 +37,6 @@ public final class EnergyNetClientRegistrations {
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.CONNECTOR.get(), () -> new RenderConnector<>(false));
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.CONNECTOR_SUPER.get(), () -> new RenderConnector<>(true));
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.CABLE_DIODE.get(), RenderCableDiode::new);
-        HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.RED_CABLE_PAINTABLE.get(), RenderCablePaintable::new);
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.HEV_BATTERY.get(), RenderHEVBattery::new);
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.TESLA.get(), RenderTesla::new);
         // 1.7 turns N=90, W=180, S=270, E=0: the standard map + 90

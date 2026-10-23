@@ -140,7 +140,7 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
         EntityBulletBaseMK4 flame = new EntityBulletBaseMK4(level, conf, damage, 0.05F,
                 worldYaw(), worldPitch());
         flame.setPos(tip.x, tip.y, tip.z);
-        level.addFreshEntity(flame);
+        fire(flame);
 
         level.playSound(null, worldPosition, ModSounds.FLAMETHROWER_SHOOT.get(), SoundSource.BLOCKS, 2F,
                 1F + level.getRandom().nextFloat() * 0.5F);

@@ -387,13 +387,13 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
 
         boolean needsDesignator = needsDesignator(inventory.getStackInSlot(0).getItem());
 
-        int targetX = worldPosition.getX();
-        int targetZ = worldPosition.getZ();
+        // The pad as the world sees it: the default target, and where the designator measures range from.
+        BlockPos padInWorld = SubLevels.toWorldBlock(level, worldPosition);
+        int targetX = padInWorld.getX();
+        int targetZ = padInWorld.getZ();
 
         ItemStack designatorStack = inventory.getStackInSlot(1);
         if (!designatorStack.isEmpty() && designatorStack.getItem() instanceof IDesignatorItem designator) {
-            // The designator measures range from the pad as the world sees it.
-            BlockPos padInWorld = SubLevels.toWorldBlock(level, worldPosition);
             if (!designator.isReady(level, designatorStack, padInWorld) && needsDesignator) {
                 return BombReturnCode.ERROR_MISSING_COMPONENT;
             }

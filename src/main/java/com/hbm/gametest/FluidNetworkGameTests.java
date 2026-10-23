@@ -9,7 +9,9 @@ import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidUserMK2;
 import com.hbm.blocks.machine.MachineFluidTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.api.block.IToolable;
 import com.hbm.blocks.ModFluidNetBlocks;
+import com.hbm.blocks.network.FluidDuctPaintable;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
@@ -19,7 +21,9 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
+import com.hbm.tileentity.network.DuctPaint;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
+import com.hbm.tileentity.network.TileEntityPipePaintable;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
 import dev.golem.core.data.ModelData;
@@ -33,7 +37,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -73,11 +79,62 @@ public final class FluidNetworkGameTests {
             TESTS.function("fluid_net_interior_retype", 40, 8, () -> FluidNetworkGameTests::interiorRetype);
     public static final GameTests.Function MULTI_USER =
             TESTS.function("fluid_net_multi_user_faces", 300, 8, () -> FluidNetworkGameTests::multiUser);
+    public static final GameTests.Function DUCT_PAINT =
+            TESTS.function("fluid_duct_paint", 40, 8, () -> FluidNetworkGameTests::ductPaint);
 
     private static final int Y = 5;
-    private static final int JOIN_Z = 6, SPLIT_Z = 12, TYPE_Z = 18, EXHAUST_Z = 24, SPREAD_Z = 30, INTERIOR_Z = 36, MULTI_Z = 42;
+    private static final int JOIN_Z = 6, SPLIT_Z = 12, TYPE_Z = 18, EXHAUST_Z = 24, SPREAD_Z = 30, INTERIOR_Z = 36, MULTI_Z = 42,
+            PAINT_Z = 48;
 
     private FluidNetworkGameTests() {}
+
+    /**
+     * 1.7 {@code FluidDuctPaintable}: a block item paints an unpainted coated duct (a second one does not repaint it), the
+     * paint survives a save, the defuser toggles the overlay and the screwdriver strips the paint. The coated exhaust
+     * duct paints the same way; the gauge takes no paint.
+     */
+    private static void ductPaint(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos duct = helper.absolutePos(new BlockPos(2, Y, PAINT_Z));
+        BlockPos copy = duct.east(2), gauge = duct.east(4), exhaust = duct.east(6);
+        level.setBlock(duct, ModFluidNetBlocks.fluid_duct_paintable.get().defaultBlockState(), 3);
+        level.setBlock(copy, ModFluidNetBlocks.fluid_duct_paintable.get().defaultBlockState(), 3);
+        level.setBlock(gauge, ModFluidNetBlocks.fluid_duct_gauge.get().defaultBlockState(), 3);
+        level.setBlock(exhaust, ModFluidNetBlocks.fluid_duct_paintable_block_exhaust.get().defaultBlockState(), 3);
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+
+        click(player, level, duct, new ItemStack(Items.STONE));
+        click(player, level, duct, new ItemStack(Items.DIRT));
+        helper.assertTrue(paint(level, duct) == Blocks.STONE.defaultBlockState(),
+                "the coated duct is painted " + paint(level, duct) + ", expected stone (and not repainted with dirt)");
+
+        ((TileEntityPipePaintable) level.getBlockEntity(duct)).copyPersistentDataTo((TileEntityPipePaintable) level.getBlockEntity(copy));
+        helper.assertTrue(paint(level, copy) == Blocks.STONE.defaultBlockState(), "the paint did not survive a save");
+
+        FluidDuctPaintable block = ModFluidNetBlocks.fluid_duct_paintable.get();
+        block.onScrew(level, player, duct, Direction.UP, Vec3.atCenterOf(duct), InteractionHand.MAIN_HAND, IToolable.ToolType.DEFUSER);
+        helper.assertTrue(!level.getBlockState(duct).getValue(FluidDuctPaintable.OVERLAY), "the defuser did not hide the overlay");
+        block.onScrew(level, player, duct, Direction.UP, Vec3.atCenterOf(duct), InteractionHand.MAIN_HAND, IToolable.ToolType.SCREWDRIVER);
+        helper.assertTrue(paint(level, duct) == null, "the screwdriver did not strip the paint");
+
+        click(player, level, exhaust, new ItemStack(Items.STONE));
+        helper.assertTrue(paint(level, exhaust) == Blocks.STONE.defaultBlockState(), "the coated exhaust duct took no paint");
+        click(player, level, gauge, new ItemStack(Items.STONE));
+        helper.assertTrue(!(level.getBlockEntity(gauge) instanceof DuctPaint.Holder)
+                        && !level.getBlockState(gauge).hasProperty(FluidDuctPaintable.OVERLAY),
+                "the gauge takes paint, which 1.7's gauge does not");
+        helper.succeed();
+    }
+
+    private static void click(ServerPlayer player, ServerLevel level, BlockPos pos, ItemStack stack) {
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        player.gameMode.useItemOn(player, level, stack, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false));
+    }
+
+    private static BlockState paint(ServerLevel level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof DuctPaint.Holder duct ? duct.paint().get() : null;
+    }
 
     public static void init() {}
 

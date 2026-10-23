@@ -70,7 +70,9 @@ public final class ModItemModels {
         // 1.7 names block sprites textures/blocks (any file there), outside the block/ directory vanilla stitches. The 1.7 GUI tank
         // textures (every file under textures/gui/fluids) are stitched too: they are what other mods draw an HBM fluid with
         // (Fluids.tokenSpec), and a fluid sprite must be in the block atlas.
-        Atlases.directories("minecraft", "blocks", "blocks", "blocks/", "gui/fluids", "gui/fluids/");
+        // The two OBJ pipe textures (textures/models/blocks) are drawn into the chunk mesh, so they are block sprites too.
+        Atlases.directories("minecraft", "blocks", "blocks", "blocks/", "gui/fluids", "gui/fluids/", "models/blocks",
+                "models/blocks/");
         // The fourteen rail/tower/compressor OBJ item definitions are authored JSON (assets/hbm/items/,
         // listed in gradle/dejson-authored.txt): hand-tuned transforms stay files, not JsonObject calls.
         // 1.7 names item sprites textures/items (any file there), outside the item/ directory vanilla stitches. Below 1.21.4

@@ -7,6 +7,7 @@ import com.hbm.tileentity.turret.TileEntityTurretBaseArtillery;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -83,7 +84,7 @@ public class ItemDesignatorArtyRange extends CompatItem {
 
         HitResult hit = player.pick(REACH, 1.0F, false);
         if (hit.getType() != HitResult.Type.BLOCK) return InteractionResult.TRY_WITH_EMPTY_HAND;
-        BlockPos aim = ((BlockHitResult) hit).getBlockPos();
+        BlockPos aim = SubLevels.toWorldBlock(level, ((BlockHitResult) hit).getBlockPos());
 
         BlockEntity blockEntity = level.getBlockEntity(BlockPos.of(packed));
         if (blockEntity instanceof TileEntityTurretBaseArtillery arty) {

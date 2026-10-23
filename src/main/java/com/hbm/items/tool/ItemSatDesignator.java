@@ -3,6 +3,7 @@ package com.hbm.items.tool;
 import com.hbm.items.machine.ItemSatChip;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.saveddata.satellites.Satellite;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -35,7 +36,8 @@ public class ItemSatDesignator extends ItemSatChip {
                 // the ray reached), so a shot into the sky still designates the far end of the trace
                 HitResult hit = player.pick(300.0D, 1.0F, false);
                 if (hit instanceof BlockHitResult blockHit) {
-                    BlockPos pos = blockHit.getBlockPos().relative(blockHit.getDirection());
+                    BlockPos pos = SubLevels.toWorldBlock(level,
+                            blockHit.getBlockPos().relative(blockHit.getDirection()));
                     sat.onCoordAction(server, player, pos.getX(), pos.getY(), pos.getZ());
                     SatelliteSavedData.get(server).setDirty();
                 }

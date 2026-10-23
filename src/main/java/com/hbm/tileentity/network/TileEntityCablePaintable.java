@@ -66,7 +66,9 @@ public class TileEntityCablePaintable extends TileEntityCableClassic implements 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
+        Block old = block;
         block = resolve(input.getStringOr("block", ""));
+        if (old != block) remesh(); // the paint is drawn by the block's model
     }
 
     private static @Nullable Block resolve(String id) {

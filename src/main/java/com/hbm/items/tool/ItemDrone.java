@@ -1,6 +1,7 @@
 package com.hbm.items.tool;
 
 import com.hbm.entity.item.EntityDeliveryDrone;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
@@ -36,7 +37,7 @@ public class ItemDrone extends Item {
             drone.setChunkLoading(type == EnumDroneType.PATROL_CHUNKLOADING
                     || type == EnumDroneType.PATROL_EXPRESS_CHUNKLOADING);
             BlockPos pos = context.getClickedPos();
-            drone.setPos(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
+            drone.setPos(SubLevels.toWorld(level, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5));
             level.addFreshEntity(drone);
         }
         context.getItemInHand().shrink(1);

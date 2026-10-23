@@ -89,8 +89,8 @@ public class BlockCable extends CompatBlock implements TickingBlock, SimpleWater
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        // Drawn by CableObjRenderer (the real cable_neo.obj), so the block model itself is invisible.
-        return RenderShape.INVISIBLE;
+        // the real cable_neo.obj, added to the chunk model where it stands (CableModel)
+        return RenderShape.MODEL;
     }
 
     @Override

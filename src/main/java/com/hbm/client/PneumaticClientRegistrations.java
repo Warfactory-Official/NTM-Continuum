@@ -6,8 +6,6 @@ import com.hbm.tileentity.ModPneumaticBlockEntities;
 import com.hbm.inventory.ModPneumaticMenus;
 import com.hbm.packet.PneumoAccessSyncPayload;
 import dev.golem.core.net.GolemNetwork;
-import com.hbm.client.render.PneumoTubePaintableRenderer;
-import com.hbm.client.render.PneumoTubeRenderer;
 import com.hbm.inventory.gui.GUIPneumoStorageAccess;
 import com.hbm.inventory.gui.GUIPneumoStorageClutter;
 import com.hbm.inventory.gui.GUIPneumoStorageExporter;
@@ -30,9 +28,6 @@ public final class PneumaticClientRegistrations {
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {
         HbmBlockEntityRenderers.regGem(sink, ModPneumaticBlockEntities.PNEUMATIC_PIPE_ANCHOR.get(), () -> new RenderPipeAnchor<>("pipe_anchor_pneumatic"));
-        HbmBlockEntityRenderers.regGem(sink, ModPneumaticBlockEntities.PNEUMATIC_TUBE.get(), PneumoTubeRenderer::new);
-        HbmBlockEntityRenderers.regGem(sink, ModPneumaticBlockEntities.PNEUMATIC_TUBE_PAINTABLE.get(),
-                PneumoTubePaintableRenderer::new);
     }
 
     /** The access terminal's listing deltas; attached with the other client handlers. */

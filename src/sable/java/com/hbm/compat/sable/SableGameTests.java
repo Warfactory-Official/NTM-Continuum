@@ -6,7 +6,25 @@ import com.hbm.blocks.ModConveyorBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.blocks.network.BlockConveyorBase;
+import com.hbm.api.item.IDesignatorItem;
+import com.hbm.blocks.ModDroneBlocks;
+import com.hbm.entity.ModEntities;
+import com.hbm.entity.effect.EntityBlackHole;
+import com.hbm.entity.item.EntityDeliveryDrone;
 import com.hbm.entity.item.EntityMovingItem;
+import com.hbm.explosion.SubLevelBlasts;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
+import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ModMachineItems;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.machine.TileEntityFEL;
+import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
+import com.hbm.tileentity.network.TileEntityDroneCrate;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.phys.BlockHitResult;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
 import dev.ryanhcode.sable.api.sublevel.ServerSubLevelContainer;
 import dev.ryanhcode.sable.api.sublevel.ticket.SubLevelLoadingTicketType;
@@ -84,6 +102,219 @@ final class SableGameTests {
         TESTS.function("sable_derrick_idle_on_ship", 200, () -> SableGameTests::derrickIdleOnShip);
         TESTS.function("sable_block_masses_by_hardness", 40, () -> SableGameTests::blockMassesByHardness);
         TESTS.function("sable_dfc_beam", 200, () -> SableGameTests::dfcBeam);
+        TESTS.function("sable_turbofan_thrust", 120, () -> SableGameTests::turbofanThrust);
+        TESTS.function("sable_fel_across_frames", 40, () -> SableGameTests::felAcrossFrames);
+        TESTS.function("sable_blast_on_ship", 40, () -> SableGameTests::blastOnShip);
+        TESTS.function("sable_black_hole_pulls_ship", 60, () -> SableGameTests::blackHolePullsShip);
+        TESTS.function("sable_designator_on_ship", 40, () -> SableGameTests::designatorOnShip);
+        TESTS.function("sable_drone_meets_moving_crate", 120, () -> SableGameTests::droneMeetsMovingCrate);
+    }
+
+    /** A burning turbofan on a ship in the air pushes it forward; the ship had no horizontal speed before. */
+    private static void turbofanThrust(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos core = fixture(helper, 13);
+        BlockMultiblockCore block = ModMachineBlocks.machine_turbofan.get();
+        level.setBlock(core, block.defaultBlockState().setValue(BlockMultiblockCore.FACING, Direction.NORTH), 3);
+        block.fillSpace(level, core, Direction.NORTH);
+        Set<BlockPos> blocks = new LinkedHashSet<>(MultiblockParts.partsWith(level, core));
+        blocks.addAll(deckUnder(level, blocks, core.getY()));
+        ServerSubLevel sub = assemble(level, core, blocks);
+        BlockPos plotCore = new SubLevelAssemblyHelper.AssemblyTransform(
+                core, sub.getPlot().getCenterBlock(), 0, Rotation.NONE, level).apply(core);
+
+        TileEntityMachineTurbofan fan = (TileEntityMachineTurbofan) level.getBlockEntity(plotCore);
+        helper.assertTrue(fan != null, "the carried turbofan has no block entity");
+        fan.tank.setTankType(Fluids.KEROSENE);
+        fan.tank.setFill(fan.tank.getMaxFill());
+        ForgeDirection dir = fan.getFacing().getRotation(ForgeDirection.UP);
+        Vec3 start = SubLevels.toWorld(level, plotCore);
+
+        helper.runAfterDelay(30, () -> {
+            Vec3 forward = SubLevels.toWorldDirection(level, plotCore, new Vec3(dir.offsetX, 0D, dir.offsetZ));
+            double speed = SubLevels.velocity(level, Vec3.atCenterOf(plotCore)).dot(forward);
+            double moved = SubLevels.toWorld(level, plotCore).subtract(start).dot(forward);
+            helper.assertTrue(fan.tank.getFill() < fan.tank.getMaxFill(), "the turbofan burned nothing");
+            helper.assertTrue(speed > 0.2D && moved > 1D,
+                    "the ship moves " + speed + " blocks/tick forward and went " + moved + " blocks");
+            helper.succeed();
+        });
+    }
+
+    /** A laser in the world stops at a wall on a ship, and one on a turned ship at a wall in the world. */
+    private static void felAcrossFrames(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos grounded = fel(level, fixture(helper, 14));
+        BlockPos wall = grounded.offset(10, 1, 0);
+        Set<BlockPos> ship = new LinkedHashSet<>();
+        for (int dz = -1; dz <= 1; dz++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                BlockPos pos = wall.offset(0, dy, dz);
+                level.setBlock(pos, Blocks.STONE.defaultBlockState(), 3);
+                ship.add(pos);
+            }
+        }
+        assemble(level, wall, ship);
+
+        BlockPos carriedCore = fel(level, fixture(helper, 15));
+        Set<BlockPos> blocks = new LinkedHashSet<>(MultiblockParts.partsWith(level, carriedCore));
+        blocks.addAll(deckUnder(level, blocks, carriedCore.getY()));
+        ServerSubLevel sub = assemble(level, carriedCore, blocks);
+        BlockPos plotCore = new SubLevelAssemblyHelper.AssemblyTransform(
+                carriedCore, sub.getPlot().getCenterBlock(), 0, Rotation.NONE, level).apply(carriedCore);
+        turnAndLift(level, sub);
+
+        // Sable finds a new sub-level by its bounds only after a physics step
+        helper.runAfterDelay(2, () -> {
+            TileEntityFEL laser = (TileEntityFEL) level.getBlockEntity(grounded);
+            TileEntityFEL.serverTick(level, grounded, level.getBlockState(grounded), laser);
+            helper.assertTrue(laser.distance == 10, "the beam in the world ends at " + laser.distance
+                    + ", the ship's wall is at 10");
+
+            BlockPos target = SubLevels.toWorldBlock(level, plotCore.offset(8, 1, 0));
+            level.setBlock(target, Blocks.STONE.defaultBlockState(), 3);
+            TileEntityFEL carried = (TileEntityFEL) level.getBlockEntity(plotCore);
+            carried.isOn = true;
+            carried.power = TileEntityFEL.maxPower;
+            TileEntityFEL.serverTick(level, plotCore, level.getBlockState(plotCore), carried);
+            level.setBlock(target, Blocks.AIR.defaultBlockState(), 3);
+            helper.assertTrue(carried.distance == 8, "the beam from the ship ends at " + carried.distance
+                    + ", the world's wall is at 8");
+            clear(level, grounded);
+            helper.succeed();
+        });
+    }
+
+    /** A laser core at {@code core} facing east, on, powered and holding a CO2 crystal. */
+    private static BlockPos fel(ServerLevel level, BlockPos core) {
+        BlockMultiblockCore block = ModMachineBlocks.machine_fel.get();
+        level.setBlock(core, block.defaultBlockState().setValue(BlockMultiblockCore.FACING, Direction.EAST), 3);
+        block.fillSpace(level, core, Direction.EAST);
+        TileEntityFEL laser = (TileEntityFEL) level.getBlockEntity(core);
+        laser.inventory.setStackInSlot(1, new ItemStack(ModMachineItems.laser_crystal_co2.get()));
+        laser.isOn = true;
+        laser.power = TileEntityFEL.maxPower;
+        return core;
+    }
+
+    /** A blast in the world breaks a ship's planks; a crater takes its blocks inside the radius and none outside. */
+    private static void blastOnShip(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos centre = fixture(helper, 16);
+        Set<BlockPos> deck = deck(level, centre, 2, Blocks.OAK_PLANKS.defaultBlockState());
+        ServerSubLevel sub = assemble(level, centre, deck);
+        SubLevelAssemblyHelper.AssemblyTransform up = new SubLevelAssemblyHelper.AssemblyTransform(
+                centre, sub.getPlot().getCenterBlock(), 0, Rotation.NONE, level);
+        BlockPos ironCentre = fixture(helper, 17);
+        Set<BlockPos> iron = deck(level, ironCentre, 3, Blocks.IRON_BLOCK.defaultBlockState());
+        ServerSubLevel ironShip = assemble(level, ironCentre, iron);
+        SubLevelAssemblyHelper.AssemblyTransform ironUp = new SubLevelAssemblyHelper.AssemblyTransform(
+                ironCentre, ironShip.getPlot().getCenterBlock(), 0, Rotation.NONE, level);
+
+        helper.runAfterDelay(2, () -> {
+            Vec3 above = SubLevels.toWorld(level, up.apply(centre)).add(0D, 1D, 0D);
+            new ExplosionVNT(level, above.x, above.y, above.z, 3F)
+                    .setBlockAllocator(new BlockAllocatorStandard())
+                    .setBlockProcessor(new BlockProcessorStandard().setNoDrop())
+                    .explode();
+            int left = 0;
+            for (BlockPos pos : deck) if (!level.getBlockState(up.apply(pos)).isAir()) left++;
+            helper.assertTrue(left < deck.size() - 4,
+                    "the blast broke " + (deck.size() - left) + " of the ship's planks");
+
+            Vec3 ground = SubLevels.toWorld(level, ironUp.apply(ironCentre.west(3)));
+            List<BlockPos> inside = new ArrayList<>();
+            for (BlockPos pos : iron) {
+                BlockPos plot = ironUp.apply(pos);
+                if (SubLevels.toWorld(level, plot).distanceToSqr(ground) <= 2.5D * 2.5D) inside.add(plot);
+            }
+            SubLevelBlasts.crater(level, ground, 2.5D);
+            for (BlockPos pos : iron) {
+                BlockPos plot = ironUp.apply(pos);
+                boolean present = !level.getBlockState(plot).isAir();
+                helper.assertTrue(inside.contains(plot) != present, (present ? "kept " : "lost ") + pos
+                        + " (" + inside.size() + " of " + iron.size() + " inside the crater)");
+            }
+            helper.succeed();
+        });
+    }
+
+    /** A ship six blocks from a black hole gains speed toward it. */
+    private static void blackHolePullsShip(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos centre = fixture(helper, 18);
+        ServerSubLevel sub = assemble(level, centre, deck(level, centre, 1, Blocks.IRON_BLOCK.defaultBlockState()));
+        BlockPos plotCentre = new SubLevelAssemblyHelper.AssemblyTransform(
+                centre, sub.getPlot().getCenterBlock(), 0, Rotation.NONE, level).apply(centre);
+        EntityBlackHole hole = new EntityBlackHole(ModEntities.BLACK_HOLE.get(), level, 0.5F).noBreak();
+        hole.setPos(centre.getX() + 6.5D, centre.getY() + 0.5D, centre.getZ() + 0.5D);
+        Chunks.claimTicking(level, hole.blockPosition().getX() >> 4, hole.blockPosition().getZ() >> 4);
+        level.addFreshEntity(hole);
+
+        helper.runAfterDelay(10, () -> {
+            double towards = SubLevels.velocity(level, Vec3.atCenterOf(plotCentre)).x;
+            hole.discard();
+            Chunks.releaseTicking(level, hole.blockPosition().getX() >> 4, hole.blockPosition().getZ() >> 4);
+            helper.assertTrue(towards > 0.3D, "the ship moves " + towards + " blocks/tick toward the black hole");
+            helper.succeed();
+        });
+    }
+
+    /** A designator clicked on a ship's block stores where that block is seen, not its plot position. */
+    private static void designatorOnShip(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos centre = fixture(helper, 19);
+        ServerSubLevel sub = assemble(level, centre, deck(level, centre, 1, Blocks.IRON_BLOCK.defaultBlockState()));
+        BlockPos plotCentre = new SubLevelAssemblyHelper.AssemblyTransform(
+                centre, sub.getPlot().getCenterBlock(), 0, Rotation.NONE, level).apply(centre);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack stack = new ItemStack(ModMissileItems.designator.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        stack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(plotCentre), Direction.UP, plotCentre, false)));
+        Vec3 target = ((IDesignatorItem) stack.getItem()).getCoords(level, stack, centre);
+        BlockPos seen = SubLevels.toWorldBlock(level, plotCentre);
+        helper.assertTrue((int) target.x == seen.getX() && (int) target.z == seen.getZ() && !seen.equals(plotCentre),
+                "the designator aims at " + target + ", the block is seen at " + seen);
+        helper.succeed();
+    }
+
+    /** A drone sent to a crate on a falling ship is caught there at the ship's speed and sent on to the next link. */
+    private static void droneMeetsMovingCrate(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos centre = fixture(helper, 20);
+        Set<BlockPos> blocks = deck(level, centre, 1, Blocks.IRON_BLOCK.defaultBlockState());
+        BlockPos crate = centre.above();
+        level.setBlock(crate, ModDroneBlocks.DRONE_CRATE.get().defaultBlockState(), 3);
+        blocks.add(crate);
+        ServerSubLevel sub = assemble(level, centre, blocks);
+        BlockPos plotCrate = new SubLevelAssemblyHelper.AssemblyTransform(
+                centre, sub.getPlot().getCenterBlock(), 0, Rotation.NONE, level).apply(crate);
+        TileEntityDroneCrate box = (TileEntityDroneCrate) level.getBlockEntity(plotCrate);
+        helper.assertTrue(box != null, "the carried crate has no block entity");
+        BlockPos next = centre.offset(40, 0, 0);
+        box.next = next;
+
+        EntityDeliveryDrone drone = new EntityDeliveryDrone(level);
+        drone.setPos(centre.getX() + 6.5D, centre.getY() + 2D, centre.getZ() + 0.5D);
+        BlockPos meet = box.getCoord();
+        drone.setTarget(meet.getX() + 0.5D, meet.getY(), meet.getZ() + 0.5D);
+        level.addFreshEntity(drone);
+        // Outside the test plot entity ticking starts only after wall-clock time; back-to-back test ticks drive it.
+        helper.onEachTick(() -> {
+            if (!drone.isRemoved() && !level.isPositionEntityTicking(drone.blockPosition())) drone.tick();
+        });
+
+        helper.runAfterDelay(40, () -> {
+            boolean sentOn = drone.targetX == next.getX() + 0.5D && drone.targetZ == next.getZ() + 0.5D;
+            Vec3 shipSpeed = SubLevels.velocity(level, Vec3.atCenterOf(plotCrate));
+            drone.discard();
+            helper.assertTrue(shipSpeed.length() > 0.1D, "the ship is not moving (" + shipSpeed + ")");
+            helper.assertTrue(sentOn, "the crate did not catch the drone (target " + drone.targetX + ", "
+                    + drone.targetY + ", " + drone.targetZ + ", drone at " + drone.position() + ", crate seen at "
+                    + SubLevels.toWorld(level, plotCrate) + ")");
+            helper.succeed();
+        });
     }
 
     /** Iron block is the unit; reinforced stone (hardness 15) weighs 3, a centrifuge (5) 1 per solid part. */
@@ -535,6 +766,41 @@ final class SableGameTests {
     }
 
     // --- helpers ---
+
+    /** A square deck of {@code state} with the given half-width around {@code centre}. */
+    private static Set<BlockPos> deck(ServerLevel level, BlockPos centre, int half, BlockState state) {
+        Set<BlockPos> deck = new LinkedHashSet<>();
+        for (int dx = -half; dx <= half; dx++) {
+            for (int dz = -half; dz <= half; dz++) {
+                BlockPos pos = centre.offset(dx, 0, dz);
+                level.setBlock(pos, state, 3);
+                deck.add(pos);
+            }
+        }
+        return deck;
+    }
+
+    /** An iron deck under every part of a structure that stands at height {@code y}. */
+    private static Set<BlockPos> deckUnder(ServerLevel level, Set<BlockPos> parts, int y) {
+        Set<BlockPos> deck = new LinkedHashSet<>();
+        for (BlockPos part : parts) {
+            if (part.getY() != y) continue;
+            level.setBlock(part.below(), Blocks.IRON_BLOCK.defaultBlockState(), 3);
+            deck.add(part.below());
+        }
+        return deck;
+    }
+
+    /** Lifts a sub-level 40 blocks and turns it a quarter about the vertical, as the turret test does. */
+    private static void turnAndLift(ServerLevel level, ServerSubLevel sub) {
+        ServerSubLevelContainer container = SubLevelContainer.getContainer(level);
+        Vector3d lifted = new Vector3d(sub.logicalPose().position()).add(0D, 40D, 0D);
+        Quaterniond turned = new Quaterniond().rotateY(Math.PI / 2D);
+        container.physicsSystem().getPipeline().resetVelocity(sub);
+        container.physicsSystem().getPipeline().teleport(sub, lifted, turned);
+        sub.logicalPose().position().set(lifted);
+        sub.logicalPose().orientation().set(turned);
+    }
 
     /**
      * Where test {@code index} builds. Not in the GameTest plot: 1.21.1's test server puts its plots at random

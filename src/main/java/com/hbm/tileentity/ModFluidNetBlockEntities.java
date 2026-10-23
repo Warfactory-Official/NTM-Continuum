@@ -14,7 +14,9 @@ import com.hbm.tileentity.network.TileEntityFlowControlPump;
 import com.hbm.tileentity.network.TileEntityFluidPipeAnchor;
 import com.hbm.tileentity.network.TileEntityPipeExhaustAnchor;
 import com.hbm.tileentity.network.TileEntityPipeExhaust;
+import com.hbm.tileentity.network.TileEntityPipeExhaustPaintable;
 import com.hbm.tileentity.network.TileEntityPipeGauge;
+import com.hbm.tileentity.network.TileEntityPipePaintable;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -45,17 +47,17 @@ public final class ModFluidNetBlockEntities {
             REG.blockEntity("fluid_duct_box", () -> BlockEntities.type(TileEntityFluidDuctVariant::new, boxDucts()));
 
     /** The paintable cube duct (renderer: the fluid-coloured port overlay). */
-    public static final RegistryObject<BlockEntityType<TileEntityFluidDuctVariant>> PAINTABLE =
-            REG.blockEntity("fluid_duct_paintable", () -> BlockEntities.type(TileEntityFluidDuctVariant::new,
+    public static final RegistryObject<BlockEntityType<TileEntityPipePaintable>> PAINTABLE =
+            REG.blockEntity("fluid_duct_paintable", () -> BlockEntities.type(TileEntityPipePaintable::new,
                     ModFluidNetBlocks.fluid_duct_paintable.get()));
 
     /** The five exhaust box ducts (box renderer, exhaust skin). */
     public static final RegistryObject<BlockEntityType<TileEntityPipeExhaust>> EXHAUST =
             REG.blockEntity("fluid_duct_exhaust", () -> BlockEntities.type(TileEntityPipeExhaust::new, exhaustDucts()));
 
-    /** The paintable exhaust cube (no renderer: 1.7 drew its overlay only once painted). */
-    public static final RegistryObject<BlockEntityType<TileEntityPipeExhaust>> PAINTABLE_EXHAUST =
-            REG.blockEntity("fluid_duct_paintable_block_exhaust", () -> BlockEntities.type(TileEntityPipeExhaust::new,
+    /** The paintable exhaust cube (1.7 drew its overlay only once painted). */
+    public static final RegistryObject<BlockEntityType<TileEntityPipeExhaustPaintable>> PAINTABLE_EXHAUST =
+            REG.blockEntity("fluid_duct_paintable_block_exhaust", () -> BlockEntities.type(TileEntityPipeExhaustPaintable::new,
                     ModFluidNetBlocks.fluid_duct_paintable_block_exhaust.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityPipeGauge>> GAUGE =

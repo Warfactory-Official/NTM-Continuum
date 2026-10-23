@@ -6,6 +6,7 @@ import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -43,8 +44,9 @@ public class ItemDesignatorRange extends CompatItem implements IDesignatorItem {
         HitResult hit = player.pick(RANGE, 1.0F, false);
         if (hit.getType() != HitResult.Type.BLOCK) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
-        BlockPos pos = ((BlockHitResult) hit).getBlockPos();
-        if (level.getBlockState(pos).getBlock() instanceof LaunchPad) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        BlockPos hitPos = ((BlockHitResult) hit).getBlockPos();
+        if (level.getBlockState(hitPos).getBlock() instanceof LaunchPad) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        BlockPos pos = SubLevels.toWorldBlock(level, hitPos);
 
         ItemDesignator.setTarget(level, player, player.getItemInHand(hand), pos.getX(), pos.getZ(),
                 Component.literal("Position set to X:" + pos.getX() + ", Z:" + pos.getZ()));

@@ -144,6 +144,8 @@ public final class RenderInputClientRegistrations {
         });
         // 1.7 IBlockCT connected textures: hadron coils, coated wire, ICF/PWR shells, deco metals, CT glass, platemetal, pile
         ConnectedTextureRegistrations.register();
+        // 1.7 IBlockMultiPass: paintable cable and tube wear their paint in the chunk mesh
+        ChunkModelRegistrations.register();
         // 1.7 RenderOverhead markers ("marker" aux effect) and ParticleText ("debug")
         RenderOverhead.register();
         TextParticles.register();

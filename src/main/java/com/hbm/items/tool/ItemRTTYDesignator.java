@@ -7,6 +7,7 @@ import com.hbm.tileentity.network.RTTYSystem;
 import dev.golem.core.data.Tags;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -47,7 +48,8 @@ public class ItemRTTYDesignator extends CompatItem implements IItemControlReceiv
             // 1.7 Library.rayTrace(player, 300, 1) answers a block position even on a miss
             HitResult hit = player.pick(300.0D, 1.0F, false);
             if (hit instanceof BlockHitResult blockHit) {
-                BlockPos pos = blockHit.getBlockPos().relative(blockHit.getDirection());
+                BlockPos pos = SubLevels.toWorldBlock(level,
+                        blockHit.getBlockPos().relative(blockHit.getDirection()));
                 String coords = pos.getX() + IRORInteractive.PARAM_SEPARATOR + pos.getY()
                         + IRORInteractive.PARAM_SEPARATOR + pos.getZ();
                 RTTYSystem.broadcast(level, chanFreq, coords);

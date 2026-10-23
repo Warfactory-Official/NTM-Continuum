@@ -57,6 +57,11 @@ public class FluidDuctGauge extends FluidDuctPaintable {
     }
 
     @Override
+    protected boolean paintable() {
+        return false;
+    }
+
+    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(level.getBlockEntity(pos) instanceof TileEntityPipeGauge duct)) return null;
         FluidType type = duct.getFluidType();

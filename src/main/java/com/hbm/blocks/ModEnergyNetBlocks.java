@@ -265,13 +265,11 @@ public final class ModEnergyNetBlocks {
                 .register();
     }
 
-    /** The paintable cable: its own model with or without the overlay; painted, the renderer draws it. */
+    /** The paintable cable: its own model with or without the overlay; painted, the paint is drawn in its place. */
     private static void paintableCableStates(Reg.Handle<?> handle) {
         States.variants(Constants.MOD_ID, handle.path())
-                .variant("overlay=true,painted=false", new Variant("hbm:block/red_cable_paintable"))
-                .variant("overlay=false,painted=false", new Variant("hbm:block/red_cable_paintable_plain"))
-                .variant("overlay=true,painted=true", new Variant(EMPTY))
-                .variant("overlay=false,painted=true", new Variant(EMPTY))
+                .variant("overlay=true", new Variant("hbm:block/red_cable_paintable"))
+                .variant("overlay=false", new Variant("hbm:block/red_cable_paintable_plain"))
                 .register();
     }
 

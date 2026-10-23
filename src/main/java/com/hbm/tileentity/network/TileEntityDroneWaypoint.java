@@ -4,6 +4,7 @@ import com.hbm.tileentity.IRelocatable;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.item.EntityDeliveryDrone;
+import com.hbm.entity.item.EntityDroneBase;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -15,7 +16,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 import com.hbm.blocks.network.DroneWaypointBase;
 import com.hbm.client.DroneLineClient;
@@ -52,8 +52,8 @@ public class TileEntityDroneWaypoint extends TileEntityLoadedBase implements IDr
         BlockPos point = getPoint();
 
         if (next != null) {
-            for (EntityDeliveryDrone drone : server.getEntitiesOfClass(EntityDeliveryDrone.class, new AABB(point))) {
-                if (drone.getDeltaMovement().length() >= 0.05) continue;
+            for (EntityDeliveryDrone drone
+                    : EntityDroneBase.restingAt(server, EntityDeliveryDrone.class, point, 0.05)) {
                 drone.setTarget(next.getX() + 0.5, next.getY(), next.getZ() + 0.5);
             }
         }

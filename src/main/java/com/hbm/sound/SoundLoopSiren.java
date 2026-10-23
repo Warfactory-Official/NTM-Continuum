@@ -2,6 +2,7 @@ package com.hbm.sound;
 
 import com.hbm.items.machine.ItemCassette.SoundType;
 import com.hbm.tileentity.machine.TileEntityMachineSiren;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
@@ -50,8 +51,9 @@ public final class SoundLoopSiren extends AbstractTickableSoundInstance {
 
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
-            float f = (float) Math.sqrt(Math.pow(x - player.getX(), 2) + Math.pow(y - player.getY(), 2)
-                    + Math.pow(z - player.getZ(), 2));
+            // port: on a moving sub-level (Create Aeronautics) the siren is heard from where it is seen
+            float f = (float) Math.sqrt(SubLevels.distanceSq(tile.getLevel(), x, y, z, player.getX(), player.getY(),
+                    player.getZ()));
             volume = func(f, intendedVolume);
         } else {
             volume = intendedVolume;

@@ -5,10 +5,12 @@ import dev.golem.core.Ids;
 import dev.golem.core.net.GolemCodec;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.net.GolemPayload;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 import com.hbm.items.machine.ItemCassette;
 
 /**
@@ -34,7 +36,7 @@ public record SirenPayload(BlockPos pos, int track, boolean active) implements G
         SirenPayload payload = new SirenPayload(pos.immutable(), track, active);
         double radiusSquared = RANGE * RANGE;
         for (ServerPlayer player : level.players()) {
-            if (player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) > radiusSquared) continue;
+            if (SubLevels.distanceSq(level, Vec3.atLowerCornerOf(pos), player.position()) > radiusSquared) continue;
             GolemNetwork.sendToPlayer(player, CODEC, payload);
         }
     }

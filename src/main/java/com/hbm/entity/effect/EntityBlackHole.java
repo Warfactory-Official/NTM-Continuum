@@ -1,6 +1,7 @@
 package com.hbm.entity.effect;
 
 import dev.golem.core.world.Explosions;
+import dev.golem.core.world.SubLevels;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.entity.ModEntities;
 import com.hbm.items.ModItems;
@@ -98,9 +99,12 @@ public class EntityBlackHole extends CompatEntity {
         }
 
         float size = getSize();
-        if (!level().isClientSide() && breaksBlocks) pullBlocks(size);
-
         double range = size * 15D;
+        if (!level().isClientSide()) {
+            if (breaksBlocks) pullBlocks(size, getX(), getY(), getZ());
+            pullSubLevels(size, range);
+        }
+
         AABB bounds = new AABB(getX() - range, getY() - range, getZ() - range,
                 getX() + range, getY() + range, getZ() + range);
         List<Entity> entities = level().getEntities(this, bounds, ignored -> true);
@@ -150,7 +154,19 @@ public class EntityBlackHole extends CompatEntity {
         setDeltaMovement(getDeltaMovement().scale(0.99D));
     }
 
-    private void pullBlocks(float size) {
+    /** port: moving sub-levels (Create Aeronautics) in range fall in like entities and lose blocks to the same rays. */
+    private void pullSubLevels(float size, double range) {
+        Vec3 centre = position();
+        for (SubLevels.Local local : SubLevels.intoSubLevels(level(), centre, range)) {
+            if (breaksBlocks) pullBlocks(size, local.point().x, local.point().y, local.point().z);
+            Vec3 pull = centre.subtract(SubLevels.toWorld(level(), local.anchor()));
+            if (pull.length() > range) continue;
+            pull = rotatePull(pull.normalize());
+            SubLevels.accelerate(level(), local.anchor(), new Vec3(pull.x * 0.1D, pull.y * 0.2D, pull.z * 0.1D));
+        }
+    }
+
+    private void pullBlocks(float size, double centreX, double centreY, double centreZ) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int k = 0; k < size * 2F; k++) {
             double phi = level().getRandom().nextDouble() * (Math.PI * 2D);
@@ -162,9 +178,9 @@ public class EntityBlackHole extends CompatEntity {
             int length = (int) Math.ceil(size * 15D);
 
             for (int i = 0; i < length; i++) {
-                int x0 = (int) (getX() + x * i);
-                int y0 = (int) (getY() + y * i);
-                int z0 = (int) (getZ() + z * i);
+                int x0 = (int) (centreX + x * i);
+                int y0 = (int) (centreY + y * i);
+                int z0 = (int) (centreZ + z * i);
                 pos.set(x0, y0, z0);
                 BlockState state = level().getBlockState(pos);
                 if (!state.getFluidState().isEmpty()) {

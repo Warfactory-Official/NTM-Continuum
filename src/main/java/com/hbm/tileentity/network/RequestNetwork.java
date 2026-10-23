@@ -1,6 +1,7 @@
 package com.hbm.tileentity.network;
 
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.SubLevels;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
@@ -57,6 +58,7 @@ public final class RequestNetwork {
     public static Map<BlockPos, PathNode> localNodes(ServerLevel level, BlockPos centre, int chunkRange) {
         Long2ObjectMap<Map<BlockPos, PathNode>> chunks = NODES.get(level.dimension());
         if (chunks == null) return Map.of();
+        if (SubLevels.present()) return localNodesAsSeen(level, chunks, centre, chunkRange);
 
         Map<BlockPos, PathNode> nodes = new HashMap<>();
         int x = SectionPos.blockToSectionCoord(centre.getX());
@@ -69,6 +71,25 @@ public final class RequestNetwork {
             }
         }
 
+        return nodes;
+    }
+
+    /** port: on moving sub-levels (Create Aeronautics) nodes are near where they are seen, not in their grid. */
+    private static Map<BlockPos, PathNode> localNodesAsSeen(ServerLevel level,
+            Long2ObjectMap<Map<BlockPos, PathNode>> chunks, BlockPos centre, int chunkRange) {
+        BlockPos seen = SubLevels.toWorldBlock(level, centre);
+        int x = SectionPos.blockToSectionCoord(seen.getX());
+        int z = SectionPos.blockToSectionCoord(seen.getZ());
+        Map<BlockPos, PathNode> nodes = new HashMap<>();
+        for (Map<BlockPos, PathNode> inChunk : chunks.values()) {
+            for (PathNode node : inChunk.values()) {
+                BlockPos at = SubLevels.toWorldBlock(level, node.pos);
+                if (Math.abs(SectionPos.blockToSectionCoord(at.getX()) - x) <= chunkRange
+                        && Math.abs(SectionPos.blockToSectionCoord(at.getZ()) - z) <= chunkRange) {
+                    nodes.put(node.pos, node);
+                }
+            }
+        }
         return nodes;
     }
 
@@ -104,8 +125,8 @@ public final class RequestNetwork {
      * {@link Level#clip} is not that function and is asked once.
      */
     public static boolean hasPath(ServerLevel level, BlockPos from, BlockPos to) {
-        Vec3 start = Vec3.atCenterOf(from);
-        Vec3 end = Vec3.atCenterOf(to);
+        Vec3 start = SubLevels.toWorld(level, Vec3.atCenterOf(from));
+        Vec3 end = SubLevels.toWorld(level, Vec3.atCenterOf(to));
         if (start.distanceTo(end) > MAX_LINK_RANGE) return false;
 
         return Compat.clip(level, start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE)

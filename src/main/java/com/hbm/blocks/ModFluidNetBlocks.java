@@ -144,7 +144,7 @@ public final class ModFluidNetBlocks {
     public static final RegistryObject<FluidDuctPaintable> fluid_duct_paintable = REG.block("fluid_duct_paintable", FluidDuctPaintable::new, STEEL)
             .transform(multipart(file -> file.part(new Variant("hbm:block/fluid_duct_paintable"))).and(SELF_PICKAXE));
     public static final RegistryObject<FluidDuctGauge> fluid_duct_gauge = REG.block("fluid_duct_gauge", FluidDuctGauge::new, STEEL)
-            .transform(multipart(file -> file.part(new Variant("hbm:block/fluid_duct_gauge"))).and(SELF_PICKAXE));
+            .transform(Presets.statesOnly(Variants.facingAll())).transform(SELF_PICKAXE);
     public static final RegistryObject<FluidSwitch> fluid_switch = REG.block("fluid_switch", FluidSwitch::new, STEEL)
             .transform(valve("hbm:blocks/fluid_switch_off", "hbm:blocks/fluid_switch_on"));
     public static final RegistryObject<FluidCounterValve> fluid_counter_valve = REG.block("fluid_counter_valve", FluidCounterValve::new, STEEL)
@@ -309,7 +309,8 @@ public final class ModFluidNetBlocks {
                 .transform(Presets.shares("hbm:block/fluid_duct_paintable_block_exhaust"));
         item(pipe_anchor, HbmTab.MACHINES);
         item(pipe_anchor_exhaust, HbmTab.MACHINES);
-        item(fluid_duct_paintable, HbmTab.MACHINES).transform(Presets.shares("hbm:block/fluid_duct_paintable"));
+        item(fluid_duct_paintable, HbmTab.MACHINES).icon(d -> d.models(
+                Models.parented("minecraft:block/cube_all", Slots.of("all", "hbm:blocks/fluid_duct_paintable"))));
         item(fluid_duct_gauge, HbmTab.MACHINES).transform(Presets.shares("hbm:block/fluid_duct_gauge"));
         item(fluid_switch, HbmTab.MACHINES).transform(Presets.shares("hbm:block/fluid_switch_off"));
         item(fluid_counter_valve, HbmTab.MACHINES).transform(Presets.shares("hbm:block/fluid_counter_valve_off"));

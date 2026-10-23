@@ -138,7 +138,7 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
                 worldYaw(), worldPitch());
         projectile.setPos(tip.x, tip.y, tip.z);
         projectile.lockonTarget = target;
-        level.addFreshEntity(projectile);
+        fire(projectile);
     }
 
     /** The rack count rides its own packet so the racks empty on screen as they are fired. */

@@ -2,6 +2,7 @@ package com.hbm.explosion.vanillant;
 
 import com.hbm.explosion.vanillant.interfaces.IBlockAllocator;
 import com.hbm.api.event.HbmEvents;
+import com.hbm.explosion.SubLevelBlasts;
 import com.hbm.explosion.vanillant.interfaces.IBlockProcessor;
 import com.hbm.explosion.vanillant.interfaces.IEntityProcessor;
 import com.hbm.explosion.vanillant.interfaces.IExplosionSFX;
@@ -13,8 +14,10 @@ import com.hbm.explosion.vanillant.standard.EntityProcessorCross;
 import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectAmat;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
+import dev.golem.core.world.SubLevels;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.HashMap;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -88,6 +91,11 @@ public class ExplosionVNT {
         boolean processBlocks = blockAllocator != null && blockProcessor != null;
         boolean processEntities = entityProcessor != null && playerProcessor != null;
 
+        // port: a centre on a moving sub-level is in its plot; entities, effects and the world are where it is seen
+        Vec3 centre = new Vec3(posX, posY, posZ);
+        boolean carried = SubLevels.isOnSubLevel(world, centre);
+        Vec3 seen = SubLevels.toWorld(world, centre);
+
         ObjectOpenHashSet<BlockPos> affectedBlocks = null;
         if (processBlocks) {
             // Exposure must be calculated against the pre-blast world, as in 1.12.2.
@@ -96,24 +104,44 @@ public class ExplosionVNT {
 
         HashMap<Player, Vec3> affectedPlayers = null;
         if (processEntities) {
-            affectedPlayers = entityProcessor.process(this, world, posX, posY, posZ, size);
+            affectedPlayers = entityProcessor.process(this, world, seen.x, seen.y, seen.z, size);
         }
 
         if (processBlocks) {
+            List<BlockPos> solid = carried ? solid(affectedBlocks) : List.of();
             blockProcessor.process(this, world, posX, posY, posZ, affectedBlocks);
+            if (carried) {
+                SubLevelBlasts.push(world, centre, solid);
+                blastAt(seen, false);
+            }
+            for (SubLevels.Local local : SubLevels.intoSubLevels(world, seen, size * 2D)) {
+                if (local.point().distanceToSqr(centre) > 1.0E-6D) blastAt(local.point(), true);
+            }
         }
 
         if (processEntities) {
-            playerProcessor.process(this, world, posX, posY, posZ, affectedPlayers);
+            playerProcessor.process(this, world, seen.x, seen.y, seen.z, affectedPlayers);
         }
 
         if (sfx != null) {
             for (IExplosionSFX fx : sfx) {
-                fx.doEffect(this, world, posX, posY, posZ, size);
+                fx.doEffect(this, world, seen.x, seen.y, seen.z, size);
             }
         }
 
-        HbmEvents.explosion(world, posX, posY, posZ, size, exploder, "vnt");
+        HbmEvents.explosion(world, seen.x, seen.y, seen.z, size, exploder, "vnt");
+    }
+
+    /** port: the block half of the blast around {@code at}, the centre as the world or one sub-level sees it. */
+    private void blastAt(Vec3 at, boolean push) {
+        ObjectOpenHashSet<BlockPos> blocks = blockAllocator.allocate(this, world, at.x, at.y, at.z, size);
+        List<BlockPos> solid = push ? solid(blocks) : List.of();
+        blockProcessor.process(this, world, at.x, at.y, at.z, blocks);
+        if (push) SubLevelBlasts.push(world, at, solid);
+    }
+
+    private List<BlockPos> solid(ObjectOpenHashSet<BlockPos> blocks) {
+        return blocks.stream().filter(pos -> !world.getBlockState(pos).isAir()).map(BlockPos::immutable).toList();
     }
 
     public ExplosionVNT setBlockAllocator(IBlockAllocator blockAllocator) {

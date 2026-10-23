@@ -500,6 +500,7 @@ public final class HbmClientRegistrations {
         HbmBlockColors.registerAll();
         ConveyorClientRegistrations.registerBlockColors();
         TerrainClientRegistrations.registerBlockColors();
+        ChunkModelRegistrations.registerBlockColors();
     }
 
     /**

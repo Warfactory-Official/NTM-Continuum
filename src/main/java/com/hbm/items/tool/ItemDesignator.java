@@ -7,6 +7,7 @@ import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
+import dev.golem.core.world.SubLevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
@@ -72,7 +73,9 @@ public class ItemDesignator extends CompatItem implements IDesignatorItem {
         if (level.getBlockState(pos).getBlock() instanceof LaunchPad) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (context.getPlayer() == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
-        setTarget(level, context.getPlayer(), context.getItemInHand(), pos.getX(), pos.getZ(),
+        // A block on a moving sub-level (Create Aeronautics) is targeted where it is seen, not in its plot.
+        BlockPos target = SubLevels.toWorldBlock(level, pos);
+        setTarget(level, context.getPlayer(), context.getItemInHand(), target.getX(), target.getZ(),
                 Component.literal("Position set!"));
         return InteractionResult.SUCCESS;
     }

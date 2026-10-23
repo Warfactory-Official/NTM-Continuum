@@ -4,6 +4,9 @@ import dev.golem.core.data.Tags;
 
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
+import dev.golem.core.world.SubLevels;
+import java.util.List;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -18,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -110,9 +114,12 @@ public abstract class EntityDroneBase extends CompatEntity {
         setDeltaMovement(Vec3.ZERO);
 
         if (this.targetY != -1) {
-            Vec3 delta = new Vec3(targetX - getX(), targetY - getY(), targetZ - getZ());
+            // port: a target on a moving sub-level (Create Aeronautics) is flown to where it is seen and kept up with
+            Vec3 target = new Vec3(targetX, targetY, targetZ);
+            Vec3 delta = SubLevels.toWorld(level(), target).subtract(position());
             double speed = Math.min(getSpeed(), delta.length());
-            setDeltaMovement(delta.normalize().scale(speed));
+            setDeltaMovement(delta.normalize().scale(speed).add(SubLevels.velocity(level(), target))
+                    .subtract(SubLevels.carriedVelocity(this)));
         }
 
         // 1.7: bumping a wall makes the drone climb until it clears it
@@ -122,6 +129,20 @@ public abstract class EntityDroneBase extends CompatEntity {
 
         loadNeighboringChunks();
         move(MoverType.SELF, getDeltaMovement());
+    }
+
+    /** The drone's world motion against its target's; its own motion when neither rides a sub-level. */
+    public Vec3 relativeMotion() {
+        Vec3 motion = getDeltaMovement().add(SubLevels.carriedVelocity(this));
+        if (this.targetY == -1) return motion;
+        return motion.subtract(SubLevels.velocity(level(), new Vec3(targetX, targetY, targetZ)));
+    }
+
+    /** Drones of {@code type} resting in the block at {@code pos}, where it is seen if it rides a sub-level. */
+    public static <T extends EntityDroneBase> List<T> restingAt(ServerLevel level, Class<T> type, BlockPos pos,
+                                                                double slack) {
+        return level.getEntitiesOfClass(type, SubLevels.toWorld(level, new AABB(pos)),
+                drone -> drone.relativeMotion().length() < slack);
     }
 
     private static final Vec3[] ROTOR_OFFSETS = {

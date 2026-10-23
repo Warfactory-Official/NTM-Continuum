@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.blocks.EnergyBedrockDeclarations;
 import com.hbm.client.render.HbmBlockEntityRenderers;
-import com.hbm.client.render.PowerCableBoxRenderer;
 import com.hbm.client.render.RenderCharger;
 import com.hbm.tileentity.ModEnergyBedrockBlockEntities;
 import dev.golem.core.harness.HarnessQueryRegistry;
@@ -26,7 +25,6 @@ public final class EnergyBedrockClientRegistrations {
             {0xC1C7BD, 0x2B3227}, {0xAFAFAF, 0x0F0F0F}, {0xE2FFFA, 0x1E8A77}};
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {
-        HbmBlockEntityRenderers.regGem(sink, ModEnergyBedrockBlockEntities.ENERGY_CABLE_BOX.get(), PowerCableBoxRenderer::new);
         HbmBlockEntityRenderers.regGem(sink, ModEnergyBedrockBlockEntities.CHARGER.get(), RenderCharger::new);
         // harness: the charge of whatever battery the player holds (a charge has no damage value to read)
         HarnessQueryRegistry.register("hbm_battery", (mc, params) -> {

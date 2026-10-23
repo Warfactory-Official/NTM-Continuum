@@ -98,7 +98,7 @@ public class EntityRequestDrone extends EntityDroneBase implements StoredItems {
         super.tick();
 
         if (!(level() instanceof ServerLevel server)) return;
-        if (getDeltaMovement().length() >= 0.01) return;
+        if (relativeMotion().length() >= 0.01) return;
 
         if (this.nextActionTimer > 0) {
             this.nextActionTimer--;

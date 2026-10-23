@@ -60,7 +60,9 @@ public final class ModPneumaticBlocks {
     public static final RegistryObject<PneumoTubePaintableBlock> PNEUMATIC_TUBE_PAINTABLE = REG.block(
             "pneumatic_tube_paintable", PneumoTubePaintableBlock::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
-            .transform(DRAWN_TUBE);
+            .transform(Presets.shape(Models.renderType("minecraft:cutout",
+                    Models.cubeAll("hbm:blocks/pneumatic_tube_paintable"))).noItem())
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<PneumoStorageAccess> PNEUMATIC_STORAGE_ACCESS = REG.block(
             "pneumatic_storage_access", PneumoStorageAccess::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())

@@ -34,7 +34,7 @@ import com.hbm.tileentity.network.TileEntityCablePaintable;
 /**
  * {@code red_cable_paintable}: a full-block cable that can be dressed as any plain full block by
  * right-clicking with it. The screwdriver strips the paint; the defuser hides the cable overlay (1.7's
- * metadata 1). {@link #PAINTED} hands the drawing to the renderer, which draws the paint block itself.
+ * metadata 1). While {@link #PAINTED}, its block model draws the paint block in its place.
  */
 public class BlockCablePaintable extends CompatBlock implements TickingBlock, IToolable, IEnergyConnectorBlock, ITooltipProvider {
 

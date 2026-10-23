@@ -1,6 +1,7 @@
 package com.hbm.blocks.network;
 
 import com.hbm.tileentity.network.TileEntityPipeExhaust;
+import com.hbm.tileentity.network.TileEntityPipeExhaustPaintable;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.Fluids;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The 1.7 {@code FluidDuctPaintableBlockExhaust}: the full-cube coated duct for the smoke fluids
- * (same painting deferral as {@link FluidDuctPaintable}; carries all three smokes at once, see
+ * (painted as {@link FluidDuctPaintable} is; carries all three smokes at once, see
  * {@link TileEntityPipeExhaust}).
  */
 public class FluidDuctPaintableBlockExhaust extends FluidDuctPaintable {
@@ -25,7 +26,7 @@ public class FluidDuctPaintableBlockExhaust extends FluidDuctPaintable {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityPipeExhaust(pos, state);
+        return new TileEntityPipeExhaustPaintable(pos, state);
     }
 
     @Override

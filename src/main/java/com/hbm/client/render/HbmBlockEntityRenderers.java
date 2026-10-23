@@ -390,11 +390,6 @@ public final class HbmBlockEntityRenderers {
                  () -> new BombObjRenderer<>(obj("bombs/tsar.obj"), tex("bombs/tsar.png"), 1F,
                          NukeBombBlock.FACING, 0F, 0F, 0F, 0F, 180F, 90F, 270F));
 
-        // Red cable: the real cable_neo.obj, parts chosen from the connection state.
-        regGem(sink, ModBlockEntities.RED_CABLE.get(), CableObjRenderer::new);
-
-        // Fluid ducts (fluid_duct_neo): registered by FluidNetClientRegistrations through NeoDuctRenderer.
-
          // Fluid tank: a multiblock with its own renderer; the cylinder body is textured
          // per-fluid (tank/tank_<name>.png, NONE -> tank_none) while the frame stays machines/tank.png, so
          // it can't use the single-texture-per-part generic renderer. (Base yaw 180°; see FluidTankRenderer.)
