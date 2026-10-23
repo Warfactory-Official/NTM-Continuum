@@ -370,6 +370,12 @@ public final class JetpackClientVisuals {
         }
     }
 
+    /** The glider with its wings fully spread and no wearer: SilentYeti's bobblehead. */
+    public static void submitGliderOpen(PoseStack pose, SubmitSink sink, int light) {
+        if (gliderModel == null) gliderModel = JetpackColladaModel.load(true);
+        gliderModel.submit(pose, sink, light, gliderModelLength(), false);
+    }
+
     private static GliderAnimation gliderAnimation(Player player, boolean opening, long gameplayStart) {
         long now = System.currentTimeMillis();
         if (player == null) {

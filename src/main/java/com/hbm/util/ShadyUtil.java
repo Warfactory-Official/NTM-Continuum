@@ -49,6 +49,8 @@ public final class ShadyUtil {
     public static final String movblock = "d45aac48-013d-4efd-aa4d-bc40d6b6026d";
     public static final String Hacker6329 = "a53a3807-cd85-4833-b791-0c27705bb6fd";
     public static final String EOS = "cac1f285-001c-47dc-94a3-44052fb7e4e8";
+    public static final String MrNorwood = "ab2e13f0-0198-411a-bddb-00382418d594"; // HyperboreanA10
+    public static final String SilentYeti = "5742ae80-133d-4089-94da-40e0b38d6e55"; // SilentYeti69
 
     public static final Set<String> contributors = Set.of(
             "06ab7c03-55ce-43f8-9d3c-2850e3c652de", // mustang_rudolf

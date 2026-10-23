@@ -26,9 +26,11 @@ public final class BobbleSkinModel {
     private static final float LIMB_OVERLAY_XZ = 1.15f;
     private static final float LIMB_OVERLAY_Y = 1.035f;
 
-    private static final float LIMB_PIVOT_Y = 12f;
-    private static final float BODY_PIVOT_Y = 12f;
-    private static final float HEAD_PIVOT_Y = 0f;
+    // The overlay grows about each box's centre, so none of its faces lies on the base layer's (which z-fought at
+    // the shoulders, hips and under the head).
+    private static final float LIMB_PIVOT_Y = 6f;
+    private static final float BODY_PIVOT_Y = 6f;
+    private static final float HEAD_PIVOT_Y = 4f;
 
     /** The grey stand-in while a skin loads or if it never does: base layer only. */
     public static final int[] GRAY_SKIN = grayPixels();

@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockBobble.BobbleType;
 import com.hbm.blocks.generic.BlockTrinket;
 import com.hbm.blocks.generic.BobbleFigure;
+import com.hbm.client.jetpack.JetpackClientVisuals;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.client.render.skinlayer.BobbleSkinModel;
 import com.hbm.items.ModConsumableTailItems;
@@ -72,6 +73,9 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
     static final Identifier SHIMMER_AXE = tex("textures/models/shimmer_axe.png");
     static final Identifier MININUKE = tex("textures/models/weapons/fatman_mininuke.png");
     static final Identifier SACRED_DRAGON = tex("textures/models/weapons/double_barrel_sacred_dragon.png");
+    static final Identifier LASER_PISTOL = tex("textures/models/weapons/laser_pistol.png");
+    static final Identifier EGON_HOSE = tex("textures/models/weapons/egon_hose.png");
+    static final Identifier EGON_DISPLAY = tex("textures/models/weapons/egon_display.png");
 
     private final WavefrontObj bobble = WavefrontObj.load(tex("models/trinkets/bobble.obj"));
     private final WavefrontObj hev = WavefrontObj.load(tex("models/armor/hev.obj"));
@@ -81,6 +85,10 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
     private final WavefrontObj fatman = WavefrontObj.load(tex("models/weapons/fatman.obj"));
     private final WavefrontObj doubleBarrel = WavefrontObj.load(tex("models/weapons/sacred_dragon.obj"));
     private final WavefrontObj leafia = WavefrontObj.load(tex("models/trinkets/leafia.obj"));
+    private final WavefrontObj laserPistol = WavefrontObj.load(tex("models/weapons/laser_pistol.obj"));
+    private final WavefrontObj egon = WavefrontObj.load(tex("models/weapons/egon_hose.obj"));
+    private final WavefrontObj egonPack = WavefrontObj.load(tex("models/weapons/egon.obj"));
+    static final Identifier EGON_PACK = tex("textures/models/weapons/egon.png");
 
     /** 1.12.2 {@code skinModelCache}: one voxelized figure per skin, built the first frame the skin is in. */
     private static final Map<UUID, BobbleSkinModel> SKIN_MODELS =
@@ -260,7 +268,49 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
             model = BobbleSkinModel.gray();
             texture = GRAY_SKIN;
         }
+        if (BobbleFigure.NAMES[state.type].equals("SILENTYETI")) {
+            renderSilentYeti(pose, sink, model, texture, state, light);
+            return;
+        }
         model.render(pose, sink, texture, state.time, BobbleFigure.pose(state.type), light);
+    }
+
+    /**
+     * SilentYeti: lifted and leaning into the glider's thrust, wings spread, aiming a laser pistol one-handed. The figure and its gear share
+     * one frame so the gear follows the lean. Literals stay in this body so a debugger can hot-swap them.
+     */
+    private void renderSilentYeti(PoseStack pose, SubmitSink sink, BobbleSkinModel model, Identifier texture, State state,
+                                  int light) {
+        pose.pushPose();
+        pose.translate(0D, 0.1D, 0D); // lift: tiptoes still on the socket
+        pose.mulPose(Axis.ZP.rotationDegrees(-10F)); // lean forward (+x is the figure's front, -z his left)
+        model.render(pose, sink, texture, state.time, BobbleFigure.pose(state.type), light);
+
+        pose.pushPose();
+        pose.translate(0D, 1.75D, 0D); // the neck, where a worn glider hangs from
+        pose.mulPose(Axis.YP.rotationDegrees(-90F));
+        pose.mulPose(Axis.ZP.rotationDegrees(180F)); // into the y-down player-model space the worn glider is set in
+        pose.translate(0F, 0.9F, 1.25F); // JetpackClientVisuals.applyGliderRoot, unsneaked
+        pose.mulPose(Axis.YP.rotationDegrees(180F));
+        pose.mulPose(Axis.ZP.rotationDegrees(180F));
+        pose.scale(0.25F, 0.25F, 0.25F);
+        JetpackClientVisuals.submitGliderOpen(pose, sink, light);
+        pose.popPose();
+
+        pose.pushPose();
+        // the laser pistol in his right fist (+z), barrel along the forearm (placed from BobbleFigure's SILENTYETI right
+        // arm; change them together); its static parts, as LaserPistolWeaponRenderer draws an unanimated one
+        pose.translate(0.591D, 1.601D, 0.578D);
+        pose.mulPose(Axis.YP.rotationDegrees(-18.4F));
+        pose.mulPose(Axis.ZP.rotationDegrees(-11.4F));
+        pose.mulPose(Axis.YP.rotationDegrees(90F));
+        pose.scale(0.053F, 0.053F, 0.053F);
+        RenderType gun = CompatRenderTypes.entityCutoutCull(LASER_PISTOL);
+        part(pose, sink, laserPistol, gun, "Gun", light);
+        part(pose, sink, laserPistol, gun, "Latch", light);
+        pose.popPose();
+
+        pose.popPose();
     }
 
     private void renderPellet(PoseStack pose, SubmitSink sink, Identifier skin, State state) {
@@ -347,6 +397,31 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
                 part(pose, sink, bobble, CompatRenderTypes.plasmaGlow(GLOW), "Glow", FULLBRIGHT);
             }
             case "ABEL" -> renderGuy(pose, sink, ABEL_GLOW, state, FULLBRIGHT);
+            case "GOLEM" -> {
+                // the backpack, where EgonBackpackRenderLayer hangs it from a player's body
+                pose.pushPose();
+                pose.translate(0D, 1.75D, 0D); // the neck
+                pose.mulPose(Axis.YP.rotationDegrees(-90F));
+                pose.mulPose(Axis.ZP.rotationDegrees(180F)); // into the y-down player-model body space
+                pose.translate(0F, 0.75F, 0F);
+                pose.scale(0.0625F, 0.0625F, 0.0625F);
+                pose.mulPose(Axis.ZP.rotationDegrees(180F));
+                pose.mulPose(Axis.YP.rotationDegrees(90F));
+                all(pose, sink, egonPack, CompatRenderTypes.entityCutoutNoCull(EGON_PACK), light);
+                pose.popPose();
+                // the gluon gun at the hip, its back end by his right hip and its muzzle ahead and to his left, tipped
+                // down, upright as a player holds it: lever on top, side handle out to his left, both in his hands, which
+                // stay clear of his face (BobbleFigure's GOLEM arms are solved against this placement); drawn as
+                // ItemRenderGunEgon draws it
+                pose.translate(0.335D, 1.315D, 0.197D);
+                pose.mulPose(Axis.YP.rotationDegrees(23.4F));
+                pose.mulPose(Axis.ZP.rotationDegrees(-22.7F));
+                pose.mulPose(Axis.YP.rotationDegrees(90F));
+                pose.scale(0.13F, 0.13F, 0.13F);
+                part(pose, sink, egon, CompatRenderTypes.entityCutoutCull(EGON_HOSE), "Main", light);
+                part(pose, sink, egon, CompatRenderTypes.entityCutoutCull(EGON_HOSE), "Lever", light);
+                part(pose, sink, egon, CompatRenderTypes.entityCutoutCull(EGON_DISPLAY), "Screen", light);
+            }
             default -> { }
         }
     }

@@ -22,6 +22,11 @@ public final class SkinBoxVoxelizer {
     private static final float INV_TEX = 1f / TEX_SIZE;
     private static final int NORM_XP = 0, NORM_XN = 1, NORM_YP = 2, NORM_YN = 3, NORM_ZP = 4, NORM_ZN = 5;
     private static final float[][] NORMALS = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+    /**
+     * How far (in texels) each voxel's side walls sit inside it. A wall on the box's border is otherwise coplanar with the
+     * neighbouring face's flush surface and z-fights with it; inset, the surface always wins.
+     */
+    private static final float WALL_INSET = 0.02f;
 
     /** Per quad: four vertices of x, y, z, u, v. */
     private final float[] verts;
@@ -64,15 +69,16 @@ public final class SkinBoxVoxelizer {
                 float x0 = px - grow, x1 = px + 1 + grow;
                 float y0 = py - grow, y1 = py + 1 + grow;
                 float z0 = pz - grow, z1 = pz + 1 + grow;
+                float wx0 = x0 + WALL_INSET, wx1 = x1 - WALL_INSET, wy0 = y0 + WALL_INSET, wy1 = y1 - WALL_INSET;
                 float[] uv = pixelUV(tu, tv);
                 if (c == 0 || !frontMask[maskIdx - 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XN, x0, y0, z1, x0, y0, z0, x0, y1, z0, x0, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XN, wx0, y0, z1, wx0, y0, z0, wx0, y1, z0, wx0, y1, z1);
                 if (c == w - 1 || !frontMask[maskIdx + 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XP, x1, y0, z0, x1, y0, z1, x1, y1, z1, x1, y1, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XP, wx1, y0, z0, wx1, y0, z1, wx1, y1, z1, wx1, y1, z0);
                 if (r == 0 || !frontMask[c + (r - 1) * w])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YP, x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YP, x0, wy1, z0, x1, wy1, z0, x1, wy1, z1, x0, wy1, z1);
                 if (r == h - 1 || !frontMask[c + (r + 1) * w])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YN, x0, y0, z1, x1, y0, z1, x1, y0, z0, x0, y0, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YN, x0, wy0, z1, x1, wy0, z1, x1, wy0, z0, x0, wy0, z0);
             }
         }
 
@@ -93,15 +99,16 @@ public final class SkinBoxVoxelizer {
                 float x0 = px - grow, x1 = px + 1 + grow;
                 float y0 = py - grow, y1 = py + 1 + grow;
                 float z0 = pz - grow, z1 = pz + 1 + grow;
+                float wx0 = x0 + WALL_INSET, wx1 = x1 - WALL_INSET, wy0 = y0 + WALL_INSET, wy1 = y1 - WALL_INSET;
                 float[] uv = pixelUV(tu, tv);
                 if (c == 0 || !backMask[maskIdx - 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XP, x1, y0, z0, x1, y0, z1, x1, y1, z1, x1, y1, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XP, wx1, y0, z0, wx1, y0, z1, wx1, y1, z1, wx1, y1, z0);
                 if (c == w - 1 || !backMask[maskIdx + 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XN, x0, y0, z1, x0, y0, z0, x0, y1, z0, x0, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XN, wx0, y0, z1, wx0, y0, z0, wx0, y1, z0, wx0, y1, z1);
                 if (r == 0 || !backMask[c + (r - 1) * w])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YP, x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YP, x0, wy1, z0, x1, wy1, z0, x1, wy1, z1, x0, wy1, z1);
                 if (r == h - 1 || !backMask[c + (r + 1) * w])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YN, x0, y0, z1, x1, y0, z1, x1, y0, z0, x0, y0, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YN, x0, wy0, z1, x1, wy0, z1, x1, wy0, z0, x0, wy0, z0);
             }
         }
 
@@ -122,15 +129,16 @@ public final class SkinBoxVoxelizer {
                 float x0 = px - grow, x1 = px + 1 + grow;
                 float y0 = py - grow, y1 = py + 1 + grow;
                 float z0 = pz - grow, z1 = pz + 1 + grow;
+                float wy0 = y0 + WALL_INSET, wy1 = y1 - WALL_INSET, wz0 = z0 + WALL_INSET, wz1 = z1 - WALL_INSET;
                 float[] uv = pixelUV(tu, tv);
                 if (c == 0 || !leftMask[maskIdx - 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZN, x0, y0, z0, x1, y0, z0, x1, y1, z0, x0, y1, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZN, x0, y0, wz0, x1, y0, wz0, x1, y1, wz0, x0, y1, wz0);
                 if (c == d - 1 || !leftMask[maskIdx + 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZP, x1, y0, z1, x0, y0, z1, x0, y1, z1, x1, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZP, x1, y0, wz1, x0, y0, wz1, x0, y1, wz1, x1, y1, wz1);
                 if (r == 0 || !leftMask[c + (r - 1) * d])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YP, x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YP, x0, wy1, z0, x1, wy1, z0, x1, wy1, z1, x0, wy1, z1);
                 if (r == h - 1 || !leftMask[c + (r + 1) * d])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YN, x0, y0, z1, x1, y0, z1, x1, y0, z0, x0, y0, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YN, x0, wy0, z1, x1, wy0, z1, x1, wy0, z0, x0, wy0, z0);
             }
         }
 
@@ -151,15 +159,16 @@ public final class SkinBoxVoxelizer {
                 float x0 = px - grow, x1 = px + 1 + grow;
                 float y0 = py - grow, y1 = py + 1 + grow;
                 float z0 = pz - grow, z1 = pz + 1 + grow;
+                float wy0 = y0 + WALL_INSET, wy1 = y1 - WALL_INSET, wz0 = z0 + WALL_INSET, wz1 = z1 - WALL_INSET;
                 float[] uv = pixelUV(tu, tv);
                 if (c == 0 || !rightMask[maskIdx - 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZN, x0, y0, z0, x1, y0, z0, x1, y1, z0, x0, y1, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZN, x0, y0, wz0, x1, y0, wz0, x1, y1, wz0, x0, y1, wz0);
                 if (c == d - 1 || !rightMask[maskIdx + 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZP, x1, y0, z1, x0, y0, z1, x0, y1, z1, x1, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZP, x1, y0, wz1, x0, y0, wz1, x0, y1, wz1, x1, y1, wz1);
                 if (r == 0 || !rightMask[c + (r - 1) * d])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YP, x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YP, x0, wy1, z0, x1, wy1, z0, x1, wy1, z1, x0, wy1, z1);
                 if (r == h - 1 || !rightMask[c + (r + 1) * d])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YN, x0, y0, z1, x1, y0, z1, x1, y0, z0, x0, y0, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_YN, x0, wy0, z1, x1, wy0, z1, x1, wy0, z0, x0, wy0, z0);
             }
         }
 
@@ -180,15 +189,16 @@ public final class SkinBoxVoxelizer {
                 float x0 = px - grow, x1 = px + 1 + grow;
                 float y0 = py - grow, y1 = py + 1 + grow;
                 float z0 = pz - grow, z1 = pz + 1 + grow;
+                float wx0 = x0 + WALL_INSET, wx1 = x1 - WALL_INSET, wz0 = z0 + WALL_INSET, wz1 = z1 - WALL_INSET;
                 float[] uv = pixelUV(tu, tv);
                 if (c == 0 || !topMask[maskIdx - 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XN, x0, y0, z1, x0, y0, z0, x0, y1, z0, x0, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XN, wx0, y0, z1, wx0, y0, z0, wx0, y1, z0, wx0, y1, z1);
                 if (c == w - 1 || !topMask[maskIdx + 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XP, x1, y0, z0, x1, y0, z1, x1, y1, z1, x1, y1, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XP, wx1, y0, z0, wx1, y0, z1, wx1, y1, z1, wx1, y1, z0);
                 if (r == 0 || !topMask[c + (r - 1) * w])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZN, x0, y0, z0, x1, y0, z0, x1, y1, z0, x0, y1, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZN, x0, y0, wz0, x1, y0, wz0, x1, y1, wz0, x0, y1, wz0);
                 if (r == d - 1 || !topMask[c + (r + 1) * w])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZP, x1, y0, z1, x0, y0, z1, x0, y1, z1, x1, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZP, x1, y0, wz1, x0, y0, wz1, x0, y1, wz1, x1, y1, wz1);
             }
         }
 
@@ -209,15 +219,16 @@ public final class SkinBoxVoxelizer {
                 float x0 = px - grow, x1 = px + 1 + grow;
                 float y0 = py - grow, y1 = py + 1 + grow;
                 float z0 = pz - grow, z1 = pz + 1 + grow;
+                float wx0 = x0 + WALL_INSET, wx1 = x1 - WALL_INSET, wz0 = z0 + WALL_INSET, wz1 = z1 - WALL_INSET;
                 float[] uv = pixelUV(tu, tv);
                 if (c == 0 || !bottomMask[maskIdx - 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XN, x0, y0, z1, x0, y0, z0, x0, y1, z0, x0, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XN, wx0, y0, z1, wx0, y0, z0, wx0, y1, z0, wx0, y1, z1);
                 if (c == w - 1 || !bottomMask[maskIdx + 1])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XP, x1, y0, z0, x1, y0, z1, x1, y1, z1, x1, y1, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_XP, wx1, y0, z0, wx1, y0, z1, wx1, y1, z1, wx1, y1, z0);
                 if (r == 0 || !bottomMask[c + (r - 1) * w])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZN, x0, y0, z0, x1, y0, z0, x1, y1, z0, x0, y1, z0);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZN, x0, y0, wz0, x1, y0, wz0, x1, y1, wz0, x0, y1, wz0);
                 if (r == d - 1 || !bottomMask[c + (r + 1) * w])
-                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZP, x1, y0, z1, x0, y0, z1, x0, y1, z1, x1, y1, z1);
+                    count = addQuad(tmpVerts, tmpNorms, count, uv, NORM_ZP, x1, y0, wz1, x0, y0, wz1, x0, y1, wz1, x1, y1, wz1);
             }
         }
 

@@ -13,14 +13,14 @@ public final class BobbleFigure {
     public enum Body { GUY, PELLET, FUMO, DRILLGON, LEAFIA, SKIN }
 
     // NONE STRENGTH PERCEPTION ENDURANCE CHARISMA INTELLIGENCE AGILITY LUCK BOB FRIZZLE PU238 VT DOC BLUEHAT PHEO
-    // ADAM29 UFFR VAER NOS DRILLGON CIRNO MICROWAVE PEEP MELLOW ABEL
+    // ADAM29 UFFR VAER NOS DRILLGON CIRNO MICROWAVE PEEP MELLOW ABEL MOVBLOCK LEAFIA HACKER6329 EOS GOLEM NORWOOD SILENTYETI
     public static final String[] NAMES = {"NONE", "STRENGTH", "PERCEPTION", "ENDURANCE", "CHARISMA", "INTELLIGENCE",
             "AGILITY", "LUCK", "BOB", "FRIZZLE", "PU238", "VT", "DOC", "BLUEHAT", "PHEO", "ADAM29", "UFFR", "VAER", "NOS",
-            "DRILLGON", "CIRNO", "MICROWAVE", "PEEP", "MELLOW", "ABEL", "MOVBLOCK", "LEAFIA", "HACKER6329", "EOS"};
+            "DRILLGON", "CIRNO", "MICROWAVE", "PEEP", "MELLOW", "ABEL", "MOVBLOCK", "LEAFIA", "HACKER6329", "EOS", "GOLEM", "NORWOOD", "SILENTYETI"};
 
     /** {@code BobbleType.skinLayers}: false draws the 1.7 "17" single-layer parts. */
     private static final boolean[] LAYERS = {false, false, false, false, false, false, false, false, false, true, false,
-            true, true, true, true, true, false, true, true, false, true, true, true, true, true, true, false, true, true};
+            true, true, true, true, true, false, true, true, false, true, true, true, true, true, true, false, true, true, true, true, true};
 
     public static int index(String name) {
         for (int i = 0; i < NAMES.length; i++) if (NAMES[i].equals(name)) return i;
@@ -63,7 +63,7 @@ public final class BobbleFigure {
             case "UFFR" -> Body.FUMO;
             case "DRILLGON" -> Body.DRILLGON;
             case "LEAFIA" -> Body.LEAFIA;
-            case "MOVBLOCK", "HACKER6329", "EOS" -> Body.SKIN; // 1.12.2 skinUuid != null
+            case "MOVBLOCK", "HACKER6329", "EOS", "GOLEM", "NORWOOD", "SILENTYETI" -> Body.SKIN; // 1.12.2 skinUuid != null
             default -> Body.GUY;
         };
     }
@@ -94,6 +94,14 @@ public final class BobbleFigure {
             case "PEEP" -> { la = new double[]{0, 0, 1}; ra = new double[]{0, 0, 1}; }
             case "MELLOW" -> { la = new double[]{0, 10, 0}; ra = new double[]{0, -10, 0}; ll = new double[]{3, 5, 2}; rl = new double[]{-3, -5, 0}; }
             case "ABEL" -> { la = new double[]{0, 80, 90}; ra = new double[]{0, -80, 90}; }
+            // skin figures: +x raises a limb forward, z swings it sideways (negative toward the figure's left)
+            // the gluon gun at the hip, upright: right hand (la, drawn on his right) on its top lever, left hand on its side
+            // handle (solved against the gun's placement in RenderBobble.renderPost; change them together)
+            case "GOLEM" -> { la = new double[]{80, 0, -27}; ra = new double[]{44, 0, 12}; head = new double[]{-10, 0, 0}; }
+            // aiming the laser pistol while the glider lifts him (the lift and lean are in RenderBobble.renderSilentYeti):
+            // right arm (la) aims it (the pistol is placed from this arm; change them together), left arm out to the side
+            case "SILENTYETI" -> { la = new double[]{78, 0, 18}; ra = new double[]{10, 0, -60}; ll = new double[]{-30, 0, 0};
+                rl = new double[]{-12, 0, 0}; head = new double[]{-8, 0, 0}; }
             default -> { }
         }
         return new Pose(la, ra, ll, rl, body, head);
