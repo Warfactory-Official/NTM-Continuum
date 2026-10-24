@@ -279,6 +279,12 @@ public class HazardSystem {
 
     /** The apply half of {@link #CARRIED}, on the server thread at {@code hazardRate}. */
     private static void applyCarried(Player player, ItemStack stack, HazardEntry[] hazards) {
+        for (var transformer : trafos) {
+            if (transformer.readsLiveStorage(stack)) {
+                applyHazards(stack, player);
+                return;
+            }
+        }
         for (HazardEntry hazard : hazards) hazard.applyHazard(stack, player);
     }
 
@@ -294,7 +300,7 @@ public class HazardSystem {
         if (entity.tickCount % RadiationConfig.hazardRate != 0) return;
 
         if (entity instanceof Player player) {
-            HbmLivingProps.setNeutron(player, 0);
+            if (ContaminationUtil.neutronSystem() == null) HbmLivingProps.setNeutron(player, 0);
             return;
         }
         for (EquipmentSlot slot : EQUIPMENT_SLOTS) {
@@ -329,6 +335,11 @@ public class HazardSystem {
             hazard.addInformation(player, list, stack);
         }
         ContaminationUtil.addNeutronRadInfo(stack, list);
+    }
+
+    public static void addHazardInfo(ItemStack stack, Player player, List<Component> list,
+                                     net.minecraft.world.item.TooltipFlag flag) {
+        addHazardInfo(stack, player, list);
     }
 
     /**

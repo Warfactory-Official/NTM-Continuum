@@ -39,7 +39,7 @@ public final class ChemicalProjectileRenderer
 
     @Override public void extract(EntityChemical entity, State state, float partialTicks) {
         state.style = entity.style();
-        state.fluidColor = entity.getFluid().getColor();
+        state.fluidColor = entity.getFluid().clientMetadata().getColor();
         state.age = entity.tickCount;
         state.maxAge = entity.getMaxAge();
         state.motion = entity.getDeltaMovement();

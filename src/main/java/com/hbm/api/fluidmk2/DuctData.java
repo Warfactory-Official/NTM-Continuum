@@ -35,7 +35,7 @@ public record DuctData(FluidType fluid, boolean smokeAny) {
 
     public static final Codec<DuctData> CODEC = Codec.either(Codec.STRING, Codec.INT).xmap(
             either -> either.map(
-                    name -> SMOKE_ANY_NAME.equals(name) ? SMOKE_ANY : of(Fluids.byRegistryName(name)),
+                    name -> SMOKE_ANY_NAME.equals(name) ? SMOKE_ANY : of(Fluids.byRegistryNameExact(name)),
                     number -> of(Fluids.fromOldNumericSave(number))),
             data -> Either.left(data.smokeAny ? SMOKE_ANY_NAME : data.fluid.getRegistryName()));
 

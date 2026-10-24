@@ -32,22 +32,22 @@ public class ItemBattery extends CompatItem implements IBatteryItem {
 
     @Override
     public void chargeBattery(ItemStack stack, long i) {
-        setCharge(stack, getCharge(stack) + i);
+        setCharge(stack, IBatteryItem.adjustCharge(getCharge(stack), i, getMaxCharge(stack), false));
     }
 
     @Override
     public void setCharge(ItemStack stack, long i) {
-        ModDataComponents.BATTERY_CHARGE.set(stack, i);
+        ModDataComponents.BATTERY_CHARGE.set(stack, IBatteryItem.clampCharge(i, maxCharge));
     }
 
     @Override
     public void dischargeBattery(ItemStack stack, long i) {
-        setCharge(stack, getCharge(stack) - i);
+        setCharge(stack, IBatteryItem.adjustCharge(getCharge(stack), i, getMaxCharge(stack), true));
     }
 
     @Override
     public long getCharge(ItemStack stack) {
-        return ModDataComponents.BATTERY_CHARGE.get(stack).orElse(maxCharge);
+        return IBatteryItem.clampCharge(ModDataComponents.BATTERY_CHARGE.get(stack).orElse(maxCharge), maxCharge);
     }
 
     @Override
@@ -63,6 +63,14 @@ public class ItemBattery extends CompatItem implements IBatteryItem {
     @Override
     public long getDischargeRate(ItemStack stack) {
         return dischargeRate;
+    }
+
+    /** 1.7 getSubItems: chargeable batteries expose empty, dischargeable batteries expose full. */
+    public List<ItemStack> creativeStacks() {
+        var stacks = new java.util.ArrayList<ItemStack>();
+        if (chargeRate > 0) stacks.add(emptyStack());
+        if (dischargeRate > 0) stacks.add(new ItemStack(this));
+        return stacks;
     }
 
     /** 1.7 {@code getEmptyBattery}. */

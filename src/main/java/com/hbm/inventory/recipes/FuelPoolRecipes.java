@@ -54,7 +54,23 @@ public final class FuelPoolRecipes {
     }
 
     /** One 1.7 FuelPool entry as the recipe browser shows it. */
-    public record Entry(ItemStack input, ItemStack output) {}
+    public record Entry(ItemStack input, ItemStack output) {
+        /** Stable catalog identity, named for the registered input item as in FuelPoolRecipes. */
+        public String id() {
+            var itemId = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(input.getItem());
+            return itemId.getNamespace() + ":fuel_pool/" + itemId.getPath();
+        }
+    }
+
+    /** Every registered craftable rod, preserving HBM's order and then addon registration order. */
+    public static List<ItemRBMKRod> craftableRods() {
+        List<ItemRBMKRod> rods = new ArrayList<>();
+        for (var handle : ModRBMKItems.PELLETS.keySet()) rods.add(handle.get());
+        for (Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (item instanceof ItemRBMKRod rod && rod.pelletItem() != null && !rods.contains(rod)) rods.add(rod);
+        }
+        return List.copyOf(rods);
+    }
 
     /**
      * 1.7 {@code FuelPoolRecipes.recipes} for the recipe browser (1.7 {@code FuelPoolHandler}): the hot ZIRNOX wastes, the
@@ -79,8 +95,7 @@ public final class FuelPoolRecipes {
             ItemStack hot = new ItemStack(ItemPWRFuel.stats(fresh).hotItem());
             out.add(new Entry(hot, cool(hot)));
         }
-        for (var rodHandle : ModRBMKItems.PELLETS.keySet()) {
-            ItemRBMKRod rod = rodHandle.get();
+        for (ItemRBMKRod rod : craftableRods()) {
             ItemStack hot = new ItemStack(rod);
             ItemRBMKRod.setYield(hot, 0.2 * rod.stats().yield());
             ItemRBMKRod.setCoreHeat(hot, 100);

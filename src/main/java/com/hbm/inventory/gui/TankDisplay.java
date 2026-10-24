@@ -37,13 +37,13 @@ public final class TankDisplay {
 
     /** The tank fluid's tint, forced fully opaque. */
     public static int tint(FluidTankNTM tank) {
-        return 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
+        return 0xFF000000 | (tank.getTankType().clientMetadata().getTint() & 0xFFFFFF);
     }
 
     /** The hover lines: name, fill over capacity, pressure when it is not ambient, then fluid traits. */
     public static List<Component> tooltip(FluidTankNTM tank) {
         List<Component> lines = new ArrayList<>();
-        lines.add(tank.getTankType().getDisplayName());
+        lines.add(tank.getTankType().clientMetadata().getDisplayName());
         lines.add(Component.literal(tank.getFill() + "/" + tank.getMaxFill() + "mB"));
         if (tank.getPressure() != 0) {
             lines.add(Component.literal("Pressure: " + tank.getPressure() + " PU")
@@ -52,7 +52,7 @@ public final class TankDisplay {
             lines.add(Component.literal("Pressurized, use compressor!").withStyle(
                     BobMathUtil.getBlink() ? ChatFormatting.RED : ChatFormatting.DARK_RED));
         }
-        tank.getTankType().addInfo(lines);
+        tank.getFluid().clientMetadata().addInfo(lines, com.hbm.blocks.StandardInfo.shiftHeld());
         return lines;
     }
 }

@@ -73,6 +73,9 @@ import net.minecraft.world.phys.Vec3;
  */
 public class EntityChemical extends EntityThrowableNT {
 
+    /** Space's fork seeds only the struck block; plain HBM retains the surrounding cube. */
+    public static boolean seedSlurrySingleBlock = false;
+
     private static final EntityDataAccessor<Integer> FLUID_TYPE =
             SynchedEntityData.defineId(EntityChemical.class, EntityDataSerializers.INT);
 
@@ -230,19 +233,19 @@ public class EntityChemical extends EntityThrowableNT {
 
         ServerLevel server = level() instanceof ServerLevel value ? value : null;
 
-        if (type.temperature >= 100) {
+        if (type.getTemperature() >= 100) {
             // 1.7: 0.25 damage at 100 °C with one extra damage every 1000 °C, capped at 15.
             if (server != null) EntityDamageUtil.attackEntityFromIgnoreIFrame(entity,
-                    damage(server, ModDamageSources.BOIL), Math.min(0.25F + (type.temperature - 100) * 0.001F, 15F));
-            if (type.temperature >= 500) Effects.ignite(entity, 10); // afterburn for 10 seconds
+                    damage(server, ModDamageSources.BOIL), Math.min(0.25F + (type.getTemperature() - 100) * 0.001F, 15F));
+            if (type.getTemperature() >= 500) Effects.ignite(entity, 10); // afterburn for 10 seconds
         }
 
         boolean delicious = type.hasTrait(FluidTraitSimple.FT_Delicious.class) && living != null;
         if (style() == ChemicalStyle.LIQUID || style() == ChemicalStyle.GAS) {
             // 1.7 sprays cold with the BOIL source (s_boil), not the cryolator's: kept as written.
-            if (type.temperature < -20 && living != null && server != null) {
+            if (type.getTemperature() < -20 && living != null && server != null) {
                 EntityDamageUtil.attackEntityFromIgnoreIFrame(entity, damage(server, ModDamageSources.BOIL),
-                        Math.min(0.25F + (-type.temperature) * 0.01F, 2F));
+                        Math.min(0.25F + (-type.getTemperature()) * 0.01F, 2F));
             }
             // 1.7 heals in its LIQUID|GAS branch and again in its LIQUID branch, so a delicious liquid heals twice.
             if (delicious && living.isAlive()) living.heal(2F * (float) intensity);
@@ -430,6 +433,7 @@ public class EntityChemical extends EntityThrowableNT {
         }
 
         if (type == Fluids.SEEDSLURRY) seedSlurry(level, pos);
+        if (level instanceof net.minecraft.server.level.ServerLevel server) Environment.chemicalImpact(server, pos, type);
     }
 
     /** 1.7 {@code getExtinguishingType}: CO2, or WATER for water, heavy water and coolant. */
@@ -448,7 +452,8 @@ public class EntityChemical extends EntityThrowableNT {
      * touch, so a double slab is left alone here too.
      */
     public static void seedSlurry(Level level, BlockPos centre) {
-        for (BlockPos p : BlockPos.betweenClosed(centre.offset(-1, -1, -1), centre.offset(1, 1, 1))) {
+        var radius = seedSlurrySingleBlock ? 0 : 1;
+        for (BlockPos p : BlockPos.betweenClosed(centre.offset(-radius, -radius, -radius), centre.offset(radius, radius, radius))) {
             BlockPos at = p.immutable();
             BlockState state = level.getBlockState(at);
             boolean wasteEarth = state.is(ModFalloutBlocks.waste_earth.get());
@@ -476,7 +481,7 @@ public class EntityChemical extends EntityThrowableNT {
 
     private boolean isExtinguishing() {
         FluidType type = getFluid();
-        return style() == ChemicalStyle.LIQUID && type.temperature < 50 && !FluidCombustion.isFlammable(type);
+        return style() == ChemicalStyle.LIQUID && type.getTemperature() < 50 && !FluidCombustion.isFlammable(type);
     }
 
     @Override protected void saveData(DataOut output) {

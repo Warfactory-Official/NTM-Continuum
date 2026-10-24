@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
  * <ul>
  *   <li>{@link Exact}: 1.7 {@code new ComparableStack(ItemStack)}, the item with exactly this data (none, or
  *   {@link ItemData}); a plain item ingredient matches the item with any data.</li>
+ *   <li>{@link Battery}: a consumed battery whose saved charge is accepted, with no unrelated item state.</li>
  *   <li>{@link Cold}: spent fuel that is not hot (PUREX; 1.7 matched the cooled metadata).</li>
  *   <li>{@link AnyOf}: any one of several ingredients (the DiFurnace's 1.7 {@code DictFrame} of a material's
  *   ingot, plate, gem and dust).</li>
@@ -59,6 +60,30 @@ public final class RecipeIngredients {
         @Override
         public List<ItemStack> getDisplayStacks() {
             return List.of(ItemStacks.copyWithCount(match(), stacksize));
+        }
+    }
+
+    /** A consumed battery may carry saved charge, but no unrelated custom item state. */
+    public static final class Battery extends ComparableStack {
+
+        public Battery(Item item, int count) {
+            super(item, count);
+        }
+
+        @Override
+        public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
+            if (stack.isEmpty() || stack.getItem() != item || !ignoreSize && stack.getCount() < stacksize) return false;
+            //? if >=1.20.5 {
+            for (var component : stack.getComponentsPatch().entrySet()) {
+                if (component.getKey() != ModDataComponents.BATTERY_CHARGE.type()) return false;
+            }
+            //?} else {
+            /*var data = stack.getTag();
+            if (data != null) for (var key : data.getAllKeys()) {
+                if (!key.equals(ModDataComponents.BATTERY_CHARGE.key())) return false;
+            }
+            *///?}
+            return true;
         }
     }
 
@@ -139,6 +164,7 @@ public final class RecipeIngredients {
      */
     public static AStack withCount(AStack stack, int count) {
         if (stack instanceof Exact exact) return new Exact(exact.item, count, exact.data);
+        if (stack instanceof Battery battery) return new Battery(battery.item, count);
         if (stack instanceof ComparableStack comparable) return new ComparableStack(comparable.item, count);
         if (stack instanceof TagStack tag) return new TagStack(tag.tag, count);
         if (stack instanceof MaterialStack material) return new MaterialStack(material.material, material.shape, count);

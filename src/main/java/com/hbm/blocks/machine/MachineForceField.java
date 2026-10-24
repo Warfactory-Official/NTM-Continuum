@@ -1,5 +1,8 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
+import net.minecraft.core.Direction;
 import com.hbm.tileentity.machine.TileEntityForceField;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
@@ -25,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  * smoke puffs rise while it is cooling down. Breaking it spills the battery and the upgrades (the block
  * entity is a container, which vanilla empties on removal).
  */
-public class MachineForceField extends CompatBlock implements TickingBlock {
+public class MachineForceField extends CompatBlock implements TickingBlock, ICapabilityBlock {
 
     public MachineForceField(Properties properties) {
         super(properties);
@@ -70,4 +73,11 @@ public class MachineForceField extends CompatBlock implements TickingBlock {
             }
         }
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fe().items()
+            .faces(BlockEntity.class, (be, side) -> side != Direction.UP);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

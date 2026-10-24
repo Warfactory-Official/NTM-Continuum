@@ -31,6 +31,10 @@ import org.jspecify.annotations.Nullable;
  */
 public class EntityQuackos extends EntityDuck {
 
+    /** An addon may enable 1.7 Space's repeated-kill safety valve. */
+    public static java.util.function.BooleanSupplier serverSafety = () -> false;
+    private int killCounter;
+
 
     public EntityQuackos(EntityType<? extends EntityQuackos> type, Level level) {
         super(type, level);
@@ -72,6 +76,9 @@ public class EntityQuackos extends EntityDuck {
         // so only the kill paths are ignored.
         if (level().isClientSide() || (reason != RemovalReason.KILLED && reason != RemovalReason.DISCARDED)) {
             super.remove(reason);
+        } else if (serverSafety.getAsBoolean()) {
+            killCounter += 2;
+            if (killCounter > 20) super.remove(reason);
         }
     }
 
@@ -125,6 +132,7 @@ public class EntityQuackos extends EntityDuck {
             double respawnZ = getZ() + random.nextGaussian() * 30;
             setPos(respawnX, DropHeight.clearOfTerrain(level(), 256D, respawnX, respawnZ), respawnZ);
         }
+        if (killCounter > 0) killCounter--;
     }
 
     @Override

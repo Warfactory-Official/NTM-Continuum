@@ -8,6 +8,7 @@ import com.hbm.items.tool.ItemLeadBox;
 import com.hbm.items.tool.ItemToolBox;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
+import dev.golem.core.world.ItemStacks;
 
 /**
  * 1.7 {@code HazardTransformerRadiationContainer}, for the containers the port has: the toolbox passes its
@@ -21,6 +22,15 @@ import net.minecraft.world.item.ItemStack;
 public class HazardTransformerRadiationContainer implements IHazardTransformer {
 
     @Override
+    public boolean readsLiveStorage() { return true; }
+
+    @Override
+    public boolean readsLiveStorage(ItemStack stack) {
+        return stack.getItem() instanceof ItemLeadBox || stack.getItem() instanceof ItemToolBox
+                || dev.golem.core.world.Compat.containerItemCount(stack, 256) > 0;
+    }
+
+    @Override
     public void transformPost(ItemStack stack, List<HazardEntry> entries) {
         if (stack.getItem() instanceof ItemHolotapeImage tape
                 && tape.getType(stack) == ItemHolotapeImage.EnumHoloImage.HOLO_RESTORED) {
@@ -29,9 +39,24 @@ public class HazardTransformerRadiationContainer implements IHazardTransformer {
 
         boolean isBox = stack.getItem() instanceof ItemLeadBox;
         boolean isContainer = stack.getItem() instanceof ItemToolBox;
-        if (!isBox && !isContainer) return;
-
         float radiation = 0;
+
+        //? if >=1.20.5 {
+        var contents = stack.get(net.minecraft.core.component.DataComponents.CONTAINER);
+        if (contents != null) {
+            //? if >=26.1 {
+            for (var held : contents.nonEmptyItemCopyStream().toList()) {
+            //?} else {
+            /*for (var held : contents.nonEmptyStream().toList()) {
+            *///?}
+                radiation += HazardSystem.getRawRadsFromStack(held) * held.getCount();
+            }
+        }
+        //?} else {
+        /*for (var held : ItemStacks.carriedItems(stack, 256)) {
+            radiation += HazardSystem.getRawRadsFromStack(held) * held.getCount();
+        }
+        *///?}
 
         if (isContainer) {
             ItemStack[] items = ItemToolBox.readStacks(stack);

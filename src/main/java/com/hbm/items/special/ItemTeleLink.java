@@ -68,11 +68,9 @@ public class ItemTeleLink extends CompatItem {
             return InteractionResult.FAIL;
         }
 
-        tele.targetX = Tags.getIntOr(tag, "x", 0);
-        tele.targetY = Tags.getIntOr(tag, "y", 0);
-        tele.targetZ = Tags.getIntOr(tag, "z", 0);
-        tele.targetDim = Tags.getStringOr(tag, "dim", "minecraft:overworld");
-        tele.setChanged();
+        tele.setTarget(net.minecraft.core.GlobalPos.of(net.minecraft.resources.ResourceKey.create(
+                net.minecraft.core.registries.Registries.DIMENSION, Ids.parse(Tags.getStringOr(tag, "dim", "minecraft:overworld"))),
+                new BlockPos(Tags.getIntOr(tag, "x", 0), Tags.getIntOr(tag, "y", 0), Tags.getIntOr(tag, "z", 0))));
         level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
                 SoundSource.PLAYERS, 1.0F, 1.0F);
         player.sendSystemMessage(Component.literal("[TeleLink] Teleporters destination has been set!")

@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -26,7 +28,7 @@ import java.util.List;
 
 /** The five-long legacy gas turbine multiblock. */
 public class MachineTurbineGas extends BlockMultiblockMachine
-        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
+        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay, ICapabilityBlock {
 
     public MachineTurbineGas(Properties properties) {
         super(properties);
@@ -131,4 +133,12 @@ public class MachineTurbineGas extends BlockMultiblockMachine
                 {-5, 1, 0, ForgeDirection.WEST.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerOut().fluidIn().fluidOut().items().fe()
+            .faces(BlockEntity.class, (be, side) -> side != Direction.DOWN)
+            .fluidFaces(BlockEntity.class, (be, side) -> side != Direction.DOWN);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

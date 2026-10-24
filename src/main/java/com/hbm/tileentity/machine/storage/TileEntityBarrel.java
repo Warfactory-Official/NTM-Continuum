@@ -3,6 +3,10 @@ package com.hbm.tileentity.machine.storage;
 import dev.golem.core.world.Explosions;
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.interfaces.IOverpressurable;
+import com.hbm.uninos.graph.EndpointRegistry;
+import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.machine.BlockFluidBarrel;
@@ -60,12 +64,19 @@ import com.hbm.tileentity.TilePortShapes;
  * the speeds and buffer mode's LOW priority.
  */
 public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive,
-        WorldlyContainer {
+        WorldlyContainer, IOverpressurable {
+
+    public static final int MODE_RECEIVE = 0;
+    public static final int MODE_BUFFER = 1;
+    public static final int MODE_SEND = 2;
+    public static final int MODE_NONE = 3;
+    private static final FluidTankNTM[] NO_TANKS = {};
 
     public final FluidTankNTM tank;
-    public short mode = 0;
+    public short mode = MODE_RECEIVE;
     public static final short MODES = 4;
     public byte lastRedstone = 0;
+    private boolean pressureRetired;
 
     public TileEntityBarrel(BlockPos pos, BlockState state) {
         super(ModFluidNetBlockEntities.BARREL.get(), pos, state, 6);
@@ -97,43 +108,55 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
 
     @Override
     public long getDemand(FluidType type, int pressure) {
-        if (this.mode == 2 || this.mode == 3) return 0;
+        if (pressureRetired || mode == MODE_SEND || mode == MODE_NONE) return 0;
         if (tank.getPressure() != pressure) return 0;
-        return type == tank.getTankType() ? tank.getMaxFill() - tank.getFill() : 0;
+        return tank.accepts(type) ? tank.getMaxFill() - tank.getFill() : 0;
     }
 
     @Override
     public long getFluidAvailable(FluidType type, int pressure) {
-        if (this.mode == 0 || this.mode == 3) return 0;
+        if (pressureRetired || mode == MODE_RECEIVE || mode == MODE_NONE) return 0;
         if (tank.getPressure() != pressure) return 0;
-        return type == tank.getTankType() ? tank.getFill() : 0;
+        return tank.provides(type) ? tank.getFill() : 0;
     }
 
     protected PortDef[] cachedPorts;
     public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityBarrel barrel) {
-        barrel.setupFluidPorts(barrel.getPorts());
-        barrel.updatePortFIFO();
+        barrel.tickServer();
+    }
 
-        byte comp = barrel.getComparatorPower(); // do comparator shenanigans
-        if (comp != barrel.lastRedstone) {
-            barrel.setChanged();
-            level.updateNeighbourForOutputSignal(pos, state.getBlock());
+    public void tickServer() {
+        if (pressureRetired) {
+            networkPackNT();
+            return;
         }
-        barrel.lastRedstone = comp;
+        setupFluidPorts(getPorts());
+        updatePortFIFO();
 
-        barrel.tank.setType(barrel.inventory, 0, 1);
-        MachineFluidContainerIO.load(barrel.tank, barrel.inventory, 2, 3);
-        MachineFluidContainerIO.unload(barrel.tank, barrel.inventory, 4, 5);
+        byte comp = getComparatorPower();
+        if (comp != lastRedstone) {
+            setChanged();
+            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+        }
+        lastRedstone = comp;
 
-        if (barrel.tank.getFill() > 0) barrel.checkFluidInteraction();
-        barrel.networkPackNT(); // 1.7 packed every 50 ticks; unchanged payloads are skipped here
+        tank.setType(inventory, 0, 1);
+        MachineFluidContainerIO.load(tank, inventory, 2, 3);
+        MachineFluidContainerIO.unload(tank, inventory, 4, 5);
+
+        if (tank.getFill() > 0) checkFluidInteraction();
+        networkPackNT();
+    }
+
+    public void setMode(int next) {
+        mode = (short) Mth.clamp(next, MODE_RECEIVE, MODE_NONE);
+        setChanged();
     }
 
     public void cycleMode() {
-        mode = (short) ((mode + 1) % MODES);
-        setChanged();
+        setMode((mode + 1) % MODES);
     }
 
     /**
@@ -175,7 +198,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         return type.isAntimatter();
     }
 
-    /** Replaces the blast of antimatter filled into a matter barrel (ADDON-API-INVENTORY H-68). */
+    /** Replaces the blast of antimatter filled into a matter barrel. */
     @FunctionalInterface
     public interface AntimatterBlast {
         /** Called after the barrel was removed; return true when the listener made the blast. */
@@ -186,7 +209,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
     public static final Hook<AntimatterBlast> ANTIMATTER_BLAST = Hook.notifying();
 
     public void checkFluidInteraction() {
-        if (level == null || level.isClientSide()) return;
+        if (pressureRetired || level == null || level.isClientSide()) return;
         Block b = getBlockState().getBlock();
         FluidType type = tank.getTankType();
         BlockPos pos = getBlockPos();
@@ -213,11 +236,12 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
             if (level.getRandom().nextInt(3 * 60 * 20) == 0) level.destroyBlock(pos, false);
         }
         if (b == ModFluidNetBlocks.barrel_steel.get() && isHighlyCorrosive(type)) {
-            int fill = tank.getFill();
+            var contents = new CompoundTag();
+            tank.writeCarried(contents, "tank");
             level.setBlock(pos, ModFluidNetBlocks.barrel_corroded.get().defaultBlockState(), 3);
             if (level.getBlockEntity(pos) instanceof TileEntityBarrel barrel) {
-                barrel.tank.setTankType(type);
-                barrel.tank.setFill(fill);
+                barrel.tank.withPressure(tank.getPressure());
+                barrel.tank.readCarried(contents, "tank");
             }
         }
         // For when Tom's firestorm hits a barrel full of water
@@ -236,37 +260,82 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
 
     @Override
     public boolean canConnect(FluidType fluid, ForgeDirection dir) {
-        return fluid == tank.getTankType();
+        return !pressureRetired && tank.joins(fluid);
     }
 
-    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tank}; }
-    @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return pressureRetired ? NO_TANKS : new FluidTankNTM[]{tank}; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return pressureRetired ? NO_TANKS : new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 
     @Override
     public long getProviderSpeed(FluidType type, int pressure) {
-        return (mode == 1 || mode == 2) ? 1_000_000_000 : 0;
+        return !pressureRetired && (mode == MODE_BUFFER || mode == MODE_SEND) ? 1_000_000_000 : 0;
     }
 
     @Override
     public long getReceiverSpeed(FluidType type, int pressure) {
-        return (mode == 0 || mode == 1) ? 1_000_000_000 : 0;
+        return !pressureRetired && (mode == MODE_RECEIVE || mode == MODE_BUFFER) ? 1_000_000_000 : 0;
     }
 
     @Override
     public ConnectionPriority getFluidPriority() {
-        return mode == 1 ? ConnectionPriority.LOW : ConnectionPriority.NORMAL;
+        return mode == MODE_BUFFER ? ConnectionPriority.LOW : ConnectionPriority.NORMAL;
+    }
+
+    /** An optional fluid-specific rupture; the barrel retires before the selected blast is emitted. */
+    public interface PressureBlast {
+        boolean accepts(FluidType fluid, int power);
+        void explode(ServerLevel level, BlockPos pos, FluidType fluid, int power);
+    }
+
+    /** The first matching reaction replaces the ordinary strength-five receiver rupture. */
+    public static final Hook<PressureBlast> PRESSURE_BLAST = Hook.notifying();
+
+    @Override
+    public void explode(Level level, BlockPos pos) {
+        if (!(level instanceof ServerLevel server) || pressureRetired) return;
+        var fluid = tank.getTankType();
+        int power = Math.min(tank.getFill() / 100, 90);
+        for (var reaction : PRESSURE_BLAST) {
+            if (!reaction.accepts(fluid, power)) continue;
+            pressureRetired = true;
+            retireNetwork();
+            setChanged();
+            reaction.explode(server, pos, fluid, power);
+            return;
+        }
+        server.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        Explosions.explode(server, null, pos.getX() + .5D, pos.getY() + .5D, pos.getZ() + .5D, 5F,
+                Level.ExplosionInteraction.NONE);
+    }
+
+    private void retireNetwork() {
+        destroyAllPorts();
+        if (level instanceof ServerLevel server) {
+            // Retire a saved conductor cell too, even if this receiver has not rebuilt its ports after loading.
+            FluidGraph.get(server).removeNode(worldPosition.asLong());
+            EndpointRegistry.of(server).withdraw(worldPosition);
+            LevelNodeGraph.invalidateEndpointsAround(server, worldPosition);
+        }
+    }
+
+    @Override
+    public void clearRemoved() {
+        super.clearRemoved();
+        if (pressureRetired) retireNetwork();
     }
 
     // --- item form: the 1.7 IPersistentNBT (only a non-empty barrel carries its tank) ---
 
     @Override
     protected CompoundTag collectCarriedData() {
-        if (tank.getFill() == 0) return null;
+        if (tank.getFill() == 0 && !tank.isStrict()) return null;
         CompoundTag data = new CompoundTag();
         data.putInt("fill", tank.getFill());
         Fluids.write(data, "type", tank.getTankType());
         data.putInt("max", tank.getMaxFill());
+        if (tank.isStrict()) Fluids.write(data, "pin", tank.getDeclaredFluid());
+        if (tank.getFill() > 0 && tank.getFluid() != tank.getTankType()) Fluids.write(data, "held", tank.getFluid());
         data.putShort("mode", mode);
         return data;
     }
@@ -274,7 +343,9 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
     @Override
     protected void applyCarriedData(CompoundTag data) {
         tank.setTankType(Fluids.read(data, "type"));
-        tank.setFill(Math.min(Tags.getIntOr(data, "fill", 0), tank.getMaxFill()));
+        if (Tags.contains(data, "pin")) tank.setTankTypeByIdentifier(Fluids.readExact(data, "pin"));
+        var resource = Tags.contains(data, "held") ? Fluids.readExact(data, "held") : tank.getFluid();
+        tank.fill(resource, Math.min(Tags.getIntOr(data, "fill", 0), tank.getMaxFill()), true);
         mode = (short) Tags.getIntOr(data, "mode", 0);
     }
 
@@ -319,6 +390,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         super.saveData(output);
         output.putShort("mode", mode);
         tank.writeToNBT(output, "tank");
+        if (pressureRetired) output.putBoolean("pressureRetired", true);
     }
 
     @Override
@@ -326,6 +398,8 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         super.loadData(input);
         mode = input.getShortOr("mode", (short) 0);
         tank.readFromNBT(input, "tank");
+        pressureRetired = input.getBooleanOr("pressureRetired", false);
+        if (pressureRetired) retireNetwork();
     }
 
     // --- Redstone over Radio ---
@@ -354,11 +428,9 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         if ((PREFIX_FUNCTION + "setmode").equals(name) && params.length > 0) {
             int m = IRORInteractive.parseInt(params[0], 0, 3);
             if (m != this.mode) {
-                this.mode = (short) m;
-                this.markChanged();
+                setMode(m);
             } else if (params.length > 1) {
-                this.mode = (short) IRORInteractive.parseInt(params[1], 0, 3);
-                this.markChanged();
+                setMode(IRORInteractive.parseInt(params[1], 0, 3));
             }
         }
         return null;

@@ -241,7 +241,7 @@ public final class RcNukeGameTests {
         double perDegree = 2_000D * eff;
         int input = 16_000 / step.amountReq;
         int output = 16_000 / step.amountProduced;
-        int temp = (int) Math.floor((2000D - step.typeProduced.temperature) * perDegree / step.heatReq);
+        int temp = (int) Math.floor((2000D - step.typeProduced.getTemperature()) * perDegree / step.heatReq);
         int ops = Math.min(input, Math.min(output, temp));
         heater.tickServer();
         helper.assertTrue(heater.feed.getFill() == 16_000 - step.amountReq * ops && heater.steam.getFill() == step.amountProduced * ops,

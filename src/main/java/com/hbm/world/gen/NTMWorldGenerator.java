@@ -38,7 +38,21 @@ public final class NTMWorldGenerator {
             DeferredRegister.create(Registries.STRUCTURE_TYPE, Constants.MOD_ID);
     public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES =
             DeferredRegister.create(Registries.STRUCTURE_PIECE, Constants.MOD_ID);
-    private static final Reg REG = Reg.of(STRUCTURE_TYPES, STRUCTURE_PIECES);
+    public static final DeferredRegister<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<?>> STRUCTURE_PROCESSORS =
+            DeferredRegister.create(Registries.STRUCTURE_PROCESSOR, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(STRUCTURE_TYPES, STRUCTURE_PIECES, STRUCTURE_PROCESSORS);
+
+    public static final RegistryObject<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<com.hbm.world.gen.nbt.MultiblockAssemblyProcessor>> MULTIBLOCK_ASSEMBLY =
+            REG.register(Registries.STRUCTURE_PROCESSOR, "multiblock_assembly",
+                    () -> () -> com.hbm.world.gen.nbt.MultiblockAssemblyProcessor.MAP_CODEC);
+
+    public static final RegistryObject<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<com.hbm.world.gen.nbt.DuctFluidProcessor>> DUCT_FLUID =
+            REG.register(Registries.STRUCTURE_PROCESSOR, "duct_fluid",
+                    () -> () -> com.hbm.world.gen.nbt.DuctFluidProcessor.MAP_CODEC);
+
+    public static final RegistryObject<net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType<com.hbm.world.gen.nbt.LegacyBlockTableProcessor>> LEGACY_BLOCK_TABLE =
+            REG.register(Registries.STRUCTURE_PROCESSOR, "legacy_block_table",
+                    () -> () -> com.hbm.world.gen.nbt.LegacyBlockTableProcessor.MAP_CODEC);
 
     /** {@code hbm:nbt}: one registered {@link SpawnCondition} as a vanilla structure. */
     public static final RegistryObject<StructureType<NBTStructure.GenStructure>> NBT_STRUCTURE =

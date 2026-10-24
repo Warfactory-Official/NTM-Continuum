@@ -7,6 +7,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.FluidRecipeCodecs;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.inventory.recipes.loader.RecipeText;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -34,7 +35,7 @@ import net.minecraft.world.item.ItemStack;
  *
  * <p>The machine takes the <b>first</b> recipe that matches, so the order is 1.7's and load-bearing: solid-fuel rows first
  * (1.7 registers them first; the syngas one is why syngas plus tungsten dust makes solid fuel), then the bedrock-ore roasting
- * rows {@link BedrockOreChainRecipes} still adds in code (R-10), then the literal rows; inside each group, recipe-id order.
+ * rows {@link BedrockOreChainRecipes} still adds in code (R-10), then the literal rows; inside each group, authored {@code order} then recipe-id order.
  * {@code ANY_COKE} / {@code ANY_TAR} are the {@code c:cokes} / {@code c:tars} tags.
  */
 public final class PyroOvenRecipes {
@@ -47,6 +48,8 @@ public final class PyroOvenRecipes {
     public static final TagKey<Item> TARS = TagKey.create(Registries.ITEM, Ids.of("c", "tars"));
 
     public static final class PyroOvenRecipe {
+        /** Native catalog identity: a loaded resource ID, or the code row's registered input identity. */
+        public String id;
         public FluidStack inputFluid;
         public AStack inputItem;
         public FluidStack outputFluid;
@@ -54,6 +57,7 @@ public final class PyroOvenRecipes {
         public final int duration;
 
         public PyroOvenRecipe(int duration) { this.duration = duration; }
+        public PyroOvenRecipe identifiedBy(String id) { this.id = id; return this; }
         public PyroOvenRecipe in(FluidStack stack) { this.inputFluid = stack; return this; }
         public PyroOvenRecipe in(AStack stack) { this.inputItem = stack; return this; }
         public PyroOvenRecipe out(FluidStack stack) { this.outputFluid = stack; return this; }
@@ -62,7 +66,7 @@ public final class PyroOvenRecipes {
 
     public record Row(Optional<FluidStack> inputFluid, Optional<AStack> inputItem, Optional<FluidStack> outputFluid,
                       Optional<GenericRecipeCodec.ItemOut> outputItem, int duration, Optional<FluidType> solidFuel,
-                      Optional<Long> solidFuelEnergy) {}
+                      Optional<Long> solidFuelEnergy, int order) {}
 
     public static final MapCodec<Row> CODEC = FluidRecipeCodecs.checked(RecordCodecBuilder.<Row>mapCodec(i -> i.group(
             GenericRecipeCodec.FLUID_STACK.optionalFieldOf("input_fluid").forGetter(Row::inputFluid),
@@ -71,7 +75,8 @@ public final class PyroOvenRecipes {
             GenericRecipeCodec.ITEM_OUT.optionalFieldOf("output_item").forGetter(Row::outputItem),
             Codec.INT.fieldOf("duration").forGetter(Row::duration),
             GenericRecipeCodec.FLUID.optionalFieldOf("solid_fuel").forGetter(Row::solidFuel),
-            Codec.LONG.optionalFieldOf("solid_fuel_energy").forGetter(Row::solidFuelEnergy)
+            Codec.LONG.optionalFieldOf("solid_fuel_energy").forGetter(Row::solidFuelEnergy),
+            Codec.INT.optionalFieldOf("order", Integer.MAX_VALUE).forGetter(Row::order)
     ).apply(i, Row::new)), row -> row.solidFuel().isPresent() != row.solidFuelEnergy().isPresent()
             || (row.solidFuel().isPresent() && row.inputFluid().isPresent())
             ? DataResult.error(() -> "a pyrolysis row has \"input_fluid\", or \"solid_fuel\" with \"solid_fuel_energy\"")
@@ -91,8 +96,9 @@ public final class PyroOvenRecipes {
     private static void reindex() {
         List<PyroOvenRecipe> solidFuel = new ArrayList<>();
         List<PyroOvenRecipe> literal = new ArrayList<>();
-        for (Row row : TABLE.rows()) {
-            PyroOvenRecipe recipe = new PyroOvenRecipe(row.duration());
+        for (var entry : RecipeText.ordered(TABLE.entries(), e -> e.value().order())) {
+            Row row = entry.value();
+            PyroOvenRecipe recipe = new PyroOvenRecipe(row.duration()).identifiedBy(entry.id());
             if (row.solidFuel().isPresent()) {
                 // 1.7 registerSFAuto: x0.5 bonus, at least 1 mB
                 int mB = FluidRecipeCodecs.solidFuelAmount(row.solidFuelEnergy().get(), 0.5D,

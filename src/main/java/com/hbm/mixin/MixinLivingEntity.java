@@ -38,6 +38,11 @@ public class MixinLivingEntity {
         }
     }
 
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void hbm$tickStart(CallbackInfo ci) {
+        com.hbm.api.environment.Environment.livingTickStart((LivingEntity) (Object) this);
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void hbm$tick(CallbackInfo ci) {
         EntityEffectHandler.onUpdate((LivingEntity) (Object) this);

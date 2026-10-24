@@ -74,7 +74,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         var map = FluidDataMaps.FLUID_CONTAINER.byId();
         for (String full : new TreeSet<>(map.keySet())) {
             FluidDataMaps.Container c = map.get(full);
-            FluidType type = Fluids.byRegistryName(c.fluid());
+            FluidType type = Fluids.byRegistryNameExact(c.fluid());
             if (type == Fluids.NONE) continue;
             rows.add(new Fixed(full, c.empty().orElse(""), type.getName(), c.amount()));
         }

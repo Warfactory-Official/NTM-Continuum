@@ -93,6 +93,12 @@ public abstract class GenericRecipes {
         return recipeNameMap.get(name);
     }
 
+    /** The current table in display order, independent of subsequent rebuilds. */
+    public List<GenericRecipe> recipes() {
+        registerRecipes();
+        return List.copyOf(recipeOrderedList);
+    }
+
     public static void addToPool(String pool, GenericRecipe recipe) {
         blueprintPools.computeIfAbsent(pool, k -> new ArrayList<>()).add(recipe.getInternalName());
         pooledBlueprints.put(recipe.getInternalName(), recipe);

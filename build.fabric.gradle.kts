@@ -253,108 +253,9 @@ val modCfg = if (obfuscated) "modImplementation" else "implementation"
 // Loom's `localRuntime` is not remapped either way; with obfuscation off the plain config is correct.
 val devRuntime = if (obfuscated) "modLocalRuntime" else "localRuntime"
 
-/**
- * Drops Loom's cached remap of Golem Core when an upstream input is newer than it.
- *
- * Loom caches remapped mod jars under `.gradle/loom-cache/remapped_mods/remapped/<group>/<artifact>/
- * <version>/`, keyed by the *coordinates* — content is never hashed. Golem Core arrives through a
- * composite build whose version string (`0.1.0+<mc>`) is constant, so editing it produces a
- * byte-different jar under an identical cache key and Loom keeps serving the old remap. HBM then
- * compiles against a stale Golem Core with no error, no warning, and a green build.
- *
- * This was not hypothetical: the cached 1.21.1 remap was found two days old, missing methods that had
- * since been added, while `chiseledBuild` reported success. Only the obfuscated Fabric nodes are
- * affected — NeoForge does not remap, and 26.1-fabric is unobfuscated, so both see the real jar. That
- * asymmetry is what makes it dangerous: five nodes agree and the two quiet ones are wrong.
- *
- * Deleting the remap is only half of it. Loom resolves the substituted dependency at configuration
- * time, which is before the composite build's `jar` task could possibly run, so it re-remaps
- * whichever jar is already sitting in Golem Core's `build/libs` — and if that jar predates the edit
- * too, the fresh remap is just as stale as the one that was deleted. The build then reports zero
- * `:Golem-Core:` tasks and a missing symbol for a method that plainly exists. `checkGolemJarIsFresh`
- * below catches that case, because nothing in this build can fix it after the fact.
- *
- * Runs at configuration time because Loom resolves remapped mods before any task executes.
- */
-fun invalidateStaleGolemRemap() {
-    if (!obfuscated) return
-    val cacheRoot = rootProject.file(".gradle/loom-cache/remapped_mods/remapped/dev/golem")
-    if (!cacheRoot.isDirectory) return
-
-    val golemRoot = rootProject.file("../Golem-Core")
-    val upstream = sequence {
-        // Directory mtimes make deletions and renames visible; file mtimes cover content changes.
-        yieldAll(golemRoot.resolve("src").walkTopDown().filter { it.isFile || it.isDirectory })
-        yield(golemRoot.resolve("build.fabric.gradle.kts"))
-        yield(golemRoot.resolve("settings.gradle.kts"))
-        yield(golemRoot.resolve("stonecutter.gradle.kts"))
-        yield(golemRoot.resolve("gradle.properties"))
-        yield(golemRoot.resolve("versions/$mcVersion-fabric/gradle.properties"))
-        yieldAll(golemRoot.resolve("versions/$mcVersion-fabric/build/libs").listFiles()
-            ?.filter { it.name.endsWith(".jar") && !it.name.endsWith("-sources.jar") }
-            .orEmpty())
-    }.filter { it.isFile || it.isDirectory }.maxOfOrNull { it.lastModified() }
-
-    cacheRoot.listFiles { file -> file.isDirectory && file.name.startsWith("$mcVersion-fabric-") }
-        ?.forEach { entry ->
-            val cachedAt = entry.walkTopDown().filter { it.isFile }.maxOfOrNull { it.lastModified() }
-            if (cachedAt != null && upstream != null && upstream > cachedAt) {
-                logger.lifecycle("Golem Core changed since its cached remap; invalidating ${entry.name}.")
-                entry.deleteRecursively()
-            }
-        }
-}
-
-invalidateStaleGolemRemap()
-
-/**
- * Fails the build when Golem Core's jar is older than Golem Core's sources.
- *
- * The composite build only runs Golem Core's `jar` task when Gradle has to produce the artifact. An
- * artifact already on disk is taken as-is, at configuration time, and no `:Golem-Core:` task appears
- * in the build at all — so an edit to Golem Core that has not been rebuilt is compiled against its
- * previous self. The symptom is a `cannot find symbol` on a method that is right there in the source,
- * which reads like a broken IDE rather than a stale artifact.
- *
- * There is no way to repair this from inside the same invocation; by the time any task could run, the
- * stale jar has already been resolved and remapped. So this stops rather than warns, and names the
- * command that fixes it.
- *
- * It is wired as a task rather than run at configuration time, even though nothing it inspects
- * changes between the two. Stonecutter configures every node on every invocation, so a throw during
- * configuration aborts the build whichever node was asked for — one stale 1.20.1 jar would block a
- * 1.21.1 build that is perfectly fine. As a task it stops exactly the node that asked for it.
- *
- * It is a task and not a `doFirst` on `compileJava` for a reason that was measured, not guessed. An
- * edit to Golem Core alone changes none of this project's inputs, so `compileJava` is UP-TO-DATE and
- * a `doFirst` never runs — silently skipping the check in precisely the case it exists for, where
- * nothing recompiles and the stale jar goes on to `jar` and the run tasks unnoticed. A task with no
- * declared outputs is never up to date, and a dependency runs even when its dependent does not.
- */
-fun checkGolemJarIsFresh() {
-    if (!obfuscated) return
-
-    val golemRoot = rootProject.file("../Golem-Core")
-    val jar = golemRoot.resolve("versions/$mcVersion-fabric/build/libs")
-        .listFiles { file -> file.name.endsWith(".jar") && !file.name.endsWith("-sources.jar") }
-        ?.maxByOrNull { it.lastModified() }
-        // No jar means Gradle must build one, which is the path that works. Only a present-but-old
-        // jar is the trap.
-        ?: return
-
-    val newestSource = golemRoot.resolve("src").walkTopDown()
-        .filter { it.isFile || it.isDirectory }
-        .maxOfOrNull { it.lastModified() } ?: return
-
-    if (newestSource > jar.lastModified()) {
-        throw GradleException(
-            "Golem Core's sources are newer than ${jar.name}, and Loom has already remapped that jar. " +
-                "This node would compile against a stale Golem Core and fail on symbols that exist. " +
-                "Build Golem Core first:  (cd ../Golem-Core && sh gradlew :$mcVersion-fabric:build)\n" +
-                "To launch the client, ./client does both in the right order."
-        )
-    }
-}
+// Resolve and validate the same upstream artifacts as every other Fabric consumer.
+extra["mc_version"] = mcVersion
+apply(from = rootProject.file("../Golem-Core/gradle/mod/composite-freshness.gradle.kts"))
 
 dependencies {
     "minecraft"("com.mojang:minecraft:${prop("deps.minecraft")}")
@@ -596,19 +497,14 @@ tasks.jar {
 
 // Stonecutter rewrites the shared src/ tree in place for the active node. Both compilation and
 // resource processing must wait for that rewrite, or they consume the previous node's source state.
-val checkGolemJarFreshness = tasks.register("checkGolemJarFreshness") {
-    doLast { checkGolemJarIsFresh() }
-}
-
 tasks.compileJava {
-    dependsOn(tasks.named("stonecutterGenerate"), checkGolemJarFreshness)
+    dependsOn(tasks.named("stonecutterGenerate"))
     options.release = javaVersion
     options.compilerArgs.addAll(listOf("-Xmaxerrs", "2000"))
 }
 tasks.processResources { dependsOn(tasks.named("stonecutterGenerate")) }
 
 // Recipe ingredients are written in the 26.1 shape and converted downward for older nodes.
-extra["mc_version"] = mcVersion
 extra["java_version"] = javaVersion.toString()
 // Golem Core's shared build layer; HBM's parameters for it (golem.build.*) are in gradle.properties.
 apply(from = rootProject.file("../Golem-Core/gradle/mod/run-toolchain.gradle.kts"))

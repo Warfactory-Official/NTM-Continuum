@@ -5,6 +5,7 @@ import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.FluidRecipeCodecs;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
 import com.hbm.inventory.recipes.loader.ItemSpec;
+import com.hbm.inventory.recipes.loader.RecipeConditions;
 import com.hbm.inventory.recipes.loader.TableCodecs;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.saveddata.AnnihilatorSavedData;
@@ -90,10 +91,15 @@ public final class AnnihilatorRecipes {
     public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("annihilator", () -> CODEC);
 
     private static volatile Map<Object, AnnihilatorRecipe> current = Map.of();
+    private static volatile String builtFlags;
 
     /** Keys: an {@link Item}, a {@link FluidType}, or a {@link String} tag id; always the current rows (read-only). */
     public static Map<Object, AnnihilatorRecipe> recipes() {
-        if (current.isEmpty()) TABLE.rows();
+        var flags = RecipeConditions.fingerprint();
+        if (!flags.equals(builtFlags)) {
+            TABLE.rows();
+            if (!flags.equals(builtFlags)) reindex();
+        }
         return current;
     }
 
@@ -115,6 +121,7 @@ public final class AnnihilatorRecipes {
             }
         }
         current = Collections.unmodifiableMap(next);
+        builtFlags = RecipeConditions.fingerprint();
     }
 
     /**

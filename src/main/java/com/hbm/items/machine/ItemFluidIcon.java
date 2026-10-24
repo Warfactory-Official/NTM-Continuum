@@ -70,6 +70,6 @@ public class ItemFluidIcon extends CompatItem {
         if (amount > 0) tooltip.add(Component.literal(amount + "mB"));
         int pressure = ModDataComponents.fluidPressure(stack);
         if (pressure > 0) tooltip.add(Component.literal(pressure + "PU").withStyle(ChatFormatting.RED));
-        getFluid(stack).addInfo(tooltip);
+        getFluid(stack).clientMetadata().addInfo(tooltip, com.hbm.blocks.StandardInfo.shiftHeld());
     }
 }

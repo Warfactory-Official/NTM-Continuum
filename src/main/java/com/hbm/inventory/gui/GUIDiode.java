@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
-import com.hbm.tileentity.network.TileEntityNetworkSeparator;
+import com.hbm.tileentity.network.DiodeControl;
 import com.hbm.packet.ControlEventPayload;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
@@ -22,21 +22,21 @@ import net.minecraft.sounds.SoundEvents;
  */
 public final class GUIDiode extends CompatScreen {
 
-    private final TileEntityNetworkSeparator diode;
+    private final DiodeControl diode;
     private EditBox textThroughput;
     private int priority;
     private int buttonX, buttonY;
 
-    public GUIDiode(TileEntityNetworkSeparator diode) {
-        super(Component.translatable("block.hbm.network_separator"));
+    public GUIDiode(DiodeControl diode) {
+        super(diode.getControlTitle());
         this.diode = diode;
-        this.priority = diode.priority.ordinal();
+        this.priority = diode.getPriority().ordinal();
     }
 
     @Override
     protected void init() {
         textThroughput = new EditBox(font, this.width / 2 - 150, 100, 90, 20, Component.empty());
-        textThroughput.setValue("" + diode.configuredLimit);
+        textThroughput.setValue("" + diode.getConfiguredLimit());
         textThroughput.setMaxLength(11);
         addRenderableWidget(textThroughput);
         focusedEditBoxForInput = textThroughput;

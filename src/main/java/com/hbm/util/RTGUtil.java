@@ -9,6 +9,18 @@ import net.minecraft.world.item.ItemStack;
 public final class RTGUtil {
     private RTGUtil() {}
 
+    public enum HalfLifeType { LONG, MEDIUM, SHORT }
+
+    /** 1.7 RTG lifespan conversion; its float arithmetic is part of the authored pellet lifetime. */
+    public static long getLifespan(float halfLife, HalfLifeType type, boolean realYears) {
+        float life = switch (type) {
+            case LONG -> (48000 * (realYears ? 365 : 100) * 100) * halfLife;
+            case MEDIUM -> (48000 * (realYears ? 365 : 100)) * halfLife;
+            case SHORT -> 48000 * halfLife;
+        };
+        return (long) life;
+    }
+
     public static short getPower(ItemRTGPellet fuel, ItemStack stack) {
         // 1.7: the output only falls with decay when 9.00_scaleRTGPower (or 528 mode) is on; the default is flat heat
         return MachineConfig.scaleRTGPowerActive() ? ItemRTGPellet.getScaledPower(fuel, stack) : fuel.getHeat();

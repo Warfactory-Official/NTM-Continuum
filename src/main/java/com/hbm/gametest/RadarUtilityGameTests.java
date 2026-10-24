@@ -126,10 +126,7 @@ public final class RadarUtilityGameTests {
         TileEntityMachineTeleporter tele = GameTestHelpers.blockEntity(helper, pad, TileEntityMachineTeleporter.class);
         helper.assertTrue(tele != null, "no teleporter block entity");
         BlockPos exit = helper.absolutePos(new BlockPos(4, 1, 4));
-        tele.targetX = exit.getX();
-        tele.targetY = exit.getY();
-        tele.targetZ = exit.getZ();
-        tele.targetDim = Ids.keyId(helper.getLevel().dimension()).toString();
+        tele.setTarget(net.minecraft.core.GlobalPos.of(helper.getLevel().dimension(), exit));
         tele.power = TileEntityMachineTeleporter.maxPower;
 
         BlockPos abs = helper.absolutePos(pad);

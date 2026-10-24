@@ -42,10 +42,10 @@ public class ContainerMachinePress extends AbstractContainerMenu {
         this.machine = press != null ? press : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 26, 53));   // fuel
-        this.addSlot(validated(1, 80, 17));    // stamp
-        this.addSlot(validated(2, 80, 53));    // input
-        this.addSlot(new Slot(this.machine, 3, 140, 35) { // output (take only)
+        this.addSlot(validated(TileEntityMachinePress.SLOT_FUEL, 26, 53));   // fuel
+        this.addSlot(validated(TileEntityMachinePress.SLOT_STAMP, 80, 17));    // stamp
+        this.addSlot(validated(TileEntityMachinePress.SLOT_INPUT, 80, 53));    // input
+        this.addSlot(new Slot(this.machine, TileEntityMachinePress.SLOT_OUTPUT, 140, 35) { // output (take only)
             @Override public boolean mayPlace(ItemStack stack) { return false; }
         });
         for (int i = 0; i < 9; i++) this.addSlot(validated(4 + i, 8 + i * 18, 84)); // storage buffer

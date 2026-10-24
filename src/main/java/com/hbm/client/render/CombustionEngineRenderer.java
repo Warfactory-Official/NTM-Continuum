@@ -60,8 +60,8 @@ public final class CombustionEngineRenderer
         state.doorAngle = be.prevDoorAngle + (be.doorAngle - be.prevDoorAngle) * partialTicks;
 
         FluidType tankType = be.tank.getTankType();
-        state.canisterColor = FluidContainers.hasCanister(tankType)
-                ? legacyCanisterTint(FluidContainers.canisterColor(tankType)) : 0xFFFFFFFF;
+        state.canisterColor = FluidContainers.clientHasCanister(tankType)
+                ? legacyCanisterTint(FluidContainers.clientCanisterColor(tankType)) : 0xFFFFFFFF;
     }
 
     // The legacy renderer tints with CD_Canister.color (the hbm:fluid_containers data map), not FluidType.color.

@@ -21,6 +21,12 @@ import net.minecraft.world.item.ItemStack;
  */
 public interface IHazardTransformer {
 
+    /** Whether a carried applicator must resolve mutable nested/component state again at use time. */
+    default boolean readsLiveStorage() { return false; }
+
+    /** Narrows a live transformer to stacks whose state it actually reads. */
+    default boolean readsLiveStorage(ItemStack stack) { return readsLiveStorage(); }
+
     default void transformPre(ItemStack stack, List<HazardEntry> entries) {}
 
     default void transformPost(ItemStack stack, List<HazardEntry> entries) {}

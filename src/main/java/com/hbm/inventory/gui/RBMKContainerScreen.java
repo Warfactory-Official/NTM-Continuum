@@ -19,7 +19,7 @@ abstract class RBMKContainerScreen<T extends AbstractContainerMenu> extends Comp
     protected final void fluidTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y, int w, int h,
             int mouseX, int mouseY) {
         if (region(x, y, w, h, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font, List.of(tank.getTankType().getDisplayName(),
+            GuiDraw.tooltip(graphics, font, List.of(tank.getTankType().clientMetadata().getDisplayName(),
                     Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
         }
     }

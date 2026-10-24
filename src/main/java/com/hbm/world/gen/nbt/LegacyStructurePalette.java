@@ -3,6 +3,7 @@ package com.hbm.world.gen.nbt;
 import com.hbm.Constants;
 import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.machine.rbmk.RBMKBase;
 import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 import dev.golem.core.world.LegacyBlockStates;
@@ -72,6 +73,8 @@ public final class LegacyStructurePalette {
     public enum Kind {
         /** Place {@link Resolved#state()} as-is. */
         STATE,
+        /** Unresolved legacy block: runtime retains the authored air fallback; conversion must report it. */
+        UNKNOWN,
         /** A multiblock core: place the state, then let the multiblock fill its own cells. */
         CORE,
         /** A multiblock cell the core fills: place nothing. */
@@ -407,6 +410,12 @@ public final class LegacyStructurePalette {
     /** The rule-less mapping: multiblock core/cell, stairs, otherwise the generic per-property rule. */
     private static Resolved fromBlock(Block block, int meta) {
         BlockState base = block.defaultBlockState();
+        if (block instanceof RBMKBase) {
+            if (meta < 12) return new Resolved(Blocks.AIR.defaultBlockState(), Kind.CELL);
+            var lid = meta == 13 ? RBMKBase.Lid.GLASS : meta == 15 ? RBMKBase.Lid.CONCRETE : RBMKBase.Lid.NONE;
+            return new Resolved(base.setValue(BlockMultiblockCore.FACING, RBMKBase.DIR_NO_LID)
+                    .setValue(RBMKBase.LID, lid), Kind.CORE);
+        }
         if (block instanceof BlockMultiblockCore) {
             // 1.7 BlockDummyable: the core carries ForgeDirection + 10; every other meta is a cell the core fills
             if (meta >= 12) return new Resolved(with(base, "facing", forge(meta - 10)), Kind.CORE);
@@ -418,7 +427,7 @@ public final class LegacyStructurePalette {
 
     private static Resolved unknown(String name) {
         if (WARNED.add(name)) Constants.LOG.warn("[NBTStructure] no port block for 1.7 structure block {}, placing air", name);
-        return Resolved.of(Blocks.AIR.defaultBlockState());
+        return new Resolved(Blocks.AIR.defaultBlockState(), Kind.UNKNOWN);
     }
 
     /**

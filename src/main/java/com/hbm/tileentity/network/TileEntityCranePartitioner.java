@@ -24,7 +24,7 @@ public class TileEntityCranePartitioner extends TileEntityMachineBase implements
     /** 1.7's 45 queue and 45 declog slots. */
     public static final int SLOT_COUNT = 45;
     /**
-     * Queue ({@code INPUT_COUNT}) and declog ({@code OUTPUT_COUNT}) slot counts (ADDON-API-INVENTORY V-176), 1.7's 45 and
+     * Queue ({@code INPUT_COUNT}) and declog ({@code OUTPUT_COUNT}) slot counts, 1.7's 45 and
      * 45 in plain HBM; NTM: Space sets hbm-space's 96 and 8. Set before any partitioner exists (an addon's
      * {@code declare}); the inventory is saved by slot, so a world keeps what fits.
      */
@@ -102,10 +102,16 @@ public class TileEntityCranePartitioner extends TileEntityMachineBase implements
 
     /** 1.7 {@code isItemValidForSlot}: automation may only queue acidizer inputs; the belt path fills the declog band directly. */
     @Override
-    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
-        return slot <= inputs - 1 && getAmount(stack) >= 1;
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return slot < inputs && getAmount(stack) >= 1;
     }
 
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
+        return canPlaceItem(slot, stack);
+    }
+
+    /** The backing handler also accepts rejected belt items into the declog band. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return slot >= inputs || getAmount(stack) >= 1;

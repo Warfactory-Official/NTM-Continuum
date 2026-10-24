@@ -60,8 +60,12 @@ import com.hbm.tileentity.TilePortShapes;
 public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2,
         IFluidStandardTransceiverMK2, WorldlyContainer, IControlReceiver, IUpgradeInfoProvider, IRORValueProvider, IRORInteractive {
 
+    public static final int SLOT_INPUT_START = 4;
+    public static final int SLOT_OUTPUT = 16;
+    public static final int SLOT_COUNT = SLOT_OUTPUT + 1;
+
     /** Slots a hopper/pipe may touch: the 12 inputs (insert) + the output (extract). */
-    private static final int[] IO_SLOTS = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    private static final int[] IO_SLOTS = java.util.stream.IntStream.range(SLOT_INPUT_START, SLOT_COUNT).toArray();
 
     public long power;
     public long maxPower = 100_000;
@@ -86,9 +90,9 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     private final Random rand = new Random();
 
     public TileEntityMachineAssemblyMachine(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_ASSEMBLY_MACHINE.get(), pos, state, 17);
+        super(ModBlockEntities.MACHINE_ASSEMBLY_MACHINE.get(), pos, state, SLOT_COUNT);
         AssemblyMachineRecipes.INSTANCE.registerRecipes(); // idempotent; registries are flushed by now
-        this.assemblerModule = new ModuleMachineAssembler(0, this, this.inventory).itemInput(4).itemOutput(16)
+        this.assemblerModule = new ModuleMachineAssembler(0, this, this.inventory).itemInput(SLOT_INPUT_START).itemOutput(SLOT_OUTPUT)
                 .fluidInput(inputTank).fluidOutput(outputTank);
     }
 
@@ -102,7 +106,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         if (slot == 0) return true;                                       // battery slot (1.7 accepts anything)
         if (slot == 1) return stack.getItem() instanceof ItemBlueprints;  // template
         if (slot >= 2 && slot <= 3) return Library.isMachineUpgrade(stack); // upgrades (any type, like SlotUpgrade)
-        if (slot == 16) return false;                                     // output
+        if (slot == SLOT_OUTPUT) return false;                                     // output
         // recipe inputs 4..15: accept the current recipe's inputs OR any recipe in the inserted
         // template's pool (so an ingredient can go in before the recipe auto-selects)
         return assemblerModule.isItemValidForPool(slot, stack, inventory.getStackInSlot(1));
@@ -117,12 +121,12 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot >= 4 && slot <= 15 && isItemValidForSlot(slot, stack);
+        return slot >= SLOT_INPUT_START && slot < SLOT_OUTPUT && isItemValidForSlot(slot, stack);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot == 16 || assemblerModule.isSlotClogged(slot); // 1.7: the output, or a clogged input
+        return slot == SLOT_OUTPUT || assemblerModule.isSlotClogged(slot); // 1.7: the output, or a clogged input
     }
 
     // --- server: power + processing ---

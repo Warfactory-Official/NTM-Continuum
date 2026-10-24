@@ -4,7 +4,6 @@ import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.ItemSpec;
 import com.hbm.inventory.recipes.loader.TableCodecs;
-import com.hbm.items.ModItems;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -48,8 +47,8 @@ public final class SawmillRecipes {
     /** The modern equivalent of the old {@code stickWood} ore-dictionary entry. */
     public static final TagKey<Item> WOODEN_RODS = TagKey.create(Registries.ITEM, Ids.of("c", "rods/wooden"));
 
-    /** What the recipe viewer shows: an input, its output and the sawdust chance in percent. */
-    public record SawmillRecipe(AStack input, ItemStack output, ItemStack secondary, int secondaryChance) {}
+    /** The recipe viewer's effective inputs, primary output and unrounded sawdust probability. */
+    public record SawmillRecipe(List<ItemStack> input, ItemStack output, float sawdustChance) {}
 
     /** The input's crafting-table result, if it is in {@code require}, scaled by {@code multiply / divide}. */
     public record CraftingResult(TagKey<Item> require, int multiply, int divide) {
@@ -92,19 +91,26 @@ public final class SawmillRecipes {
     /** The row that saws {@code input} (the first match by order), or null. */
     public static @Nullable Row match(ItemStack input) {
         if (input.isEmpty()) return null;
-        for (Row row : index()) if (row.input().matchesRecipe(input, true)) return row;
+        return firstMatch(index(), input);
+    }
+
+    private static @Nullable Row firstMatch(List<Row> candidates, ItemStack input) {
+        for (var row : candidates) if (row.input().matchesRecipe(input, true)) return row;
         return null;
     }
 
-    /** The recipe viewer's list, one entry per visible row. */
+    /** Visible rows contain only inputs that actually select that row, including addon overrides. */
     public static List<SawmillRecipe> getRecipes() {
-        List<SawmillRecipe> out = new ArrayList<>();
-        for (Row row : index()) {
+        var out = new ArrayList<SawmillRecipe>();
+        // Use one snapshot: a table reload must not compare old rows against a newer match index.
+        var snapshot = index();
+        for (var row : snapshot) {
             if (row.hidden()) continue;
-            boolean sawdust = row.sawdustChance() > 0F;
-            out.add(new SawmillRecipe(row.input(), row.output().stack(),
-                    sawdust ? new ItemStack(ModItems.powder_sawdust.get()) : ItemStack.EMPTY,
-                    sawdust ? Math.round(row.sawdustChance() * 100F) : 0));
+            var input = row.input().getDisplayStacks().stream()
+                    .filter(stack -> !stack.isEmpty() && firstMatch(snapshot, stack) == row)
+                    .map(ItemStack::copy).toList();
+            if (input.isEmpty()) continue;
+            out.add(new SawmillRecipe(input, row.output().stack(), row.sawdustChance()));
         }
         return out;
     }

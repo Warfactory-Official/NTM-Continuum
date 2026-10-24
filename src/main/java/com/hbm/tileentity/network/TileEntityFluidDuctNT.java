@@ -116,9 +116,9 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        FluidType old = this.type;
-        this.type = Fluids.read(input, "type");
-        if (old != this.type) remesh(); // the coated ducts' block tint is the fluid's colour
+        var old = this.type;
+        setFluidType(Fluids.readExact(input, "type"));
+        if (old != this.type) remesh();
     }
 
     @Override
@@ -142,7 +142,7 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
     @Override
     public void pasteSettings(CompoundTag nbt, int index, Level level,
                               Player player, BlockPos pos) {
-        FluidType[] fluids = Fluids.readList(nbt, "fluids");
+        FluidType[] fluids = Fluids.readListExact(nbt, "fluids");
         if (fluids.length == 0) return;
         FluidType fluid = index < fluids.length ? fluids[index] : Fluids.NONE;
         boolean ctrl = ToolKeybinds.getKeyPressed(player,

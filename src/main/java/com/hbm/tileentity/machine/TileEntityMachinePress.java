@@ -38,9 +38,14 @@ import org.jspecify.annotations.Nullable;
  * <p>Slots: 0 fuel, 1 stamp, 2 input, 3 output, 4–12 storage buffer.
  *
  * <p>The {@code press_preheater} block (speeds up the stroke) lives in {@code com.hbm.production}. The
- * press-operate sound is not implemented (IMPLEMENTATION.md §18).
+ * press-operate sound is not implemented.
  */
 public class TileEntityMachinePress extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
+    public static final int SLOT_FUEL = 0;
+    public static final int SLOT_STAMP = 1;
+    public static final int SLOT_INPUT = 2;
+    public static final int SLOT_OUTPUT = 3;
+
 
     private static final int[] SLOTS_DOWN = {3};            // output only (extract from below)
     private static final int[] SLOTS_SIDE = {0, 1, 2};      // fuel / stamp / input (insert from the sides)
@@ -125,13 +130,13 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         }
 
         // Consume fuel into burnTime when below the threshold.
-        ItemStack fuel = te.inventory.getStackInSlot(0);
+        ItemStack fuel = te.inventory.getStackInSlot(SLOT_FUEL);
         if (!fuel.isEmpty() && te.burnTime < 200 && Compat.burnDuration(level, fuel) > 0) {
             te.burnTime += Compat.burnDuration(level, fuel);
             ItemStack remainder = Compat.craftingRemainder(fuel); // e.g. lava bucket -> empty bucket
             fuel.shrink(1);
             if (fuel.isEmpty()) {
-                te.inventory.setStackInSlot(0, remainder);
+                te.inventory.setStackInSlot(SLOT_FUEL, remainder);
             }
             te.setChanged();
         }
@@ -140,13 +145,13 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     }
 
     private void craftItem() {
-        ItemStack input = inventory.getStackInSlot(2);
-        ItemStack stamp = inventory.getStackInSlot(1);
+        ItemStack input = inventory.getStackInSlot(SLOT_INPUT);
+        ItemStack stamp = inventory.getStackInSlot(SLOT_STAMP);
         ItemStack output = PressRecipes.getOutput(input, stamp);
         if (output.isEmpty()) return;
 
-        ItemStack outSlot = inventory.getStackInSlot(3);
-        if (outSlot.isEmpty()) inventory.setStackInSlot(3, output.copy());
+        ItemStack outSlot = inventory.getStackInSlot(SLOT_OUTPUT);
+        if (outSlot.isEmpty()) inventory.setStackInSlot(SLOT_OUTPUT, output.copy());
         else outSlot.grow(output.getCount());
 
         input.shrink(1);
@@ -158,20 +163,20 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         if (!stamp.isDamageableItem()) return;
         stamp.setDamageValue(stamp.getDamageValue() + 1);
         if (stamp.getDamageValue() >= stamp.getMaxDamage()) {
-            inventory.setStackInSlot(1, ItemStack.EMPTY);
+            inventory.setStackInSlot(SLOT_STAMP, ItemStack.EMPTY);
         }
     }
 
     public boolean canProcess() {
         if (burnTime < 200) return false;
-        ItemStack stamp = inventory.getStackInSlot(1);
-        ItemStack input = inventory.getStackInSlot(2);
+        ItemStack stamp = inventory.getStackInSlot(SLOT_STAMP);
+        ItemStack input = inventory.getStackInSlot(SLOT_INPUT);
         if (stamp.isEmpty() || input.isEmpty()) return false;
 
         ItemStack output = PressRecipes.getOutput(input, stamp);
         if (output.isEmpty()) return false;
 
-        ItemStack outSlot = inventory.getStackInSlot(3);
+        ItemStack outSlot = inventory.getStackInSlot(SLOT_OUTPUT);
         if (outSlot.isEmpty()) return true;
         if (!ItemStacks.sameItemAndData(outSlot, output)) return false;
         return outSlot.getCount() + output.getCount() <= outSlot.getMaxStackSize();
@@ -181,11 +186,11 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     public boolean isItemValidForSlot(int i, ItemStack stack) {
         Level level = this.level;
         return switch (i) {
-            case 0 -> level != null && Compat.burnDuration(level, stack) > 0;
-            case 1 -> stack.getItem() instanceof ItemStamp;
-            case 2 -> !(stack.getItem() instanceof ItemStamp)
+            case SLOT_FUEL -> level != null && Compat.burnDuration(level, stack) > 0;
+            case SLOT_STAMP -> stack.getItem() instanceof ItemStamp;
+            case SLOT_INPUT -> !(stack.getItem() instanceof ItemStamp)
                     && (level == null || Compat.burnDuration(level, stack) <= 0);
-            case 3 -> false;
+            case SLOT_OUTPUT -> false;
             default -> i >= 4 && i <= 12;
         };
     }
@@ -227,7 +232,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         buf.writeInt(speed);
         buf.writeInt(burnTime);
         buf.writeInt(progress);
-        ItemStacks.writeOptional(buf, inventory.getStackInSlot(2));
+        ItemStacks.writeOptional(buf, inventory.getStackInSlot(SLOT_INPUT));
     }
 
     @Override

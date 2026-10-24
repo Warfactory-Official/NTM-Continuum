@@ -59,6 +59,25 @@ public class ContaminationUtil {
 
     public static final String RAD_MULT_KEY = "hbmradmultiplier";
 
+    /** An addon's neutron policy shares HBM's item components and persistent living props. */
+    public interface NeutronSystem {
+        boolean enabled();
+        float stackRads(ItemStack stack);
+        boolean updateStack(ItemStack stack, float rad, float decay);
+        boolean contaminate(LivingEntity entity, ContaminationType type, double amount);
+    }
+
+    private static NeutronSystem neutronSystem;
+
+    public static void registerNeutronSystem(NeutronSystem system) {
+        if (neutronSystem != null) throw new IllegalStateException("A neutron system is already installed");
+        neutronSystem = java.util.Objects.requireNonNull(system);
+    }
+
+    public static NeutronSystem neutronSystem() {
+        return neutronSystem;
+    }
+
     /**
      * Calculates how much radiation can be applied to this entity by calculating resistance.
      */
@@ -216,6 +235,7 @@ public class ContaminationUtil {
 
     public static double getPlayerRads(LivingEntity entity) {
         double rads = HbmLivingProps.getRadBuf(entity);
+        if (neutronSystem != null) return rads;
         if (entity instanceof Player)
             rads = rads + HbmLivingProps.getNeutron(entity) * 20;
         return rads;
@@ -231,8 +251,9 @@ public class ContaminationUtil {
         return HazardSystem.getRawRadsFromStack(stack) > 0;
     }
 
-    /** Neutron activation reads, data-component based; system is config-off, kept minimal. */
+    /** Total stored activation, using an addon's policy when one is installed. */
     public static float getNeutronRads(ItemStack stack) {
+        if (neutronSystem != null) return neutronSystem.stackRads(stack);
         if (stack.isEmpty() || isRadItem(stack)) return 0F;
         return ModDataComponents.NEUTRON_ACTIVATION.getOr(stack, 0F) * stack.getCount();
     }
@@ -244,6 +265,7 @@ public class ContaminationUtil {
 
     /** The old drum-side neutron activation update, expressed with the modern item component. */
     public static boolean neutronActivateItem(ItemStack stack, float rad, float decay) {
+        if (neutronSystem != null) return neutronSystem.updateStack(stack, rad, decay);
         if (stack.isEmpty() || stack.getCount() != 1 || isRadItem(stack)) return false;
         float previous = ModDataComponents.NEUTRON_ACTIVATION.getOr(stack, 0F);
         float next = previous * decay + rad / stack.getCount();
@@ -259,8 +281,18 @@ public class ContaminationUtil {
         return false;
     }
 
+    /** Applies one exposure or cleanup pass to main inventory, armour and offhand. */
+    public static boolean neutronActivateInventory(Player player, float rad, float decay) {
+        boolean changed = false;
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            changed |= neutronActivateItem(player.getInventory().getItem(slot), rad, decay);
+        }
+        return changed;
+    }
+
     /** Adds the old neutron-activation radioactive tooltip lines to the shared item tooltip path. */
     public static void addNeutronRadInfo(ItemStack stack, List<Component> list) {
+        if (neutronSystem != null) return; // the installed system supplies a normal radiation hazard entry
         float activation = getNeutronRads(stack);
         if (activation <= 0F) return;
 
@@ -292,7 +324,7 @@ public class ContaminationUtil {
     }
 
     /**
-     * Asked after the mutation check and before 1.7's immunity list (ADDON-API-INVENTORY H-76): the first listener that
+     * Asked after the mutation check and before 1.7's immunity list: the first listener that
      * does not {@code PASS} decides ({@code ALLOW} immune, {@code DENY} not). HBM registers none. NTM: Space: hbm-space
      * dropped the ocelot (and so the cat) from the list.
      */
@@ -505,6 +537,10 @@ public class ContaminationUtil {
     }
 
     public static boolean contaminate(LivingEntity entity, HazardType hazard, ContaminationType cont, double amount) {
+
+        if (hazard == HazardType.NEUTRON && neutronSystem != null) {
+            return neutronSystem.contaminate(entity, cont, amount);
+        }
 
         if (hazard == HazardType.RADIATION) {
             double radEnv = HbmLivingProps.getRadEnv(entity);

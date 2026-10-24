@@ -33,6 +33,7 @@ import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import com.hbm.items.block.ItemBlockDecoVariant;
+import com.hbm.items.ItemFamily;
 import com.hbm.items.block.ItemBlockLockableCrate;
 import dev.golem.core.Ids;
 import dev.golem.core.dejson.Dispatch;
@@ -305,6 +306,11 @@ public final class ModDecoCrateBlocks {
                 BlockPlushie.PlushieType type = BlockPlushie.PlushieType.of(i);
                 return type.inscription == null ? List.of() : List.of(Component.literal(type.inscription));
             });
+    /** Variant-family views over the existing registrations, also joinable by addons. */
+    public static final ItemFamily<BlockBobble.BobbleType, ItemBlockDecoVariant> bobblehead_family =
+            ItemFamily.of(BlockBobble.BobbleType.class, type -> bobblehead_items.get(type.ordinal()));
+    public static final ItemFamily<BlockPlushie.PlushieType, ItemBlockDecoVariant> plushie_family =
+            ItemFamily.of(BlockPlushie.PlushieType.class, type -> plushie_items.get(type.ordinal()));
     public static final List<RegistryObject<ItemBlockDecoVariant>> snowglobe_items = variants(
             DecoCrateDeclarations.trinketIds("snowglobe", BlockSnowglobe.SnowglobeType.VALUES), snowglobe,
             i -> Component.translatable("block.hbm.snowglobe"), null);

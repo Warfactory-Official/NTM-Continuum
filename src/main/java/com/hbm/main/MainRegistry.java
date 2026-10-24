@@ -356,6 +356,7 @@ public final class MainRegistry {
         ModFeatures.init(); // worldgen feature types (1.7 ores, strata, MapGen terrain, surface features)
         BossSpawnHandler.init(); // 1.7 meteor strikes and showers, rolled every level tick
         SpecialPlayers.init(); // 1.7 onPlayerRespawn: Dr_Nostalgia's hat and Beta
+        com.hbm.handler.BobmazonSignHandler.init();
         HbmPlayerProps.init(); // 1.7 onPlayerClone: reputation, shield, fbi/rad marks survive respawn
         NTMWorldGenerator.init(); // NBT structures: hbm:nbt structure type, piece type, 1.7 spawn registrations
         NTMComponentStructures.init(); // features/bunker/meteor_dungeon spawns + hardcoded piece types (WG-C)

@@ -5,6 +5,7 @@ import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
+import com.hbm.api.fluidmk2.IFluidUserMK2;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.uninos.networkproviders.FluidNetProvider;
@@ -43,8 +44,7 @@ import net.minecraft.core.BlockPos;
  *
  * <p>The buf sync runs <em>synchronously</em> on the server thread (the old off-thread packet pool has
  * no cross-loader equivalent and was a frequent source of CMEs), and the chunk-load path uses vanilla
- * NBT rather than the {@code hbmSync} byte[] trick (which can't survive {@code DataOut}, see
- * IMPLEMENTATION.md §20).
+ * NBT rather than the {@code hbmSync} byte[] trick (which can't survive {@code DataOut}).
  */
 public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTile, IBufPacketReceiver, GraphResident {
 
@@ -88,7 +88,7 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
         if (fluidInPorts != null) return;
         fluidInPorts = TilePort.oneToMany(this, tanks.length, ports);
         for (int i = 0; i < fluidInPorts.length; i++) {
-            fluidInPorts[i].setupType(FluidNetProvider.of(tanks[i].getTankType()));
+            fluidInPorts[i].setupFluids(tanks[i], level);
         }
     }
 
@@ -96,7 +96,7 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
         if (fluidOutPorts != null) return;
         fluidOutPorts = TilePort.oneToMany(this, tanks.length, ports);
         for (int i = 0; i < fluidOutPorts.length; i++) {
-            fluidOutPorts[i].setupType(FluidNetProvider.of(tanks[i].getTankType()));
+            fluidOutPorts[i].setupFluids(tanks[i], level);
         }
     }
 
@@ -125,7 +125,7 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     public void provideFluid(FluidTankNTM[] tanks, TilePort[] ports) {
         if (ports == null || ports.length != tanks.length) return;
         for (int i = 0; i < ports.length; i++) {
-            ports[i].setupType(FluidNetProvider.of(tanks[i].getTankType()));
+            ports[i].setupFluids(tanks[i], level);
             if (!ports[i].needsRebuild) ports[i].checkProvide(level);
         }
     }
@@ -134,9 +134,24 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     public void receiveFluid(FluidTankNTM[] tanks, TilePort[] ports) {
         if (ports == null || ports.length != tanks.length) return;
         for (int i = 0; i < ports.length; i++) {
-            ports[i].setupType(FluidNetProvider.of(tanks[i].getTankType()));
+            ports[i].setupFluids(tanks[i], level);
             if (!ports[i].needsRebuild) ports[i].checkSubscribe(level);
         }
+    }
+
+    /** Applies a changed tank declaration to every real port and its exact-resource equivalents. */
+    public void refreshFluidPorts() {
+        if (this instanceof IFluidStandardReceiverMK2 receiver && fluidInPorts != null) {
+            var tanks = receiver.getReceivingTanks();
+            if (tanks.length == fluidInPorts.length) for (var index = 0; index < tanks.length; index++) fluidInPorts[index].setupFluids(tanks[index], level);
+        }
+        if (this instanceof IFluidStandardSenderMK2 sender && fluidOutPorts != null) {
+            var tanks = sender.getSendingTanks();
+            if (tanks.length == fluidOutPorts.length) for (var index = 0; index < tanks.length; index++) fluidOutPorts[index].setupFluids(tanks[index], level);
+        }
+        updateAllPorts();
+        if (this instanceof IFluidStandardReceiverMK2 receiver) receiveFluid(receiver.getReceivingTanks());
+        if (this instanceof IFluidStandardSenderMK2 sender) provideFluid(sender.getSendingTanks());
     }
 
     public void destroyAllPorts() {
@@ -155,6 +170,7 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     @Override
     public void clearRemoved() {
         super.clearRemoved();
+        if (this instanceof IFluidUserMK2 user) for (var tank : user.getAllTanks()) tank.bindOwner(this);
         GraphResident.onLoad(this);
     }
 
@@ -255,13 +271,21 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
 
     @Override
     public void setRemoved() {
-        if (level instanceof ServerLevel serverLevel) GolemSync.retract(serverLevel, worldPosition);
+        releaseSync();
         // also a chunk unload: 1.7 dropped the port nodes in onChunkUnload and invalidate alike
         disablePorts(powerPorts);
         disablePorts(fluidInPorts);
         disablePorts(fluidOutPorts);
         super.setRemoved();
     }
+
+    /** Releases this tile's current native publication entry before its lifecycle ends. */
+    public void releaseSync() {
+        if (level instanceof ServerLevel serverLevel) GolemSync.retract(serverLevel, worldPosition);
+    }
+
+    protected void writeMuffled(io.netty.buffer.ByteBuf output) { output.writeBoolean(muffled); }
+    protected void readMuffled(io.netty.buffer.ByteBuf input) { muffled = input.readBoolean(); }
 
     private byte[] compilePayload() {
         var buf = GolemBuffers.wrap(Unpooled.buffer(), level);
@@ -282,11 +306,11 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
      */
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
-        buf.writeBoolean(muffled);
+        writeMuffled(buf);
     }
 
     @Override
     public void deserialize(RegistryFriendlyByteBuf buf) {
-        muffled = buf.readBoolean();
+        readMuffled(buf);
     }
 }

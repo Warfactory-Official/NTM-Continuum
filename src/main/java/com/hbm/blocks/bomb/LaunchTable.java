@@ -1,5 +1,7 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -22,7 +24,7 @@ import org.jspecify.annotations.Nullable;
  * the scaffold axis is {@code dummy_plate_launch_table}, every other cell {@code dummy_port_launch_table}. Port
  * cells take power and fluid; the edge ports open outward, where 1.7 subscribed its connections.
  */
-public class LaunchTable extends BlockMultiblockMachine implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class LaunchTable extends BlockMultiblockMachine implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2, ICapabilityBlock {
 
     public LaunchTable(Properties properties) {
         super(properties);
@@ -76,4 +78,12 @@ public class LaunchTable extends BlockMultiblockMachine implements IBomb, IEnerg
         }
         return BombReturnCode.UNDEFINED;
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().items().fe()
+            .faces(BlockEntity.class, (be, side) -> side.getAxis().isHorizontal())
+            .fluidFaces(BlockEntity.class, (be, side) -> side.getAxis().isHorizontal());
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

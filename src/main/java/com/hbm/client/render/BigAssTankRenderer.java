@@ -69,7 +69,7 @@ public final class BigAssTankRenderer extends GiantTankRenderer<TileEntityMachin
     protected void submitFluid(GiantTankRenderState state, PoseStack poseStack, SubmitSink collector) {
         float height = fillHeight(state, 1.5F);
         if (height <= 0F) return;
-        RenderType fluidType = CompatRenderTypes.entityTranslucentEmissive(state.fluidType.getTexture());
+        RenderType fluidType = CompatRenderTypes.entityTranslucentEmissive(state.fluidType.clientMetadata().getTexture());
         float minU = -((state.gameTime % 250L + state.partialTick) / 250F) % 1F;
         float maxU = minU + 0.5F;
         collector.submitCustomGeometry(poseStack, fluidType, (pose, buffer) -> {

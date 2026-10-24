@@ -46,6 +46,8 @@ public class TileEntityChungus extends TileEntityLoadedBase
     public long powerBuffer;
     /** 1.7 TileEntityTurbineBase serialises tanks[0] BEFORE the cooling step, so the client sees the pre-consumption steam. */
     private int syncedInputFill;
+    private @org.jspecify.annotations.Nullable FluidType syncedInputResource;
+    private @org.jspecify.annotations.Nullable FluidType syncedInputPin;
     public boolean operational = false;
     /** 1.7: counts down from 25 after the last operational tick; the client keeps spinning while it is positive. */
     private int turnTimer;
@@ -73,6 +75,8 @@ public class TileEntityChungus extends TileEntityLoadedBase
         turbine.powerBuffer = 0;
         turbine.operational = false;
         turbine.syncedInputFill = turbine.tanks[0].getFill();
+        turbine.syncedInputResource = turbine.tanks[0].getFluid();
+        turbine.syncedInputPin = turbine.tanks[0].isStrict() ? turbine.tanks[0].getDeclaredFluid() : null;
 
         FluidType input = turbine.tanks[0].getTankType();
         CoolingRecipes.CoolingRecipe recipe = CoolingRecipes.get(input);
@@ -113,6 +117,10 @@ public class TileEntityChungus extends TileEntityLoadedBase
         if (operational) turnTimer = 25;
     }
 
+    protected final void stopTurning() { turnTimer = 0; }
+
+    public boolean isTurning() { return turnTimer > 0; }
+
     public void onClientTick() {
         this.lastRotor = this.rotor;
         this.rotor += this.fanAcceleration;
@@ -122,7 +130,7 @@ public class TileEntityChungus extends TileEntityLoadedBase
             this.lastRotor -= 360;
         }
 
-        if (turnTimer > 0) {
+        if (isTurning()) {
             // Fan accelerates with a random offset to ensure the audio doesn't perfectly align, makes for a more pleasant hum
             this.fanAcceleration = Math.max(0F, Math.min(25F, this.fanAcceleration += 0.075F + audioDesync));
 
@@ -261,7 +269,8 @@ public class TileEntityChungus extends TileEntityLoadedBase
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
-        tanks[0].serialize(buf, syncedInputFill);
+        if (syncedInputResource == null) tanks[0].serialize(buf, syncedInputFill);
+        else tanks[0].serialize(buf, syncedInputFill, syncedInputResource, syncedInputPin);
         tanks[1].serialize(buf);
         buf.writeLong(powerBuffer);
         buf.writeInt(turnTimer);

@@ -62,7 +62,7 @@ public final class RenderOrbus extends GemBER<TileEntityMachineOrbus, RenderOrbu
         }
         state.fill = orbus.tank.getFill();
         state.scale = (double) orbus.tank.getFill() / (double) Math.max(1, orbus.tank.getMaxFill());
-        state.color = orbus.tank.getTankType().getColor();
+        state.color = orbus.tank.getTankType().clientMetadata().getColor();
         state.time = orbus.getLevel() == null ? 0L : orbus.getLevel().getGameTime();
         state.interp = partialTicks;
     }

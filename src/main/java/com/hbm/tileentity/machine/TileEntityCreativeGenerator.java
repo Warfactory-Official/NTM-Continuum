@@ -30,6 +30,9 @@ public class TileEntityCreativeGenerator extends TileEntityLoadedBase implements
         gen.providePower();
     }
 
+    // An infinite source has no finite owned buffer.
+    @Override public boolean ownsEnergyBuffer() { return false; }
+
     @Override
     public long getPower() {
         return MAX;

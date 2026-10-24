@@ -54,7 +54,7 @@ public class RefuelerRenderer extends GemBER<TileEntityRefueler, RefuelerRenderS
             default -> 0F;
         };
         state.fillLevel = be.prevFillLevel + (be.fillLevel - be.prevFillLevel) * partialTicks;
-        state.fluidColor = be.tank.getTankType().getColor();
+        state.fluidColor = be.tank.getTankType().clientMetadata().getColor();
     }
 
     /**

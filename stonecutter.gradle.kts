@@ -55,10 +55,12 @@ stonecutter parameters {
         string(current.parsed < "1.21.11") {
             replace("Identifier", "ResourceLocation")
         }
+        if (current.parsed < "1.20.5") {
+            // Older nodes lack registry-aware buffers. Modern nodes also have plain codecs, so
+            // this narrowing is one-way: reversing it would change their buffer contract.
+            string(true) { replace("RegistryFriendlyByteBuf", "FriendlyByteBuf") }
+        }
         string(current.parsed < "1.20.5") {
-            // 1.20.1 has no registry-aware buffer. HBM's sync payload only writes primitives and
-            // explicit ids, so the plain buffer is behaviorally equivalent for these call sites.
-            replace("RegistryFriendlyByteBuf", "FriendlyByteBuf")
             // Vanilla renamed GRASS -> SHORT_GRASS in 1.20.5. The trailing `)` is load-bearing: a bare
             // `Blocks.GRASS` rule would also rewrite the four `Blocks.GRASS_BLOCK` uses into
             // `Blocks.SHORT_GRASS_BLOCK` on the way back up. Checked against the tree, not assumed.

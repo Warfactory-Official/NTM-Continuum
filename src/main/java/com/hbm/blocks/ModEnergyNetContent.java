@@ -19,8 +19,9 @@ public final class ModEnergyNetContent {
     public static final GolemComponent<BlockPos> WIRE_START =
             GolemComponent.of(Constants.MOD_ID, "wire_start", BlockPos.CODEC);
 
-    /** A capacitor item's stored charge; capacitors store nothing, but saved items still carry it. */
-    public static final GolemComponent<Long> CAPACITOR_POWER = GolemComponent.longValue(Constants.MOD_ID, "capacitor_power");
+    /** The stored HE and ceiling carried by a functional capacitor. */
+    public static final GolemComponent<com.hbm.tileentity.machine.storage.CapacitorCharge> CAPACITOR_STATE =
+            GolemComponent.of(Constants.MOD_ID, "capacitor_state", com.hbm.tileentity.machine.storage.CapacitorCharge.CODEC);
 
     /** A battery's stored charge, carried on its dropped item (1.7's {@code IPersistentNBT} power). */
     public static final GolemComponent<Long> BATTERY_POWER = GolemComponent.longValue(Constants.MOD_ID, "battery_power");

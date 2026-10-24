@@ -1,5 +1,8 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
+import net.minecraft.core.Direction;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityChimneyBase;
 import com.hbm.tileentity.machine.TileEntityChimneyBrick;
@@ -12,7 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The 13-high brick smokestack. */
-public final class MachineChimneyBrick extends MachineChimneyBase {
+public final class MachineChimneyBrick extends MachineChimneyBase implements ICapabilityBlock {
 
     public MachineChimneyBrick(Properties properties) {
         super(properties);
@@ -35,4 +38,11 @@ public final class MachineChimneyBrick extends MachineChimneyBase {
                 {0, 0, -1, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn()
+            .fluidContacts(com.hbm.tileentity.machine.TileEntityChimneyBase.class);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

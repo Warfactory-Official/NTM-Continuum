@@ -37,6 +37,6 @@ public class ItemMuffler extends CompatItem {
             tile.setChanged();
             return InteractionResult.SUCCESS;
         }
-        return InteractionResult.TRY_WITH_EMPTY_HAND;
+        return InteractionResult.PASS;
     }
 }

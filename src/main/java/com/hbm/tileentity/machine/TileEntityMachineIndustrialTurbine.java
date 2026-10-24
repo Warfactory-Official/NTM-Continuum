@@ -41,6 +41,8 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
     public long powerBuffer;
     /** 1.7 TileEntityTurbineBase serialises tanks[0] BEFORE the cooling step, so the client sees the pre-consumption steam. */
     private int syncedInputFill;
+    private @org.jspecify.annotations.Nullable FluidType syncedInputResource;
+    private @org.jspecify.annotations.Nullable FluidType syncedInputPin;
     public boolean operational;
     public float rotor;
     public float lastRotor;
@@ -67,6 +69,8 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
         turbine.powerBuffer = 0;
         turbine.operational = false;
         turbine.syncedInputFill = turbine.tanks[0].getFill();
+        turbine.syncedInputResource = turbine.tanks[0].getFluid();
+        turbine.syncedInputPin = turbine.tanks[0].isStrict() ? turbine.tanks[0].getDeclaredFluid() : null;
 
         FluidType input = turbine.tanks[0].getTankType();
         CoolingRecipes.CoolingRecipe recipe = CoolingRecipes.get(input);
@@ -172,8 +176,8 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
 
     @Override
     public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return (CoolingRecipes.get(type) != null || type == Fluids.SPENTSTEAM)
-                && dir != getFacing() && dir != getFacing().getOpposite();
+        return (type.hasTrait(com.hbm.inventory.fluid.trait.FT_Coolable.class) || type == Fluids.SPENTSTEAM)
+                && dir != ForgeDirection.UNKNOWN && dir != getFacing() && dir != getFacing().getOpposite();
     }
 
     public double consumptionPercent() { return 0.2D; }
@@ -236,7 +240,8 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
-        tanks[0].serialize(buf, syncedInputFill);
+        if (syncedInputResource == null) tanks[0].serialize(buf, syncedInputFill);
+        else tanks[0].serialize(buf, syncedInputFill, syncedInputResource, syncedInputPin);
         tanks[1].serialize(buf);
         buf.writeLong(powerBuffer);
         buf.writeDouble(spin);

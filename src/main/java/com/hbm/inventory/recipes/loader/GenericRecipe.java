@@ -8,10 +8,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,8 @@ import java.util.Locale;
 public class GenericRecipe {
 
     public final String name;
+    /** The datapack entry that supplied this row; synthesized rules have no entry. */
+    private ResourceKey<Recipe<?>> recipeId;
     public AStack[] inputItem;
     public ItemStack[] outputItem;
     public FluidStack[] inputFluid;
@@ -48,6 +53,7 @@ public class GenericRecipe {
     private int[] outputTagCounts;
     /** Mutually exclusive weighted outputs for one result slot, matching ChanceOutputMulti. */
     public OutputChoice[] outputChoices;
+    private OutputSelector outputSelector;
     public int duration;
     public long power;
     public String autoSwitchGroup = null;
@@ -84,6 +90,17 @@ public class GenericRecipe {
     public GenericRecipe(String name) {
         this.name = name;
     }
+
+    private static final ResourceKey<net.minecraft.core.Registry<Recipe<?>>> RECIPE_REGISTRY =
+            ResourceKey.createRegistryKey(dev.golem.core.Ids.minecraft("recipe"));
+
+    public void bindRecipeId(String id) {
+        recipeId = ResourceKey.create(RECIPE_REGISTRY, dev.golem.core.Ids.parse(id));
+    }
+
+    public ResourceKey<Recipe<?>> recipeId() { return recipeId; }
+
+    public String[] getPools() { return blueprintPools; }
 
     public GenericRecipe setup(int duration, long power) {
         this.duration = duration;
@@ -131,12 +148,14 @@ public class GenericRecipe {
     public GenericRecipe outputItems(ItemStack... output) {
         this.outputItem = output;
         this.outputChoices = null;
+        this.outputSelector = null;
         return this;
     }
 
     /** Sets one result slot whose output is selected by weight when the recipe completes. */
     public GenericRecipe outputChoices(OutputChoice... choices) {
         this.outputChoices = choices;
+        this.outputSelector = new FloatOutputs(choices);
         this.outputItem = choices.length == 0 ? null : new ItemStack[]{choices[0].stack().copy()};
         return this;
     }
@@ -303,6 +322,95 @@ public class GenericRecipe {
         if (kept <= 0) return ItemStack.EMPTY;
         stack.setCount(kept);
         return stack;
+    }
+
+    /** Checks every possible result without consuming random state. */
+    public boolean canFitOutput(int index, ItemStack slot, int slotLimit) {
+        if (outputChoices != null && index == 0) {
+            for (var choice : outputChoices) {
+                if (choice.weight() > 0F && !outputFits(slot, choice.stack(), slotLimit)) return false;
+            }
+            return true;
+        }
+        return outputFits(slot, outputItem[index], slotLimit);
+    }
+
+    public static boolean outputFits(ItemStack slot, ItemStack made, int slotLimit) {
+        if (made.isEmpty()) return true;
+        var limit = Math.min(slotLimit, made.getMaxStackSize());
+        return made.getCount() <= limit && (slot.isEmpty()
+                || dev.golem.core.world.ItemStacks.sameItemAndData(slot, made)
+                && slot.getCount() + made.getCount() <= Math.min(limit, slot.getMaxStackSize()));
+    }
+
+    private interface OutputSelector {
+        ItemStack pick(RandomSource random);
+    }
+
+    /** Retains the existing module protocol and floating-point distribution. */
+    private static final class FloatOutputs implements OutputSelector {
+        private final OutputChoice[] choices;
+        private final float total;
+
+        private FloatOutputs(OutputChoice[] choices) {
+            this.choices = choices;
+            var sum = 0F;
+            for (var choice : choices) sum += Math.max(0F, choice.weight());
+            total = sum;
+        }
+
+        @Override public ItemStack pick(RandomSource random) {
+            var pick = random.nextFloat() * total;
+            for (var choice : choices) {
+                pick -= Math.max(0F, choice.weight());
+                if (pick <= 0F) return choice.stack();
+            }
+            return choices[0].stack();
+        }
+    }
+
+    /** Integer weighted builders retain their exact weights and bounded-integer draw. */
+    private static final class IntegerOutputs implements OutputSelector {
+        private final ItemStack[] choices;
+        private final int[] cumulative;
+        private final int total;
+
+        private IntegerOutputs(int[] weights, ItemStack[] choices) {
+            this.choices = choices;
+            cumulative = new int[choices.length];
+            var sum = 0;
+            for (var i = 0; i < choices.length; i++) {
+                if (weights[i] < 0) throw new IllegalArgumentException("Negative output weight");
+                cumulative[i] = sum = Math.addExact(sum, weights[i]);
+            }
+            total = sum;
+        }
+
+        @Override public ItemStack pick(RandomSource random) {
+            if (total == 0) return ItemStack.EMPTY;
+            var pick = random.nextInt(total);
+            for (var i = 0; i < cumulative.length; i++) if (pick < cumulative[i]) return choices[i];
+            throw new AssertionError("Weighted output selection exceeded its total");
+        }
+    }
+
+    /** Explicit integer selector for builders whose weights are integers rather than continuous floats. */
+    public GenericRecipe weightedOutputs(int[] weights, ItemStack... choices) {
+        if (weights.length != choices.length) throw new IllegalArgumentException("Output and weight counts differ");
+        outputChoices = new OutputChoice[choices.length];
+        for (var i = 0; i < choices.length; i++) outputChoices[i] = new OutputChoice(choices[i], weights[i]);
+        outputSelector = new IntegerOutputs(weights, choices);
+        outputItem = new ItemStack[] {choices.length == 0 ? ItemStack.EMPTY : choices[0].copy()};
+        return this;
+    }
+
+    /** Rolls a single committed result; display and space checks use the declarations directly. */
+    public ItemStack rollOutput(int index, RandomSource random) {
+        var made = outputItem[index].copy();
+        if (outputChoices != null && index == 0) {
+            made = outputSelector.pick(random).copy();
+        }
+        return rollChance(index, made, random);
     }
 
     public boolean isPooled() { return blueprintPools != null; }

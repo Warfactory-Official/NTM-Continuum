@@ -208,7 +208,7 @@ public final class ForeignFluids {
         public Fluid fluid(int index) {
             FluidTankNTM tank = tank(index);
             if (tank == null || tank.getFill() <= 0) return net.minecraft.world.level.material.Fluids.EMPTY;
-            return Fluids.toVanilla(tank.getTankType());
+            return Fluids.toVanilla(tank.getFluid());
         }
 
         @Override
@@ -226,8 +226,8 @@ public final class ForeignFluids {
         @Override
         public boolean accepts(int index, Fluid fluid) {
             FluidTankNTM tank = tank(index);
-            FluidType type = Fluids.fromVanilla(fluid);
-            if (tank == null || type == Fluids.NONE || tank.getTankType() != type || tank.getPressure() != PRESSURE) return false;
+            FluidType type = Fluids.fromVanillaExact(fluid);
+            if (tank == null || type == Fluids.NONE || !tank.accepts(type) || tank.getPressure() != PRESSURE) return false;
             IFluidReceiverMK2 receiver = receiver(type);
             if (receiver == null || !connects(type)) return false;
             return !(receiver instanceof IFluidStandardReceiverMK2 standard) || contains(standard.getReceivingTanks(), tank);
@@ -236,8 +236,8 @@ public final class ForeignFluids {
         @Override
         public boolean provides(int index, Fluid fluid) {
             FluidTankNTM tank = tank(index);
-            FluidType type = Fluids.fromVanilla(fluid);
-            if (tank == null || type == Fluids.NONE || tank.getTankType() != type || tank.getPressure() != PRESSURE) return false;
+            FluidType type = Fluids.fromVanillaExact(fluid);
+            if (tank == null || type == Fluids.NONE || !tank.provides(type) || tank.getPressure() != PRESSURE) return false;
             IFluidProviderMK2 provider = provider(type);
             if (provider == null || !connects(type)) return false;
             return !(provider instanceof IFluidStandardSenderMK2 standard) || contains(standard.getSendingTanks(), tank);
@@ -245,7 +245,7 @@ public final class ForeignFluids {
 
         @Override
         public long demand(Fluid fluid) {
-            FluidType type = Fluids.fromVanilla(fluid);
+            FluidType type = Fluids.fromVanillaExact(fluid);
             IFluidReceiverMK2 receiver = receiver(type);
             if (receiver == null || !valid() || !connects(type)) return 0L;
             return Math.max(0L, Math.min(receiver.getDemand(type, PRESSURE), receiver.getReceiverSpeed(type, PRESSURE)));
@@ -253,7 +253,7 @@ public final class ForeignFluids {
 
         @Override
         public long available(Fluid fluid) {
-            FluidType type = Fluids.fromVanilla(fluid);
+            FluidType type = Fluids.fromVanillaExact(fluid);
             IFluidProviderMK2 provider = provider(type);
             if (provider == null || !valid() || !connects(type)) return 0L;
             return Math.max(0L, Math.min(provider.getFluidAvailable(type, PRESSURE), provider.getProviderSpeed(type, PRESSURE)));
@@ -261,7 +261,7 @@ public final class ForeignFluids {
 
         @Override
         public long receive(Fluid fluid, long mb) {
-            FluidType type = Fluids.fromVanilla(fluid);
+            FluidType type = Fluids.fromVanillaExact(fluid);
             IFluidReceiverMK2 receiver = receiver(type);
             if (receiver == null || type == Fluids.NONE || mb <= 0L) return 0L;
             return mb - receiver.transferFluid(type, PRESSURE, mb);
@@ -269,7 +269,7 @@ public final class ForeignFluids {
 
         @Override
         public long give(Fluid fluid, long mb) {
-            FluidType type = Fluids.fromVanilla(fluid);
+            FluidType type = Fluids.fromVanillaExact(fluid);
             IFluidProviderMK2 provider = provider(type);
             if (provider == null || type == Fluids.NONE || mb <= 0L) return 0L;
             long given = Math.min(mb, provider.getFluidAvailable(type, PRESSURE));
@@ -382,7 +382,7 @@ public final class ForeignFluids {
         @Override
         public long capacity(ItemStack one, Fluid fluid) {
             FluidType held = heldType(one);
-            FluidType type = fluid == net.minecraft.world.level.material.Fluids.EMPTY ? held : Fluids.fromVanilla(fluid);
+            FluidType type = fluid == net.minecraft.world.level.material.Fluids.EMPTY ? held : Fluids.fromVanillaExact(fluid);
             if (one.getItem() instanceof IFillableItem fillable) {
                 if (type == Fluids.NONE) return one.getItem() instanceof ItemFluidTank tank ? tank.capacity : 0L;
                 if (held != Fluids.NONE && held != type) return 0L;
@@ -401,7 +401,7 @@ public final class ForeignFluids {
 
         @Override
         public @Nullable Moved fill(ItemStack one, Fluid fluid, long maxMb) {
-            FluidType type = Fluids.fromVanilla(fluid);
+            FluidType type = Fluids.fromVanillaExact(fluid);
             if (type == Fluids.NONE || maxMb <= 0L) return null;
             int max = FluidUnits.saturate(maxMb);
             if (one.getItem() instanceof IFillableItem fillable) {
@@ -421,7 +421,7 @@ public final class ForeignFluids {
 
         @Override
         public @Nullable Moved drain(ItemStack one, Fluid fluid, long maxMb) {
-            FluidType type = Fluids.fromVanilla(fluid);
+            FluidType type = Fluids.fromVanillaExact(fluid);
             if (type == Fluids.NONE || maxMb <= 0L) return null;
             int max = FluidUnits.saturate(maxMb);
             if (one.getItem() instanceof IFillableItem fillable) {

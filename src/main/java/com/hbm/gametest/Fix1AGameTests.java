@@ -118,7 +118,7 @@ public final class Fix1AGameTests {
                 "1.7 ids: RADIOSOLVENT 88, CHLORINE 89, SMOKE 120, DHC 153, FLUE 155; have "
                         + Fluids.legacyId(Fluids.CHLORINE) + "/" + Fluids.legacyId(Fluids.SMOKE) + "/" + Fluids.legacyId(Fluids.FLUE));
         helper.assertTrue(Fluids.fromName("HYDRAZINE") == Fluids.NONE, "HYDRAZINE is not a 1.7 fluid");
-        helper.assertTrue(Fluids.AIRBLAST.temperature == 1_200, "AIRBLAST 1.7 setTemp(1_200)");
+        helper.assertTrue(Fluids.AIRBLAST.getTemperature() == 1_200, "AIRBLAST 1.7 setTemp(1_200)");
         helper.assertTrue(FluidCombustion.getFlammableEnergy(Fluids.FLUE) == 25_000L, "FLUE FT_Flammable(25_000)");
         helper.assertTrue(Fluids.STEAM.getTrait(FT_Heatable.class) == null
                         && Fluids.HOTSTEAM.getTrait(FT_Heatable.class) == null

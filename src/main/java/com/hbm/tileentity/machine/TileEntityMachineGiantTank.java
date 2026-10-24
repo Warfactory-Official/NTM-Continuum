@@ -111,13 +111,13 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
     @Override
     public long getDemand(FluidType type, int pressure) {
         if (isTilted() || mode == 2 || mode == 3 || tankNew.getPressure() != pressure) return 0;
-        return type == tankNew.getTankType() ? tankNew.getMaxFill() - tankNew.getFill() : 0;
+        return tankNew.accepts(type) ? tankNew.getMaxFill() - tankNew.getFill() : 0;
     }
 
     @Override
     public long getFluidAvailable(FluidType type, int pressure) {
         if (isTilted() || mode == 0 || mode == 3 || tankNew.getPressure() != pressure) return 0;
-        return type == tankNew.getTankType() ? tankNew.getFill() : 0;
+        return tankNew.provides(type) ? tankNew.getFill() : 0;
     }
 
     @Override
@@ -137,9 +137,9 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
 
     @Override
     public long transferFluid(FluidType type, int pressure, long amount) {
-        long moved = Math.min(getDemand(type, pressure), amount);
-        tankNew.setFill(tankNew.getFill() + (int) moved);
-        setChanged();
+        var requested = (int) Math.min(getDemand(type, pressure), amount);
+        var moved = tankNew.receive(type, requested);
+        if (moved > 0) setChanged();
         return amount - moved;
     }
 
@@ -214,5 +214,10 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         mode = (short) input.getShortOr("mode", (short) 0);
         tilted = input.getBooleanOr("tilted", false);
         tankNew.readFromNBT(input, "tank");
+    }
+
+    @Override
+    public boolean canConnect(FluidType fluid, ForgeDirection side) {
+        return tankNew.joins(fluid);
     }
 }

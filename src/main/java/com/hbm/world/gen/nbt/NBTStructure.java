@@ -405,6 +405,51 @@ public class NBTStructure {
         }
     }
 
+    /** Converts the loaded legacy placement data without retaining a second copy of the source file. */
+    public LegacyStructureTemplate.Result exportLegacy(net.minecraft.core.HolderLookup.Provider registries,
+                                                        boolean intactSpotlights) {
+        if (!isLoaded || !legacy) throw new IllegalStateException(name + ": not a loaded legacy structure");
+        var source = new CompoundTag();
+        source.put("size", intList(sizeX, sizeY, sizeZ));
+        var palette = new ListTag();
+        var blocks = new ListTag();
+        var indexes = new java.util.LinkedHashMap<LegacyStructurePalette.Legacy, Integer>();
+        for (var x = 0; x < sizeX; x++) {
+            for (var y = 0; y < sizeY; y++) {
+                for (var z = 0; z < sizeZ; z++) {
+                    var entry = blockArray[x][y][z];
+                    if (entry == null) continue;
+                    var index = indexes.computeIfAbsent(new LegacyStructurePalette.Legacy(entry.name, entry.meta), key -> {
+                        var row = new CompoundTag();
+                        row.putString("Name", key.name());
+                        var properties = new CompoundTag();
+                        properties.putString("meta", Integer.toString(key.meta()));
+                        row.put("Properties", properties);
+                        palette.add(row);
+                        return indexes.size();
+                    });
+                    var block = new CompoundTag();
+                    block.put("pos", intList(x, y, z));
+                    block.putInt("state", index);
+                    if (entry.nbt != null) block.put("nbt", entry.nbt.copy());
+                    blocks.add(block);
+                }
+            }
+        }
+        var items = new ListTag();
+        for (var entry : new java.util.TreeMap<>(itemPalette).entrySet()) {
+            var item = new CompoundTag();
+            item.putInt("ID", entry.getKey());
+            item.putString("Name", entry.getValue());
+            items.add(item);
+        }
+        source.put("palette", palette);
+        source.put("blocks", blocks);
+        source.put("itemPalette", items);
+        source.put("entities", new ListTag());
+        return LegacyStructureTemplate.convert(name, source, registries, intactSpotlights);
+    }
+
     // building
 
     public void build(Level level, int x, int y, int z) {
@@ -1030,7 +1075,7 @@ public class NBTStructure {
         /**
          * {@link #assemble(net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder,
          * net.minecraft.world.level.levelgen.structure.Structure.GenerationContext, SpawnCondition)} drawing from
-         * {@code rand} instead of the context's random (ADDON-API-INVENTORY H-56). 1.7's {@code MapGenStructure} built
+         * {@code rand} instead of the context's random. 1.7's {@code MapGenStructure} built
          * the start with the random its region pick had just drawn from; an addon whose structure type repeats that pick
          * (NTM: Space's planet structures) hands that random on, so the pieces, rotations and pools are 1.7's.
          */

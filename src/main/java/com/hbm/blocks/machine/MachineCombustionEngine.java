@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -17,7 +19,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Combustion Engine block, 1:1 port of the 1.12.2 {@code MachineCombustionEngine}: a low 4×3
  * the folded core (dims {@code {1,0,1,0,3,2}}, offset 0; 4 makeExtra power/fluid ports). */
-public class MachineCombustionEngine extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachineCombustionEngine extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ICapabilityBlock {
 
     public MachineCombustionEngine(Properties properties) {
         super(properties);
@@ -63,4 +65,12 @@ public class MachineCombustionEngine extends BlockMultiblockMachine implements I
                 {-1, 0, -1, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerOut().fluidIn().fluidOut().items().fe()
+            .faces(BlockEntity.class, (be, side) -> side != Direction.DOWN)
+            .fluidFaces(BlockEntity.class, (be, side) -> side != Direction.DOWN);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

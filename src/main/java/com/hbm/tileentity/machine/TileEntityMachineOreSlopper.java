@@ -64,6 +64,9 @@ public class TileEntityMachineOreSlopper extends TileEntityMachineBase
 
     public long power;
     public static final long maxPower = 100_000;
+    public static final int SLOT_INPUT = 2;
+    public static final int SLOT_OUTPUT_START = 3;
+    public static final int SLOT_OUTPUT_END = 8;
 
     public static final int waterUsedBase = 1_000;
     public int waterUsed = waterUsedBase;

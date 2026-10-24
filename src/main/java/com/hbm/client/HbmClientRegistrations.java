@@ -479,6 +479,7 @@ public final class HbmClientRegistrations {
     }
 
     public static void installTints() {
+        com.hbm.inventory.fluid.ClientFluidProperties.init();
         Tints.install(Constants.MOD_ID);
         BlockLayers.install(Constants.MOD_ID);
         EnergyBedrockClientRegistrations.installSprites(); // computed bedrock ore grade art
@@ -492,6 +493,7 @@ public final class HbmClientRegistrations {
      */
     public static void installItemModelProperties() {
         UtilityToolClientRegistrations.installItemModelProperties();
+        ScrapsRendering.install();
         ItemModelProperties.register(Constants.MOD_ID, "model_state",
                 ModelState::of);
     }

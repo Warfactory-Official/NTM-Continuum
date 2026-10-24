@@ -24,6 +24,11 @@ public class JigsawPool {
         totalWeight += weight;
     }
 
+    /** An immutable snapshot of the authored entries, before a generation clone removes selected pieces. */
+    public List<Weighted> entries() {
+        return List.copyOf(pieces);
+    }
+
     public int getAverageWeight() {
         if (pieces.isEmpty()) return 1;
         return totalWeight / pieces.size();

@@ -131,6 +131,15 @@ public final class MachineObjModel implements ItemModel {
         return context("ground", rotation, translation, scale);
     }
 
+    /** NONE displays the primary OBJ at full size, centered on its loaded bounds, before the common item body. */
+    public MachineObjModel rawMeshInNone() {
+        var none = new JsonObject();
+        none.addProperty("raw_mesh", true);
+        if (contexts == null) contexts = new JsonObject();
+        contexts.add("none", none);
+        return this;
+    }
+
     private JsonObject contexts;
 
     private MachineObjModel context(String key, Number[] rotation, Number[] translation, Number scale) {

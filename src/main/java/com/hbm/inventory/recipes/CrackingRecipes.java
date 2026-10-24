@@ -17,6 +17,8 @@ import java.util.Map;
  */
 public final class CrackingRecipes {
 
+    public static final int FILL_PER_OP = 100;
+
     private CrackingRecipes() {}
 
     // 1.7's public percentage constants, kept for code that names them

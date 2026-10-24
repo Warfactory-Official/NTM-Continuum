@@ -2,6 +2,7 @@ package com.hbm.items.armor;
 
 import com.hbm.api.environment.Environment;
 import com.hbm.handler.JetpackHandler;
+import com.hbm.handler.ArmorModEvents;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.ArmorFSBPowered;
@@ -11,6 +12,10 @@ import com.hbm.util.TickPhase;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Attributes;
 import dev.golem.core.world.DamageEvents;
+import dev.golem.core.world.Sounds;
+import dev.golem.core.hook.Hook;
+import java.util.function.Predicate;
+import net.minecraft.world.damagesource.DamageSource;
 import dev.golem.core.world.GolemArmorMaterial;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -22,12 +27,17 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 
 /** DNS armor, including sprint amplification, powered jetpack and glider assist. */
 public class ArmorDNT extends ArmorFSBPowered {
 
     private static final String SPEED_MODIFIER = "hbm:dns_speed";
+
+    /** Damage that the suit cancels silently; addons may identify their own environmental sources. */
+    public static final Hook<Predicate<DamageSource>> SILENT_ATTACK = Hook.of(listeners -> source -> {
+        for (var predicate : listeners) if (predicate.test(source)) return true;
+        return false;
+    });
 
     public ArmorDNT(GolemArmorMaterial material, ArmorSlot slot, Properties properties,
                     long maxPower, long chargeRate, long consumption, long drain) {
@@ -72,8 +82,6 @@ public class ArmorDNT extends ArmorFSBPowered {
         JetpackHandler.resetFlightTime(player);
 
         boolean thrusting = JetpackHandler.isJetpackActive(player);
-        boolean gliding = !thrusting && JetpackHandler.isBackpackEnabled(player)
-                && !player.isShiftKeyDown() && !player.onGround();
         if (thrusting) {
             double y = player.getDeltaMovement().y;
             if (y < 0.6D) y += 0.2D;
@@ -81,27 +89,18 @@ public class ArmorDNT extends ArmorFSBPowered {
             player.fallDistance = 0;
             if (TickPhase.every(player, 4)) playThrustSound(level, player);
             if (!level.isClientSide()) JetpackHandler.sendExhaust(player, JetpackHandler.EXHAUST_DNS);
-        } else if (gliding) {
-            player.fallDistance = 0;
-            var motion = player.getDeltaMovement();
-            double y = motion.y;
-            if (y < -1D) y += 0.4D;
-            else if (y < -0.1D) y += 0.2D;
-            else if (y < 0D) y = 0D;
-            motion = new Vec3(motion.x * 1.05D, y, motion.z * 1.05D);
+        } else {
+            boolean backpack = JetpackHandler.isBackpackEnabled(player);
             float forward = JetpackHandler.getForwardInput(player);
-            if (forward != 0F) {
-                var look = player.getViewVector(1.0F);
-                motion = motion.add(look.x * 0.25D * forward, 0, look.z * 0.25D * forward);
+            float strafe = JetpackHandler.getStrafeInput(player);
+            float gravity = (float) Environment.gravity(player);
+            player.setDeltaMovement(SuitFlight.dnsGlide(player, player.getDeltaMovement(), backpack,
+                    forward, strafe, gravity));
+            if (SuitFlight.shows(player.isShiftKeyDown(), player.onGround(), backpack,
+                    forward != 0F || strafe != 0F, player.isSprinting(), gravity)) {
+                if (TickPhase.every(player, 4)) playThrustSound(level, player);
+                if (!level.isClientSide()) JetpackHandler.sendExhaust(player, JetpackHandler.EXHAUST_DNS);
             }
-            player.setDeltaMovement(motion);
-            if (TickPhase.every(player, 4)) playThrustSound(level, player);
-            if (!level.isClientSide()) JetpackHandler.sendExhaust(player, JetpackHandler.EXHAUST_DNS);
-        }
-        // hbm-space: in free fall sneaking only descends with the backpack on (com.hbm.api.environment.Environment)
-        if (player.isShiftKeyDown() && !player.onGround()
-                && (Environment.gravity(player) > 0D || JetpackHandler.isBackpackEnabled(player))) {
-            player.setDeltaMovement(player.getDeltaMovement().add(0, -0.1D, 0));
         }
     }
 
@@ -114,7 +113,13 @@ public class ArmorDNT extends ArmorFSBPowered {
     @Override
     public void handleAttack(DamageEvents.DamageEvent event) {
         if (event.entity() instanceof Player player && ArmorFSB.hasFSBArmor(player)
-                && !event.source().is(DamageTypeTags.IS_EXPLOSION)) event.cancel();
+                && !event.source().is(DamageTypeTags.IS_EXPLOSION)) {
+            if (event.amount() > 0F && !SILENT_ATTACK.invoker().test(event.source())) {
+                ArmorModEvents.plink(player, Sounds.minecraft("entity.item.break"), 0.5F,
+                        1F + player.getRandom().nextFloat() * 0.5F);
+            }
+            event.cancel();
+        }
     }
 
     @Override

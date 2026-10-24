@@ -13,6 +13,7 @@ import com.hbm.Constants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
@@ -21,13 +22,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 /**
  * Registers the HBM creative tabs (one per {@link HbmTab}) and tracks their contents.
  *
  * <p>Tabs are built with the vanilla {@link CreativeModeTab} builder (cross-loader). Contents can't
  * be filled from common because {@code CreativeModeTab.Output} is protected, so {@link #CONTENTS}
- * maps each tab to its item list and the loader bootstraps fill the tabs through their own public
+ * records each tab's registrations; {@link #displayStacks} resolves the final listing for each loader's public
  * API (NeoForge {@code BuildCreativeModeTabContentsEvent}, Fabric {@code CreativeModeTabEvents}).
  * Content classes call {@link #addTo(HbmTab, RegistryObject)} during registration.
  */
@@ -43,11 +45,11 @@ public final class ModTabs {
     private static final EnumMap<HbmTab, List<RegistryObject<? extends Item>>> LISTS = new EnumMap<>(HbmTab.class);
     private static final EnumMap<HbmTab, RegistryObject<CreativeModeTab>> TAB_OBJECTS = new EnumMap<>(HbmTab.class);
 
-    /** Tab key -> ordered contents, consumed by the loader bootstraps. */
+    /** Tab key -> registration-order item handles. Final display ordering is resolved by {@link #displayStacks}. */
     public static final Map<ResourceKey<CreativeModeTab>, List<RegistryObject<? extends Item>>> CONTENTS = new ByTabKey<>(LISTS);
 
     private static final EnumMap<HbmTab, List<Supplier<List<ItemStack>>>> STACK_LISTS = new EnumMap<>(HbmTab.class);
-    /** Tab key -> custom display stacks (e.g. one fluid bucket per fluid), consumed by the loader bootstraps. */
+    /** Tab key -> custom display batches (e.g. one fluid bucket per fluid), resolved by {@link #displayStacks}. */
     public static final Map<ResourceKey<CreativeModeTab>, List<Supplier<List<ItemStack>>>> STACK_CONTENTS = new ByTabKey<>(STACK_LISTS);
 
     static {
@@ -112,6 +114,61 @@ public final class ModTabs {
     public static void addStacksTo(HbmTab tab, Supplier<List<ItemStack>> stacks) {
         List<Supplier<List<ItemStack>>> contents = STACK_LISTS.get(tab);
         if (!contents.contains(stacks)) contents.add(stacks);
+    }
+
+    private static final EnumMap<HbmTab, EntryOrder<String>> ORDER = new EnumMap<>(HbmTab.class);
+    private static final EnumMap<HbmTab, Map<RegistryObject<? extends Item>, Supplier<List<ItemStack>>>> DISPLAY_STACKS = new EnumMap<>(HbmTab.class);
+
+    /** Moves the existing entries after the anchor's first stack; shared anchors keep declaration order. */
+    public static void insertAfter(HbmTab tab, String anchor, String... entries) {
+        ORDER.computeIfAbsent(tab, ignored -> new EntryOrder<>()).insertAfter(anchor, List.of(entries));
+    }
+
+    /** Moves the existing entries before the anchor's first stack; inserted entries may themselves be anchors. */
+    public static void insertBefore(HbmTab tab, String anchor, String... entries) {
+        ORDER.computeIfAbsent(tab, ignored -> new EntryOrder<>()).insertBefore(anchor, List.of(entries));
+    }
+
+    /** Moves existing entries to the front of a tab, retaining every component-bearing variant. */
+    public static void insertFirst(HbmTab tab, String... entries) {
+        ORDER.computeIfAbsent(tab, ignored -> new EntryOrder<>()).insertFirst(List.of(entries));
+    }
+
+    /** Removes every display variant of an existing entry. Missing entries and anchors refuse to build. */
+    public static void remove(HbmTab tab, String entry) {
+        ORDER.computeIfAbsent(tab, ignored -> new EntryOrder<>()).remove(entry);
+    }
+
+    /** Replaces an item's default display stack with its real component-bearing variants. */
+    public static void displayStacks(HbmTab tab, RegistryObject<? extends Item> item, Supplier<List<ItemStack>> stacks) {
+        DISPLAY_STACKS.computeIfAbsent(tab, ignored -> new LinkedHashMap<>()).put(item, stacks);
+    }
+
+    /** The final common listing consumed by every loader, including custom display variants and addon positions. */
+    public static List<ItemStack> displayStacks(ResourceKey<CreativeModeTab> tab) {
+        var contents = CONTENTS.get(tab);
+        if (contents == null) return List.of();
+        HbmTab group = null;
+        for (var candidate : HbmTab.values()) if (get(candidate).getKey().equals(tab)) {
+            group = candidate;
+            break;
+        }
+        var replacements = DISPLAY_STACKS.getOrDefault(group, Map.of());
+        var result = new ArrayList<ItemStack>();
+        for (var handle : contents) {
+            var item = handle.get();
+            if (!shouldDisplay(tab, item)) continue;
+            var replacement = replacements.get(handle);
+            if (replacement == null) result.add(new ItemStack(item));
+            else result.addAll(replacement.get());
+        }
+        for (var supplier : STACK_CONTENTS.get(tab)) result.addAll(supplier.get());
+        var order = ORDER.get(group);
+        return order == null ? result : order.apply(result, stack -> BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+    }
+
+    public static void accept(ResourceKey<CreativeModeTab> tab, Consumer<ItemStack> output) {
+        displayStacks(tab).forEach(output);
     }
 
     public static RegistryObject<CreativeModeTab> get(HbmTab tab) {

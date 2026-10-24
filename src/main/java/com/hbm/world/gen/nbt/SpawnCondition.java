@@ -60,6 +60,19 @@ public class SpawnCondition {
         return pool != null ? pool.clone() : null;
     }
 
+    /** Finds a piece belonging to this spawn, including a single-piece spawn. */
+    public JigsawPiece findPiece(String pieceName) {
+        if (structure != null && structure.name.equals(pieceName)) return structure;
+        if (pools != null) {
+            for (var pool : pools.values()) {
+                for (var entry : pool.entries()) {
+                    if (entry.piece().name.equals(pieceName)) return entry.piece();
+                }
+            }
+        }
+        return null;
+    }
+
     // Builds all of the pools into neat rows and columns, for editing and debugging!
     // Make sure structure debug is enabled, or it will no-op. Do not use in generation.
     public void buildAll(Level level, int x, int y, int z) {

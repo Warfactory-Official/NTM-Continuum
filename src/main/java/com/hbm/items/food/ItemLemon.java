@@ -2,6 +2,10 @@ package com.hbm.items.food;
 
 import java.util.List;
 import dev.golem.core.world.CompatItem;
+import dev.golem.core.hook.Hook;
+import java.util.function.Consumer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerLevel;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -14,6 +18,9 @@ import net.minecraft.world.entity.LivingEntity;
 
 /** The plain 1.12.2 {@code ItemLemon} food family. */
 public class ItemLemon extends CompatItem {
+
+    /** Runs after ipecac or PTSD medication is consumed on the server. */
+    public static final Hook<Consumer<Player>> EMETIC_USED = Hook.notifying();
 
     private final String id;
 
@@ -61,6 +68,10 @@ public class ItemLemon extends CompatItem {
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         ItemStack result = super.finishUsingItem(stack, level, entity);
+        if ((id.equals("med_ipecac") || id.equals("med_ptsd"))
+                && level instanceof ServerLevel && entity instanceof Player player) {
+            for (var listener : EMETIC_USED) listener.accept(player);
+        }
         // The old override returned a bowl after eating; this fallback also covers pre-26.1 targets where
         // Item.Properties has no use-time remainder component.
         return id.equals("loop_stew") ? Items.BOWL.getDefaultInstance() : result;

@@ -1,6 +1,7 @@
 package com.hbm.api.fluidmk2;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
+import com.hbm.capability.CapRole;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.capability.ForeignFluidReceiver;
 import com.hbm.capability.MachineCaps;
@@ -235,11 +236,11 @@ public final class FluidNetwork {
         BlockState state = level.getBlockState(pos);
         ForgeDirection side = ForgeDirection.getOrientation(face);
         if (!(state.getBlock() instanceof IFluidConnectorBlockMK2 connector)
-                || !connector.canConnect(type, level, pos.getX(), pos.getY(), pos.getZ(), side)) {
+                || !connector.canConnect(Fluids.kindOf(type), level, pos.getX(), pos.getY(), pos.getZ(), side)) {
             return null;
         }
         BlockEntity core = MachineCore.at(level, pos, state);
-        return core instanceof IFluidUserMK2 ? core : null;
+        return accepts(core, type, face) ? core : null;
     }
 
     /**
@@ -248,7 +249,14 @@ public final class FluidNetwork {
      */
     private static boolean accepts(@Nullable BlockEntity be, FluidType type, @Nullable Direction face) {
         if (!(be instanceof IFluidUserMK2 user) || be instanceof IFluidPipeMK2) return false;
-        return face == null || user.canConnect(type, ForgeDirection.getOrientation(face));
+        var receives = MachineCaps.supportsRole(be, CapRole.FLUID_IN);
+        var provides = MachineCaps.supportsRole(be, CapRole.FLUID_OUT);
+        if (face == null) return receives || provides;
+        var side = ForgeDirection.getOrientation(face);
+        return receives && MachineCaps.acceptsResource(be, face, type, CapRole.FLUID_IN)
+                && user.exposesFluidContact(type, side, true)
+                || provides && MachineCaps.acceptsResource(be, face, type, CapRole.FLUID_OUT)
+                && user.exposesFluidContact(type, side, false);
     }
 
     private static @Nullable BlockEntity userAtAny(ServerLevel level, BlockPos pos, int faceOrdinal, FluidType[] types) {

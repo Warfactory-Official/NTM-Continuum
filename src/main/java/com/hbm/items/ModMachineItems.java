@@ -111,8 +111,14 @@ public final class ModMachineItems {
     /** Foundry scraps: solidified molten material (material + quanta amount in data components). */
     public static final RegistryObject<ItemScraps> scraps = REG.<ItemScraps>item(
             "scraps", ItemScraps::new, p -> p.stacksTo(64))
-            .icon(d -> d.models(Models.generated("hbm:items/scraps"))
-                    .definition(ItemModels.customModelDataFlag(0, ItemModels.model("hbm:item/scraps_liquid", Tints.customModelData(0, 16777215)), ItemModels.model("hbm:item/scraps", Tints.customModelData(0, 16777215)))));
+            .icon(d -> d
+                    //? if >=26.1 {
+                    .definition(ScrapsModels.definition(null))
+                    //?} else {
+                    /*.models(Models.generated("hbm:items/scraps"))
+                    .definition(ItemModels.customModelDataFlag(0, ItemModels.model("hbm:item/scraps_liquid", Tints.customModelData(0, 16777215)), ItemModels.model("hbm:item/scraps", Tints.customModelData(0, 16777215))))
+                    *///?}
+            );
 
     // FEL laser crystals: the wavelength "lens" a Free Electron Laser is loaded with. Each one
     // unlocks the SILEX recipes at or below its wavelength and multiplies the speed of the weaker

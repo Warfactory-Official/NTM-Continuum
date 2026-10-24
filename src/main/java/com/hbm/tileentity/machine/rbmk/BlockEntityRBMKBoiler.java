@@ -59,10 +59,10 @@ public class BlockEntityRBMKBoiler extends BlockEntityRBMKBase implements IFluid
      @Override public boolean hasPermission(Player player) { return player.containerMenu instanceof MenuRBMKBoiler menu && menu.blockEntity() == this && menu.stillValid(player); }
      @Override public void receiveControl(CompoundTag data) { if (Tags.getBooleanOr(data, "compression", false)) cycleCompressor(); }
     @Override public RBMKColumn getConsoleData() { RBMKColumn.BoilerColumn data=(RBMKColumn.BoilerColumn)super.getConsoleData(); data.water=feed.getFill(); data.maxWater=feed.getMaxFill(); data.steam=steam.getFill(); data.maxSteam=steam.getMaxFill(); data.steamType=RBMKColumn.fluidId(steam.getTankType()); return data; }
-    @Override public long getFluidAvailable(FluidType t, int p) { return t == steam.getTankType() && p == steam.getPressure() ? steam.getFill() : 0; }
+    @Override public long getFluidAvailable(FluidType t, int p) { return steam.provides(t) && p == steam.getPressure() ? steam.getFill() : 0; }
     @Override public void useUpFluid(FluidType t, int p, long a) { if (getFluidAvailable(t,p)>0) { steam.setFill(steam.getFill()-(int)Math.min(a,steam.getFill())); setChanged(); } }
-    @Override public long getDemand(FluidType t, int p) { return t == Fluids.WATER && p == feed.getPressure() ? feed.getMaxFill()-feed.getFill() : 0; }
-    @Override public long transferFluid(FluidType t,int p,long a) { if (t != Fluids.WATER || p != feed.getPressure()) return a; int n=feed.fill(t,(int)Math.min(a,Integer.MAX_VALUE),true); if(n>0)setChanged(); return a-n; }
+    @Override public long getDemand(FluidType t, int p) { return Fluids.kindOf(t) == Fluids.WATER && feed.accepts(t) && p == feed.getPressure() ? feed.getMaxFill()-feed.getFill() : 0; }
+    @Override public long transferFluid(FluidType t,int p,long a) { if (Fluids.kindOf(t) != Fluids.WATER || !feed.accepts(t) || p != feed.getPressure()) return a; int n=feed.fill(t,(int)Math.min(a,Integer.MAX_VALUE),true); if(n>0)setChanged(); return a-n; }
     @Override protected void saveData(DataOut o) { super.saveData(o); feed.writeToNBT(o,"feed"); steam.writeToNBT(o,"steam"); }
     @Override protected void loadData(DataIn i) { super.loadData(i); feed.readFromNBT(i,"feed"); steam.readFromNBT(i,"steam"); }
     @Override public void serialize(RegistryFriendlyByteBuf buffer) { super.serialize(buffer); steam.serialize(buffer); feed.serialize(buffer); }

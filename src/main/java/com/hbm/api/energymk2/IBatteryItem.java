@@ -15,6 +15,23 @@ import net.minecraft.world.item.ItemStack;
  */
 public interface IBatteryItem {
 
+    /** A battery's readable and writable charge range. */
+    static long clampCharge(long charge, long maxCharge) {
+        return Math.max(0L, Math.min(charge, maxCharge));
+    }
+
+    /**
+     * Applies a signed charge or discharge amount without overflowing before the range clamp.
+     * Subtraction is expressed through bounded deltas, so Long.MIN_VALUE never needs negating.
+     */
+    static long adjustCharge(long charge, long amount, long maxCharge, boolean discharge) {
+        charge = clampCharge(charge, maxCharge);
+        var lower = discharge ? charge - maxCharge : -charge;
+        var upper = discharge ? charge : maxCharge - charge;
+        var delta = Math.max(lower, Math.min(amount, upper));
+        return discharge ? charge - delta : charge + delta;
+    }
+
     /** Adds energy to the battery item, clamped to {@link #getMaxCharge(ItemStack)}. */
     void chargeBattery(ItemStack stack, long i);
 

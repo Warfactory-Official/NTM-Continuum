@@ -85,11 +85,11 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
 
     @Override
     public void receiveControl(Player player, ItemStack stack, CompoundTag data) {
-        if (Tags.contains(data, "primary")) setType(stack, Fluids.read(data, "primary"), true);
-        if (Tags.contains(data, "secondary")) setType(stack, Fluids.read(data, "secondary"), false);
+        if (Tags.contains(data, "primary")) setType(stack, Fluids.readExact(data, "primary"), true);
+        if (Tags.contains(data, "secondary")) setType(stack, Fluids.readExact(data, "secondary"), false);
         if (Tags.contains(data, "bookmarks")) {
             CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, new CompoundTag()).copy();
-            Fluids.writeList(tag, "bookmarks", Fluids.readList(data, "bookmarks"));
+            Fluids.writeList(tag, "bookmarks", Fluids.readListExact(data, "bookmarks"));
             ModUtilityToolItems.FLUID_MULTI.set(stack, tag);
         }
     }
@@ -119,12 +119,12 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
     /** The picker's bookmarks, oldest first, saved by fluid name. */
     public static FluidType[] getBookmarks(ItemStack stack) {
         CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, null);
-        return tag == null ? new FluidType[0] : Fluids.readList(tag, "bookmarks");
+        return tag == null ? new FluidType[0] : Fluids.readListExact(tag, "bookmarks");
     }
 
     public static FluidType getType(ItemStack stack, boolean primary) {
         CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, null);
         if (tag == null) return Fluids.NONE;
-        return Fluids.read(tag, "fluid" + (primary ? 1 : 2));
+        return Fluids.readExact(tag, "fluid" + (primary ? 1 : 2));
     }
 }

@@ -121,6 +121,11 @@ public final class ArmorModHandler {
         return armor != null && ModDataComponents.ARMOR_MODS.has(armor);
     }
 
+    /** The installed module's item identity, without copying the armour's module stacks. */
+    public static net.minecraft.world.item.Item modItem(ItemStack armor, int slot) {
+        return ModDataComponents.ARMOR_MODS.getOr(armor, ItemContents.EMPTY).itemAt(slot);
+    }
+
     public static ItemStack[] pryMods(ItemStack armor) {
         List<ItemStack> values = read(armor);
         ItemStack[] result = new ItemStack[MOD_SLOTS];

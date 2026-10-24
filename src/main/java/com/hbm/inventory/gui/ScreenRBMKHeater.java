@@ -34,6 +34,6 @@ public final class ScreenRBMKHeater extends RBMKContainerScreen<MenuRBMKHeater> 
         if (tank.getMaxFill() <= 0 || tank.getFill() <= 0) return;
         int height = tank.getFill() * 58 / tank.getMaxFill();
         GuiDraw.fill(graphics, leftPos + x, topPos + y + 58 - height, leftPos + x + 14, topPos + y + 58,
-                0xFF000000 | tank.getTankType().getColor());
+                0xFF000000 | tank.getTankType().clientMetadata().getColor());
     }
 }

@@ -2,8 +2,6 @@ package com.hbm.items.special;
 
 import com.hbm.Constants;
 import com.hbm.world.feature.LegacyPerlinNoise;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.hook.Hook;
 import dev.golem.core.world.CompatItem;
@@ -34,30 +32,9 @@ public class ItemBedrockOreBase extends CompatItem {
     public static final GolemComponent<BedrockOreDensity> DENSITY =
             GolemComponent.of(Constants.MOD_ID, "bedrock_ore_density", BedrockOreDensity.CODEC);
 
-    /**
-     * The composition of a stack mined where {@link #SOURCE} answered: where it was mined (a translation key, shown as
-     * "Mined on: ..."; empty for none) and the amount of each type, by type name. Such a stack carries no
-     * {@link #DENSITY}.
-     */
-    public record Composition(String origin, List<Amount> amounts) {
-        public static final Codec<Composition> CODEC =
-                RecordCodecBuilder.create(i -> i.group(
-                        Codec.STRING.optionalFieldOf("origin", "").forGetter(Composition::origin),
-                        Amount.CODEC.listOf().fieldOf("amounts").forGetter(Composition::amounts)
-                ).apply(i, Composition::new));
-    }
-
-    /** One type's amount, the type saved by its registry name. */
-    public record Amount(String type, double amount) {
-        public static final Codec<Amount> CODEC =
-                RecordCodecBuilder.create(i -> i.group(
-                        Codec.STRING.fieldOf("type").forGetter(Amount::type),
-                        Codec.DOUBLE.fieldOf("amount").forGetter(Amount::amount)
-                ).apply(i, Amount::new));
-    }
-
-    public static final GolemComponent<Composition> COMPOSITION =
-            GolemComponent.of(Constants.MOD_ID, "bedrock_ore_composition", Composition.CODEC);
+    /** Named-set samples use one amount per real set kind, persisted by that kind's suffix. */
+    public static final GolemComponent<BedrockOreSample> SAMPLE =
+            GolemComponent.of(Constants.MOD_ID, "bedrock_ore_sample", () -> BedrockOreSample.CODEC);
 
     /**
      * What lies under a column: the density of each type there, in order, where it is (a translation key, or null),
@@ -126,24 +103,25 @@ public class ItemBedrockOreBase extends CompatItem {
     }
 
     public static double getOreAmount(ItemStack stack, BedrockOreType type) {
-        Composition composition = COMPOSITION.get(stack).orElse(null);
-        if (composition != null) {
-            for (Amount amount : composition.amounts()) if (amount.type().equals(type.name())) return amount.amount();
-            return 0D;
-        }
+        BedrockOreSample sample = SAMPLE.get(stack).orElse(null);
+        if (sample != null) return sample.amount(type);
         return DENSITY.getOr(stack, BedrockOreDensity.ZERO).get(type);
     }
 
-    /** The types a raw ore stack carries amounts of, in order: its composition's, or HBM's six. */
+    /** The types a raw ore stack carries amounts of, in order: its named set's, or HBM's six. */
     public static List<BedrockOreType> types(ItemStack stack) {
-        Composition composition = COMPOSITION.get(stack).orElse(null);
-        if (composition == null) return List.of(BedrockOreType.VALUES);
-        List<BedrockOreType> types = new ArrayList<>();
-        for (Amount amount : composition.amounts()) {
-            BedrockOreType type = BedrockOreType.byName(amount.type());
-            if (type != null) types.add(type);
-        }
-        return types;
+        var named = SAMPLE.get(stack).orElse(null);
+        return named == null ? BedrockOreSet.NTM.kinds() : named.set().kinds();
+    }
+
+    /** The native sample carried by a stack; HBM's active six-channel density is its implicit set. */
+    public static BedrockOreSample sample(ItemStack stack) {
+        BedrockOreSample sample = SAMPLE.get(stack).orElse(null);
+        if (sample != null) return sample;
+        BedrockOreDensity density = DENSITY.getOr(stack, BedrockOreDensity.ZERO);
+        double[] amounts = new double[BedrockOreSet.NTM.kinds().size()];
+        for (int i = 0; i < amounts.length; i++) amounts[i] = density.get(BedrockOreSet.NTM.kinds().get(i));
+        return new BedrockOreSample(BedrockOreSet.NTM, amounts);
     }
 
     /**
@@ -157,12 +135,11 @@ public class ItemBedrockOreBase extends CompatItem {
             setOreAmount(stack, x, z, multiplier);
             return;
         }
-        List<Amount> amounts = new ArrayList<>();
-        for (Map.Entry<BedrockOreType, Double> entry : field.levels().entrySet()) {
-            amounts.add(new Amount(entry.getKey().name(), entry.getValue() * multiplier));
-        }
+        BedrockOreSet set = BedrockOreSet.OF.get().apply(level);
+        double[] amounts = new double[set.kinds().size()];
+        for (int i = 0; i < amounts.length; i++) amounts[i] = field.levels().get(set.kinds().get(i)) * multiplier;
         DENSITY.remove(stack);
-        COMPOSITION.set(stack, new Composition(field.origin() == null ? "" : field.origin(), amounts));
+        SAMPLE.set(stack, new BedrockOreSample(set, amounts));
     }
 
     public static void setOreAmount(ItemStack stack, int x, int z) {
@@ -170,6 +147,7 @@ public class ItemBedrockOreBase extends CompatItem {
     }
 
     public static void setOreAmount(ItemStack stack, int x, int z, double multiplier) {
+        SAMPLE.remove(stack);
         DENSITY.set(stack, new BedrockOreDensity(
                 getOreLevel(x, z, BedrockOreType.LIGHT_METAL) * multiplier,
                 getOreLevel(x, z, BedrockOreType.HEAVY_METAL) * multiplier,
@@ -209,16 +187,13 @@ public class ItemBedrockOreBase extends CompatItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        Composition composition = COMPOSITION.get(stack).orElse(null);
-        if (composition != null && !composition.origin().isEmpty()) {
-            // hbm-space: "Mined on: " + the body
-            tooltip.add(Component.literal("Mined on: ").append(Component.translatable(composition.origin())));
-        }
+        var named = SAMPLE.get(stack).orElse(null);
+        var origin = named == null ? null : named.set().origin();
+        if (origin != null) tooltip.add(origin);
         for (BedrockOreType type : types(stack)) {
             double amount = getOreAmount(stack, type);
             double truncated = ((int) (amount * 100D)) / 100D;
-            tooltip.add(Component.translatableWithFallback(
-                            "item.bedrock_ore.type." + type.suffix + ".name", type.displayName)
+            tooltip.add(type.typeName().copy()
                     .append(": " + truncated + " (")
                     .append(Component.translatableWithFallback(densityKey(amount), densityFallback(amount))
                             .withStyle(densityColor(amount)))

@@ -126,7 +126,7 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
 
     @Override
     public int getBarColor(ItemStack stack) {
-        int color = getType(stack).getColor();
+        int color = getType(stack).clientMetadata().getColor();
         return color >= 0 ? color : 0x3399FF;
     }
 

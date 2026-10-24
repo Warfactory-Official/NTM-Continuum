@@ -7,6 +7,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec.ItemOut;
 import com.hbm.inventory.recipes.loader.MaterialCodecs;
 import com.hbm.inventory.recipes.loader.RecipeText;
@@ -146,18 +147,19 @@ public final class CrystallizerRecipes {
     public static void declare() {}
 
     /** One acidizer recipe. {@code input.stacksize} is the required item count (old {@code setReq}). */
-    public static final class CrystallizerRecipe {
+    public static final class CrystallizerRecipe extends GenericRecipe {
         public final AStack input;
         public final FluidType fluid;
         public final int acidAmount;
-        public final int duration;
         public final float productivity; // Carried only. The old TE never read it (EFFECT upgrades did).
         public final ItemStack output;
         /** The chance {@link #output} is made; below 1 only for ntm-next's raw ore rows. */
         public final float chance;
 
-        CrystallizerRecipe(AStack input, FluidType fluid, int acidAmount, int duration, float productivity, ItemStack output,
+        CrystallizerRecipe(String id, AStack input, FluidType fluid, int acidAmount, int duration, float productivity, ItemStack output,
                            float chance) {
+            super(id.substring(id.lastIndexOf('/') + 1));
+            bindRecipeId(id);
             this.input = input;
             this.fluid = fluid;
             this.acidAmount = acidAmount;
@@ -165,6 +167,11 @@ public final class CrystallizerRecipes {
             this.productivity = productivity;
             this.output = output;
             this.chance = chance;
+            inputItems(input);
+            outputItems(output);
+            outputChances(chance);
+            inputFluids(new FluidStack(fluid, acidAmount));
+            outputFluids();
         }
 
         /** A copy of {@link #output}, or empty when the chance roll fails. */
@@ -175,15 +182,17 @@ public final class CrystallizerRecipes {
 
     /** Ensures the rows are loaded and indexed (the table fills itself from the datapack). */
     public static synchronized void register() {
-        List<Row> rows = TABLE.rows();
+        var entries = new ArrayList<>(TABLE.entries());
         if (!stale) return;
         stale = false;
         List<CrystallizerRecipe> next = new ArrayList<>();
-        for (Row row : RecipeText.ordered(rows, Row::order)) {
+        entries.sort(java.util.Comparator.comparingInt(entry -> entry.value().order()));
+        for (var entry : entries) {
+            var row = entry.value();
             if (row.requires().isPresent() && firstInTag(row.requires().get()) == null) continue;
             ItemStack output = row.output().stack();
             if (output.isEmpty()) continue;
-            next.add(new CrystallizerRecipe(row.input(), row.acid().type, row.acid().fill, row.duration(), row.productivity(), output,
+            next.add(new CrystallizerRecipe(entry.id(), row.input(), row.acid().type, row.acid().fill, row.duration(), row.productivity(), output,
                     row.output().chance()));
         }
         recipes = List.copyOf(next);
@@ -194,29 +203,32 @@ public final class CrystallizerRecipes {
         return null;
     }
 
-    /** The recipe matching {@code stack} under the given tank fluid, or null. */
+    /** The recipe matching the input and acid, with exact item inputs before tags. */
     public static CrystallizerRecipe getOutput(ItemStack stack, FluidType type) {
+        return find(stack, recipe -> recipe.fluid == type);
+    }
+
+    public static boolean isAnyRecipeInput(ItemStack stack) {
+        return find(stack, recipe -> true) != null;
+    }
+
+    /** Input demand regardless of acid. */
+    public static int getAmount(ItemStack stack) {
+        var recipe = find(stack, candidate -> true);
+        return recipe == null ? 0 : recipe.input.stacksize;
+    }
+
+    private static CrystallizerRecipe find(ItemStack stack, java.util.function.Predicate<CrystallizerRecipe> accepts) {
         if (stack == null || stack.isEmpty()) return null;
         register();
         CrystallizerRecipe tagMatch = null;
-        for (CrystallizerRecipe r : recipes) {
-            if (r.fluid == type && r.input.matchesRecipe(stack, true)) {
-                // The old HashMap lookup tried the exact ComparableStack key before ore-dict keys.
-                if (r.input instanceof ComparableStack) return r;
-                tagMatch = r;
+        for (var recipe : recipes) {
+            if (accepts.test(recipe) && recipe.input.matchesRecipe(stack, true)) {
+                if (recipe.input instanceof ComparableStack) return recipe;
+                tagMatch = recipe;
             }
         }
         return tagMatch;
-    }
-
-    /** Whether {@code stack} is the input of ANY recipe, regardless of the acid (for slot placement). */
-    public static boolean isAnyRecipeInput(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) return false;
-        register();
-        for (CrystallizerRecipe r : recipes) {
-            if (r.input.matchesRecipe(stack, true)) return true;
-        }
-        return false;
     }
 
     /** The row form of a recipe (for converting a table and for tests); a scrap output is written as its material. */

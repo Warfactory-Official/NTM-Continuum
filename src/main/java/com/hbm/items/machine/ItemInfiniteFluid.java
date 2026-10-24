@@ -84,7 +84,7 @@ public class ItemInfiniteFluid extends CompatItem implements IInfiniteFluidItem,
     public void checkWaterTable(ItemStack stack, Level level, BlockPos pos) {
         if (!requiresTable) return;
         FluidType table = Environment.declaredGroundwater(level, pos);
-        if (table == null || table == infiniteType()) {
+        if (table == null || Fluids.kindOf(table) == Fluids.kindOf(infiniteType())) {
             if (WRONG_WATER_TABLE.has(stack)) WRONG_WATER_TABLE.remove(stack);
         } else if (WRONG_WATER_TABLE.getOr(stack, null) != table) {
             WRONG_WATER_TABLE.set(stack, table);
@@ -128,15 +128,20 @@ public class ItemInfiniteFluid extends CompatItem implements IInfiniteFluidItem,
         FluidType mine = infiniteType();
         String rate = chance <= 1 ? amount + " mB/t" : amount + " mB every " + chance + " ticks";
         tooltip.add(Component.literal((mine == null ? "Any fluid" : mine.getDisplayNameString()) + ", " + rate).withStyle(ChatFormatting.GRAY));
-        // hbm-space's lines for an item that found the wrong water table
-        FluidType table = WRONG_WATER_TABLE.getOr(stack, null);
+        describeTableCondition(stack, tooltip::add);
+    }
+
+    /** The live condition lines, shared by the item's tooltip and callers describing its remembered table. */
+    public void describeTableCondition(ItemStack stack, java.util.function.Consumer<Component> adder) {
+        var mine = infiniteType();
+        var table = WRONG_WATER_TABLE.getOr(stack, null);
         if (table != null && mine != null) {
-            tooltip.add(Component.literal(table == Fluids.NONE ? "Current environment has insufficient vapor pressure"
-                    : "Current environment has an incompatible fluid table"));
-            tooltip.add(Component.literal("Requires: " + mine.getDisplayNameString() + " table"));
-            tooltip.add(Component.literal(table == Fluids.NONE
-                    ? "Releasing 0.2atm of vapor into the atmosphere will add a table on dry celestial bodies"
-                    : "Current environment: " + table.getDisplayNameString() + " table"));
+            var dry = table == Fluids.NONE;
+            adder.accept(Component.translatable(dry ? "desc.ntmspace.infiniteFluid.dry"
+                    : "desc.ntmspace.infiniteFluid.incompatible"));
+            adder.accept(Component.translatable("desc.ntmspace.infiniteFluid.requires", mine.getDisplayNameString()));
+            adder.accept(dry ? Component.translatable("desc.ntmspace.infiniteFluid.release")
+                    : Component.translatable("desc.ntmspace.infiniteFluid.current", table.getDisplayNameString()));
         }
     }
 }

@@ -26,8 +26,24 @@ import java.util.function.Supplier;
  */
 public interface IToolable {
 
+    /** A directly toolable cell keeps priority; otherwise resolve its folded core. */
+    static @Nullable BlockPos targetPos(Level level, BlockPos pos) {
+        if (level.getBlockState(pos).getBlock() instanceof IToolable) return pos;
+        return com.hbm.blocks.multiblock.MultiblockSurface.coreOfAny(level, pos);
+    }
+
+    static @Nullable IToolable at(Level level, BlockPos pos) {
+        var target = targetPos(level, pos);
+        if (target == null) return null;
+        return level.getBlockState(target).getBlock() instanceof IToolable toolable ? toolable : null;
+    }
+
     /** @return true if the tool did something (and should therefore charge the player for it). */
     boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit, InteractionHand hand, ToolType tool);
+
+    default boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit, ToolType tool) {
+        return onScrew(level, player, pos, side, hit, InteractionHand.MAIN_HAND, tool);
+    }
 
     enum ToolType {
         SCREWDRIVER,
@@ -47,7 +63,7 @@ public interface IToolable {
         /**
          * Registered by {@link Supplier}, not {@code Item} or {@code ItemStack}: tools are declared
          * during bootstrap, before the item registry is flushed, and building an {@code ItemStack}
-         * before data components are bound throws outright (IMPLEMENTATION.md §22).
+         * before data components are bound throws outright.
          */
         public void register(Supplier<? extends Item> item) {
             tools.add(item);

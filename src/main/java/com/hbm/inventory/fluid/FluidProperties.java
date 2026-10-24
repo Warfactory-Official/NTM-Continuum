@@ -44,6 +44,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.effect.MobEffectInstance;
 
 /**
@@ -141,11 +143,21 @@ public final class FluidProperties {
 
     /** Applies every file of a datapack load ({@code <ns>:<path>} to its JSON) to its fluid; a bad file is skipped. */
     public static synchronized void apply(Map<String, JsonElement> files) {
+        var previousFiles = baseFiles;
         baseFiles = Map.copyOf(files);
+        for (var id : previousFiles.keySet()) {
+            if (files.containsKey(id)) continue;
+            var fluid = Fluids.byRegistryNameExact(id);
+            if (!fluid.isForeign()) continue;
+            var defaults = FOREIGN_DEFAULTS.remove(fluid);
+            if (defaults != null) defaults.restore(fluid);
+            if (patches.containsKey(id)) PRISTINE.put(fluid, Pristine.of(fluid));
+            else PRISTINE.remove(fluid);
+        }
         int applied = 0;
         List<String> failures = new ArrayList<>();
         for (Map.Entry<String, JsonElement> file : files.entrySet()) {
-            FluidType fluid = Fluids.byRegistryName(file.getKey());
+            FluidType fluid = Fluids.byRegistryNameExact(file.getKey());
             if (fluid == Fluids.NONE && !file.getKey().equals(Fluids.NONE.getRegistryName())) {
                 failures.add(file.getKey() + " names no fluid");
                 continue;
@@ -159,7 +171,7 @@ public final class FluidProperties {
         }
         // the files just replaced the patched fluids that have one; put every patch back on top
         for (Map.Entry<String, List<JsonObject>> patched : patches.entrySet()) {
-            FluidType fluid = Fluids.byRegistryName(patched.getKey());
+            FluidType fluid = Fluids.byRegistryNameExact(patched.getKey());
             try {
                 reset(fluid, true);
                 patch(fluid, patched.getValue());
@@ -167,6 +179,8 @@ public final class FluidProperties {
                 failures.add(patched.getKey() + " (patches): " + e.getMessage());
             }
         }
+        // DataFiles refreshes after bound tags change on the server and after client metadata sync.
+        Fluids.sharingChanged();
         Constants.LOG.info("[HBM] Applied {} fluid property file(s)", applied);
         if (!failures.isEmpty()) Constants.LOG.warn("[HBM] Skipped {} fluid property file(s): {}", failures.size(), failures);
     }
@@ -199,17 +213,23 @@ public final class FluidProperties {
      * colour); {@code traits} are the phases, flags and parameterised traits in file order.
      */
     public record Properties(@org.jspecify.annotations.Nullable Integer color, @org.jspecify.annotations.Nullable Integer tint,
-                             int temperature, FluidHazard hazard, List<Object> traits) {
+                             int temperature, FluidHazard hazard, List<Object> traits, List<TagKey<Fluid>> shares) {
 
         public Properties {
             hazard = Objects.requireNonNull(hazard);
             traits = List.copyOf(traits);
+            shares = List.copyOf(shares);
+        }
+
+        public Properties(@org.jspecify.annotations.Nullable Integer color, @org.jspecify.annotations.Nullable Integer tint,
+                          int temperature, FluidHazard hazard, List<Object> traits) {
+            this(color, tint, temperature, hazard, traits, List.of());
         }
 
         /** {@code fluid}'s current properties ({@code tint} null when it is the colour). */
         public static Properties of(FluidType fluid) {
             return new Properties(fluid.getColor(), fluid.getTint() != fluid.getColor() ? fluid.getTint() : null,
-                    fluid.temperature, fluid.getHazard(), List.copyOf(fluid.traits()));
+                    fluid.getTemperature(), fluid.getHazard(), List.copyOf(fluid.traits()), fluid.getSharedTags());
         }
     }
 
@@ -221,15 +241,34 @@ public final class FluidProperties {
         Integer tint = json.has("tint") ? color(json.get("tint")) : null;
         int temperature = json.has("temperature") ? json.get("temperature").getAsInt() : FluidType.ROOM_TEMPERATURE;
         FluidHazard hazard = json.has("hazard") ? FluidHazard.read(json.getAsJsonObject("hazard")) : FluidHazard.NONE;
-        return new Properties(color, tint, temperature, hazard, traits);
+        return new Properties(color, tint, temperature, hazard, traits,
+                json.has("shares") ? readShares(json.get("shares")) : List.of());
+    }
+
+    private static List<TagKey<Fluid>> readShares(JsonElement json) {
+        List<TagKey<Fluid>> shares = new ArrayList<>();
+        Iterable<JsonElement> entries = json.isJsonArray() ? json.getAsJsonArray() : List.of(json);
+        for (var entry : entries) {
+            String name = entry.getAsString();
+            if (!name.startsWith("#")) throw new IllegalArgumentException("fluid share must name a tag: " + name);
+            shares.add(TagKey.create(Registries.FLUID, Ids.parse(name.substring(1))));
+        }
+        return shares;
+    }
+
+    private static JsonArray writeShares(List<TagKey<Fluid>> shares) {
+        JsonArray json = new JsonArray();
+        for (var tag : shares) json.add("#" + tag.location());
+        return json;
     }
 
     /** Replaces {@code fluid}'s colour, tint, temperature, hazard diamond and traits with {@code json}'s. */
     public static void apply(FluidType fluid, JsonObject json) {
+        rememberForeign(fluid);
         Properties properties = read(json);
         int color = properties.color() != null ? properties.color() : fluid.getColor();
         int tint = properties.tint() != null ? properties.tint() : color;
-        fluid.applyProperties(color, tint, properties.temperature(), properties.hazard(), properties.traits());
+        fluid.applyProperties(color, tint, properties.temperature(), properties.hazard(), properties.traits(), properties.shares());
     }
 
     /**
@@ -384,22 +423,64 @@ public final class FluidProperties {
     private static Map<String, List<JsonObject>> patches = Map.of();
     /** A patched fluid's state before its first patch, for a fluid without a property file. */
     private static final Map<FluidType, Pristine> PRISTINE = new IdentityHashMap<>();
+    private static final Map<FluidType, Pristine> FOREIGN_DEFAULTS = Collections.synchronizedMap(new IdentityHashMap<>());
 
-    private record Pristine(int color, int tint, int temperature, FluidHazard hazard, List<Object> traits) {
+    private static void rememberForeign(FluidType fluid) {
+        if (fluid.isForeign()) FOREIGN_DEFAULTS.computeIfAbsent(fluid, Pristine::of);
+    }
+
+    private record Pristine(Properties properties, boolean defined) {
 
         static Pristine of(FluidType fluid) {
-            return new Pristine(fluid.getColor(), fluid.getTint(), fluid.temperature, fluid.getHazard(), List.copyOf(fluid.traits()));
+            return new Pristine(fluid.ownProperties(), fluid.hasOwnProperties());
         }
 
         void restore(FluidType fluid) {
-            fluid.applyProperties(color, tint, temperature, hazard, traits);
+            var color = properties.color();
+            fluid.applyProperties(color, properties.tint() != null ? properties.tint() : color, properties.temperature(),
+                    properties.hazard(), properties.traits(), properties.shares(), defined);
         }
     }
 
     /** Declares both data folders (synced to clients by Golem {@code DataFiles}). HBM's entry calls this at mod construction. */
     public static void declare() {
-        DataFiles.folder(FOLDER, FluidProperties::apply);
-        DataFiles.folder(PATCH_FOLDER, FluidProperties::applyPatches);
+        DataFiles.folder(FOLDER, FluidProperties::apply, ClientFluidProperties::stageBase);
+        DataFiles.folder(PATCH_FOLDER, FluidProperties::applyPatches, ClientFluidProperties::stagePatches);
+        dev.golem.core.net.GolemConfiguration.declareTask(FluidPropertySnapshot.CODEC, FluidProperties::serverSnapshot);
+        DataFiles.AFTER_SYNC.register((server, players) -> {
+            var snapshot = serverSnapshot();
+            for (var player : players) dev.golem.core.net.GolemNetwork.sendToPlayer(player, FluidPropertySnapshot.CODEC, snapshot);
+        });
+    }
+
+    /** Captures all resolved metadata by exact vanilla registry name; no live trait object enters the payload. */
+    public static synchronized FluidPropertySnapshot serverSnapshot() {
+        var entries = new java.util.TreeMap<String, FluidPropertySnapshot.Entry>();
+        var kinds = new java.util.TreeMap<String, String>();
+        for (var vanilla : net.minecraft.core.registries.BuiltInRegistries.FLUID) {
+            var type = Fluids.fromVanillaExact(vanilla);
+            var exact = Fluids.toVanilla(type);
+            var name = net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(exact).toString();
+            if (entries.containsKey(name)) continue;
+            var kind = Fluids.kindOf(type);
+            entries.put(name, new FluidPropertySnapshot.Entry(write(type).toString(),
+                    com.hbm.inventory.FluidContainers.of(type), type.hasOwnProperties()));
+            kinds.put(name, net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(Fluids.toVanilla(kind)).toString());
+        }
+        return new FluidPropertySnapshot(entries, kinds);
+    }
+
+    /** The server's own declarations, keyed as vanilla fluids, for diagnostics and server integrations. */
+    public static synchronized Map<net.minecraft.world.level.material.Fluid, Properties> serverProperties() {
+        var owned = new java.util.HashMap<net.minecraft.world.level.material.Fluid, Properties>();
+        var snapshot = serverSnapshot();
+        for (var row : snapshot.entries().entrySet()) {
+            if (row.getValue().own()) {
+                var fluid = Fluids.toVanilla(Fluids.byRegistryNameExact(row.getKey()));
+                owned.put(fluid, read(com.google.gson.JsonParser.parseString(row.getValue().properties()).getAsJsonObject()));
+            }
+        }
+        return Map.copyOf(owned);
     }
 
     /** The patch files of the last load, as {@link #applyPatches} received them (GameTests put them back with it). */
@@ -429,7 +510,7 @@ public final class FluidProperties {
                 continue;
             }
             String fluidId = owner[1].substring(0, slash) + ":" + owner[1].substring(slash + 1);
-            FluidType fluid = Fluids.byRegistryName(fluidId);
+            FluidType fluid = Fluids.byRegistryNameExact(fluidId);
             if (fluid == Fluids.NONE && !fluidId.equals(Fluids.NONE.getRegistryName())) continue;
             if (!file.getValue().isJsonObject()) {
                 failures.add(file.getKey() + " is not an object");
@@ -443,10 +524,14 @@ public final class FluidProperties {
         touched.addAll(next.keySet());
         int applied = 0;
         for (String id : touched) {
-            FluidType fluid = Fluids.byRegistryName(id);
+            FluidType fluid = Fluids.byRegistryNameExact(id);
             try {
                 reset(fluid, previous.containsKey(id));
                 applied += patch(fluid, next.get(id));
+                if (fluid.isForeign() && !baseFiles.containsKey(id) && !next.containsKey(id)) {
+                    FOREIGN_DEFAULTS.remove(fluid);
+                    PRISTINE.remove(fluid);
+                }
             } catch (RuntimeException e) {
                 failures.add(id + ": " + e.getMessage());
             }
@@ -477,11 +562,19 @@ public final class FluidProperties {
      */
     public record Patch(List<String> remove, List<Object> add, @org.jspecify.annotations.Nullable Integer color,
                         @org.jspecify.annotations.Nullable Integer tint, @org.jspecify.annotations.Nullable Integer temperature,
-                        @org.jspecify.annotations.Nullable FluidHazard hazard) {
+                        @org.jspecify.annotations.Nullable FluidHazard hazard,
+                        @org.jspecify.annotations.Nullable List<TagKey<Fluid>> shares) {
 
         public Patch {
             remove = List.copyOf(remove);
             add = List.copyOf(add);
+            if (shares != null) shares = List.copyOf(shares);
+        }
+
+        public Patch(List<String> remove, List<Object> add, @org.jspecify.annotations.Nullable Integer color,
+                     @org.jspecify.annotations.Nullable Integer tint, @org.jspecify.annotations.Nullable Integer temperature,
+                     @org.jspecify.annotations.Nullable FluidHazard hazard) {
+            this(remove, add, color, tint, temperature, hazard, null);
         }
     }
 
@@ -494,7 +587,8 @@ public final class FluidProperties {
         return new Patch(remove, add, json.has("color") ? color(json.get("color")) : null,
                 json.has("tint") ? color(json.get("tint")) : null,
                 json.has("temperature") ? json.get("temperature").getAsInt() : null,
-                json.has("hazard") ? FluidHazard.read(json.getAsJsonObject("hazard")) : null);
+                json.has("hazard") ? FluidHazard.read(json.getAsJsonObject("hazard")) : null,
+                json.has("shares") ? readShares(json.get("shares")) : null);
     }
 
     /** {@code patch} as a {@link #PATCH_FOLDER} file: the inverse of {@link #readPatch}. */
@@ -515,11 +609,13 @@ public final class FluidProperties {
         if (patch.tint() != null) json.addProperty("tint", hex(patch.tint()));
         if (patch.temperature() != null) json.addProperty("temperature", patch.temperature());
         if (patch.hazard() != null) json.add("hazard", patch.hazard().write());
+        if (patch.shares() != null) json.add("shares", writeShares(patch.shares()));
         return json;
     }
 
     /** Applies one patch to {@code fluid}'s current properties: removals, additions, then the overrides. */
     public static void patch(FluidType fluid, JsonObject json) {
+        rememberForeign(fluid);
         ensureNames();
         Patch patch = readPatch(json);
         Map<Class<?>, Object> traits = new LinkedHashMap<>();
@@ -528,9 +624,10 @@ public final class FluidProperties {
         for (Object trait : patch.add()) traits.put(trait.getClass(), trait);
         int color = patch.color() != null ? patch.color() : fluid.getColor();
         int tint = patch.tint() != null ? patch.tint() : fluid.getTint();
-        int temperature = patch.temperature() != null ? patch.temperature() : fluid.temperature;
+        int temperature = patch.temperature() != null ? patch.temperature() : fluid.getTemperature();
         FluidHazard hazard = patch.hazard() != null ? patch.hazard() : fluid.getHazard();
-        fluid.applyProperties(color, tint, temperature, hazard, new ArrayList<>(traits.values()));
+        fluid.applyProperties(color, tint, temperature, hazard, new ArrayList<>(traits.values()),
+                patch.shares() != null ? patch.shares() : fluid.getSharedTags());
     }
 
     /** The class a trait, flag or phase name stands for. */
@@ -626,6 +723,7 @@ public final class FluidProperties {
         if (properties.tint() != null) json.addProperty("tint", hex(properties.tint()));
         json.addProperty("temperature", properties.temperature());
         if (!properties.hazard().equals(FluidHazard.NONE)) json.add("hazard", properties.hazard().write());
+        if (!properties.shares().isEmpty()) json.add("shares", writeShares(properties.shares()));
         JsonArray flags = new JsonArray();
         for (Map.Entry<String, Object> flag : FLAGS.entrySet()) {
             if (fluid.hasTrait(flag.getValue().getClass())) flags.add(flag.getKey());

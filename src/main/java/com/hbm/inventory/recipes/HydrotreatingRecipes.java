@@ -18,6 +18,8 @@ import java.util.Map;
  */
 public final class HydrotreatingRecipes {
 
+    public static final int FILL_PER_OP = 100;
+
     private HydrotreatingRecipes() {}
 
     /** Hydrogen requirement (pressurized) + two outputs, per 100 mB input. */

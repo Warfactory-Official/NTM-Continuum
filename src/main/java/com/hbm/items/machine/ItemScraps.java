@@ -23,8 +23,7 @@ import java.util.List;
  * (shovel-emptied crucibles/channels, broken foundry blocks, spilled pours). Melts back into exactly its
  * contents. The 1.12.2 {@code ItemScraps} stored material as item metadata + amount as NBT; the port uses
  * the {@link ModDataComponents#MATERIAL} (material name) + {@link ModDataComponents#MAT_AMOUNT} (quanta)
- * components. Icon: the grayscale {@code scraps} sprite tinted by the material's solid colour via the
- * vanilla {@code custom_model_data} colour list (same trick as {@code ItemFluidId}).
+ * components. The model selects each material's recoloured solid sprite, or its molten sheet and colour.
  */
 public class ItemScraps extends CompatItem {
 
@@ -57,7 +56,7 @@ public class ItemScraps extends CompatItem {
         ItemStack scrap = new ItemStack(ModMachineItems.scraps.get());
         ModDataComponents.material(scrap, mats.material.name);
         ModDataComponents.setMaterialAmount(scrap, mats.amount);
-        ModelData.setColorAndFlag(scrap, mats.material.solidColorLight, liquid);
+        ModelData.setColorAndFlag(scrap, liquid ? mats.material.moltenColor : mats.material.solidColorLight, liquid);
         return scrap;
     }
 

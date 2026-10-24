@@ -103,6 +103,16 @@ public final class ChunkUtil {
         drop(claims, chunkPos);
     }
 
+    /** Holds a blast's chunk loaded without simulating it; paired with {@link #releaseChunkAsync}. */
+    public static void addBlastTicket(ServerLevel level, long chunkPos) {
+        dev.golem.core.world.Chunks.claimForLoading(level, ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
+    }
+
+    /** Releases one loading-only blast claim without waiting for a chunk to unload. */
+    public static void releaseChunkAsync(ServerLevel level, long chunkPos) {
+        dev.golem.core.world.Chunks.releaseForLoading(level, ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
+    }
+
     /** Forgets every claim; the manager already released the tickets with the level. */
     public static void onServerStopped() {
         CLAIMS.clear();

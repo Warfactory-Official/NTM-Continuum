@@ -19,6 +19,7 @@ import com.hbm.client.render.RenderSubstation;
 import com.hbm.client.render.RenderTesla;
 import com.hbm.client.render.WiringHudOverlay;
 import com.hbm.inventory.gui.GUIDiode;
+import com.hbm.blocks.network.CableDiode;
 
 /** Client hooks for the energy-network family: the separator screen, the pylon/wire renderers, the drum readout. */
 public final class EnergyNetClientRegistrations {
@@ -27,6 +28,7 @@ public final class EnergyNetClientRegistrations {
 
     public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
         BlockNetworkSeparator.OPEN_SCREEN = separator -> Minecraft.getInstance().setScreen(new GUIDiode(separator));
+        CableDiode.OPEN_SCREEN = diode -> Minecraft.getInstance().setScreen(new GUIDiode(diode));
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {

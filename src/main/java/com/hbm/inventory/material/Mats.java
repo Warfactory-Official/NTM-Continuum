@@ -552,11 +552,11 @@ public final class Mats {
         List<MaterialStack> entries = materialEntries.get(stack.getItem());
         if (entries != null) for (MaterialStack ms : entries) list.add(ms.copy());
 
-        if (list.isEmpty() && stack.getItem() instanceof com.hbm.items.special.ItemAutogen autogen) {
-            NTMMaterial material = autogen.material;
+        if (list.isEmpty() && stack.getItem() instanceof com.hbm.items.special.MaterialShapeItem materialItem) {
+            NTMMaterial material = materialItem.material;
             if (material.smeltsInto.smeltable == SmeltingBehavior.SMELTABLE
                     || material.smeltsInto.smeltable == SmeltingBehavior.ADDITIVE) {
-                list.add(new MaterialStack(material, autogen.shape.quantity));
+                list.add(new MaterialStack(material, materialItem.shape.quantity));
             }
         }
 

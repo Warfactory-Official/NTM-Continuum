@@ -1,6 +1,7 @@
 package com.hbm.items.special;
 
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.special.ItemAutogen;
@@ -152,6 +153,14 @@ public final class BedrockOreType {
         return name;
     }
 
+    /** Shared 1.7 suffixes use HBM's translation; an addon's own suffix uses its registration namespace. */
+    public net.minecraft.network.chat.Component typeName() {
+        boolean shared = java.util.Arrays.stream(VALUES).anyMatch(type -> type.suffix.equals(suffix));
+        String namespace = shared || !name.contains(":") ? com.hbm.Constants.MOD_ID : name.substring(0, name.indexOf(':'));
+        return net.minecraft.network.chat.Component.translatableWithFallback(
+                "item." + namespace + ".bedrock_ore.type." + suffix, displayName);
+    }
+
     @Override
     public String toString() {
         return name;
@@ -168,6 +177,16 @@ public final class BedrockOreType {
             throw new IllegalStateException("Missing bedrock fragment item for " + output.material().name);
         }
         return new ItemStack(item, Math.min((int) Math.ceil(output.amount() * multiplier), 64));
+    }
+
+    /** The actual smeltable output in molten-material quanta, as ItemBedrockOreNew.toFluid computed it. */
+    public static Mats.MaterialStack molten(@org.jspecify.annotations.Nullable BedrockOreOutput output, double multiplier) {
+        if (output == null) return null;
+        var material = output.material();
+        return material.smeltable == NTMMaterial.SmeltingBehavior.SMELTABLE
+                ? new Mats.MaterialStack(material,
+                        (int) Math.ceil(MaterialShapes.FRAGMENT.quantity * output.amount() * multiplier))
+                : null;
     }
 
     /** Every output slot that is set, in table order (a four-output type has four). */

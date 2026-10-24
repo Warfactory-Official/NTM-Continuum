@@ -1,6 +1,7 @@
 package com.hbm.module;
 
 import dev.golem.core.data.Tags;
+import com.hbm.items.ItemFamily;
 
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -103,7 +104,8 @@ public final class ModulePatternMatcher {
         ItemStack oneInput = input.copyWithCount(1);
         if (MODE_EXACT.equals(mode)) return ItemStacks.sameItemAndData(oneInput, oneFilter);
         if (MODE_WILDCARD.equals(mode)) {
-            return ItemStacks.sameItemAndDataIgnoringDamage(oneInput, oneFilter);
+            return ItemStacks.sameItemAndDataIgnoringDamage(oneInput, oneFilter)
+                    || ItemFamily.sameFamily(oneInput.getItem(), oneFilter.getItem());
         }
         return tagNames(oneInput).contains(mode);
     }
@@ -114,13 +116,7 @@ public final class ModulePatternMatcher {
         String mode = modes[index];
         if (mode == null) modes[index] = mode = MODE_EXACT;
 
-        ItemStack oneFilter = filter.copyWithCount(1);
-        ItemStack oneInput = input.copyWithCount(1);
-        if (MODE_EXACT.equals(mode)) return ItemStacks.sameItemAndData(oneInput, oneFilter);
-        if (MODE_WILDCARD.equals(mode)) {
-            return ItemStacks.sameItemAndDataIgnoringDamage(oneInput, oneFilter);
-        }
-        return tagNames(oneInput).contains(mode);
+        return matches(mode, filter, input);
     }
 
     public void save(DataOut output) {

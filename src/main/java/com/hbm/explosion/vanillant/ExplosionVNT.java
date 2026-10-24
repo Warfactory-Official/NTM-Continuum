@@ -34,17 +34,14 @@ import org.jspecify.annotations.Nullable;
  * ({@link IEntityProcessor} + {@link IPlayerProcessor}) and looks like something
  * ({@link IExplosionSFX}); any of the four can be left out.
  *
- * <p><b>One deviation.</b> Upstream carries a dummy vanilla {@code Explosion} object (<i>"compat"</i>) whose
- * only job is to be handed to vanilla's block and entity hooks ({@code getExplosionResistance},
- * {@code canDropFromExplosion}, {@code onBlockExploded}, {@code ForgeEventFactory.onExplosionDetonate}) and to
- * carry its own player-knockback map. It cannot be reproduced portably: {@code Explosion} is an
- * <i>interface</i> at 26.1 (implemented by {@code ServerExplosion}) and a concrete class below it, so any
- * instance would be a version-specific type in a shared source tree. The parts call the underlying vanilla
- * operations directly (resistance from the block, drops through {@code Block.dropResources}), which is what
- * those hooks do anyway. Everything observable (which blocks go, what they drop, how hard entities are hit)
- * follows the original formulas.
+ * On modern targets the blast implements vanilla's explosion context directly, preserving its identity across
+ * block callbacks. Older targets retain the separate VNT callback interface.
  */
-public class ExplosionVNT {
+public class ExplosionVNT
+        //? if >=26.1 {
+        implements net.minecraft.world.level.Explosion
+        //?}
+{
 
     private @Nullable IBlockAllocator blockAllocator;
     private @Nullable IEntityProcessor entityProcessor;
@@ -78,13 +75,37 @@ public class ExplosionVNT {
     }
 
     public float blockResistance(Level level, BlockPos pos, BlockState state) {
-        return Math.max(state.getBlock().getExplosionResistance(), level.getFluidState(pos).getExplosionResistance());
+        var resistance = Math.max(state.getBlock().getExplosionResistance(), level.getFluidState(pos).getExplosionResistance());
+        //? if >=26.1 {
+        return exploder == null ? resistance : exploder.getBlockExplosionResistance(this, level, pos, state, state.getFluidState(), resistance);
+        //?} else {
+        /*return resistance;
+        *///?}
     }
 
     public boolean blockExplodes(Level level, BlockPos pos,
             BlockState state, float power) {
-        return true;
+        //? if >=26.1 {
+        return exploder == null || exploder.shouldBlockExplode(this, level, pos, state, power);
+        //?} else {
+        /*return true;
+        *///?}
     }
+
+    //? if >=26.1 {
+    @Override public net.minecraft.server.level.ServerLevel level() { return (net.minecraft.server.level.ServerLevel) world; }
+    @Override public BlockInteraction getBlockInteraction() {
+        return blockProcessor == null ? BlockInteraction.DESTROY_WITH_DECAY : blockProcessor.interaction();
+    }
+    @Override public net.minecraft.world.entity.@Nullable LivingEntity getIndirectSourceEntity() {
+        return net.minecraft.world.level.Explosion.getIndirectSourceEntity(exploder);
+    }
+    @Override public @Nullable Entity getDirectSourceEntity() { return exploder; }
+    @Override public float radius() { return size; }
+    @Override public net.minecraft.world.phys.Vec3 center() { return new net.minecraft.world.phys.Vec3(posX, posY, posZ); }
+    @Override public boolean canTriggerBlocks() { return false; }
+    @Override public boolean shouldAffectBlocklikeEntities() { return true; }
+    //?}
 
     public void explode() {
 

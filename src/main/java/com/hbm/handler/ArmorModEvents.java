@@ -71,6 +71,10 @@ public final class ArmorModEvents {
     private static final EquipmentSlot[] SLOTS = {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST,
             EquipmentSlot.HEAD};
 
+    /** After the existing real-player, mob-loot and module-drop rules have accepted this death. */
+    public static final dev.golem.core.hook.Hook<java.util.function.BiConsumer<LivingEntity, Player>> KILLED_BY_PLAYER =
+            dev.golem.core.hook.Hook.notifying();
+
     private static boolean installed;
 
     public static void init() {
@@ -118,10 +122,11 @@ public final class ArmorModEvents {
                 if (server) wanted = new ArrayList<>();
                 for (ItemStack mod : ArmorModHandler.pryMods(armor)) {
                     if (!(mod.getItem() instanceof ItemArmorMod armorMod)) continue;
-                    armorMod.modUpdate(entity, armor);
+                    if (server && armorMod.ticksServer()) armorMod.modUpdate(entity, armor);
+                    else if (!server && armorMod.ticksClient()) armorMod.modUpdateClient(entity, armor);
                     if (server) {
                         HazardSystem.applyHazards(mod, entity);
-                        armorMod.collectModifiers(armor, armorSlot, wanted);
+                        if (armorMod.hasAttributes()) armorMod.collectModifiers(armor, armorSlot, wanted);
                     }
                 }
             }
@@ -215,24 +220,25 @@ public final class ArmorModEvents {
     /** 1.7 {@code onEntityDamaged}'s first block: the shield soaks damage and resets the regen delay. */
     public static void absorbShield(DamageEvents.DamageEvent event) {
         if (!(event.entity() instanceof Player player)) return;
-        EntityHbmProps props = HbmLivingProps.getData(player);
-        if (props.shield > 0) {
-            float reduce = Math.min(props.shield, event.amount());
-            props.shield -= reduce;
-            event.setAmount(event.amount() - reduce);
-        }
-        props.lastDamage = player.tickCount;
+        event.setAmount(PlayerShield.absorb(player, event.amount()));
     }
 
     // Sounds
 
+    public static final int PLINK_COOLDOWN_TICKS = 10;
     private static final Map<Player, Long> PLINK = new WeakHashMap<>();
+
+    /** Remaining time in the same sound throttle used by actual armor interception. */
+    public static int plinkCooldown(Player player) {
+        var last = PLINK.get(player);
+        return last == null ? 0 : (int) Math.max(0L, PLINK_COOLDOWN_TICKS - (player.level().getGameTime() - last));
+    }
 
     /** 1.7 {@code HbmPlayerProps.plink}: a sound with a 10-tick per-player cooldown. */
     public static void plink(Player player, SoundEvent sound, float volume, float pitch) {
         long now = player.level().getGameTime();
         Long last = PLINK.get(player);
-        if (last == null || now - last >= 10) {
+        if (last == null || now - last >= PLINK_COOLDOWN_TICKS) {
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS,
                     volume, pitch);
             PLINK.put(player, now);
@@ -292,6 +298,7 @@ public final class ArmorModEvents {
         if (entity instanceof Animal && rng.nextInt(500) == 0) drop(entity, level, ModArmorModItems.bandaid.get());
         if (entity instanceof Enemy && rng.nextInt(1000) == 0) drop(entity, level, ModArmorModItems.heart_piece.get());
         if (entity instanceof EntityCyberCrab && rng.nextInt(500) == 0) drop(entity, level, ModArmorModItems.wd40.get());
+        for (var listener : KILLED_BY_PLAYER) listener.accept(entity, killer);
     }
 
     private static void drop(LivingEntity entity, ServerLevel level, Item item) {

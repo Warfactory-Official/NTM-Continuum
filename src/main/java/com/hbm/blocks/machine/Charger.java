@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.tileentity.machine.TileEntityCharger;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
@@ -26,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  * 1.7 stored the facing as metadata 2..5 from the placer's yaw, so the front faces the player; the box hangs
  * on the opposite side of the cell, where it also takes its power ({@link TileEntityCharger}).
  */
-public class Charger extends CompatBlock implements TickingBlock {
+public class Charger extends CompatBlock implements TickingBlock, ICapabilityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -82,4 +84,11 @@ public class Charger extends CompatBlock implements TickingBlock {
     public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fe()
+            .faces(com.hbm.tileentity.machine.TileEntityCharger.class, (be, side) -> be.canConnect(com.hbm.lib.ForgeDirection.getOrientation(side)));
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

@@ -28,6 +28,20 @@ public final class SpecialPlayers {
 
     private SpecialPlayers() {}
 
+    /** Player.tick HEAD and TAIL on both logical sides. */
+    public static final dev.golem.core.hook.Hook<java.util.function.Consumer<Player>> TICK_START =
+            dev.golem.core.hook.Hook.notifying();
+    public static final dev.golem.core.hook.Hook<java.util.function.Consumer<Player>> TICK_END =
+            dev.golem.core.hook.Hook.notifying();
+
+    public static void tickStart(Player player) {
+        for (var listener : TICK_START) listener.accept(player);
+    }
+
+    public static void tickEnd(Player player) {
+        for (var listener : TICK_END) listener.accept(player);
+    }
+
     /** 1.7 {@code fopSpeed} ({@code e5a8c95d-c7a0-4ecf-8126-76fb8c949389}, "FOP SPEED"). */
     private static final String FOP_SPEED = "hbm:fop_speed";
 

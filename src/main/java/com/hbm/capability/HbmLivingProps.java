@@ -79,10 +79,14 @@ public class HbmLivingProps {
 
     // Neutron Radiation
     public static double getNeutron(LivingEntity entity) {
+        var system = com.hbm.util.ContaminationUtil.neutronSystem();
+        if (system != null && !system.enabled()) return 0D;
         return getData(entity).getNeutrons();
     }
 
     public static void setNeutron(LivingEntity entity, double rad) {
+        var system = com.hbm.util.ContaminationUtil.neutronSystem();
+        if (system != null && !system.enabled()) return;
         getData(entity).setNeutrons(rad);
     }
 

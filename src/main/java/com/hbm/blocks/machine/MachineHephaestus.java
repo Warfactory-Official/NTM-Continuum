@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -31,7 +33,7 @@ import com.hbm.tileentity.machine.TileEntityMachineHephaestus;
  * offset 1) whose eight axis-neighbours of the core at y and y+11 are the fluid ports. Right-clicking with a
  * fluid identifier retypes the input tank; there is no menu.
  */
-public class MachineHephaestus extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
+public class MachineHephaestus extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay, ICapabilityBlock {
 
     public MachineHephaestus(Properties properties) {
         super(properties);
@@ -140,4 +142,11 @@ public class MachineHephaestus extends BlockMultiblockMachine implements IFluidC
                 {0, 11, -1, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn().fluidOut()
+            .fluidFaces(BlockEntity.class, (be, side) -> side == null || side.getAxis().isHorizontal());
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

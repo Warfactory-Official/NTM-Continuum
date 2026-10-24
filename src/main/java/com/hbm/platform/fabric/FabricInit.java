@@ -64,18 +64,9 @@ public class FabricInit implements ModEntry {
         // Worldgen: the biome modifiers ModBiomeModifiers declares reach Fabric through Golem Core's
         // BiomeFeatures.install(), called from MainRegistry right after the declaration.
 
-        // Populate our creative tabs from the common contents map.
-        ModTabs.CONTENTS.forEach((tabKey, contents) ->
-                dev.golem.core.registry.Tabs.modifyEntries(tabKey, output -> {
-                    contents.forEach(item -> {
-                        net.minecraft.world.item.Item resolved = item.get();
-                        if (ModTabs.shouldDisplay(tabKey, resolved)) {
-                            output.accept(new net.minecraft.world.item.ItemStack(resolved));
-                        }
-                    });
-                    var stacks = ModTabs.STACK_CONTENTS.get(tabKey);
-                    if (stacks != null) stacks.forEach(supplier -> supplier.get().forEach(output::accept));
-                }));
+        // Every loader consumes the same listing, including addon positions and component-bearing variants.
+        ModTabs.CONTENTS.keySet().forEach(tabKey ->
+                dev.golem.core.registry.Tabs.modifyEntries(tabKey, output -> ModTabs.accept(tabKey, output::accept)));
 
         // Power/network engine driver: tick the nodespace each server tick, clear it on level unload.
         // The radiation engine ticks on the same hook.

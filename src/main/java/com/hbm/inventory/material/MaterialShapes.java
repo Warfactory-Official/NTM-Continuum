@@ -70,4 +70,9 @@ public enum MaterialShapes {
     public String displayName(String materialName) {
         return displayTemplate.replace("%s", materialName);
     }
+
+    public net.minecraft.tags.TagKey<net.minecraft.world.item.Item> tagFor(String materialName) {
+        return net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
+                dev.golem.core.Ids.of("c", tagPlural + "/" + materialName));
+    }
 }

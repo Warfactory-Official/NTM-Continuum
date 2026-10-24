@@ -219,6 +219,11 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         this.setChanged();
     }
 
+    @Override
+    public void repair(net.minecraft.world.entity.player.Player player) {
+        repair();
+    }
+
     /** 1.7 {@code writeNBT}: a refinery with fluid in it, or a torn one, travels with its item. */
     @Override
     protected CompoundTag collectCarriedData() {

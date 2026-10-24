@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -47,7 +49,7 @@ import com.hbm.tileentity.machine.TileEntityMachineThresher;
  * own horizontal look direction; the tile then works with its opposite.
  */
 public class MachineThresher extends CompatBlock
-        implements TickingBlock, IFluidConnectorBlockMK2, IToolable, ILookOverlay, ITooltipProvider {
+        implements TickingBlock, IFluidConnectorBlockMK2, IToolable, ILookOverlay, ITooltipProvider, ICapabilityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -153,4 +155,12 @@ public class MachineThresher extends CompatBlock
         return new ILookOverlay.Data(Component.translatable("block.hbm.machine_thresher").getString(),
                 0xffff00, 0x404000, text);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn()
+            .faces(BlockEntity.class, (be, side) -> side == Direction.DOWN || side.getAxis().isHorizontal() && side.getAxis() != be.getBlockState().getValue(FACING).getAxis())
+            .fluidFaces(BlockEntity.class, (be, side) -> side == Direction.DOWN || side.getAxis().isHorizontal() && side.getAxis() != be.getBlockState().getValue(FACING).getAxis());
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

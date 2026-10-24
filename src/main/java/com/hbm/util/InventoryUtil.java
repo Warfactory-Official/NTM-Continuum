@@ -56,7 +56,11 @@ public final class InventoryUtil {
 
         if (shouldRemove) {
             for (int i = 0; i < original.size(); i++) {
-                original.set(i, inventory[i].isEmpty() ? ItemStack.EMPTY : inventory[i]);
+                var current = original.get(i);
+                var remaining = inventory[i].getCount();
+                if (current.getCount() == remaining) continue;
+                if (remaining == 0) original.set(i, ItemStack.EMPTY);
+                else current.setCount(remaining);
             }
         }
 

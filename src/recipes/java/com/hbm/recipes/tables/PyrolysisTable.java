@@ -137,7 +137,7 @@ public final class PyrolysisTable extends RecipeSource<Row> {
     /** 1.7 {@code registerSFAuto}, a 60-tick recipe; the mB amount is computed by {@code PyroOvenRecipes}. */
     private void registerSFAuto(FluidType fluid, long tuPerSF, Item fuel) {
         register("solid_fuel_" + fluid.getKey(), new Row(Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.of(ItemOut.of(new ItemStack(fuel))), 60, Optional.of(fluid), Optional.of(tuPerSF)));
+                Optional.of(ItemOut.of(new ItemStack(fuel))), 60, Optional.of(fluid), Optional.of(tuPerSF), nextOrder()));
     }
 
     /** 1.7 {@code recipes.add(recipe)}. */
@@ -147,7 +147,7 @@ public final class PyrolysisTable extends RecipeSource<Row> {
         if (recipe.inputItem != null) id.append('_').append(name(recipe.inputItem));
         register(id.toString(), new Row(Optional.ofNullable(recipe.inputFluid), Optional.ofNullable(recipe.inputItem),
                 Optional.ofNullable(recipe.outputFluid), Optional.ofNullable(recipe.outputItem).map(ItemOut::of),
-                recipe.duration, Optional.empty(), Optional.empty()));
+                recipe.duration, Optional.empty(), Optional.empty(), nextOrder()));
     }
 
     private static String name(AStack stack) {

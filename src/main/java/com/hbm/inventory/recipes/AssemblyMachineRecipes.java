@@ -36,6 +36,13 @@ import net.minecraft.world.item.ItemStack;
  */
 public class AssemblyMachineRecipes extends DataGenericRecipes<GenericRecipe> {
 
+    /**
+     * Gap between authored assembly rows; addon rows occupy the positions inside that gap. The serialized
+     * order is a display position, not a recipe index: datapacks inserting at raw numeric orders must use this
+     * spaced layout. Relative authored order and a replacement row's anchor position stay unchanged.
+     */
+    public static final int ORDER_STRIDE = 256;
+
     public static final AssemblyMachineRecipes INSTANCE = new AssemblyMachineRecipes();
 
     public static final String POOL_PLATES = POOL_PREFIX_ALT + "plates";

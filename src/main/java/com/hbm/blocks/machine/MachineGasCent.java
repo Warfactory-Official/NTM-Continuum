@@ -1,5 +1,8 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
+import net.minecraft.core.Direction;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -21,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Four-block gas centrifuge tower with energy and fluid ports around its core. */
 public class MachineGasCent extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2,
-        WorldlyContainerHolder {
+        WorldlyContainerHolder, ICapabilityBlock {
 
     public MachineGasCent(Properties properties) {
         super(properties);
@@ -59,4 +62,11 @@ public class MachineGasCent extends BlockMultiblockMachine implements IEnergyCon
                 {0, 0, 0, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().items().fe()
+            .fluidContacts(com.hbm.tileentity.machine.TileEntityMachineGasCent.class);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

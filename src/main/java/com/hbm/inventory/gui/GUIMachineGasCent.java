@@ -66,7 +66,7 @@ public class GUIMachineGasCent extends CompatContainerScreen<ContainerMachineGas
         int x0 = leftPos + x;
         int bottom = topPos + y + 52;
         int top = bottom - height;
-        Identifier texture = textureTank.getTankType().getTexture();
+        Identifier texture = textureTank.getTankType().clientMetadata().getTexture();
         if (Minecraft.getInstance().getResourceManager().getResource(texture).isPresent()) {
             graphics.enableScissor(x0, top, x0 + 6, bottom);
             for (int tileY = bottom - 16; tileY > top - 16; tileY -= 16) {
@@ -75,7 +75,7 @@ public class GUIMachineGasCent extends CompatContainerScreen<ContainerMachineGas
             graphics.disableScissor();
         } else {
             graphics.fill(x0, top, x0 + 6, bottom,
-                    0xFF000000 | (textureTank.getTankType().getColor() & 0xFFFFFF));
+                    0xFF000000 | (textureTank.getTankType().clientMetadata().getColor() & 0xFFFFFF));
         }
     }
 

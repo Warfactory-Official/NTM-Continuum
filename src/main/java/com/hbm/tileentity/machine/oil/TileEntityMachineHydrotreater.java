@@ -95,13 +95,13 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         tanks[2].setTankType(out.out1().type);
         tanks[3].setTankType(out.out2().type);
 
-        if (power < 20_000 || tanks[0].getFill() < 100) return;
+        if (power < 20_000 || tanks[0].getFill() < HydrotreatingRecipes.FILL_PER_OP) return;
         if (tanks[1].getFill() < out.hydrogen().fill) return;
         if (inventory.getStackInSlot(10).isEmpty() || inventory.getStackInSlot(10).getItem() != ModItems.catalytic_converter.get()) return;
         if (tanks[2].getFill() + out.out1().fill > tanks[2].getMaxFill()) return;
         if (tanks[3].getFill() + out.out2().fill > tanks[3].getMaxFill()) return;
 
-        tanks[0].setFill(tanks[0].getFill() - 100);
+        tanks[0].setFill(tanks[0].getFill() - HydrotreatingRecipes.FILL_PER_OP);
         tanks[1].setFill(tanks[1].getFill() - out.hydrogen().fill);
         tanks[2].setFill(tanks[2].getFill() + out.out1().fill);
         tanks[3].setFill(tanks[3].getFill() + out.out2().fill);

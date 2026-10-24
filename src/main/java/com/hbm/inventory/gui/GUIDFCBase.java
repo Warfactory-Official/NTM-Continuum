@@ -35,8 +35,8 @@ public abstract class GUIDFCBase<T extends AbstractContainerMenu> extends Compat
         int x0 = leftPos + x;
         int bottom = topPos + y + height;
         int top = bottom - filled;
-        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
-        Identifier fluidTexture = tank.getTankType().getTexture();
+        int tint = 0xFF000000 | (tank.getTankType().clientMetadata().getTint() & 0xFFFFFF);
+        Identifier fluidTexture = tank.getTankType().clientMetadata().getTexture();
 
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTexture).isPresent()) {
             graphics.enableScissor(x0, top, x0 + width, bottom);
@@ -46,7 +46,7 @@ public abstract class GUIDFCBase<T extends AbstractContainerMenu> extends Compat
             graphics.disableScissor();
         } else {
             GuiDraw.fill(graphics, x0, top, x0 + width, bottom,
-                    0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
+                    0xFF000000 | (tank.getTankType().clientMetadata().getColor() & 0xFFFFFF));
         }
     }
 

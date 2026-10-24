@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
@@ -19,11 +20,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * <p>HEAD, because vanilla resets {@code fallDistance} immediately afterwards.
  *
  * <p>The two branches are a descriptor guard: the first parameter widened from {@code float} to
- * {@code double} at 26.1, and a mixin injector's parameters must match its target exactly. AGENTS.md §1
- * lists that as the one era-guard category that legitimately belongs in HBM.
+ * {@code double} at 26.1, and a mixin injector's parameters must match its target exactly.
  */
 @Mixin(Player.class)
 public class MixinPlayer {
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void hbm$playerTickStart(CallbackInfo ci) {
+        com.hbm.handler.SpecialPlayers.tickStart((Player) (Object) this);
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void hbm$playerTickEnd(CallbackInfo ci) {
+        com.hbm.handler.SpecialPlayers.tickEnd((Player) (Object) this);
+    }
+
 
     @Inject(method = "causeFallDamage", at = @At("HEAD"))
     //? if >=26.1 {

@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
@@ -37,7 +39,7 @@ import org.jspecify.annotations.Nullable;
  * (dims {@code {8,0,1,1,1,1}}, offset 1) with the 4 base corners marked as extras (the fluid ports).
  */
 public class MachineRefinery extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder,
-        IBlockExplodedVNT, IToolable, ILookOverlay {
+        IBlockExplodedVNT, IToolable, ILookOverlay, ICapabilityBlock {
 
     public MachineRefinery(Properties properties) {
         super(properties);
@@ -142,4 +144,11 @@ public class MachineRefinery extends BlockMultiblockMachine implements IEnergyCo
     protected boolean carriesData() {
         return true;
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().fluidOut().items().itemsAtCells().fe()
+            .fluidFaces(BlockEntity.class, (be, side) -> side != Direction.DOWN);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

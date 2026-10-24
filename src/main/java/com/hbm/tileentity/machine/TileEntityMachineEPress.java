@@ -44,12 +44,17 @@ import com.hbm.tileentity.TilePortShapes;
  * {@code TileEntityMachineEPress}.
  *
  * <p>Slots: 0 battery, 1 stamp, 2 input, 3 output, 4 upgrade (SPEED only, 1.12.2 formula: faster
- * stroke + shorter inter-cycle delay). Deferred (see IMPLEMENTATION.md §18): the per-loader energy
+ * stroke + shorter inter-cycle delay). Deferred: the per-loader energy
  * capability bridge.
  */
 public class TileEntityMachineEPress extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer, IUpgradeInfoProvider {
+    public static final int SLOT_BATTERY = 0;
+    public static final int SLOT_STAMP = 1;
+    public static final int SLOT_INPUT = 2;
+    public static final int SLOT_OUTPUT = 3;
 
-    private static final int[] IO_SLOTS = {1, 2, 3}; // stamp / input (insert) + output (extract)
+
+    private static final int[] IO_SLOTS = {SLOT_STAMP, SLOT_INPUT, SLOT_OUTPUT}; // stamp / input (insert) + output (extract)
 
     public long power = 0;
     public static final long maxPower = 50000;
@@ -130,42 +135,42 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     }
 
     private boolean canProcess() {
-        ItemStack stamp = inventory.getStackInSlot(1);
-        ItemStack input = inventory.getStackInSlot(2);
+        ItemStack stamp = inventory.getStackInSlot(SLOT_STAMP);
+        ItemStack input = inventory.getStackInSlot(SLOT_INPUT);
         if (stamp.isEmpty() || input.isEmpty()) return false;
 
         ItemStack output = PressRecipes.getOutput(input, stamp);
         if (output.isEmpty()) return false;
 
-        ItemStack outSlot = inventory.getStackInSlot(3);
+        ItemStack outSlot = inventory.getStackInSlot(SLOT_OUTPUT);
         if (outSlot.isEmpty()) return true;
         if (!ItemStacks.sameItemAndData(outSlot, output)) return false;
         return outSlot.getCount() + output.getCount() <= outSlot.getMaxStackSize();
     }
 
     private void craftItem() {
-        ItemStack input = inventory.getStackInSlot(2);
-        ItemStack stamp = inventory.getStackInSlot(1);
+        ItemStack input = inventory.getStackInSlot(SLOT_INPUT);
+        ItemStack stamp = inventory.getStackInSlot(SLOT_STAMP);
         ItemStack output = PressRecipes.getOutput(input, stamp);
         if (output.isEmpty()) return;
 
-        ItemStack outSlot = inventory.getStackInSlot(3);
-        if (outSlot.isEmpty()) inventory.setStackInSlot(3, output.copy());
+        ItemStack outSlot = inventory.getStackInSlot(SLOT_OUTPUT);
+        if (outSlot.isEmpty()) inventory.setStackInSlot(SLOT_OUTPUT, output.copy());
         else outSlot.grow(output.getCount());
 
         input.shrink(1);
         if (stamp.isDamageableItem()) {
             stamp.setDamageValue(stamp.getDamageValue() + 1);
-            if (stamp.getDamageValue() >= stamp.getMaxDamage()) inventory.setStackInSlot(1, ItemStack.EMPTY);
+            if (stamp.getDamageValue() >= stamp.getMaxDamage()) inventory.setStackInSlot(SLOT_STAMP, ItemStack.EMPTY);
         }
     }
 
     @Override
     public boolean isItemValidForSlot(int i, ItemStack stack) {
         return switch (i) {
-            case 0 -> Library.isBattery(stack);
-            case 1 -> stack.getItem() instanceof ItemStamp;
-            case 2 -> !(stack.getItem() instanceof ItemStamp) && !Library.isBattery(stack) && !Library.isMachineUpgrade(stack);
+            case SLOT_BATTERY -> Library.isBattery(stack);
+            case SLOT_STAMP -> stack.getItem() instanceof ItemStamp;
+            case SLOT_INPUT -> !(stack.getItem() instanceof ItemStamp) && !Library.isBattery(stack) && !Library.isMachineUpgrade(stack);
             case 4 -> Library.isMachineUpgrade(stack); // upgrade slot (any type, like SlotUpgrade)
             default -> false; // case 3 output
         };
@@ -238,7 +243,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         super.serialize(buf);
         buf.writeLong(power);
         buf.writeInt(progress);
-        ItemStacks.writeOptional(buf, inventory.getStackInSlot(2));
+        ItemStacks.writeOptional(buf, inventory.getStackInSlot(SLOT_INPUT));
     }
 
     @Override

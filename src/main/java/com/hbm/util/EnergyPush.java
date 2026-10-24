@@ -5,6 +5,8 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.energymk2.PowerGraph;
 import com.hbm.api.energymk2.PowerNetwork;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.capability.NativeContacts;
+import com.hbm.capability.CapRole;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -43,9 +45,8 @@ public final class EnergyPush {
 
     private static @Nullable IEnergyReceiverMK2 receiverAt(ServerLevel level, BlockPos target, ForgeDirection dir,
                                                          @Nullable Object self) {
-        BlockEntity te = level.getBlockEntity(target);
-        if (te instanceof IEnergyReceiverMK2 rec && te != self && rec.canConnect(dir.getOpposite())
-                && rec.allowDirectProvision()) {
+        var contact = NativeContacts.powerAt(level, target, dir.getOpposite().toDirection(), CapRole.POWER_IN);
+        if (contact instanceof IEnergyReceiverMK2 rec && rec != self && rec.allowDirectProvision()) {
             return rec;
         }
         return null;

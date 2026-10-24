@@ -63,6 +63,13 @@ public class ItemArmorMod extends ItemCustomLore {
         if (key != null) tooltip.add(Component.literal("  ").append(Component.translatable(key)));
     }
 
+    /** Native modules receive these callbacks by default; an override may disable an unused route. */
+    public boolean ticksServer() { return true; }
+    public boolean ticksClient() { return true; }
+    public boolean hasAttributes() { return true; }
+
+    public void modUpdateClient(LivingEntity entity, ItemStack armor) { modUpdate(entity, armor); }
+
     public void modDamage(DamageEvents.DamageEvent event, ItemStack armor) {}
 
     public void modUpdate(LivingEntity entity, ItemStack armor) {}

@@ -1,5 +1,8 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
+import net.minecraft.core.Direction;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
@@ -37,7 +40,7 @@ import org.jspecify.annotations.Nullable;
  * A non-empty barrel keeps its fluid when picked up (see {@link TileEntityBarrel#collectCarriedData}).
  * Drawn by the {@code barrel.obj} renderer, with a connector on every side a duct of its fluid touches.
  */
-public class BlockFluidBarrel extends CompatBlock implements TickingBlock {
+public class BlockFluidBarrel extends CompatBlock implements TickingBlock, ICapabilityBlock {
 
     private static final VoxelShape SHAPE = Shapes.box(0.125, 0, 0.125, 0.875, 1, 0.875);
 
@@ -111,4 +114,11 @@ public class BlockFluidBarrel extends CompatBlock implements TickingBlock {
     protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
         return level.getBlockEntity(pos) instanceof TileEntityBarrel barrel ? barrel.getComparatorPower() : 0;
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn().fluidOut().items()
+            .fluidContacts(com.hbm.tileentity.machine.storage.TileEntityBarrel.class);
+
+    @Override
+    public MachineCaps caps() { return corroded ? MachineCaps.NONE : CAPS; }
 }

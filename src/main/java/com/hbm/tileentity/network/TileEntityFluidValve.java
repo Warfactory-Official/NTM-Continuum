@@ -120,7 +120,7 @@ public class TileEntityFluidValve extends CompatBlockEntity implements IFluidPip
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        type = Fluids.read(input, "type");
+        type = Fluids.readExact(input, "type");
     }
 
     @Override

@@ -88,27 +88,11 @@ public final class MachineExplosionDamage {
     public static boolean repair(Level level, BlockPos pos, Player player) {
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null) return false;
-        BlockEntity be = level.getBlockEntity(core);
-        List<AStack> materials;
-        Runnable repair;
-        if (be instanceof TileEntityMachineFluidTank tank && tank.isDamaged()) {
-            materials = tank.getRepairMaterials();
-            repair = tank::repair;
-        } else if (be instanceof TileEntityMachineRefinery refinery && refinery.isDamaged()) {
-            materials = refinery.getRepairMaterials();
-            repair = refinery::repair;
-        } else {
-            return false;
-        }
-        if (materials.isEmpty() || InventoryUtil.doesPlayerHaveAStacks(player, materials, true)) {
-            if (!level.isClientSide()) repair.run();
-            return true;
-        }
-        return false;
+        return com.hbm.interfaces.IRepairable.tryRepairMultiblock(level, core, player);
     }
 
     /**
-     * hbm-space's repair overlay rule (ADDON-API-INVENTORY V-173): a damaged machine always lists its repair, with a
+     * hbm-space's repair overlay rule: a damaged machine always lists its repair, with a
      * "Tool: Blowtorch" line while no blowtorch is held. False (1.7): the list shows only with a blowtorch in hand.
      * NTM: Space sets it.
      */

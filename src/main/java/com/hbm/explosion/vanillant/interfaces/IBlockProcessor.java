@@ -9,4 +9,10 @@ import net.minecraft.world.level.Level;
 public interface IBlockProcessor {
 
     void process(ExplosionVNT explosion, Level world, double x, double y, double z, ObjectOpenHashSet<BlockPos> affectedBlocks);
+
+    //? if >=26.1 {
+    default net.minecraft.world.level.Explosion.BlockInteraction interaction() {
+        return net.minecraft.world.level.Explosion.BlockInteraction.DESTROY_WITH_DECAY;
+    }
+    //?}
 }

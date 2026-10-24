@@ -145,6 +145,7 @@ public final class GenericRecipeCodec {
 
     private static final String TYPE_FLUID_CONTAINER = "hbm:fluid_container";
     private static final String TYPE_COLD = "hbm:cold";
+    private static final String TYPE_BATTERY = "hbm:battery";
     private static final String TYPE_ANY_OF = "hbm:any_of";
     private static final String TYPE_FLUID_ITEM = "hbm:fluid_item";
 
@@ -158,6 +159,13 @@ public final class GenericRecipeCodec {
                 stack.stacksize = count;
                 return stack;
             })));
+
+    /** A battery accepting saved charge alone: {"type": "hbm:battery", "item", "count"}. */
+    private static final Codec<RecipeIngredients.Battery> BATTERY = typed(TYPE_BATTERY,
+            RecordCodecBuilder.<RecipeIngredients.Battery>mapCodec(i -> i.group(
+                    ItemStacks.itemCodec().fieldOf("item").forGetter(stack -> stack.item),
+                    Codec.INT.optionalFieldOf("count", 1).forGetter(stack -> stack.stacksize)
+            ).apply(i, RecipeIngredients.Battery::new)));
 
     private static final Codec<RecipeIngredients.Cold> COLD = typed(TYPE_COLD,
             RecordCodecBuilder.<RecipeIngredients.Cold>mapCodec(i -> i.group(
@@ -243,6 +251,7 @@ public final class GenericRecipeCodec {
                 return switch (type.get()) {
                     case TYPE_FLUID_CONTAINER -> FLUID_CONTAINER.decode(ops, input).map(p -> p.mapFirst(s -> (AStack) s));
                     case TYPE_COLD -> COLD.decode(ops, input).map(p -> p.mapFirst(s -> (AStack) s));
+                    case TYPE_BATTERY -> BATTERY.decode(ops, input).map(p -> p.mapFirst(s -> (AStack) s));
                     case TYPE_ANY_OF -> ANY_OF.decode(ops, input).map(p -> p.mapFirst(s -> (AStack) s));
                     case TYPE_FLUID_ITEM -> FLUID_ITEM.decode(ops, input).map(p -> p.mapFirst(s -> (AStack) s));
                     default -> DataResult.error(() -> "unknown ingredient type " + type.get());
@@ -262,6 +271,7 @@ public final class GenericRecipeCodec {
             }
             if (stack instanceof FluidContainerStack container) return FLUID_CONTAINER.encode(container, ops, prefix);
             if (stack instanceof RecipeIngredients.Cold cold) return COLD.encode(cold, ops, prefix);
+            if (stack instanceof RecipeIngredients.Battery battery) return BATTERY.encode(battery, ops, prefix);
             if (stack instanceof RecipeIngredients.AnyOf any) return ANY_OF.encode(any, ops, prefix);
             if (stack instanceof RecipeIngredients.FluidItem fluid) return FLUID_ITEM.encode(fluid, ops, prefix);
             return input(stack).flatMap(input -> INPUT.encode(input, ops, prefix));
@@ -581,6 +591,7 @@ public final class GenericRecipeCodec {
         String body;
         if (stack instanceof TagStack tag) body = "#" + tag.tag.location();
         else if (stack instanceof RecipesCommon.MaterialStack material) body = "mat:" + material.material.name + "/" + material.shape;
+        else if (stack instanceof RecipeIngredients.Battery battery) body = "battery:" + BuiltInRegistries.ITEM.getKey(battery.item);
         else if (stack instanceof ComparableStack comparable) {
             Optional<ItemData> exact = exactData(comparable);
             body = BuiltInRegistries.ITEM.getKey(comparable.item) + exact.map(data -> "!exact" + data.describe()).orElse("");

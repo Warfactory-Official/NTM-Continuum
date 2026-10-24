@@ -97,7 +97,9 @@ public final class ModItemModels {
     };
 
     private static final String[] SPRITE_ITEMS_3 = {
-            "scraps_liquid",
+            //? if <26.1 {
+            /*"scraps_liquid",
+            *///?}
             "shell",
             "wire_dense", "wire_fine"
     };

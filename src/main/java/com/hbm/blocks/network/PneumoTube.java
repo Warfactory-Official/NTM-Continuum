@@ -1,5 +1,7 @@
 package com.hbm.blocks.network;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.inventory.fluid.FluidType;
@@ -53,7 +55,7 @@ import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
  * {@code canConnectToAir}) ride the block entity. 1.7 drew it with an ISBRH; the same boxes are its chunk model
  * here ({@code PneumoTubeModel}).
  */
-public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, IFluidConnectorBlockMK2 {
+public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, IFluidConnectorBlockMK2, ICapabilityBlock {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;
@@ -231,7 +233,7 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
                 && !type.hasTrait(FT_Corrosive.class)
                 && FluidTraitSimple.isGaseousAny(type);
         if (canUse) {
-            tube.compair.setTankType(type);
+            tube.compair.setTankTypeByIdentifier(type);
             tube.setChanged();
             tube.refreshAirMask();
             player.sendSystemMessage(Component.literal("Changed type to ")
@@ -319,4 +321,11 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
         return world.getBlockEntity(new BlockPos(x, y, z)) instanceof TileEntityPneumoTube tube
                 && tube.canConnect(type, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn()
+            .fluidContacts(com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube.class);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }
