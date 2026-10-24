@@ -107,22 +107,24 @@ public class BlockOutgas extends CompatBlock {
     @Override
     public void spawnAfterBreak(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
         super.spawnAfterBreak(state, level, pos, tool, dropExperience);
-        if (!onBreak || this == ModOutgasBlocks.ancient_scrap.get()) return;
+        if (!onBreak) return;
         Block gas = getGas();
         if (gas != Blocks.AIR) level.setBlock(pos, gas.defaultBlockState(), 3);
     }
 
-    /** Ancient scrap's gas is 1.7 breakBlock, which runs on any removal. */
+    /** Ancient scrap's 1.7 breakBlock. Writing {@code pos} here fails the removal before 26.1, so a mined block drops nothing. */
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        super.onBlockRemoved(state, level, pos, movedByPiston);
-        // Carried by a sub-level system, not mined: nothing escapes at the old position.
-        if (level.isClientSide() || !onBreak || this != ModOutgasBlocks.ancient_scrap.get() || SubLevels.isMoving(level)) return;
+        super.onBlockRemoved(state, level, pos, movedByPiston);        // Carried by a sub-level system, not mined: nothing escapes at the old position.
+        if (level.isClientSide() || this != ModOutgasBlocks.ancient_scrap.get() || SubLevels.isMoving(level)) return;
         Block gas = getGas();
         if (gas == Blocks.AIR) return;
-        level.setBlock(pos, gas.defaultBlockState(), 3);
-        // The source is gas by now, so schedule the callback on the gas block itself.
-        if (gas instanceof BlockGasRadonTomb && level instanceof ServerLevel server) server.scheduleTick(pos, gas, 1);
+        for (int x = -2; x <= 2; x++) for (int y = -2; y <= 2; y++) for (int z = -2; z <= 2; z++) {
+            // 1.7 tests the sum, not a distance
+            int sum = Math.abs(x + y + z);
+            BlockPos target = pos.offset(x, y, z);
+            if (sum > 0 && sum < 5 && level.getBlockState(target).isAir()) level.setBlock(target, gas.defaultBlockState(), 3);
+        }
     }
 
     @Override

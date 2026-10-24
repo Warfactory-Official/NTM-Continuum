@@ -66,17 +66,4 @@ public class BlockGasRadonTomb extends BlockGasBase {
         Direction first = random.nextInt(3) == 0 ? Direction.UP : Direction.DOWN;
         drift(level, state, pos, random, first, randomHorizontal(random));
     }
-
-    @Override
-    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        // Ancient scrap schedules this gas cell after the source has already been replaced.
-        for (int x = -2; x <= 2; x++) for (int y = -2; y <= 2; y++) for (int z = -2; z <= 2; z++) {
-            int manhattan = Math.abs(x + y + z); // Deliberately odd: this is the old formula.
-            if (manhattan > 0 && manhattan < 5) {
-                BlockPos target = pos.offset(x, y, z);
-                if (isAirLike(level.getBlockState(target)))
-                    level.setBlock(target, state, 3);
-            }
-        }
-    }
 }

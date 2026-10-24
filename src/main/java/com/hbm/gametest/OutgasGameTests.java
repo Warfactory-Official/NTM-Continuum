@@ -1,9 +1,11 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.ModNuclearBlocks;
+import com.hbm.blocks.ModOreBlocks;
 import com.hbm.blocks.ModOutgasBlocks;
 import com.hbm.blocks.generic.BlockOutgas;
 import com.hbm.Constants;
+import com.hbm.items.ModItems;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -12,11 +14,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.phys.AABB;
 
 /** GameTest contracts for old BlockOutgas mappings and emission triggers. */
 public final class OutgasGameTests {
@@ -35,6 +39,8 @@ public final class OutgasGameTests {
             TESTS.function("outgas_neighbour_emission", 20, () -> OutgasGameTests::neighbourEmission);
     public static final GameTests.Function ANCIENT_SPREAD =
             TESTS.function("outgas_ancient_spread", 20, () -> OutgasGameTests::ancientSpread);
+    public static final GameTests.Function MINED_DROPS =
+            TESTS.function("outgas_mined_blocks_drop", 20, () -> OutgasGameTests::minedDrops);
 
     public static void init() {}
 
@@ -68,6 +74,28 @@ public final class OutgasGameTests {
         helper.assertTrue(level.getBlockState(pos).is(ModNuclearBlocks.gas_asbestos.get()),
                 "mining asbestos brick left " + level.getBlockState(pos) + ", not asbestos gas");
         helper.succeed();
+    }
+
+    /** Mining an outgas block drops its loot and leaves its gas; before 26.1 a removal hook writing the cell cancels the drop. */
+    public static void minedDrops(GameTestHelper helper) {
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_PICKAXE));
+        assertMinedDrop(helper, player, 0, ModNuclearBlocks.ore_uranium.get(), ModNuclearBlocks.gas_radon.get());
+        assertMinedDrop(helper, player, 1, ModOreBlocks.ore_uranium_deepslate.get(), ModNuclearBlocks.gas_radon.get());
+        assertMinedDrop(helper, player, 2, ModNuclearBlocks.ore_nether_uranium_scorched.get(), ModNuclearBlocks.gas_radon.get());
+        assertMinedDrop(helper, player, 3, ModOutgasBlocks.ancient_scrap.get(), ModNuclearBlocks.gas_radon_tomb.get());
+        helper.succeed();
+    }
+
+    private static void assertMinedDrop(GameTestHelper helper, ServerPlayer player, int slot, Block block, Block gas) {
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(slot * 6, 2, 0));
+        level.setBlock(pos, block.defaultBlockState(), 3);
+        helper.assertTrue(player.gameMode.destroyBlock(pos), "survival could not mine " + block);
+        helper.assertTrue(level.getBlockState(pos).is(gas), "mined " + block + " left " + level.getBlockState(pos));
+        boolean dropped = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(1)).stream()
+                .anyMatch(e -> e.getItem().is(block.asItem()) || e.getItem().is(ModItems.raw_uranium.get()));
+        helper.assertTrue(dropped, "mined " + block + " dropped nothing");
     }
 
     public static void randomEmission(GameTestHelper helper) {
