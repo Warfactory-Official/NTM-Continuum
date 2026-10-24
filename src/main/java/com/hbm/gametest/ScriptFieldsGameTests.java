@@ -5,9 +5,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.hbm.inventory.recipes.AssemblyMachineRecipes;
+import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.RecipeShapes;
 import com.mojang.serialization.JsonOps;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.platform.Platform;
+import dev.golem.core.world.ItemPatch;
+import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.RecipeFields;
 import dev.golem.core.world.RecipeFields.FluidAmount;
 import dev.golem.core.world.RecipeFields.ItemIn;
@@ -25,6 +30,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
  * The recipe tables' script fields ({@link RecipeFields}, read by Golem Core's KubeJS adapter): every stated field is a
@@ -41,6 +50,9 @@ public final class ScriptFieldsGameTests {
 
     public static final GameTests.Function ROWS_PARSE = RecipeTableGameTests.TESTS.function(
             "script_fields_rows_parse", 20, () -> ScriptFieldsGameTests::rowsParse);
+
+    public static final GameTests.Function OUTPUT_DATA = RecipeTableGameTests.TESTS.function(
+            "script_fields_output_item_data", 20, () -> ScriptFieldsGameTests::outputData);
 
     public static void init() {}
 
@@ -272,6 +284,36 @@ public final class ScriptFieldsGameTests {
         new Row("hbm:arc_welder", problems).put("output", gold).put("ingredients", steel3, iron).raw("duration", 100)
                 .raw("consumption", 1000L).put("fluid", water).check(registries);
         new Row("hbm:sawmill", problems).put("output", gold4).put("input", iron).raw("sawdust_chance", 0.5D).check(registries);
+        helper.assertTrue(problems.isEmpty(), String.join("\n", problems));
+        helper.succeed();
+    }
+
+    /** A script's output stack with data (a vehicle crate's block entity) reaches the machine's output unchanged. */
+    public static void outputData(GameTestHelper helper) {
+        List<String> problems = new ArrayList<>();
+        HolderLookup.Provider registries = helper.getLevel().registryAccess();
+        ItemStack named = new ItemStack(Items.GOLD_INGOT, 2);
+        ItemStacks.setCustomName(named, Component.literal("script output"));
+        JsonElement data = ItemPatch.of(named).json(RegistryOps.create(JsonOps.INSTANCE, registries));
+        Row row = new Row("hbm:assembly_machine", problems).raw("name", "ass.script_data")
+                .put("output_items", new ItemOut(GOLD, 2, null, data)).put("input_items", new ItemIn(IRON, false, 1))
+                .raw("duration", 100).raw("power", 10L);
+        row.check(registries);
+        expectFailure(problems, RecipeShapes.STACK_OUT, new ItemOut(GOLD, 1, null, data));
+        if (row.table != null && problems.isEmpty()) {
+            GenericRecipe recipe = (GenericRecipe) row.table.fromJson(row.json, registries);
+            recipe.bindStacks();
+            ItemStack out = recipe.outputItem[0];
+            if (out.getCount() != 2 || !ItemStacks.sameItemAndData(out, named)) {
+                problems.add("bound output " + out + " lost the data of " + named);
+            }
+        }
+        // with KubeJS, the row of harness/kubejs/server_scripts/golem_kubejs_functional.js
+        if (Platform.isModLoaded("kubejs")) {
+            GenericRecipe scripted = AssemblyMachineRecipes.INSTANCE.recipeNameMap.get("kjs.item_data");
+            ItemStack out = scripted == null ? ItemStack.EMPTY : scripted.outputItem[0];
+            if (!out.is(Items.IRON_PICKAXE) || out.getDamageValue() != 3) problems.add("scripted kjs.item_data output: " + out);
+        }
         helper.assertTrue(problems.isEmpty(), String.join("\n", problems));
         helper.succeed();
     }

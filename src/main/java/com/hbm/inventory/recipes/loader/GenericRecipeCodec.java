@@ -319,7 +319,8 @@ public final class GenericRecipeCodec {
             either -> either.map(item -> new Output(new ItemSpec(item, 1, ItemData.NONE), Optional.empty(), Optional.empty()),
                     object -> object.map(output -> output, output -> output)),
             output -> output.tag().isPresent() ? Either.right(Either.left(output))
-                    : output.spec().count() == 1 && output.spec().data().isEmpty() && output.chance().isEmpty()
+                    : output.spec().count() == 1 && output.spec().data().isEmpty() && output.spec().patch().isEmpty()
+                    && output.chance().isEmpty()
                     ? Either.left(output.spec().item()) : Either.right(Either.right(output)));
 
     /** A weight, written as an integer when it is one (1.7's weights are). */

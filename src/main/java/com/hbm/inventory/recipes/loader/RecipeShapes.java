@@ -3,11 +3,13 @@ package com.hbm.inventory.recipes.loader;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import dev.golem.core.world.ItemPatch;
 import dev.golem.core.world.RecipeFields;
 import dev.golem.core.world.RecipeFields.FluidAmount;
 import dev.golem.core.world.RecipeFields.ItemIn;
 import dev.golem.core.world.RecipeFields.ItemOut;
 import dev.golem.core.world.RecipeFields.Shape;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -82,7 +84,7 @@ public final class RecipeShapes {
         if (in.tag()) throw new IllegalArgumentException("this input takes an item, not the tag #" + in.id());
         return stack(in.id(), in.count(), false);
     }, json -> {
-        ItemOut out = readStack(json, false);
+        ItemOut out = readStack(json, false, false);
         return out == null ? null : new ItemIn(out.id(), false, out.count());
     });
 
@@ -113,37 +115,47 @@ public final class RecipeShapes {
     public static final Shape STACK_OUT = shape(value -> {
         ItemOut out = itemOut(value);
         noChance(out);
+        noData(out);
         return stack(out.id(), out.count(), false);
-    }, json -> readStack(json, false));
+    }, json -> readStack(json, false, false));
 
-    /** {@link ItemSpec#MAP_CODEC} as an object: always {@code {"id", "count"}} (the generic schema's {@code icon}). */
+    /** {@link ItemSpec#MAP_CODEC} as an object: always {@code {"id", "count"}}, and the stack's data (the generic schema's {@code icon}). */
     public static final Shape STACK_OUT_OBJECT = shape(value -> {
         ItemOut out = itemOut(value);
         noChance(out);
-        return stack(out.id(), out.count(), true);
-    }, json -> json.isJsonObject() ? readStack(json, false) : null);
+        JsonObject json = stack(out.id(), out.count(), true).getAsJsonObject();
+        if (out.data() != null) json.add(ItemPatch.KEY, out.data());
+        return json;
+    }, json -> json.isJsonObject() ? readStack(json, false, true) : null);
 
     /** A bare item id, one item (lemegeton, magic, pedestal outputs). */
     public static final Shape ITEM_ID_OUT = shape(value -> {
         ItemOut out = itemOut(value);
         noChance(out);
+        noData(out);
         single(out.count(), "this output takes no count");
         return new JsonPrimitive(out.id());
     }, json -> isString(json) && !json.getAsString().startsWith("#") ? new ItemOut(json.getAsString(), 1, null) : null);
 
     /**
      * The generic schema's output ({@code output_items}): {@code "id"} for one plain item, else {@code {"id", "count",
-     * "chance"}}. Tag outputs, item data and weighted choices read as null (raw JSON).
+     * "chance"}} with the stack's data under {@link ItemPatch#KEY}. Tag outputs, {@code item_data} and weighted choices
+     * read as null (raw JSON).
      */
     public static final Shape OUTPUT = shape(value -> {
         ItemOut out = itemOut(value);
-        if (out.count() == 1 && out.chance() == null) return new JsonPrimitive(out.id());
-        return chanceObject(out);
-    }, json -> readStack(json, true));
+        if (out.count() == 1 && out.chance() == null && out.data() == null) return new JsonPrimitive(out.id());
+        JsonObject json = chanceObject(out);
+        if (out.data() != null) json.add(ItemPatch.KEY, out.data());
+        return json;
+    }, json -> readStack(json, true, true));
 
     /** An output that is always an object, with an optional chance (the anvil's construction outputs). */
-    public static final Shape CHANCE_OUTPUT_OBJECT = shape(value -> chanceObject(itemOut(value)),
-            json -> json.isJsonObject() ? readStack(json, true) : null);
+    public static final Shape CHANCE_OUTPUT_OBJECT = shape(value -> {
+        ItemOut out = itemOut(value);
+        noData(out);
+        return chanceObject(out);
+    }, json -> json.isJsonObject() ? readStack(json, true, false) : null);
 
     // Fluids
 
@@ -230,6 +242,10 @@ public final class RecipeShapes {
         if (out.chance() != null) throw new IllegalArgumentException("this output takes no chance: " + out.id());
     }
 
+    private static void noData(ItemOut out) {
+        if (out.data() != null) throw new IllegalArgumentException("this output takes no item data: " + out.id());
+    }
+
     private static JsonElement stack(String id, int count, boolean object) {
         if (count == 1 && !object) return new JsonPrimitive(id);
         JsonObject json = new JsonObject();
@@ -246,11 +262,14 @@ public final class RecipeShapes {
         return json;
     }
 
-    /** {@code "id"} or {@code {"id", "count"(, "chance")}} with no other key; anything else is null. */
+    /** {@code "id"} or {@code {"id", "count"(, "chance")(, ItemPatch.KEY)}} with no other key; anything else is null. */
     @Nullable
-    private static ItemOut readStack(JsonElement json, boolean chance) {
+    private static ItemOut readStack(JsonElement json, boolean chance, boolean data) {
         if (isString(json)) return json.getAsString().startsWith("#") ? null : new ItemOut(json.getAsString(), 1, null);
-        JsonObject object = object(json, chance ? Set.of("id", "count", "chance") : Set.of("id", "count"));
+        Set<String> keys = new HashSet<>(Set.of("id", "count"));
+        if (chance) keys.add("chance");
+        if (data) keys.add(ItemPatch.KEY);
+        JsonObject object = object(json, keys);
         if (object == null || !isString(object.get("id"))) return null;
         Integer count = count(object);
         if (count == null) return null;
@@ -259,7 +278,7 @@ public final class RecipeShapes {
             if (!object.get("chance").isJsonPrimitive() || !object.get("chance").getAsJsonPrimitive().isNumber()) return null;
             value = object.get("chance").getAsFloat();
         }
-        return new ItemOut(object.get("id").getAsString(), count, value);
+        return new ItemOut(object.get("id").getAsString(), count, value, object.get(ItemPatch.KEY));
     }
 
     /** {@code json} as an object whose keys are all in {@code keys}, else null. */
