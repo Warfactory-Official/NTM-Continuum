@@ -56,27 +56,27 @@ public final class RadioTelexScreen extends CompatContainerScreen<RadioTelexMenu
         TileEntityRadioTelex telex = menu.telex();
 
         txFrequency = field(29, 110, 90, telex == null ? "" : telex.txChannel, TileEntityRadioTelex.CHANNEL_LENGTH,
-                0xFF00FF00);
+                0xFF00FF00, true);
         rxFrequency = field(29, 224, 90, telex == null ? "" : telex.rxChannel, TileEntityRadioTelex.CHANNEL_LENGTH,
-                0xFF00FF00);
+                0xFF00FF00, true);
 
-        // These widgets receive charTyped/backspace events. Their text is transparent because the old
-        // renderer lays out each character on its fixed seven-pixel terminal grid below.
+        // Input only: the terminal grid below draws each character
         for (int i = 0; i < txLines.length; i++) {
             txLines[i] = field(7, 7 + 14 * i, 242,
-                    telex == null ? "" : telex.txBuffer[i], TileEntityRadioTelex.LINE_WIDTH, 0x00000000);
+                    telex == null ? "" : telex.txBuffer[i], TileEntityRadioTelex.LINE_WIDTH, 0xFF00FF00, false);
         }
         setLineFocus();
     }
 
-    private EditBox field(int x, int y, int width, String value, int max, int color) {
+    private EditBox field(int x, int y, int width, String value, int max, int color, boolean drawn) {
         EditBox box = new EditBox(font, leftPos + x, topPos + y, width, 14, Component.empty());
         box.setBordered(false);
         box.setTextColor(color);
         box.setTextColorUneditable(color);
         box.setMaxLength(max);
         box.setValue(value == null ? "" : value);
-        addRenderableWidget(box);
+        if (drawn) addRenderableWidget(box);
+        else addWidget(box);
         return box;
     }
 

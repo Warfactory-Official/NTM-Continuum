@@ -5,15 +5,17 @@ import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
+import com.hbm.items.food.ItemLemon;
 import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
-import dev.golem.core.world.ItemStacks;
+import dev.golem.core.world.CompatConsumables;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -103,9 +105,9 @@ public final class ModFuelItems {
     public static final RegistryObject<Item> ingot_schraranium = plain("ingot_schraranium")
             .transform(Presets.sprite());
 
-    /** 1.12.2 {@code ItemLemon(2, 0.5F, false, …)}: edible, 2 hunger / 0.5 saturation. */
-    public static final RegistryObject<Item> powder_cement = REG.simpleItem("powder_cement",
-            p -> p.food(ItemStacks.food(2, 0.5F)))
+    /** 1.7 {@code ItemLemon(2, 0.5F, false)}: edible, 2 hunger / 0.5 saturation. */
+    public static final RegistryObject<ItemLemon> powder_cement = REG.item("powder_cement",
+            p -> new ItemLemon(p, "powder_cement"), p -> CompatConsumables.food(p, 2, 0.5F, List.of()))
             .transform(Presets.sprite());
 
     private static Reg.Handle<Item> plain(String name) {

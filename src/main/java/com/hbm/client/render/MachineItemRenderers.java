@@ -51,8 +51,10 @@ public final class MachineItemRenderers {
         if (model == null && column == null && block == null) return;
 
         // In a GUI these models must not paint outside their slot; see clipToSlot.
-        boolean clipped = context == ItemDisplayContext.GUI
-                && !MachineItemModels.isOversizedInGui(id) && clipToSlot(poseStack, stack);
+        boolean clip = context == ItemDisplayContext.GUI && !MachineItemModels.isOversizedInGui(id);
+        // Draw what is already queued first, or the slot scissor clips it too (ImmediatelyFast batches the hotbar)
+        if (clip && buffers instanceof MultiBufferSource.BufferSource batched) batched.endBatch();
+        boolean clipped = clip && clipToSlot(poseStack, stack);
 
         RecordingSubmitSink sink = new RecordingSubmitSink();
         if (column != null) column.submit(poseStack, sink, light, overlay);

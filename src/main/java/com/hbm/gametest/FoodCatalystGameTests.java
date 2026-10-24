@@ -13,6 +13,7 @@ import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +21,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Contracts for the hand-registered ItemLemon and ItemCatalyst families. */
 public final class FoodCatalystGameTests {
@@ -29,8 +32,23 @@ public final class FoodCatalystGameTests {
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function FOOD_AND_CATALYSTS =
             TESTS.function("food_and_catalysts", 40, () -> FoodCatalystGameTests::foodAndCatalysts);
+    public static final GameTests.Function FOOD_USE_ANIMATION =
+            TESTS.function("food_items_animate_when_used", 20, () -> FoodCatalystGameTests::foodUseAnimation);
 
     public static void init() {}
+
+    /** Every HBM food eats or drinks visibly; a NONE animation is consumed silently, which players read as "cannot eat". */
+    public static void foodUseAnimation(GameTestHelper helper) {
+        List<String> silent = new ArrayList<>();
+        for (Item item : BuiltInRegistries.ITEM) {
+            Identifier id = BuiltInRegistries.ITEM.getKey(item);
+            ItemStack stack = new ItemStack(item);
+            if (!Constants.MOD_ID.equals(id.getNamespace()) || ItemStacks.foodProperties(stack) == null) continue;
+            if ("NONE".equals(stack.getUseAnimation().name())) silent.add(id.getPath());
+        }
+        helper.assertTrue(silent.isEmpty(), silent.size() + " foods without a use animation: " + silent);
+        helper.succeed();
+    }
 
     public static void foodAndCatalysts(GameTestHelper helper) {
         assertFood(helper, ModFoodItems.bio_wafer, "bio_wafer", 8, 8F, false);

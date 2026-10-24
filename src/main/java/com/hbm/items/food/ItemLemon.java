@@ -58,6 +58,12 @@ public class ItemLemon extends CompatItem {
         }
     }
 
+    /** 1.7 ItemFood: the eat animation, sound and crumbs. */
+    @Override
+    protected UseAnimation compatUseAnimation(ItemStack stack) {
+        return UseAnimation.EAT;
+    }
+
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         ItemStack result = super.finishUsingItem(stack, level, entity);

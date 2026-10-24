@@ -236,6 +236,8 @@ dependencies {
     // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency. Jade carries mixins, hence `devModJar`.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devModJar("maven.modrinth:jade:$it") }
+    // ImmediatelyFast, dev runs only (`-Pimmediatelyfast.run=true`): HUD batching that has hidden the hotbar before.
+    if (propOrNull("immediatelyfast.run") == "true") propOrNull("deps.immediatelyfast")?.let { devModJar("maven.modrinth:immediatelyfast:$it") }
 
     // Applied Energistics 2 and its required GuideME, dev runs only (`-Pae2.run=true`): HBM's machines reach AE2's
     // pattern providers through Golem Core's dev.golem.core.autocraft, so HBM has no AE2 dependency. Both carry mixins.

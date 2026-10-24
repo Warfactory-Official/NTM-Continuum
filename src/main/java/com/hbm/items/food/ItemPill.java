@@ -46,6 +46,11 @@ public final class ItemPill extends CompatItem {
     }
 
     @Override
+    protected UseAnimation compatUseAnimation(ItemStack stack) {
+        return UseAnimation.EAT;
+    }
+
+    @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         ItemStack result = super.finishUsingItem(stack, level, entity);
         if (!level.isClientSide() && entity instanceof Player player) apply(player, level);
