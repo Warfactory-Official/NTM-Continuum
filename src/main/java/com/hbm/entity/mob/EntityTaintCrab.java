@@ -1,17 +1,14 @@
 package com.hbm.entity.mob;
 
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
-import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.factory.XFactory762mm;
 import com.hbm.particle.helper.EntityEffects;
 import com.hbm.potion.ModEffects;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.TeslaZap;
-import dev.golem.core.world.Compat;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -21,8 +18,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -75,26 +70,6 @@ public class EntityTaintCrab extends EntityCyberCrab {
         super.tick();
     }
 
-    @Override
-    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-        super.dropCustomDeathLoot(level, source, killedByPlayer);
-
-        int looting = 0;
-        // 1.7 EntityLivingBase.onDeath only read looting off an EntityPlayer killer
-        if (source.getEntity() instanceof Player attacker) {
-            looting = Compat.lootingLevel(level, attacker);
-        }
-
-        int amount = random.nextInt(3) + (looting > 0 ? random.nextInt(looting + 1) : 0);
-        for (int i = 0; i < amount; i++) spawnAtLocation(level, new ItemStack(ModItems.coil_copper.get()));
-
-        if (!killedByPlayer) return;
-
-        // 1.7 EntityLivingBase.onDeath: rare drops roll nextInt(200) - looting < 5
-        if (random.nextInt(200) - looting < 5) {
-            spawnAtLocation(level, new ItemStack(ModItems.coil_magnetized_tungsten.get()));
-        }
-    }
 
     @Override
     public void performRangedAttack(LivingEntity target, float power) {

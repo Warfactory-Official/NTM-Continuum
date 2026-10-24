@@ -8,6 +8,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.TilePortShapes;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * 1.7 {@code TileEntityMachineRadarLarge}: the same radar with three times the range, fed and read through
@@ -16,6 +20,18 @@ import com.hbm.tileentity.TilePortShapes;
 public class TileEntityMachineRadarLarge extends TileEntityMachineRadarNT {
 
     public static int radarLargeRange = 3_000;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "radar_large"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            radarLargeRange = IConfigurableMachine.grab(obj, "I:radarLargeRange", radarLargeRange);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:radarLargeRange").value(radarLargeRange);
+        }
+    };
 
     public TileEntityMachineRadarLarge(BlockPos pos, BlockState state) {
         super(ModRadarUtilityBlockEntities.RADAR_LARGE.get(), pos, state);

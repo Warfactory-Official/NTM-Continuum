@@ -1,5 +1,6 @@
 package com.hbm.packet;
 
+import com.google.gson.JsonObject;
 import com.hbm.Constants;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.client.AbilityToolClientRegistrations;
@@ -14,6 +15,7 @@ import com.hbm.client.crucible.SlicedMobs;
 import com.hbm.client.particle.GluonParticles;
 import com.hbm.client.particle.PlasmaBlastClient;
 import com.hbm.config.ClientConfig;
+import com.hbm.config.MachineDynConfig;
 import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.handler.EnumCraneKey;
 import com.hbm.handler.HbmKeybinds;
@@ -85,8 +87,10 @@ public final class HbmPackets {
         GolemNetwork.declarePlayToClient(EntityPropsSyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(ImpactSyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(GemRenderNoticePayload.CODEC);
+        GolemNetwork.declarePlayToClient(MachineConfigPayload.CODEC);
         Lifecycle.onPlayerJoin((player, firstTime) -> {
             if (firstTime) GolemNetwork.sendToPlayer(player, GemRenderNoticePayload.CODEC, new GemRenderNoticePayload());
+            GolemNetwork.sendToPlayer(player, MachineConfigPayload.CODEC, new MachineConfigPayload(MachineDynConfig.values()));
         });
         GolemNetwork.declarePlayToClient(PollutionSyncPayload.CODEC);
         GolemNetwork.registerPlayToServer(ControlEventPayload.CODEC,
@@ -195,6 +199,8 @@ public final class HbmPackets {
                 context.player().sendSystemMessage(Component.translatable("hbm.gemrender.missing").withStyle(ChatFormatting.GOLD));
             }
         });
+        GolemNetwork.registerPlayToClient(MachineConfigPayload.CODEC, (payload, context) ->
+                MachineDynConfig.apply(MachineDynConfig.gson.fromJson(payload.json(), JsonObject.class)));
         GolemNetwork.registerPlayToClient(ImpactSyncPayload.CODEC, (payload, context) -> {
             // 1.7 PermaSyncHandler.readPacket: the values belong to the level the player is in
             ImpactWorldHandler.lastSyncWorld = context.level();

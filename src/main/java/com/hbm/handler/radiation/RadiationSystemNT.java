@@ -145,6 +145,15 @@ public final class RadiationSystemNT {
         if (data != null) data.markDirty(pos);
     }
 
+    /** What counts as a wall changed everywhere (a datapack reload): rebuild every loaded section on next access. */
+    public static void markAllForRebuild() {
+        for (WorldRadiationData data : worldMap.values()) {
+            for (ChunkRad cr : data.chunks.values()) {
+                for (SectionRad sr : cr.sections) if (sr != null) sr.dirty = true;
+            }
+        }
+    }
+
     // Lifecycle (wired from the loader entrypoints)
 
     /**
@@ -815,10 +824,7 @@ public final class RadiationSystemNT {
             boolean[] wall = new boolean[SECTION_BLOCKS];
             for (int y = 0; y < 16; y++) for (int z = 0; z < 16; z++) for (int x = 0; x < 16; x++) {
                 BlockState state = sec.getBlockState(x, y, z);
-                if (state.getBlock() instanceof IRadResistantBlock r
-                        && r.isRadResistant(world.level, new BlockPos((cx << 4) + x, (sy << 4) + y, (cz << 4) + z))) {
-                    wall[idx(x, y, z)] = true;
-                }
+                if (RadiationWalls.isWall(world.level, state, cx, sy, cz, x, y, z)) wall[idx(x, y, z)] = true;
             }
             // flood fill non-wall blocks into pockets, accumulating each pocket's centre-of-mass sums
             Arrays.fill(pocketOf, WALL);

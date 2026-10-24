@@ -8,6 +8,7 @@ import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectWeapon;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
+import com.hbm.handler.ConsumableTreatments;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.items.ModDataComponents;
@@ -70,6 +71,7 @@ public final class ModEventHandlerHooks {
         if (installed) return;
         installed = true;
         ItemUses.onFinish(ModEventHandlerHooks::onFoodEaten);
+        ConsumableTreatments.init();
         BlockBreaks.onBreak(ModEventHandlerHooks::onBlockBreak);
         Sleeps.onSleepAttempt((player, pos) -> PollutionHandler.rampantTargetSetter(pos));
         Spawns.onPotentialSpawns((level, category, pos) -> PollutionHandler.rampantScoutPopulator(level, pos));

@@ -2,8 +2,6 @@ package com.hbm.items.food;
 
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityVortex;
-import com.hbm.items.ModFinalConsumableItems;
-import com.hbm.items.ModItems;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import java.util.Locale;
@@ -31,19 +29,14 @@ public class ItemConserve extends ItemModFood {
         this.type = type;
     }
 
+    /** The key, the recursion can and the fist's punch are the treatment; a vortex is not data. */
     @Override
     protected void onFoodEaten(ItemStack stack, ServerLevel level, Player player) {
-        player.getInventory().add(new ItemStack(ModItems.can_key.get()));
-
         if (type == EnumFoodType.BHOLE) {
             EntityVortex vortex = new EntityVortex(ModEntities.VORTEX.get(), level, 0.5F).setShrinkRate(0.01F);
             vortex.noBreak();
             vortex.setPos(player.getX(), player.getY(), player.getZ());
             level.addFreshEntity(vortex);
-        } else if (type == EnumFoodType.RECURSION && level.getRandom().nextInt(10) > 0) {
-            player.getInventory().add(new ItemStack(ModFinalConsumableItems.canned(EnumFoodType.RECURSION)));
-        } else if (type == EnumFoodType.FIST) {
-            player.hurt(level.damageSources().magic(), 2F);
         }
     }
 

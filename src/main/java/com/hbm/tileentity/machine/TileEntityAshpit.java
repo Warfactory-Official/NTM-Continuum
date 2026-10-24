@@ -22,6 +22,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.world.level.block.state.BlockState;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /** Five-output ash collector for firebox ash and chimney fly ash/soot. */
 public class TileEntityAshpit extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
@@ -40,12 +44,31 @@ public class TileEntityAshpit extends TileEntityMachineBase implements MenuProvi
     public int ashLevelFly;
     public int ashLevelSoot;
 
-    // These remain mutable defaults, like the old configurable statics. No fake file-backed config is added.
     public static int thresholdWood = 2_000;
     public static int thresholdCoal = 2_000;
     public static int thresholdMisc = 2_000;
     public static int thresholdFly = 2_000;
     public static int thresholdSoot = 8_000;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "ashpit"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            thresholdWood = IConfigurableMachine.grab(obj, "I:thresholdWood", thresholdWood);
+            thresholdCoal = IConfigurableMachine.grab(obj, "I:thresholdCoal", thresholdCoal);
+            thresholdMisc = IConfigurableMachine.grab(obj, "I:thresholdMisc", thresholdMisc);
+            thresholdFly = IConfigurableMachine.grab(obj, "I:thresholdFly", thresholdFly);
+            thresholdSoot = IConfigurableMachine.grab(obj, "I:thresholdSoot", thresholdSoot);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:thresholdWood").value(thresholdWood);
+            writer.name("I:thresholdCoal").value(thresholdCoal);
+            writer.name("I:thresholdMisc").value(thresholdMisc);
+            writer.name("I:thresholdFly").value(thresholdFly);
+            writer.name("I:thresholdSoot").value(thresholdSoot);
+        }
+    };
 
     public TileEntityAshpit(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_ASHPIT.get(), pos, state, SLOT_COUNT);

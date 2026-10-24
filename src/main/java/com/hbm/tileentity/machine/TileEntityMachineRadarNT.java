@@ -62,6 +62,10 @@ import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.TilePortShapes;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * 1.7 {@code TileEntityMachineRadarNT}: "Now with SmЯt™ lag-free entity detection! (patent pending)".
@@ -108,6 +112,30 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     public static int radarAltitude = 55;
     public static int chunkLoadCap = 10;
     public static boolean generateChunks = false;
+
+    /** 1.7 reads {@code I:chunkLoadCap} but never writes it, so it stays out of a fresh file. */
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "radar"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            maxPower = IConfigurableMachine.grab(obj, "L:powerCap", maxPower);
+            consumption = IConfigurableMachine.grab(obj, "L:consumption", consumption);
+            radarRange = IConfigurableMachine.grab(obj, "I:radarRange", radarRange);
+            radarBuffer = IConfigurableMachine.grab(obj, "I:radarBuffer", radarBuffer);
+            radarAltitude = IConfigurableMachine.grab(obj, "I:radarAltitude", radarAltitude);
+            chunkLoadCap = IConfigurableMachine.grab(obj, "I:chunkLoadCap", chunkLoadCap);
+            generateChunks = IConfigurableMachine.grab(obj, "B:generateChunks", generateChunks);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("L:powerCap").value(maxPower);
+            writer.name("L:consumption").value(consumption);
+            writer.name("I:radarRange").value(radarRange);
+            writer.name("I:radarBuffer").value(radarBuffer);
+            writer.name("I:radarAltitude").value(radarAltitude);
+            writer.name("B:generateChunks").value(generateChunks);
+        }
+    };
 
     public byte[] map = new byte[40_000];
     public boolean clearFlag = false;

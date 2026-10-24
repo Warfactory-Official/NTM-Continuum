@@ -21,11 +21,11 @@ public final class ModArmorModules {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    public static final RegistryObject<ItemModCladding> cladding_paint = cladding("cladding_paint", 0.025D);
-    public static final RegistryObject<ItemModCladding> cladding_rubber = cladding("cladding_rubber", 0.005D);
-    public static final RegistryObject<ItemModCladding> cladding_lead = cladding("cladding_lead", 0.1D);
-    public static final RegistryObject<ItemModCladding> cladding_desh = cladding("cladding_desh", 0.2D);
-    public static final RegistryObject<ItemModCladding> cladding_ghiorsium = cladding("cladding_ghiorsium", 0.5D);
+    public static final RegistryObject<ItemModCladding> cladding_paint = cladding("cladding_paint");
+    public static final RegistryObject<ItemModCladding> cladding_rubber = cladding("cladding_rubber");
+    public static final RegistryObject<ItemModCladding> cladding_lead = cladding("cladding_lead");
+    public static final RegistryObject<ItemModCladding> cladding_desh = cladding("cladding_desh");
+    public static final RegistryObject<ItemModCladding> cladding_ghiorsium = cladding("cladding_ghiorsium");
 
     public static final RegistryObject<ItemModInsert> insert_kevlar = insert("insert_kevlar", 1500, 1F, .9F, 1F, 1F);
     public static final RegistryObject<ItemModInsert> insert_sapi = insert("insert_sapi", 1750, 1F, .85F, 1F, 1F);
@@ -49,9 +49,9 @@ public final class ModArmorModules {
         ModTabs.addTo(HbmTab.CONSUMABLES, armor_polish);
     }
 
-    private static RegistryObject<ItemModCladding> cladding(String id, double resistance) {
+    private static RegistryObject<ItemModCladding> cladding(String id) {
         RegistryObject<ItemModCladding> item = REG.item(id,
-                p -> new ItemModCladding(resistance, p), p -> p.stacksTo(1)).transform(Presets.sprite());
+                ItemModCladding::new, p -> p.stacksTo(1)).transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, item);
         return item;
     }

@@ -35,6 +35,7 @@ import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import com.hbm.tileentity.machine.TileEntityMachineBigAssTank;
 import com.hbm.tileentity.machine.TileEntityMachineIntake;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
+import com.hbm.tileentity.machine.GroundwaterPumps;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
 import com.hbm.tileentity.machine.TileEntityMachineWoodBurner;
 import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
@@ -434,21 +435,21 @@ public final class EnvironmentGameTests {
         level.setBlock(pos, block.defaultBlockState(), 3);
         block.fillSpace(level, pos, Direction.NORTH);
         TileEntityMachinePumpElectric pump = (TileEntityMachinePumpElectric) level.getBlockEntity(pos);
-        if (pos.getY() > TileEntityMachinePumpElectric.GROUND_HEIGHT) {
+        if (pos.getY() > GroundwaterPumps.groundHeight) {
             helper.succeed(); // the GameTest plot sits above the pump's working height; nothing to observe here
             return;
         }
 
         pumpTick(pump, level, pos);
         helper.assertTrue(pump.onGround && pump.water.getTankType() == Fluids.WATER
-                        && pump.water.getFill() == TileEntityMachinePumpElectric.ELECTRIC_SPEED,
+                        && pump.water.getFill() == GroundwaterPumps.electricSpeed,
                 "unanswered, the pump lifts water at full speed (1.7)");
 
         TABLE.put(pos, Fluids.OIL);
         try {
             pumpTick(pump, level, pos);
             helper.assertTrue(pump.onGround && pump.water.getTankType() == Fluids.OIL
-                            && pump.water.getFill() == TileEntityMachinePumpElectric.ELECTRIC_SPEED
+                            && pump.water.getFill() == GroundwaterPumps.electricSpeed
                             / TileEntityMachinePumpElectric.NON_WATER_DEBUFF,
                     "an oil table must be pumped as oil at a hundredth of the speed, got "
                             + pump.water.getTankType().getName() + " " + pump.water.getFill());

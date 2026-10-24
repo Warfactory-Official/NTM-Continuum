@@ -40,6 +40,10 @@ import com.hbm.util.TickPhase;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * Crucible (1.12.2 {@code TileEntityCrucible}): melts items into molten material quanta using heat
@@ -47,8 +51,8 @@ import java.util.List;
  * alloying {@link CrucibleRecipe} on its <b>recipe stack</b>, collects everything else in the <b>waste
  * stack</b>, and pours both out via a downward raytrace ({@link CrucibleUtil}): waste out the back,
  * recipe output out the front. Slots 1–9 are the 3×3 input grid (limit 1/slot; slot 0 is unused, as in
- * the original); thrown items landing in the basin are vacuumed in. Constants as written; the
- * {@code IConfigurableMachine} JSON config is deferred. Each non-empty pour stack adds 1.7's {@code SOOT_PER_SECOND / 20} soot every tick.
+ * the original); thrown items landing in the basin are vacuumed in. Configured as {@code crucible} in
+ * {@code hbmMachines.json}. Each non-empty pour stack adds 1.7's {@code SOOT_PER_SECOND / 20} soot every tick.
  */
 public class TileEntityCrucible extends TileEntityMachineBase implements MenuProvider, ICrucibleAcceptor, IControlReceiver {
 
@@ -60,12 +64,31 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     public List<Mats.MaterialStack> recipeStack = new ArrayList<>();
     public List<Mats.MaterialStack> wasteStack = new ArrayList<>();
 
-    /* CONSTANTS (1.12.2 defaults) */
-    public static final int recipeZCapacity = MaterialShapes.BLOCK.quantity * 16;
-    public static final int wasteZCapacity = MaterialShapes.BLOCK.quantity * 16;
-    public static final int processTime = 20_000;
-    public static final double diffusion = 0.25D;
-    public static final int maxHeat = 100_000;
+    public static int recipeZCapacity = MaterialShapes.BLOCK.quantity * 16;
+    public static int wasteZCapacity = MaterialShapes.BLOCK.quantity * 16;
+    public static int processTime = 20_000;
+    public static double diffusion = 0.25D;
+    public static int maxHeat = 100_000;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "crucible"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            recipeZCapacity = IConfigurableMachine.grab(obj, "I:recipeCapacity", recipeZCapacity);
+            wasteZCapacity = IConfigurableMachine.grab(obj, "I:wasteCapacity", wasteZCapacity);
+            processTime = IConfigurableMachine.grab(obj, "I:processHeat", processTime);
+            diffusion = IConfigurableMachine.grab(obj, "D:diffusion", diffusion);
+            maxHeat = IConfigurableMachine.grab(obj, "I:heatCap", maxHeat);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:recipeCapacity").value(recipeZCapacity);
+            writer.name("I:wasteCapacity").value(wasteZCapacity);
+            writer.name("I:processHeat").value(processTime);
+            writer.name("D:diffusion").value(diffusion);
+            writer.name("I:heatCap").value(maxHeat);
+        }
+    };
 
     // Pour-stream visuals, synced to the client for the renderer (-1 colour = no stream). Each stream
     // has a server-only decay timer (the old ParticleFoundry lived 20 ticks): a successful pour refreshes

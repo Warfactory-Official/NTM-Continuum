@@ -37,10 +37,13 @@ public final class D2Sources {
                 new CustomNukeSource.Items(),
                 new ProtectionClassesSource(),
                 new RadiationResistanceSource(),
+                new RadiationCladdingSource(),
+                new GasMaskBlacklistSource(),
                 new ArmorSetsSource(),
                 new RBMKFuelSource(),
                 new HazardRegistrySource.Items(),
                 new HazardRegistrySource.Cells(),
+                new ConsumableTreatmentSource(),
                 // fluid maps
                 new AutosawFuelSource(),
                 new GasTurbineFuelSource(),
@@ -53,6 +56,7 @@ public final class D2Sources {
                 new ErosionSource(),
                 new FluidDepositSource(),
                 new EntityDamageResistanceSource(),
+                new RadiationTransformationSource(),
                 // fallout_transform
                 new FalloutTransformSource());
     }

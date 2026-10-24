@@ -1,25 +1,20 @@
 package com.hbm.items.special;
 
-import com.hbm.capability.HbmLivingProps;
-import com.hbm.config.VersatileConfig;
 import com.hbm.handler.ArmorModHandler;
-import com.hbm.items.ModItems;
-import com.hbm.lib.ModDamageSources;
-import com.hbm.potion.ModEffects;
+import com.hbm.handler.ConsumableTreatment;
+import com.hbm.handler.ConsumableTreatment.Context;
+import com.hbm.handler.ConsumableTreatment.Trigger;
+import com.hbm.handler.ConsumableTreatments;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.armor.JetpackFueledBase;
 import com.hbm.sound.ModSounds;
-import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
-import dev.golem.core.world.Effects;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -30,8 +25,11 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-/** Right-click and melee-injection consumables, ported from the old handler tables. */
-public final class ItemConsumable extends CompatItem {
+/**
+ * Right-click and melee-injection consumables (1.7 syringes, med bag, CBT device, stopper, jetpack tank). What each
+ * does is its {@code hbm:consumable_treatment}; the syringes also run it on the entity they hit.
+ */
+public final class ItemConsumable extends CompatItem implements ConsumableTreatments.Handled {
 
     private final String id;
 
@@ -42,28 +40,22 @@ public final class ItemConsumable extends CompatItem {
 
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
-        // 1.7: the MKU syringe only works as a melee injection
-        if (level instanceof ServerLevel serverLevel && !id.equals("syringe_mkunicorn")) {
-            apply(serverLevel, player, player, hand);
+        if (level instanceof ServerLevel serverLevel) {
+            if (id.equals("jetpack_tank")) refuelJetpack(serverLevel, player, hand);
+            ConsumableTreatment treatment = ConsumableTreatments.of(this);
+            if (treatment != null && treatment.has(Trigger.USE)) apply(treatment, serverLevel, player, player, hand);
         }
         return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override
     protected boolean compatHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (isMeleeConsumable() && attacker instanceof Player player && target.level() instanceof ServerLevel level) {
-            apply(level, player, target, InteractionHand.MAIN_HAND);
+        ConsumableTreatment treatment = ConsumableTreatments.of(this);
+        if (treatment != null && treatment.has(Trigger.HIT) && attacker instanceof Player player
+                && target.level() instanceof ServerLevel level) {
+            apply(treatment, level, player, target, InteractionHand.MAIN_HAND);
         }
         return false;
-    }
-
-    private boolean isMeleeConsumable() {
-        return switch (id) {
-            case "syringe_antidote", "syringe_awesome", "syringe_poison", "syringe_metal_stimpak",
-                    "syringe_metal_medx", "syringe_metal_psycho", "syringe_metal_super", "syringe_taint",
-                    "syringe_mkunicorn" -> true;
-            default -> false;
-        };
     }
 
     @Override
@@ -71,151 +63,28 @@ public final class ItemConsumable extends CompatItem {
         return id.equals("syringe_awesome") || super.isFoil(stack);
     }
 
-    private void apply(ServerLevel level, Player user, LivingEntity target, InteractionHand hand) {
-        switch (id) {
-            case "syringe_antidote" -> {
-                // 1.7 ItemSimpleConsumable.effectAntidote: sickness only through the (default-off) config
-                if (!VersatileConfig.hasPotionSickness(target)) {
-                    Effects.clear(target);
-                    play(level, target, ModSounds.SYRINGE.get());
-                    shrinkAndReplace(user, hand, ModItems.syringe_empty.get());
-                    VersatileConfig.applyPotionSickness(target, 5);
-                }
-            }
-            case "syringe_awesome" -> {
-                if (VersatileConfig.hasPotionSickness(target)) return;
-                add(target, MobEffects.REGENERATION, 50 * 20, 9);
-                add(target, Effects.resistance(), 50 * 20, 9);
-                add(target, MobEffects.FIRE_RESISTANCE, 50 * 20, 0);
-                add(target, Effects.strength(), 50 * 20, 24);
-                add(target, Effects.haste(), 50 * 20, 9);
-                add(target, Effects.speed(), 50 * 20, 6);
-                add(target, Effects.jumpBoost(), 50 * 20, 9);
-                add(target, MobEffects.HEALTH_BOOST, 50 * 20, 9);
-                add(target, MobEffects.ABSORPTION, 50 * 20, 4);
-                add(target, MobEffects.NAUSEA, 5 * 20, 4);
-                Effects.addRegistered(target, ModEffects.RADX.get(), 50 * 20, 9);
-                play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, ModItems.syringe_empty.get());
-                VersatileConfig.applyPotionSickness(target, 5);
-            }
-            case "syringe_poison" -> {
-                play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, ModItems.syringe_empty.get());
-                Compat.hurt(target, level, target == user ? (level.getRandom().nextBoolean()
-                        ? ModDamageSources.euthanizedSelf(level) : ModDamageSources.euthanizedSelf2(level))
-                        : ModDamageSources.euthanized(level, user), 30F);
-            }
-            case "syringe_metal_stimpak" -> {
-                if (VersatileConfig.hasPotionSickness(target)) return;
-                target.heal(5F);
-                VersatileConfig.applyPotionSickness(target, 5);
-                play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, ModItems.syringe_metal_empty.get());
-            }
-            case "syringe_metal_medx" -> {
-                if (VersatileConfig.hasPotionSickness(target)) return;
-                add(target, Effects.resistance(), 4 * 60 * 20, 2);
-                VersatileConfig.applyPotionSickness(target, 5);
-                play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, ModItems.syringe_metal_empty.get());
-            }
-            case "syringe_metal_psycho" -> {
-                if (VersatileConfig.hasPotionSickness(target)) return;
-                add(target, Effects.resistance(), 2 * 60 * 20, 0);
-                add(target, Effects.strength(), 2 * 60 * 20, 0);
-                VersatileConfig.applyPotionSickness(target, 5);
-                play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, ModItems.syringe_metal_empty.get());
-            }
-            case "syringe_metal_super" -> {
-                if (VersatileConfig.hasPotionSickness(target)) return;
-                target.heal(25F);
-                add(target, MobEffects.SLOWNESS, 10 * 20, 0);
-                VersatileConfig.applyPotionSickness(target, 15);
-                play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, ModItems.syringe_metal_empty.get());
-            }
-            case "med_bag" -> {
-                if (VersatileConfig.hasPotionSickness(target)) return;
-                target.setHealth(target.getMaxHealth());
-                Effects.remove(target, MobEffects.BLINDNESS);
-                Effects.remove(target, MobEffects.NAUSEA);
-                Effects.remove(target, MobEffects.MINING_FATIGUE);
-                Effects.remove(target, MobEffects.HUNGER);
-                Effects.remove(target, MobEffects.SLOWNESS);
-                Effects.remove(target, MobEffects.POISON);
-                Effects.remove(target, MobEffects.WEAKNESS);
-                Effects.remove(target, MobEffects.WITHER);
-                Effects.removeRegistered(target, ModEffects.RADIATION.get());
-                VersatileConfig.applyPotionSickness(target, 15);
+    private static void apply(ConsumableTreatment treatment, ServerLevel level, Player user, LivingEntity target,
+                              InteractionHand hand) {
+        if (!treatment.blocked(target)) treatment.run(Context.use(level, user, target, hand));
+    }
+
+    /** 1.7: fills a kerosene jetpack by 1000 mB, only when that changes its fuel; not data, it edits the jetpack. */
+    private static void refuelJetpack(ServerLevel level, Player user, InteractionHand hand) {
+        ItemStack chest = user.getItemBySlot(EquipmentSlot.CHEST);
+        // 1.7: a jetpack module inside the chestplate is filled the same way
+        ItemStack jetpack = chest.getItem() instanceof JetpackFueledBase || !ArmorModHandler.hasMods(chest)
+                ? chest : ArmorModHandler.pryMod(chest, ArmorModHandler.plate_only);
+        if (jetpack.getItem() instanceof JetpackFueledBase jetItem && jetItem.fuel == Fluids.KEROSENE) {
+            int oldFuel = JetpackFueledBase.getFuel(jetpack);
+            int newFuel = Math.min(oldFuel + 1000, jetItem.maxFuel);
+            if (oldFuel != newFuel) {
+                JetpackFueledBase.setFuel(jetpack, newFuel);
+                if (jetpack != chest) ArmorModHandler.applyMod(chest, jetpack);
+                level.playSound(null, user.getX(), user.getY(), user.getZ(), ModSounds.JETPACK_TANK.get(),
+                        SoundSource.PLAYERS, 1.0F, 1.0F);
                 user.getItemInHand(hand).shrink(1);
-            }
-            case "syringe_taint" -> {
-                Effects.addRegistered(target, ModEffects.TAINT.get(), 60 * 20, 0);
-                add(target, MobEffects.NAUSEA, 5 * 20, 0);
-                play(level, target, ModSounds.SYRINGE.get());
-                shrinkAndReplace(user, hand, ModItems.syringe_metal_empty.get());
-                giveOrDrop(user, ModItems.bottle2_empty.get().getDefaultInstance());
-            }
-            case "cbt_device" -> {
-                Effects.addRegistered(target, ModEffects.BANG.get(), 30, 0);
-                user.getItemInHand(hand).shrink(1);
-                play(level, target, ModSounds.VICE.get());
-            }
-            case "syringe_mkunicorn" -> {
-                HbmLivingProps.setContagion(target, 3 * 60 * 60 * 20);
-                play(level, target, ModSounds.SYRINGE.get());
-                user.getItemInHand(hand).shrink(1);
-            }
-            case "euphemium_stopper" -> {
-                add(target, MobEffects.WEAKNESS, 30 * 20, 9);
-                add(target, MobEffects.SLOWNESS, 30 * 20, 9);
-                add(target, MobEffects.MINING_FATIGUE, 30 * 20, 9);
-            }
-            case "jetpack_tank" -> {
-                ItemStack chest = target.getItemBySlot(EquipmentSlot.CHEST);
-                // 1.7: a jetpack module inside the chestplate is filled the same way
-                ItemStack jetpack = chest.getItem() instanceof JetpackFueledBase || !ArmorModHandler.hasMods(chest)
-                        ? chest : ArmorModHandler.pryMod(chest, ArmorModHandler.plate_only);
-                if (jetpack.getItem() instanceof JetpackFueledBase jetItem && jetItem.fuel == Fluids.KEROSENE) {
-                    int oldFuel = JetpackFueledBase.getFuel(jetpack);
-                    int newFuel = Math.min(oldFuel + 1000, jetItem.maxFuel);
-                    if (oldFuel != newFuel) {
-                        JetpackFueledBase.setFuel(jetpack, newFuel);
-                        if (jetpack != chest) ArmorModHandler.applyMod(chest, jetpack);
-                        play(level, target, ModSounds.JETPACK_TANK.get());
-                        user.getItemInHand(hand).shrink(1);
-                    }
-                }
-            }
-            default -> {
             }
         }
-    }
-
-    private static void add(LivingEntity target, Object effect, int duration, int amplifier) {
-        Effects.add(target, effect, duration, amplifier);
-    }
-
-    private static void play(ServerLevel level, LivingEntity target, SoundEvent sound) {
-        level.playSound(null, target.getX(), target.getY(), target.getZ(), sound,
-                SoundSource.PLAYERS, 1.0F, 1.0F);
-    }
-
-    private static void shrinkAndReplace(Player player, InteractionHand hand, Item replacement) {
-        ItemStack held = player.getItemInHand(hand);
-        held.shrink(1);
-        ItemStack result = replacement.getDefaultInstance();
-        if (held.isEmpty()) {
-            player.setItemInHand(hand, result);
-        } else {
-            giveOrDrop(player, result);
-        }
-    }
-
-    private static void giveOrDrop(Player player, ItemStack stack) {
-        if (!player.getInventory().add(stack)) player.drop(stack, false);
     }
 
     @Override

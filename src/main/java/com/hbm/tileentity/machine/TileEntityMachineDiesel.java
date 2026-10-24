@@ -11,13 +11,20 @@ import com.hbm.util.TickPhase;
 import com.hbm.inventory.FluidContainerRegistry;
 import com.hbm.inventory.container.ContainerMachineDiesel;
 import com.hbm.inventory.fluid.FluidCombustion;
+import com.hbm.inventory.fluid.FluidCombustion.FuelGrade;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.Library;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachinePolluting;
+import java.io.IOException;
+import java.util.EnumMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -55,9 +62,41 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
         implements MenuProvider, IEnergyProviderMK2, IFluidStandardTransceiverMK2, WorldlyContainer {
 
     public static final int SLOT_COUNT = 4;
-    public static final int FUEL_CAP = 16_000;
+    public static long maxPower = 50_000;
+    public static int fuelCap = 16_000;
+    /** 1.7 {@code fuelEfficiency}: a grade without an entry burns at 0, LOW never burns. */
+    public static final EnumMap<FuelGrade, Double> fuelEfficiency = new EnumMap<>(FuelGrade.class);
+    static {
+        fuelEfficiency.put(FuelGrade.MEDIUM, 0.5D);
+        fuelEfficiency.put(FuelGrade.HIGH, 0.75D);
+        fuelEfficiency.put(FuelGrade.AERO, 0.1D);
+    }
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "dieselgen"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            maxPower = IConfigurableMachine.grab(obj, "L:powerCap", maxPower);
+            fuelCap = IConfigurableMachine.grab(obj, "I:fuelCap", fuelCap);
+            if (obj.has("D[:efficiency")) {
+                JsonArray array = obj.get("D[:efficiency").getAsJsonArray();
+                for (FuelGrade grade : FuelGrade.values()) fuelEfficiency.put(grade, array.get(grade.ordinal()).getAsDouble());
+            }
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("L:powerCap").value(maxPower);
+            writer.name("I:fuelCap").value(fuelCap);
+            StringBuilder info = new StringBuilder("Fuel grades in order:");
+            for (FuelGrade grade : FuelGrade.values()) info.append(' ').append(grade.name());
+            writer.name("INFO").value(info.toString());
+            writer.name("D[:efficiency").beginArray().setIndent("");
+            for (FuelGrade grade : FuelGrade.values()) writer.value(fuelEfficiency.getOrDefault(grade, 0.0D));
+            writer.endArray().setIndent("  ");
+        }
+    };
+
     public long power;
-    public static final long maxPower = 50000;
     public long powerCap = maxPower;
     public FluidTankNTM tank;
     public boolean isOn = false;
@@ -68,19 +107,9 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
     private static final int[] SLOTS_BOTTOM = {1, 2};
     private static final int[] SLOTS_SIDE = {2};
 
-    /** Grade efficiency table (old {@code fuelEfficiency}); LOW/GAS absent means not burnable here. */
-    private static double efficiency(FluidCombustion.FuelGrade grade) {
-        return switch (grade) {
-            case MEDIUM -> 0.5D;
-            case HIGH -> 0.75D;
-            case AERO -> 0.1D;
-            default -> 0D;
-        };
-    }
-
     public TileEntityMachineDiesel(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_DIESEL.get(), pos, state, SLOT_COUNT, 100);
-        tank = new FluidTankNTM(Fluids.DIESEL, FUEL_CAP);
+        tank = new FluidTankNTM(Fluids.DIESEL, fuelCap);
     }
 
     @Override
@@ -129,8 +158,8 @@ public class TileEntityMachineDiesel extends TileEntityMachinePolluting
 
     public static long getHEFromFuel(FluidType type) {
         FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(type);
-        if (fuel != null && fuel.grade() != FluidCombustion.FuelGrade.LOW) {
-            return (long) ((double) fuel.energyPerBucket() / 1000L * efficiency(fuel.grade()));
+        if (fuel != null && fuel.grade() != FuelGrade.LOW) {
+            return (long) ((double) fuel.energyPerBucket() / 1000L * fuelEfficiency.getOrDefault(fuel.grade(), 0D));
         }
         return 0;
     }

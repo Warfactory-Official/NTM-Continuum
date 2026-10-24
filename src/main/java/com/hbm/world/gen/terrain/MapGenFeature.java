@@ -13,7 +13,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
 import java.util.Random;
 
@@ -37,18 +37,19 @@ import java.util.Random;
  * skipped, and it writes its share into every loaded chunk in range. That is how a single crater or bubble can be put
  * down for inspection; world generation never takes that path.
  */
-public abstract class MapGenFeature extends Feature<NoneFeatureConfiguration> {
+public abstract class MapGenFeature<C extends FeatureConfiguration> extends Feature<C> {
 
-    /** 1.7 {@code MapGenBase.range}: how many chunks away an origin may lie. */
-    protected final int range;
-
-    protected MapGenFeature(Codec<NoneFeatureConfiguration> codec, int range) {
+    protected MapGenFeature(Codec<C> codec) {
         super(codec);
-        this.range = range;
     }
 
+    /** 1.7 {@code MapGenBase.range}: how many chunks away an origin may lie. */
+    protected abstract int range(C config);
+
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
+    public boolean place(FeaturePlaceContext<C> context) {
+        C config = context.config();
+        int range = range(config);
         WorldGenLevel level = context.level();
         int chunkX = context.origin().getX() >> 4;
         int chunkZ = context.origin().getZ() >> 4;
@@ -66,7 +67,7 @@ public abstract class MapGenFeature extends Feature<NoneFeatureConfiguration> {
                 for (int oz = chunkZ - range; oz <= chunkZ + range; oz++) {
                     long originSeed = (long) ox * a ^ (long) oz * b ^ seed;
                     rand.setSeed(originSeed);
-                    any |= generate(level, generator, rand, originSeed, seaLevel, ox, oz, chunkX, chunkZ, false);
+                    any |= generate(config, level, generator, rand, originSeed, seaLevel, ox, oz, chunkX, chunkZ, false);
                 }
             }
         } else {
@@ -75,7 +76,7 @@ public abstract class MapGenFeature extends Feature<NoneFeatureConfiguration> {
                 for (int cz = chunkZ - range; cz <= chunkZ + range; cz++) {
                     if (!level.hasChunk(cx, cz)) continue;
                     rand.setSeed(originSeed);
-                    any |= generate(level, generator, rand, originSeed, seaLevel, chunkX, chunkZ, cx, cz, true);
+                    any |= generate(config, level, generator, rand, originSeed, seaLevel, chunkX, chunkZ, cx, cz, true);
                 }
             }
         }
@@ -87,8 +88,8 @@ public abstract class MapGenFeature extends Feature<NoneFeatureConfiguration> {
      * ({@code chunkX}, {@code chunkZ}). {@code rand} is freshly seeded with {@code originSeed} (kept so a subclass can
      * test a roll on a copy first). Write only inside ({@code chunkX}, {@code chunkZ}).
      */
-    protected abstract boolean generate(WorldGenLevel level, ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
-                                        int originX, int originZ, int chunkX, int chunkZ, boolean forced);
+    protected abstract boolean generate(C config, WorldGenLevel level, ChunkGenerator generator, Random rand, long originSeed,
+                                        int seaLevel, int originX, int originZ, int chunkX, int chunkZ, boolean forced);
 
     // Helpers
 

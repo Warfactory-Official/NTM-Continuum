@@ -1,6 +1,5 @@
 package com.hbm.world.gen.component;
 
-import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPools;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.world.gen.NTMComponentStructures;
@@ -114,7 +113,7 @@ public class CivilianFeatures {
 			//Loot/Sand
 			this.placeBlockAtCurrentPosition(world, Mod.crate_weapon, 0, 1, 0, 1, box);
 			if(!this.hasPlacedChest)
-				this.hasPlacedChest = this.generateStructureChestContents(world, box, rand, 3, 0, 1, ItemPool.getPool(ItemPools.POOL_GENERIC), rand.nextInt(2) + 8);
+				this.hasPlacedChest = this.generateStructureChestContents(world, box, rand, 3, 0, 1, ItemPools.POOL_GENERIC, rand.nextInt(2) + 8);
 			this.fillWithBlocks(world, box, 5, 0, 1, 6, 0, 1, Mod.crate, Vanilla.air, false);
 			this.placeBlockAtCurrentPosition(world, Vanilla.sand, 0, 7, 0, 1, box);
 			if(rand.nextFloat() <= 0.25)
@@ -243,7 +242,7 @@ public class CivilianFeatures {
 			if(!hasPlacedLoot[0]) {
 				this.placeBlockAtCurrentPosition(world, Vanilla.chest, this.getMetadataWithOffset(Vanilla.chest, 3), 1, 1, 9 - 2, box);
 				Container chest = inventoryAt(world, this.getXWithOffset(1, 9 - 2), this.getYWithOffset(1), this.getZWithOffset(1, 9 - 2));
-				generateChestContents(rand, ItemPool.getPool(ItemPools.POOL_MACHINE_PARTS), chest, 10);
+				generateChestContents(world, rand, ItemPools.POOL_MACHINE_PARTS, chest, 10);
 				this.hasPlacedLoot[0] = chest != null; // port: set once the chunk holding the chest has built it
 			}
 			this.fillWithBlocks(world, box, 4, 1, 9 - 1, 5, 1, 9 - 1, Mod.crate, Vanilla.air, false);
@@ -256,7 +255,7 @@ public class CivilianFeatures {
 			if(!hasPlacedLoot[1]) {
 				this.placeBlockAtCurrentPosition(world, Vanilla.chest, this.getMetadataWithOffset(Vanilla.chest, 3), 15 - 5, 1, 1, box);
 				Container chest = inventoryAt(world, this.getXWithOffset(15 - 5, 1), this.getYWithOffset(1), this.getZWithOffset(15 - 5, 1));
-				generateChestContents(rand, ItemPool.getPool(ItemPools.POOL_ANTENNA), chest, 10);
+				generateChestContents(world, rand, ItemPools.POOL_ANTENNA, chest, 10);
 				this.hasPlacedLoot[1] = chest != null; // port: set once the chunk holding the chest has built it
 			}
 			this.placeBlockAtCurrentPosition(world, Mod.bobblehead, rand.nextInt(16), 15 - 5, 1, 4, box);
@@ -390,7 +389,7 @@ public class CivilianFeatures {
 
 			this.placeBlockAtCurrentPosition(world, Mod.crate_can, 0, 9 - 1, 1, 7 - 2, box);
 			if(!hasPlacedLoot[1]) {
-				this.hasPlacedLoot[1] = this.generateInvContents(world, box, rand, Mod.crate_iron, 9 - 1, 1, 7 - 1, ItemPool.getPool(ItemPools.POOL_GENERIC), 8);
+				this.hasPlacedLoot[1] = this.generateInvContents(world, box, rand, Mod.crate_iron, 9 - 1, 1, 7 - 1, ItemPools.POOL_GENERIC, 8);
 			}
 
 			return true;
@@ -563,7 +562,7 @@ public class CivilianFeatures {
 			this.placeBlockAtCurrentPosition(world, Mod.crate, 0, 4, 1, 8 - 2, box);
 			this.placeBlockAtCurrentPosition(world, Mod.crate_lead, 0, 4, 2, 8 - 2, box);
 			if(!hasPlacedLoot[0]) {
-				this.hasPlacedLoot[0] = this.generateInvContents(world, box, rand, Mod.crate_iron, 5, 1, 8 - 2, ItemPool.getPool(ItemPools.POOL_NUKE_FUEL), 10);
+				this.hasPlacedLoot[0] = this.generateInvContents(world, box, rand, Mod.crate_iron, 5, 1, 8 - 2, ItemPools.POOL_NUKE_FUEL, 10);
 			}
 			this.fillWithBlocks(world, box, 4, 1, 8 - 3, 5, 1, 8 - 3, Mod.crate_lead, Vanilla.air, false);
 
@@ -573,7 +572,7 @@ public class CivilianFeatures {
 			this.placeBlockAtCurrentPosition(world, Mod.steel_beam, 0, 12 - 2, 2, 8 - 2, box);
 			this.fillWithBlocks(world, box, 12 - 4, 3, 8 - 2, 12 - 2, 3, 8 - 2, Mod.steel_roof, Vanilla.air, false);
 			if(!hasPlacedLoot[1]) {
-				this.hasPlacedLoot[1] = this.generateInvContents(world, box, rand, Mod.crate_iron, 12 - 2, 1, 3, ItemPool.getPool(ItemPools.POOL_NUKE_TRASH), 9);
+				this.hasPlacedLoot[1] = this.generateInvContents(world, box, rand, Mod.crate_iron, 12 - 2, 1, 3, ItemPools.POOL_NUKE_TRASH, 9);
 				if(rand.nextInt(2) == 0)
 					generateLoreBook(world, box, 12 - 2, 1, 3, 1, generateOfficeBook(rand));
 			}
@@ -959,8 +958,8 @@ public class CivilianFeatures {
 			placeBlockAtCurrentPosition(world, rand.nextBoolean() ? Mod.crate_weapon : Mod.crate, 0, 6, 5, 12, box);
 
 			//inventories
-			generateInvContents(world, box, rand, Mod.filing_cabinet, getDecoModelMeta(2), 7, 1, 10, ItemPool.getPool(ItemPools.POOL_OFFICE_TRASH), 4);
-			generateInvContents(world, box, rand, Vanilla.chest, metaE, 7, 5, 5, ItemPool.getPool(ItemPools.POOL_GENERIC), 8);
+			generateInvContents(world, box, rand, Mod.filing_cabinet, getDecoModelMeta(2), 7, 1, 10, ItemPools.POOL_OFFICE_TRASH, 4);
+			generateInvContents(world, box, rand, Vanilla.chest, metaE, 7, 5, 5, ItemPools.POOL_GENERIC, 8);
 			//loot
 			placeBlockAtCurrentPosition(world, Mod.deco_loot, 0, 3, 2, 12, box);
 			lootBookLore(world, getXWithOffset(3, 12), getYWithOffset(2), getZWithOffset(3, 12), generateLabBook(rand)); //TODO write more lore

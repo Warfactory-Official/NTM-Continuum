@@ -1,20 +1,19 @@
 package com.hbm.items.special;
 
 import com.hbm.advancement.HbmCriteria;
-import com.hbm.capability.HbmLivingProps;
+import com.hbm.handler.ConsumableTreatment;
+import com.hbm.handler.ConsumableTreatment.Context;
+import com.hbm.handler.ConsumableTreatments;
 import com.hbm.items.ModFinalConsumableItems;
-import com.hbm.sound.ModSounds;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
-import dev.golem.core.world.Effects;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -24,12 +23,12 @@ import net.minecraft.world.level.Level;
 /**
  * 1.7 {@code ItemCigarette}, shared by the FFI cigarette and the health pipe: a 30-tick bow-drawn "use" after
  * which the smoker coughs. The cigarette deposits black lung, asbestos and 100 RAD; the pipe a little black lung,
- * ten seconds of nausea and 10 HP of healing.
+ * ten seconds of nausea and 10 HP of healing. Both are {@code hbm:consumable_treatment}.
  *
  * <p>Not reproduced: the {@code vomit}/{@code smoke} aux particle burst (no port of that particle yet) and the
  * No. 9 achievement, whose helmet does not exist in the port.
  */
-public class ItemCigarette extends CompatItem {
+public class ItemCigarette extends CompatItem implements ConsumableTreatments.Handled {
 
     public ItemCigarette(Properties properties) {
         super(properties);
@@ -57,22 +56,11 @@ public class ItemCigarette extends CompatItem {
         ItemStack smoked = stack.copyWithCount(1);
         stack.shrink(1); // 1.7 consumes the cigarette even in creative
 
-        if (!level.isClientSide()) {
-            if (cigarette) {
-                HbmLivingProps.incrementBlackLung(entity, 2000);
-                HbmLivingProps.incrementAsbestos(entity, 2000);
-                HbmLivingProps.incrementRadiation(entity, 100F);
-                // 1.7 achNo9: the advancement's player predicate asks for the No. 9 helmet
-                if (entity instanceof ServerPlayer player) {
-                    HbmCriteria.SMOKED.fire(player, smoked);
-                }
-            } else {
-                HbmLivingProps.incrementBlackLung(entity, 500);
-                Effects.add(entity, MobEffects.NAUSEA, 200, 0);
-                entity.heal(10F);
-            }
-            level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), ModSounds.COUGH.get(),
-                    SoundSource.PLAYERS, 1.0F, 1.0F);
+        if (level instanceof ServerLevel server) {
+            ConsumableTreatment treatment = ConsumableTreatments.of(this);
+            if (treatment != null) treatment.run(Context.eaten(server, entity));
+            // 1.7 achNo9: the advancement's player predicate asks for the No. 9 helmet
+            if (cigarette && entity instanceof ServerPlayer player) HbmCriteria.SMOKED.fire(player, smoked);
         }
         return stack;
     }

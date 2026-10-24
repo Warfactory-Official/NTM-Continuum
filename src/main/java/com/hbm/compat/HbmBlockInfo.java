@@ -106,7 +106,7 @@ public final class HbmBlockInfo {
         BlockInfo.gauges(TileEntityFusionBoiler.class,
                 (te, out) -> out.accept(Gauge.of("", te.plasmaEnergySync(), 0, "TU", TU_FROM, TU_TO)));
         BlockInfo.gauges(TileEntityFusionMHDT.class, (te, out) -> out.accept(
-                Gauge.of("", te.plasmaEnergySync(), TileEntityFusionMHDT.MINIMUM_PLASMA, "TU/t", TU_FROM, TU_TO)));
+                Gauge.of("", te.plasmaEnergySync(), TileEntityFusionMHDT.minimumPlasma, "TU/t", TU_FROM, TU_TO)));
 
         // 1.7's ICF GUI shows the laser as OFFLINE while no laser is linked; the overlay leaves it out
         BlockInfo.gauges(TileEntityICF.class, (te, out) -> {

@@ -1,28 +1,38 @@
 package com.hbm.world.gen.terrain;
 
+import dev.golem.core.data.Codecs;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.blocks.ModTerrainBlocks;
 import com.hbm.blocks.generic.BlockDeadPlant;
+import com.hbm.lib.HbmBlockTags;
+import com.hbm.world.feature.FeatureCodecs;
+import com.hbm.world.gen.ConfigInt;
+import com.hbm.world.gen.WorldgenKeys;
 import com.mojang.serialization.Codec;
-import java.util.function.Supplier;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 
+import java.util.Optional;
 import java.util.Random;
-import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+import static com.hbm.world.feature.FeatureCodecs.lazy;
 
 /**
- * 1.7 {@code world/gen/terrain/MapGenBubble}: an oblate (3 x 1 x 3) sphere of ore replacing one host block, rolled per
- * origin chunk, plus the blighted surface spot and vent hole above it. Registered twice, as 1.7's {@code HbmWorld} did:
+ * 1.7 {@code world/gen/terrain/MapGenBubble}: an oblate (3 x 1 x 3) sphere of {@code ore} replacing {@code host}, rolled
+ * per origin chunk, plus the blighted surface spot and vent hole above it. Registered twice, as 1.7's {@code HbmWorld} did:
  * <ul>
  *   <li>{@code hbm:oil_bubble}: {@code ore_oil} in stone, one origin in {@code oilSpawn} (100), y 15..39, radius 8..15,
  *       range 3;</li>
@@ -39,49 +49,64 @@ import java.util.function.Predicate;
  * <p>Deviations: 1.7's {@code blocks[] == Blocks.sand} also matched red sand (sand metadata 1), so red sand is a host
  * here too; scans start at the column's generated top instead of y 127.
  */
-public class MapGenBubble extends MapGenFeature {
+public class MapGenBubble extends MapGenFeature<MapGenBubble.Config> {
 
-    private final int frequency;
-    private final int minSize;
-    private final int maxSize;
-    private final int minY;
-    private final int rangeY;
-    private final boolean fuzzy;
-    private final Predicate<BlockState> replace;
-    private final Supplier<BlockState> block;
-    private final Predicate<Holder<Biome>> canSpawn;
+    /** {@code min_temperature} absent: no climate rule; {@code no_lightning}: only where it never storms. */
+    public record Config(ConfigInt frequency, int minSize, int maxSize, int minY, int yRange, boolean fuzzy, RuleTest host,
+                         BlockState ore, Optional<Float> minTemperature, boolean noLightning, int spotCount,
+                         int spotWidth) implements FeatureConfiguration {
 
-    public MapGenBubble(Codec<NoneFeatureConfiguration> codec, int frequency, int minSize, int maxSize, int minY, int rangeY,
-                        boolean fuzzy, Predicate<BlockState> replace, Supplier<BlockState> block,
-                        Predicate<Holder<Biome>> canSpawn) {
-        super(codec, maxSize / 8 + 1); // 1.7 setSize
-        this.frequency = frequency;
-        this.minSize = minSize;
-        this.maxSize = maxSize;
-        this.minY = minY;
-        this.rangeY = rangeY;
-        this.fuzzy = fuzzy;
-        this.replace = replace;
-        this.block = block;
-        this.canSpawn = canSpawn;
+        static Codec<Config> codec(Supplier<Config> d) {
+            return FeatureCodecs.sizeRange(RecordCodecBuilder.<Config>create(i -> i.group(
+                    lazy(ConfigInt.CODEC, "frequency", () -> d.get().frequency()).forGetter(Config::frequency),
+                    lazy(Codec.INT, "min_size", () -> d.get().minSize()).forGetter(Config::minSize),
+                    lazy(Codec.INT, "max_size", () -> d.get().maxSize()).forGetter(Config::maxSize),
+                    lazy(Codec.INT, "min_y", () -> d.get().minY()).forGetter(Config::minY),
+                    FeatureCodecs.positive("y_range", () -> d.get().yRange()).forGetter(Config::yRange),
+                    lazy(Codec.BOOL, "fuzzy", () -> d.get().fuzzy()).forGetter(Config::fuzzy),
+                    FeatureCodecs.rule("host", () -> d.get().host()).forGetter(Config::host),
+                    lazy(BlockState.CODEC, "ore", () -> d.get().ore()).forGetter(Config::ore),
+                    Codecs.strictOptionalField(Codec.FLOAT, "min_temperature")
+                            .xmap(t -> t.or(() -> d.get().minTemperature()), t -> t).forGetter(Config::minTemperature),
+                    lazy(Codec.BOOL, "no_lightning", () -> d.get().noLightning()).forGetter(Config::noLightning),
+                    lazy(Codec.INT, "spot_count", () -> d.get().spotCount()).forGetter(Config::spotCount),
+                    lazy(Codec.INT, "spot_width", () -> d.get().spotWidth()).forGetter(Config::spotWidth)
+            ).apply(i, Config::new)), Config::minSize, Config::maxSize);
+        }
+
+        static Config oil() {
+            return new Config(ConfigInt.key(WorldgenKeys.OIL), 8, 16, 15, 25, false, FeatureCodecs.block(Blocks.STONE),
+                    ModOilBlocks.ore_oil.get().defaultBlockState(), Optional.empty(), false, 150, 7);
+        }
+
+        /** {@code hbm:oil_sand_bubble}, 1.7 {@code HbmWorld.registerNTMTerrain} (its rate was a hardcoded 200). */
+        static Config oilSand() {
+            return new Config(ConfigInt.of(200), 16, 48, 56, 16, true, FeatureCodecs.tag(HbmBlockTags.TAR_SAND_HOSTS),
+                    ModFallingBlocks.ore_oil_sand.get().defaultBlockState(), Optional.of(1.5F), true, 150, 7);
+        }
     }
 
-    /** {@code hbm:oil_bubble}, 1.7 {@code HbmWorld.registerNTMTerrain}. */
-    public static MapGenBubble oil(Codec<NoneFeatureConfiguration> codec, int frequency) {
-        return new MapGenBubble(codec, frequency, 8, 16, 15, 25, false, s -> s.is(Blocks.STONE),
-                () -> ModOilBlocks.ore_oil.get().defaultBlockState(), null);
-    }
+    public static final Codec<Config> OIL_CODEC = Config.codec(Config::oil);
+    public static final Codec<Config> OIL_SAND_CODEC = Config.codec(Config::oilSand);
 
-    /** {@code hbm:oil_sand_bubble}, 1.7 {@code HbmWorld.registerNTMTerrain} (its rate was a hardcoded 200). */
-    public static MapGenBubble oilSand(Codec<NoneFeatureConfiguration> codec) {
-        return new MapGenBubble(codec, 200, 16, 48, 56, 16, true, s -> s.is(Blocks.SAND) || s.is(Blocks.RED_SAND),
-                () -> ModFallingBlocks.ore_oil_sand.get().defaultBlockState(),
-                biome -> !LegacyClimate.lightning(biome) && LegacyClimate.temperature(biome) >= 1.5F);
+    public MapGenBubble(Codec<Config> codec) {
+        super(codec);
     }
 
     @Override
-    protected boolean generate(WorldGenLevel level, ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
+    protected int range(Config config) {
+        return config.maxSize() / 8 + 1; // 1.7 setSize
+    }
+
+    private static boolean canSpawn(Config c, Holder<Biome> biome) {
+        if (c.noLightning() && LegacyClimate.lightning(biome)) return false;
+        return c.minTemperature().isEmpty() || LegacyClimate.temperature(biome) >= c.minTemperature().get();
+    }
+
+    @Override
+    protected boolean generate(Config c, WorldGenLevel level, ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
                                int originX, int originZ, int chunkX, int chunkZ, boolean forced) {
+        int frequency = c.frequency().get();
         if (frequency <= 0) return false;
         Holder<Biome> biome = null;
         int effecFreq = frequency;
@@ -96,33 +121,33 @@ public class MapGenBubble extends MapGenFeature {
             if (effecFreq <= 0) effecFreq = 1;
         }
         boolean roll = rand.nextInt(effecFreq) == effecFreq - 1;
-        if (!forced && !(roll && (canSpawn == null || canSpawn.test(biome)))) return false;
+        if (!forced && !(roll && canSpawn(c, biome))) return false;
 
         int xCoord = (chunkX - originX) * 16 + rand.nextInt(16);
         int zCoord = (chunkZ - originZ) * 16 + rand.nextInt(16);
-        int yCoord = rand.nextInt(rangeY) + minY;
+        int yCoord = rand.nextInt(c.yRange()) + c.minY();
 
-        double radius = rand.nextInt(maxSize - minSize) + minSize;
+        double radius = rand.nextInt(c.maxSize() - c.minSize()) + c.minSize();
         double radiusSqr = (radius * radius) / 2; // 1.7: "original OilBubble implementation divided the square by 2 for some reason"
 
         int yMin = Math.max(Math.max(1, level.getMinY()), Mth.floor(yCoord - radius));
         int yMax = Math.min(Math.min(127, level.getMaxY()), Mth.ceil(yCoord + radius));
 
-        BlockState ore = block.get();
+        RandomSource hostRand = RandomSource.create(originSeed);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         boolean placed = false;
         for (int bx = 15; bx >= 0; bx--) {
             for (int bz = 15; bz >= 0; bz--) {
                 for (int by = yMin; by < yMax; by++) {
                     pos.set((chunkX << 4) + bx, by, (chunkZ << 4) + bz);
-                    if (!replace.test(level.getBlockState(pos))) continue;
+                    if (!c.host().test(level.getBlockState(pos), hostRand)) continue;
                     int x = xCoord + bx;
                     int z = zCoord + bz;
                     int y = yCoord - by;
                     double rSqr = x * x + z * z + y * y * 3;
-                    if (fuzzy) rSqr -= rand.nextDouble() * radiusSqr / 3;
+                    if (c.fuzzy()) rSqr -= rand.nextDouble() * radiusSqr / 3;
                     if (rSqr < radiusSqr) {
-                        set(level, pos, ore);
+                        set(level, pos, c.ore());
                         placed = true;
                     }
                 }
@@ -130,16 +155,15 @@ public class MapGenBubble extends MapGenFeature {
         }
 
         if (rand.nextInt(1) == 0) {
-            addSurfaceSpot(level, rand, xCoord, zCoord, chunkX, chunkZ);
+            addSurfaceSpot(level, rand, xCoord, zCoord, chunkX, chunkZ, c.spotCount(), c.spotWidth());
         }
         return placed;
     }
 
-    /** 1.7 {@code addSurfaceSpot}: 150 gaussian (sigma 7) blight spots and the vent hole, this chunk's share of them. */
-    private static void addSurfaceSpot(WorldGenLevel level, Random rand, int xCoord, int zCoord, int chunkX, int chunkZ) {
+    /** 1.7 {@code addSurfaceSpot}: gaussian blight spots and the vent hole, this chunk's share of them. */
+    private static void addSurfaceSpot(WorldGenLevel level, Random rand, int xCoord, int zCoord, int chunkX, int chunkZ,
+                                       int spotCount, int spotWidth) {
         BlockDeadPlant.Type[] deadTypes = BlockDeadPlant.Type.values();
-        int spotCount = 150;
-        int spotWidth = 7;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
         for (int i = 0; i < spotCount; i++) {

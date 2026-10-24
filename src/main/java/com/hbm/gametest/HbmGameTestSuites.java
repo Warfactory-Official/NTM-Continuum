@@ -66,6 +66,7 @@ public final class HbmGameTestSuites {
             list.add(RecipeTableGameTests.TESTS);
             list.add(FluidPropertyGameTests.TESTS);
             list.add(DataMapGameTests.TESTS);
+            list.add(TreatmentGameTests.TESTS);
             list.add(AddonEnumGameTests.TESTS);
             list.add(EnvironmentGameTests.TESTS);
             list.add(ScriptHookGameTests.TESTS);
@@ -73,6 +74,7 @@ public final class HbmGameTestSuites {
             list.add(GenericRecipeTableGameTests.TESTS);
             list.add(ItemProcessingTableGameTests.TESTS);
             list.add(ValueMapGameTests.TESTS);
+            list.add(RadiationDataGameTests.TESTS);
             list.add(AddonSeamGameTests.TESTS);
             list.add(FluidRecipeTableGameTests.TESTS);
             list.add(ItemRecipeTableGameTests.TESTS);
@@ -163,13 +165,16 @@ public final class HbmGameTestSuites {
         RecipeTableGameTests.init();
         FluidPropertyGameTests.init();
         DataMapGameTests.init();
+        TreatmentGameTests.init();
         AddonEnumGameTests.init();
         EnvironmentGameTests.init();
         ScriptHookGameTests.init();
         AddonContentGameTests.init();
         GenericRecipeTableGameTests.init();
         ItemProcessingTableGameTests.init();
+        LootTableGameTests.init();
         ValueMapGameTests.init();
+        RadiationDataGameTests.init();
         AddonSeamGameTests.init();
         FluidRecipeTableGameTests.init();
         ItemRecipeTableGameTests.init();

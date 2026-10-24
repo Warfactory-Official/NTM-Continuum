@@ -221,17 +221,8 @@ public class EntityRADBeast extends CompatMonster implements IRadiationImmune {
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
+        // the looting polonium is in the loot table; whether the beast is wet has no loot condition
         if (!killedByPlayer) return;
-
-        int looting = 0;
-        if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = Compat.lootingLevel(level, attacker);
-        }
-
-        // 1.7: a guaranteed polonium nugget per looting level
-        if (looting > 0) {
-            spawnAtLocation(level, new ItemStack(ModItems.nugget_polonium.get(), looting));
-        }
 
         boolean wet = isInWaterOrRain();
         int count = random.nextInt(3) + 1;

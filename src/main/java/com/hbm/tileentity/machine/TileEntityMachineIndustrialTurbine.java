@@ -24,6 +24,10 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Random;
 import com.hbm.tileentity.TilePort.PortDef;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * Industrial steam turbine, ported from the 1.12.2 turbine base without the old Forge fluid/GUI layer.
@@ -35,6 +39,23 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
     public static int inputTankSize = 750_000;
     public static int outputTankSize = 3_000_000;
     public static double efficiency = 1D;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "steamturbineIndustrialMk2"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            inputTankSize = IConfigurableMachine.grab(obj, "I:inputTankSize", inputTankSize);
+            outputTankSize = IConfigurableMachine.grab(obj, "I:outputTankSize", outputTankSize);
+            efficiency = IConfigurableMachine.grab(obj, "D:efficiency", efficiency);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("INFO").value("industrial steam turbine consumes 20% of available steam per tick");
+            writer.name("I:inputTankSize").value(inputTankSize);
+            writer.name("I:outputTankSize").value(outputTankSize);
+            writer.name("D:efficiency").value(efficiency);
+        }
+    };
     public static final double ACCELERATION = 1D / 400D;
 
     public final FluidTankNTM[] tanks;

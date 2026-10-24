@@ -1,5 +1,6 @@
 package com.hbm.items.gear;
 
+import com.hbm.api.data.ArmorDataMaps;
 import com.hbm.api.item.IGasMask;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.items.ModDataComponents;
@@ -21,16 +22,14 @@ import net.minecraft.sounds.SoundSource;
 
 /** Component-backed, filterable helmet. Right-click with a filter in the other hand to install it; sneak to remove it. */
 public class ItemGasMask extends CompatArmorItem implements IGasMask {
-    private final List<HazardClass> blacklist;
 
-    public ItemGasMask(Properties properties, List<HazardClass> blacklist) {
+    public ItemGasMask(Properties properties) {
         super(HbmArmorMaterials.GAS_MASK, ArmorSlot.HELMET, properties);
-        this.blacklist = List.copyOf(blacklist);
     }
 
     @Override
     public List<HazardClass> getBlacklist(ItemStack stack) {
-        return blacklist;
+        return ArmorDataMaps.gasMaskBlacklist(this);
     }
 
     @Override

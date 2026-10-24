@@ -29,7 +29,6 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 
@@ -60,20 +59,6 @@ public class EntityCreeperNuclear extends EntityCreeperBase {
         return super.hurtServer(level, source, amount);
     }
 
-    @Override
-    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-        super.dropCustomDeathLoot(level, source, killedByPlayer);
-
-        int looting = 0;
-        if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = Compat.lootingLevel(level, attacker);
-        }
-
-        int tnt = random.nextInt(3) + (looting > 0 ? random.nextInt(looting + 1) : 0);
-        for (int i = 0; i < tnt; i++) spawnAtLocation(level, new ItemStack(Items.TNT));
-
-        if (random.nextInt(3) == 0) spawnAtLocation(level, new ItemStack(ModItems.coin_creeper.get()));
-    }
 
     @Override
     public void die(DamageSource source) {

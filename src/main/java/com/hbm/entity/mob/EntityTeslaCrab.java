@@ -1,19 +1,14 @@
 package com.hbm.entity.mob;
 
-import com.hbm.items.ModItems;
 import com.hbm.particle.helper.EntityEffects;
 import com.hbm.util.TeslaZap;
-import dev.golem.core.world.Compat;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -55,19 +50,4 @@ public class EntityTeslaCrab extends EntityCyberCrab {
         super.tick();
     }
 
-    @Override
-    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-        super.dropCustomDeathLoot(level, source, killedByPlayer);
-
-        if (!killedByPlayer) return;
-
-        int looting = 0;
-        // 1.7 EntityLivingBase.onDeath only read looting off an EntityPlayer killer
-        if (source.getEntity() instanceof Player attacker) {
-            looting = Compat.lootingLevel(level, attacker);
-        }
-
-        // 1.7 EntityLivingBase.onDeath: rare drops roll nextInt(200) - looting < 5
-        if (random.nextInt(200) - looting < 5) spawnAtLocation(level, new ItemStack(ModItems.coil_copper.get()));
-    }
 }

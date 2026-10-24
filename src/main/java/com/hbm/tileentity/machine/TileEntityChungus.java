@@ -27,6 +27,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.Random;
 import com.hbm.tileentity.ModPowerGenBlockEntities;
 import com.hbm.tileentity.TilePort.PortDef;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * The Leviathan steam turbine, a 1:1 port of 1.7 {@code TileEntityChungus} over {@code TileEntityTurbineBase}.
@@ -37,10 +41,26 @@ import com.hbm.tileentity.TilePort.PortDef;
 public class TileEntityChungus extends TileEntityLoadedBase
         implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, IRORValueProvider {
 
-    // Configurable values (1.7 IConfigurableMachine "steamturbineLeviathan"; the config file itself is not ported)
     public static int inputTankSize = 1_000_000_000;
     public static int outputTankSize = 1_000_000_000;
     public static double efficiency = 0.85D;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "steamturbineLeviathan"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            inputTankSize = IConfigurableMachine.grab(obj, "I:inputTankSize", inputTankSize);
+            outputTankSize = IConfigurableMachine.grab(obj, "I:outputTankSize", outputTankSize);
+            efficiency = IConfigurableMachine.grab(obj, "D:efficiency", efficiency);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("INFO").value("leviathan steam turbine consumes all availible steam per tick");
+            writer.name("I:inputTankSize").value(inputTankSize);
+            writer.name("I:outputTankSize").value(outputTankSize);
+            writer.name("D:efficiency").value(efficiency);
+        }
+    };
 
     public final FluidTankNTM[] tanks;
     public long powerBuffer;

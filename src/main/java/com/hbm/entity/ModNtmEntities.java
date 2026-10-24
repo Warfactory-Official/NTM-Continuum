@@ -146,31 +146,31 @@ public final class ModNtmEntities {
                     EntityType.Builder.<EntityFBI>of(EntityFBI::new, MobCategory.MONSTER).sized(0.6F, 1.8F).fireImmune().clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityCreeperGold>> CREEPER_GOLD =
             REG.entity("entity_mob_gold_creeper", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityCreeperGold>of(EntityCreeperGold::new, MobCategory.MONSTER)).sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityCreeperGold>of(EntityCreeperGold::new, MobCategory.MONSTER).sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityCreeperVolatile>> CREEPER_VOLATILE =
             REG.entity("entity_mob_volatile_creeper", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityCreeperVolatile>of(EntityCreeperVolatile::new, MobCategory.MONSTER)).sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityCreeperVolatile>of(EntityCreeperVolatile::new, MobCategory.MONSTER).sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityCreeperPhosgene>> CREEPER_PHOSGENE =
             REG.entity("entity_mob_phosgene_creeper", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityCreeperPhosgene>of(EntityCreeperPhosgene::new, MobCategory.MONSTER)).sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityCreeperPhosgene>of(EntityCreeperPhosgene::new, MobCategory.MONSTER).sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityCreeperTainted>> CREEPER_TAINTED =
             REG.entity("entity_mob_tainted_creeper", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityCreeperTainted>of(EntityCreeperTainted::new, MobCategory.MONSTER)).sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityCreeperTainted>of(EntityCreeperTainted::new, MobCategory.MONSTER).sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityCreeperNuclear>> CREEPER_NUCLEAR =
             REG.entity("entity_mob_nuclear_creeper", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityCreeperNuclear>of(EntityCreeperNuclear::new, MobCategory.MONSTER)).sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityCreeperNuclear>of(EntityCreeperNuclear::new, MobCategory.MONSTER).sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityCyberCrab>> CYBER_CRAB =
             REG.entity("entity_cyber_crab", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityCyberCrab>of(EntityCyberCrab::new, MobCategory.MONSTER)).sized(0.75F, 0.35F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityTeslaCrab>> TESLA_CRAB =
             REG.entity("entity_tesla_crab", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityTeslaCrab>of(EntityTeslaCrab::new, MobCategory.MONSTER)).sized(0.75F, 1.25F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityTeslaCrab>of(EntityTeslaCrab::new, MobCategory.MONSTER).sized(0.75F, 1.25F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityTaintCrab>> TAINT_CRAB =
             REG.entity("entity_taint_crab", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityTaintCrab>of(EntityTaintCrab::new, MobCategory.MONSTER)).sized(1.25F, 1.25F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityTaintCrab>of(EntityTaintCrab::new, MobCategory.MONSTER).sized(1.25F, 1.25F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityDuck>> DUCK =
             REG.entity("entity_fucc_a_ducc", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityDuck>of(EntityDuck::new, MobCategory.CREATURE)).sized(0.3F, 0.7F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityDuck>of(EntityDuck::new, MobCategory.CREATURE).sized(0.3F, 0.7F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityGhost>> GHOST =
             REG.entity("entity_ghost", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityGhost>of(EntityGhost::new, MobCategory.MONSTER)).sized(0.6F, 1.8F).clientTrackingRange(63).updateInterval(1), key));
@@ -188,22 +188,22 @@ public final class ModNtmEntities {
                     Entities.noLoot(EntityType.Builder.<EntityPlasticBag>of(EntityPlasticBag::new, MobCategory.WATER_CREATURE)).sized(0.45F, 0.45F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityPigeon>> PIGEON =
             REG.entity("entity_pigeon", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityPigeon>of(EntityPigeon::new, MobCategory.CREATURE)).sized(0.5F, 1.0F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityPigeon>of(EntityPigeon::new, MobCategory.CREATURE).sized(0.5F, 1.0F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityGlyphid>> GLYPHID =
             REG.entity("entity_glyphid", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityGlyphid>of(EntityGlyphid::new, MobCategory.MONSTER)).sized(1.75F, 1F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityGlyphid>of(EntityGlyphid::new, MobCategory.MONSTER).sized(1.75F, 1F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityGlyphidBehemoth>> GLYPHID_BEHEMOTH =
             REG.entity("entity_glyphid_behemoth", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityGlyphidBehemoth>of(EntityGlyphidBehemoth::new, MobCategory.MONSTER)).sized(2.5F, 1.5F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityGlyphidBehemoth>of(EntityGlyphidBehemoth::new, MobCategory.MONSTER).sized(2.5F, 1.5F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityGlyphidBrenda>> GLYPHID_BRENDA =
             REG.entity("entity_glyphid_brenda", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityGlyphidBrenda>of(EntityGlyphidBrenda::new, MobCategory.MONSTER)).sized(2.5F, 1.75F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityGlyphidBrenda>of(EntityGlyphidBrenda::new, MobCategory.MONSTER).sized(2.5F, 1.75F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityGlyphidScout>> GLYPHID_SCOUT =
             REG.entity("entity_glyphid_scout", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityGlyphidScout>of(EntityGlyphidScout::new, MobCategory.MONSTER)).sized(1.25F, 0.75F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityGlyphidScout>of(EntityGlyphidScout::new, MobCategory.MONSTER).sized(1.25F, 0.75F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityGlyphidNuclear>> GLYPHID_NUCLEAR =
             REG.entity("entity_glyphid_nuclear", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityGlyphidNuclear>of(EntityGlyphidNuclear::new, MobCategory.MONSTER)).sized(2.5F, 1.75F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityGlyphidNuclear>of(EntityGlyphidNuclear::new, MobCategory.MONSTER).sized(2.5F, 1.75F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityMeteor>> METEOR =
             REG.entity("entity_meteor", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityMeteor>of(EntityMeteor::new, MobCategory.MISC)).fireImmune().sized(4F, 4F).clientTrackingRange(16).updateInterval(1), key));
@@ -278,7 +278,7 @@ public final class ModNtmEntities {
                     Entities.noLoot(EntityType.Builder.<EntityFBIDrone>of(EntityFBIDrone::new, MobCategory.MONSTER)).fireImmune().sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityRADBeast>> RAD_BEAST =
             REG.entity("entity_radiation_blaze", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityRADBeast>of(EntityRADBeast::new, MobCategory.MONSTER)).fireImmune().sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityRADBeast>of(EntityRADBeast::new, MobCategory.MONSTER).fireImmune().sized(0.6F, 1.8F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityMaskMan>> MASK_MAN =
             REG.entity("entity_mob_mask_man", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityMaskMan>of(EntityMaskMan::new, MobCategory.MONSTER)).fireImmune().sized(2.0F, 5.0F).clientTrackingRange(5).updateInterval(3), key));

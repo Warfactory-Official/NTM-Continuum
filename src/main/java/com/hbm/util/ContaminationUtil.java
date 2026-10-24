@@ -1,8 +1,6 @@
 package com.hbm.util;
 
-import com.hbm.entity.mob.EntityCreeperNuclear;
 import com.hbm.entity.mob.EntityDuck;
-import com.hbm.entity.mob.EntityQuackos;
 import dev.golem.core.hook.Hook;
 import dev.golem.core.hook.Verdict;
 import dev.golem.core.world.Compat;
@@ -21,6 +19,7 @@ import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.hazard.type.HazardTypeRadiation;
 import com.hbm.interfaces.IRadiationImmune;
+import com.hbm.lib.HbmEntityTags;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.potion.ModEffects;
 import com.hbm.items.ModDataComponents;
@@ -34,13 +33,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.feline.Ocelot;
-import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.animal.feline.Cat;
-import net.minecraft.world.entity.animal.equine.SkeletonHorse;
-import net.minecraft.world.entity.animal.equine.ZombieHorse;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.monster.zombie.Zombie;
-import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -307,19 +300,9 @@ public class ContaminationUtil {
             if (verdict == Verdict.ALLOW) return true;
             if (verdict == Verdict.DENY) return false;
         }
-        // 1.7 immuneEntities (nuclear creeper, mooshroom, zombie, skeleton, quackos, ocelot, IRadiationImmune); the
-        // cat (1.7's tamed ocelot), the undead horses and armour stands are the port's additions.
-        return e instanceof EntityCreeperNuclear
-                || e instanceof EntityQuackos
-                || e instanceof MushroomCow
-                || e instanceof Zombie
-                || e instanceof AbstractSkeleton
-                || e instanceof Ocelot
-                || e instanceof Cat
-                || e instanceof ZombieHorse
-                || e instanceof SkeletonHorse
-                || e instanceof ArmorStand
-                || e instanceof IRadiationImmune;
+        // 1.7 immuneEntities as the hbm:radiation_immune tag. IRadiationImmune stays a class check: it is the code
+        // contract an addon's entity class signs, and getRads reads it too.
+        return e.getType().builtInRegistryHolder().is(HbmEntityTags.RADIATION_IMMUNE) || e instanceof IRadiationImmune;
     }
 
     /// ASBESTOS ///

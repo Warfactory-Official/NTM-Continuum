@@ -26,7 +26,7 @@ public class EntityGlyphidBombardier extends EntityGlyphid {
 
     public static final RegistryObject<EntityType<EntityGlyphidBombardier>> TYPE =
             REG.entity("entity_glyphid_bombardier", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityGlyphidBombardier>of(EntityGlyphidBombardier::new, MobCategory.MONSTER)).sized(1.75F, 1F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityGlyphidBombardier>of(EntityGlyphidBombardier::new, MobCategory.MONSTER).sized(1.75F, 1F).clientTrackingRange(5).updateInterval(3), key));
 
     static {
         LivingAttributes.register(TYPE, EntityGlyphidBombardier::createAttributes);

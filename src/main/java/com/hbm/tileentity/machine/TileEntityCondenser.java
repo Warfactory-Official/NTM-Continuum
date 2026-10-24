@@ -18,9 +18,30 @@ import net.minecraft.nbt.CompoundTag;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.TilePortShapes;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /** Passive 100 mB/t spent-steam condenser that closes the ZIRNOX water loop. */
 public class TileEntityCondenser extends TileEntityMachineBase implements IFluidStandardTransceiverMK2 {
+
+    public static int inputTankSize = 100;
+    public static int outputTankSize = 100;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "condenser"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            inputTankSize = IConfigurableMachine.grab(obj, "I:inputTankSize", inputTankSize);
+            outputTankSize = IConfigurableMachine.grab(obj, "I:outputTankSize", outputTankSize);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:inputTankSize").value(inputTankSize);
+            writer.name("I:outputTankSize").value(outputTankSize);
+        }
+    };
 
     public FluidTankNTM input;
     public FluidTankNTM output;
@@ -37,7 +58,7 @@ public class TileEntityCondenser extends TileEntityMachineBase implements IFluid
     public boolean vacuumOptimised = false;
 
     public TileEntityCondenser(BlockPos pos, BlockState state) {
-        this(ModBlockEntities.MACHINE_CONDENSER.get(), pos, state, 100, 100);
+        this(ModBlockEntities.MACHINE_CONDENSER.get(), pos, state, inputTankSize, outputTankSize);
     }
 
     protected TileEntityCondenser(BlockEntityType<?> type, BlockPos pos, BlockState state,

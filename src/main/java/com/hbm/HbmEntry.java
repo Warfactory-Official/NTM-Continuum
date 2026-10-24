@@ -2,13 +2,17 @@ package com.hbm;
 
 import com.hbm.api.data.HbmDataMaps;
 import com.hbm.api.script.HbmScripts;
+import com.hbm.config.MachineDynConfig;
 import com.hbm.hazard.Hazards;
 import com.hbm.inventory.fluid.FluidProperties;
 import com.hbm.inventory.recipes.HbmRecipeTables;
 import com.hbm.itempool.ItemPool;
+import com.hbm.itempool.PoolFill;
 import com.hbm.packet.HbmPackets;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
+import dev.golem.core.platform.Lifecycle;
 import dev.golem.core.platform.ModEntry;
+import dev.golem.core.world.EntityLoot;
 
 /**
  * HBM's common start-up, in Golem Core's three phases (see {@link dev.golem.core.platform.ModEntries}): the same on
@@ -32,12 +36,17 @@ public class HbmEntry implements ModEntry {
         HbmRecipeTables.declare();
         HbmDataMaps.declare();
         ItemPool.declare();
+        PoolFill.register();
+        EntityLoot.register(); // golemcore:looting, read by the entity loot tables
         FluidProperties.declare(); // fluid_property + fluid_property_patch
         HbmScripts.declare(); // the HBM script global and HBMEvents (inert without KubeJS)
     }
 
     @Override
     public void registered() {
+        // after every mod's declare(), so an addon's MachineDynConfig.register is in the file too
+        MachineDynConfig.initialize();
+        Lifecycle.onServerStarting(server -> MachineDynConfig.restoreLocal());
         // Item and material hazards name registered items.
         Hazards.init();
         // the missile item -> entity table, its own start-up step (separate from Hazards.init)

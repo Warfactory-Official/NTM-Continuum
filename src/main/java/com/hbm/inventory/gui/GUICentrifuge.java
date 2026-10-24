@@ -69,7 +69,7 @@ public class GUICentrifuge extends CompatContainerScreen<ContainerCentrifuge>
         TileEntityMachineCentrifuge centrifuge = this.menu.getCentrifuge();
         if (centrifuge == null) return;
         if (GuiUtil.hover(mouseX, mouseY, this.leftPos + 8, this.topPos + 18, 16, 37)) {
-            GuiUtil.tooltip(graphics, this.font, GuiUtil.energyTooltip(centrifuge.power, TileEntityMachineCentrifuge.MAX_POWER), mouseX, mouseY);
+            GuiUtil.tooltip(graphics, this.font, GuiUtil.energyTooltip(centrifuge.power, TileEntityMachineCentrifuge.maxPower), mouseX, mouseY);
         } else if (GuiUtil.hover(mouseX, mouseY, this.leftPos + 160, this.topPos + 16, 8, 8)) {
             GuiDraw.tooltip(graphics, this.font, GuiUtil.upgradeInfo(centrifuge), Optional.empty(), mouseX, mouseY);
         }

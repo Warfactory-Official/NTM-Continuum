@@ -9,7 +9,6 @@ import com.hbm.entity.mob.ai.EntityAIStartFlying;
 import com.hbm.entity.mob.ai.EntityAIStopFlying;
 import com.hbm.entity.mob.ai.EntityAISwimmingConditional;
 import com.hbm.entity.mob.ai.EntityAIWanderConditional;
-import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -20,7 +19,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -121,15 +119,7 @@ public class EntityPigeon extends CompatPathfinderMob implements IFlyingCreature
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
-
-        int looting = 0;
-        if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = Compat.lootingLevel(level, attacker);
-        }
-
-        int feathers = random.nextInt(3) + random.nextInt(1 + looting);
-        for (int i = 0; i < feathers; i++) spawnAtLocation(level, new ItemStack(Items.FEATHER));
-
+        // feathers come from the loot table; a fat pigeon's three chickens need its unsaved fatness
         spawnAtLocation(level, new ItemStack(isOnFire() ? Items.COOKED_CHICKEN : Items.CHICKEN, isFat() ? 3 : 1));
     }
 

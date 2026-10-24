@@ -22,6 +22,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.TilePortShapes;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * Oil Derrick, 1:1 port of the 1.12.2 {@code TileEntityMachineOilWell} (config name "derrick"):
@@ -31,13 +35,37 @@ import com.hbm.tileentity.TilePortShapes;
  */
 public class TileEntityMachineOilWell extends TileEntityOilDrillBase {
 
-    protected static final int maxPower = 100_000;
-    protected static final int consumption = 100;
-    protected static final int delay = 50;
-    protected static final int oilPerDeposit = 500;
-    protected static final int gasPerDepositMin = 100;
-    protected static final int gasPerDepositMax = 500;
-    protected static final double drainChance = 0.05D;
+    public static int maxPower = 100_000;
+    public static int consumption = 100;
+    public static int delay = 50;
+    public static int oilPerDeposit = 500;
+    public static int gasPerDepositMin = 100;
+    public static int gasPerDepositMax = 500;
+    public static double drainChance = 0.05D;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "derrick"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            maxPower = IConfigurableMachine.grab(obj, "I:powerCap", maxPower);
+            consumption = IConfigurableMachine.grab(obj, "I:consumption", consumption);
+            delay = IConfigurableMachine.grab(obj, "I:delay", delay);
+            oilPerDeposit = IConfigurableMachine.grab(obj, "I:oilPerDeposit", oilPerDeposit);
+            gasPerDepositMin = IConfigurableMachine.grab(obj, "I:gasPerDepositMin", gasPerDepositMin);
+            gasPerDepositMax = IConfigurableMachine.grab(obj, "I:gasPerDepositMax", gasPerDepositMax);
+            drainChance = IConfigurableMachine.grab(obj, "D:drainChance", drainChance);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:powerCap").value(maxPower);
+            writer.name("I:consumption").value(consumption);
+            writer.name("I:delay").value(delay);
+            writer.name("I:oilPerDeposit").value(oilPerDeposit);
+            writer.name("I:gasPerDepositMin").value(gasPerDepositMin);
+            writer.name("I:gasPerDepositMax").value(gasPerDepositMax);
+            writer.name("D:drainChance").value(drainChance);
+        }
+    };
 
     public TileEntityMachineOilWell(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_OIL_WELL.get(), pos, state);

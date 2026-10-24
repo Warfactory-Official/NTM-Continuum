@@ -22,6 +22,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.tileentity.TilePort.PortDef;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /** Heat-to-energy core for the legacy Stirling engine family. */
 public class TileEntityStirling extends TileEntityMachineBase implements IEnergyProviderMK2 {
@@ -31,6 +35,26 @@ public class TileEntityStirling extends TileEntityMachineBase implements IEnergy
     public static int maxHeatNormal = 300;
     public static int maxHeatSteel = 1500;
     public static int overspeedLimit = 300;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "stirling"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            diffusion = IConfigurableMachine.grab(obj, "D:diffusion", diffusion);
+            efficiency = IConfigurableMachine.grab(obj, "D:efficiency", efficiency);
+            maxHeatNormal = IConfigurableMachine.grab(obj, "I:maxHeatNormal", maxHeatNormal);
+            maxHeatSteel = IConfigurableMachine.grab(obj, "I:maxHeatSteel", maxHeatSteel);
+            overspeedLimit = IConfigurableMachine.grab(obj, "I:overspeedLimit", overspeedLimit);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("D:diffusion").value(diffusion);
+            writer.name("D:efficiency").value(efficiency);
+            writer.name("I:maxHeatNormal").value(maxHeatNormal);
+            writer.name("I:maxHeatSteel").value(maxHeatSteel);
+            writer.name("I:overspeedLimit").value(overspeedLimit);
+        }
+    };
 
     public long powerBuffer;
     public int heat;

@@ -14,14 +14,36 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.TilePortShapes;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
-/** The powered condenser; conversion is gated by its stored HE buffer. Defaults mirror hbmMachines.json. */
+/** The powered condenser; conversion is gated by its stored HE buffer. */
 public class TileEntityCondenserPowered extends TileEntityCondenser implements IEnergyReceiverMK2 {
 
     public static long maxPower = 10_000_000L;
     public static int inputTankSizeP = 1_000_000;
     public static int outputTankSizeP = 1_000_000;
     public static int powerConsumption = 10;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "condenserPowered"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            maxPower = IConfigurableMachine.grab(obj, "L:maxPower", maxPower);
+            inputTankSizeP = IConfigurableMachine.grab(obj, "I:inputTankSize", inputTankSizeP);
+            outputTankSizeP = IConfigurableMachine.grab(obj, "I:outputTankSize", outputTankSizeP);
+            powerConsumption = IConfigurableMachine.grab(obj, "I:powerConsumption", powerConsumption);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("L:maxPower").value(maxPower);
+            writer.name("I:inputTankSize").value(inputTankSizeP);
+            writer.name("I:outputTankSize").value(outputTankSizeP);
+            writer.name("I:powerConsumption").value(powerConsumption);
+        }
+    };
 
     public long power;
     public float spin;

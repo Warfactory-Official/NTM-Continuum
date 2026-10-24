@@ -1,5 +1,6 @@
 package com.hbm.items.armor;
 
+import com.hbm.api.data.ArmorDataMaps;
 import com.hbm.api.item.IGasMask;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.ArmorUtil;
@@ -63,8 +64,7 @@ public class ItemModGasmask extends ItemArmorMod implements IGasMask {
 
     @Override
     public List<HazardClass> getBlacklist(ItemStack stack) {
-        return mono ? List.of(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA)
-                : List.of(HazardClass.GAS_BLISTERING);
+        return ArmorDataMaps.gasMaskBlacklist(this);
     }
 
     @Override

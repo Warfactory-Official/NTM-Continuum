@@ -7,14 +7,9 @@ import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectStandard;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
-import com.hbm.items.ModItems;
-import dev.golem.core.world.Compat;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -43,18 +38,4 @@ public class EntityCreeperGold extends EntityCreeperBase {
         return super.checkSpawnRules(level, reason) && getY() <= 40D && level().dimension() == Level.OVERWORLD;
     }
 
-    @Override
-    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-        super.dropCustomDeathLoot(level, source, killedByPlayer);
-
-        int looting = 0;
-        if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = Compat.lootingLevel(level, attacker);
-        }
-
-        int amount = killedByPlayer ? 5 + random.nextInt(6 + looting * 2) : 3;
-        for (int i = 0; i < amount; i++) {
-            spawnAtLocation(level, new ItemStack(ModItems.crystal_gold.get()));
-        }
-    }
 }

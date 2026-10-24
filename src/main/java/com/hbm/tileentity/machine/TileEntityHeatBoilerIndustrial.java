@@ -27,11 +27,29 @@ import com.hbm.sound.ModSounds;
 import com.hbm.sound.MachineAudio;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.TilePort.PortDef;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /** Industrial boiler, ported from {@code TileEntityHeatBoilerIndustrial}. */
 public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider {
-    public static final int maxHeat = 12_800_000;
-    public static final double diffusion = 0.1D;
+    public static int maxHeat = 12_800_000;
+    public static double diffusion = 0.1D;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "boilerIndustrial"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            maxHeat = IConfigurableMachine.grab(obj, "I:maxHeat", maxHeat);
+            diffusion = IConfigurableMachine.grab(obj, "D:diffusion", diffusion);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:maxHeat").value(maxHeat);
+            writer.name("D:diffusion").value(diffusion);
+        }
+    };
 
     public final FluidTankNTM[] tanks = {
             new FluidTankNTM(Fluids.WATER, 64_000),

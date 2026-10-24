@@ -1,8 +1,12 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.inventory.container.ContainerFirebox;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
 import com.hbm.module.ModuleBurnTime;
+import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.ModBlockEntities;
+import java.io.IOException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -12,14 +16,13 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * Firebox (1.12.2 {@code TileEntityHeaterFirebox}), the tier-1 solid-fuel heater. Constants and fuel
  * bonuses as in the 1.12.2 class: base 100 TU/t, 100k TU cap; lignite/coal/coke ×1.25 time ×2 heat, solid fuel
- * ×1.5/×3, rocket fuel ×1.5/×5, balefire ×0.5/×15. The {@code IConfigurableMachine} JSON config is
- * deferred (values hardcoded at the old defaults).
+ * ×1.5/×3, rocket fuel ×1.5/×5, balefire ×0.5/×15. Configured as {@code firebox} in {@code hbmMachines.json}.
  */
 public class TileEntityHeaterFirebox extends TileEntityFireboxBase {
 
-    public static final int baseHeat = 100;
-    public static final double timeMult = 1D;
-    public static final int maxHeatEnergy = 100_000;
+    public static int baseHeat = 100;
+    public static double timeMult = 1D;
+    public static int maxHeatEnergy = 100_000;
 
     public static final ModuleBurnTime burnModule = new ModuleBurnTime()
             .setLigniteTimeMod(1.25)
@@ -35,6 +38,27 @@ public class TileEntityHeaterFirebox extends TileEntityFireboxBase {
             .setSolidHeatMod(3)
             .setRocketHeatMod(5)
             .setBalefireHeatMod(15);
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "firebox"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            baseHeat = IConfigurableMachine.grab(obj, "I:baseHeat", baseHeat);
+            timeMult = IConfigurableMachine.grab(obj, "D:burnTimeMult", timeMult);
+            maxHeatEnergy = IConfigurableMachine.grab(obj, "I:heatCap", maxHeatEnergy);
+            // 1.7 tests for "burnModule" but reads "M:burnModule", so the written key alone changes nothing
+            if (obj.has("burnModule")) burnModule.readIfPresent(obj.get("M:burnModule").getAsJsonObject());
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:baseHeat").value(baseHeat);
+            writer.name("D:burnTimeMult").value(timeMult);
+            writer.name("I:heatCap").value(maxHeatEnergy);
+            writer.name("M:burnModule").beginObject();
+            burnModule.writeConfig(writer);
+            writer.endObject();
+        }
+    };
 
     public TileEntityHeaterFirebox(BlockPos pos, BlockState state) {
         super(ModBlockEntities.HEATER_FIREBOX.get(), pos, state);

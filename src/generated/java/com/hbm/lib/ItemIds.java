@@ -725,6 +725,7 @@ public final class ItemIds {
     public static final String bobblehead_endurance = "hbm:bobblehead_endurance";
     public static final String bobblehead_eos = "hbm:bobblehead_eos";
     public static final String bobblehead_frizzle = "hbm:bobblehead_frizzle";
+    public static final String bobblehead_golem = "hbm:bobblehead_golem";
     public static final String bobblehead_hacker6329 = "hbm:bobblehead_hacker6329";
     public static final String bobblehead_intelligence = "hbm:bobblehead_intelligence";
     public static final String bobblehead_leafia = "hbm:bobblehead_leafia";
@@ -732,11 +733,13 @@ public final class ItemIds {
     public static final String bobblehead_mellow = "hbm:bobblehead_mellow";
     public static final String bobblehead_microwave = "hbm:bobblehead_microwave";
     public static final String bobblehead_movblock = "hbm:bobblehead_movblock";
+    public static final String bobblehead_norwood = "hbm:bobblehead_norwood";
     public static final String bobblehead_nos = "hbm:bobblehead_nos";
     public static final String bobblehead_peep = "hbm:bobblehead_peep";
     public static final String bobblehead_perception = "hbm:bobblehead_perception";
     public static final String bobblehead_pheo = "hbm:bobblehead_pheo";
     public static final String bobblehead_pu238 = "hbm:bobblehead_pu238";
+    public static final String bobblehead_silentyeti = "hbm:bobblehead_silentyeti";
     public static final String bobblehead_strength = "hbm:bobblehead_strength";
     public static final String bobblehead_uffr = "hbm:bobblehead_uffr";
     public static final String bobblehead_vaer = "hbm:bobblehead_vaer";

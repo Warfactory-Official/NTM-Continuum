@@ -46,6 +46,10 @@ import com.hbm.tileentity.ModProductionBlockEntities;
 import com.hbm.lib.Library;
 import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
 import com.hbm.tileentity.TilePort.PortDef;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * The rotary furnace core: three unordered item inputs, a fluid-identifier slot, a solid-fuel slot,
@@ -53,8 +57,8 @@ import com.hbm.tileentity.TilePort.PortDef;
  *
  * <p>Ported 1:1 from the original {@code TileEntityMachineRotaryFurnace}. The old
  * {@code TileEntityMachinePolluting} base is inlined as the three smoke tanks; a smoke overflow goes into
- * the region through {@link PollutionHandler} and sets {@code isVenting}, as 1.7's override does. The JSON
- * machine-config hooks ({@code IConfigurableMachine}) and the fluid copy tool are not carried.
+ * the region through {@link PollutionHandler} and sets {@code isVenting}, as 1.7's override does. Configured as
+ * {@code rotaryfurnace} in {@code hbmMachines.json}; the fluid copy tool is not carried.
  */
 public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         implements MenuProvider, IFluidStandardTransceiverMK2 {
@@ -97,6 +101,21 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
             .setSolidHeatMod(1.5)
             .setRocketHeatMod(3)
             .setBalefireHeatMod(10);
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "rotaryfurnace"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            // 1.7 tests for "burnModule" but reads "M:burnModule", so the written key alone changes nothing
+            if (obj.has("burnModule")) burnModule.readIfPresent(obj.get("M:burnModule").getAsJsonObject());
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("M:burnModule").beginObject();
+            burnModule.writeConfig(writer);
+            writer.endObject();
+        }
+    };
 
     public TileEntityMachineRotaryFurnace(BlockPos pos, BlockState state) {
         super(ModProductionBlockEntities.ROTARY_FURNACE.get(), pos, state, 5);

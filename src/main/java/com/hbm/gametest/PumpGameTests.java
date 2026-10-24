@@ -11,6 +11,7 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
+import com.hbm.tileentity.machine.GroundwaterPumps;
 import com.hbm.tileentity.machine.TileEntityMachinePumpSteam;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.uninos.graph.GraphNode;
@@ -66,7 +67,7 @@ public final class PumpGameTests {
 
         helper.assertTrue(pump.isOn, "Pump did not operate with power and valid ground");
         helper.assertTrue(pump.power == 0, "Pump did not consume 1,000 HE");
-        helper.assertTrue(pump.water.getFill() == TileEntityMachinePumpElectric.ELECTRIC_SPEED,
+        helper.assertTrue(pump.water.getFill() == GroundwaterPumps.electricSpeed,
                 "Pump did not produce 10,000 mB");
         helper.succeed();
     }
@@ -121,7 +122,7 @@ public final class PumpGameTests {
         helper.assertTrue(pump.isOn, "Steam pump did not operate with steam and valid ground");
         helper.assertTrue(pump.steam.getFill() == 0, "Steam pump did not consume 100 mB steam");
         helper.assertTrue(pump.lps.getFill() == 1, "Steam pump did not produce 1 mB spent steam");
-        helper.assertTrue(pump.water.getFill() == TileEntityMachinePumpSteam.STEAM_SPEED,
+        helper.assertTrue(pump.water.getFill() == GroundwaterPumps.steamSpeed,
                 "Steam pump did not produce 1,000 mB water");
         helper.succeed();
     }

@@ -20,18 +20,38 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.tileentity.TilePort.PortDef;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /** Server logic and client animation state for the legacy steam engine. */
 public class TileEntityMachineSteamEngine extends TileEntityMachineBase
         implements IEnergyProviderMK2, IFluidStandardTransceiverMK2 {
 
-    public static final int STEAM_CAPACITY = 2_000;
-    public static final int SPENT_STEAM_CAPACITY = 20;
-    public static final double EFFICIENCY = 0.85D;
+    public static int steamCap = 2_000;
+    public static int ldsCap = 20;
+    public static double efficiency = 0.85D;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "steamengine"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            steamCap = IConfigurableMachine.grab(obj, "I:steamCap", steamCap);
+            ldsCap = IConfigurableMachine.grab(obj, "I:ldsCap", ldsCap);
+            efficiency = IConfigurableMachine.grab(obj, "D:efficiency", efficiency);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:steamCap").value(steamCap);
+            writer.name("I:ldsCap").value(ldsCap);
+            writer.name("D:efficiency").value(efficiency);
+        }
+    };
 
     public final FluidTankNTM[] tanks = {
-            new FluidTankNTM(Fluids.STEAM, STEAM_CAPACITY),
-            new FluidTankNTM(Fluids.SPENTSTEAM, SPENT_STEAM_CAPACITY)
+            new FluidTankNTM(Fluids.STEAM, steamCap),
+            new FluidTankNTM(Fluids.SPENTSTEAM, ldsCap)
     };
     public long powerBuffer;
     public float rotor;
@@ -61,7 +81,7 @@ public class TileEntityMachineSteamEngine extends TileEntityMachineBase
             ops = Math.min(inputOps, outputOps);
             engine.tanks[0].setFill(engine.tanks[0].getFill() - ops * recipe.inputAmount());
             engine.tanks[1].setFill(engine.tanks[1].getFill() + ops * recipe.outputAmount());
-            engine.powerBuffer = (long) (ops * recipe.heatEnergy() * EFFICIENCY);
+            engine.powerBuffer = (long) (ops * recipe.heatEnergy() * efficiency);
         }
 
         if (ops > 0) {

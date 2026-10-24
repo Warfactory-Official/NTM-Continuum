@@ -1,10 +1,8 @@
 package com.hbm.world.feature;
 
 import com.hbm.blocks.ModOreBlocks;
-import com.hbm.config.WorldConfig;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.items.ModFuelItems;
 import com.hbm.items.special.ItemBedrockOreBase;
 import com.hbm.tileentity.BedrockOreBlockEntity;
 import it.unimi.dsi.fastutil.HashCommon;
@@ -12,22 +10,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import org.jspecify.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /** The dynamic 3x3 bedrock-ore patch and its surrounding depth-rock cap. */
 public final class BedrockOreFeature {
 
     private BedrockOreFeature() {}
-
-    // 1.7 BedrockOre.weightedOresNether weights: hbm.cfg 2.BN00_bedrockGlowstoneWeight, 2.BN01_bedrockPhosphorusWeight and
-    // 2.BN01_bedrockQuartzWeight (WorldConfig)
 
     public static int tierForDensity(double density) {
         if (density > 1.5D) return 4;
@@ -53,7 +49,8 @@ public final class BedrockOreFeature {
      * 1.7 {@code BedrockOre.generateAuto}, rebased from y=0 to the modern world's floor. The old one-in-ten roll
      * is the placed feature's {@code rarity_filter} (see {@code BedrockDepositFeature}).
      */
-    public static void generateAutoChunk(WorldGenLevel level, RandomSource random, int chunkMinX, int chunkMinZ) {
+    public static void generateAutoChunk(WorldGenLevel level, RandomSource random, int chunkMinX, int chunkMinZ,
+                                         Block depthRock, RuleTest host, int color) {
         int x = chunkMinX + random.nextInt(2) + 8;
         int z = chunkMinZ + random.nextInt(2) + 8;
         // hbm-space generateAuto: the mean over the column's types (ItemBedrockOreBase.SOURCE), the body's acid if it
@@ -63,41 +60,53 @@ public final class BedrockOreFeature {
         int tier = tierForDensity(density);
         FluidStack acid = field.boreFluid() != null ? field.boreFluid() : boreFluidForTier(tier);
         placeDeposit(level, random, new BlockPos(x, level.getMinY(), z),
-                new Deposit(() -> new ItemStack(ModOreBlocks.bedrock_ore_base.get()),
-                        acid, 0xD78A16, tier, ModOreBlocks.stone_depth.get()));
+                new Deposit(() -> new ItemStack(ModOreBlocks.bedrock_ore_base.get()), acid, color, tier, depthRock), host);
     }
 
     /**
      * 1.7's Nether-only weighted deposit, the ore kind fixed deterministically per chunk. The one-in-ten roll is the
      * placed feature's {@code rarity_filter}.
      */
-    public static void generateNetherChunk(WorldGenLevel level, RandomSource random, int chunkMinX, int chunkMinZ) {
+    public static void generateNetherChunk(WorldGenLevel level, RandomSource random, int chunkMinX, int chunkMinZ,
+                                           Block depthRock, RuleTest host, List<BedrockDepositFeature.Nether.Entry> entries) {
+        if (entries.isEmpty()) return;
         int x = chunkMinX + random.nextInt(2) + 8;
         int z = chunkMinZ + random.nextInt(2) + 8;
-        Deposit deposit = weightedNetherDeposit(level.getSeed(), chunkMinX >> 4, chunkMinZ >> 4);
-        placeDeposit(level, random, new BlockPos(x, level.getMinY(), z), deposit);
+        Deposit deposit = weightedNetherDeposit(level.getSeed(), chunkMinX >> 4, chunkMinZ >> 4, entries, depthRock);
+        placeDeposit(level, random, new BlockPos(x, level.getMinY(), z), deposit, host);
     }
 
+    /** The default (1.7) nether deposit of a chunk. */
     public static Deposit weightedNetherDeposit(long worldSeed, int chunkX, int chunkZ) {
-        int glowstone = Math.max(0, WorldConfig.bedrockGlowstoneSpawn);
-        int phosphorus = Math.max(0, WorldConfig.bedrockPhosphorusSpawn);
-        int total = Math.max(1, glowstone + phosphorus + Math.max(0, WorldConfig.bedrockQuartzSpawn));
-        int roll = nextIntDeterministic(worldSeed, chunkX, chunkZ, total);
-        if (roll < glowstone) {
-            return new Deposit(() -> new ItemStack(Items.GLOWSTONE_DUST, 4), null,
-                    0xF9FF4D, 1, ModOreBlocks.stone_depth_nether.get());
-        }
-        roll -= glowstone;
-        if (roll < phosphorus) {
-            return new Deposit(() -> new ItemStack(ModFuelItems.powder_fire.get(), 4), null,
-                    0xD7341F, 1, ModOreBlocks.stone_depth_nether.get());
-        }
-        return new Deposit(() -> new ItemStack(Items.QUARTZ, 4), null,
-                0xF0EFDD, 1, ModOreBlocks.stone_depth_nether.get());
+        return weightedNetherDeposit(worldSeed, chunkX, chunkZ, BedrockDepositFeature.Nether.Config.entries17(),
+                ModOreBlocks.stone_depth_nether.get());
     }
 
-    /** Public deterministic placement core used by GameTests. */
+    /** A weighted pick, the last entry taking what is left over as 1.7's quartz did. */
+    static Deposit weightedNetherDeposit(long worldSeed, int chunkX, int chunkZ, List<BedrockDepositFeature.Nether.Entry> entries,
+                                         Block depthRock) {
+        int total = 0;
+        for (BedrockDepositFeature.Nether.Entry e : entries) total += Math.max(0, e.weight().get());
+        int roll = nextIntDeterministic(worldSeed, chunkX, chunkZ, Math.max(1, total));
+        BedrockDepositFeature.Nether.Entry pick = entries.get(entries.size() - 1);
+        for (int i = 0; i < entries.size() - 1; i++) {
+            int weight = Math.max(0, entries.get(i).weight().get());
+            if (roll < weight) {
+                pick = entries.get(i);
+                break;
+            }
+            roll -= weight;
+        }
+        BedrockDepositFeature.Nether.Entry e = pick;
+        return new Deposit(() -> new ItemStack(e.item(), e.count()), null, e.color(), e.tier(), depthRock);
+    }
+
+    /** Public deterministic placement core used by GameTests; the cap replaces {@code #minecraft:base_stone_overworld}. */
     public static int placeDeposit(WorldGenLevel level, RandomSource random, BlockPos origin, Deposit deposit) {
+        return placeDeposit(level, random, origin, deposit, FeatureCodecs.tag(BlockTags.BASE_STONE_OVERWORLD));
+    }
+
+    static int placeDeposit(WorldGenLevel level, RandomSource random, BlockPos origin, Deposit deposit, RuleTest host) {
         if (!level.getBlockState(origin).is(Blocks.BEDROCK)) return 0;
 
         int placed = 0;
@@ -124,8 +133,7 @@ public final class BedrockOreFeature {
                     pos.set(x, origin.getY() + dy, z);
                     BlockState state = level.getBlockState(pos);
                     // 1.7 replaced stone here; at the modern world floor that stone is deepslate, or TerraFirmaCraft's rock
-                    if ((dy < 3 || state.is(Blocks.BEDROCK))
-                            && (state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(Blocks.BEDROCK))) {
+                    if ((dy < 3 || state.is(Blocks.BEDROCK)) && (host.test(state, random) || state.is(Blocks.BEDROCK))) {
                         level.setBlock(pos, deposit.depthRock().defaultBlockState(), 2);
                     }
                 }

@@ -64,11 +64,11 @@ public final class CentrifugeGameTests {
         MachineCentrifuge block = ModMachineBlocks.machine_centrifuge.get();
         helper.getLevel().setBlock(pos, block.defaultBlockState(), 3);
         TileEntityMachineCentrifuge centrifuge = (TileEntityMachineCentrifuge) helper.getLevel().getBlockEntity(pos);
-        centrifuge.power = TileEntityMachineCentrifuge.MAX_POWER;
+        centrifuge.power = TileEntityMachineCentrifuge.maxPower;
         centrifuge.inventory.setStackInSlot(0, new ItemStack(Items.IRON_ORE));
 
         centrifuge.progress = 1;
-        for (int i = 0; i < TileEntityMachineCentrifuge.PROCESSING_SPEED - 1; i++) {
+        for (int i = 0; i < TileEntityMachineCentrifuge.processingSpeed - 1; i++) {
             TileEntityMachineCentrifuge.serverTick(helper.getLevel(), pos,
                     helper.getLevel().getBlockState(pos), centrifuge);
         }
@@ -82,9 +82,9 @@ public final class CentrifugeGameTests {
                 "centrifuge did not produce all repeated primary outputs");
         helper.assertTrue(centrifuge.inventory.getStackInSlot(5).is(Items.GRAVEL),
                 "centrifuge did not produce its tailings output");
-        helper.assertTrue(centrifuge.power == TileEntityMachineCentrifuge.MAX_POWER
-                        - (long) (TileEntityMachineCentrifuge.PROCESSING_SPEED - 1)
-                        * TileEntityMachineCentrifuge.BASE_CONSUMPTION,
+        helper.assertTrue(centrifuge.power == TileEntityMachineCentrifuge.maxPower
+                        - (long) (TileEntityMachineCentrifuge.processingSpeed - 1)
+                        * TileEntityMachineCentrifuge.baseConsumption,
                 "centrifuge did not draw exactly 200 HE/t for the processing window");
         helper.succeed();
     }

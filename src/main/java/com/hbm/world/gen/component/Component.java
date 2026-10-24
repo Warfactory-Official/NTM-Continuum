@@ -4,7 +4,7 @@ import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.Waterlogging;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.config.StructureConfig;
-import com.hbm.itempool.ItemPool;
+import com.hbm.itempool.PoolLoot;
 import com.hbm.items.special.ItemBookLore;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.deco.TileEntityBobble;
@@ -14,7 +14,6 @@ import com.hbm.world.gen.component.LegacyBlocks.Mod;
 import com.hbm.world.gen.component.LegacyBlocks.Vanilla;
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
 import dev.golem.core.data.Tags;
-import dev.golem.core.world.ItemStacks;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -496,7 +495,7 @@ public abstract class Component extends StructurePiece {
 
     /** 1.7 {@code StructureComponent.generateStructureChestContents}: a chest with meta 0 and its loot. */
     protected boolean generateStructureChestContents(WorldGenLevel world, BoundingBox box, RandomSource rand, int x, int y, int z,
-                                                     List<ItemPool.Entry> content, int amount) {
+                                                     String pool, int amount) {
         int posX = this.getXWithOffset(x, z);
         int posY = this.getYWithOffset(y);
         int posZ = this.getZWithOffset(x, z);
@@ -506,7 +505,7 @@ public abstract class Component extends StructurePiece {
             Container chest = inventoryAt(world, posX, posY, posZ);
 
             if (chest != null) {
-                generateChestContents(rand, content, chest, amount);
+                PoolLoot.fill(world, new BlockPos(posX, posY, posZ), chest, pool, rand, amount);
             }
 
             return true;
@@ -520,30 +519,11 @@ public abstract class Component extends StructurePiece {
         return getTileEntity(world, x, y, z) instanceof Container container ? container : null;
     }
 
-    /**
-     * 1.7 {@code WeightedRandomChestContent.generateChestContents}: {@code count} weighted draws, each stack put into a
-     * random slot (overwriting); a draw larger than a stack splits into single items. A null inventory is skipped
-     * (1.7 threw).
-     */
-    protected static void generateChestContents(RandomSource rand, List<ItemPool.Entry> content, @Nullable Container inventory, int count) {
-        if (inventory == null) return;
-        int size = inventory.getContainerSize();
-        if (size <= 0) return;
-        for (int j = 0; j < count; ++j) {
-            ItemStack drawn = ItemPool.getStack(content, rand);
-            if (drawn.isEmpty()) continue;
-            if (drawn.getCount() <= drawn.getMaxStackSize()) {
-                inventory.setItem(rand.nextInt(size), drawn);
-            } else {
-                for (int i = 0; i < drawn.getCount(); i++) {
-                    inventory.setItem(rand.nextInt(size), ItemStacks.copyWithCount(drawn, 1));
-                }
-            }
-        }
-        if (inventory instanceof BlockEntity be) be.setChanged();
+    /** {@link PoolLoot#fill} into a placed container; a null one is skipped (1.7 threw). */
+    protected static void generateChestContents(WorldGenLevel world, RandomSource rand, String pool, @Nullable Container inventory, int count) {
+        if (inventory instanceof BlockEntity be) PoolLoot.fill(world, be.getBlockPos(), inventory, pool, rand, count);
     }
 
-    /** 1.7 {@code ItemDoor.placeDoorBlock}: both halves, hinge from the neighbours, clipped to the chunk being built. */
     protected static void placeDoorBlock(WorldGenLevel world, int x, int y, int z, int meta, LegacyBlock door) {
         int b0 = 0;
         int b1 = 0;
@@ -823,8 +803,8 @@ public abstract class Component extends StructurePiece {
 
     // 1.7 Component: loot
 
-    protected boolean generateInvContents(WorldGenLevel world, BoundingBox box, RandomSource rand, LegacyBlock block, int featureX, int featureY, int featureZ, List<ItemPool.Entry> content, int amount) {
-        return generateInvContents(world, box, rand, block, 0, featureX, featureY, featureZ, content, amount);
+    protected boolean generateInvContents(WorldGenLevel world, BoundingBox box, RandomSource rand, LegacyBlock block, int featureX, int featureY, int featureZ, String pool, int amount) {
+        return generateInvContents(world, box, rand, block, 0, featureX, featureY, featureZ, pool, amount);
     }
 
     /**
@@ -832,7 +812,7 @@ public abstract class Component extends StructurePiece {
      * for hasPlacedLoot checks"); the port answers {@code false} there, so a {@code hasPlacedLoot} flag only turns once
      * the chunk holding the container has built it (1.7's populate boxes happened to contain these positions).
      */
-    protected boolean generateInvContents(WorldGenLevel world, BoundingBox box, RandomSource rand, LegacyBlock block, int meta, int featureX, int featureY, int featureZ, List<ItemPool.Entry> content, int amount) {
+    protected boolean generateInvContents(WorldGenLevel world, BoundingBox box, RandomSource rand, LegacyBlock block, int meta, int featureX, int featureY, int featureZ, String pool, int amount) {
         int posX = this.getXWithOffset(featureX, featureZ);
         int posY = this.getYWithOffset(featureY);
         int posZ = this.getZWithOffset(featureX, featureZ);
@@ -846,7 +826,7 @@ public abstract class Component extends StructurePiece {
 
         if (inventory != null) {
             amount = (int) Math.floor(amount * StructureConfig.lootAmountFactor);
-            generateChestContents(rand, content, inventory, amount < 1 ? 1 : amount);
+            PoolLoot.fill(world, new BlockPos(posX, posY, posZ), inventory, pool, rand, amount < 1 ? 1 : amount);
             return true;
         }
 
@@ -854,12 +834,12 @@ public abstract class Component extends StructurePiece {
     }
 
     protected boolean generateLockableContents(WorldGenLevel world, BoundingBox box, RandomSource rand, LegacyBlock block, int featureX, int featureY, int featureZ,
-                                               List<ItemPool.Entry> content, int amount, double mod) {
-        return generateLockableContents(world, box, rand, block, 0, featureX, featureY, featureZ, content, amount, mod);
+                                               String pool, int amount, double mod) {
+        return generateLockableContents(world, box, rand, block, 0, featureX, featureY, featureZ, pool, amount, mod);
     }
 
     protected boolean generateLockableContents(WorldGenLevel world, BoundingBox box, RandomSource rand, LegacyBlock block, int meta, int featureX, int featureY, int featureZ,
-                                               List<ItemPool.Entry> content, int amount, double mod) {
+                                               String pool, int amount, double mod) {
         int posX = this.getXWithOffset(featureX, featureZ);
         int posY = this.getYWithOffset(featureY);
         int posZ = this.getZWithOffset(featureX, featureZ);
@@ -872,7 +852,7 @@ public abstract class Component extends StructurePiece {
 
         if (tile instanceof TileEntityLockableBase lock && tile instanceof Container inventory) {
             amount = (int) Math.floor(amount * StructureConfig.lootAmountFactor);
-            generateChestContents(rand, content, inventory, amount < 1 ? 1 : amount);
+            PoolLoot.fill(world, new BlockPos(posX, posY, posZ), inventory, pool, rand, amount < 1 ? 1 : amount);
 
             lock.setPins(rand.nextInt(999) + 1);
             lock.setMod(mod);

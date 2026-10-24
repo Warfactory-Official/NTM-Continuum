@@ -44,6 +44,16 @@ public final class HbmBlockTags {
             Registries.BLOCK,
             Library.id("pump_ground"));
 
+    /** The stone 1.7's veins, strata and the coltan deposit replace by default (1.7 stone, plus deepslate and tuff). */
+    public static final TagKey<Block> LEGACY_STONE = TagKey.create(
+            Registries.BLOCK,
+            Library.id("legacy_stone"));
+
+    /** What the tar-sand bubble replaces by default (1.7 {@code Blocks.sand}, both metadata). */
+    public static final TagKey<Block> TAR_SAND_HOSTS = TagKey.create(
+            Registries.BLOCK,
+            Library.id("tar_sand_hosts"));
+
     public static final TagKey<Block> FLEIJA_IMMUNE = TagKey.create(
             Registries.BLOCK,
             Library.id("fleija_immune"));
@@ -109,6 +119,11 @@ public final class HbmBlockTags {
     public static final TagKey<Block> IMPACT_CLEARED = TagKey.create(
             Registries.BLOCK,
             Library.id("impact_cleared"));
+
+    /** Blocks that seal radiation besides the {@code IRadResistantBlock} classes; empty, as in 1.7. */
+    public static final TagKey<Block> RADIATION_RESISTANT = TagKey.create(
+            Registries.BLOCK,
+            Library.id("radiation_resistant"));
 
     private HbmBlockTags() {
     }

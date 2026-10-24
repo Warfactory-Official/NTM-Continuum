@@ -1,5 +1,6 @@
 package com.hbm.items.armor;
 
+import com.hbm.api.data.ArmorDataMaps;
 import com.hbm.api.item.IGasMask;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.util.ArmorRegistry.HazardClass;
@@ -32,7 +33,7 @@ public class ArmorHazmatMask extends ArmorHazmat implements IGasMask {
 
     @Override
     public List<HazardClass> getBlacklist(ItemStack stack) {
-        return List.of(); // full hood has no restrictions
+        return ArmorDataMaps.gasMaskBlacklist(this);
     }
 
     @Override

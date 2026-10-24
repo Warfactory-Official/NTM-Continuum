@@ -3,6 +3,7 @@ package com.hbm.world.feature;
 import com.hbm.blocks.ModDecoContent;
 import com.hbm.saveddata.TomSaveData;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.world.Structures;
 import dev.golem.core.world.Vegetation;
 import net.minecraft.core.BlockPos;
@@ -24,7 +25,9 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
+
+import static com.hbm.world.feature.FeatureCodecs.field;
 
 /**
  * The worldgen half of 1.7.10's {@code ModEventHandlerImpact}, for chunks generated after Tom's impact, run once per
@@ -52,20 +55,33 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
  * chunk being generated only, so a tree a neighbour grew across the border loses its part inside this chunk, as it
  * did in 1.7's own post-populate wipe. The 1.7 decoration rolls were one per chunk, so is the 1-in-9 recovery roll.
  */
-public class ImpactAftermathFeature extends Feature<NoneFeatureConfiguration> {
+public class ImpactAftermathFeature extends Feature<ImpactAftermathFeature.Config> {
 
-    public ImpactAftermathFeature(Codec<NoneFeatureConfiguration> codec) {
+    /** {@code recovery_chance}: trees, huge mushrooms and cacti each come back one chunk in this many. */
+    public record Config(BlockState impactDirt, int recoveryChance, float wipeDust) implements FeatureConfiguration {
+        public static final Codec<Config> CODEC = RecordCodecBuilder.create(i -> i.group(
+                FeatureCodecs.state("impact_dirt", ModDecoContent.impact_dirt).forGetter(Config::impactDirt),
+                FeatureCodecs.positive("recovery_chance", 9).forGetter(Config::recoveryChance),
+                field(Codec.FLOAT, "wipe_dust", 0.25F).forGetter(Config::wipeDust)
+        ).apply(i, Config::new));
+    }
+
+    public ImpactAftermathFeature(Codec<Config> codec) {
         super(codec);
     }
 
     /** One chunk's verdict, computed once (public for the GameTests). */
     public record Verdict(boolean dusty, boolean wipe, boolean trees, boolean shrooms, boolean cacti) {
         public static Verdict of(float dust, float fire, RandomSource rand) {
+            return of(dust, fire, rand, 9, 0.25F);
+        }
+
+        static Verdict of(float dust, float fire, RandomSource rand, int recovery, float wipeDust) {
             boolean dusty = dust > 0 || fire > 0;
-            boolean wipe = dust > 0.25F || fire > 0;
+            boolean wipe = dust > wipeDust || fire > 0;
             if (dusty) return new Verdict(true, wipe, false, false, false);
             // 1.7: TREE / BIG_SHROOM / CACTUS each DEFAULT on world.rand.nextInt(9) == 0, otherwise DENY
-            return new Verdict(false, false, rand.nextInt(9) == 0, rand.nextInt(9) == 0, rand.nextInt(9) == 0);
+            return new Verdict(false, false, rand.nextInt(recovery) == 0, rand.nextInt(recovery) == 0, rand.nextInt(recovery) == 0);
         }
 
         /** What this block becomes, or null to leave it. */
@@ -167,13 +183,14 @@ public class ImpactAftermathFeature extends Feature<NoneFeatureConfiguration> {
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
+    public boolean place(FeaturePlaceContext<Config> context) {
         WorldGenLevel level = context.level();
         TomSaveData data = TomSaveData.published(level.getLevel());
         if (data == null || !data.impact) return false;
 
-        Verdict verdict = Verdict.of(data.dust, data.fire, context.random());
-        BlockState impactDirt = ModDecoContent.impact_dirt.get().defaultBlockState();
+        Config c = context.config();
+        Verdict verdict = Verdict.of(data.dust, data.fire, context.random(), c.recoveryChance(), c.wipeDust());
+        BlockState impactDirt = c.impactDirt();
         BlockPos origin = context.origin();
         ChunkAccess chunk = level.getChunk(origin.getX() >> 4, origin.getZ() >> 4);
         LevelChunkSection[] sections = chunk.getSections();

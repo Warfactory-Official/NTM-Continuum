@@ -3,14 +3,13 @@ package com.hbm.world.gen;
 import com.hbm.blocks.generic.TrappedBrick;
 import com.hbm.blocks.generic.Waterlogging;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.itempool.ItemPool;
+import com.hbm.itempool.PoolLoot;
 import com.hbm.lib.Library;
 import com.hbm.world.gen.LegacyDungeonBlocks.Blocks;
 import com.hbm.world.gen.LegacyDungeonBlocks.ModBlocks;
 import com.hbm.world.gen.component.LegacyBlock;
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
 import dev.golem.core.registry.BlockEntities;
-import dev.golem.core.world.ItemStacks;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -21,7 +20,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.NoiseColumn;
@@ -212,25 +210,13 @@ public final class LegacyDungeonWorld {
 
     /**
      * 1.7 {@code WeightedRandomChestContent.generateChestContents(rand, pool, (TileEntityChest) world.getTileEntity(x, y,
-     * z), count)}: {@code count} weighted draws with {@code rand}, each stack into a random slot (overwriting), a draw
-     * larger than a stack split into single items. Nothing happens where no container stands (1.7 threw).
+     * z), count)}, through {@link PoolLoot#fill} once the block is placed, seeded from {@code rand}. Nothing happens where
+     * no container stands (1.7 threw).
      */
     public void generateChestContents(RandomSource rand, String pool, int x, int y, int z, int count) {
         LegacyBlock block = getBlock(x, y, z);
-        int size = block == Blocks.chest ? 27 : block == ModBlocks.crate_steel ? 54 : 0;
-        if (size == 0) return;
-        Tile tile = tile(x, y, z);
-        if (tile.slots == null) tile.slots = new ItemStack[size];
-        List<ItemPool.Entry> content = ItemPool.getPool(pool);
-        for (int j = 0; j < count; ++j) {
-            ItemStack drawn = ItemPool.getStack(content, rand);
-            if (drawn.isEmpty()) continue;
-            if (drawn.getCount() <= drawn.getMaxStackSize()) {
-                tile.slots[rand.nextInt(size)] = drawn;
-            } else {
-                for (int i = 0; i < drawn.getCount(); i++) tile.slots[rand.nextInt(size)] = ItemStacks.copyWithCount(drawn, 1);
-            }
-        }
+        if (block != Blocks.chest && block != ModBlocks.crate_steel) return;
+        tile(x, y, z).fills.add(new Fill(pool, count, rand.nextLong()));
     }
 
     /** {@code ChestGenHooks.getItems(DUNGEON_CHEST, rand)}: vanilla's dungeon chest loot table, seeded from {@code rand}. */
@@ -267,8 +253,11 @@ public final class LegacyDungeonWorld {
     }
 
     /** What a builder did to one tile entity. */
+    /** A chest fill from the item pool {@code pool}, drawn when the block is placed, with a random seeded here. */
+    record Fill(String pool, int count, long seed) {}
+
     static final class Tile {
-        ItemStack @Nullable [] slots;
+        final List<Fill> fills = new ArrayList<>();
         @Nullable String lootTable;
         long lootSeed;
         @Nullable String spawner;
@@ -445,10 +434,8 @@ public final class LegacyDungeonWorld {
         private static void applyTile(WorldGenLevel level, BlockPos pos, Tile tile) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be == null) return;
-            if (tile.slots != null && be instanceof Container container) {
-                for (int i = 0; i < tile.slots.length && i < container.getContainerSize(); i++) {
-                    if (tile.slots[i] != null) container.setItem(i, tile.slots[i].copy());
-                }
+            if (be instanceof Container container) {
+                for (Fill fill : tile.fills) PoolLoot.fill(level, pos, container, fill.pool(), RandomSource.create(fill.seed()), fill.count());
             }
             if (tile.lootTable != null) {
                 // the vanilla keys every supported version reads a lootable container's table from

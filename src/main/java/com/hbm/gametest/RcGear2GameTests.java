@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.api.data.ArmorDataMaps;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.handler.ArmorModEvents;
 import com.hbm.handler.ArmorModHandler;
@@ -139,7 +140,7 @@ public final class RcGear2GameTests {
 
     /** Insert numbers, speed modifiers and the polonium and ERA behaviour from 1.7. */
     public static void inserts(GameTestHelper helper) {
-        helper.assertTrue(ModArmorModules.cladding_rubber.get().rad == 0.005D, "rubber cladding is +0.005");
+        helper.assertTrue(ArmorDataMaps.cladding(ModArmorModules.cladding_rubber.get()) == 0.005D, "rubber cladding is +0.005");
         Player player = player(helper);
         ItemStack chest = new ItemStack(ModArmorItems.steel_plate.get());
         ArmorModHandler.applyMod(chest, new ItemStack(ModArmorModules.insert_steel.get()));

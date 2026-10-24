@@ -415,6 +415,10 @@ public final class HbmGameTestFunctions {
             TESTS.function("steam_engine_conversion", 40, 8, () -> SteamEngineGameTests::conversion);
     public static final GameTests.Function STEAM_ENGINE_GEAR_RECIPE =
             TESTS.function("steam_engine_gear_recipe", 40, () -> SteamEngineGameTests::gearAndRecipe);
+    public static final GameTests.Function MACHINE_CONFIG_DEFAULTS =
+            TESTS.function("machine_config_defaults", 20, () -> MachineConfigGameTests::defaults);
+    public static final GameTests.Function MACHINE_CONFIG_OVERRIDE =
+            TESTS.function("machine_config_override", 40, () -> MachineConfigGameTests::override);
     public static final GameTests.Function PUMP_LAYOUT =
             TESTS.function("pump_layout", 100, 8, () -> PumpGameTests::layout);
     public static final GameTests.Function PUMP_PORTS =
@@ -1797,6 +1801,12 @@ public final class HbmGameTestFunctions {
             TESTS.function("wg_glyphid_hive", 20, () -> WorldFeatureGameTests::glyphidHive);
     public static final GameTests.Function WG_METEOR_CHARMS =
             TESTS.function("wg_meteor_charms", 20, () -> WorldFeatureGameTests::meteorCharms);
+    public static final GameTests.Function WG_CONFIG_DEFAULTS =
+            TESTS.function("wg_config_defaults", 20, () -> WorldgenConfigGameTests::defaults);
+    public static final GameTests.Function WG_CONFIG_OVERRIDE =
+            TESTS.function("wg_config_override", 20, () -> WorldgenConfigGameTests::override);
+    public static final GameTests.Function WG_CONFIG_BOUNDS =
+            TESTS.function("wg_config_bounds", 20, () -> WorldgenConfigGameTests::bounds);
 
     // --- 1.7 fluid traits: vent radiation, poison, pheromone, simple tags, tooltip order (FluidTraitGameTests) ---
     public static final GameTests.Function FLUID_TRAIT_VENT_RADIATION =

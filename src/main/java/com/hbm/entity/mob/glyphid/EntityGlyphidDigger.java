@@ -36,7 +36,7 @@ public class EntityGlyphidDigger extends EntityGlyphid {
 
     public static final RegistryObject<EntityType<EntityGlyphidDigger>> TYPE =
             REG.entity("entity_glyphid_digger", key -> Entities.build(
-                    Entities.noLoot(EntityType.Builder.<EntityGlyphidDigger>of(EntityGlyphidDigger::new, MobCategory.MONSTER)).sized(1.75F, 1F).clientTrackingRange(5).updateInterval(3), key));
+                    EntityType.Builder.<EntityGlyphidDigger>of(EntityGlyphidDigger::new, MobCategory.MONSTER).sized(1.75F, 1F).clientTrackingRange(5).updateInterval(3), key));
 
     static {
         LivingAttributes.register(TYPE, EntityGlyphidDigger::createAttributes);

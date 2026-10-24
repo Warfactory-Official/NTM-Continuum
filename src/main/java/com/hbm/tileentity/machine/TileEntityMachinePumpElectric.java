@@ -31,13 +31,10 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
 
     public static final long MAX_POWER = 10_000;
     public static final int POWER_COST = 1_000;
-    public static final int GROUND_HEIGHT = 70;
-    public static final int GROUND_DEPTH = 4;
-    public static final int ELECTRIC_SPEED = 10_000;
     public static final int NON_WATER_DEBUFF = 100;
 
     public long power;
-    public final FluidTankNTM water = new FluidTankNTM(Fluids.WATER, ELECTRIC_SPEED * 100);
+    public final FluidTankNTM water = new FluidTankNTM(Fluids.WATER, GroundwaterPumps.electricSpeed * 100);
     public boolean isOn;
     public float rotor;
     public float lastRotor;
@@ -61,7 +58,7 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
         else pump.onGround = pump.checkGround(level, pos);
 
         pump.isOn = false;
-        if (pump.canOperate() && pos.getY() <= GROUND_HEIGHT && pump.onGround) {
+        if (pump.canOperate() && pos.getY() <= GroundwaterPumps.groundHeight && pump.onGround) {
             pump.isOn = true;
             pump.operate();
         }
@@ -92,7 +89,7 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
 
     private void operate() {
         power -= POWER_COST;
-        int pumpSpeed = water.getTankType() == Fluids.WATER ? ELECTRIC_SPEED : ELECTRIC_SPEED / NON_WATER_DEBUFF;
+        int pumpSpeed = water.getTankType() == Fluids.WATER ? GroundwaterPumps.electricSpeed : GroundwaterPumps.electricSpeed / NON_WATER_DEBUFF;
         water.setFill(Math.min(water.getFill() + pumpSpeed, water.getMaxFill()));
     }
 
@@ -107,7 +104,7 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
         int validBlocks = 0;
         int invalidBlocks = 0;
         for (int x = -1; x <= 1; x++) {
-            for (int y = -1; y >= -GROUND_DEPTH; y--) {
+            for (int y = -1; y >= -GroundwaterPumps.groundDepth; y--) {
                 for (int z = -1; z <= 1; z++) {
                     BlockPos groundPos = pos.offset(x, y, z);
                     BlockState groundState = level.getBlockState(groundPos);

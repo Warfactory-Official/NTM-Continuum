@@ -7,7 +7,6 @@ import com.google.gson.stream.JsonWriter;
 import com.hbm.Constants;
 import com.hbm.api.data.ArmorDataMaps;
 import com.hbm.config.CustomMachineConfigJSON;
-import com.hbm.items.armor.ItemModCladding;
 import com.hbm.util.ShadyUtil;
 import dev.golem.core.Ids;
 import java.io.IOException;
@@ -94,10 +93,10 @@ public class HazmatRegistry {
         return f;
     }
 
-    /** Returns radiation cladding from the ordered armor-module component, if installed. */
+    /** The radiation cladding of the installed cladding module, if any ({@link ArmorDataMaps#RADIATION_CLADDING}). */
     public static double getCladding(ItemStack stack) {
         ItemStack mod = ArmorModHandler.pryMod(stack, ArmorModHandler.cladding);
-        return mod.getItem() instanceof ItemModCladding cladding ? cladding.rad : 0D;
+        return mod.isEmpty() ? 0D : ArmorDataMaps.cladding(mod.getItem());
     }
 
     /**

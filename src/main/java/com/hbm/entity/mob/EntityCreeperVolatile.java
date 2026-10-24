@@ -9,12 +9,9 @@ import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
 import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectStandard;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
-import com.hbm.items.ModItems;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 
@@ -42,10 +39,4 @@ public class EntityCreeperVolatile extends EntityCreeperBase {
         return super.checkSpawnRules(level, reason) && getY() <= 40D && level().dimension() == Level.OVERWORLD;
     }
 
-    @Override
-    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-        super.dropCustomDeathLoot(level, source, killedByPlayer);
-        spawnAtLocation(level, new ItemStack(ModItems.sulfur.get(), 2 + random.nextInt(3)));
-        spawnAtLocation(level, new ItemStack(ModItems.stick_tnt.get(), 1 + random.nextInt(2)));
-    }
 }

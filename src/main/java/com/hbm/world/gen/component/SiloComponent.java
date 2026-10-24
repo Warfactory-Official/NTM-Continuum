@@ -1,8 +1,6 @@
 package com.hbm.world.gen.component;
 
-import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPools;
-import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.bomb.TileEntityLandmine;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadRusted;
@@ -22,7 +20,6 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 
-import java.util.List;
 
 public class SiloComponent extends Component {
 	
@@ -267,7 +264,7 @@ public class SiloComponent extends Component {
 		setRTTYFreq(world, box, 16, 25, 17, freqHatch);
 		
 		//Containers
-		generateInvContents(world, box, rand, Vanilla.chest, 2, 36, 26, 17, ItemPool.getPool(ItemPools.POOL_VERTIBIRD), 5);
+		generateInvContents(world, box, rand, Vanilla.chest, 2, 36, 26, 17, ItemPools.POOL_VERTIBIRD, 5);
 		
 		/* Stairway */
 		fillWithAir(world, box, 37, 26, 9, 37, 27, 10);
@@ -482,22 +479,22 @@ public class SiloComponent extends Component {
 		placeRandomBobble(world, box, rand, 16, 22, 4);
 		
 		//Containers
-		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 21, 17, ItemPool.getPool(ItemPools.POOL_FILING_CABINET), 4);
-		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 21, 18, ItemPool.getPool(ItemPools.POOL_VAULT_LAB), 6);
-		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 21, 19, ItemPool.getPool(ItemPools.POOL_FILING_CABINET), 4);
-		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 22, 17, ItemPool.getPool(ItemPools.POOL_FILING_CABINET), 4);
-		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 22, 19, ItemPool.getPool(ItemPools.POOL_FILING_CABINET), 4);
-		generateInvContents(world, box, rand, Mod.crate_steel, 2, 29, 21, 19, ItemPool.getPool(ItemPools.POOL_OFFICE_TRASH), 8);
-		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelE, 29, 21, 18, ItemPool.getPool(ItemPools.POOL_FILING_CABINET), 4);
-		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelE, 29, 21, 17, ItemPool.getPool(ItemPools.POOL_FILING_CABINET), 4);
+		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 21, 17, ItemPools.POOL_FILING_CABINET, 4);
+		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 21, 18, ItemPools.POOL_VAULT_LAB, 6);
+		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 21, 19, ItemPools.POOL_FILING_CABINET, 4);
+		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 22, 17, ItemPools.POOL_FILING_CABINET, 4);
+		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 22, 19, ItemPools.POOL_FILING_CABINET, 4);
+		generateInvContents(world, box, rand, Mod.crate_steel, 2, 29, 21, 19, ItemPools.POOL_OFFICE_TRASH, 8);
+		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelE, 29, 21, 18, ItemPools.POOL_FILING_CABINET, 4);
+		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelE, 29, 21, 17, ItemPools.POOL_FILING_CABINET, 4);
 		
-		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 21, 8, ItemPool.getPool(ItemPools.POOL_FILING_CABINET), 5);
+		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelW, 31, 21, 8, ItemPools.POOL_FILING_CABINET, 5);
 		
-		generateInvContents(world, box, rand, Mod.crate_steel, 3, 25, 21, 2, ItemPool.getPool(ItemPools.POOL_MACHINE_PARTS), 4);
+		generateInvContents(world, box, rand, Mod.crate_steel, 3, 25, 21, 2, ItemPools.POOL_MACHINE_PARTS, 4);
 		
-		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelN, 23, 21, 5, ItemPool.getPool(ItemPools.POOL_FILING_CABINET), 5);
+		generateInvContents(world, box, rand, Mod.filing_cabinet, decoModelN, 23, 21, 5, ItemPools.POOL_FILING_CABINET, 5);
 		
-		generateLockableContents(world, box, rand, Mod.safe, decoW, 16, 21, 4, ItemPool.getPool(ItemPools.POOL_VAULT_RUSTY), 3, 1D);
+		generateLockableContents(world, box, rand, Mod.safe, decoW, 16, 21, 4, ItemPools.POOL_VAULT_RUSTY, 3, 1D);
 		
 		/* Silo */
 		//	TOP
@@ -936,12 +933,12 @@ public class SiloComponent extends Component {
 				placeBed(world, box, 1, i, j, 8);
 		
 		//Containers
-		generateInvContents(world, box, rand, Mod.crate_steel, 2, 8, 17, 25, ItemPool.getPool(ItemPools.POOL_VAULT_LOCKERS), 6);
+		generateInvContents(world, box, rand, Mod.crate_steel, 2, 8, 17, 25, ItemPools.POOL_VAULT_LOCKERS, 6);
 		
-		generateInvContents(world, box, rand, Mod.crate_steel, 2, 2, 17, 11, ItemPool.getPool(ItemPools.POOL_VAULT_LOCKERS), 6); //placed separately for loot table control
-		generateInvContents(world, box, rand, Mod.crate_steel, 2, 4, 17, 11, ItemPool.getPool(ItemPools.POOL_EXPENSIVE), 2);
-		generateInvContents(world, box, rand, Mod.crate_steel, 2, 6, 17, 11, ItemPool.getPool(ItemPools.POOL_VAULT_LOCKERS), 6);
-		generateInvContents(world, box, rand, Mod.crate_steel, 2, 8, 17, 11, ItemPool.getPool(ItemPools.POOL_VAULT_LOCKERS), 6);
+		generateInvContents(world, box, rand, Mod.crate_steel, 2, 2, 17, 11, ItemPools.POOL_VAULT_LOCKERS, 6); //placed separately for loot table control
+		generateInvContents(world, box, rand, Mod.crate_steel, 2, 4, 17, 11, ItemPools.POOL_EXPENSIVE, 2);
+		generateInvContents(world, box, rand, Mod.crate_steel, 2, 6, 17, 11, ItemPools.POOL_VAULT_LOCKERS, 6);
+		generateInvContents(world, box, rand, Mod.crate_steel, 2, 8, 17, 11, ItemPools.POOL_VAULT_LOCKERS, 6);
 		//Mines
 		fillWithMines(world, box, rand, 2, 17, 9, 11, 17, 11);
 		fillWithMines(world, box, rand, 9, 17, 17, 11, 17, 24);
@@ -1035,10 +1032,10 @@ public class SiloComponent extends Component {
 		placeBlockAtCurrentPosition(world, Mod.deco_toaster, getCRTMeta(1), 28, 13, 17, box);
 		
 		//Containers
-		generateInvContents(world, box, rand, Mod.crate_steel, 2, 32, 13, 9, ItemPool.getPool(ItemPools.POOL_SILO), 6);
-		generateInvContents(world, box, rand, Mod.safe, decoN, 33, 13, 9, ItemPool.getPool(ItemPools.POOL_MACHINE_PARTS), 6);
+		generateInvContents(world, box, rand, Mod.crate_steel, 2, 32, 13, 9, ItemPools.POOL_SILO, 6);
+		generateInvContents(world, box, rand, Mod.safe, decoN, 33, 13, 9, ItemPools.POOL_MACHINE_PARTS, 6);
 		
-		generateInvContents(world, box, rand, Mod.crate_steel, 2, 33, 13, 21, ItemPool.getPool(ItemPools.POOL_VAULT_LAB), 8);
+		generateInvContents(world, box, rand, Mod.crate_steel, 2, 33, 13, 21, ItemPools.POOL_VAULT_LAB, 8);
 		//Mines
 		fillWithMines(world, box, rand, 27, 13, 13, 33, 13, 15);
 		
@@ -1173,7 +1170,7 @@ public class SiloComponent extends Component {
 		fillWithBlocks(world, box, 7, 11, 8, 11, 11, 8, Mod.deco_lead);
 		
 		//Containers
-		generateInvContents(world, box, rand, Mod.crate_steel, 2, 4, 9, 7, ItemPool.getPool(ItemPools.POOL_NUKE_FUEL), 5);
+		generateInvContents(world, box, rand, Mod.crate_steel, 2, 4, 9, 7, ItemPools.POOL_NUKE_FUEL, 5);
 		//Mines
 		fillWithMines(world, box, rand, 1, 9, 7, 6, 9, 11);
 		fillWithMines(world, box, rand, 8, 9, 17, 10, 9, 22);
@@ -1232,22 +1229,17 @@ public class SiloComponent extends Component {
 		placeBlockAtCurrentPosition(world, Mod.hev_battery, 0, 30, 2, 11, box);
 		
 		//Containers
-		generateLockableContents(world, box, rand, Mod.safe, decoE, 31, 5, 13, launchKey(), 1, 0.1D);
-		generateInvContents(world, box, rand, Mod.crate_steel, 2, 31, 5, 14, ItemPool.getPool(ItemPools.POOL_NUKE_TRASH), 5);
-		generateInvContents(world, box, rand, Mod.safe, decoE, 31, 5, 15, ItemPool.getPool(ItemPools.POOL_FILING_CABINET), 5);
+		generateLockableContents(world, box, rand, Mod.safe, decoE, 31, 5, 13, ItemPools.POOL_LAUNCH_KEY, 1, 0.1D);
+		generateInvContents(world, box, rand, Mod.crate_steel, 2, 31, 5, 14, ItemPools.POOL_NUKE_TRASH, 5);
+		generateInvContents(world, box, rand, Mod.safe, decoE, 31, 5, 15, ItemPools.POOL_FILING_CABINET, 5);
 		
-		generateInvContents(world, box, rand, Mod.crate_iron, 2, 30, 1, 11, ItemPool.getPool(ItemPools.POOL_EXPENSIVE), 7);
+		generateInvContents(world, box, rand, Mod.crate_iron, 2, 30, 1, 11, ItemPools.POOL_EXPENSIVE, 7);
 		//Mines
 		fillWithMines(world, box, rand, 27, 5, 13, 30, 5, 15);
 		
 		return true;
 	}
 
-	/** 1.7 {@code new WeightedRandomChestContent(ModItems.launch_key, 0, 1, 1, 1)}; built on use (items register late). */
-	public static List<ItemPool.Entry> launchKey() {
-		return List.of(ItemPool.Entry.of(ModItems.launch_key.get(), 1, 1, 1));
-	}
-	
 	protected void setRTTYFreq(WorldGenLevel world, BoundingBox box, int featureX, int featureY, int featureZ, int freq) {
 		int posX = this.getXWithOffset(featureX, featureZ);
 		int posY = this.getYWithOffset(featureY);

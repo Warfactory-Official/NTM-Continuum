@@ -64,7 +64,6 @@ import com.hbm.config.BombConfig;
 import com.hbm.config.Configuration;
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.MachineConfig;
-import com.hbm.config.MachineDynConfig;
 import com.hbm.config.MobConfig;
 import com.hbm.config.PotionConfig;
 import com.hbm.config.RadiationConfig;
@@ -88,6 +87,7 @@ import com.hbm.handler.SpecialPlayers;
 import com.hbm.handler.neutron.NeutronLifecycle;
 import com.hbm.handler.pollution.PollutionLifecycle;
 import com.hbm.handler.radiation.RadiationFog;
+import com.hbm.handler.radiation.RadiationWalls;
 import com.hbm.inventory.ModGunSupportMenus;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.ModRBMKMenus;
@@ -279,7 +279,6 @@ public final class MainRegistry {
         ModGapsBContent.init(); // G-B: crates opened from the hand (CRATE_OPEN_HELD menus)
         ModRenderInputContent.init(); // G-C: tool animation cues, equip edge, rendering/input gap content
         ModIcfContent.init(); // ICF reactor, seed, vessel components, laser controller/array, pellet maker, fuel pellet
-        MachineDynConfig.initialize(); // 1.7 hbmConfig/hbmMachines.json (icfLaser)
         ModEnergyBedrockContent.init(); // boxcable, coated wire, charging station, HE/RF converters, bedrock ore grades
         ModDungeonContent.init(); // dungeon/structure bricks, keyholes, pedestal, skeleton holder, loot pile, old lantern, action blocks, cart rails, rebar + placer
         ModStructureWandBlocks.init(); // structure wand blocks: wand_air/loot/jigsaw/logic/tandem/structure (NBTStructure editing)
@@ -383,6 +382,7 @@ public final class MainRegistry {
         ModEventHandlerHooks.init();    // food eaten, block break, sleep, potential spawns
         ImpactSky.register();         // Tom impact sky darkening (1.7 WorldProviderNTM)
         RadiationFog.init(); // 1.7 radFog, read from the chunk radiation
+        RadiationWalls.init(); // the hbm:radiation_resistant tag as radiation walls
         ChunkLoadingManager.init();   // forced-chunk bookkeeping + restart reconciliation
         Lifecycle.onLevelUnload((server, level) -> JetpackHandler.clear(level));
         Lifecycle.onServerTick(server ->

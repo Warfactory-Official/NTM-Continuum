@@ -20,6 +20,10 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 import com.hbm.tileentity.TilePort.PortDef;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * Magnetohydrodynamic turbine: the fusion chain's electrical output, converting plasma straight to HE
@@ -27,7 +31,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  *
  * <p>Conversion is better than unity ({@link #PLASMA_EFFICIENCY}), which is the point of the machine:
  * plasma is worth more through an MHD turbine than through a boiler and a steam turbine. But it only
- * pays out in full above {@link #MINIMUM_PLASMA}; a trickle halves the yield, so the
+ * pays out in full above {@link #minimumPlasma}; a trickle halves the yield, so the
  * turbine rewards one big reactor over several small ones.
  *
  * <p>It also has to be actively cooled: without perfluoromethyl to run through, it produces nothing at
@@ -38,8 +42,20 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
 
     public static final double PLASMA_EFFICIENCY = 1.35D;
     public static final int COOLANT_USE = 50;
-    /** Below this, the turbine yields half. Configurable upstream; a constant here (no config file). */
-    public static final long MINIMUM_PLASMA = 5_000_000L;
+    /** Below this, the turbine yields half. */
+    public static long minimumPlasma = 5_000_000L;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "mhd-turbine"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            minimumPlasma = IConfigurableMachine.grab(obj, "L:minimumPlasma", minimumPlasma);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("L:minimumPlasma").value(minimumPlasma);
+        }
+    };
     public static final float ROTOR_ACCELERATION = 0.125F;
 
     public final FluidTankNTM[] tanks = {
@@ -64,7 +80,7 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
     }
 
     public boolean hasMinimumPlasma() {
-        return plasmaEnergy >= MINIMUM_PLASMA;
+        return plasmaEnergy >= minimumPlasma;
     }
 
     /** The turbine only runs while there is cold coolant to spend and room for the warmed return. */

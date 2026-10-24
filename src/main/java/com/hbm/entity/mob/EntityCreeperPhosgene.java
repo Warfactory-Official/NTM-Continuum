@@ -3,15 +3,11 @@ package com.hbm.entity.mob;
 import dev.golem.core.world.Explosions;
 import com.hbm.entity.effect.EntityMist;
 import com.hbm.inventory.fluid.Fluids;
-import dev.golem.core.world.Compat;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -41,18 +37,6 @@ public class EntityCreeperPhosgene extends EntityCreeperBase {
     }
 
     /** 1.7 overrode neither drop method, so it kept {@code EntityCreeper.getDropItem} = gunpowder. */
-    @Override
-    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-        super.dropCustomDeathLoot(level, source, killedByPlayer);
-
-        int looting = 0;
-        if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = Compat.lootingLevel(level, attacker);
-        }
-
-        int amount = random.nextInt(3) + (looting > 0 ? random.nextInt(looting + 1) : 0);
-        for (int i = 0; i < amount; i++) spawnAtLocation(level, new ItemStack(Items.GUNPOWDER));
-    }
 
     @Override
     protected void detonate(ServerLevel level) {

@@ -3,8 +3,6 @@ package com.hbm.items.food;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -20,11 +18,6 @@ public class ItemTemFlakes extends ItemModFood {
     public ItemTemFlakes(Properties properties, int tier) {
         super(properties);
         this.tier = tier;
-    }
-
-    @Override
-    protected void onFoodEaten(ItemStack stack, ServerLevel level, Player player) {
-        player.heal(2F);
     }
 
     @Override

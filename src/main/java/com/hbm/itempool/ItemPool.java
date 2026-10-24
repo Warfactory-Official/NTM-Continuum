@@ -170,7 +170,7 @@ public class ItemPool {
         return new Entry(template, min, max, weight);
     }
 
-    private static @Nullable ItemStack filled(ItemStack stack, com.hbm.inventory.fluid.@Nullable FluidType fluid) {
+    static @Nullable ItemStack filled(ItemStack stack, com.hbm.inventory.fluid.@Nullable FluidType fluid) {
         if (fluid == null || fluid == Fluids.NONE) return null;
         if (stack.getItem() instanceof ItemCell) return ItemCell.getFullCell(fluid);
         if (stack.getItem() instanceof ItemFluidTank tank) return tank.make(fluid, tank.capacity);

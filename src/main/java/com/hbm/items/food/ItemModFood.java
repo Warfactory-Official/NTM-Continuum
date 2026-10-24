@@ -1,5 +1,8 @@
 package com.hbm.items.food;
 
+import com.hbm.handler.ConsumableTreatment;
+import com.hbm.handler.ConsumableTreatment.Context;
+import com.hbm.handler.ConsumableTreatments;
 import dev.golem.core.world.CompatItem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -10,10 +13,10 @@ import net.minecraft.world.level.Level;
 /**
  * The shared shape of 1.7's {@code ItemFood} subclasses: the food component carries hunger and saturation
  * (built with {@code CompatConsumables}), and {@link #onFoodEaten} is 1.7's server-side hook that runs after
- * the stack was eaten. The use animation and duration are stated here rather than read off the component
+ * the stack was eaten, after the item's {@code hbm:consumable_treatment}. The use animation and duration are stated here rather than read off the component
  * because {@link CompatItem} answers both itself.
  */
-public class ItemModFood extends CompatItem {
+public class ItemModFood extends CompatItem implements ConsumableTreatments.Handled {
 
     private final int duration;
     private final boolean drink;
@@ -43,6 +46,8 @@ public class ItemModFood extends CompatItem {
         ItemStack eaten = stack.copyWithCount(1); // the vanilla path may empty the stack before our hook
         ItemStack result = super.finishUsingItem(stack, level, entity);
         if (level instanceof ServerLevel server && entity instanceof Player player) {
+            ConsumableTreatment treatment = ConsumableTreatments.of(this);
+            if (treatment != null) treatment.run(Context.eaten(server, player));
             onFoodEaten(eaten, server, player);
         }
         return result;

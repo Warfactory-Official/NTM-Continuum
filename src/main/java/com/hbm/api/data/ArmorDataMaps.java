@@ -74,6 +74,22 @@ public final class ArmorDataMaps {
     /** Chest pieces that multiply the lock-pick chance a hundredfold ({@code true}; 1.7 {@code TileEntityLockableBase}: the two jackets). */
     public static final DataMap<Item, Boolean> LOCKPICK_JACKET = item("lockpick_jacket", Codec.BOOL);
 
+    /** A cladding module's radiation resistance, added to the piece it is installed on (1.7 {@code ItemModCladding.rad}). */
+    public static final DataMap<Item, Double> RADIATION_CLADDING = item("radiation_cladding", Codec.DOUBLE);
+
+    /** What a gas mask or mask attachment takes off its filter's protection (1.7 {@code IGasMask.getBlacklist}). */
+    public static final DataMap<Item, List<HazardClass>> GAS_MASK_BLACKLIST = item("gas_mask_blacklist", HazardClass.CODEC.listOf());
+
+    public static double cladding(Item item) {
+        Double value = RADIATION_CLADDING.get(item);
+        return value != null ? value : 0D;
+    }
+
+    public static List<HazardClass> gasMaskBlacklist(Item item) {
+        List<HazardClass> value = GAS_MASK_BLACKLIST.get(item);
+        return value != null ? value : List.of();
+    }
+
     /** Loads the class at mod construction (from {@link HbmDataMaps#declare()}). */
     public static void declare() {}
 }

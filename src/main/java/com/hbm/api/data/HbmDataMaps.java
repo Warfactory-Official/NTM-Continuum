@@ -1,6 +1,7 @@
 package com.hbm.api.data;
 
 import com.hbm.Constants;
+import com.hbm.handler.ConsumableTreatment;
 import com.mojang.serialization.Codec;
 import dev.golem.core.data.DataMaps;
 import dev.golem.core.data.DataMaps.DataMap;
@@ -23,6 +24,10 @@ public final class HbmDataMaps {
     /** Brick furnace: how many burn ticks one operation on this input takes away per tick (1.7 {@code TileEntityFurnaceBrick}). */
     public static final DataMap<Item, Integer> BRICK_FURNACE_SPEED = item("brick_furnace_speed", Codec.INT);
 
+    /** What eating, using or injecting the item does (pills, syringes, drinks, foods; any item a pack names). */
+    public static final DataMap<Item, ConsumableTreatment> CONSUMABLE_TREATMENT = item("consumable_treatment",
+            ConsumableTreatment.CODEC);
+
     /** Loads the class at mod construction (HbmEntry.declare). */
     public static void declare() {
         HazardDataMaps.declare();
@@ -35,5 +40,6 @@ public final class HbmDataMaps {
         DiFurnaceDataMaps.declare();
         MachinePartDataMaps.declare();
         DepositDataMaps.declare();
+        RadiationDataMaps.declare();
     }
 }

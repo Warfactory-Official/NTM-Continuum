@@ -1,7 +1,11 @@
 package com.hbm.items.food;
 
+import com.hbm.handler.ConsumableTreatment;
+import com.hbm.handler.ConsumableTreatment.Context;
+import com.hbm.handler.ConsumableTreatments;
 import com.hbm.sound.ModGunSounds;
 import dev.golem.core.world.CompatItem;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -14,9 +18,10 @@ import net.minecraft.world.level.Level;
  * 1.7 {@code ItemBDCL}: a 40-tick drink that does nothing but gulp and groan. Its {@code onUsingTick} reads 1.7's
  * {@code itemInUseCount}, gulping every fifth count while at least ten remain, and from 24 down it steals one
  * extra count every fourth count, so the drink really lasts 34 ticks. Modern use cannot take ticks away, so the
- * use lasts those 34 ticks and {@link #COUNTS} maps each real tick back to the count 1.7 saw on it.
+ * use lasts those 34 ticks and {@link #COUNTS} maps each real tick back to the count 1.7 saw on it. The final groan
+ * is its {@code hbm:consumable_treatment}.
  */
-public class ItemBDCL extends CompatItem {
+public class ItemBDCL extends CompatItem implements ConsumableTreatments.Handled {
 
     /** The 1.7 {@code itemInUseCount} seen on each successive tick of the drink. */
     private static final int[] COUNTS = {40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25,
@@ -56,10 +61,8 @@ public class ItemBDCL extends CompatItem {
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         if (!(entity instanceof Player player) || !player.getAbilities().instabuild) stack.shrink(1);
-        if (!level.isClientSide()) {
-            level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), ModGunSounds.PLAYER_GROAN.get(),
-                    SoundSource.PLAYERS, 1F, 1F);
-        }
+        ConsumableTreatment treatment = ConsumableTreatments.of(this);
+        if (treatment != null && level instanceof ServerLevel server) treatment.run(Context.eaten(server, entity));
         return stack;
     }
 }

@@ -60,7 +60,7 @@ public class MachineFusionMHDT extends BlockMultiblockMachine implements ILookOv
         List<String> text = new ArrayList<>();
         text.add("§a-> " + (hasPlasma ? "§r" : "§6")
                 + String.format(Locale.US, "%,d", turbine.plasmaEnergy) + " TU/t / "
-                + String.format(Locale.US, "%,d", TileEntityFusionMHDT.MINIMUM_PLASMA) + " TU/t");
+                + String.format(Locale.US, "%,d", TileEntityFusionMHDT.minimumPlasma) + " TU/t");
         text.add("§c<- §r" + String.format(Locale.US, "%,d", isCool ? power : 0L) + " HE/t");
 
         FluidTankNTM[] tanks = turbine.getAllTanks();

@@ -27,14 +27,10 @@ import com.hbm.tileentity.TilePortShapes;
 /** Steam-powered groundwater pump ported from the legacy pump base and steam implementation. */
 public class TileEntityMachinePumpSteam extends TileEntityMachineBase
         implements IFluidStandardTransceiverMK2, PumpAnimationState {
-
-    public static final int GROUND_HEIGHT = 70;
-    public static final int GROUND_DEPTH = 4;
-    public static final int STEAM_SPEED = 1_000;
     public static final int STEAM_COST = 100;
     public static final int NON_WATER_DEBUFF = 100;
 
-    public final FluidTankNTM water = new FluidTankNTM(Fluids.WATER, STEAM_SPEED * 100);
+    public final FluidTankNTM water = new FluidTankNTM(Fluids.WATER, GroundwaterPumps.steamSpeed * 100);
     public final FluidTankNTM steam = new FluidTankNTM(Fluids.STEAM, 1_000);
     public final FluidTankNTM lps = new FluidTankNTM(Fluids.SPENTSTEAM, 10);
     public boolean isOn;
@@ -62,7 +58,7 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
         else pump.onGround = pump.checkGround(level, pos);
 
         pump.isOn = false;
-        if (pump.canOperate() && pos.getY() <= GROUND_HEIGHT && pump.onGround) {
+        if (pump.canOperate() && pos.getY() <= GroundwaterPumps.groundHeight && pump.onGround) {
             pump.isOn = true;
             pump.operate();
         }
@@ -96,7 +92,7 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
     private void operate() {
         steam.setFill(steam.getFill() - STEAM_COST);
         lps.setFill(lps.getFill() + 1);
-        int pumpSpeed = water.getTankType() == Fluids.WATER ? STEAM_SPEED : STEAM_SPEED / NON_WATER_DEBUFF;
+        int pumpSpeed = water.getTankType() == Fluids.WATER ? GroundwaterPumps.steamSpeed : GroundwaterPumps.steamSpeed / NON_WATER_DEBUFF;
         water.setFill(Math.min(water.getFill() + pumpSpeed, water.getMaxFill()));
     }
 
@@ -111,7 +107,7 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
         int validBlocks = 0;
         int invalidBlocks = 0;
         for (int x = -1; x <= 1; x++) {
-            for (int y = -1; y >= -GROUND_DEPTH; y--) {
+            for (int y = -1; y >= -GroundwaterPumps.groundDepth; y--) {
                 for (int z = -1; z <= 1; z++) {
                     BlockPos groundPos = pos.offset(x, y, z);
                     BlockState groundState = level.getBlockState(groundPos);

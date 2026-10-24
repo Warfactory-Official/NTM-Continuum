@@ -30,6 +30,10 @@ import java.util.ArrayList;
 import java.util.List;
 import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.TilePortShapes;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * 1.7 {@code TileEntityForceField}: a sphere, 16 blocks across by default and 16 more per radius upgrade, that
@@ -65,6 +69,34 @@ public class TileEntityForceField extends TileEntityMachineBase implements IEner
     public static int shUpgrade = 50;
     public static double cooldownModif = 1;
     public static double healthRegenModif = 1;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "forcefield"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            maxPower = IConfigurableMachine.grab(obj, "L:powerCap", maxPower);
+            baseCon = IConfigurableMachine.grab(obj, "I:baseConsumption", baseCon);
+            radCon = IConfigurableMachine.grab(obj, "I:radiusConsumption", radCon);
+            shCon = IConfigurableMachine.grab(obj, "I:shieldConsumption", shCon);
+            baseRadius = IConfigurableMachine.grab(obj, "I:baseRadius", baseRadius);
+            radUpgrade = IConfigurableMachine.grab(obj, "I:radiusUpgrade", radUpgrade);
+            shUpgrade = IConfigurableMachine.grab(obj, "I:shieldUpgrade", shUpgrade);
+            cooldownModif = IConfigurableMachine.grab(obj, "D:cooldownModifier", cooldownModif);
+            healthRegenModif = IConfigurableMachine.grab(obj, "D:healthRegenModifier", healthRegenModif);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("L:powerCap").value(maxPower);
+            writer.name("I:baseConsumption").value(baseCon);
+            writer.name("I:radiusConsumption").value(radCon);
+            writer.name("I:shieldConsumption").value(shCon);
+            writer.name("I:baseRadius").value(baseRadius);
+            writer.name("I:radiusUpgrade").value(radUpgrade);
+            writer.name("I:shieldUpgrade").value(shUpgrade);
+            writer.name("D:cooldownModifier").value(cooldownModif);
+            writer.name("D:healthRegenModifier").value(healthRegenModif);
+        }
+    };
 
     List<Entity> outside = new ArrayList<>();
     List<Entity> inside = new ArrayList<>();

@@ -4,7 +4,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.blocks.generic.BlockLoot.TileEntityLoot;
 import com.hbm.inventory.recipes.MKUCraftingRecipe;
-import com.hbm.itempool.ItemPool;
+import com.hbm.itempool.PoolLoot;
 import com.hbm.itempool.ItemPools;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.special.ItemBookLore;
@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import java.util.List;
 
 /**
  * 1.7 {@code LootGenerator}: the named item arrangements a loot pile ({@code deco_loot}) is filled with by a
@@ -100,6 +101,16 @@ public final class LootGenerator {
         loot.addItem(stack, x + rand.nextGaussian() * 0.02, y, z + rand.nextGaussian() * 0.02);
     }
 
+    private static void addDraw(TileEntityLoot loot, RandomSource rand, List<ItemStack> stacks, double x, double y, double z) {
+        for (ItemStack stack : stacks) addItemWithDeviation(loot, rand, stack, x, y, z);
+    }
+
+    /** One structure-loot draw; a draw of nothing still takes its place in the pile, as 1.7's empty stack did. */
+    private static List<ItemStack> draw(LevelAccessor level, BlockPos pos, String pool, RandomSource rand) {
+        List<ItemStack> stacks = PoolLoot.draw(level, pos, pool, rand);
+        return stacks.isEmpty() ? List.of(ItemStack.EMPTY) : stacks;
+    }
+
     private static TileEntityLoot emptyPile(LevelAccessor level, BlockPos pos) {
         return level.getBlockEntity(pos) instanceof TileEntityLoot loot && loot.items.isEmpty() ? loot : null;
     }
@@ -135,8 +146,8 @@ public final class LootGenerator {
         TileEntityLoot loot = emptyPile(level, pos);
         if (loot != null) {
             RandomSource rand = level.getRandom();
-            for (int i = 0; i < 4; i++) addItemWithDeviation(loot, rand, ItemPool.getStack(ItemPools.POOL_PILE_MED_SYRINGE, rand), 0.125, i * 0.03125, 0.25);
-            addItemWithDeviation(loot, rand, ItemPool.getStack(ItemPools.POOL_PILE_MED_PILLS, rand), -0.25, 0, -0.125);
+            for (int i = 0; i < 4; i++) addDraw(loot, rand, draw(level, pos, ItemPools.POOL_PILE_MED_SYRINGE, rand), 0.125, i * 0.03125, 0.25);
+            addDraw(loot, rand, draw(level, pos, ItemPools.POOL_PILE_MED_PILLS, rand), -0.25, 0, -0.125);
         }
     }
 
@@ -148,7 +159,7 @@ public final class LootGenerator {
                 for (int j = -1; j <= 1; j++) {
                     int count = rand.nextInt(5) + 3;
                     for (int k = 0; k < count; k++) {
-                        addItemWithDeviation(loot, rand, ItemPool.getStack(ItemPools.POOL_PILE_CAPS, rand), i * 0.3125, k * 0.03125, j * 0.3125);
+                        addDraw(loot, rand, draw(level, pos, ItemPools.POOL_PILE_CAPS, rand), i * 0.3125, k * 0.03125, j * 0.3125);
                     }
                 }
             }
@@ -160,15 +171,15 @@ public final class LootGenerator {
         if (loot != null) {
             RandomSource rand = level.getRandom();
             boolean r = rand.nextBoolean();
-            if (r) addItemWithDeviation(loot, rand, ItemPool.getStack(ItemPools.POOL_PILE_MAKESHIFT_GUN, rand), 0.125, 0.025, 0.25);
+            if (r) addDraw(loot, rand, draw(level, pos, ItemPools.POOL_PILE_MAKESHIFT_GUN, rand), 0.125, 0.025, 0.25);
 
-            if (!r || rand.nextBoolean()) addItemWithDeviation(loot, rand, ItemPool.getStack(ItemPools.POOL_PILE_MAKESHIFT_WRENCH, rand), -0.25, 0, -0.28125);
+            if (!r || rand.nextBoolean()) addDraw(loot, rand, draw(level, pos, ItemPools.POOL_PILE_MAKESHIFT_WRENCH, rand), -0.25, 0, -0.28125);
 
             int count = rand.nextInt(2) + 1;
-            for (int i = 0; i < count; i++) addItemWithDeviation(loot, rand, ItemPool.getStack(ItemPools.POOL_PILE_MAKESHIFT_PLATES, rand), -0.25, i * 0.03125, 0.3125);
+            for (int i = 0; i < count; i++) addDraw(loot, rand, draw(level, pos, ItemPools.POOL_PILE_MAKESHIFT_PLATES, rand), -0.25, i * 0.03125, 0.3125);
 
             count = rand.nextInt(2) + 2;
-            for (int i = 0; i < count; i++) addItemWithDeviation(loot, rand, ItemPool.getStack(ItemPools.POOL_PILE_MAKESHIFT_WIRE, rand), 0.25, i * 0.03125, 0.1875);
+            for (int i = 0; i < count; i++) addDraw(loot, rand, draw(level, pos, ItemPools.POOL_PILE_MAKESHIFT_WIRE, rand), 0.25, i * 0.03125, 0.1875);
         }
     }
 
@@ -179,20 +190,23 @@ public final class LootGenerator {
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 4; j++) {
                     if (rand.nextBoolean()) {
-                        loot.addItem(ItemPool.getStack(ItemPools.POOL_PILE_NUKE_STORAGE, rand), -0.375 + i * 0.25, 0, -0.375 + j * 0.25);
+                        for (ItemStack stack : draw(level, pos, ItemPools.POOL_PILE_NUKE_STORAGE, rand)) {
+                            loot.addItem(stack, -0.375 + i * 0.25, 0, -0.375 + j * 0.25);
+                        }
                     }
                 }
             }
         }
     }
 
-    private static void scattered(LevelAccessor level, BlockPos pos, String pool, int base, int spread) {
+    /** {@code base + rand(spread)} draws from the item pool {@code pool}'s loot, scattered over the pile. */
+    public static void scattered(LevelAccessor level, BlockPos pos, String pool, int base, int spread) {
         TileEntityLoot loot = emptyPile(level, pos);
         if (loot != null) {
             RandomSource rand = level.getRandom();
             int limit = rand.nextInt(spread) + base;
             for (int i = 0; i < limit; i++) {
-                addItemWithDeviation(loot, rand, ItemPool.getStack(ItemPool.getPool(pool), rand), rand.nextDouble() - 0.5, i * 0.03125, rand.nextDouble() - 0.5);
+                addDraw(loot, rand, draw(level, pos, pool, rand), rand.nextDouble() - 0.5, i * 0.03125, rand.nextDouble() - 0.5);
             }
         }
     }

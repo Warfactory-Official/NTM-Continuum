@@ -1,8 +1,12 @@
 package com.hbm.module;
 
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
 import com.hbm.api.data.MachinePartDataMaps;
+import com.hbm.tileentity.IConfigurableMachine;
 import dev.golem.core.world.Compat;
 import com.hbm.items.ModFuelItems;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,8 +19,8 @@ import net.minecraft.world.level.Level;
  * Determines the burn time/heat of a fuel stack with per-fuel-class bonuses, as the 1.12.2
  * {@code ModuleBurnTime} does, in reduced form. Base burn time comes from {@code level.fuelValues()} (the 26.1
  * replacement for {@code TileEntityFurnace.getItemBurnTime}); classification uses exact HBM fuel items
- * plus registry-path/tag checks in place of the old ore-dict name scan. The JSON config plumbing
- * ({@code IConfigurableMachine}) is deferred with that system.
+ * plus registry-path/tag checks in place of the old ore-dict name scan. Owners write it into their
+ * {@code hbmMachines.json} entry as {@code M:burnModule}.
  */
 public class ModuleBurnTime {
 
@@ -94,6 +98,45 @@ public class ModuleBurnTime {
     public ModuleBurnTime setSolidHeatMod(double mod) { this.modHeat[modSolid] = mod; return this; }
     public ModuleBurnTime setRocketHeatMod(double mod) { this.modHeat[modRocket] = mod; return this; }
     public ModuleBurnTime setBalefireHeatMod(double mod) { this.modHeat[modBalefire] = mod; return this; }
+
+    /** 1.7 keys, {@code D:heatBalefie} misspelt as 1.7 writes it. */
+    public void readIfPresent(JsonObject obj) {
+        modTime[modLog] = IConfigurableMachine.grab(obj, "D:timeLog", modTime[modLog]);
+        modTime[modWood] = IConfigurableMachine.grab(obj, "D:timeWood", modTime[modWood]);
+        modTime[modCoal] = IConfigurableMachine.grab(obj, "D:timeCoal", modTime[modCoal]);
+        modTime[modLignite] = IConfigurableMachine.grab(obj, "D:timeLignite", modTime[modLignite]);
+        modTime[modCoke] = IConfigurableMachine.grab(obj, "D:timeCoke", modTime[modCoke]);
+        modTime[modSolid] = IConfigurableMachine.grab(obj, "D:timeSolid", modTime[modSolid]);
+        modTime[modRocket] = IConfigurableMachine.grab(obj, "D:timeRocket", modTime[modRocket]);
+        modTime[modBalefire] = IConfigurableMachine.grab(obj, "D:timeBalefire", modTime[modBalefire]);
+        modHeat[modLog] = IConfigurableMachine.grab(obj, "D:heatLog", modHeat[modLog]);
+        modHeat[modWood] = IConfigurableMachine.grab(obj, "D:heatWood", modHeat[modWood]);
+        modHeat[modCoal] = IConfigurableMachine.grab(obj, "D:heatCoal", modHeat[modCoal]);
+        modHeat[modLignite] = IConfigurableMachine.grab(obj, "D:heatLignite", modHeat[modLignite]);
+        modHeat[modCoke] = IConfigurableMachine.grab(obj, "D:heatCoke", modHeat[modCoke]);
+        modHeat[modSolid] = IConfigurableMachine.grab(obj, "D:heatSolid", modHeat[modSolid]);
+        modHeat[modRocket] = IConfigurableMachine.grab(obj, "D:heatRocket", modHeat[modRocket]);
+        modHeat[modBalefire] = IConfigurableMachine.grab(obj, "D:heatBalefie", modHeat[modBalefire]);
+    }
+
+    public void writeConfig(JsonWriter writer) throws IOException {
+        writer.name("D:timeLog").value(modTime[modLog]);
+        writer.name("D:timeWood").value(modTime[modWood]);
+        writer.name("D:timeCoal").value(modTime[modCoal]);
+        writer.name("D:timeLignite").value(modTime[modLignite]);
+        writer.name("D:timeCoke").value(modTime[modCoke]);
+        writer.name("D:timeSolid").value(modTime[modSolid]);
+        writer.name("D:timeRocket").value(modTime[modRocket]);
+        writer.name("D:timeBalefire").value(modTime[modBalefire]);
+        writer.name("D:heatLog").value(modHeat[modLog]);
+        writer.name("D:heatWood").value(modHeat[modWood]);
+        writer.name("D:heatCoal").value(modHeat[modCoal]);
+        writer.name("D:heatLignite").value(modHeat[modLignite]);
+        writer.name("D:heatCoke").value(modHeat[modCoke]);
+        writer.name("D:heatSolid").value(modHeat[modSolid]);
+        writer.name("D:heatRocket").value(modHeat[modRocket]);
+        writer.name("D:heatBalefie").value(modHeat[modBalefire]);
+    }
 
     // --- 1.7 GUI description (the burn-bonus tooltip over an empty fuel slot) ---
 

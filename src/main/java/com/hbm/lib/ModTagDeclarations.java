@@ -39,6 +39,17 @@ public final class ModTagDeclarations {
                 .register();
         Tags.of("block", "hbm", "fleija_immune")
                 .register();
+        Tags.of("block", "hbm", "radiation_resistant")
+                .register();
+        // 1.7 isRadImmune's classes as the types they cover; bogged and parched exist only on newer versions
+        Tags.of("entity_type", "hbm", "radiation_immune")
+                .values("hbm:entity_mob_nuclear_creeper", "hbm:entity_elder_one", "minecraft:mooshroom",
+                        "minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:zombie_villager",
+                        "minecraft:zombified_piglin", "minecraft:skeleton", "minecraft:stray", "minecraft:wither_skeleton",
+                        "minecraft:ocelot", "minecraft:cat", "minecraft:zombie_horse", "minecraft:skeleton_horse",
+                        "minecraft:armor_stand")
+                .optional("minecraft:bogged", "minecraft:parched")
+                .register();
         Tags.of("item", "hbm", "certus_quartz_clusters")
                 .optional("ae2:quartz_cluster")
                 .register();
@@ -65,6 +76,11 @@ public final class ModTagDeclarations {
         Tags.block("hbm", "pump_ground",
                 "minecraft:grass_block", "minecraft:dirt", "minecraft:sand", "minecraft:mycelium", "hbm:waste_earth",
                 "hbm:dirt_dead", "hbm:dirt_oily", "hbm:sand_dirty", "hbm:sand_dirty_red");
+        // OreVeinPlacer.STONE and the bubble's sand: the default hosts of the configurable world features
+        Tags.block("hbm", "legacy_stone",
+                "minecraft:stone", "minecraft:granite", "minecraft:diorite", "minecraft:andesite", "minecraft:deepslate",
+                "minecraft:tuff");
+        Tags.block("hbm", "tar_sand_hosts", "minecraft:sand", "minecraft:red_sand");
         Tags.block("hbm", "uranium_ores",
                 "#c:ores/uranium");
         Tags.entityType("hbm", "bosses",

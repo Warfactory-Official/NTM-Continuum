@@ -7,14 +7,32 @@ import com.hbm.tileentity.TilePortShapes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /** 9x9x13 cooling tower; 10,000 mB condenser tanks and twelve perimeter ports. */
 public class TileEntityTowerLarge extends TileEntityCondenser {
-    public static final int INPUT_TANK_SIZE = 10_000;
-    public static final int OUTPUT_TANK_SIZE = 10_000;
+    public static int inputTankSizeTL = 10_000;
+    public static int outputTankSizeTL = 10_000;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "condenserTowerLarge"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            inputTankSizeTL = IConfigurableMachine.grab(obj, "I:inputTankSize", inputTankSizeTL);
+            outputTankSizeTL = IConfigurableMachine.grab(obj, "I:outputTankSize", outputTankSizeTL);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:inputTankSize").value(inputTankSizeTL);
+            writer.name("I:outputTankSize").value(outputTankSizeTL);
+        }
+    };
 
     public TileEntityTowerLarge(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_TOWER_LARGE.get(), pos, state, INPUT_TANK_SIZE, OUTPUT_TANK_SIZE);
+        super(ModBlockEntities.MACHINE_TOWER_LARGE.get(), pos, state, inputTankSizeTL, outputTankSizeTL);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state,

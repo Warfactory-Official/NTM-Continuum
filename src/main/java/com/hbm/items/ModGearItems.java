@@ -11,8 +11,6 @@ import com.hbm.handler.HazmatRegistry;
 import com.hbm.items.gear.ItemGasMask;
 import com.hbm.items.machine.ItemGear;
 import com.hbm.util.ArmorRegistry;
-import com.hbm.util.ArmorRegistry.HazardClass;
-import java.util.List;
 import java.util.stream.IntStream;
 import com.hbm.items.tool.ItemDosimeter;
 import com.hbm.items.tool.ItemFilter;
@@ -74,10 +72,10 @@ public final class ModGearItems {
     public static final RegistryObject<Item> hazmat_boots_grey = armor("hazmat_boots_grey", () -> HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.BOOTS);
 
     // Gas masks and replaceable filters
-    public static final RegistryObject<ItemGasMask> gas_mask = gasMask("gas_mask", "hbm:items/gas_mask", List.of(HazardClass.GAS_BLISTERING));
-    public static final RegistryObject<ItemGasMask> gas_mask_m65 = gasMask("gas_mask_m65", "hbm:items/gas_mask_m65", List.of(HazardClass.GAS_BLISTERING));
-    public static final RegistryObject<ItemGasMask> gas_mask_mono = gasMask("gas_mask_mono", "hbm:items/gas_mask_mono", List.of(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA));
-    public static final RegistryObject<ItemGasMask> gas_mask_olde = gasMask("gas_mask_olde", "hbm:items/gas_mask_olde", List.of(HazardClass.GAS_BLISTERING));
+    public static final RegistryObject<ItemGasMask> gas_mask = gasMask("gas_mask", "hbm:items/gas_mask");
+    public static final RegistryObject<ItemGasMask> gas_mask_m65 = gasMask("gas_mask_m65", "hbm:items/gas_mask_m65");
+    public static final RegistryObject<ItemGasMask> gas_mask_mono = gasMask("gas_mask_mono", "hbm:items/gas_mask_mono");
+    public static final RegistryObject<ItemGasMask> gas_mask_olde = gasMask("gas_mask_olde", "hbm:items/gas_mask_olde");
     public static final RegistryObject<ItemFilter> gas_mask_filter_rag = filter("gas_mask_filter_rag", "hbm:items/gas_mask_filter_rag");
     public static final RegistryObject<ItemFilter> gas_mask_filter_piss = filter("gas_mask_filter_piss", "hbm:items/gas_mask_filter_piss");
     public static final RegistryObject<ItemFilter> gas_mask_filter_mono = filter("gas_mask_filter_mono", "hbm:items/gas_mask_filter_mono");
@@ -92,9 +90,9 @@ public final class ModGearItems {
         return ro;
     }
 
-    private static RegistryObject<ItemGasMask> gasMask(String name, String sprite, List<HazardClass> blacklist) {
+    private static RegistryObject<ItemGasMask> gasMask(String name, String sprite) {
         RegistryObject<ItemGasMask> ro = REG.item(name,
-                p -> new ItemGasMask(p, blacklist), p -> p.stacksTo(1)).transform(Presets.sprite(sprite));
+                ItemGasMask::new, p -> p.stacksTo(1)).transform(Presets.sprite(sprite));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }

@@ -108,7 +108,7 @@ public final class ItemProcessingTableGameTests {
                 + " " + MaterialCodecs.describe(ItemScraps.getMats(r.output)) + " t=" + r.duration + " "
                 + r.fluid.getKey() + "x" + r.acidAmount).orElse("-"), "#c:ingots/malachite x1 copper:72 t=300 sulfuric_acidx250");
         long compat = CrystallizerRecipes.TABLE.rows().stream().filter(r -> r.requires().isPresent()).count();
-        check(failures, "crystallizer compat rows", String.valueOf(compat), "3");
+        check(failures, "crystallizer compat rows", String.valueOf(compat), "4");
         var cyc = CyclotronRecipes.recipes.isEmpty() ? null : CyclotronRecipes.recipes.get(0);
         check(failures, "cyclotron first", cyc == null ? "-" : CyclotronRecipes.describe(cyc),
                 "hbm:part_lithium x1 + #c:dusts/lithium x1 -> hbm:powder_beryllium x1 am=50");
@@ -146,6 +146,7 @@ public final class ItemProcessingTableGameTests {
 
     // Pins are SHA-256 hashes of each table's key-sorted JSON (CanonicalJson), in 1.7's line order, with ntm-next's
     // raw ore rows (material distribution, centrifuge, crystallizer, shredder) after their ore's row.
+    // AE2 certus cluster rows (centrifuge, crystallizer) follow the certus ore rows.
     private static final String EXPECTED_CRUCIBLE =
             "13:16a916835a5adb64587bf5a8f085f4704b659f6a3541e82ca15865530fdef281";
     private static final String EXPECTED_MATERIAL_DISTRIBUTION =
@@ -153,9 +154,9 @@ public final class ItemProcessingTableGameTests {
     private static final String EXPECTED_ARC_FURNACE =
             "79:27f6f8737eeccb2f41680fb8fce5ab0530ff1bd96f931769ad6a1739b78c985e";
     private static final String EXPECTED_CENTRIFUGE =
-            "179:05edb92a12e60a6837b8945e425869fb08c470ba0a4f70d15bd6c3901aa8f6ee";
+            "180:21d686926c9db4403cef0086fa42513d5f4546281aa86beb5b29e914db6b2c1d";
     private static final String EXPECTED_CRYSTALLIZER =
-            "346:d7177e57e99bb7a3f2ba972e9b1e24a43feea582c4b8a44b78f2165281f621e1";
+            "347:550d19b20262209204c4d5f9e9772616ce3d4bda8531d24cbf16bb530bc6e095";
     private static final String EXPECTED_CYCLOTRON =
             "42:5050b64e4c5dcf8c8e758f87ee0eb121119ce386210b824af548970cbfc5dbf3";
     private static final String EXPECTED_ELECTROLYSER_METAL =

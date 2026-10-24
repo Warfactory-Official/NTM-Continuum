@@ -28,6 +28,10 @@ import com.hbm.sound.ModSounds;
 import com.hbm.sound.MachineAudio;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.TilePort.PortDef;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * Heat Boiler: 1:1 port of the 1.12.2 {@code TileEntityHeatBoiler} ({@code heat_boiler}): the
@@ -40,15 +44,31 @@ import com.hbm.tileentity.TilePort.PortDef;
  * ExplosionVNT; the burst husk renders via {@code boiler_burst.obj}).
  *
  * <p>1.7's Tom-impact fire heating ({@code +0.0005%} of the remaining buffer per tick under open sky) is
- * ported. Not ported: IPersistentNBT/IConfigurableMachine. IFluidCopiable (water/steam ids) follows 1.7.
+ * ported. Not ported: IPersistentNBT. IFluidCopiable (water/steam ids) follows 1.7.
  * Port seam: heat is polled through a multiblock cell below by resolving its core (the old code used proxy TEs).
  */
 public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider,
         IFluidCopiable {
 
-    public static final int maxHeat = 3_200_000; // 1.7.10 (1.12.2 raised it to 12.8M)
-    public static final double diffusion = 0.1D;
-    public static final boolean canExplode = true;
+    public static int maxHeat = 3_200_000; // 1.7.10 (1.12.2 raised it to 12.8M)
+    public static double diffusion = 0.1D;
+    public static boolean canExplode = true;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "boiler"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            maxHeat = IConfigurableMachine.grab(obj, "I:maxHeat", maxHeat);
+            diffusion = IConfigurableMachine.grab(obj, "D:diffusion", diffusion);
+            canExplode = IConfigurableMachine.grab(obj, "B:canExplode", canExplode);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:maxHeat").value(maxHeat);
+            writer.name("D:diffusion").value(diffusion);
+            writer.name("B:canExplode").value(canExplode);
+        }
+    };
 
     public FluidTankNTM[] tanks;
     public int heat;

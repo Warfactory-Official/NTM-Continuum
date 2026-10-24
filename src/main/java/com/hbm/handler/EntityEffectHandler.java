@@ -1,11 +1,14 @@
 package com.hbm.handler;
 
 import dev.golem.core.world.Explosions;
+import com.hbm.Constants;
 import com.hbm.advancement.HbmCriteria;
+import com.hbm.api.data.RadiationDataMaps;
+import com.hbm.api.data.RadiationDataMaps.BiomeRadiation;
+import com.hbm.api.data.RadiationDataMaps.Transformation;
 import com.hbm.api.environment.Environment;
 import com.hbm.config.ServerConfig;
 import com.hbm.config.WorldConfig;
-import com.hbm.entity.ModNtmEntities;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.handler.radiation.ChunkRadiationManager;
@@ -18,12 +21,15 @@ import com.hbm.potion.ModEffects;
 import com.hbm.tileentity.machine.TileEntityMachineRadiolysis;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.world.biome.ModBiomes;
+import dev.golem.core.Ids;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.world.Effects;
 
 import dev.golem.core.world.Compat;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.GeneralConfig;
@@ -36,6 +42,7 @@ import com.hbm.items.armor.JetpackBase;
 import com.hbm.items.armor.ArmorDNT;
 import com.hbm.items.gear.JetpackGlider;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
@@ -64,9 +71,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.animal.cow.Cow;
-import net.minecraft.world.entity.animal.cow.MushroomCow;
-import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -87,6 +91,7 @@ import net.minecraft.world.level.block.Blocks;
 public class EntityEffectHandler {
 
     private static final int SYNC_INTERVAL = 5;
+    private static final Set<String> BAD_RESULTS = ConcurrentHashMap.newKeySet();
 
     public static void onUpdate(LivingEntity entity) {
 
@@ -329,8 +334,10 @@ public class EntityEffectHandler {
         }
     }
 
-    /** The crater-biome RAD/s at a biome, 0 elsewhere (1.7 {@code EntityEffectHandler.onUpdate}). */
+    /** The biome's ambient RAD/s: its {@code hbm:ambient_radiation} entry, else 1.7's crater config values, else 0. */
     public static float craterBiomeRad(Holder<Biome> biome, boolean wet) {
+        BiomeRadiation data = RadiationDataMaps.BIOME_RADIATION.get(biome);
+        if (data != null) return wet ? data.radiation() * data.wetMultiplier() : data.radiation();
         float radiation = 0;
         if (biome.is(ModBiomes.crater_outer)) radiation = WorldConfig.craterBiomeOuterRad;
         if (biome.is(ModBiomes.crater)) radiation = WorldConfig.craterBiomeRad;
@@ -376,6 +383,8 @@ public class EntityEffectHandler {
         // 1.7 handleRadiationFX: the nether's ambient floor (hellRad, 0.1 RAD/s) under the chunk value
         if (level.dimension() == Level.NETHER && RadiationConfig.hellRad > 0 && offset < RadiationConfig.hellRad)
             offset = RadiationConfig.hellRad;
+        Double dimension = RadiationDataMaps.DIMENSION_RADIATION.byId().get(Ids.keyId(level.dimension()).toString());
+        if (dimension != null && offset < dimension) offset = dimension;
         // hbm-space: unshielded sunlight on its planets and in orbit raises the floor further
         // (com.hbm.api.environment.Environment.AMBIENT_RADIATION; none on plain HBM)
         float floor = Environment.ambientRadiationFloor(level, pos, entity);
@@ -435,29 +444,18 @@ public class EntityEffectHandler {
         if (entity instanceof Player player && (player.isCreative() || player.isSpectator())) return;
 
         double eRad = HbmLivingProps.getRadiation(entity);
-        if (eRad < 50) return;
+        if (eRad <= 0) return;
         DamageSource radiation = ModDamageSources.radiation(serverLevel);
         RandomSource rand = level.getRandom();
 
-        // 1.7 EntityEffectHandler.handleRadiationEffect transformations, in 1.7's else-if order. The creeper and duck
-        // checks are exact-class checks in 1.7 (getClass().equals), so the HBM creeper/duck subclasses never convert.
-        if (entity.getType() == EntityType.CREEPER && eRad >= 200 && entity.getHealth() > 0) {
-            if (rand.nextInt(3) == 0) {
-                convert((Mob) entity, ModNtmEntities.CREEPER_NUCLEAR.get(), serverLevel);
-            } else {
-                Compat.hurt(entity, serverLevel, radiation, 100F);
+        // read before 1.7's 50 RAD cut-off, which every 1.7 threshold is above
+        Transformation transformation = RadiationDataMaps.TRANSFORMATIONS.get(entity.getType());
+        if (transformation != null && eRad >= transformation.threshold() && entity instanceof Mob mob) {
+            if (transformation.chance() <= 1 || rand.nextInt(transformation.chance()) == 0) {
+                convert(mob, transformation.result(), serverLevel);
+            } else if (transformation.fallbackDamage() > 0F) {
+                Compat.hurt(entity, serverLevel, radiation, transformation.fallbackDamage());
             }
-            return;
-        } else if (eRad >= 50 && entity instanceof Cow cow && !(entity instanceof MushroomCow)) {
-            convert(cow, EntityType.MOOSHROOM, serverLevel);
-            return;
-        } else if (eRad >= 500 && entity instanceof Villager villager) {
-            // 1.7 spawns a plain EntityZombie, not a zombie villager. (The 1.12.2 fork's zombie horse at 800 RAD
-            // is not 1.7 and is not ported.)
-            convert(villager, EntityType.ZOMBIE, serverLevel);
-            return;
-        } else if (entity.getType() == ModNtmEntities.DUCK.get() && eRad >= 200) {
-            convert((Mob) entity, ModNtmEntities.QUACKOS.get(), serverLevel);
             return;
         }
 
@@ -502,9 +500,12 @@ public class EntityEffectHandler {
         }
     }
 
-    private static void convert(Mob from, EntityType<? extends Mob> toType, ServerLevel level) {
-        Mob to = Entities.createForConversion(toType, level);
-        if (to == null) return;
+    private static void convert(Mob from, String toType, ServerLevel level) {
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(Ids.parse(toType)).orElse(null);
+        if (type == null || !(Entities.createForConversion(type, level) instanceof Mob to)) {
+            if (BAD_RESULTS.add(toType)) Constants.LOG.warn("Radiation transformation: {} is not a mob type", toType);
+            return;
+        }
         to.snapTo(from.getX(), from.getY(), from.getZ(), from.getYRot(), from.getXRot());
         if (from.isAlive() && level.addFreshEntity(to)) {
             from.discard();

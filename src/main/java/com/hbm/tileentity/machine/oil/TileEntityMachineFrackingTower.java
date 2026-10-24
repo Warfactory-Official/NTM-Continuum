@@ -27,6 +27,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.TilePortShapes;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * Fracking Tower: 1:1 port of the 1.12.2 {@code TileEntityMachineFrackingTower}. Extends the shared
@@ -35,26 +39,59 @@ import com.hbm.tileentity.TilePortShapes;
  * blights the surface via {@link OilSpot} (range 75). Sucks both {@code ore_oil} (1000 oil + 100-500 gas,
  * 2% deplete) and {@code ore_bedrock_oil} (100 oil + 10-50 gas, never depletes). Reuses the oil-well GUI.
  *
- * <p>Deviations: {@code getDrillDepth()} maps the old {@code 0} to the 26.1 world floor; IPersistentNBT
- * / IConfigurableMachine deferred (per the drill precedent).
+ * <p>Deviations: {@code getDrillDepth()} maps the old {@code 0} to the 26.1 world floor; IPersistentNBT deferred
+ * (per the drill precedent).
  */
 public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
 
-    protected static final int maxPower = 5_000_000;
-    protected static final int consumption = 5000;
-    protected static final int solutionRequired = 10;
-    protected static final int delay = 20;
-    /**
-     * 1.7's per-suck amounts (its {@code hbmMachines.json} keys {@code I:oilPerDeposit}, {@code I:gasPerDepositMin/Max},
-     * {@code D:drainChance}); the deposit's {@code hbm:fluid_deposit} yields scale them. Public and assignable so an
-     * addon can set its own at start-up (NTM: Space's fracking tower takes the derrick's amounts); HBM never changes them.
-     */
+    public static int maxPower = 5_000_000;
+    public static int consumption = 5000;
+    public static int solutionRequired = 10;
+    public static int delay = 20;
+    /** The deposit's {@code hbm:fluid_deposit} yield scales these; NTM: Space assigns its own at start-up. */
     public static int oilPerDeposit = 1000;
     public static int gasPerDepositMin = 100;
     public static int gasPerDepositMax = 500;
     public static double drainChance = 0.02D;
-    // 1.7's bedrock amounts (100 oil, 10-50 gas) are ore_bedrock_oil's yield of 0.1 in hbm:fluid_deposit
-    protected static final int destructionRange = 75;
+    /** 1.7's bedrock amounts: they scale what a fracking-only deposit gives, so the defaults change nothing. */
+    public static int oilPerBedrockDeposit = 100;
+    public static int gasPerBedrockDepositMin = 10;
+    public static int gasPerBedrockDepositMax = 50;
+    public static int destructionRange = 75;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "frackingtower"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            maxPower = IConfigurableMachine.grab(obj, "I:powerCap", maxPower);
+            consumption = IConfigurableMachine.grab(obj, "I:consumption", consumption);
+            solutionRequired = IConfigurableMachine.grab(obj, "I:solutionRequired", solutionRequired);
+            delay = IConfigurableMachine.grab(obj, "I:delay", delay);
+            oilPerDeposit = IConfigurableMachine.grab(obj, "I:oilPerDeposit", oilPerDeposit);
+            gasPerDepositMin = IConfigurableMachine.grab(obj, "I:gasPerDepositMin", gasPerDepositMin);
+            gasPerDepositMax = IConfigurableMachine.grab(obj, "I:gasPerDepositMax", gasPerDepositMax);
+            drainChance = IConfigurableMachine.grab(obj, "D:drainChance", drainChance);
+            oilPerBedrockDeposit = IConfigurableMachine.grab(obj, "I:oilPerBedrockDeposit", oilPerBedrockDeposit);
+            gasPerBedrockDepositMin = IConfigurableMachine.grab(obj, "I:gasPerBedrockDepositMin", gasPerBedrockDepositMin);
+            gasPerBedrockDepositMax = IConfigurableMachine.grab(obj, "I:gasPerBedrockDepositMax", gasPerBedrockDepositMax);
+            destructionRange = IConfigurableMachine.grab(obj, "I:destructionRange", destructionRange);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:powerCap").value(maxPower);
+            writer.name("I:consumption").value(consumption);
+            writer.name("I:solutionRequired").value(solutionRequired);
+            writer.name("I:delay").value(delay);
+            writer.name("I:oilPerDeposit").value(oilPerDeposit);
+            writer.name("I:gasPerDepositMin").value(gasPerDepositMin);
+            writer.name("I:gasPerDepositMax").value(gasPerDepositMax);
+            writer.name("D:drainChance").value(drainChance);
+            writer.name("I:oilPerBedrockDeposit").value(oilPerBedrockDeposit);
+            writer.name("I:gasPerBedrockDepositMin").value(gasPerBedrockDepositMin);
+            writer.name("I:gasPerBedrockDepositMax").value(gasPerBedrockDepositMax);
+            writer.name("I:destructionRange").value(destructionRange);
+        }
+    };
 
     public TileEntityMachineFrackingTower(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_FRACKING_TOWER.get(), pos, state);
@@ -104,13 +141,23 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
     @Override
     public void onSuck(BlockPos pos, DepositDataMaps.Deposit deposit) {
         // 1.7 ore_oil: 1000 oil + 100-500 gas, 2% drain; ore_bedrock_oil: 100 + 10-50, never drains (yield 0.1, no empty)
-        suckDeposit(pos, deposit, oilPerDeposit, gasPerDepositMin, gasPerDepositMax, drainChance);
+        if (deposit.frackingOnly()) {
+            suckAmounts(pos, deposit, scale(deposit.primaryAmount(oilPerDeposit), oilPerBedrockDeposit, 100),
+                    scale(deposit.secondaryAmount(gasPerDepositMin), gasPerBedrockDepositMin, 10),
+                    scale(deposit.secondaryAmount(gasPerDepositMax), gasPerBedrockDepositMax, 50), drainChance);
+        } else {
+            suckDeposit(pos, deposit, oilPerDeposit, gasPerDepositMin, gasPerDepositMax, drainChance);
+        }
         tanks[2].setFill(tanks[2].getFill() - solutionRequired);
 
         if (level instanceof ServerLevel server
                 && BLIGHT.invoker().blight(server, worldPosition, pos, deposit) != Verdict.DENY) {
             OilSpot.generateOilSpot(server, worldPosition.getX(), worldPosition.getZ(), destructionRange, 10, false);
         }
+    }
+
+    private static int scale(int amount, int bedrock, int bedrockDefault) {
+        return (int) Math.round((double) amount * bedrock / bedrockDefault);
     }
 
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[0], tanks[1]}; }

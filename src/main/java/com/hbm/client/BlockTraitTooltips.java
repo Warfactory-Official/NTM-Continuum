@@ -2,6 +2,7 @@ package com.hbm.client;
 
 import com.hbm.Constants;
 import com.hbm.interfaces.IRadResistantBlock;
+import com.hbm.lib.HbmBlockTags;
 import dev.golem.core.client.Tooltips;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -23,7 +24,8 @@ public final class BlockTraitTooltips {
     private static void addLines(ItemStack stack, List<Component> lines) {
         if (!(stack.getItem() instanceof BlockItem item)) return;
         Block block = item.getBlock();
-        if (block instanceof IRadResistantBlock shield && shield.isRadShielding()) {
+        if (block instanceof IRadResistantBlock shield && shield.isRadShielding()
+                || block.defaultBlockState().is(HbmBlockTags.RADIATION_RESISTANT)) {
             lines.add(Component.literal("[").append(Component.translatable("trait.radshield")).append("]")
                     .withStyle(ChatFormatting.DARK_GREEN));
         }

@@ -8,6 +8,7 @@ import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.itempool.ItemPool;
+import com.hbm.itempool.PoolLoot;
 import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.tool.ItemKeyPin;
@@ -23,13 +24,11 @@ import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
-import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -256,8 +255,6 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
                 return;
             }
 
-            List<ItemPool.Entry> pool = ItemPool.getPool(poolName);
-
             // 1.7 set the block, then ran its onBlockPlacedBy for a fake player turned to placedRotation; the flat
             // equivalent is the block's own placement state for that look direction
             BlockState placed = replaceState;
@@ -288,31 +285,11 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
             if (te instanceof Container inventory) {
                 int count = minItems;
                 if (maxItems - minItems > 0) count += world.getRandom().nextInt(maxItems - minItems);
-                generateChestContents(world.getRandom(), pool, inventory, count);
+                PoolLoot.fill(world, pos, inventory, poolName, world.getRandom(), count);
             } else if (te instanceof BlockLoot.TileEntityLoot) {
                 LootGenerator.applyLoot(world, pos, poolName);
             }
             te.setChanged();
-        }
-
-        /**
-         * 1.7 {@code WeightedRandomChestContent.generateChestContents}: {@code count} weighted draws, each stack put
-         * into a random slot (overwriting), a draw larger than a stack split into single items.
-         */
-        static void generateChestContents(RandomSource rand, List<ItemPool.Entry> pool, Container inventory, int count) {
-            int size = inventory.getContainerSize();
-            if (size <= 0) return;
-            for (int j = 0; j < count; ++j) {
-                ItemStack drawn = ItemPool.getStack(pool, rand);
-                if (drawn.isEmpty()) continue;
-                if (drawn.getCount() <= drawn.getMaxStackSize()) {
-                    inventory.setItem(rand.nextInt(size), drawn);
-                } else {
-                    for (int i = 0; i < drawn.getCount(); i++) {
-                        inventory.setItem(rand.nextInt(size), ItemStacks.copyWithCount(drawn, 1));
-                    }
-                }
-            }
         }
 
         List<String> getPoolNames(boolean loot) {

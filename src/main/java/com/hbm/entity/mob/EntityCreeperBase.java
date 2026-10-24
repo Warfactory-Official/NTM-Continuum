@@ -1,14 +1,10 @@
 package com.hbm.entity.mob;
 
 import dev.golem.core.data.CompatCreeper;
-import dev.golem.core.world.Compat;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 /** Set {@code maxSwell} in the subclass constructor for a custom fuse. */
@@ -33,17 +29,6 @@ public abstract class EntityCreeperBase extends CompatCreeper {
         return super.hurtServer(level, source, amount);
     }
 
-    @Override
-    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-        super.dropCustomDeathLoot(level, source, killedByPlayer);
-
-        // 1.7 EntityCreeper.onDeath tested EntitySkeleton, which was also the wither skeleton; AbstractSkeleton
-        // additionally admits Stray and Bogged
-        if (!(source.getEntity() instanceof AbstractSkeleton)) return;
-
-        Compat.randomItemOf(ItemTags.CREEPER_DROP_MUSIC_DISCS, random)
-             .ifPresent(disc -> spawnAtLocation(level, new ItemStack(disc)));
-    }
 
     @Override
     public void tick() {

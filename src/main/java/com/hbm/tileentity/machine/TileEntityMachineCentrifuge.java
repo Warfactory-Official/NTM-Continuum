@@ -12,6 +12,9 @@ import com.hbm.items.ModItems;
 import com.hbm.items.ModFuelItems;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import com.hbm.tileentity.IConfigurableMachine;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -31,6 +34,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import com.hbm.tileentity.TilePort.PortDef;
@@ -40,9 +44,25 @@ import com.hbm.tileentity.TilePortShapes;
 public class TileEntityMachineCentrifuge extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer, IUpgradeInfoProvider {
 
-    public static final long MAX_POWER = 100_000;
-    public static final int PROCESSING_SPEED = 200;
-    public static final int BASE_CONSUMPTION = 200;
+    public static long maxPower = 100_000;
+    public static int processingSpeed = 200;
+    public static int baseConsumption = 200;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "centrifuge"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            maxPower = IConfigurableMachine.grab(obj, "I:powerCap", maxPower);
+            processingSpeed = IConfigurableMachine.grab(obj, "I:timeToProcess", processingSpeed);
+            baseConsumption = IConfigurableMachine.grab(obj, "I:consumption", baseConsumption);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:powerCap").value(maxPower);
+            writer.name("I:timeToProcess").value(processingSpeed);
+            writer.name("I:consumption").value(baseConsumption);
+        }
+    };
 
     private static final int[] IO_SLOTS = {0, 2, 3, 4, 5};
 
@@ -68,9 +88,9 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
         te.setupPowerPorts(te.getPorts());
         te.updateAllPorts();
         te.receivePower();
-        te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, MAX_POWER);
+        te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
 
-        int consumption = BASE_CONSUMPTION;
+        int consumption = baseConsumption;
         int speed = 1;
         te.upgradeManager.checkSlots(te.inventory, 6, 7);
 
@@ -78,9 +98,9 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
         int overdriveLevel = te.upgradeManager.getLevel(UpgradeType.OVERDRIVE);
         int powerLevel = te.upgradeManager.getLevel(UpgradeType.POWER);
         speed += speedLevel;
-        consumption += speedLevel * BASE_CONSUMPTION;
+        consumption += speedLevel * baseConsumption;
         speed *= 1 + overdriveLevel * 5;
-        consumption += overdriveLevel * BASE_CONSUMPTION * 50;
+        consumption += overdriveLevel * baseConsumption * 50;
         consumption /= 1 + powerLevel;
 
         if (te.hasPower() && te.isProcessing()) {
@@ -91,7 +111,7 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
         te.isProgressing = te.hasPower() && te.canProcess();
         if (te.isProgressing) {
             te.progress += speed;
-            if (te.progress >= PROCESSING_SPEED) {
+            if (te.progress >= processingSpeed) {
                 te.progress = 0;
                 te.processItem();
             }
@@ -141,11 +161,11 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
     }
 
     public long getPowerScaled(long scale) {
-        return (power * scale) / MAX_POWER;
+        return (power * scale) / maxPower;
     }
 
     public int getProgressScaled(int scale) {
-        return (progress * scale) / PROCESSING_SPEED;
+        return (progress * scale) / processingSpeed;
     }
 
     protected PortDef[] cachedPorts;
@@ -225,8 +245,8 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
-    @Override public long getMaxPower() { return MAX_POWER; }
-    @Override public long getReceiverSpeed() { return MAX_POWER; }
+    @Override public long getMaxPower() { return maxPower; }
+    @Override public long getReceiverSpeed() { return maxPower; }
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

@@ -3,6 +3,7 @@ package com.hbm.world.feature;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.blocks.generic.BlockGlyphid;
+import com.hbm.itempool.ItemPools;
 import com.hbm.util.LootGenerator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -10,6 +11,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 1.7 {@code world/feature/GlyphidHive}: the small hive, an 11 x 5 x 11 dome of {@code glyphid_base} with a
@@ -54,6 +56,12 @@ public final class GlyphidHive {
      * turns the third kind of floor block into a hive loot pile (worldgen) instead of a hive block (scouts).
      */
     public static void generateSmall(LevelAccessor level, int x, int y, int z, RandomSource rand, boolean infected, boolean loot) {
+        generateSmall(level, x, y, z, rand, infected, 3, loot ? ItemPools.POOL_PILE_HIVE : null, ItemPools.POOL_PILE_BONES);
+    }
+
+    /** One in {@code spawnerChance} core cells is a spawner; a null {@code lootPool} lays hive blocks instead of loot piles. */
+    public static void generateSmall(LevelAccessor level, int x, int y, int z, RandomSource rand, boolean infected,
+                                     int spawnerChance, @Nullable String lootPool, String bonesPool) {
         BlockGlyphid.HiveType type = infected ? BlockGlyphid.HiveType.INFESTED : BlockGlyphid.HiveType.NORMAL;
         BlockState base = ModDecoCrateBlocks.glyphid_base.get().defaultBlockState().setValue(BlockGlyphid.TYPE, type);
         BlockState spawner = ModDecoCrateBlocks.glyphid_spawner.get().defaultBlockState().setValue(BlockGlyphid.TYPE, type);
@@ -66,7 +74,7 @@ public final class GlyphidHive {
                     BlockPos pos = new BlockPos(x + i - 5, y + j - 2, z + k - 5);
                     switch (block) {
                         case 1 -> level.setBlock(pos, base, 2);
-                        case 2 -> level.setBlock(pos, rand.nextInt(3) == 0 ? spawner : base, 2);
+                        case 2 -> level.setBlock(pos, rand.nextInt(spawnerChance) == 0 ? spawner : base, 2);
                         case 3 -> {
                             int r = rand.nextInt(3);
                             if (r == 0) {
@@ -75,10 +83,10 @@ public final class GlyphidHive {
                                         .setValue(SkullBlock.ROTATION, rand.nextInt(16)), 3);
                             } else if (r == 1) {
                                 level.setBlock(pos, pile, 2);
-                                LootGenerator.lootBones(level, pos);
-                            } else if (loot) {
+                                LootGenerator.scattered(level, pos, bonesPool, 3, 3);
+                            } else if (lootPool != null) {
                                 level.setBlock(pos, pile, 2);
-                                LootGenerator.lootGlyphidHive(level, pos);
+                                LootGenerator.scattered(level, pos, lootPool, 3, 3);
                             } else {
                                 level.setBlock(pos, base, 2);
                             }

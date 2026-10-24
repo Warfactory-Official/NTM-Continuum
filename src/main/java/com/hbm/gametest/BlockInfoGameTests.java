@@ -59,7 +59,7 @@ public final class BlockInfoGameTests {
         TileEntityFusionMHDT turbine = place(helper, ModMachineBlocks.fusion_mhdt.get(), TileEntityFusionMHDT.class);
         turbine.plasmaEnergy = 6_000_000L;
         TileEntityFusionMHDT.serverTick(helper.getLevel(), turbine.getBlockPos(), turbine.getBlockState(), turbine);
-        expect(helper, turbine, "", "TU/t", 6_000_000L, TileEntityFusionMHDT.MINIMUM_PLASMA);
+        expect(helper, turbine, "", "TU/t", 6_000_000L, TileEntityFusionMHDT.minimumPlasma);
 
         TileEntityICF icf = place(helper, ModIcfBlocks.icf.get(), TileEntityICF.class);
         helper.assertTrue(gauge(icf, "", "TU/t") == null, "an ICF without lasers showed a laser line");

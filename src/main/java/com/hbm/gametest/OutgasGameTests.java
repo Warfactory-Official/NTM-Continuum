@@ -4,11 +4,16 @@ import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.ModOutgasBlocks;
 import com.hbm.blocks.generic.BlockOutgas;
 import com.hbm.Constants;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -54,8 +59,14 @@ public final class OutgasGameTests {
         BlockPos pos = helper.absolutePos(new BlockPos(0, 2, 0));
         level.setBlock(pos, ModOutgasBlocks.brick_asbestos.get().defaultBlockState(), 3);
         level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+        helper.assertTrue(level.getBlockState(pos).isAir(), "replacing asbestos brick left " + level.getBlockState(pos));
+        // 1.7 releases the gas from the harvest drop, so only mining leaves it
+        level.setBlock(pos, ModOutgasBlocks.brick_asbestos.get().defaultBlockState(), 3);
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_PICKAXE));
+        helper.assertTrue(player.gameMode.destroyBlock(pos), "survival could not mine asbestos brick");
         helper.assertTrue(level.getBlockState(pos).is(ModNuclearBlocks.gas_asbestos.get()),
-                "breaking asbestos brick did not leave asbestos gas");
+                "mining asbestos brick left " + level.getBlockState(pos) + ", not asbestos gas");
         helper.succeed();
     }
 

@@ -58,7 +58,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * ({@code level*10} mB/t gives {@code +5 HE/mB}).
  *
  * <p>Skipped from the old class (see IMPLEMENTATION.md §20): IPersistentNBT (power/tanks don't survive item form),
- * IConfigurableMachine, IFluidCopiable, the {@code ore_bedrock_oil} BFS target (deferred with the
+ * IFluidCopiable, the {@code ore_bedrock_oil} BFS target (deferred with the
  * fracking tower), and the oreUranium/oreAsbestos gas-pocket easter eggs ({@code onDrill} is an empty
  * seam: the gas blocks are unported).
  */
@@ -250,14 +250,19 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
      */
     protected void suckDeposit(BlockPos pos, DepositDataMaps.Deposit deposit, int primary, int secondaryMin,
                                int secondaryMax, double drainChance) {
+        suckAmounts(pos, deposit, deposit.primaryAmount(primary), deposit.secondaryAmount(secondaryMin),
+                deposit.secondaryAmount(secondaryMax), drainChance);
+    }
+
+    /** {@link #suckDeposit} with the amounts already scaled by the deposit's yield. */
+    protected void suckAmounts(BlockPos pos, DepositDataMaps.Deposit deposit, int primary, int min, int max,
+                               double drainChance) {
         FluidType first = deposit.primaryFluid();
         FluidType second = deposit.secondaryFluid();
         tanks[0].setTankType(first);
-        tanks[0].setFill(Math.min(tanks[0].getFill() + deposit.primaryAmount(primary), tanks[0].getMaxFill()));
+        tanks[0].setFill(Math.min(tanks[0].getFill() + primary, tanks[0].getMaxFill()));
         if (second != Fluids.NONE) {
             tanks[1].setTankType(second);
-            int min = deposit.secondaryAmount(secondaryMin);
-            int max = deposit.secondaryAmount(secondaryMax);
             tanks[1].setFill(Math.min(tanks[1].getFill() + min + level.getRandom().nextInt(max - min + 1), tanks[1].getMaxFill()));
         }
         Block empty = deposit.emptyBlock();

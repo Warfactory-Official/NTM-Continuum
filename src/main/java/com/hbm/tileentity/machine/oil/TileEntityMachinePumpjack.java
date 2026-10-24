@@ -24,6 +24,10 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 import com.hbm.tileentity.TilePort.PortDef;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import com.hbm.tileentity.IConfigurableMachine;
 
 /**
  * Pumpjack, 1:1 port of the 1.12.2 {@code TileEntityMachinePumpjack} (config name "pumpjack"):
@@ -34,13 +38,37 @@ import com.hbm.tileentity.TilePort.PortDef;
  */
 public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 
-    protected static final int maxPower = 250_000;
-    protected static final int consumption = 200;
-    protected static final int delay = 25;
-    protected static final int oilPerDeposit = 750;
-    protected static final int gasPerDepositMin = 50;
-    protected static final int gasPerDepositMax = 250;
-    protected static final double drainChance = 0.025D;
+    public static int maxPower = 250_000;
+    public static int consumption = 200;
+    public static int delay = 25;
+    public static int oilPerDeposit = 750;
+    public static int gasPerDepositMin = 50;
+    public static int gasPerDepositMax = 250;
+    public static double drainChance = 0.025D;
+
+    public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
+        @Override public String getConfigName() { return "pumpjack"; }
+
+        @Override public void readIfPresent(JsonObject obj) {
+            maxPower = IConfigurableMachine.grab(obj, "I:powerCap", maxPower);
+            consumption = IConfigurableMachine.grab(obj, "I:consumption", consumption);
+            delay = IConfigurableMachine.grab(obj, "I:delay", delay);
+            oilPerDeposit = IConfigurableMachine.grab(obj, "I:oilPerDeposit", oilPerDeposit);
+            gasPerDepositMin = IConfigurableMachine.grab(obj, "I:gasPerDepositMin", gasPerDepositMin);
+            gasPerDepositMax = IConfigurableMachine.grab(obj, "I:gasPerDepositMax", gasPerDepositMax);
+            drainChance = IConfigurableMachine.grab(obj, "D:drainChance", drainChance);
+        }
+
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
+            writer.name("I:powerCap").value(maxPower);
+            writer.name("I:consumption").value(consumption);
+            writer.name("I:delay").value(delay);
+            writer.name("I:oilPerDeposit").value(oilPerDeposit);
+            writer.name("I:gasPerDepositMin").value(gasPerDepositMin);
+            writer.name("I:gasPerDepositMax").value(gasPerDepositMax);
+            writer.name("D:drainChance").value(drainChance);
+        }
+    };
 
     public float rot = 0;
     public float prevRot = 0;

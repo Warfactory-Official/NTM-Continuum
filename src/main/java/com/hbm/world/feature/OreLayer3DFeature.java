@@ -1,123 +1,116 @@
 package com.hbm.world.feature;
 
-import dev.golem.core.world.Compat;
 import com.hbm.blocks.ModOreBlocks;
-import com.hbm.config.WorldConfig;
+import com.hbm.lib.HbmBlockTags;
+import com.hbm.world.gen.ConfigInt;
+import com.hbm.world.gen.WorldgenKeys;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.LegacyRandomSource;
-import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
+
+import java.util.List;
+
+import static com.hbm.world.feature.FeatureCodecs.field;
+import static com.hbm.world.feature.FeatureCodecs.lazy;
 
 /**
- * The 3D noise ore layers, 1.12.2's {@code OreLayer3D}, registered three times in
- * {@code MainRegistry} in this exact order:
+ * {@code hbm:ore_layers}: 1.7's {@code OreLayer3D} layers, in list order (hematite, bauxite, malachite). A cell between
+ * {@code min_y} and {@code max_y} becomes the layer's {@code state} when {@code nX · nY · nZ > threshold} and it is a
+ * solid host block. The thresholds are in the hundreds because the product is of unnormalised noise.
  * <pre>
- *   id 0  hematite   scaleH 0.04  scaleV 0.25  threshold 230
- *   id 1  bauxite    scaleH 0.03  scaleV 0.15  threshold 300
- *   id 2  malachite  scaleH 0.10  scaleV 0.15  threshold 275
+ *   nX = noiseX(y · scale_v, z · scale_h)
+ *   nY = noiseY(x · scale_h, z · scale_h)
+ *   nZ = noiseX(y · scale_v, (chunkZ + 8 + xOff) · scale_h)     // sic
  * </pre>
- *
- * <p>Three independent Perlin fields are sampled per cell and <b>multiplied</b>; the cell becomes the
- * resource stone when {@code nX · nY · nZ > threshold}. Because it is a triple product of unnormalised
- * noise, the thresholds are in the hundreds, see {@link LegacyPerlinNoise} for why that matters.
- *
- * <pre>
- *   nX = noiseX(y · scaleV, z · scaleH)
- *   nY = noiseY(x · scaleH, z · scaleH)
- *   nZ = noiseX(y · scaleV, (chunkZ + 8 + xOff) · scaleH)     // sic, see below
- * </pre>
- *
- * <p><b>The 1.7 sampling bug is ported (AGENTS.md section 3).</b> 1.7.10 fills {@code cacheX[o][y]} from
- * noiseX at the column's z and {@code cacheZ[o][y]} from noiseZ at its x, then reads {@code nz = cacheX[ox][y]}:
- * the "z" factor is noiseX again, taken at the z-coordinate the x offset indexes, and noiseZ is built but never
- * read. The ore bodies of every 1.7 world come from that product. The noiseZ generator is still constructed
- * so nothing else shifts.
- *
- * <p>The layers span y 6–64 over the chunk's +8 decoration offset, and only replace solid rock that
- * passes the standard stone predicate.
- *
- * <p><b>Fix vs upstream:</b> upstream's noise seed offset is {@code seed + 101/102/103 + id}, where {@code id}
- * comes from a static counter incremented at registration, so reordering the registrations changes the world.
- * Each layer here carries its explicit upstream id (0/1/2), which makes generation order-independent while
- * producing the same fields.
+ * The 1.7 sampling bug is ported: 1.7 reads {@code nz = cacheX[ox][y]}, noiseX again at the z the x offset indexes, so
+ * noiseZ is never read. The fields are seeded {@code seed + 101 + seed_offset} and {@code seed + 102 + seed_offset}
+ * (1.7's static registration counter, pinned per layer).
  */
-public class OreLayer3DFeature extends Feature<NoneFeatureConfiguration> {
+public class OreLayer3DFeature extends Feature<OreLayer3DFeature.Config> {
 
-    private static final int MIN_Y = 6;
-    private static final int MAX_Y = 64;
+    public record Layer(BlockState state, double scaleH, double scaleV, double threshold, long seedOffset,
+                        ConfigInt enabled) {
+        public static final Codec<Layer> CODEC = RecordCodecBuilder.create(i -> i.group(
+                BlockState.CODEC.fieldOf("state").forGetter(Layer::state),
+                Codec.DOUBLE.fieldOf("scale_h").forGetter(Layer::scaleH),
+                Codec.DOUBLE.fieldOf("scale_v").forGetter(Layer::scaleV),
+                Codec.DOUBLE.fieldOf("threshold").forGetter(Layer::threshold),
+                field(Codec.LONG, "seed_offset", 0L).forGetter(Layer::seedOffset),
+                field(ConfigInt.CODEC, "enabled", ConfigInt.of(1)).forGetter(Layer::enabled)
+        ).apply(i, Layer::new));
+    }
 
-    /** One configured layer. {@code id} is the upstream static-counter value, pinned. */
-    private record Layer(int id, double scaleH, double scaleV, double threshold) {}
+    public record Config(List<Layer> layers, RuleTest host, int minY, int maxY) implements FeatureConfiguration {
+        public static final Codec<Config> CODEC = RecordCodecBuilder.create(i -> i.group(
+                lazy(Layer.CODEC.listOf(), "layers", Config::layers17).forGetter(Config::layers),
+                FeatureCodecs.rule("host", () -> FeatureCodecs.tag(HbmBlockTags.LEGACY_STONE)).forGetter(Config::host),
+                field(Codec.INT, "min_y", 6).forGetter(Config::minY),
+                field(Codec.INT, "max_y", 64).forGetter(Config::maxY)
+        ).apply(i, Config::new));
 
-    private static final Layer HEMATITE = new Layer(0, 0.04D, 0.25D, 230D);
-    private static final Layer BAUXITE = new Layer(1, 0.03D, 0.15D, 300D);
-    private static final Layer MALACHITE = new Layer(2, 0.10D, 0.15D, 275D);
+        static List<Layer> layers17() {
+            return List.of(
+                    new Layer(ModOreBlocks.stone_resource_hematite.get().defaultBlockState(), 0.04D, 0.25D, 230D, 0,
+                            ConfigInt.key(WorldgenKeys.HEMATITE)),
+                    new Layer(ModOreBlocks.stone_resource_bauxite.get().defaultBlockState(), 0.03D, 0.15D, 300D, 1,
+                            ConfigInt.key(WorldgenKeys.BAUXITE)),
+                    new Layer(ModOreBlocks.stone_resource_malachite.get().defaultBlockState(), 0.10D, 0.15D, 275D, 2,
+                            ConfigInt.key(WorldgenKeys.MALACHITE)));
+        }
+    }
 
-    private record Noises(LegacyPerlinNoise x, LegacyPerlinNoise y, LegacyPerlinNoise z) {}
-
-    private Noises hematiteNoise, bauxiteNoise, malachiteNoise;
-    private long noiseSeed = Long.MIN_VALUE;
-
-    public OreLayer3DFeature(Codec<NoneFeatureConfiguration> codec) {
+    public OreLayer3DFeature(Codec<Config> codec) {
         super(codec);
     }
 
-    private static Noises noisesFor(long seed, Layer layer) {
-        return new Noises(
-                new LegacyPerlinNoise(new WorldgenRandom(new LegacyRandomSource(seed + 101L + layer.id())), 4),
-                new LegacyPerlinNoise(new WorldgenRandom(new LegacyRandomSource(seed + 102L + layer.id())), 4),
-                new LegacyPerlinNoise(new WorldgenRandom(new LegacyRandomSource(seed + 103L + layer.id())), 4));
+    private static LegacyPerlinNoise noiseX(long seed, Layer layer) {
+        return NoiseCache.get(seed + 101L + layer.seedOffset(), 4);
+    }
+
+    private static LegacyPerlinNoise noiseY(long seed, Layer layer) {
+        return NoiseCache.get(seed + 102L + layer.seedOffset(), 4);
     }
 
     @Override
-    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
+    public boolean place(FeaturePlaceContext<Config> context) {
+        Config c = context.config();
         WorldGenLevel level = context.level();
-        long seed = level.getSeed();
-        if (hematiteNoise == null || noiseSeed != seed) {
-            noiseSeed = seed;
-            hematiteNoise = noisesFor(seed, HEMATITE);
-            bauxiteNoise = noisesFor(seed, BAUXITE);
-            malachiteNoise = noisesFor(seed, MALACHITE);
-        }
-
         int cx = context.origin().getX();
         int cz = context.origin().getZ();
-
-        if (WorldConfig.enableHematite) {
-            generate(level, cx, cz, HEMATITE, hematiteNoise, ModOreBlocks.stone_resource_hematite.get().defaultBlockState());
-        }
-        if (WorldConfig.enableBauxite) {
-            generate(level, cx, cz, BAUXITE, bauxiteNoise, ModOreBlocks.stone_resource_bauxite.get().defaultBlockState());
-        }
-        if (WorldConfig.enableMalachite) {
-            generate(level, cx, cz, MALACHITE, malachiteNoise, ModOreBlocks.stone_resource_malachite.get().defaultBlockState());
+        for (Layer layer : c.layers()) {
+            if (layer.enabled().get() == 0) continue;
+            generate(level, context.random(), cx, cz, c, layer);
         }
         return true;
     }
 
     /**
      * Test seam: the noise product 1.7 compares against the threshold for one cell of the chunk at block
-     * {@code (cx, cz)}, offsets {@code xOff, zOff}, layer {@code 0..2} (hematite, bauxite, malachite).
+     * {@code (cx, cz)}, offsets {@code xOff, zOff}, default layer {@code 0..2} (hematite, bauxite, malachite).
      */
     public static double cellProduct17(long seed, int layerId, int cx, int cz, int xOff, int zOff, int y) {
-        Layer layer = layerId == 0 ? HEMATITE : layerId == 1 ? BAUXITE : MALACHITE;
-        Noises noise = noisesFor(seed, layer);
+        Layer layer = Config.layers17().get(layerId);
         int x = cx + 8 + xOff;
         int z = cz + 8 + zOff;
-        double nY = noise.y().getValue(x * layer.scaleH(), z * layer.scaleH());
-        double nX = noise.x().getValue(y * layer.scaleV(), z * layer.scaleH());
-        double nZ = noise.x().getValue(y * layer.scaleV(), (cz + 8 + xOff) * layer.scaleH());
+        double nY = noiseY(seed, layer).getValue(x * layer.scaleH(), z * layer.scaleH());
+        double nX = noiseX(seed, layer).getValue(y * layer.scaleV(), z * layer.scaleH());
+        double nZ = noiseX(seed, layer).getValue(y * layer.scaleV(), (cz + 8 + xOff) * layer.scaleH());
         return nX * nY * nZ;
     }
 
-    private static void generate(WorldGenLevel level, int cx, int cz, Layer layer, Noises noise, BlockState ore) {
+    private static void generate(WorldGenLevel level, RandomSource rand, int cx, int cz, Config c, Layer layer) {
+        LegacyPerlinNoise noiseX = noiseX(level.getSeed(), layer);
+        LegacyPerlinNoise noiseY = noiseY(level.getSeed(), layer);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        int startX = cx + 8;   // the old +8 decoration offset
+        int startX = cx + 8;   // the 1.7 +8 decoration offset
         int startZ = cz + 8;
         int floor = level.getMinY();
         int ceiling = level.getMaxY();
@@ -127,19 +120,18 @@ public class OreLayer3DFeature extends Feature<NoneFeatureConfiguration> {
             for (int zOff = 0; zOff < 16; zOff++) {
                 int z = startZ + zOff;
                 if (!level.hasChunk(x >> 4, z >> 4)) continue;
-                double nY = noise.y().getValue(x * layer.scaleH(), z * layer.scaleH());
+                double nY = noiseY.getValue(x * layer.scaleH(), z * layer.scaleH());
 
-                for (int y = MAX_Y; y >= MIN_Y; y--) {
+                for (int y = c.maxY(); y >= c.minY(); y--) {
                     if (y < floor || y > ceiling) continue;
-                    double nX = noise.x().getValue(y * layer.scaleV(), z * layer.scaleH());
-                    // 1.7: nz = cacheX[ox][y], i.e. noiseX at z = chunkZ + 8 + xOff (see the class comment)
-                    double nZ = noise.x().getValue(y * layer.scaleV(), (startZ + xOff) * layer.scaleH());
+                    double nX = noiseX.getValue(y * layer.scaleV(), z * layer.scaleH());
+                    double nZ = noiseX.getValue(y * layer.scaleV(), (startZ + xOff) * layer.scaleH());
                     if (nX * nY * nZ <= layer.threshold()) continue;
 
                     pos.set(x, y, z);
                     BlockState state = level.getBlockState(pos);
-                    if (Compat.isSolidRender(state) && OreVeinPlacer.STONE.test(state)) {
-                        level.setBlock(pos, ore, 2 | 16);
+                    if (Compat.isSolidRender(state) && c.host().test(state, rand)) {
+                        level.setBlock(pos, layer.state(), 2 | 16);
                     }
                 }
             }

@@ -77,6 +77,16 @@ public final class WorldgenKeys {
     public static final String BEDROCK_OIL = bind("2.22_bedrockOilSpawnRate", () -> WorldConfig.bedrockOilSpawn);
     public static final String METEORITE = bind("2.23_meteoriteSpawnRate", () -> WorldConfig.meteoriteSpawn);
 
+    // 02_ores: noise strata switches and the nether bedrock ore weights
+    public static final String HEMATITE = bind("2.L00_enableHematite", () -> on(WorldConfig.enableHematite));
+    public static final String MALACHITE = bind("2.L01_enableMalachite", () -> on(WorldConfig.enableMalachite));
+    public static final String BAUXITE = bind("2.L02_enableBauxite", () -> on(WorldConfig.enableBauxite));
+    public static final String SULFUR_CAVE = bind("2.C00_enableSulfurCave", () -> on(WorldConfig.enableSulfurCave));
+    public static final String ASBESTOS_CAVE = bind("2.C01_enableAsbestosCave", () -> on(WorldConfig.enableAsbestosCave));
+    public static final String BEDROCK_GLOWSTONE = bind("2.BN00_bedrockGlowstoneWeight", () -> WorldConfig.bedrockGlowstoneSpawn);
+    public static final String BEDROCK_PHOSPHORUS = bind("2.BN01_bedrockPhosphorusWeight", () -> WorldConfig.bedrockPhosphorusSpawn);
+    public static final String BEDROCK_QUARTZ = bind("2.BN01_bedrockQuartzWeight", () -> WorldConfig.bedrockQuartzSpawn);
+
     // 01_general / 528
     public static final String PLUTONIUM_ORE = bind("1.02_enablePlutoniumNetherOre", () -> on(GeneralConfig.enablePlutoniumOre));
     public static final String RAD_HOTSPOT = bind("1.06_enableRadHotspotSpawn", () -> on(GeneralConfig.enableRad));
@@ -84,6 +94,7 @@ public final class WorldgenKeys {
     public static final String VAULTS = bind("1.15_enableVaultSpawn", () -> on(DungeonConfig.enableVaults));
     public static final String COLTAN_SPAWN = bind("X528_enableColtanSpawning", () -> on(GeneralConfig.enable528ColtanSpawn));
     public static final String COLTAN_RATE = bind("X528_oreColtanFrequency", () -> GeneralConfig.coltanRate);
+    public static final String COLTAN_DEPOSIT = bind("X528_enableColtanDeposit", () -> on(GeneralConfig.enable528ColtanDeposit));
     public static final String BOSNIA = bind("X528_enableBosniaSimulator", () -> on(DungeonConfig.enable528BosniaSimulator));
 
     // 04_dungeons: one per n chunks (0 = off)

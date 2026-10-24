@@ -3,7 +3,6 @@ package com.hbm.entity.mob.glyphid;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import dev.golem.core.data.Tags;
 
-import com.hbm.items.ModFoodItems;
 import com.hbm.config.MobConfig;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
@@ -52,8 +51,6 @@ import dev.golem.core.world.CompatMeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -303,20 +300,6 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
         if (path != null) Navigations.navigateTo(getNavigation(), path, 1.0D);
     }
 
-    @Override
-    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-        super.dropCustomDeathLoot(level, source, killedByPlayer);
-
-        int looting = 0;
-        if (source.getEntity() instanceof LivingEntity attacker) {
-            looting = Compat.lootingLevel(level, attacker);
-        }
-
-        Item drop = isOnFire() ? ModFoodItems.glyphid_meat_grilled.get() : ModFoodItems.glyphid_meat.get();
-        if (random.nextInt(2) == 0) {
-            spawnAtLocation(level, new ItemStack(drop, ((int) getGlyphidScale() * 2) + looting));
-        }
-    }
 
     public @Nullable Player findTargetCandidate() {
         if (hasEffect(MobEffects.BLINDNESS)) return null;

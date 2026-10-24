@@ -1,15 +1,15 @@
 package com.hbm.items.food;
 
-import com.hbm.config.VersatileConfig;
+import com.hbm.handler.ConsumableTreatment;
+import com.hbm.handler.ConsumableTreatment.Context;
+import com.hbm.handler.ConsumableTreatments;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
-import dev.golem.core.world.Effects;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,9 +21,10 @@ import net.minecraft.world.level.Level;
 /**
  * 1.7 {@code ItemCanteen}: a reusable flask whose durability bar is its cooldown. Drinking (10 ticks) sets the
  * damage to the maximum; it counts back down by one every 20 ticks the holder exists, and only an empty bar
- * lets it be drunk again. The stylish flask is the only canteen.
+ * lets it be drunk again. The stylish flask is the only canteen. The cooldown is the item's durability, so it stays
+ * here; the drink's effects are its {@code hbm:consumable_treatment}.
  */
-public class ItemCanteen extends CompatItem {
+public class ItemCanteen extends CompatItem implements ConsumableTreatments.Handled {
 
     public ItemCanteen(Properties properties) {
         super(properties);
@@ -38,7 +39,7 @@ public class ItemCanteen extends CompatItem {
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (stack.getDamageValue() == 0 && !VersatileConfig.hasPotionSickness(player)) {
+        if (stack.getDamageValue() == 0 && !ConsumableTreatments.blocked(this, player)) {
             player.startUsingItem(hand);
             return InteractionResult.CONSUME;
         }
@@ -48,12 +49,8 @@ public class ItemCanteen extends CompatItem {
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         stack.setDamageValue(stack.getMaxDamage());
-        if (!level.isClientSide()) {
-            Effects.add(entity, MobEffects.NAUSEA, 10 * 20, 0);
-            Effects.add(entity, Effects.strength(), 30 * 20, 2);
-            // 1.7 VersatileConfig: off at the default PotionConfig.potionSickness
-            VersatileConfig.applyPotionSickness(entity, 5);
-        }
+        ConsumableTreatment treatment = ConsumableTreatments.of(this);
+        if (treatment != null && level instanceof ServerLevel server) treatment.run(Context.eaten(server, entity));
         return stack;
     }
 

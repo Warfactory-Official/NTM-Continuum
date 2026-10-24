@@ -10,6 +10,7 @@ import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.machine.GroundwaterPumps;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
 import com.hbm.tileentity.machine.TileEntityMachinePumpSteam;
 import net.minecraft.core.BlockPos;
@@ -69,7 +70,7 @@ public class MachinePump extends BlockMultiblockMachine implements IEnergyConnec
             text.add("§c<- §r" + pump.water.getTankType().getDisplayNameString() + ": "
                     + String.format(Locale.US, "%,d", pump.water.getFill()) + " / "
                     + String.format(Locale.US, "%,d", pump.water.getMaxFill()) + "mB");
-            if (pump.getBlockPos().getY() > TileEntityMachinePumpSteam.GROUND_HEIGHT) {
+            if (pump.getBlockPos().getY() > GroundwaterPumps.groundHeight) {
                 text.add("&[" + warningColor() + "&]! ! ! ALTITUDE ! ! !");
             }
             if (!pump.onGround) text.add("&[" + warningColor() + "&]! ! ! NO VALID GROUND ! ! !");
@@ -80,7 +81,7 @@ public class MachinePump extends BlockMultiblockMachine implements IEnergyConnec
             text.add("§c<- §r" + pump.water.getTankType().getDisplayNameString() + ": "
                     + String.format(Locale.US, "%,d", pump.water.getFill()) + " / "
                     + String.format(Locale.US, "%,d", pump.water.getMaxFill()) + "mB");
-            if (pump.getBlockPos().getY() > TileEntityMachinePumpElectric.GROUND_HEIGHT) {
+            if (pump.getBlockPos().getY() > GroundwaterPumps.groundHeight) {
                 text.add("&[" + warningColor() + "&]! ! ! ALTITUDE ! ! !");
             }
             if (!pump.onGround) text.add("&[" + warningColor() + "&]! ! ! NO VALID GROUND ! ! !");

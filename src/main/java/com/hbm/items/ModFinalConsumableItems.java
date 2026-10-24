@@ -111,7 +111,7 @@ public final class ModFinalConsumableItems {
     /** Every tier of an apple shows the plain apple's sprite. */
     private static RegistryObject<ItemAppleSchrabidium> apple(String id, boolean lead, int tier, int nutrition,
                                                                float saturation) {
-        return reg(id, HbmTab.CONSUMABLES, p -> new ItemAppleSchrabidium(p, lead, tier),
+        return reg(id, HbmTab.CONSUMABLES, p -> new ItemAppleSchrabidium(p, tier),
                 and(food(nutrition, saturation, true), p -> p.rarity(Rarities.APPLE_RARITY[tier])))
                 .transform(Presets.sprite(lead ? "hbm:items/apple_lead" : "hbm:items/apple_schrabidium"));
     }
