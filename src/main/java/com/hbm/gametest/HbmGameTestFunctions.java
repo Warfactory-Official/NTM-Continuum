@@ -1471,6 +1471,12 @@ public final class HbmGameTestFunctions {
 
     public static final GameTests.Function FALLOUT_SPARED_LEAVES_NOT_SOLID =
             TESTS.function("pt1012_fallout_spared_leaves_not_solid", 100, 24, () -> PickAndFalloutGameTests::falloutSparedLeavesAreNotSolid);
+    public static final GameTests.Function FALLOUT_URANIUM_TO_SCHRABIDIUM =
+            TESTS.function("fallout_uranium_to_schrabidium", 100, () -> PickAndFalloutGameTests::falloutUraniumToSchrabidium);
+    public static final GameTests.Function FALLOUT_RAIN_CONVERTS_URANIUM =
+            TESTS.function("fallout_rain_converts_uranium", 400, 40, () -> PickAndFalloutGameTests::falloutRainConvertsUranium);
+    public static final GameTests.Function FALLOUT_URANIUM_OUTGAS_ONLY_ON_BREAK =
+            TESTS.function("fallout_uranium_outgas_only_on_break", 20, () -> PickAndFalloutGameTests::uraniumOutgasOnlyOnBreak);
 
     // --- volcano cores + blobs (implementations live in VolcanoGameTests) ---
     public static final GameTests.Function VOLCANO_GROWING_CORE_CLIMBS =

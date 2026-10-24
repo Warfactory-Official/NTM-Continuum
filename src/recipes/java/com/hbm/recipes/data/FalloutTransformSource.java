@@ -107,6 +107,9 @@ public final class FalloutTransformSource extends DataSource<TransformFile> {
                     .max(i * 5).solid(true).matchesBlock(block("hbm:ore_uranium")));
             if (m > 4) entries.add(FalloutEntry.builder().addPrimary(sellafield("hbm:ore_sellafield_schrabidium", m), 1).addPrimary(sellafield("hbm:ore_sellafield_uranium_scorched", m), 9)
                     .max(i * 5).solid(true).matchesBlock(block("hbm:ore_gneiss_uranium")));
+            // port: the deepslate twin converts like its stone ore
+            if (m > 4) entries.add(FalloutEntry.builder().addPrimary(sellafield("hbm:ore_sellafield_schrabidium", m), 1).addPrimary(sellafield("hbm:ore_sellafield_uranium_scorched", m), 9)
+                    .max(i * 5).solid(true).matchesBlock(block("hbm:ore_uranium_deepslate")));
             entries.add(FalloutEntry.builder().addPrimary(sellafield("hbm:ore_sellafield_radgem", m), 1)
                     .max(i * 5).solid(true).matchesBlock(block("minecraft:diamond_ore")));
             entries.add(FalloutEntry.builder().addPrimary(sellafield("hbm:ore_sellafield_radgem", m), 1)

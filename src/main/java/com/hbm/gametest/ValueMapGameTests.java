@@ -117,7 +117,7 @@ public final class ValueMapGameTests {
      * SHA-256 of {@link #falloutDump}, with the rules' JSON keys sorted. 1.7 FalloutConfigJSON's solid marks and
      * order, no 1.12 opaque flag or log axis, no snow-block entry, the nether uranium entry.
      */
-    static final String HASH_FALLOUT = "700bd2cd7c85a79d993cfe9a72e41f3bf75b1b8a6d98cc734e9b82b19a8a5186";
+    static final String HASH_FALLOUT = "0704cc27092e5f3ff8cc8c9a998e2fda0953709e46bb4f0a46009717d949ea18";
 
     public static void hazards(GameTestHelper helper) {
         boolean old = RadiationConfig.enableContaminationOnGround;

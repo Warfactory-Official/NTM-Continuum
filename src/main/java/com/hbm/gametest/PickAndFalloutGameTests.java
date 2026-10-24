@@ -3,22 +3,29 @@ package com.hbm.gametest;
 import com.hbm.blocks.ModConveyorBlocks;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
+import com.hbm.blocks.ModNuclearBlocks;
+import com.hbm.blocks.ModOreBlocks;
 import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.BlockFallout;
+import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityFalloutRain;
 import com.hbm.items.ModConveyorItems;
 import com.hbm.items.block.ItemBlockDecoVariant;
 import com.hbm.tileentity.deco.TileEntityTrinket;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.world.CompatBlock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -263,6 +270,86 @@ public final class PickAndFalloutGameTests {
         helper.assertTrue(converted == 5, "four spared leaves above the trunk stopped the column: " + converted
                 + " of 5 logs became waste logs (1.7: only opaque full cubes count as depth)");
         helper.succeed();
+    }
+
+    /** Uranium ore inside 25% of the fallout: weights 1 : 9, but 1.7's {@code r <= 0} pick makes it 20% schrabidium. */
+    public static void falloutUraniumToSchrabidium(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos ore = helper.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlock(ore.below(), Blocks.STONE.defaultBlockState(), 3);
+        Block schrab = ModFalloutBlocks.ore_sellafield_schrabidium.get();
+        Block scorched = ModFalloutBlocks.ore_sellafield_uranium_scorched.get();
+        RandomSource rand = RandomSource.create(4815162342L);
+        for (Block input : List.of(ModNuclearBlocks.ore_uranium.get(), ModOreBlocks.ore_uranium_deepslate.get())) {
+            level.setBlock(ore, input.defaultBlockState(), 3);
+            int schrabCount = 0;
+            int scorchedCount = 0;
+            int trials = 1000;
+            for (int i = 0; i < trials; i++) {
+                BlockState after = EntityFalloutRain.stompColumnForTest(level, ore.getX(), ore.getZ(), 3.0D, rand).get(ore);
+                if (after != null && after.is(schrab)) schrabCount++;
+                else if (after != null && after.is(scorched)) scorchedCount++;
+            }
+            helper.assertTrue(schrabCount + scorchedCount == trials && schrabCount > 140 && schrabCount < 260,
+                    input + " at 3%: " + schrabCount + " schrabidium, " + scorchedCount + " scorched of " + trials
+                            + " (1.7: about 20% schrabidium, the rest scorched)");
+        }
+        helper.succeed();
+    }
+
+    /** Uranium ore releases radon when mined, never when another block replaces it (1.7 dropBlockAsItemWithChance). */
+    public static void uraniumOutgasOnlyOnBreak(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
+        level.setBlock(pos, ModNuclearBlocks.ore_uranium.get().defaultBlockState(), 3);
+        level.setBlock(pos, Blocks.STONE.defaultBlockState(), 3);
+        helper.assertTrue(level.getBlockState(pos).is(Blocks.STONE), "replacing uranium ore left " + level.getBlockState(pos));
+        level.setBlock(pos, ModNuclearBlocks.ore_uranium.get().defaultBlockState(), 3);
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_PICKAXE));
+        helper.assertTrue(player.gameMode.destroyBlock(pos), "survival could not mine uranium ore");
+        helper.assertTrue(level.getBlockState(pos).is(ModNuclearBlocks.gas_radon.get()),
+                "mined uranium ore left " + level.getBlockState(pos) + ", not radon");
+        helper.succeed();
+    }
+
+    /** The same conversion through a real fallout entity: its chunk scan, the transform table and the block writes. */
+    public static void falloutRainConvertsUranium(GameTestHelper helper) {
+        var level = helper.getLevel();
+        int scale = 16;
+        BlockPos centre = helper.absolutePos(new BlockPos(20, 2, 20));
+        for (int dx = -scale; dx <= scale; dx++) {
+            for (int dz = -scale; dz <= scale; dz++) {
+                // bedrock under the stone: fallout drops soft blocks standing on air
+                level.setBlock(centre.offset(dx, -2, dz), Blocks.BEDROCK.defaultBlockState(), 2);
+                level.setBlock(centre.offset(dx, -1, dz), Blocks.STONE.defaultBlockState(), 2);
+                level.setBlock(centre.offset(dx, 0, dz), ModNuclearBlocks.ore_uranium.get().defaultBlockState(), 2);
+            }
+        }
+        EntityFalloutRain rain = new EntityFalloutRain(ModEntities.FALLOUT_RAIN.get(), level);
+        rain.setPos(centre.getX(), centre.getY() + 1.0D, centre.getZ());
+        rain.setScale(scale);
+        level.addFreshEntity(rain);
+        Block schrab = ModFalloutBlocks.ore_sellafield_schrabidium.get();
+        Block scorched = ModFalloutBlocks.ore_sellafield_uranium_scorched.get();
+        helper.succeedWhen(() -> {
+            helper.assertTrue(rain.isRemoved(), "fallout still running");
+            int inner = 0;
+            int ore = 0;
+            int schrabCount = 0;
+            for (int dx = -scale; dx <= scale; dx++) {
+                for (int dz = -scale; dz <= scale; dz++) {
+                    if (Math.hypot(dx, dz) * 100.0D / scale > 25.0D) continue;
+                    BlockState after = level.getBlockState(centre.offset(dx, 0, dz));
+                    inner++;
+                    if (after.is(schrab) || after.is(scorched)) ore++;
+                    if (after.is(schrab)) schrabCount++;
+                }
+            }
+            // each band's falloff tail can hand a cell to the slaked sellafite row after it, as in 1.7
+            helper.assertTrue(ore * 10 >= inner * 8 && schrabCount > 0, inner + " uranium ores inside 25%: " + ore
+                    + " became sellafite ore, " + schrabCount + " of them schrabidium");
+        });
     }
 
     private static Map<BlockPos, BlockState> stomp(GameTestHelper helper, BlockPos column) {

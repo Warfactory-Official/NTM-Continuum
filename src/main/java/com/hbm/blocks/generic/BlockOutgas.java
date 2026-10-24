@@ -13,6 +13,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -102,19 +103,26 @@ public class BlockOutgas extends CompatBlock {
         }
     }
 
+    /** 1.7 dropBlockAsItemWithChance: gas escapes when the block is mined or blown up, not when it is replaced. */
+    @Override
+    public void spawnAfterBreak(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
+        super.spawnAfterBreak(state, level, pos, tool, dropExperience);
+        if (!onBreak || this == ModOutgasBlocks.ancient_scrap.get()) return;
+        Block gas = getGas();
+        if (gas != Blocks.AIR) level.setBlock(pos, gas.defaultBlockState(), 3);
+    }
+
+    /** Ancient scrap's gas is 1.7 breakBlock, which runs on any removal. */
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         super.onBlockRemoved(state, level, pos, movedByPiston);
         // Carried by a sub-level system, not mined: nothing escapes at the old position.
-        if (level.isClientSide() || !onBreak || SubLevels.isMoving(level)) return;
+        if (level.isClientSide() || !onBreak || this != ModOutgasBlocks.ancient_scrap.get() || SubLevels.isMoving(level)) return;
         Block gas = getGas();
-        if (gas != Blocks.AIR) level.setBlock(pos, gas.defaultBlockState(), 3);
-
-        if (this == ModOutgasBlocks.ancient_scrap.get()) {
-            // The source is gas by now, so schedule the callback on the gas block itself.
-            if (gas instanceof BlockGasRadonTomb && level instanceof ServerLevel server)
-                server.scheduleTick(pos, gas, 1);
-        }
+        if (gas == Blocks.AIR) return;
+        level.setBlock(pos, gas.defaultBlockState(), 3);
+        // The source is gas by now, so schedule the callback on the gas block itself.
+        if (gas instanceof BlockGasRadonTomb && level instanceof ServerLevel server) server.scheduleTick(pos, gas, 1);
     }
 
     @Override
