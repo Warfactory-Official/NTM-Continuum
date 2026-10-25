@@ -113,7 +113,7 @@ jobs:
           body: |
             Automated pre-release build. Not for general use.
 
-            Each `hbm-<loader>-<mc>` jar needs the matching `golemcore-<loader>-<mc>` jar (included,
+            Each `hbm-<loader>-<version>+<mc>` jar needs the `golemcore-<loader>` jar for the same `<mc>` (included,
             built from Golem Core `${{ steps.jars.outputs.golem }}`).
           files: dist/*.jar
 
