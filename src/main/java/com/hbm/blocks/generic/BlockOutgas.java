@@ -67,6 +67,7 @@ public class BlockOutgas extends CompatBlock {
 
         if (GeneralConfig.enableAsbestosDust) {
             if (this == ModBlocks.ore_asbestos.get() || this == ModBlocks.ore_gneiss_asbestos.get()
+                    || this == ModOreBlocks.ore_asbestos_deepslate.get()
                     || this == ModOutgasBlocks.block_asbestos.get() || this == ModOutgasBlocks.deco_asbestos.get()
                     || this == ModOutgasBlocks.brick_asbestos.get() || this == ModBlocks.tile_lab.get()
                     || this == ModBlocks.tile_lab_cracked.get() || this == ModOutgasBlocks.tile_lab_broken.get()) {

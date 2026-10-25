@@ -45,6 +45,11 @@ public class EntityMinecartCrate extends EntityMinecartContainerBase {
         }
     }
 
+    @Override
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return ItemStacks.fitsInContainerItem(stack);
+    }
+
     /**
      * 1.7 killMinecart: the whole hold packs into the dropped item, nothing spills. A packed cart whose
      * compressed NBT tops 6000 bytes explodes instead.

@@ -24,7 +24,6 @@ sourceSets["main"].java {
 
 legacyForge {
     version = prop("deps.forge")
-    accessTransformers.from(rootProject.file("src/main/resources/META-INF/hbm.legacy.accesstransformer.cfg"))
     runs {
         configureEach {
             systemProperty("forge.enabledGameTestNamespaces", modId)
@@ -185,6 +184,10 @@ dependencies {
         propOrNull("deps.ae2")?.let { modRuntimeOnly("maven.modrinth:ae2:$it") { isTransitive = false } }
         propOrNull("deps.ae2_guideme")?.let { modRuntimeOnly("maven.modrinth:guideme:$it") { isTransitive = false } }
     }
+    // Refined Storage 1.12, dev runs only (`-Prefinedstorage.run=true`), through Golem Core's item capability.
+    if (propOrNull("refinedstorage.run") == "true") {
+        propOrNull("deps.refinedstorage")?.let { modRuntimeOnly("maven.modrinth:refined-storage:$it") { isTransitive = false } }
+    }
     // Mo' Bends, client dev runs only (`-Pmobends.run=true`), with the Architectury API it requires. HBM's armour follows
     // its bent skeleton through Golem Core (dev.golem.core.render.BodyAnimations); nothing here compiles against it.
     if (propOrNull("mobends.run") == "true") {
@@ -255,14 +258,8 @@ tasks.processResources {
     filesMatching(listOf("META-INF/mods.toml", "pack.mcmeta", "*.mixins.json")) { expand(props) }
     exclude(
         "fabric.mod.json", "$modId.fabric.mixins.json", "META-INF/neoforge.mods.toml",
-        "META-INF/accesstransformer.cfg", "META-INF/hbm.legacy.accesstransformer.cfg",
-        "META-INF/hbm.neoforge.accesstransformer.cfg", "*.accesswidener",
         "data/$modId/neoforge/**", "data/neoforge/**",
     )
-    from(rootProject.file("src/main/resources/META-INF/hbm.legacy.accesstransformer.cfg")) {
-        into("META-INF")
-        rename { "accesstransformer.cfg" }
-    }
 }
 
 tasks.jar {

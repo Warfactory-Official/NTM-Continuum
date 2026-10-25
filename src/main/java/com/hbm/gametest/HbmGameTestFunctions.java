@@ -667,6 +667,8 @@ public final class HbmGameTestFunctions {
     // --- press recipes (implementations live in PressGameTests) ---
     public static final GameTests.Function PRESS_CASING =
             TESTS.function("press_casing", 20, () -> PressGameTests::casingRecipes);
+    public static final GameTests.Function PRESS_COKE_GRAPHITE =
+            TESTS.function("press_coke_to_graphite", 400, 8, () -> PressGameTests::cokeToGraphite);
     public static final GameTests.Function AMMO_PRESS_RECIPES =
             TESTS.function("ammo_press_recipes", 20, () -> AmmoPressGameTests::recipes);
     public static final GameTests.Function AMMO_PRESS_LAYOUT_MENU =
@@ -830,6 +832,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("rc_nuke_pwr_heat", 60, 8, () -> PwrGameTests::heatAndMeltdown);
     public static final GameTests.Function RC_NUKE_REASIM_BOILER =
             TESTS.function("rc_nuke_reasim_boiler_steam", 60, () -> RcNukeGameTests::reasimBoilerSteam);
+    public static final GameTests.Function RC_NUKE_REASIM_PIPED =
+            TESTS.function("rc_nuke_reasim_boiler_piped", 140, 10, () -> RcNukeGameTests::reasimBoilerPiped);
 
     // --- reactors audit, round two: long runs against 1.7 numbers ---
     public static final GameTests.Function RC_NUKE2_FUSION_TABLE =
@@ -1422,6 +1426,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("rc_logi_crate_lockable", 40, 16, () -> RcLogiGameTests::crateLockable);
     public static final GameTests.Function RC_LOGI_CRATE_PLAYER_BREAK =
             TESTS.function("rc_logi_crate_player_break", 20, () -> RcLogiGameTests::crateKeepsContentsOnPlayerBreak);
+    public static final GameTests.Function RC_LOGI_CRATE_NO_NESTING =
+            TESTS.function("rc_logi_crate_no_nesting", 20, () -> RcLogiGameTests::crateNoNesting);
 
     public static final GameTests.Function RC_LOGI_DOOR_PADLOCK =
             TESTS.function("rc_logi_door_padlock", 40, 16, () -> RcLogiGameTests::doorPadlockAndKey);
@@ -1860,6 +1866,10 @@ public final class HbmGameTestFunctions {
             TESTS.function("chemical_armour_unbreaking", 40, 8, () -> ChemicalImpactGameTests::unbreaking);
     public static final GameTests.Function FOREIGN_ITEMS_READ_ONLY_VIEW =
             TESTS.function("foreign_items_read_only_view", 20, () -> ForeignItemsGameTests::readOnlyView);
+    public static final GameTests.Function FOREIGN_ITEMS_HOPPER_RULES =
+            TESTS.function("foreign_items_hopper_rules", 20, 12, () -> ForeignItemsGameTests::hopperRules);
+    public static final GameTests.Function FOREIGN_ITEMS_VIEWER_TOTALS =
+            TESTS.function("foreign_items_viewer_totals", 20, 16, () -> ForeignItemsGameTests::viewerTotals);
 
     public static void init() {}
 

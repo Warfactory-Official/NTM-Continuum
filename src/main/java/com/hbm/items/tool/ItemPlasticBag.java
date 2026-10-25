@@ -57,4 +57,9 @@ public class ItemPlasticBag extends CompatItem {
         ItemStack held = getContents(stack);
         if (!held.isEmpty()) tooltip.add(held.getHoverName());
     }
+
+    @Override
+    public boolean canFitInsideContainerItems() {
+        return false;
+    }
 }

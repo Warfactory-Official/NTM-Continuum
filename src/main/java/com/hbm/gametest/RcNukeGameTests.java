@@ -14,6 +14,7 @@ import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.entity.effect.EntitySpear;
 import com.hbm.entity.projectile.EntityRBMKDebris;
 import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
 import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingStep;
@@ -32,6 +33,8 @@ import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKInlet;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKOutlet;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKRod;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
+import com.hbm.tileentity.machine.storage.TileEntityBarrel;
+import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.registry.BlockEntities;
 import java.util.ArrayList;
@@ -512,5 +515,50 @@ public final class RcNukeGameTests {
             helper.succeed();
         });
         helper.onEachTick(() -> base.heat = Math.max(base.heat, 1_500D));
+    }
+
+    /**
+     * A 3 x 3 core of full columns fed from a water barrel through a duct, its outlet piped into a steam barrel. The
+     * inlet and outlet touch upper cells, which find their column through the core index.
+     */
+    public static void reasimBoilerPiped(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        boolean old = RBMKDials.REASIM_BOILERS.get(level);
+        RBMKDials.REASIM_BOILERS.set(level.getServer(), true);
+        List<BlockEntityRBMKBase> columns = new ArrayList<>();
+        for (int x = 3; x <= 5; x++) for (int z = 2; z <= 4; z++) {
+            BlockPos core = new BlockPos(x, 1, z);
+            helper.setBlock(core, ModRBMKBlocks.rbmk_blank.get().defaultBlockState());
+            ModRBMKBlocks.rbmk_blank.get().fillSpace(level, helper.absolutePos(core), Direction.NORTH);
+            columns.add(GameTestHelpers.blockEntity(helper, core, BlockEntityRBMKBase.class));
+        }
+        TileEntityBarrel water = barrel(helper, new BlockPos(0, 2, 3), Fluids.WATER, 2, 64_000);
+        duct(helper, new BlockPos(1, 2, 3), Fluids.WATER);
+        helper.setBlock(new BlockPos(2, 2, 3), ModRBMKBlocks.rbmk_steam_inlet.get().defaultBlockState());
+        helper.setBlock(new BlockPos(6, 3, 3), ModRBMKBlocks.rbmk_steam_outlet.get().defaultBlockState());
+        duct(helper, new BlockPos(7, 3, 3), Fluids.SUPERHOTSTEAM);
+        TileEntityBarrel steam = barrel(helper, new BlockPos(8, 3, 3), Fluids.SUPERHOTSTEAM, 0, 0);
+        helper.onEachTick(() -> { for (BlockEntityRBMKBase column : columns) column.heat = Math.max(column.heat, 1_400D); });
+        helper.runAfterDelay(100, () -> {
+            RBMKDials.REASIM_BOILERS.set(level.getServer(), old);
+            BlockEntityRBMKBase middle = columns.get(4);
+            helper.assertTrue(steam.tank.getFill() >= 1_000, "the steam barrel holds " + steam.tank.getFill() + " mB (water barrel "
+                    + water.tank.getFill() + ", middle column water " + middle.reasimWater + ", steam " + middle.reasimSteam + ")");
+            helper.succeed();
+        });
+    }
+
+    private static TileEntityBarrel barrel(GameTestHelper helper, BlockPos rel, FluidType type, int mode, int fill) {
+        helper.setBlock(rel, ModFluidNetBlocks.barrel_steel.get().defaultBlockState());
+        TileEntityBarrel barrel = GameTestHelpers.blockEntity(helper, rel, TileEntityBarrel.class);
+        barrel.tank.setTankType(type);
+        barrel.tank.setFill(fill);
+        barrel.mode = (short) mode;
+        return barrel;
+    }
+
+    private static void duct(GameTestHelper helper, BlockPos rel, FluidType type) {
+        helper.setBlock(rel, ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
+        ((TileEntityFluidDuctNT) helper.getLevel().getBlockEntity(helper.absolutePos(rel))).setFluidType(type);
     }
 }

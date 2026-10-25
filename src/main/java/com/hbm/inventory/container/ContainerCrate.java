@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.SlotCrate;
 import com.hbm.tileentity.machine.storage.CrateType;
 import com.hbm.tileentity.machine.storage.TileEntityCrate;
 import net.minecraft.core.BlockPos;
@@ -55,7 +56,7 @@ public class ContainerCrate extends AbstractContainerMenu {
         for (int row = 0; row < type.rows; row++) {
             for (int col = 0; col < type.columns; col++) {
                 int slot = col + row * type.columns;
-                this.addSlot(new Slot(machine, slot, type.crateX + col * 18, type.crateY + row * 18));
+                this.addSlot(new SlotCrate(machine, slot, type.crateX + col * 18, type.crateY + row * 18));
             }
         }
 

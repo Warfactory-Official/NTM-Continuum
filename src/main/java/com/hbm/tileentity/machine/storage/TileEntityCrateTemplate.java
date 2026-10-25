@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine.storage;
 import com.hbm.inventory.container.ContainerCrateTemplate;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
@@ -42,6 +43,11 @@ public class TileEntityCrateTemplate extends TileEntityMachineBase implements Me
     @Override
     public Component getDisplayName() {
         return hasCustomName() ? Component.literal(getName()) : Component.translatable(getDefaultName());
+    }
+
+    @Override
+    public boolean isItemValidForSlot(int slot, ItemStack stack) {
+        return ItemStacks.fitsInContainerItem(stack);
     }
 
     @Override

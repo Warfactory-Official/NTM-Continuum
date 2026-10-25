@@ -33,4 +33,9 @@ public class ItemBlockMassStorage extends CompatBlockItem {
         lines.add(Component.literal(String.format(Locale.US, "%,d / %,d",
                 MassStorageItemData.stockpile(stack), storageType.capacity)));
     }
+
+    @Override
+    public boolean canFitInsideContainerItems() {
+        return false;
+    }
 }

@@ -1,8 +1,11 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.blocks.ModOutgasBlocks;
+import com.hbm.blocks.ModTerrainBlocks;
+import com.hbm.blocks.generic.BlockOreBasalt;
 import com.hbm.blocks.generic.BlockOutgas;
 import com.hbm.Constants;
 import com.hbm.items.ModItems;
@@ -41,6 +44,8 @@ public final class OutgasGameTests {
             TESTS.function("outgas_ancient_spread", 20, () -> OutgasGameTests::ancientSpread);
     public static final GameTests.Function MINED_DROPS =
             TESTS.function("outgas_mined_blocks_drop", 20, () -> OutgasGameTests::minedDrops);
+    public static final GameTests.Function ASBESTOS_SOURCES =
+            TESTS.function("outgas_asbestos_sources", 20, 8, () -> OutgasGameTests::asbestosSources);
 
     public static void init() {}
 
@@ -158,6 +163,28 @@ public final class OutgasGameTests {
             helper.assertTrue(gasCount > 1, "ancient scrap did not spread tomb radon after breaking");
             helper.succeed();
         });
+    }
+
+    /** Every 1.7 asbestos source: replaced, it stays replaced; mined, it drops and leaves asbestos gas. */
+    public static void asbestosSources(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND_PICKAXE));
+        Block[] sources = {ModBlocks.ore_asbestos.get(), ModBlocks.ore_gneiss_asbestos.get(), ModOreBlocks.ore_asbestos_deepslate.get(),
+                ModBlocks.tile_lab.get(), ModBlocks.tile_lab_cracked.get(), ModTerrainBlocks.ore_basalt(BlockOreBasalt.Type.ASBESTOS)};
+        for (int i = 0; i < sources.length; i++) {
+            Block block = sources[i];
+            BlockPos pos = helper.absolutePos(new BlockPos(i, 2, 1));
+            level.setBlock(pos, block.defaultBlockState(), 3);
+            level.setBlock(pos, Blocks.STONE.defaultBlockState(), 3);
+            helper.assertTrue(level.getBlockState(pos).is(Blocks.STONE), "replacing " + block + " left " + level.getBlockState(pos));
+            BlockPos mined = pos.south(3);
+            level.setBlock(mined, block.defaultBlockState(), 3);
+            helper.assertTrue(player.gameMode.destroyBlock(mined), "survival could not mine " + block);
+            helper.assertTrue(level.getBlockState(mined).is(ModNuclearBlocks.gas_asbestos.get()), "mined " + block + " left " + level.getBlockState(mined));
+            helper.assertTrue(!level.getEntitiesOfClass(ItemEntity.class, new AABB(mined).inflate(0.5D)).isEmpty(), "mined " + block + " dropped nothing");
+        }
+        helper.succeed();
     }
 
     private static void assertMapping(GameTestHelper helper, BlockOutgas block, Block expectedGas, int rate) {

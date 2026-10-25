@@ -112,4 +112,9 @@ public class ItemCasingBag extends CompatItem {
             return false;
         }
     }
+
+    @Override
+    public boolean canFitInsideContainerItems() {
+        return false;
+    }
 }

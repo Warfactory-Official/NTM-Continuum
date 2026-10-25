@@ -29,4 +29,9 @@ public class ItemBlockTemplateCrate extends CompatBlockItem {
         lines.add(Component.literal(used + "/" + TemplateCrateLayout.SLOTS
                 + " Slots used (" + percent + "%)").withStyle(color));
     }
+
+    @Override
+    public boolean canFitInsideContainerItems() {
+        return false;
+    }
 }

@@ -71,11 +71,10 @@ public class BlockOreBasalt extends CompatBlock {
         }
     }
 
-    /** 1.7 {@code dropBlockAsItemWithChance}: breaking the asbestos ore leaves a dust cell behind. */
+    /** 1.7 {@code dropBlockAsItemWithChance}: mining or blasting the asbestos ore leaves dust, replacing it does not. */
     @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (type == Type.ASBESTOS && !movedByPiston && !level.isClientSide() && level.getBlockState(pos).isAir()) {
-            level.setBlockAndUpdate(pos, ModNuclearBlocks.gas_asbestos.get().defaultBlockState());
-        }
+    public void spawnAfterBreak(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
+        super.spawnAfterBreak(state, level, pos, tool, dropExperience);
+        if (type == Type.ASBESTOS) level.setBlockAndUpdate(pos, ModNuclearBlocks.gas_asbestos.get().defaultBlockState());
     }
 }

@@ -7,6 +7,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
 import dev.golem.core.registry.Entities;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -49,7 +50,18 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase impleme
             protected void onContentsChanged(int slot) {
                 TileEntityCrateBase.this.setChanged();
             }
+
+            @Override
+            public boolean isItemValid(int slot, ItemStack stack) {
+                return canPlaceItem(slot, stack);
+            }
         };
+    }
+
+    /** Like a shulker box, a crate takes nothing that carries other items. */
+    @Override
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return ItemStacks.fitsInContainerItem(stack);
     }
 
     /** The untranslated default name, 1.7's {@code getInventoryName} without a custom name. */

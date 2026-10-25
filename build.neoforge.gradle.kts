@@ -33,7 +33,8 @@ val neoforgeFloor = propOrNull("deps.neoforge_floor") ?: neoforgeVersion
 neoForge {
     version = neoforgeVersion
 
-    accessTransformers.from(rootProject.file("src/main/resources/META-INF/hbm.neoforge.accesstransformer.cfg"))
+    val at = rootProject.file("src/main/resources/META-INF/accesstransformer.cfg")
+    if (at.exists()) accessTransformers.from(at)
 
     runs {
         configureEach {
@@ -175,11 +176,12 @@ val ccServerMod: Configuration by configurations.creating
 val sableServerMod: Configuration by configurations.creating
 val kubejsServerMod: Configuration by configurations.creating
 val ae2ServerMod: Configuration by configurations.creating
+val rsServerMod: Configuration by configurations.creating
 for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestServer")) {
     val modsDir = layout.projectDirectory.dir("runs/$run/mods")
     val sync = tasks.register("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
-        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run, -Pkubejs.run, -Pae2.run)."
-        inputs.files(ccServerMod, sableServerMod, kubejsServerMod, ae2ServerMod)
+        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run, -Pkubejs.run, -Pae2.run, -Prefinedstorage.run)."
+        inputs.files(ccServerMod, sableServerMod, kubejsServerMod, ae2ServerMod, rsServerMod)
         outputs.dir(modsDir)
         doLast {
             project.sync {
@@ -187,6 +189,7 @@ for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestSe
                 from(sableServerMod)
                 from(kubejsServerMod)
                 from(ae2ServerMod)
+                from(rsServerMod)
                 into(modsDir)
             }
         }
@@ -246,6 +249,19 @@ dependencies {
             propOrNull("deps.ae2")?.let { add(conf.name, "maven.modrinth:ae2:$it") { isTransitive = false } }
             propOrNull("deps.ae2_guideme")?.let { add(conf.name, "maven.modrinth:guideme:$it") { isTransitive = false } }
         }
+    }
+
+    // Refined Storage, dev runs only (`-Prefinedstorage.run=true`): it reaches HBM's machines through the item and
+    // fluid capabilities Golem Core exposes, so HBM has no Refined Storage dependency.
+    if (propOrNull("refinedstorage.run") == "true") {
+        for (conf in listOf(devModJar, rsServerMod)) {
+            propOrNull("deps.refinedstorage")?.let { add(conf.name, "maven.modrinth:refined-storage:$it") { isTransitive = false } }
+        }
+    }
+
+    // Holo Inventory Modern, client dev runs only (`-Pholoinventory.run=true`): reads HBM blocks through the item capability.
+    if (propOrNull("holoinventory.run") == "true") {
+        propOrNull("deps.holoinventory")?.let { devModJar("curse.maven:holo-inventory-modern-1720961:$it") }
     }
 
     // Mo' Bends, client dev runs only (`-Pmobends.run=true`), with the Architectury API it requires. HBM's armour follows
@@ -376,12 +392,7 @@ fun ProcessResources.expandModResources() {
     // Only Forge generates a refmap; naming an absent one leaves the jar pointing at a file it lacks.
     filesMatching("*.mixins.json") { filter { if (it.trimStart().startsWith("\"refmap\"")) null else it } }
     // NeoForge reads only neoforge.mods.toml; the Forge template would ship unexpanded.
-    exclude("fabric.mod.json", "$modId.fabric.mixins.json", "data/$modId/forge/**", "META-INF/mods.toml",
-        "META-INF/hbm.legacy.accesstransformer.cfg", "META-INF/hbm.neoforge.accesstransformer.cfg", "*.accesswidener")
-    from(rootProject.file("src/main/resources/META-INF/hbm.neoforge.accesstransformer.cfg")) {
-        into("META-INF")
-        rename { "accesstransformer.cfg" }
-    }
+    exclude("fabric.mod.json", "$modId.fabric.mixins.json", "data/$modId/forge/**", "META-INF/mods.toml")
 }
 
 tasks.processResources { expandModResources() }

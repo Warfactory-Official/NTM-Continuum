@@ -4,13 +4,13 @@ import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.BlockCargoElevator;
-import com.hbm.blocks.machine.CargoElevatorShape;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.OrderedShape;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -103,17 +103,13 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
         shapeHeight = height;
         shapeExtension = extension;
         double top = height + 1D;
-        shape = Shapes.empty();
-        var boxes = new AABB[]{
+        // 1.7 getAABBs order: the four guide rails, then the platform.
+        shape = OrderedShape.of(new AABB(-1D, 0D, -1D, 2D, top, 2D),
                 new AABB(-1D, 0D, -1D, -0.75D, top, -0.75D),
                 new AABB(-1D, 0D, 1.75D, -0.75D, top, 2D),
                 new AABB(1.75D, 0D, -1D, 2D, top, -0.75D),
                 new AABB(1.75D, 0D, 1.75D, 2D, top, 2D),
-                new AABB(-1D, 0.75D + extension, -1D, 2D, 1D + extension, 2D)};
-        for (var box : boxes) {
-            shape = Shapes.or(shape, Shapes.create(box));
-        }
-        shape = new CargoElevatorShape(shape, boxes, height);
+                new AABB(-1D, 0.75D + extension, -1D, 2D, 1D + extension, 2D));
         return shape;
     }
 
@@ -124,7 +120,8 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
         double lower = pos.getY() + 1D + Math.min(extension, prevExtension);
         List<Entity> riders = level.getEntitiesOfClass(Entity.class,
                 new AABB(pos.getX() - 0.99D, lower, pos.getZ() - 0.99D,
-                        // Entity queries exclude touching faces; a descending rider stands exactly at upper.
+                        // port: 1.7's query also excludes touching faces and lets a descending rider fall; this
+                        // includes one standing exactly at upper so it rides down with the platform.
                         pos.getX() + 1.99D, Math.nextUp(upper), pos.getZ() + 1.99D));
 
         for (Entity entity : riders) {

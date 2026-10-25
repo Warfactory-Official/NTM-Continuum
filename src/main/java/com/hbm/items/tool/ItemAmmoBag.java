@@ -133,4 +133,9 @@ public class ItemAmmoBag extends CompatItem {
             return result;
         }
     }
+
+    @Override
+    public boolean canFitInsideContainerItems() {
+        return false;
+    }
 }

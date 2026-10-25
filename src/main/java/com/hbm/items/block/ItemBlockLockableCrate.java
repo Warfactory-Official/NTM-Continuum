@@ -87,4 +87,9 @@ public class ItemBlockLockableCrate extends CompatBlockItem {
             if (amount > 0) list.add(Component.literal("...and " + amount + " more.").withStyle(ChatFormatting.AQUA));
         }
     }
+
+    @Override
+    public boolean canFitInsideContainerItems() {
+        return false;
+    }
 }

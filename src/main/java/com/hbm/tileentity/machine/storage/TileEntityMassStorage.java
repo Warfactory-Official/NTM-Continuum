@@ -156,7 +156,7 @@ public class TileEntityMassStorage extends TileEntityCrateBase implements IRORVa
     }
 
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return slot == INPUT_SLOT || slot == FILTER_SLOT;
+        return slot == INPUT_SLOT && canPlaceItem(slot, stack) || slot == FILTER_SLOT;
     }
 
     private boolean matchesFilter(ItemStack stack) {
@@ -250,7 +250,7 @@ public class TileEntityMassStorage extends TileEntityCrateBase implements IRORVa
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return !isLocked() && slot == INPUT_SLOT && matchesFilter(stack);
+        return !isLocked() && slot == INPUT_SLOT && matchesFilter(stack) && canPlaceItem(slot, stack);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.inventory.SlotCrate;
 import com.hbm.tileentity.machine.storage.TemplateCrateLayout;
 import com.hbm.tileentity.machine.storage.TileEntityCrateTemplate;
 import dev.golem.core.world.Compat;
@@ -41,7 +42,7 @@ public class ContainerCrateTemplate extends AbstractContainerMenu {
 
         for (int row = 0; row < TemplateCrateLayout.ROWS; row++) {
             for (int col = 0; col < TemplateCrateLayout.COLUMNS; col++) {
-                addSlot(new Slot(crate, col + row * TemplateCrateLayout.COLUMNS,
+                addSlot(new SlotCrate(crate, col + row * TemplateCrateLayout.COLUMNS,
                         TemplateCrateLayout.CRATE_X + col * 18, TemplateCrateLayout.CRATE_Y + row * 18));
             }
         }

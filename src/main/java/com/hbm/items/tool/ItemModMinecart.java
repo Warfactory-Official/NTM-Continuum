@@ -123,4 +123,9 @@ public class ItemModMinecart extends Item {
             return (this.types & (1 << type.ordinal())) > 0;
         }
     }
+
+    @Override
+    public boolean canFitInsideContainerItems() {
+        return type != EnumMinecart.CRATE;
+    }
 }

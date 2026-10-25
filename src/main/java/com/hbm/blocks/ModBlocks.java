@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import com.hbm.blocks.generic.BlockOutgas;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -259,9 +260,9 @@ public final class ModBlocks {
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.AXE);
     public static final RegistryObject<Block> brick_fire = block("brick_fire", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(10.0F, 21.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> tile_lab = block("tile_lab", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(1.0F, 12.0F).sound(SoundType.GLASS))
+    public static final RegistryObject<Block> tile_lab = block("tile_lab", HbmTab.BLOCKS, p -> new BlockOutgas(p, false, 5, true), p -> p.requiresCorrectToolForDrops().strength(1.0F, 12.0F).sound(SoundType.GLASS))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> tile_lab_cracked = block("tile_lab_cracked", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(1.0F, 12.0F).sound(SoundType.GLASS))
+    public static final RegistryObject<Block> tile_lab_cracked = block("tile_lab_cracked", HbmTab.BLOCKS, p -> new BlockOutgas(p, false, 5, true), p -> p.requiresCorrectToolForDrops().strength(1.0F, 12.0F).sound(SoundType.GLASS))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> block_slag = block("block_slag", HbmTab.BLOCKS, BlockSlag::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 2.0F).sound(SoundType.STONE))
             .model(d -> d.models(Models.group().and("", Models.cubeAll("hbm:blocks/block_slag")).and("_cracked", Models.cubeAll("hbm:blocks/block_slag_broken"))).states(Variants.select("cracked", "false", "", "true", "_cracked")).blockItemDirect()).loot(Loot.self()).tag(BlockTag.PICKAXE);
@@ -289,7 +290,7 @@ public final class ModBlocks {
             .transform(Presets.cubeAll()).loot(RawOres.drop("hbm:raw_beryllium", Loot.self())).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_lignite = block("ore_lignite", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 9.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:lignite", 1, 1)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_asbestos = oreXp("ore_asbestos", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(5.0F, 9.0F))
+    public static final RegistryObject<Block> ore_asbestos = block("ore_asbestos", HbmTab.RESOURCES, p -> new BlockOutgas(p, true, 5, true), p -> p.requiresCorrectToolForDrops().strength(5.0F, 9.0F).randomTicks())
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:ingot_asbestos", 1, 1)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_rare = block("ore_rare", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:chunk_ore_rare", 1, 1)).tag(BlockTag.PICKAXE);
@@ -308,7 +309,7 @@ public final class ModBlocks {
             .transform(Presets.cubeAll()).loot(RawOres.drop("minecraft:raw_gold", Loot.self())).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_gneiss_copper = block("ore_gneiss_copper", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(1.5F, 6.0F))
             .transform(Presets.cubeAll()).loot(RawOres.drop("minecraft:raw_copper", Loot.self())).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> ore_gneiss_asbestos = oreXp("ore_gneiss_asbestos", HbmTab.RESOURCES, 0, p -> p.requiresCorrectToolForDrops().strength(1.5F, 6.0F))
+    public static final RegistryObject<Block> ore_gneiss_asbestos = block("ore_gneiss_asbestos", HbmTab.RESOURCES, p -> new BlockOutgas(p, true, 5, true), p -> p.requiresCorrectToolForDrops().strength(1.5F, 6.0F).randomTicks())
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("hbm:ingot_asbestos", 1, 1)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> ore_gneiss_lithium = block("ore_gneiss_lithium", HbmTab.RESOURCES, p -> p.requiresCorrectToolForDrops().strength(1.5F, 6.0F))
             .transform(Presets.cubeAll()).loot(RawOres.drop("hbm:raw_lithium", Loot.self())).tag(BlockTag.PICKAXE);

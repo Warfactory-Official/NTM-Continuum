@@ -237,8 +237,8 @@ public final class ModOreBlocks {
             RawOres.drop("hbm:raw_cobalt", Loot.oreMultiplied("hbm:fragment_cobalt", 4, 9)));
     public static final RegistryObject<Block> ore_lignite_deepslate = deepslateOre("ore_lignite", 5.0F, 15.0F,
             Loot.oreMultiplied("hbm:lignite", 1, 1));
-    public static final RegistryObject<Block> ore_asbestos_deepslate = deepslateOre("ore_asbestos", 5.0F, 15.0F,
-            Loot.oreMultiplied("hbm:ingot_asbestos", 1, 1));
+    public static final RegistryObject<BlockOutgas> ore_asbestos_deepslate = deepslateOre("ore_asbestos", 5.0F, 15.0F,
+            p -> new BlockOutgas(p.randomTicks(), true, 5, true), Loot.oreMultiplied("hbm:ingot_asbestos", 1, 1));
     public static final RegistryObject<Block> ore_coltan_deepslate = deepslateOre("ore_coltan", 15.0F, 10.0F,
             Loot.oreMultiplied("hbm:fragment_coltan", 1, 1));
 

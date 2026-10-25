@@ -5,6 +5,7 @@ import com.hbm.blocks.ModDoorBlocks;
 import com.hbm.blocks.ModPneumaticBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.network.PneumoTube;
+import com.hbm.inventory.container.ContainerCrate;
 import com.hbm.tileentity.machine.TileEntityCargoElevator;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageExporter;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageImporter;
@@ -229,6 +230,26 @@ public final class RcLogiGameTests {
         helper.assertFalse(carried.isEmpty(), "no crate item dropped");
         ItemStack slot = ItemStacks.carriedItems(carried, "inventory", 36).get(5);
         helper.assertTrue(slot.is(Items.DIAMOND) && slot.getCount() == 7, "the crate item carries " + slot + " in slot 5, expected 7 diamonds");
+        helper.succeed();
+    }
+
+    /** As in ntm-next, a crate takes no crate, shulker box or filled container: not by hand, hopper or item handler. */
+    public static void crateNoNesting(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
+        level.setBlock(pos, ModStorageBlocks.crate_steel.get().defaultBlockState(), 3);
+        TileEntityCrate crate = (TileEntityCrate) level.getBlockEntity(pos);
+        ContainerCrate menu = new ContainerCrate(0, GameTestHelpers.mockServerPlayerInLevel(helper).getInventory(), crate);
+        ItemStack filledChest = new ItemStack(Items.CHEST);
+        ItemStacks.setCarriedItems(filledChest, List.of(new ItemStack(Items.DIAMOND)));
+        for (ItemStack stack : List.of(new ItemStack(ModStorageBlocks.crate_iron.get()), new ItemStack(ModStorageBlocks.mass_storage_iron.get()),
+                new ItemStack(Items.SHULKER_BOX), filledChest)) {
+            helper.assertFalse(menu.getSlot(0).mayPlace(stack), "the crate slot takes " + stack);
+            helper.assertFalse(crate.canPlaceItemThroughFace(0, stack, Direction.UP), "a hopper puts " + stack + " into the crate");
+            helper.assertTrue(crate.inventory.insertItem(0, stack, true).getCount() == stack.getCount(), "the item handler takes " + stack);
+        }
+        ItemStack chest = new ItemStack(Items.CHEST);
+        helper.assertTrue(menu.getSlot(0).mayPlace(chest) && crate.canPlaceItemThroughFace(0, chest, Direction.UP), "an empty chest no longer fits");
         helper.succeed();
     }
 

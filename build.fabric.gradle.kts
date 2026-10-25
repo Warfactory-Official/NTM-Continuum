@@ -419,6 +419,11 @@ dependencies {
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devRuntime("maven.modrinth:jade:$it") }
     // Applied Energistics 2, dev runs only (`-Pae2.run=true`), through Golem Core's dev.golem.core.autocraft. 1.20.1 only.
     if (propOrNull("ae2.run") == "true") propOrNull("deps.ae2")?.let { devRuntime("maven.modrinth:ae2:$it") }
+    // Refined Storage, dev runs only (`-Prefinedstorage.run=true`); it reads HBM's blocks through Fabric's transfer API.
+    if (propOrNull("refinedstorage.run") == "true") {
+        propOrNull("deps.refinedstorage")?.let { devRuntime("maven.modrinth:refined-storage:$it") }
+        propOrNull("deps.refinedstorage_cloth")?.let { devRuntime("maven.modrinth:cloth-config:$it") }
+    }
     propOrNull("deps.sodium_fabric")?.let { devRuntime("maven.modrinth:sodium:$it") }
     // Iris (Oculus on Forge 1.20.1) for testing under shader packs: `-Pshaders.run=true` puts it in the client run.
     // Client-side, dev runtime only, never compiled against or published; off by default so the standard runs
@@ -482,15 +487,13 @@ dependencies {
     }
 }
 
-// Unobfuscated Minecraft uses the official namespace; older Loom nodes use named mappings. The
-// 1.20.1 file also exposes AbstractMinecart.getDropItem, which no longer exists on the newer nodes.
-val accessWidenerName = if (!obfuscated) "$modId.accesswidener"
-    else if (mcVersion.startsWith("1.21")) "$modId.legacy-1.21.accesswidener"
-    else "$modId.legacy.accesswidener"
-val allAccessWideners = listOf("$modId.accesswidener", "$modId.legacy-1.21.accesswidener", "$modId.legacy.accesswidener")
-
 loom {
-    accessWidenerPath = rootProject.file("src/main/resources/$accessWidenerName")
+    // 1.20.1 vanilla hides AbstractMinecart.getDropItem from any subclass outside its package; every other
+    // node either patches it (Forge) or moved it (1.21+), so the widening is stated per era, not globally.
+    val awName = if (obfuscated && mcVersion.startsWith("1.20")) "$modId.legacy.accesswidener"
+    else "$modId.accesswidener"
+    val aw = rootProject.file("src/main/resources/$awName")
+    if (aw.exists()) accessWidenerPath = aw
 
     runs {
         named("client") {
@@ -550,10 +553,6 @@ tasks.processResources {
     )
     inputs.properties(props)
     filesMatching(listOf("fabric.mod.json", "pack.mcmeta", "*.mixins.json")) { expand(props) }
-    filesMatching("fabric.mod.json") {
-        filter { it.replace("$modId.accesswidener", accessWidenerName) }
-    }
-    exclude(allAccessWideners.filter { it != accessWidenerName })
     // Only Forge generates a refmap; naming an absent one leaves the jar pointing at a file it lacks.
     filesMatching("*.mixins.json") { filter { if (it.trimStart().startsWith("\"refmap\"")) null else it } }
     // The Sable integration's entry points, only on nodes that declare Sable. Appended by line rather than templated,
@@ -586,7 +585,6 @@ tasks.processResources {
     // `data/neoforge/**` is the NeoForge-namespaced data maps (furnace fuels), which Fabric supplies
     // through FuelRegistry/FuelValueEvents instead — excluded so the jar carries no inert files.
     exclude("META-INF/mods.toml", "META-INF/neoforge.mods.toml", "META-INF/accesstransformer.cfg",
-        "META-INF/hbm.legacy.accesstransformer.cfg", "META-INF/hbm.neoforge.accesstransformer.cfg",
         "data/$modId/neoforge/**", "data/$modId/forge/**", "data/neoforge/**")
 }
 

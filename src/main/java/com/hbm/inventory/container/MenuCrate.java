@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.SlotCrate;
 import com.hbm.items.block.CrateHeldOpening;
 import com.hbm.tileentity.machine.storage.CrateType;
 import dev.golem.core.gui.CompatContainerMenu;
@@ -50,7 +51,7 @@ public class MenuCrate extends CompatContainerMenu {
         for (int row = 0; row < type.rows; row++) {
             for (int col = 0; col < type.columns; col++) {
                 int slot = col + row * type.columns;
-                addSlot(new Slot(container, slot, type.crateX + col * 18, type.crateY + row * 18));
+                addSlot(new SlotCrate(container, slot, type.crateX + col * 18, type.crateY + row * 18));
             }
         }
 

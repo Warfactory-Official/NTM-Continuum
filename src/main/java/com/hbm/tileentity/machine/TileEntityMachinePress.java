@@ -183,8 +183,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         return switch (i) {
             case 0 -> level != null && Compat.burnDuration(level, stack) > 0;
             case 1 -> stack.getItem() instanceof ItemStamp;
-            case 2 -> !(stack.getItem() instanceof ItemStamp)
-                    && (level == null || Compat.burnDuration(level, stack) <= 0);
+            case 2 -> !(stack.getItem() instanceof ItemStamp);
             case 3 -> false;
             default -> i >= 4 && i <= 12;
         };

@@ -1,10 +1,10 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModDecoCrateMenus;
+import com.hbm.inventory.SlotCrate;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.Slot;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -21,7 +21,7 @@ public class ContainerFileCabinet extends ContainerCrateBase {
         super(ModDecoCrateMenus.FILE_CABINET.get(), containerId, tile, 8);
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 4; j++) {
-                this.addSlot(new Slot(crate, j + i * 4, 53 + j * 18, 18 + i * 36));
+                this.addSlot(new SlotCrate(crate, j + i * 4, 53 + j * 18, 18 + i * 36));
             }
         }
         this.playerInv(inventory, 8, 88);

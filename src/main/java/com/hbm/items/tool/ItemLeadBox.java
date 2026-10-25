@@ -105,4 +105,9 @@ public class ItemLeadBox extends CompatItem {
             return player == this.player && (player.getMainHandItem() == target || player.getOffhandItem() == target);
         }
     }
+
+    @Override
+    public boolean canFitInsideContainerItems() {
+        return false;
+    }
 }

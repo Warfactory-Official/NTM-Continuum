@@ -269,4 +269,9 @@ public class ItemToolBox extends CompatItem implements ModelState {
             ModDataComponents.TOOLBOX_OPEN.remove(target);
         }
     }
+
+    @Override
+    public boolean canFitInsideContainerItems() {
+        return false;
+    }
 }

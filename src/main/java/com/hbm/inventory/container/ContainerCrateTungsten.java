@@ -2,11 +2,11 @@ package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModDecoCrateMenus;
 import com.hbm.inventory.ModHeldCrateMenus;
+import com.hbm.inventory.SlotCrate;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.Slot;
 import org.jspecify.annotations.Nullable;
 
 /** 1.7 {@code ContainerCrateTungsten}: three rows of nine at (8, 18), the player inventory at (8, 86). */
@@ -30,7 +30,7 @@ public class ContainerCrateTungsten extends ContainerCrateBase {
     private void layout(Inventory inventory) {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
-                this.addSlot(new Slot(crate, j + i * 9, 8 + j * 18, 18 + i * 18));
+                this.addSlot(new SlotCrate(crate, j + i * 9, 8 + j * 18, 18 + i * 18));
             }
         }
         this.playerInv(inventory, 8, 32 + 18 * 3);
