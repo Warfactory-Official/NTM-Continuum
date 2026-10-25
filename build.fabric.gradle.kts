@@ -424,7 +424,11 @@ dependencies {
         propOrNull("deps.refinedstorage")?.let { devRuntime("maven.modrinth:refined-storage:$it") }
         propOrNull("deps.refinedstorage_cloth")?.let { devRuntime("maven.modrinth:cloth-config:$it") }
     }
-    propOrNull("deps.sodium_fabric")?.let { devRuntime("maven.modrinth:sodium:$it") }
+    // Voxy (far terrain on Sodium), dev runs only (`-Pvoxy.run=true`): harness VoxyWorldFluids has it bake HBM's fluids.
+    // It pins one Sodium release, which then replaces the dev Sodium.
+    val voxy = if (propOrNull("voxy.run") == "true") propOrNull("deps.voxy") else null
+    voxy?.let { devRuntime("maven.modrinth:voxy:$it") }
+    propOrNull(if (voxy != null) "deps.voxy_sodium" else "deps.sodium_fabric")?.let { devRuntime("maven.modrinth:sodium:$it") }
     // Iris (Oculus on Forge 1.20.1) for testing under shader packs: `-Pshaders.run=true` puts it in the client run.
     // Client-side, dev runtime only, never compiled against or published; off by default so the standard runs
     // and baselines keep vanilla's pipeline. Place a pack in the run's shaderpacks folder and select it in game.

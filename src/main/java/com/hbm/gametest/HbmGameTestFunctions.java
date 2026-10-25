@@ -1513,6 +1513,10 @@ public final class HbmGameTestFunctions {
             TESTS.function("fluid_volcanic_lava", 620, 14, () -> FlowingFluidGameTests::volcanicLavaFlowsAndSets);
     public static final GameTests.Function FLUID_REGISTRATION =
             TESTS.function("fluid_registration", 20, () -> FlowingFluidGameTests::registration);
+    public static final GameTests.Function FLUID_LIQUID_BLOCKS =
+            TESTS.function("fluid_liquid_blocks", 20, () -> FlowingFluidGameTests::liquidBlocks);
+    public static final GameTests.Function FLUID_NO_VANILLA_LIQUID_HOOKS =
+            TESTS.function("fluid_no_vanilla_liquid_hooks", 40, 14, () -> FlowingFluidGameTests::noVanillaLiquidHooks);
 
     // --- chunk loading + missiles (implementations live in MissileGameTests) ---
     public static final GameTests.Function CHUNK_REFCOUNTING =

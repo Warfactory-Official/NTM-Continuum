@@ -21,6 +21,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -248,6 +249,46 @@ public final class FlowingFluidGameTests {
         bucket(helper, ModWorldFluids.SCHRABIDIC, ModFluidNetItems.bucket_schrabidic_acid.get());
         bucket(helper, ModWorldFluids.SULFURIC_ACID, ModFluidNetItems.bucket_sulfuric_acid.get());
         helper.succeed();
+    }
+
+    /** Every world fluid block is a {@link LiquidBlock} (Voxy crashes on any other fluid holder). */
+    public static void liquidBlocks(GameTestHelper helper) {
+        int blocks = 0;
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (!(block instanceof FluidBlock)) continue;
+            blocks++;
+            helper.assertTrue(block instanceof LiquidBlock, name(block) + " must be a LiquidBlock");
+            for (BlockState state : block.getStateDefinition().getPossibleStates()) {
+                helper.assertTrue(state.getFluidState().createLegacyBlock().is(block),
+                        state + ": its fluid's block must be " + name(block));
+                helper.assertTrue(state.isRandomlyTicking(), state + " must tick randomly (1.7 setTickRandomly)");
+            }
+        }
+        helper.assertTrue(blocks >= 8, "found only " + blocks + " world fluid blocks");
+        helper.succeed();
+    }
+
+    /** No vanilla fluid tick, and volcanic lava beside water stays lava while the water sets into stone (1.7). */
+    public static void noVanillaLiquidHooks(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        floor(helper, Blocks.OBSIDIAN);
+        Block lava = ModFluidNetBlocks.volcanic_lava_block.get();
+        BlockPos water = SOURCE.east();
+        helper.setBlock(water, Blocks.WATER.defaultBlockState());
+        helper.setBlock(SOURCE, lava.defaultBlockState());
+        helper.setBlock(SOURCE.west(), Blocks.STONE.defaultBlockState());
+        BlockPos at = helper.absolutePos(SOURCE);
+        FluidBlock block = (FluidBlock) lava;
+        helper.assertTrue(level.getBlockTicks().hasScheduledTick(at, lava), "a neighbour update must schedule the 1.7 flow");
+        helper.assertFalse(level.getFluidTicks().hasScheduledTick(at, block.fluid().source())
+                || level.getFluidTicks().hasScheduledTick(at, block.fluid().flowing()), "a vanilla fluid tick was scheduled");
+        helper.runAfterDelay(2, () -> {
+            BlockState state = level.getBlockState(at);
+            helper.assertTrue(state.is(lava), "volcanic lava beside water became " + state);
+            helper.assertTrue(level.getBlockState(helper.absolutePos(water)).is(Blocks.STONE), "the water beside volcanic lava must set into stone");
+            clear(helper, FLOOR);
+            helper.succeed();
+        });
     }
 
     private static void check(GameTestHelper helper, WorldFluids.Handle fluid, boolean water, boolean lava) {

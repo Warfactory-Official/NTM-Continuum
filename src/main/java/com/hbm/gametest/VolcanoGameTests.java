@@ -94,7 +94,8 @@ public final class VolcanoGameTests {
                     "1.7 grows only when volcanoTimer reaches " + TileEntityVolcanoCore.GROWING_UPDATE_RATE
                             + "; the core had already left " + CORE + " at tick " + STILL_THERE);
             helper.assertTrue(isLava(helper, level, CORE.above()),
-                    "the cell the core will climb into must be shell lava, not another core, before the climb");
+                    "the cell the core will climb into must be shell lava, not another core, before the climb; it is "
+                            + level.getBlockState(helper.absolutePos(CORE.above())));
         }));
 
         // 1.7: setBlock(y + 1, same block + meta) then setBlock(y, lava)

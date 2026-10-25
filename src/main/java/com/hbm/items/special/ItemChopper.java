@@ -1,5 +1,6 @@
 package com.hbm.items.special;
 
+import dev.golem.core.fluid.FluidBlock;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,6 +22,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
@@ -82,7 +84,9 @@ public class ItemChopper extends CompatItem {
         if (!(level instanceof ServerLevel serverLevel)) return InteractionResult.SUCCESS;
 
         BlockPos pos = hit.getBlockPos();
-        if (!(level.getBlockState(pos).getBlock() instanceof LiquidBlock)) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        // 1.7 BlockLiquid: vanilla water and lava, not Forge fluid blocks
+        Block block = level.getBlockState(pos).getBlock();
+        if (!(block instanceof LiquidBlock) || block instanceof FluidBlock) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.mayInteract(player, pos) || !player.mayUseItemAt(pos, hit.getDirection(), stack)) {
             return InteractionResult.FAIL;
         }
