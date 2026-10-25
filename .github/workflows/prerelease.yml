@@ -81,6 +81,22 @@ jobs:
         working-directory: new-hbm
         run: bash ./gradlew chiseledBuild --no-daemon --stacktrace
 
+      # Builds count from 1 for each mod.version: the next number follows the newest pre-release of the same version
+      # (the last step keeps only the newest), so a version bump starts again at build 1.
+      - name: Build number
+        id: build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          version=$(grep -E '^mod.version=' new-hbm/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          last=$(gh release list --repo "$REPO" --limit 200 --json tagName,isPrerelease \
+            --jq '.[] | select(.isPrerelease) | .tagName' \
+            | awk -v p="v${version}-build." 'index($0, p) == 1 && substr($0, length(p) + 1) ~ /^[0-9]+$/ { print substr($0, length(p) + 1) }' \
+            | sort -n | tail -n 1)
+          echo "number=$(( ${last:-0} + 1 ))" >> "$GITHUB_OUTPUT"
+          echo "Build $(( ${last:-0} + 1 )) of $version"
+
       - name: Collect release jars
         id: jars
         run: |
@@ -92,12 +108,12 @@ jobs:
           # Tag every jar with this build's number, so jars from different builds never share a file name:
           # hbm-fabric-0.1.0+1.20.1.jar -> hbm-fabric-0.1.0+1.20.1-build.42.jar
           for jar in dist/*.jar; do
-            mv "$jar" "${jar%.jar}-build.${{ github.run_number }}.jar"
+            mv "$jar" "${jar%.jar}-build.${{ steps.build.outputs.number }}.jar"
           done
           ls -l dist
           ls dist | grep -q '^hbm-' || { echo "No HBM jars produced"; exit 1; }
           version=$(grep -E '^mod.version=' new-hbm/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
-          echo "tag=v${version}-build.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${version}-build.${{ steps.build.outputs.number }}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "golem=$(git -C Golem-Core rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
@@ -107,7 +123,7 @@ jobs:
           repository: ${{ github.repository }}
           tag_name: ${{ steps.jars.outputs.tag }}
           target_commitish: ${{ github.sha }}
-          name: NTM - Continuum ${{ steps.jars.outputs.version }} build ${{ github.run_number }}
+          name: NTM - Continuum ${{ steps.jars.outputs.version }} build ${{ steps.build.outputs.number }}
           prerelease: true
           generate_release_notes: true
           body: |
@@ -118,7 +134,7 @@ jobs:
           files: dist/*.jar
 
       # Keep only the newest automated build: delete every older pre-release this workflow made (its tags
-      # end in -build.<run number>) along with its tag. Real releases and beta/alpha tags never match.
+      # end in -build.<build number>) along with its tag. Real releases and beta/alpha tags never match.
       - name: Delete previous pre-releases
         env:
           GH_TOKEN: ${{ github.token }}
