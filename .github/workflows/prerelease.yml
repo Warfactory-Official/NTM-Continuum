@@ -90,7 +90,7 @@ jobs:
             find $repo/versions/*/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
           done
           # Tag every jar with this build's number, so jars from different builds never share a file name:
-          # hbm-fabric-1.20.1-0.1.0+1.20.1.jar -> hbm-fabric-1.20.1-0.1.0+1.20.1-build.42.jar
+          # hbm-fabric-0.1.0+1.20.1.jar -> hbm-fabric-0.1.0+1.20.1-build.42.jar
           for jar in dist/*.jar; do
             mv "$jar" "${jar%.jar}-build.${{ github.run_number }}.jar"
           done

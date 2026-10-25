@@ -129,7 +129,7 @@ val modId = prop("mod.id")
 
 group = prop("mod.group")
 version = "${prop("mod.version")}+$mcVersion"
-base.archivesName = "$modId-fabric-$mcVersion"
+base.archivesName = "$modId-fabric"
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
@@ -615,7 +615,7 @@ extra["java_version"] = javaVersion.toString()
 // Golem Core's shared build layer; HBM's parameters for it (golem.build.*) are in gradle.properties.
 apply(from = rootProject.file("../Golem-Core/gradle/mod/run-toolchain.gradle.kts"))
 // Visual test harness launch capture (shared by every Golem Core mod); see harness.json and ../Golem-Core/harness/README.md.
-apply(from = rootProject.file("../Golem-Core/gradle/harness-spec.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/harness-spec.gradle.kts"))
 apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-recipes.gradle.kts"))
 extra["loader"] = "fabric"
 // Neutral "golem:conditions" in data JSON, rewritten to this loader's spelling; see the script.

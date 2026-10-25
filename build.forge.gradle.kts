@@ -14,7 +14,7 @@ val modId = prop("mod.id")
 
 group = prop("mod.group")
 version = "${prop("mod.version")}+$mcVersion"
-base.archivesName = "$modId-forge-$mcVersion"
+base.archivesName = "$modId-forge"
 
 java { toolchain.languageVersion = JavaLanguageVersion.of(javaVersion) }
 
@@ -284,7 +284,7 @@ extra["convention_namespace"] = "forge"
 // Golem Core's shared build layer; HBM's parameters for it (golem.build.*) are in gradle.properties.
 apply(from = rootProject.file("../Golem-Core/gradle/mod/run-toolchain.gradle.kts"))
 // Visual test harness launch capture (shared by every Golem Core mod); see harness.json and ../Golem-Core/harness/README.md.
-apply(from = rootProject.file("../Golem-Core/gradle/harness-spec.gradle.kts"))
+apply(from = rootProject.file("../Golem-Core/gradle/mod/harness-spec.gradle.kts"))
 apply(from = rootProject.file("../Golem-Core/gradle/mod/legacy-recipes.gradle.kts"))
 extra["loader"] = "forge"
 // Orders the mod before KubeJS (optional dependency) so its script groups and bindings reach the startup scripts.
