@@ -14,6 +14,7 @@ import dev.golem.core.world.Compat;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.function.UnaryOperator;
@@ -97,11 +98,11 @@ public final class ModBombs2Blocks {
             .loot(Loot.oreNoFortune("minecraft:snowball", 1, 1));
     // 1.7 WasteLog: 2 + rand(3) snowballs, silk touch keeps the block.
     public static final RegistryObject<RotatedPillarBlock> frozen_log = REG.block("frozen_log", RotatedPillarBlock::new,
-                    p -> p.strength(0.5F, 1.5F).sound(SoundType.GLASS))
+                    p -> p.strength(0.5F, 1.5F).sound(SoundType.GLASS).instrument(NoteBlockInstrument.BASS).ignitedByLava())
             .transform(Presets.column("hbm:blocks/frozen_log_top", "hbm:blocks/frozen_log").states(Variants.axis()))
             .loot(Loot.oreNoFortune("minecraft:snowball", 2, 4)).tag(BlockTag.AXE);
     public static final RegistryObject<Block> frozen_planks = REG.<Block>block("frozen_planks", Block::new,
-                    p -> p.strength(0.5F, 1.5F).sound(SoundType.GLASS))
+                    p -> p.strength(0.5F, 1.5F).sound(SoundType.GLASS).instrument(NoteBlockInstrument.BASS).ignitedByLava())
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:snowball", 1, 1)).tag(BlockTag.AXE);
 
     static {

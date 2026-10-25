@@ -20,14 +20,25 @@ import net.minecraft.world.item.TooltipFlag;
  * <p>The tooltip appends {@code .desc.0, .desc.1, ...} and stops at the first key absent from the
  * active language ({@link Language#has} is server/common safe).
  *
- * <p>TODO(port): per-item rarity -> {@code Item.Properties.rarity}; enchantment glint for the special
- * items (old {@code hasEffect}) -> {@code DataComponents.ENCHANTMENT_GLINT_OVERRIDE}; the
- * {@code ModItems.undefined} scrambling-name gimmick -> a dedicated special item.
+ * <p>1.7's {@code setRarity} is {@code Item.Properties.rarity} at registration; {@link #setEffect} is its glint.
+ * TODO(items): the {@code ModItems.undefined} scrambling-name gimmick.
  */
 public class ItemCustomLore extends CompatItem {
 
+    private boolean hasEffect;
+
     public ItemCustomLore(Item.Properties properties) {
         super(properties);
+    }
+
+    public ItemCustomLore setEffect() {
+        this.hasEffect = true;
+        return this;
+    }
+
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        return hasEffect || super.isFoil(stack);
     }
 
     @Override

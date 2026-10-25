@@ -41,6 +41,9 @@ public abstract class JEIUniversalHandler<T> extends HbmRecipeCategory<T> {
         return 1F;
     }
 
+    /** Extra tooltip lines on every input (1.7's {@code ItemStackUtil.addTooltipToStack} on the recipe's stacks). */
+    protected void inputTooltip(T recipe, List<Component> tooltip) {}
+
     @Override
     public void setRecipe(SlotLayout builder, T recipe) {
         List<List<ItemStack>> in = inputs(recipe);
@@ -50,7 +53,10 @@ public abstract class JEIUniversalHandler<T> extends HbmRecipeCategory<T> {
         for (int i = 0; i < in.size(); i++) {
             builder.addSlot(Role.INPUT, inPos[i][0], inPos[i][1])
                     .addItemStacks(in.get(i)).setBackground(slotFrame, -1, -1)
-                    .addTooltipCallback(JEIUniversalHandler::stackSizeLabel);
+                    .addTooltipCallback((shown, tooltip) -> {
+                        stackSizeLabel(shown, tooltip);
+                        inputTooltip(recipe, tooltip);
+                    });
         }
 
         int[][] outPos = getOutputCoords(out.size());

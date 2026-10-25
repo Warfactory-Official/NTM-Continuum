@@ -66,11 +66,13 @@ public class EntityHbmProps {
     public long fbiMark = 0;
     /** 1.7 player PERSISTED_NBT_TAG "radMark": set by a reactor meltdown nearby, consumed by the radiation beasts. Kept on death. */
     public boolean radMark = false;
+    /** 1.7 player PERSISTED_NBT_TAG "hasDucked": the one duck O throws has been thrown. Kept on death. */
+    public boolean hasDucked = false;
 
     /**
      * 1.7 {@code ModEventHandler.onPlayerClone}: the respawned (or End-returned) player gets the old one's
      * HbmPlayerProps ({@code serialize}/{@code deserialize}: shield, max shield, backpack, HUD, reputation) and its
-     * PERSISTED_NBT_TAG (fbiMark, radMark); everything HbmLivingProps held starts over.
+     * PERSISTED_NBT_TAG (fbiMark, radMark, hasDucked); everything HbmLivingProps held starts over.
      */
     public void copyPlayerPropsFrom(EntityHbmProps old) {
         this.shield = old.shield;
@@ -81,6 +83,7 @@ public class EntityHbmProps {
         this.enableMagnet = old.enableMagnet;
         this.fbiMark = old.fbiMark;
         this.radMark = old.radMark;
+        this.hasDucked = old.hasDucked;
     }
 
     public double getRads() { return rads; }
@@ -160,6 +163,7 @@ public class EntityHbmProps {
         out.putInt("maskManTimer", maskManTimer);
         out.putLong("fbiMark", fbiMark);
         out.putBoolean("radMark", radMark);
+        out.putBoolean("hasDucked", hasDucked);
         DataOut.ChildList list = out.childrenList("cont");
         for (ContaminationEffect effect : contamination) effect.save(list.addChild());
     }
@@ -187,6 +191,7 @@ public class EntityHbmProps {
         this.maskManTimer = in.getIntOr("maskManTimer", 0);
         this.fbiMark = in.getLongOr("fbiMark", 0L);
         this.radMark = in.getBooleanOr("radMark", false);
+        this.hasDucked = in.getBooleanOr("hasDucked", false);
         contamination.clear();
         for (DataIn child : in.childrenListOrEmpty("cont")) {
             contamination.add(ContaminationEffect.load(child));

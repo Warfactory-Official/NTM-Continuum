@@ -17,6 +17,7 @@ import dev.golem.core.world.Compat;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 
 import java.util.List;
 import com.hbm.blocks.generic.BarbedWire;
@@ -87,7 +88,7 @@ public final class ModSecurityBlocks {
 
     /** The old renderInventoryBlock drew a post and two rails; that is the authored wood_barrier_inventory model. */
     public static final RegistryObject<BlockBarrier> wood_barrier = REG.block("wood_barrier", BlockBarrier::new,
-                    p -> p.strength(5.0F, 9.0F).sound(SoundType.WOOD).noOcclusion())
+                    p -> p.strength(5.0F, 9.0F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava().noOcclusion())
             .icon(d -> d.models(Models.blockItem("hbm:block/wood_barrier_inventory")))
             .loot(Loot.self())
             .tag(BlockTag.AXE)

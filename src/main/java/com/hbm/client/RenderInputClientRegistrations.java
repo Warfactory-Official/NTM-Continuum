@@ -29,8 +29,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -141,6 +143,18 @@ public final class RenderInputClientRegistrations {
                         rand.nextGaussian() * 0.05, small);
             }
             Particles.add(new ParticleHadron(client, x, y, z).makeSmall(small));
+        });
+        HbmEffectNT.VanillaBurst_RedDust.setHandler((level, x, y, z, data) -> {
+            double motion = Tags.getDoubleOr(data, "motion", 0D);
+            RandomSource rand = level.getRandom();
+            for (int i = 0; i < Tags.getIntOr(data, "count", 0); i++) {
+                double mX = rand.nextGaussian() * motion;
+                double mY = rand.nextGaussian() * motion;
+                double mZ = rand.nextGaussian() * motion;
+                // 1.7 set the motion after construction, past EntityReddustFX's own damping
+                Particle fx = Minecraft.getInstance().particleEngine.createParticle(DustParticleOptions.REDSTONE, x, y, z, 0D, 0D, 0D);
+                if (fx != null) fx.setParticleSpeed(mX, mY, mZ);
+            }
         });
         // 1.7 IBlockCT connected textures: hadron coils, coated wire, ICF/PWR shells, deco metals, CT glass, platemetal, pile
         ConnectedTextureRegistrations.register();

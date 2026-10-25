@@ -33,6 +33,8 @@ public final class NtmEntityModels {
     public static final WavefrontObj PLASTIC_BAG = load("mobs/plasticbag.obj");
     public static final WavefrontObj MASK_MAN = load("mobs/maskman.obj");
     public static final WavefrontObj UFO = load("mobs/ufo.obj");
+    public static final WavefrontObj SIEGE_UFO = load("mobs/siege_ufo.obj");
+    public static final WavefrontObj TUNNELER = load("mobs/tunneler.obj");
     public static final WavefrontObj BOT_PRIME_HEAD = load("mobs/bot_prime_head.obj");
     public static final WavefrontObj BOT_PRIME_BODY = load("mobs/bot_prime_body.obj");
 

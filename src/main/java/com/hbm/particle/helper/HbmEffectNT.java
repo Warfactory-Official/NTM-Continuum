@@ -166,6 +166,8 @@ public final class HbmEffectNT {
     public static final HbmEffectNT VanillaExt_Cloud = hbm("VanillaExt_Cloud");
     /** 1.7 {@code network}: a {@code ParticleDebug} port marker. Tag: {@code mode} power or fluid, {@code color}, {@code mX/mY/mZ}. */
     public static final HbmEffectNT Network = hbm("network");
+    /** 1.7 {@code vanillaburst} mode {@code reddust}: {@code count} red dust, each moving {@code gaussian * motion}. */
+    public static final HbmEffectNT VanillaBurst_RedDust = hbm("VanillaBurst_RedDust");
 
     private final String name;
 

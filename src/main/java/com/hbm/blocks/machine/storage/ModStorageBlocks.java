@@ -12,6 +12,7 @@ import dev.golem.core.registry.RegistryObject;
 import com.hbm.tileentity.machine.storage.CrateType;
 import com.hbm.tileentity.machine.storage.MassStorageType;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
@@ -67,7 +68,7 @@ public final class ModStorageBlocks {
     /** 1.7 ModBlocks.crate_supply: wood, 1.0/2.5, missile tab; placed by EntityParachuteCrate. */
     public static final RegistryObject<BlockCrateSupply> crate_supply = REG.<BlockCrateSupply>block(
             "crate_supply", BlockCrateSupply::new,
-            p -> p.strength(1.0F, 1.5F).sound(SoundType.WOOD).noOcclusion().ignitedByLava())
+            p -> p.strength(1.0F, 1.5F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).noOcclusion().ignitedByLava())
             .transform(RENDERED_SIMPLE).tag(BlockTag.AXE);
 
     public static final RegistryObject<BlockMassStorage> mass_storage_wood = massStorage(MassStorageType.WOOD);

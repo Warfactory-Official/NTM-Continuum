@@ -289,6 +289,8 @@
   "container.radiorec": "Rádio FM",
   "container.safe": "Cofre",
   "info.coil": "Força da Bobina",
+  "info.asbestos": "Meus pulmões estão queimando.",
+  "info.coaldust": "É difícil respirar aqui.",
   "death.attack.broadcast": "%1$s teve o cérebro derretido.",
   "block.hbm.crystal_hardened": "Cristal Sombrio Endurecido",
   "block.hbm.deco_aluminium": "Bloco Decorativo de Alumínio",

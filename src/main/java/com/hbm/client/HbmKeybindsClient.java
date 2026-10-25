@@ -7,6 +7,7 @@ import com.hbm.handler.JetpackHandler;
 import com.hbm.inventory.gui.GUICalculator;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower;
+import com.hbm.packet.DuckPayload;
 import com.hbm.packet.KeybindPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.golem.core.client.ClientTicks;
@@ -21,6 +22,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * The client half of HBM's keybinds: registers the mappings, watches them, and reports every change to
@@ -55,6 +57,8 @@ public final class HbmKeybindsClient {
     private static boolean lastJetpackHud;
     private static boolean lastToggleJetpack;
     private static boolean lastToggleHead;
+    /** 1.7 {@code ModEventHandlerClient.ducked}: O asks for the duck once per client session. */
+    private static boolean ducked;
 
     /** Last reported state per keybind, so only edges go over the wire. */
     private static final boolean[] LAST_STATE = new boolean[EnumKeybind.VALUES.length];
@@ -94,6 +98,12 @@ public final class HbmKeybindsClient {
         // 1.7 KeyInputEvent: only fires with no screen open; the calculator replaces the (absent) screen.
         while (calculatorKey.consumeClick()) {
             if (mc.screen == null) mc.setScreen(new GUICalculator());
+        }
+
+        // 1.7 reads the raw O key, not a mapping: there is no Controls entry for it.
+        if (!ducked && mc.screen == null && KeyMappings.isKeyDown(GLFW.GLFW_KEY_O)) {
+            ducked = true;
+            GolemNetwork.sendToServer(DuckPayload.CODEC, new DuckPayload());
         }
 
         PlayerInputs.State input = PlayerInputs.read(player);

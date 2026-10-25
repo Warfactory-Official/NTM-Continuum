@@ -54,7 +54,7 @@ public final class EntityRenderSmoke {
             "entity_glyphid_bombardier", "entity_glyphid_blaster", "entity_glyphid_scout", "entity_glyphid_digger",
             "entity_glyphid_nuclear",
             "entity_fbi_drone", "entity_mob_mask_man", "entity_ufo", "entity_balls_o_tron", "entity_balls_o_tron_seg",
-            "entity_mob_hunter_chopper",
+            "entity_mob_hunter_chopper", "entity_siege_craft", "entity_siege_tunneler",
             // vehicles and props
             "entity_cart_ore", "entity_cart_powder", "entity_cart_semtex", "entity_cart_crate", "entity_cart_destroyer",
             "entity_minecart_test", "entity_rubber_boat", "entity_cargo_tram", "entity_cargo_tram_trailer",

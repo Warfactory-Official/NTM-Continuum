@@ -86,6 +86,8 @@ import com.hbm.entity.mob.glyphid.EntityGlyphidBrenda;
 import com.hbm.entity.mob.glyphid.EntityGlyphidDigger;
 import com.hbm.entity.mob.glyphid.EntityGlyphidNuclear;
 import com.hbm.entity.mob.glyphid.EntityGlyphidScout;
+import com.hbm.entity.mob.siege.EntitySiegeCraft;
+import com.hbm.entity.mob.siege.EntitySiegeTunneler;
 import com.hbm.entity.particle.EntityChlorineFX;
 import com.hbm.entity.particle.EntityCloudFX;
 import com.hbm.entity.particle.EntityOrangeFX;
@@ -294,6 +296,14 @@ public final class ModNtmEntities {
     public static final RegistryObject<EntityType<EntityHunterChopper>> HUNTER_CHOPPER =
             REG.entity("entity_mob_hunter_chopper", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityHunterChopper>of(EntityHunterChopper::new, MobCategory.MONSTER)).fireImmune().sized(8.25F, 3.0F).clientTrackingRange(5).updateInterval(3), key));
+    // 1.7 never registers the siege mobs (dead code there); registered so they can be summoned
+    public static final RegistryObject<EntityType<EntitySiegeCraft>> SIEGE_CRAFT =
+            REG.entity("entity_siege_craft", key -> Entities.build(
+                    Entities.noLoot(EntityType.Builder.<EntitySiegeCraft>of(EntitySiegeCraft::new, MobCategory.MONSTER)).fireImmune().sized(7.0F, 1.0F).clientTrackingRange(5).updateInterval(3), key));
+    // eye at 1.0: 1.7's yOffset 0.5 put posY at the box centre and the eye half a block above it
+    public static final RegistryObject<EntityType<EntitySiegeTunneler>> SIEGE_TUNNELER =
+            REG.entity("entity_siege_tunneler", key -> Entities.build(
+                    Entities.eyeHeight(Entities.noLoot(EntityType.Builder.<EntitySiegeTunneler>of(EntitySiegeTunneler::new, MobCategory.MONSTER)).sized(1.0F, 1.0F), 1.0F).clientTrackingRange(5).updateInterval(3), key));
     public static final RegistryObject<EntityType<EntityTntNtm>> TNT_NTM =
             REG.entity("tnt", key -> Entities.build(
                     Entities.eyeHeight(Entities.noLoot(EntityType.Builder.<EntityTntNtm>of(EntityTntNtm::new, MobCategory.MISC)).fireImmune().sized(0.98F, 0.98F), 0.15F).clientTrackingRange(63).updateInterval(1), key));
@@ -469,6 +479,8 @@ public final class ModNtmEntities {
         LivingAttributes.register(BALLS_O_TRON, EntityBOTPrimeHead::createAttributes);
         LivingAttributes.register(BALLS_O_TRON_SEG, EntityBOTPrimeBody::createAttributes);
         LivingAttributes.register(HUNTER_CHOPPER, EntityHunterChopper::createAttributes);
+        LivingAttributes.register(SIEGE_CRAFT, EntitySiegeCraft::createAttributes);
+        LivingAttributes.register(SIEGE_TUNNELER, EntitySiegeTunneler::createAttributes);
     }
 
     /** Touches every self-registering entity class so its {@code TYPE} lands before the registry flush. */

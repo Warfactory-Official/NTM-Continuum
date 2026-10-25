@@ -293,6 +293,8 @@
   "container.radiorec": "FM收音机",
   "container.safe": "保险箱",
   "info.coil": "线圈强度",
+  "info.asbestos": "我感觉我的肺在燃烧。",
+  "info.coaldust": "在这里很难呼吸。",
   "death.attack.broadcast": "%1$s 的大脑融化了",
   "block.hbm.crystal_hardened": "硬化黑水晶",
   "block.hbm.deco_aluminium": "铝装饰块",

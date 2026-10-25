@@ -23,6 +23,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.ArrayList;
@@ -96,10 +97,10 @@ public final class ModEnergyNetBlocks {
             p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion()))
             .transform(FOLDED).tag(BlockTag.PICKAXE);
     public static final RegistryObject<PylonMedium> red_pylon_medium_wood = REG.block("red_pylon_medium_wood",
-            p -> new PylonMedium(p, false, false), p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.WOOD).noOcclusion()))
+            p -> new PylonMedium(p, false, false), p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava().noOcclusion()))
             .transform(FOLDED).tag(BlockTag.AXE);
     public static final RegistryObject<PylonMedium> red_pylon_medium_wood_transformer = REG.block("red_pylon_medium_wood_transformer",
-            p -> new PylonMedium(p, false, true), p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.WOOD).noOcclusion()))
+            p -> new PylonMedium(p, false, true), p -> dummyable(p.strength(5.0F, 6.0F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava().noOcclusion()))
             .transform(FOLDED).tag(BlockTag.AXE);
     public static final RegistryObject<PylonMedium> red_pylon_medium_steel = REG.block("red_pylon_medium_steel",
             p -> new PylonMedium(p, true, false), p -> dummyable(p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion()))

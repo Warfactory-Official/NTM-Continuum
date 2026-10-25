@@ -7,6 +7,7 @@ import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import net.minecraft.world.item.Rarity;
 
 /**
  * Hand-registered bomb crafting components (igniters, cores, explosive lenses) that arm HBM bombs.
@@ -27,7 +28,7 @@ public final class ModBombItems {
 
     /** Fat Man / Mike / Tsar fissile core. */
     public static final RegistryObject<ItemCustomLore> man_core =
-            REG.item("man_core", ItemCustomLore::new, p -> p.stacksTo(1))
+            REG.item("man_core", ItemCustomLore::new, p -> p.stacksTo(1).rarity(Rarity.UNCOMMON))
                     .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** Fat Man igniter assembly. */
@@ -42,7 +43,7 @@ public final class ModBombItems {
 
     /** The Gadget's large plutonium core. */
     public static final RegistryObject<ItemCustomLore> gadget_core =
-            REG.item("gadget_core", ItemCustomLore::new, p -> p.stacksTo(1))
+            REG.item("gadget_core", ItemCustomLore::new, p -> p.stacksTo(1).rarity(Rarity.UNCOMMON))
                     .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** Little Boy's ordered five-part firing assembly. */
@@ -50,10 +51,10 @@ public final class ModBombItems {
             REG.item("boy_shielding", ItemCustomLore::new, p -> p.stacksTo(1))
                     .transform(Presets.sprite()).tab(HbmTab.BOMBS);
     public static final RegistryObject<ItemCustomLore> boy_target =
-            REG.item("boy_target", ItemCustomLore::new, p -> p.stacksTo(1))
+            REG.item("boy_target", ItemCustomLore::new, p -> p.stacksTo(1).rarity(Rarity.UNCOMMON))
                     .transform(Presets.sprite()).tab(HbmTab.BOMBS);
     public static final RegistryObject<ItemCustomLore> boy_bullet =
-            REG.item("boy_bullet", ItemCustomLore::new, p -> p.stacksTo(1))
+            REG.item("boy_bullet", ItemCustomLore::new, p -> p.stacksTo(1).rarity(Rarity.UNCOMMON))
                     .transform(Presets.sprite()).tab(HbmTab.BOMBS);
     public static final RegistryObject<ItemCustomLore> boy_propellant =
             REG.item("boy_propellant", ItemCustomLore::new, p -> p.stacksTo(1))

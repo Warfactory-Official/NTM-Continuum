@@ -16,7 +16,7 @@ import dev.golem.core.world.ItemStacks;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -105,7 +105,7 @@ public final class AnnihilatorRecipes {
     public static void declare() {}
 
     private static void reindex() {
-        Map<Object, AnnihilatorRecipe> next = new HashMap<>();
+        Map<Object, AnnihilatorRecipe> next = new LinkedHashMap<>();
         for (Row row : TABLE.rows()) {
             // 1.7 read GeneralConfig.enable528 while registering; a reload reads it again
             if (!TableCodecs.holds(row.requires())) continue;

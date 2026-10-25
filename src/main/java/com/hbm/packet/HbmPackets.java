@@ -14,6 +14,7 @@ import com.hbm.client.anim.GunAnimationHandler;
 import com.hbm.client.crucible.SlicedMobs;
 import com.hbm.client.particle.GluonParticles;
 import com.hbm.client.particle.PlasmaBlastClient;
+import com.hbm.explosion.vanillant.standard.ExplosionEffectStandard;
 import com.hbm.client.render.armor.ModelMan;
 import com.hbm.config.ClientConfig;
 import com.hbm.config.MachineDynConfig;
@@ -92,7 +93,9 @@ public final class HbmPackets {
         Lifecycle.onPlayerJoin((player, firstTime) -> {
             if (firstTime) GolemNetwork.sendToPlayer(player, GemRenderNoticePayload.CODEC, new GemRenderNoticePayload());
             GolemNetwork.sendToPlayer(player, MachineConfigPayload.CODEC, new MachineConfigPayload(MachineDynConfig.values()));
+            DuckPayload.onJoin(player);
         });
+        GolemNetwork.registerPlayToServer(DuckPayload.CODEC, (payload, player) -> DuckPayload.handle(player));
         GolemNetwork.declarePlayToClient(PollutionSyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(ManlySyncPayload.CODEC);
         GolemNetwork.registerPlayToServer(ControlEventPayload.CODEC,
@@ -112,6 +115,7 @@ public final class HbmPackets {
         GolemNetwork.declarePlayToClient(JetpackExhaustPayload.CODEC);
         GolemNetwork.declarePlayToClient(ProjectileStatePayload.CODEC);
         GolemNetwork.declarePlayToClient(FallingMultiblockPayload.CODEC);
+        GolemNetwork.declarePlayToClient(ExplosionBlocksPayload.CODEC);
         GolemNetwork.registerPlayToServer(JetpackInputPayload.CODEC,
                 (payload, player) -> JetpackHandler.handleInput(player, payload));
         GolemNetwork.registerPlayToServer(KeybindPayload.CODEC,
@@ -247,6 +251,8 @@ public final class HbmPackets {
         });
         GolemNetwork.registerPlayToClient(FallingMultiblockPayload.CODEC,
                 (payload, context) -> FallingMultiblockPayload.handleClient(context.level(), payload));
+        GolemNetwork.registerPlayToClient(ExplosionBlocksPayload.CODEC, (payload, context) -> ExplosionEffectStandard.performClient(
+                context.level(), payload.x(), payload.y(), payload.z(), payload.size(), payload.blocks()));
         PneumaticClientRegistrations.registerPacketHandlers();
         DroneClientRegistrations.registerPacketHandlers();
         PowerGenClientRegistrations.registerPacketHandlers();

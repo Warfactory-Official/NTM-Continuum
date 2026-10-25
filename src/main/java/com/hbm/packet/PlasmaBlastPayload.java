@@ -33,9 +33,14 @@ public record PlasmaBlastPayload(double x, double y, double z, float r, float g,
     /** Source TargetPoint radius, retained through the existing loader-neutral send-to-player seam. */
     public static void send(Level level, double x, double y, double z, float r, float g, float b,
             float pitch, float yaw, float scale) {
+        send(level, x, y, z, r, g, b, pitch, yaw, scale, 100D);
+    }
+
+    public static void send(Level level, double x, double y, double z, float r, float g, float b,
+            float pitch, float yaw, float scale, double range) {
         if (!(level instanceof ServerLevel server)) return;
         PlasmaBlastPayload payload = new PlasmaBlastPayload(x, y, z, r, g, b, pitch, yaw, scale);
-        double radiusSquared = 100D * 100D;
+        double radiusSquared = range * range;
         for (var player : server.players()) {
             if (player.distanceToSqr(x, y, z) <= radiusSquared) {
                 GolemNetwork.sendToPlayer(player, CODEC, payload);

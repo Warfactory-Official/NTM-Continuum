@@ -3,6 +3,7 @@ package com.hbm.hazard.type;
 import dev.golem.core.hook.Hook;
 import java.util.List;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.hazard.helper.HazardHelper;
 import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.util.ContaminationUtil;
@@ -38,7 +39,7 @@ public class HazardTypeRadiation implements IHazardType {
     @Override
     public void onUpdate(final LivingEntity target, double level, final ItemStack stack) {
 
-        final boolean reacher = HazardHelper.isHoldingReacher(target);
+        final boolean reacher = HazardHelper.hasReacher(target);
 
         level *= stack.getCount();
         level += stackRadiation(stack);
@@ -46,7 +47,10 @@ public class HazardTypeRadiation implements IHazardType {
         if (level > 0) {
             double rad = level / 20D;
 
-            if (reacher) {
+            if (GeneralConfig.enable528 && reacher) {
+                // 528: x / distance^2
+                rad = rad / 49D;
+            } else if (reacher) {
                 // Reworked radiation function: sqrt(x+1/(x+2)^2)-1/(x+2)
                 rad = Math.sqrt(rad + 1D / ((rad + 2D) * (rad + 2D))) - 1D / (rad + 2D);
             }

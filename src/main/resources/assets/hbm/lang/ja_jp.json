@@ -282,6 +282,8 @@
   "container.radiorec": "FMラジオ",
   "container.safe": "金庫",
   "info.coil": "コイル強度",
+  "info.asbestos": "肺が焼け付くように痛い。",
+  "info.coaldust": "ここでは息をするのが苦しい。",
   "death.attack.broadcast": "%1$sは脳が溶かされた",
   "block.hbm.crystal_hardened": "硬化した闇の結晶",
   "block.hbm.deco_aluminium": "アルミニウム装飾ブロック",

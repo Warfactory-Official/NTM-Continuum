@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.Block;
 import dev.golem.core.world.CompatDropExperienceBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /**
@@ -254,7 +255,7 @@ public final class ModBlocks {
             .transform(Presets.column("hbm:blocks/watz_element_top", "hbm:blocks/watz_element_side")).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> watz_cooler = block("watz_cooler", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
             .transform(Presets.column("hbm:blocks/watz_cooler_top", "hbm:blocks/watz_cooler_side")).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> pink_planks = block("pink_planks", HbmTab.BLOCKS, p -> p.sound(SoundType.WOOD))
+    public static final RegistryObject<Block> pink_planks = block("pink_planks", HbmTab.BLOCKS, p -> p.sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava())
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.AXE);
     public static final RegistryObject<Block> brick_fire = block("brick_fire", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(10.0F, 21.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
@@ -339,7 +340,7 @@ public final class ModBlocks {
             .transform(Presets.cubeAll()).loot(Loot.oreNoFortune("hbm:fragment_meteorite", 1, 3)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> block_meteor_treasure = block("block_meteor_treasure", HbmTab.RESOURCES, BlockMeteoriteTreasure::new, p -> p.requiresCorrectToolForDrops().strength(15.0F, 216.0F).noLootTable())
             .transform(Presets.cubeAll()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> waste_planks = block("waste_planks", HbmTab.RESOURCES, p -> p.strength(0.5F, 1.5F).sound(SoundType.WOOD))
+    public static final RegistryObject<Block> waste_planks = block("waste_planks", HbmTab.RESOURCES, p -> p.strength(0.5F, 1.5F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava())
             .transform(Presets.cubeAll()).loot(Loot.oreMultiplied("minecraft:charcoal", 1, 1)).tag(BlockTag.AXE);
 
     // --- slabs (Wave 2c); vanilla SlabBlock (TYPE=bottom/top/double replaces the old *_double_slab) ---
@@ -386,7 +387,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> tile_lab_slab = slab("tile_lab_slab", HbmTab.BLOCKS, "hbm:blocks/tile_lab", p -> p.requiresCorrectToolForDrops().strength(1.0F, 6.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> tile_lab_cracked_slab = slab("tile_lab_cracked_slab", HbmTab.BLOCKS, "hbm:blocks/tile_lab_cracked", p -> p.requiresCorrectToolForDrops().strength(1.0F, 6.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> tile_lab_broken_slab = slab("tile_lab_broken_slab", HbmTab.BLOCKS, "hbm:blocks/tile_lab_broken", p -> p.requiresCorrectToolForDrops().strength(1.0F, 6.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> pink_slab = slab("pink_slab", null, "hbm:blocks/pink_planks", p -> p.sound(SoundType.WOOD)).tag(BlockTag.AXE);
+    public static final RegistryObject<Block> pink_slab = slab("pink_slab", null, "hbm:blocks/pink_planks", p -> p.sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava()).tag(BlockTag.AXE);
 
     // --- stairs (Wave 2c); base block must be registered above so defaultBlockState() resolves ---
     public static final RegistryObject<Block> reinforced_stone_stairs = stairs("reinforced_stone_stairs", HbmTab.BLOCKS, reinforced_stone, "hbm:blocks/reinforced_stone", p -> p.requiresCorrectToolForDrops().strength(15.0F, 76.0F)).tag(BlockTag.PICKAXE);
@@ -410,7 +411,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> tile_lab_cracked_stairs = stairs("tile_lab_cracked_stairs", HbmTab.BLOCKS, tile_lab_cracked, "hbm:blocks/tile_lab_cracked", p -> p.requiresCorrectToolForDrops().strength(1.0F, 9.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> tile_lab_broken_stairs = stairs("tile_lab_broken_stairs", HbmTab.BLOCKS, ModOutgasBlocks.tile_lab_broken, "hbm:blocks/tile_lab_broken", p -> p.requiresCorrectToolForDrops().strength(1.0F, 9.0F).sound(SoundType.GLASS)).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> brick_fire_stairs = stairs("brick_fire_stairs", HbmTab.BLOCKS, brick_fire, "hbm:blocks/brick_fire", p -> p.requiresCorrectToolForDrops().strength(15.0F, 21.0F)).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> pink_stairs = stairs("pink_stairs", null, pink_planks, "hbm:blocks/pink_planks", p -> p.sound(SoundType.WOOD)).tag(BlockTag.AXE);
+    public static final RegistryObject<Block> pink_stairs = stairs("pink_stairs", null, pink_planks, "hbm:blocks/pink_planks", p -> p.sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava()).tag(BlockTag.AXE);
 
     public static void init() {}
 }

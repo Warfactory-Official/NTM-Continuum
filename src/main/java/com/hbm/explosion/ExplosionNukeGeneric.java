@@ -7,6 +7,7 @@ import com.hbm.config.GeneralConfig;
 import com.hbm.entity.grenade.EntityGrenadeUniversal;
 import com.hbm.entity.projectile.EntityB92Beam;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.entity.projectile.EntityCombineBallNT;
 import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.util.EntityDamageUtil;
@@ -103,11 +104,10 @@ public final class ExplosionNukeGeneric {
         }
     }
 
-    /** True if a solid block lies between the two points (line-of-sight blocked). */
+    // 1.7's EntityBulletBaseNT shooters fire EntityBulletBaseMK4 here; the combine ball is its one subclass
     private static boolean isExplosionExempt(Entity e) {
-        // TODO: 1.7 ExplosionNukeGeneric.java:117 also exempts EntityBulletBaseNT, unported.
-        if (e instanceof Ocelot || e instanceof EntityB92Beam || e instanceof EntityBulletBaseMK4
-                || e instanceof EntityGrenadeUniversal) {
+        if (e instanceof Ocelot || e instanceof EntityB92Beam || e instanceof EntityCombineBallNT
+                || e instanceof EntityBulletBaseMK4 || e instanceof EntityGrenadeUniversal) {
             return true;
         }
 
@@ -377,9 +377,7 @@ public final class ExplosionNukeGeneric {
         }
         // 26.1: 1.7 Material.{cactus,coral,leaves,plants,sponge,vine,gourd,wood}; no 1.7 vanilla block is
         // Material.coral. plants -> VegetationBlock plus the two 1.7 non-BlockBush plants; wood -> the note-block
-        // instrument, as in wasteDest.
-        // TODO: hbm blocks declare no instrument, so 1.7's Material.wood arm misses waste_planks/waste_log and the
-        // wooden deco family (com/hbm/blocks/ModBlocks.java).
+        // instrument, as in wasteDest (HBM's 1.7 wood blocks declare it).
         if (state.is(Blocks.CACTUS) || state.is(Blocks.VINE) || state.is(Blocks.SPONGE) || state.is(Blocks.WET_SPONGE)
                 || state.is(Blocks.PUMPKIN) || state.is(Blocks.CARVED_PUMPKIN) || state.is(Blocks.JACK_O_LANTERN)
                 || state.is(Blocks.MELON) || state.is(BlockTags.LEAVES) || state.is(BlockTags.FLOWERS)

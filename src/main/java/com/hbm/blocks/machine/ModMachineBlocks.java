@@ -52,6 +52,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import com.hbm.blocks.network.RadioAUTOCAL;
 import com.hbm.blocks.network.RadioTelex;
 import com.hbm.blocks.network.RadioTorchController;
@@ -1451,7 +1452,7 @@ public final class ModMachineBlocks {
             .transform(radioSteady("rtty_controller"));
     public static final RegistryObject<RadioTelex> radio_telex = REG.block(
             "radio_telex", RadioTelex::new,
-            properties -> properties.strength(3.0F, 6.0F).sound(SoundType.WOOD).noOcclusion())
+            properties -> properties.strength(3.0F, 6.0F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava().noOcclusion())
             .transform(FOLDED)
             .loot(Loot.self()).tag(BlockTag.AXE);
     public static final RegistryObject<RadioAUTOCAL> radio_autocal = REG.block(

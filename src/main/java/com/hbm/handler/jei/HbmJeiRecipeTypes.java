@@ -72,8 +72,18 @@ public final class HbmJeiRecipeTypes {
             type("arc_welder", ArcWelderRecipes.ArcWelderRecipe.class);
     public static final ViewerType<RotaryFurnaceRecipes.RotaryFurnaceRecipe> ROTARY_FURNACE =
             type("rotary_furnace", RotaryFurnaceRecipes.RotaryFurnaceRecipe.class);
-    public static final ViewerType<StorageDrumRecipeHandler.Entry> STORAGE_DRUM =
-            type("storage_drum", StorageDrumRecipeHandler.Entry.class);
+    // 1.7 NEIUniversalHandler tabs: ntmRBMKWaste, ntmAnnihilating, ntmOreSlopper, ntmOutgasser, ntmDeuterium, ntmGrenade,
+    // ntmZirnox, ntmPWR, ntmWatz, ntmRBMKDisassembly
+    public static final ViewerType<UniversalRecipeHandler.Row> STORAGE_DRUM = type("storage_drum", UniversalRecipeHandler.Row.class);
+    public static final ViewerType<UniversalRecipeHandler.Row> ANNIHILATOR = type("annihilator", UniversalRecipeHandler.Row.class);
+    public static final ViewerType<UniversalRecipeHandler.Row> ORE_SLOPPER = type("ore_slopper", UniversalRecipeHandler.Row.class);
+    public static final ViewerType<UniversalRecipeHandler.Row> OUTGASSER = type("outgasser", UniversalRecipeHandler.Row.class);
+    public static final ViewerType<UniversalRecipeHandler.Row> DEUTERIUM = type("deuterium", UniversalRecipeHandler.Row.class);
+    public static final ViewerType<UniversalRecipeHandler.Row> GRENADE = type("grenade", UniversalRecipeHandler.Row.class);
+    public static final ViewerType<UniversalRecipeHandler.Row> ZIRNOX = type("zirnox", UniversalRecipeHandler.Row.class);
+    public static final ViewerType<UniversalRecipeHandler.Row> PWR = type("pwr", UniversalRecipeHandler.Row.class);
+    public static final ViewerType<UniversalRecipeHandler.Row> WATZ = type("watz", UniversalRecipeHandler.Row.class);
+    public static final ViewerType<UniversalRecipeHandler.Row> RBMK_DISASSEMBLY = type("rbmk_disassembly", UniversalRecipeHandler.Row.class);
     /** 1.7 {@code FuelPoolHandler} ("ntmSpentDrum"): the spent fuel pool drum. */
     public static final ViewerType<FuelPoolRecipes.Entry> FUEL_POOL =
             type("fuel_pool", FuelPoolRecipes.Entry.class);

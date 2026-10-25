@@ -289,6 +289,8 @@
   "container.radiorec": "FM радіо",
   "container.safe": "Сейф",
   "info.coil": "Сила котушки",
+  "info.asbestos": "Мої легені горять.",
+  "info.coaldust": "Тут важко дихати.",
   "death.attack.broadcast": "У %1$s розтопився мозок.",
   "block.hbm.crystal_hardened": "Загартований темний кристал",
   "block.hbm.deco_aluminium": "Алюмінієвий декоративний блок",

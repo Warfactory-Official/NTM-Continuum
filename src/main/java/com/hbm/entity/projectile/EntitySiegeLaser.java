@@ -47,12 +47,7 @@ public class EntitySiegeLaser extends EntityThrowableNT {
         super(type, level);
     }
 
-    /**
-     * 1.7 EntityThrowable(World, EntityLivingBase); its only caller is EntitySiegeCraft:263.
-     * TODO(port): 1.7 entity/mob/siege (EntitySiegeCraft, EntitySiegeTunneler, SiegeTier) is unported. 1.7
-     * constructs neither mob anywhere live, its one spawn site being commented out at
-     * items/tool/ItemWandD.java:142, so the family is dead upstream too. This ctor stays caller-less either way.
-     */
+    /** 1.7 EntityThrowable(World, EntityLivingBase); the siege craft fires its fan through it. */
     public EntitySiegeLaser(EntityType<? extends EntitySiegeLaser> type, Level level, LivingEntity thrower) {
         super(type, level);
         initThrower(thrower);

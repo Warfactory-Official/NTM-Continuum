@@ -13,6 +13,7 @@ import com.hbm.explosion.vanillant.standard.CustomDamageHandlerAmat;
 import com.hbm.explosion.vanillant.standard.EntityProcessorCross;
 import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectAmat;
+import com.hbm.explosion.vanillant.standard.ExplosionEffectStandard;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import dev.golem.core.world.SubLevels;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -59,6 +60,8 @@ public class ExplosionVNT {
     public final double posZ;
     public final float size;
     public final @Nullable Entity exploder;
+    /** 1.7 {@code compat.affectedBlockPositions}: a copy of the allocation, as the world sees it, read by the SFX. */
+    public List<BlockPos> affectedBlockPositions = List.of();
 
     public ExplosionVNT(Level world, double x, double y, double z, float size) {
         this(world, x, y, z, size, null);
@@ -100,6 +103,9 @@ public class ExplosionVNT {
         if (processBlocks) {
             // Exposure must be calculated against the pre-blast world, as in 1.12.2.
             affectedBlocks = blockAllocator.allocate(this, world, posX, posY, posZ, size);
+            affectedBlockPositions = carried
+                    ? affectedBlocks.stream().map(pos -> SubLevels.toWorldBlock(world, pos)).toList()
+                    : List.copyOf(affectedBlocks);
         }
 
         HashMap<Player, Vec3> affectedPlayers = null;
@@ -170,16 +176,15 @@ public class ExplosionVNT {
     }
 
     /**
-     * Upstream's {@code makeStandard} minus its SFX: {@code ExplosionEffectStandard} belongs to the
-     * unported particle families, so a caller that wants a look supplies it with {@link #setSFX}.
-     * Also uses {@link EntityProcessorCross} rather than upstream's {@code EntityProcessorStandard},
-     * which is the processor the missiles all use anyway.
+     * 1.7 {@code makeStandard}, but with {@link EntityProcessorCross} rather than upstream's
+     * {@code EntityProcessorStandard}, which is the processor the missiles all use anyway.
      */
     public ExplosionVNT makeStandard() {
         this.setBlockAllocator(new BlockAllocatorStandard());
         this.setBlockProcessor(new BlockProcessorStandard());
         this.setEntityProcessor(new EntityProcessorCross());
         this.setPlayerProcessor(new PlayerProcessorStandard());
+        this.setSFX(new ExplosionEffectStandard());
         return this;
     }
 

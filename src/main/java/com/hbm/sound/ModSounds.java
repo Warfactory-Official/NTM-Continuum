@@ -164,6 +164,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> ALARM_GAMBIT = register("alarm.gambit");
     public static final RegistryObject<SoundEvent> ALARM_SOYUZED = register("alarm.soyuzed");
     public static final RegistryObject<SoundEvent> BALLS_LASER = register("weapon.balls_laser");
+    public static final RegistryObject<SoundEvent> STINGER_LOCK_ON = register("weapon.stingerlockon");
     public static final RegistryObject<SoundEvent> BOMBER_WHISTLE = register("entity.bomb_whistle");
     public static final RegistryObject<SoundEvent> BOMB_DET = register("entity.bomb_det");
     public static final RegistryObject<SoundEvent> CHOPPER_CHARGE = register("entity.chopper_charge");

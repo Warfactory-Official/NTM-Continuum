@@ -12,10 +12,25 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
  */
 public class EntityAINearestAttackableTargetNT<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
 
+    private final double range;
+
     /** The filter is a plain predicate; Golem spells it in whichever type this version's goal takes. */
     public EntityAINearestAttackableTargetNT(Mob mob, Class<T> targetType, int randomInterval, boolean mustSee,
                                              boolean mustReach, java.util.function.@Nullable Predicate<LivingEntity> selector) {
+        this(mob, targetType, randomInterval, mustSee, mustReach, selector, -1D);
+    }
+
+    /** {@code range} replaces the follow range attribute as the search distance, as 1.7's last argument did. */
+    public EntityAINearestAttackableTargetNT(Mob mob, Class<T> targetType, int randomInterval, boolean mustSee,
+                                             boolean mustReach, java.util.function.@Nullable Predicate<LivingEntity> selector,
+                                             double range) {
         super(mob, targetType, randomInterval, mustSee, mustReach, Targeting.selector(selector));
+        this.range = range;
+    }
+
+    @Override
+    protected double getFollowDistance() {
+        return this.range > 0 ? this.range : super.getFollowDistance();
     }
 
     @Override

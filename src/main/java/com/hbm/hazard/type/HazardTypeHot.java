@@ -2,6 +2,7 @@ package com.hbm.hazard.type;
 
 import java.util.List;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.config.RadiationConfig;
 import com.hbm.hazard.helper.HazardHelper;
 import com.hbm.hazard.modifier.IHazardModifier;
@@ -18,8 +19,10 @@ public class HazardTypeHot implements IHazardType {
     @Override
     public void onUpdate(final LivingEntity target, final double level, final ItemStack stack) {
 
-        final boolean wetOrReacher = HazardHelper.isHoldingReacher(target) || target.isInWaterOrRain();
-        if (RadiationConfig.disableHot || wetOrReacher) return;
+        if (RadiationConfig.disableHot) return;
+        // 1.7 ignores the reacher in 528 mode
+        final boolean reacher = !GeneralConfig.enable528 && HazardHelper.hasReacher(target);
+        if (reacher || target.isInWaterOrRain()) return;
         // 1.7 setFire(ceil(level)) every tick: a duration in seconds that only ever raises the remaining burn, so
         // one application per hazardRate ticks keeps it identical; multiplying it by the rate made a nugget burn 5x
         // longer after being dropped. 1.7 exempted no creative player either (they burn without taking damage).

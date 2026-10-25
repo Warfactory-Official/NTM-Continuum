@@ -44,6 +44,8 @@ public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
      * HBM never changes them.
      */
     public static int powerDivisor = 20;
+    /** Water used per mB of heavy water. */
+    public static final int WATER_PER_HEAVY_WATER = 50;
     public static long powerFloorExclusive = Long.MIN_VALUE;
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityDeuteriumExtractor extractor) {
@@ -52,9 +54,9 @@ public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
 
         if (extractor.hasPower() && extractor.power > powerFloorExclusive && extractor.hasEnoughWater()
                 && extractor.tanks[1].getMaxFill() > extractor.tanks[1].getFill()) {
-            int convert = Math.min(extractor.tanks[1].getMaxFill(), extractor.tanks[0].getFill()) / 50;
+            int convert = Math.min(extractor.tanks[1].getMaxFill(), extractor.tanks[0].getFill()) / WATER_PER_HEAVY_WATER;
             convert = Math.min(convert, extractor.tanks[1].getMaxFill() - extractor.tanks[1].getFill());
-            extractor.tanks[0].setFill(extractor.tanks[0].getFill() - convert * 50);
+            extractor.tanks[0].setFill(extractor.tanks[0].getFill() - convert * WATER_PER_HEAVY_WATER);
             extractor.tanks[1].setFill(extractor.tanks[1].getFill() + convert);
             extractor.power -= extractor.getMaxPower() / powerDivisor;
         }

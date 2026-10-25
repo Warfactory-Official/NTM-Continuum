@@ -44,9 +44,15 @@ public final class BalefireGlint {
      */
     public static void submit(PoseStack poseStack, SubmitSink sink, Geometry geometry, int layers, float scale,
                               float speed) {
+        submit(poseStack, sink, geometry, SHEET, layers, scale, speed);
+    }
+
+    /** As above with another pre-tinted sheet, for 1.7's other {@code renderClassicGlint} colours. */
+    public static void submit(PoseStack poseStack, SubmitSink sink, Geometry geometry, Identifier sheet, int layers,
+                              float scale, float speed) {
         LocalPlayer player = Minecraft.getInstance().player;
         float offset = (player == null ? 0 : player.tickCount) + Frames.partialTick();
-        sink.submitCustomGeometry(poseStack, CompatRenderTypes.glint(SHEET, false), (pose, buffer) -> {
+        sink.submitCustomGeometry(poseStack, CompatRenderTypes.glint(sheet, false), (pose, buffer) -> {
             for (int k = 0; k < layers; k++) {
                 float movement = offset * (0.001F + k * 0.003F) * speed;
                 // GL_TEXTURE: identity, then scale, rotate about z, translate - each multiplied on the right

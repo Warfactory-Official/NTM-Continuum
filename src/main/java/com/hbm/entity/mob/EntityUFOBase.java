@@ -11,6 +11,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.player.Player;
@@ -42,6 +43,13 @@ public abstract class EntityUFOBase extends CompatMob implements Enemy {
     @Override
     protected void checkFallDamage(double ya, boolean onGround, BlockState onState, BlockPos pos) {
         // 1.7 EntityFlying.fall() was empty
+    }
+
+    /** 1.7 {@code EntityFlying.moveEntityWithHeading}: move, then a flat 0.91 drag (0.546 on the ground). */
+    @Override
+    public void travel(Vec3 input) {
+        move(MoverType.SELF, getDeltaMovement());
+        setDeltaMovement(getDeltaMovement().scale(onGround() ? 0.6D * 0.91D : 0.91D));
     }
 
     /**

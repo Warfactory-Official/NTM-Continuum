@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * 1.7 {@code BlockProcessorNoDamage}: breaks nothing. The optional mutator still sees every allocated
  * non-air block ({@code mutatePre}) and every allocated air position ({@code mutatePost}), and the set is
- * cleared afterwards so the standard SFX draws no block-damage particles.
+ * cleared afterwards. The standard SFX still draws its particles: it reads the explosion's own copy, as in 1.7.
  */
 public class BlockProcessorNoDamage implements IBlockProcessor {
 
@@ -36,6 +36,6 @@ public class BlockProcessorNoDamage implements IBlockProcessor {
                 if (world.getBlockState(pos).isAir()) this.convert.mutatePost(explosion, pos);
             }
         }
-        affectedBlocks.clear(); // 1.7: tricks the standard SFX into skipping the block-damage particles
+        affectedBlocks.clear();
     }
 }

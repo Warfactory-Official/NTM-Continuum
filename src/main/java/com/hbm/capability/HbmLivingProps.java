@@ -2,11 +2,14 @@ package com.hbm.capability;
 
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.config.ServerConfig;
+import com.hbm.packet.PlayerInformPayload;
 import com.hbm.particle.helper.LivingEffects;
 import dev.golem.core.Ids;
 import dev.golem.core.data.EntityData;
+import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.world.Compat;
 import java.util.List;
+import net.minecraft.ChatFormatting;
 
 import com.hbm.Constants;
 import com.hbm.config.RadiationConfig;
@@ -27,8 +30,6 @@ import net.minecraft.world.level.block.Blocks;
  * Static facade over each living entity's {@link EntityHbmProps}, ported ~1:1 from 1.12.2's
  * {@code HbmLivingProps}. All gameplay code goes through here: the setters carry the old clamps and
  * side effects (digamma max-health modifier + death, asbestos/blacklung kill at max).
- *
- * <p>Deferred vs the original: the asbestos/coal-dust on-screen inform toasts.
  */
 public class HbmLivingProps {
 
@@ -175,8 +176,19 @@ public class HbmLivingProps {
     }
 
     public static void incrementAsbestos(LivingEntity entity, int asbestos) {
+        if (RadiationConfig.disableAsbestos) return;
         setAsbestos(entity, getAsbestos(entity) + asbestos);
-        // TODO(hud): the old red "info.asbestos" inform toast (PlayerInformPacketLegacy)
+        informGasHazard(entity, "info.asbestos");
+    }
+
+    /** 1.7 {@code ServerProxy.ID_GAS_HAZARD}. */
+    public static final int ID_GAS_HAZARD = 12;
+
+    /** The red three-second lung warning 1.7 sends on every asbestos or coal dust increment. */
+    private static void informGasHazard(LivingEntity entity, String key) {
+        if (entity instanceof ServerPlayer player)
+            GolemNetwork.sendToPlayer(player, PlayerInformPayload.CODEC, PlayerInformPayload.of(ID_GAS_HAZARD, 3000,
+                    ChatFormatting.RED, new PlayerInformPayload.Translated(key)));
     }
 
     public static int getFire(LivingEntity entity) {
@@ -249,8 +261,9 @@ public class HbmLivingProps {
     }
 
     public static void incrementBlackLung(LivingEntity entity, int blacklung) {
+        if (RadiationConfig.disableCoal) return;
         setBlackLung(entity, getBlackLung(entity) + blacklung);
-        // TODO(hud): the old red "info.coaldust" inform toast
+        informGasHazard(entity, "info.coaldust");
     }
 
     /// CONTAGION ///

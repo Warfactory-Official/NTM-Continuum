@@ -234,6 +234,8 @@
   "container.radiorec": "UKW Radio",
   "container.safe": "Panzerschrank",
   "info.coil": "Spulenstärke",
+  "info.asbestos": "Meine Lunge brennt.",
+  "info.coaldust": "Das Atmen fällt mir schwer.",
   "death.attack.broadcast": "%1$s wurde das Gehirn geschmolzen.",
   "block.hbm.crystal_hardened": "Gehärteter Dunkler Kristall",
   "block.hbm.deco_aluminium": "Aluminium-Dekoblock",

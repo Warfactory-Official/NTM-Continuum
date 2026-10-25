@@ -25,6 +25,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /**
@@ -96,7 +97,7 @@ public final class ModFalloutBlocks {
             .loot(Loot.oreNoFortune("hbm:trinitite", 1, 1))
             .tag(BlockTag.SHOVEL);
     public static final RegistryObject<RotatedPillarBlock> waste_log = block("waste_log", RotatedPillarBlock::new,
-            p -> p.strength(5.0F, 1.5F).sound(SoundType.WOOD))
+            p -> p.strength(5.0F, 1.5F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava())
             .model(d -> d.models(Models.column("hbm:blocks/waste_log_top", "hbm:blocks/waste_log_side")).states(Variants.axis()).blockItem())
             // 1.7 WasteLog: 2-4 charcoal (Items.coal, damageDropped 1), no fortune; one break in 1,000 drops a single
             // burnt_bark instead; silk touch keeps the log

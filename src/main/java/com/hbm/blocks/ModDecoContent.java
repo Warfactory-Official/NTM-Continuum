@@ -31,6 +31,7 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.LinkedHashMap;
@@ -441,7 +442,7 @@ public final class ModDecoContent {
 
     // Loot crates
     public static final RegistryObject<BlockCrate> crate_weapon = plain("crate_weapon", p -> new BlockCrate(p, BlockCrate.Kind.WEAPON),
-            p -> p.strength(5.0F, 6.0F).sound(SoundType.WOOD), HbmTab.CONSUMABLES)
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava(), HbmTab.CONSUMABLES)
             .transform(CUBE).tag(BlockTag.AXE);
     public static final RegistryObject<BlockCrate> crate_lead = plain("crate_lead", p -> new BlockCrate(p, BlockCrate.Kind.LEAD),
             p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES)

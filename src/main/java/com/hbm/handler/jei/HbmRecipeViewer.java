@@ -3,6 +3,9 @@ package com.hbm.handler.jei;
 import com.hbm.Constants;
 import com.hbm.blocks.ModAnvilBlocks;
 import com.hbm.blocks.ModProductionBlocks;
+import com.hbm.blocks.ModProduction2Blocks;
+import com.hbm.blocks.ModPwrBlocks;
+import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.container.ContainerAnvil;
@@ -35,6 +38,7 @@ import com.hbm.inventory.gui.GUIBook;
 import com.hbm.inventory.gui.GUIFurnaceCombination;
 import com.hbm.inventory.gui.GUIPADetector;
 import com.hbm.inventory.gui.GUIPASource;
+import com.hbm.inventory.gui.ScreenRBMKOutgasser;
 import com.hbm.inventory.recipes.ArcFurnaceRecipes;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.BlastFurnaceRecipesNT;
@@ -75,9 +79,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import dev.golem.core.data.ModelData;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import com.hbm.blocks.ModSatelliteBlocks;
@@ -85,6 +91,7 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.handler.jei.JEIGenericRecipeHandler.Extras;
 import dev.golem.core.viewer.TransferAction;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import dev.golem.core.viewer.ViewerCategory;
 import dev.golem.core.viewer.ViewerPlugin;
 
 /**
@@ -144,7 +151,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
     private static PyrolysisRecipeHandler pyrolysis;
     private static CombinationRecipeHandler combination;
     private static CompressorRecipeHandler compressor;
-    private static StorageDrumRecipeHandler storageDrum;
+    private static UniversalRecipeHandler storageDrum;
     private static FuelPoolRecipeHandler fuelPool;
     private static ArcWelderRecipeHandler arcWelder;
     private static RotaryFurnaceRecipeHandler rotaryFurnace;
@@ -205,7 +212,9 @@ public final class HbmRecipeViewer implements ViewerPlugin {
     }
 
     @Override
-    public void categories(Categories reg) {
+    public void categories(Categories viewer) {
+        List<ViewerCategory<?>> all = new ArrayList<>();
+        Categories reg = added -> all.addAll(List.of(added));
         assembly = new JEIGenericRecipeHandler(HbmJeiRecipeTypes.ASSEMBLY_MACHINE,
                 title("assembly_machine"), AssemblyMachineRecipes.INSTANCE, stack(ModMachineBlocks.machine_assembly_machine.get()))
                 .extras(Extras.POWER);
@@ -316,8 +325,8 @@ public final class HbmRecipeViewer implements ViewerPlugin {
                 stack(ModMachineBlocks.machine_furnace_combination.get()));
         compressor = new CompressorRecipeHandler(HbmJeiRecipeTypes.COMPRESSOR,
                 title("compressor"), stack(ModMachineBlocks.machine_compressor.get()));
-        storageDrum = new StorageDrumRecipeHandler(HbmJeiRecipeTypes.STORAGE_DRUM,
-                Component.translatable("container.storageDrum"));
+        storageDrum = new UniversalRecipeHandler(HbmJeiRecipeTypes.STORAGE_DRUM, Component.literal("Nuclear Waste Decay"),
+                stack(ModMachineBlocks.machine_storage_drum.get()));
         fuelPool = new FuelPoolRecipeHandler(HbmJeiRecipeTypes.FUEL_POOL,
                 Component.translatable("block.hbm.machine_waste_drum"), stack(ModMachineBlocks.machine_waste_drum.get()));
         arcWelder = new ArcWelderRecipeHandler(HbmJeiRecipeTypes.ARC_WELDER,
@@ -339,10 +348,50 @@ public final class HbmRecipeViewer implements ViewerPlugin {
                  vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, combination, compressor, storageDrum, fuelPool,
                  arcWelder, arcFurnaceSolid, arcFurnaceFluid, diFurnace, rotaryFurnace,
                  fluidContainers, construction, tooling, ashpit, crucibleSmelting, crucibleCasting, book);
+        // 1.7's display names: literal strings or the machine's name
+        reg.add(new UniversalRecipeHandler(HbmJeiRecipeTypes.ANNIHILATOR, Component.literal("Annihilator"),
+                        stack(ModProduction2Blocks.MACHINE_ANNIHILATOR.get())),
+                new UniversalRecipeHandler(HbmJeiRecipeTypes.ORE_SLOPPER, ModProduction2Blocks.MACHINE_ORE_SLOPPER.get().getName(),
+                        stack(ModProduction2Blocks.MACHINE_ORE_SLOPPER.get())),
+                new UniversalRecipeHandler(HbmJeiRecipeTypes.RBMK_DISASSEMBLY, Component.literal("RBMK Rod Disassembly"),
+                        stack(Blocks.CRAFTING_TABLE)),
+                new UniversalRecipeHandler(HbmJeiRecipeTypes.GRENADE, Component.literal("Grenade Crafting"), stack(Blocks.CRAFTING_TABLE)),
+                new UniversalRecipeHandler(HbmJeiRecipeTypes.ZIRNOX, ModMachineBlocks.machine_zirnox.get().getName(),
+                        stack(ModMachineBlocks.machine_zirnox.get())),
+                new UniversalRecipeHandler(HbmJeiRecipeTypes.PWR, ModPwrBlocks.PWR_CONTROLLER.get().getName(),
+                        stack(ModPwrBlocks.PWR_CONTROLLER.get())),
+                new UniversalRecipeHandler(HbmJeiRecipeTypes.WATZ, ModMachineBlocks.watz.get().getName(), stack(ModMachineBlocks.watz.get())),
+                new UniversalRecipeHandler(HbmJeiRecipeTypes.OUTGASSER, ModRBMKBlocks.rbmk_outgasser.get().getName(),
+                        stack(ModRBMKBlocks.rbmk_outgasser.get()), stack(ModMachineBlocks.fusion_breeder.get())),
+                new UniversalRecipeHandler(HbmJeiRecipeTypes.DEUTERIUM, ModMachineBlocks.machine_deuterium_extractor.get().getName(),
+                        stack(ModMachineBlocks.machine_deuterium_extractor.get()), stack(ModMachineBlocks.machine_deuterium_tower.get())));
         RTGJeiIntegration.registerCategory(reg);
         reg.add(new SatelliteRecipeHandler());
         NuclearMiscJeiIntegration.registerCategories(reg);
         CustomMachineJeiIntegration.registerCategories(reg);
+        all.sort(Comparator.comparingInt(HbmRecipeViewer::neiPosition));
+        viewer.add(all.toArray(ViewerCategory<?>[]::new));
+    }
+
+    /**
+     * 1.7's tab order: {@code NEIRegistry.listAllHandlers}, then the custom machines {@code NEIConfig} adds. Port-only
+     * categories go after 1.7's last tab, before the custom machines.
+     */
+    public static final List<String> NEI_ORDER = List.of("tooling", "construction", "annihilator", "soldering_station",
+            "blast_furnace", "anvil_construction", "anvil_smithing", "press", "shredder", "crucible_smelting",
+            "crucible_alloy", "crucible_casting", "assembly_machine", "precass", "chemical_plant", "refinery", "centrifuge",
+            "gas_centrifuge", "cyclotron", "vacuum_distiller", "cracking", "radiolysis", "reforming", "hydrotreating", "purex",
+            "ore_slopper", "crystallizer", "book_of_boxcars", "fusion", "plasma_forge", "silex", "fuel_pool",
+            "rbmk_disassembly", "storage_drum", "satellite", "grenade", "zirnox", "pwr", "watz", "rtg", "liquefaction",
+            "solidification", "coker", "pyrolysis", "fractioning", "boiling", "combination", "sawmill", "mixer", "outgasser",
+            "fusionbreeder", "electrolysis_fluid", "electrolysis_metal", "ashpit", "arc_welder", "exposure_chamber",
+            "arc_furnace_solid", "arc_furnace_fluid", "rotary_furnace", "ammo_press", "compressor", "particle_accelerator",
+            "deuterium", "rock_mill", "supercomputer", "space_assembler", "fluid_containers");
+
+    static int neiPosition(ViewerCategory<?> category) {
+        if (category instanceof CustomMachineRecipeHandler) return NEI_ORDER.size() + 1;
+        int index = NEI_ORDER.indexOf(category.type().path());
+        return index < 0 ? NEI_ORDER.size() : index;
     }
 
     @Override
@@ -421,7 +470,16 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         reg.add(HbmJeiRecipeTypes.PYROLYSIS, PyrolysisRecipeHandler.buildRecipes());
         reg.add(HbmJeiRecipeTypes.COMBINATION, CombinationRecipeHandler.buildRecipes());
          reg.add(HbmJeiRecipeTypes.COMPRESSOR, CompressorRecipeHandler.buildRecipes());
-         reg.add(HbmJeiRecipeTypes.STORAGE_DRUM, StorageDrumRecipeHandler.buildRecipes());
+         reg.add(HbmJeiRecipeTypes.STORAGE_DRUM, UniversalRecipeHandler.wasteDecay());
+        reg.add(HbmJeiRecipeTypes.ANNIHILATOR, UniversalRecipeHandler.annihilator());
+        reg.add(HbmJeiRecipeTypes.ORE_SLOPPER, UniversalRecipeHandler.oreSlopper());
+        reg.add(HbmJeiRecipeTypes.RBMK_DISASSEMBLY, UniversalRecipeHandler.rbmkDisassembly());
+        reg.add(HbmJeiRecipeTypes.GRENADE, UniversalRecipeHandler.grenade());
+        reg.add(HbmJeiRecipeTypes.ZIRNOX, UniversalRecipeHandler.zirnox());
+        reg.add(HbmJeiRecipeTypes.PWR, UniversalRecipeHandler.pwr());
+        reg.add(HbmJeiRecipeTypes.WATZ, UniversalRecipeHandler.watz());
+        reg.add(HbmJeiRecipeTypes.OUTGASSER, UniversalRecipeHandler.outgasser());
+        reg.add(HbmJeiRecipeTypes.DEUTERIUM, UniversalRecipeHandler.deuterium());
          reg.add(HbmJeiRecipeTypes.FUEL_POOL, FuelPoolRecipeHandler.buildRecipes());
          reg.add(HbmJeiRecipeTypes.ARC_WELDER, ArcWelderRecipeHandler.buildRecipes());
          reg.add(HbmJeiRecipeTypes.ROTARY_FURNACE, RotaryFurnaceRecipeHandler.buildRecipes());
@@ -474,7 +532,8 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         // 1.7 NEI rects, offset by NEI's (5, 11) recipe origin
         reg.add(GUISILEX.class, 44, 71, 60, 50, HbmJeiRecipeTypes.SILEX);
         reg.add(GUIBook.class, 89, 34, 24, 18, HbmJeiRecipeTypes.BOOK);
-        reg.add(GUIFurnaceCombination.class, 49, 44, 18, 18, HbmJeiRecipeTypes.COMBINATION);
+        reg.add(GUIFurnaceCombination.class, 54, 55, 18, 18, HbmJeiRecipeTypes.COMBINATION);
+        reg.add(ScreenRBMKOutgasser.class, 80, 37, 16, 32, HbmJeiRecipeTypes.OUTGASSER);
         RTGJeiIntegration.registerGuiHandler(reg);
     }
 
@@ -619,6 +678,16 @@ public final class HbmRecipeViewer implements ViewerPlugin {
                  stack(ModMachineBlocks.machine_storage_drum.get()));
          reg.add(HbmJeiRecipeTypes.FUEL_POOL,
                  stack(ModMachineBlocks.machine_waste_drum.get()));
+        reg.add(HbmJeiRecipeTypes.ANNIHILATOR, stack(ModProduction2Blocks.MACHINE_ANNIHILATOR.get()));
+        reg.add(HbmJeiRecipeTypes.ORE_SLOPPER, stack(ModProduction2Blocks.MACHINE_ORE_SLOPPER.get()));
+        reg.add(HbmJeiRecipeTypes.RBMK_DISASSEMBLY, stack(Blocks.CRAFTING_TABLE));
+        reg.add(HbmJeiRecipeTypes.GRENADE, stack(Blocks.CRAFTING_TABLE));
+        reg.add(HbmJeiRecipeTypes.ZIRNOX, stack(ModMachineBlocks.machine_zirnox.get()));
+        reg.add(HbmJeiRecipeTypes.PWR, stack(ModPwrBlocks.PWR_CONTROLLER.get()));
+        reg.add(HbmJeiRecipeTypes.WATZ, stack(ModMachineBlocks.watz.get()));
+        reg.add(HbmJeiRecipeTypes.OUTGASSER, stack(ModRBMKBlocks.rbmk_outgasser.get()), stack(ModMachineBlocks.fusion_breeder.get()));
+        reg.add(HbmJeiRecipeTypes.DEUTERIUM, stack(ModMachineBlocks.machine_deuterium_extractor.get()),
+                stack(ModMachineBlocks.machine_deuterium_tower.get()));
 
         // The electric furnace runs vanilla smelting, so list it under the viewer's built-in furnace category
         // (mirrors the old JEIConfig line; no bespoke category needed).

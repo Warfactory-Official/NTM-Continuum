@@ -50,6 +50,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.ArrayList;
@@ -124,13 +125,13 @@ public final class ModDecoCrateBlocks {
     // Crates
     /** 1.7 {@code crate}: the supply crate, wood 5/10, consumable tab; a crowbar spills random supplies. */
     public static final RegistryObject<BlockCrate> crate = REG.block("crate",
-                    p -> new BlockCrate(p, BlockCrate.Kind.SUPPLY), p -> p.strength(5.0F, 6.0F).sound(SoundType.WOOD))
+                    p -> new BlockCrate(p, BlockCrate.Kind.SUPPLY), p -> p.strength(5.0F, 6.0F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava())
             .transform(Presets.cubeAll().viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.AXE);
     /** The conserve crate: renderer-drawn; its OBJ item is typed data in {@link DecoCrateDeclarations}. */
     public static final RegistryObject<BlockCanCrate> crate_can = REG.block("crate_can", BlockCanCrate::new,
-                    rendered(p -> p.strength(1.0F, 1.5F).sound(SoundType.WOOD)))
+                    rendered(p -> p.strength(1.0F, 1.5F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava()))
             .transform(Presets.rendered(Variants.simple()))
             .loot(Loot.self())
             .tag(BlockTag.AXE);
@@ -225,7 +226,7 @@ public final class ModDecoCrateBlocks {
 
     /** 1.7 {@code BlockPinkLog}: an axis log, oak bark on the sides and the pink rings on the ends; no creative tab. */
     public static final RegistryObject<RotatedPillarBlock> pink_log = REG.block("pink_log",
-                    RotatedPillarBlock::new, p -> p.strength(0.5F).sound(SoundType.WOOD).ignitedByLava())
+                    RotatedPillarBlock::new, p -> p.strength(0.5F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava())
             .transform(Presets.column("hbm:blocks/pink_log", "minecraft:block/oak_log").states(Variants.axis()).viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.AXE);
@@ -237,7 +238,7 @@ public final class ModDecoCrateBlocks {
         for (BlockWoodStructure.EnumWoodStructure type : BlockWoodStructure.EnumWoodStructure.values()) {
             // the element models and multipart blockstate (their joins) are authored; the item shows the block model
             Reg.Handle<BlockWoodStructure> wood = REG.block(woodId(type), p -> new BlockWoodStructure(p, type),
-                            p -> p.strength(5.0F, 9.0F).sound(SoundType.WOOD).noOcclusion().ignitedByLava())
+                            p -> p.strength(5.0F, 9.0F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).noOcclusion().ignitedByLava())
                     .transform(Presets.shares("hbm:block/" + woodId(type)))
                     .loot(Loot.self())
                     .tag(BlockTag.AXE);
