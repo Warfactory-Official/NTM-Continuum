@@ -3,6 +3,46 @@
 Each release has a `## <version>` section; the release workflow uploads only the section matching
 `mod.version` in gradle.properties.
 
+## 1.0.2
+
+Requires Golem Core 1.0.2. Use GemRender 0.1.18.
+
+### Added
+- Configurability with 1.7 defaults: every 1.7 machine config in `hbmMachines.json` (synced to clients); radiation walls
+  and immunity tags, biome and dimension ambient radiation, mob transformations, cladding and gas mask blacklists as data;
+  consumable treatments as the `hbm:consumable_treatment` item data map; every worldgen feature configurable.
+- Looting mob drops and structure chest loot are loot tables (`hbm:chests/<pool>`), filled the way 1.7 fills them.
+- Refined Storage importers, AE2 buses and item pipes can take items from HBM machines on NeoForge and Forge.
+- Voxy support for HBM's placed fluids.
+- Every 1.7 NEI tab has a recipe viewer category: ten new tabs (annihilator, ore slopper, outgasser, deuterium, grenade
+  crafting, ZIRNOX, PWR, Watz, RBMK rod disassembly, waste decay) and the combination furnace, in 1.7's order in REI.
+- "Press O to Duck!" as in 1.7.
+- 1.7's coal dust and asbestos warnings, the reacher, explosion debris particles and the rarity table.
+- Raw aluminium makes fireclay; `any_rubber` accepts latex.
+
+### Fixed
+- Nuked uranium ore turned into radon instead of sellafite ore; mined uranium ore and ancient scrap dropped nothing
+  before 26.1.
+- Held crates: crates picked up while one was open joined its stack and copied its contents (dupe); crates no longer
+  take items that carry items.
+- KubeJS machine outputs kept no item data (an empty Superb Warfare vehicle crate).
+- Gem machines were invisible under a shader pack on 26.1; first-person guns were off screen under Iris on 1.21.1.
+- Weapon mods, the AMR, StG 77, laser rifle and infinite water tank recipes were hidden in EMI.
+- Crucible automation through its parts; the crucible slash no longer kills creative or spectator players.
+- MK108 belt and Liberator animations, the B92 in hand below 1.21.4, helmet overlays below 26.1, chemthrower ammo name,
+  1.7 absolute and creative damage flags.
+- TELEX ghost text, the hotbar hidden by RBMK columns under ImmediatelyFast, and foods and cement eaten without the
+  eating animation.
+- The burner press takes coal coke again; asbestos ores and lab tiles outgas as in 1.7.
+- Holo Inventory counted items twice at multiblock parts; cargo elevator picking as in 1.7.
+- Wand, logic block, HIMARS rocket and jigsaw directions are saved by name.
+- Plastic explosive, plane crash and torpedo explosions had no effects; the combine ball is exempt from nukes and 19 wood
+  blocks burn as in 1.7.
+- `machine_battery` is in no creative tab, as in 1.7.
+
+### Changed
+- Release jars are named without the version prefix.
+
 ## 1.0.1
 
 Requires Golem Core 1.0.1. Use GemRender 0.1.18. Older versions are refused.
