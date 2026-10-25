@@ -1,5 +1,7 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType;
+import com.hbm.util.SavedIds;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import dev.golem.core.data.Tags;
 
@@ -354,7 +356,7 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
     protected void saveData(DataOut output) {
         super.saveData(output);
         output.putShort("mode", mode);
-        output.putInt("type", typeLoaded);
+        if (typeLoaded >= 0) SavedIds.putEnum(output, "type", ItemAmmoHIMARS.byIndex(typeLoaded));
         output.putInt("ammo", ammo);
         output.putFloat("crane", crane);
     }
@@ -367,7 +369,8 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
     protected void loadData(DataIn input) {
         super.loadData(input);
         mode = input.getShortOr("mode", (short) 0);
-        typeLoaded = input.getIntOr("type", -1);
+        HIMARSRocketType type = SavedIds.getEnumOrNull(input, "type", HIMARSRocketType.class);
+        typeLoaded = type == null ? -1 : type.ordinal();
         ammo = input.getIntOr("ammo", 0);
         crane = input.getFloatOr("crane", 0F);
     }

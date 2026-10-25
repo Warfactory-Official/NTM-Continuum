@@ -7,12 +7,12 @@ import com.hbm.config.ServerConfig;
 import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.ICopiable;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.items.LegacyMeta;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.world.gen.nbt.ILegacyStructureTile;
 import com.hbm.world.gen.nbt.INBTTileEntityTransformable;
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
+import com.hbm.util.SavedIds;
 import com.hbm.world.gen.util.LogicBlockActions;
 import com.hbm.world.gen.util.LogicBlockConditions;
 import com.hbm.world.gen.util.LogicBlockInteractions;
@@ -24,7 +24,6 @@ import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.Mth;
@@ -38,7 +37,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -98,8 +96,7 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
             if (Compat.isSolidRender(block.defaultBlockState()) && block != this) {
                 if (level.getBlockEntity(pos) instanceof TileEntityWandLogic logic) {
                     if (!level.isClientSide()) {
-                        logic.disguise = block;
-                        logic.disguiseMeta = LegacyMeta.of(stack) & 15;
+                        logic.disguise = block.defaultBlockState();
                         logic.setChanged();
                     }
                     return InteractionResult.SUCCESS;
@@ -143,7 +140,7 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
         text.add("Interaction: " + (logic.interactionID != null ? logic.interactionID : "None"));
 
         String block;
-        if (logic.disguise != null && logic.disguise != Blocks.AIR) block = logic.disguise.getName().getString();
+        if (logic.disguise != null && !logic.disguise.isAir()) block = logic.disguise.getBlock().getName().getString();
         else block = "None";
 
         text.add("Disguise Block: " + block);
@@ -164,8 +161,7 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
 
         public int placedRotation;
 
-        @Nullable Block disguise;
-        int disguiseMeta = 0;
+        @Nullable BlockState disguise;
 
         public String actionID = "FODDER_WAVE";
         public String conditionID = "PLAYER_CUBE_5";
@@ -196,10 +192,9 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
             // copy before the block (and this block entity) goes away
             String action = actionID, condition = conditionID, interaction = interactionID;
             int rotation = placedRotation;
-            Block disguiseBlock = disguise;
-            int meta = disguiseMeta;
+            BlockState disguiseState = disguise;
 
-            world.setBlock(pos, (disguiseBlock == null ? ModDungeonBlocks.logic_block_invis : ModDungeonBlocks.logic_block).get().defaultBlockState(), 3);
+            world.setBlock(pos, (disguiseState == null ? ModDungeonBlocks.logic_block_invis : ModDungeonBlocks.logic_block).get().defaultBlockState(), 3);
 
             BlockEntity te = world.getBlockEntity(pos);
 
@@ -213,8 +208,7 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
                 logic.conditionID = condition;
                 logic.interactionID = interaction;
                 logic.direction = ForgeDirection.getOrientation(rotation);
-                logic.disguise = disguiseBlock;
-                logic.disguiseMeta = meta;
+                logic.disguise = disguiseState;
                 logic.setChanged();
             }
         }
@@ -230,11 +224,8 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
             out.putString("actionID", actionID);
             out.putString("conditionID", conditionID);
             if (interactionID != null) out.putString("interactionID", interactionID);
-            out.putInt("rotation", placedRotation);
-            if (disguise != null) {
-                out.putString("disguise", String.valueOf(BuiltInRegistries.BLOCK.getKey(disguise)));
-                out.putInt("disguiseMeta", disguiseMeta);
-            }
+            SavedIds.putEnum(out, "rotation", ForgeDirection.getOrientation(placedRotation));
+            if (disguise != null) SavedIds.putState(out, "disguise", disguise);
             out.putBoolean("trigger", triggerReplace);
         }
 
@@ -245,13 +236,9 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
             conditionID = in.getStringOr("conditionID", "");
             String interaction = in.getStringOr("interactionID", "");
             interactionID = interaction.isEmpty() ? null : interaction;
-            placedRotation = in.getIntOr("rotation", 0);
-            String disguiseName = in.getStringOr("disguise", "");
-            if (!disguiseName.isEmpty()) {
-                BlockState state = LegacyStructurePalette.parseState(disguiseName);
-                disguise = state.isAir() ? null : state.getBlock();
-                disguiseMeta = in.getIntOr("disguiseMeta", 0);
-            }
+            placedRotation = SavedIds.getEnum(in, "rotation", ForgeDirection.DOWN).ordinal();
+            BlockState state = SavedIds.getState(in, "disguise", null);
+            disguise = state == null || state.isAir() ? null : state;
             triggerReplace = in.getBooleanOr("trigger", false);
         }
 
@@ -263,9 +250,9 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
             if (Tags.contains(nbt, "interactionID")) interactionID = Tags.getStringOr(nbt, "interactionID", "");
             placedRotation = Tags.getIntOr(nbt, "rotation", 0);
             if (Tags.contains(nbt, "disguise")) {
-                disguiseMeta = Tags.getIntOr(nbt, "disguiseMeta", 0);
-                BlockState state = LegacyStructurePalette.legacyState(Tags.getStringOr(nbt, "disguise", ""), disguiseMeta);
-                disguise = state.isAir() ? null : state.getBlock();
+                BlockState state = LegacyStructurePalette.legacyState(Tags.getStringOr(nbt, "disguise", ""),
+                        Tags.getIntOr(nbt, "disguiseMeta", 0));
+                disguise = state.isAir() ? null : state;
             }
         }
 
@@ -275,8 +262,7 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
             buf.writeUtf(actionID);
             buf.writeUtf(conditionID);
             buf.writeUtf(interactionID == null ? "" : interactionID);
-            buf.writeInt(disguise == null ? -1 : BuiltInRegistries.BLOCK.getId(disguise));
-            buf.writeInt(disguiseMeta);
+            buf.writeInt(disguise == null ? -1 : Block.getId(disguise));
         }
 
         @Override
@@ -287,8 +273,7 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
             String interaction = buf.readUtf();
             interactionID = interaction.isEmpty() ? null : interaction;
             int id = buf.readInt();
-            disguise = id < 0 ? null : BuiltInRegistries.BLOCK.byId(id);
-            disguiseMeta = buf.readInt();
+            disguise = id < 0 ? null : Block.stateById(id);
         }
 
         @Override
@@ -297,11 +282,8 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
             nbt.putString("actionID", actionID);
             nbt.putString("conditionID", conditionID);
             if (interactionID != null) nbt.putString("interactionID", interactionID);
-            nbt.putInt("rotation", placedRotation);
-            if (disguise != null) {
-                nbt.putString("disguise", String.valueOf(BuiltInRegistries.BLOCK.getKey(disguise)));
-                nbt.putInt("disguiseMeta", disguiseMeta);
-            }
+            SavedIds.putEnum(nbt, "rotation", ForgeDirection.getOrientation(placedRotation));
+            if (disguise != null) SavedIds.putState(nbt, "disguise", disguise);
             return nbt;
         }
 
@@ -310,12 +292,11 @@ public class BlockWandLogic extends CompatBlock implements TickingBlock, ILookOv
             actionID = Tags.getStringOr(nbt, "actionID", "");
             conditionID = Tags.getStringOr(nbt, "conditionID", "");
             interactionID = Tags.getStringOr(nbt, "interactionID", "");
-            // 1.7 pasted the rotation from the disguiseMeta key, not "rotation"; kept
-            placedRotation = Tags.getIntOr(nbt, "disguiseMeta", 0);
+            // port: 1.7 pasted the rotation from the disguise's metadata; the disguise is a block state here
+            placedRotation = SavedIds.getEnum(nbt, "rotation", ForgeDirection.DOWN).ordinal();
             if (Tags.contains(nbt, "disguise")) {
-                BlockState state = LegacyStructurePalette.parseState(Tags.getStringOr(nbt, "disguise", ""));
-                disguise = state.isAir() ? null : state.getBlock();
-                disguiseMeta = Tags.getIntOr(nbt, "disguiseMeta", 0);
+                BlockState state = SavedIds.getState(nbt, "disguise", null);
+                disguise = state == null || state.isAir() ? null : state;
             }
             setChanged();
         }

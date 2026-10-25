@@ -48,7 +48,6 @@ com.hbm.blocks.machine.rbmk.ModRBMKBlocks
 com.hbm.items.ModRBMKItems
 com.hbm.blocks.machine.dfc.ModDFCBlocks
 com.hbm.blocks.machine.pile.ModPileBlocks
-com.hbm.blocks.machine.soyuz.ModSoyuzBlocks
 com.hbm.blocks.turret.ModTurretBlocks
 com.hbm.blocks.ModPwrBlocks
 com.hbm.items.ModPwrItems
@@ -99,13 +98,11 @@ com.hbm.items.ModIngredientItems
 com.hbm.items.ModIntermediateItems
 com.hbm.items.ModCasingItems
 com.hbm.items.ModAutogenItems
-com.hbm.items.material.FuelAdditiveItems
 com.hbm.items.ModConsumableTailItems
 com.hbm.items.ModChemicalDyeItems
 com.hbm.items.ModSpawnEggs
 com.hbm.entity.ModMobSpawns
 com.hbm.items.ModSingularityItems
-com.hbm.blocks.material.MaterialCompletionRegistrations
 com.hbm.blocks.ModDecoBlocks
 com.hbm.blocks.ModDecoContent
 com.hbm.blocks.ModTerrainBlocks

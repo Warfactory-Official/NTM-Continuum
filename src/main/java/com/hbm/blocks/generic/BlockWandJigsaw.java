@@ -4,7 +4,9 @@ import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.LegacyMeta;
 import com.hbm.items.ModWandItems;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.SavedIds;
 import com.hbm.world.gen.nbt.ILegacyStructureTile;
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
 import dev.golem.core.data.DataIn;
@@ -174,20 +176,19 @@ public class BlockWandJigsaw extends CompatBlock implements TickingBlock, ILookO
         }
 
         /**
-         * 1.7's keys; {@code direction} is the ForgeDirection the jigsaw faces and {@code block}/{@code meta} what
-         * it becomes. A port-saved structure also stores {@code stateString}, since a flattened block has no metadata.
+         * 1.7's keys, with {@code direction} (the ForgeDirection the jigsaw faces) by name and no {@code meta}: a
+         * flattened block has none, so {@code stateString} names what it becomes.
          */
         @Override
         protected void saveData(DataOut out) {
             super.saveData(out);
-            out.putInt("direction", getBlockState().getValue(FACING).get3DDataValue());
+            SavedIds.putEnum(out, "direction", ForgeDirection.getOrientation(getBlockState().getValue(FACING).get3DDataValue()));
             out.putInt("selection", selectionPriority);
             out.putInt("placement", placementPriority);
             out.putString("pool", pool);
             out.putString("name", name);
             out.putString("target", target);
             out.putString("block", String.valueOf(BuiltInRegistries.BLOCK.getKey(replaceState.getBlock())));
-            out.putInt("meta", replaceMeta);
             out.putBoolean("roll", isRollable);
             out.putString("stateString", LegacyStructurePalette.stateString(replaceState));
         }
@@ -201,7 +202,6 @@ public class BlockWandJigsaw extends CompatBlock implements TickingBlock, ILookO
             name = in.getStringOr("name", "");
             target = in.getStringOr("target", "");
             replaceState = LegacyStructurePalette.parseState(in.getStringOr("stateString", in.getStringOr("block", "")));
-            replaceMeta = in.getIntOr("meta", 0);
             isRollable = in.getBooleanOr("roll", false);
         }
 

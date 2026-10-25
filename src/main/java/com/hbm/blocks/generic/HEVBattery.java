@@ -1,8 +1,8 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.api.energymk2.IBatteryItem;
-import com.hbm.items.gear.ArmorFSB;
-import com.hbm.items.gear.ArmorFSBPowered;
+import com.hbm.items.armor.ArmorFSB;
+import com.hbm.items.armor.ArmorFSBPowered;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;

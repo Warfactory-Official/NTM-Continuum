@@ -8,7 +8,7 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.HazmatRegistry;
-import com.hbm.items.gear.ItemGasMask;
+import com.hbm.items.armor.ItemGasMask;
 import com.hbm.items.machine.ItemGear;
 import com.hbm.util.ArmorRegistry;
 import java.util.stream.IntStream;

@@ -1,8 +1,7 @@
-package com.hbm.items.gear;
+package com.hbm.items.armor;
 
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.handler.ArmorModHandler;
-import com.hbm.items.armor.ItemModBattery;
 import com.hbm.items.machine.ItemSelfcharger;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.Library;

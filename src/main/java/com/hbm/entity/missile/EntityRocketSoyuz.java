@@ -1,8 +1,8 @@
 package com.hbm.entity.missile;
 
+import com.hbm.items.ModMissileItems;
 import com.hbm.advancement.DetonationTrigger;
 import com.hbm.advancement.HbmCriteria;
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.client.ClientEffects;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.explosion.ExplosionLarge;
@@ -116,7 +116,7 @@ public class EntityRocketSoyuz extends EntityRocketBase {
                 if (load.is(ModItems.flame_pony.get())) {
                     ExplosionLarge.spawnTracers(level, getX(), getY(), getZ(), 25);
                     // 1.7 achSpace, awarded to every player in the world; the trigger keys on the rocket
-                    ItemStack rocket = ModSoyuzBlocks.missile_soyuz.stack(ItemEnums.SoyuzSkinType.NORMAL);
+                    ItemStack rocket = ModMissileItems.missile_soyuz.stack(ItemEnums.SoyuzSkinType.NORMAL);
                     for (ServerPlayer p : level.players()) HbmCriteria.orbit(p, rocket);
                 }
 

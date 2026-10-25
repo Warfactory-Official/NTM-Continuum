@@ -6,6 +6,7 @@ import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.food.ItemLemon;
+import com.hbm.items.special.FuelAdditiveItem;
 import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -13,7 +14,9 @@ import dev.golem.core.world.CompatConsumables;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +123,37 @@ public final class ModFuelItems {
         ModTabs.addTo(HbmTab.MATERIALS, powder_cement);
     }
 
+    // 1.7 fuel_additive metadata, one item per variant
+
+    private static final Map<FuelAdditive, RegistryObject<FuelAdditiveItem>> FUEL_ADDITIVES = new EnumMap<>(FuelAdditive.class);
+
+    static {
+        for (FuelAdditive variant : FuelAdditive.values()) {
+            RegistryObject<FuelAdditiveItem> item = REG.item(variant.id, FuelAdditiveItem::new)
+                    .transform(Presets.sprite("hbm:items/" + variant.id.replace("fuel_additive_", "fuel_additive.")));
+            FUEL_ADDITIVES.put(variant, item);
+            ModTabs.addTo(HbmTab.CONTROL, item);
+        }
+    }
+
+    public static FuelAdditiveItem fuelAdditive(FuelAdditive variant) {
+        return FUEL_ADDITIVES.get(variant).get();
+    }
+
+    public static ItemStack fuelAdditiveStack(FuelAdditive variant) {
+        return new ItemStack(fuelAdditive(variant));
+    }
+
+    public enum FuelAdditive {
+        ANTIKNOCK("fuel_additive_antiknock"),
+        DEICER("fuel_additive_deicer");
+
+        public final String id;
+
+        FuelAdditive(String id) {
+            this.id = id;
+        }
+    }
 
     public static void init() {}
 }

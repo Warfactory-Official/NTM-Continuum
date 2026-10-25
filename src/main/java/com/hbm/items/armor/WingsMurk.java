@@ -2,7 +2,6 @@ package com.hbm.items.armor;
 
 import com.hbm.api.environment.Environment;
 import com.hbm.handler.JetpackHandler;
-import com.hbm.items.gear.ArmorFSB;
 import dev.golem.core.world.ArmorSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;

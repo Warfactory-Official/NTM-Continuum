@@ -1,4 +1,4 @@
-package com.hbm.items.gear;
+package com.hbm.items.armor;
 
 import com.hbm.api.data.ArmorDataMaps;
 import com.hbm.api.item.IGasMask;

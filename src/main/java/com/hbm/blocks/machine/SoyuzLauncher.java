@@ -1,4 +1,4 @@
-package com.hbm.blocks.machine.soyuz;
+package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -7,16 +7,15 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.handler.BossSpawnHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
+import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
 import java.util.function.ObjIntConsumer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
-import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
+import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;

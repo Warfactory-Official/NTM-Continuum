@@ -1,7 +1,7 @@
 package com.hbm.handler;
 
 import com.hbm.interfaces.IArmorModDash;
-import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.armor.ArmorFSB;
 import com.hbm.sound.ModSounds;
 import java.util.Map;
 import java.util.UUID;

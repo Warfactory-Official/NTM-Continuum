@@ -1,4 +1,4 @@
-package com.hbm.blocks.material;
+package com.hbm.blocks.generic;
 
 import com.hbm.items.LegacyMeta;
 import dev.golem.core.world.CompatBlockItem;

@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
+import com.hbm.items.ModMissileItems;
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.missile.EntityRocketSoyuz;
 import com.hbm.inventory.fluid.Fluids;
@@ -13,7 +14,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.saveddata.SatelliteSavedData;
-import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
+import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
@@ -42,7 +43,7 @@ public final class SoyuzGameTests {
         helper.assertTrue(!launcher.canLaunch(), "An empty pad must not launch");
 
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_ROCKET,
-                ModSoyuzBlocks.missile_soyuz.stack(SoyuzSkinType.NORMAL));
+                ModMissileItems.missile_soyuz.stack(SoyuzSkinType.NORMAL));
         helper.assertTrue(launcher.hasRocket(), "The pad should see the rocket");
         helper.assertTrue(!launcher.canLaunch(), "A rocket with no payload must not launch");
 
@@ -72,7 +73,7 @@ public final class SoyuzGameTests {
         ISatChip.setFreqS(satellite, FREQ);
 
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_ROCKET,
-                ModSoyuzBlocks.missile_soyuz.stack(SoyuzSkinType.LUNAR));
+                ModMissileItems.missile_soyuz.stack(SoyuzSkinType.LUNAR));
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_SATELLITE, satellite);
         fuel(launcher);
         launcher.power = launcher.getMaxPower();
@@ -128,7 +129,7 @@ public final class SoyuzGameTests {
     public static void modes(GameTestHelper helper) {
         TileEntitySoyuzLauncher launcher = place(helper);
         launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_ROCKET,
-                ModSoyuzBlocks.missile_soyuz.stack(SoyuzSkinType.NORMAL));
+                ModMissileItems.missile_soyuz.stack(SoyuzSkinType.NORMAL));
         fuel(launcher);
         launcher.power = launcher.getMaxPower();
 
@@ -186,7 +187,7 @@ public final class SoyuzGameTests {
     // Helpers
 
     private static TileEntitySoyuzLauncher place(GameTestHelper helper) {
-        FoldedTestSupport.assemble(helper, ModSoyuzBlocks.soyuz_launcher.get(), LAUNCHER, Direction.EAST);
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.soyuz_launcher.get(), LAUNCHER, Direction.EAST);
         TileEntitySoyuzLauncher launcher = GameTestHelpers.blockEntity(
                 helper, LAUNCHER, TileEntitySoyuzLauncher.class);
         helper.assertTrue(launcher != null, "Soyuz launcher BlockEntity was not created");

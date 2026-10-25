@@ -1,7 +1,6 @@
 package com.hbm.items.armor;
 
 import com.hbm.handler.JetpackHandler;
-import com.hbm.items.gear.ArmorFSB;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.GolemArmorMaterial;

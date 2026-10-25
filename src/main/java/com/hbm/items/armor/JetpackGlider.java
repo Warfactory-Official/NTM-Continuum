@@ -1,4 +1,4 @@
-package com.hbm.items.gear;
+package com.hbm.items.armor;
 
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.handler.JetpackHandler;
@@ -7,7 +7,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModDataComponents;
-import com.hbm.items.armor.ItemArmorMod;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.ChatFormatting;

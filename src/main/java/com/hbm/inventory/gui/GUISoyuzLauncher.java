@@ -2,7 +2,7 @@ package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.ContainerSoyuzLauncher;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
+import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;

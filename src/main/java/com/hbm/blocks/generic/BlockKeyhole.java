@@ -1,10 +1,10 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.blocks.ModDecoBlocks;
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.ModDoorBlocks;
 import com.hbm.blocks.ModDungeonBlocks;
-import com.hbm.blocks.material.MaterialCompletionRegistrations;
 import com.hbm.itempool.ItemPool;
 import com.hbm.itempool.ItemPools;
 import com.hbm.items.ModArmorItems;
@@ -171,7 +171,7 @@ public class BlockKeyhole extends CompatBlock {
             }
         }
 
-        BlockState redConcrete = MaterialCompletionRegistrations.CONCRETE_COLORED.get().stateForVariant(14);
+        BlockState redConcrete = ModDecoBlocks.CONCRETE_COLORED.get().stateForVariant(14);
 
         // Pillars
         if (rand.nextInt(4) == 0) {

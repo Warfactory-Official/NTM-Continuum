@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
+import com.hbm.items.ModMissileItems;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.entity.missile.EntityRocketLambda;
 import com.hbm.entity.missile.EntityRocketSoyuz;
@@ -134,7 +134,7 @@ public final class SpaceGameTests {
         ItemStack sat = ModSatelliteItems.satellite.stack(EnumSatType.RAY_SCAN);
         ISatChip.setFreqS(sat, FREQ);
 
-        pad.inventory.setStackInSlot(0, new ItemStack(ModSoyuzBlocks.missile_lambda.get()));
+        pad.inventory.setStackInSlot(0, new ItemStack(ModMissileItems.missile_lambda.get()));
         pad.inventory.setStackInSlot(1, sat);
         helper.assertTrue(!pad.canLaunch(), "a dry rocket must not launch");
 
@@ -172,7 +172,7 @@ public final class SpaceGameTests {
         TileEntityLaunchpadSoyuz pad = placeSoyuz(helper);
         ServerLevel level = helper.getLevel();
 
-        pad.inventory.setStackInSlot(0, ModSoyuzBlocks.missile_soyuz.stack(SoyuzSkinType.LUNAR));
+        pad.inventory.setStackInSlot(0, ModMissileItems.missile_soyuz.stack(SoyuzSkinType.LUNAR));
         pad.loadedType = SoyuzSkinType.LUNAR.ordinal();
         pad.inventory.setStackInSlot(2, ModSatelliteItems.satellite.stack(EnumSatType.MINER_LUNAR));
         pad.tanks[0].setFill(100_000);
@@ -209,7 +209,7 @@ public final class SpaceGameTests {
     public static void soyuzLoading(GameTestHelper helper) {
         TileEntityLaunchpadSoyuz pad = placeSoyuz(helper);
         ServerLevel level = helper.getLevel();
-        pad.inventory.setStackInSlot(0, ModSoyuzBlocks.missile_soyuz.stack(SoyuzSkinType.NORMAL));
+        pad.inventory.setStackInSlot(0, ModMissileItems.missile_soyuz.stack(SoyuzSkinType.NORMAL));
         pad.tanks[0].setFill(100_000);
         pad.tanks[1].setFill(100_000);
 

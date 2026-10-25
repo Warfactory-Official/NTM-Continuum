@@ -2,7 +2,7 @@ package com.hbm.mixin;
 
 import com.hbm.handler.ClimbableRegistry;
 import com.hbm.handler.EntityEffectHandler;
-import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.armor.ArmorFSB;
 import com.hbm.main.ModEventHandlerMobs;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;

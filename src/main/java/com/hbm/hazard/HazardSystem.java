@@ -1,7 +1,7 @@
 package com.hbm.hazard;
 
 import com.hbm.handler.HazmatRegistry;
-import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.armor.ArmorFSB;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.DamageResistanceHandler;

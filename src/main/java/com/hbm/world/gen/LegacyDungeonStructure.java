@@ -11,7 +11,6 @@ import com.hbm.world.dungeon.DesertAtom001;
 import com.hbm.world.dungeon.LibraryDungeon;
 import com.hbm.world.dungeon.Spaceship;
 import com.hbm.world.feature.Dud;
-import com.hbm.world.feature.DungeonBlockFeature;
 import com.hbm.world.gen.LegacyDungeonBlocks.Blocks;
 import com.hbm.world.gen.LegacyDungeonBlocks.ModBlocks;
 import com.hbm.world.gen.nbt.NBTStructure;
@@ -121,10 +120,7 @@ public class LegacyDungeonStructure extends Structure {
     public static final RegistryObject<StructurePieceType> PIECE =
             REG.register(Registries.STRUCTURE_PIECE, "legacy_dungeon_piece", () -> (StructurePieceType) Piece::new);
 
-    /** Structure and piece types, and the scattered-block feature types. */
-    public static void init() {
-        DungeonBlockFeature.init();
-    }
+    public static void init() {}
 
     // Structure
 

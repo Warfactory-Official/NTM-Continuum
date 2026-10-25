@@ -3,7 +3,6 @@ package com.hbm.items.armor;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ModDataComponents;
-import com.hbm.items.gear.ArmorFSBPowered;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
 import java.util.List;

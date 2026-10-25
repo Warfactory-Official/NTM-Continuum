@@ -5,7 +5,7 @@ import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModArmorModules;
-import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.armor.ArmorFSB;
 import com.hbm.inventory.container.ContainerArmorTable;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.DamageResistanceHandler;

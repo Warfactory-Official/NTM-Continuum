@@ -3,8 +3,6 @@ package com.hbm.items.armor;
 import com.hbm.api.environment.Environment;
 import com.hbm.handler.JetpackHandler;
 import com.hbm.items.ModArmorItems;
-import com.hbm.items.gear.ArmorFSB;
-import com.hbm.items.gear.ArmorFSBPowered;
 import com.hbm.sound.ModSounds;
 import com.hbm.lib.Library;
 import com.hbm.util.TickPhase;

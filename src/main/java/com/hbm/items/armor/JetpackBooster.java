@@ -1,9 +1,8 @@
-package com.hbm.items.gear;
+package com.hbm.items.armor;
 
 import com.hbm.api.environment.Environment;
 import com.hbm.handler.JetpackHandler;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.items.armor.JetpackFueledBase;
 import com.hbm.sound.ModSounds;
 import java.util.List;
 import net.minecraft.network.chat.Component;

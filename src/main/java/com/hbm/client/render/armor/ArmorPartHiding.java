@@ -1,7 +1,7 @@
 package com.hbm.client.render.armor;
 
-import com.hbm.items.gear.IArmorDisableModel;
-import com.hbm.items.gear.IArmorDisableModel.EnumPlayerPart;
+import com.hbm.items.armor.IArmorDisableModel;
+import com.hbm.items.armor.IArmorDisableModel.EnumPlayerPart;
 import dev.golem.core.render.Worn;
 import dev.golem.core.world.ArmorSlot;
 import java.util.EnumMap;

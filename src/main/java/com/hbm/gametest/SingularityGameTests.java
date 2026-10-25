@@ -28,7 +28,7 @@ import com.hbm.items.ModItems;
 import com.hbm.items.ModRBMKItems;
 import com.hbm.items.ModSingularityItems;
 import com.hbm.items.ModSelfchargerItems;
-import com.hbm.items.gear.ArmorFSBPowered;
+import com.hbm.items.armor.ArmorFSBPowered;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.special.ItemSingularity;
 import dev.golem.core.Ids;

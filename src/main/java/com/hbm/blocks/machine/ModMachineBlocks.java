@@ -1511,6 +1511,31 @@ public final class ModMachineBlocks {
         return p.isSuffocating((state, world, pos) -> false).isViewBlocking((state, world, pos) -> false);
     }
 
+    // Soyuz launch complex
+
+    /** Drops nothing: placed by hand it forms the complex at once, and breaking it takes the complex apart. */
+    public static final RegistryObject<SoyuzLauncher> soyuz_launcher = REG.block(
+            "soyuz_launcher", SoyuzLauncher::new,
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            .transform(Presets.shape(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/soyuz_launcher"))).noItem())
+            .loot(Loot.nothing()).tag(BlockTag.PICKAXE);
+
+    public static final RegistryObject<BlockSoyuzStruct> struct_soyuz_core = REG.block(
+            "struct_soyuz_core", BlockSoyuzStruct::new,
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            .transform(Presets.cubeAll().noItem())
+            .loot(Loot.self()).tag(BlockTag.PICKAXE);
+
+    public static final RegistryObject<BlockItem> struct_soyuz_core_item =
+            REG.blockItem(struct_soyuz_core)
+                    .transform(Presets.shares("hbm:block/struct_soyuz_core"))
+                    .tab(HbmTab.MACHINES);
+    /** 1.7 registers the launcher's block, and so its item, on the missile tab: placed by hand it forms at once. */
+    public static final RegistryObject<BlockItem> soyuz_launcher_item =
+            REG.blockItem(soyuz_launcher)
+                    .transform(Presets.shares("hbm:block/soyuz_launcher"))
+                    .tab(HbmTab.MISSILES);
+
     /** The block's plain item (registered under the block's own id), shown on the machine tab. */
     private static void tabItem(RegistryObject<? extends Block> block) {
         tabItem(HbmTab.MACHINES, block);

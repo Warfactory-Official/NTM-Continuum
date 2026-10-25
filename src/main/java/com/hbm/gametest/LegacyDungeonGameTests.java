@@ -11,6 +11,7 @@ import com.hbm.tileentity.bomb.TileEntityLandmine;
 import com.hbm.tileentity.deco.TileEntityLanternBehemoth;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
 import com.hbm.world.feature.DungeonBlockFeature;
+import com.hbm.world.gen.ModFeatures;
 import com.hbm.world.feature.FeatureCodecs;
 import com.hbm.world.gen.LegacyDungeonBlocks.Blocks;
 import com.hbm.world.gen.LegacyDungeonBlocks.ModBlocks;
@@ -198,24 +199,24 @@ public final class LegacyDungeonGameTests {
         for (int x = 0; x < 12; x++) for (int z = 0; z < 5; z++) level.setBlock(helper.absolutePos(new BlockPos(x, 1, z)), stone, 3);
 
         BlockPos safePos = helper.absolutePos(new BlockPos(1, 2, 1));
-        helper.assertTrue(place(level, DungeonBlockFeature.LOCKED_SAFE.get(), DungeonBlockFeature.LockedSafe.Config.CODEC, safePos, 3L), "safe placed");
+        helper.assertTrue(place(level, ModFeatures.LOCKED_SAFE.get(), DungeonBlockFeature.LockedSafe.Config.CODEC, safePos, 3L), "safe placed");
         helper.assertTrue(level.getBlockState(safePos).is(ModDecoCrateBlocks.safe.get()), "a safe stands there");
         helper.assertTrue(level.getBlockEntity(safePos) instanceof TileEntityCrateBase safe && safe.isLocked()
                 && safe.getPins() >= 1 && safe.getPins() <= 999 && !safe.isEmpty(), "the safe is locked with pins and loot");
 
         BlockPos minePos = helper.absolutePos(new BlockPos(3, 2, 1));
-        helper.assertTrue(place(level, DungeonBlockFeature.LANDMINE_AP.get(), DungeonBlockFeature.Landmine.AP_CODEC, minePos, 4L), "AP mine placed");
+        helper.assertTrue(place(level, ModFeatures.LANDMINE_AP.get(), DungeonBlockFeature.Landmine.AP_CODEC, minePos, 4L), "AP mine placed");
         helper.assertTrue(level.getBlockState(minePos).is(ModExplosivesBlocks.mine_ap.get())
                 && level.getBlockEntity(minePos) instanceof TileEntityLandmine mine && mine.waitingForPlayer, "AP mine armed at the surface");
 
         BlockPos lanternPos = helper.absolutePos(new BlockPos(5, 2, 3));
-        helper.assertTrue(place(level, DungeonBlockFeature.BROKEN_LANTERN.get(), DungeonBlockFeature.BrokenLantern.Config.CODEC, lanternPos, 1L), "lantern placed");
+        helper.assertTrue(place(level, ModFeatures.BROKEN_LANTERN.get(), DungeonBlockFeature.BrokenLantern.Config.CODEC, lanternPos, 1L), "lantern placed");
         helper.assertTrue(level.getBlockEntity(lanternPos) instanceof TileEntityLanternBehemoth lantern && lantern.isBroken, "the lantern is broken");
         helper.assertTrue(level.getBlockState(lanternPos.above(4)).is(ModDungeonBlocks.lantern_behemoth.get()), "the lantern is five tall");
 
         BlockPos capPos = helper.absolutePos(new BlockPos(8, 5, 1)); // surface 5: the capsule goes to y 1, under a solid block at y 2
         level.setBlock(capPos.below(3), stone, 3);
-        helper.assertTrue(place(level, DungeonBlockFeature.LANDED_CAPSULE.get(), DungeonBlockFeature.LandedCapsule.Config.CODEC, capPos, 5L), "capsule placed");
+        helper.assertTrue(place(level, ModFeatures.LANDED_CAPSULE.get(), DungeonBlockFeature.LandedCapsule.Config.CODEC, capPos, 5L), "capsule placed");
         BlockPos capsule = capPos.below(4);
         helper.assertTrue(level.getBlockState(capsule).is(ModRadarUtilityBlocks.soyuz_capsule.get())
                 && level.getBlockState(capsule).getValue(SoyuzCapsule.RUSTED), "a rusted capsule four blocks down");
@@ -223,7 +224,7 @@ public final class LegacyDungeonGameTests {
                 && containsRecord(cap), "the capsule holds the glass record");
 
         BlockPos pcPos = helper.absolutePos(new BlockPos(10, 2, 1));
-        helper.assertTrue(place(level, DungeonBlockFeature.CORRUPTED_BROADCASTER.get(), DungeonBlockFeature.Broadcaster.Config.CODEC, pcPos, 6L), "broadcaster placed");
+        helper.assertTrue(place(level, ModFeatures.CORRUPTED_BROADCASTER.get(), DungeonBlockFeature.Broadcaster.Config.CODEC, pcPos, 6L), "broadcaster placed");
         helper.assertTrue(level.getBlockState(pcPos).is(ModDecoCrateBlocks.broadcaster_pc.get()), "the corrupted broadcaster stands there");
         helper.succeed();
     }

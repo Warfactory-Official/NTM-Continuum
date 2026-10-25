@@ -1,4 +1,4 @@
-package com.hbm.items.gear;
+package com.hbm.items.armor;
 
 import dev.golem.core.render.Worn;
 import net.minecraft.world.item.ItemStack;

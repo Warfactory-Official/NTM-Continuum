@@ -1,5 +1,6 @@
-package com.hbm.blocks.material;
+package com.hbm.blocks.generic;
 
+import com.hbm.blocks.ModDecoBlocks;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.DyeColor;
@@ -55,12 +56,12 @@ public final class BlockConcreteColored extends CompatBlock {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        return List.of(MaterialCompletionRegistrations.concreteColoredItem(state.getValue(COLOR).getId()));
+        return List.of(ModDecoBlocks.concreteColoredItem(state.getValue(COLOR).getId()));
     }
 
     @Override
     protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
-        return MaterialCompletionRegistrations.concreteColoredItem(variant(state));
+        return ModDecoBlocks.concreteColoredItem(variant(state));
     }
 
     @Override

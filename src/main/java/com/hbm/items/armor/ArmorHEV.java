@@ -2,8 +2,6 @@ package com.hbm.items.armor;
 
 import com.hbm.client.HEVOverlay;
 import com.hbm.items.ModArmorSetItems;
-import com.hbm.items.gear.ArmorFSB;
-import com.hbm.items.gear.ArmorFSBPowered;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.GolemArmorMaterial;
 import net.minecraft.world.entity.EquipmentSlot;

@@ -2,7 +2,6 @@ package com.hbm.items.armor;
 
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ModArmorSetBItems;
-import com.hbm.items.gear.ArmorFSBPowered;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Attributes;
 import dev.golem.core.world.Effects;

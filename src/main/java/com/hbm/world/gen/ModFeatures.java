@@ -7,6 +7,7 @@ import com.hbm.world.feature.BedrockDepositFeature;
 import com.hbm.world.feature.ColtanDepositFeature;
 import com.hbm.world.feature.CrustColumnFeature;
 import com.hbm.world.feature.DepthDepositFeature;
+import com.hbm.world.feature.DungeonBlockFeature;
 import com.hbm.world.feature.FallenMeteoriteFeature;
 import com.hbm.world.feature.Geyser;
 import com.hbm.world.feature.GlyphidHiveFeature;
@@ -121,6 +122,23 @@ public final class ModFeatures {
     /** The hematite / bauxite / malachite 3D-noise layers (the old {@code OreLayer3D} trio). */
     public static final RegistryObject<Feature<OreLayer3DFeature.Config>> ORE_LAYERS =
             REG.register(Registries.FEATURE, "ore_layers", () -> new OreLayer3DFeature(OreLayer3DFeature.Config.CODEC));
+
+    // 1.7 HbmWorldGen.generateSurface: scattered dungeon blocks
+
+    public static final RegistryObject<Feature<DungeonBlockFeature.LockedSafe.Config>> LOCKED_SAFE =
+            REG.register(Registries.FEATURE, "locked_safe", DungeonBlockFeature.LockedSafe::new);
+    public static final RegistryObject<Feature<DungeonBlockFeature.Landmine.Config>> LANDMINE_AP =
+            REG.register(Registries.FEATURE, "landmine_ap", () -> new DungeonBlockFeature.Landmine(DungeonBlockFeature.Landmine.AP_CODEC));
+    public static final RegistryObject<Feature<DungeonBlockFeature.Landmine.Config>> LANDMINE_HE =
+            REG.register(Registries.FEATURE, "landmine_he", () -> new DungeonBlockFeature.Landmine(DungeonBlockFeature.Landmine.HE_CODEC));
+    public static final RegistryObject<Feature<DungeonBlockFeature.BrokenLantern.Config>> BROKEN_LANTERN =
+            REG.register(Registries.FEATURE, "broken_lantern", DungeonBlockFeature.BrokenLantern::new);
+    public static final RegistryObject<Feature<DungeonBlockFeature.LandedCapsule.Config>> LANDED_CAPSULE =
+            REG.register(Registries.FEATURE, "landed_capsule", DungeonBlockFeature.LandedCapsule::new);
+    public static final RegistryObject<Feature<DungeonBlockFeature.Broadcaster.Config>> CORRUPTED_BROADCASTER =
+            REG.register(Registries.FEATURE, "corrupted_broadcaster", DungeonBlockFeature.Broadcaster::new);
+    public static final RegistryObject<Feature<DungeonBlockFeature.BlueprintChest.Config>> BLUEPRINT_CHEST =
+            REG.register(Registries.FEATURE, "blueprint_chest", DungeonBlockFeature.BlueprintChest::new);
 
     // hbm.cfg values in the placed features
 

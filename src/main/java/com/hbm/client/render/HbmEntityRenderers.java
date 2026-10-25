@@ -4,7 +4,6 @@ import com.hbm.Constants;
 import com.hbm.client.render.entity.NtmEntityRenderers;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.ModRBMKEntities;
-import com.hbm.entity.NtmToolEntityCatalog;
 import com.hbm.entity.missile.IMissilePitch;
 import com.hbm.entity.missile.ModMissileEntities;
 import dev.golem.core.platform.Platform;
@@ -72,7 +71,7 @@ public final class HbmEntityRenderers {
         regGem(sink, ModEntities.CHEMICAL.get(), ChemicalProjectileRenderer::new);
         sink.register(ModEntities.BEAM_BOMB.get(), RenderBeamBomb::new);
         regGem(sink, ModEntities.BEAM_MK4.get(), BeamProjectileRenderer::new);
-        regGem(sink, NtmToolEntityCatalog.COIN.get(), CoinProjectileRenderer::new);
+        regGem(sink, ModEntities.COIN.get(), CoinProjectileRenderer::new);
         regGem(sink, ModEntities.BLACK_HOLE.get(), BlackHoleRenderer::new);
         regGem(sink, ModEntities.VORTEX.get(), BlackHoleRenderer::new);
         regGem(sink, ModEntities.RAGING_VORTEX.get(), BlackHoleRenderer::new);

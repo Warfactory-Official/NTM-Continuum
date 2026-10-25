@@ -5,7 +5,7 @@ import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.blocks.generic.BlockRebar;
 import com.hbm.blocks.generic.Waterlogging;
-import com.hbm.blocks.material.MaterialCompletionRegistrations;
+import com.hbm.blocks.ModDecoBlocks;
 import com.hbm.inventory.ModDungeonMenus;
 import com.hbm.inventory.container.ContainerRebar;
 import com.hbm.items.ModDungeonItems;
@@ -61,8 +61,8 @@ public class ItemRebarPlacer extends CompatItem {
                 || item == ModDecoContent.concrete_rebar.get().asItem()
                 || item == ModBlocks.concrete_smooth.get().asItem()
                 || item == ModDecoContent.concrete_pillar.get().asItem()
-                || item == MaterialCompletionRegistrations.CONCRETE_COLORED.get().asItem()
-                || item == MaterialCompletionRegistrations.CONCRETE_COLORED_EXT.get().asItem();
+                || item == ModDecoBlocks.CONCRETE_COLORED.get().asItem()
+                || item == ModDecoBlocks.CONCRETE_COLORED_EXT.get().asItem();
     }
 
     /** Every acceptable concrete as a display stack, in 1.7's order, for the menu's empty-slot tooltip. */
@@ -72,8 +72,8 @@ public class ItemRebarPlacer extends CompatItem {
         list.add(new ItemStack(ModDecoContent.concrete_rebar.get()));
         list.add(new ItemStack(ModBlocks.concrete_smooth.get()));
         list.add(new ItemStack(ModDecoContent.concrete_pillar.get()));
-        for (int i = 0; i < 16; i++) list.add(MaterialCompletionRegistrations.concreteColoredItem(i));
-        for (int i = 0; i < 8; i++) list.add(MaterialCompletionRegistrations.concreteColoredExtItem(i));
+        for (int i = 0; i < 16; i++) list.add(ModDecoBlocks.concreteColoredItem(i));
+        for (int i = 0; i < 8; i++) list.add(ModDecoBlocks.concreteColoredExtItem(i));
         return list;
     }
 

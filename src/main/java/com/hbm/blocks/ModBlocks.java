@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import com.hbm.Constants;
-import com.hbm.blocks.ModHazardBlocks;
-import com.hbm.blocks.ModOutgasBlocks;
 import com.hbm.blocks.generic.BlockSlag;
 import com.hbm.blocks.generic.BlockMeteoriteTreasure;
 import com.hbm.blocks.generic.BlockNetherFireOre;

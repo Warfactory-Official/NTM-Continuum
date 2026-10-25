@@ -4,7 +4,6 @@ import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.JetpackHandler;
 import com.hbm.items.HbmArmorMaterials;
 import com.hbm.items.ModDataComponents;
-import com.hbm.items.gear.ArmorFSB;
 import dev.golem.core.world.ArmorSlot;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;

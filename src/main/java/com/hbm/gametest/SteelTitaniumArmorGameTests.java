@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.items.ModArmorItems;
-import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.armor.ArmorFSB;
 import com.hbm.handler.HazmatRegistry;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;

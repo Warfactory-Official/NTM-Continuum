@@ -10,7 +10,6 @@ import com.hbm.blocks.generic.BlockDynamicSlag;
 import com.hbm.blocks.machine.MachineFan;
 import com.hbm.blocks.machine.dfc.ModDFCBlocks;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.tileentity.bomb.TileEntityFireworks;
 import com.hbm.tileentity.bomb.TileEntityNukeMike;
@@ -101,8 +100,8 @@ import com.hbm.tileentity.machine.pile.TileEntityPileControl;
 import com.hbm.tileentity.machine.pile.TileEntityPileCore;
 import com.hbm.tileentity.machine.pile.TileEntityPileLoader;
 import com.hbm.tileentity.machine.pile.TileEntityPileVent;
-import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
-import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct;
+import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
+import com.hbm.tileentity.machine.TileEntitySoyuzStruct;
 import com.hbm.tileentity.machine.storage.MassStorageType;
 import com.hbm.tileentity.machine.storage.TemplateCrateLayout;
 import com.hbm.tileentity.machine.storage.TileEntityCrateSupply;
@@ -418,12 +417,12 @@ public final class ModBlockEntities {
                     () -> BlockEntities.ticking(TileEntitySoyuzLauncher::new,
                             TileEntitySoyuzLauncher::clientTick,
                             TileEntitySoyuzLauncher::serverTick,
-                            ModSoyuzBlocks.soyuz_launcher.get()));
+                            ModMachineBlocks.soyuz_launcher.get()));
     public static final RegistryObject<BlockEntityType<TileEntitySoyuzStruct>> STRUCT_SOYUZ_CORE =
             REG.blockEntity("struct_soyuz_core",
                     () -> BlockEntities.serverTicking(TileEntitySoyuzStruct::new,
                             TileEntitySoyuzStruct::serverTick,
-                            ModSoyuzBlocks.struct_soyuz_core.get()));
+                            ModMachineBlocks.struct_soyuz_core.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineSatLink>> MACHINE_SATLINK =
             REG.blockEntity("machine_satlink",

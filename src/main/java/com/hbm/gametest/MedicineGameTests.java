@@ -11,7 +11,7 @@ import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModArmorModItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.armor.ItemArmorMod;
-import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.armor.ArmorFSB;
 import com.hbm.items.ModMedicineItems;
 import com.hbm.potion.ModEffects;
 import dev.golem.core.Ids;

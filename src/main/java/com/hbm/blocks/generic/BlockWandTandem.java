@@ -7,6 +7,7 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModWandItems;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.SavedIds;
 import com.hbm.world.gen.nbt.ILegacyStructureTile;
 import com.hbm.world.gen.nbt.JigsawPiece;
 import com.hbm.world.gen.nbt.JigsawPool;
@@ -234,7 +235,6 @@ public class BlockWandTandem extends CompatBlock implements TickingBlock, ILookO
             nbt.putString("pool", pool);
             nbt.putString("target", target);
             nbt.putString("block", LegacyStructurePalette.stateString(replaceState));
-            nbt.putInt("meta", replaceMeta);
             nbt.putBoolean("roll", isRollable);
         }
 
@@ -242,14 +242,13 @@ public class BlockWandTandem extends CompatBlock implements TickingBlock, ILookO
             pool = Tags.getStringOr(nbt, "pool", "");
             target = Tags.getStringOr(nbt, "target", "");
             replaceState = LegacyStructurePalette.parseState(Tags.getStringOr(nbt, "block", ""));
-            replaceMeta = Tags.getIntOr(nbt, "meta", 0);
             isRollable = Tags.getBooleanOr(nbt, "roll", false);
         }
 
         @Override
         protected void saveData(DataOut out) {
             super.saveData(out);
-            out.putInt("direction", getBlockState().getValue(BlockWandJigsaw.FACING).get3DDataValue());
+            SavedIds.putEnum(out, "direction", ForgeDirection.getOrientation(getBlockState().getValue(BlockWandJigsaw.FACING).get3DDataValue()));
             if (isArmed) {
                 out.putBoolean("isArmed", true);
                 out.putString("structure", structure != null ? structure.name : structureName);
@@ -257,7 +256,6 @@ public class BlockWandTandem extends CompatBlock implements TickingBlock, ILookO
             out.putString("pool", pool);
             out.putString("target", target);
             out.putString("block", LegacyStructurePalette.stateString(replaceState));
-            out.putInt("meta", replaceMeta);
             out.putBoolean("roll", isRollable);
         }
 
@@ -270,7 +268,6 @@ public class BlockWandTandem extends CompatBlock implements TickingBlock, ILookO
             pool = in.getStringOr("pool", "");
             target = in.getStringOr("target", "");
             replaceState = LegacyStructurePalette.parseState(in.getStringOr("block", ""));
-            replaceMeta = in.getIntOr("meta", 0);
             isRollable = in.getBooleanOr("roll", false);
         }
 

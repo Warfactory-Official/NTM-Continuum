@@ -13,7 +13,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import com.hbm.Constants;
-import com.hbm.blocks.material.MaterialCompletionBlockItem;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;

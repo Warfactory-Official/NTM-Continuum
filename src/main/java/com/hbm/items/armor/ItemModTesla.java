@@ -1,7 +1,6 @@
 package com.hbm.items.armor;
 
 import com.hbm.handler.ArmorModHandler;
-import com.hbm.items.gear.ArmorFSBPowered;
 import com.hbm.util.TeslaZap;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;

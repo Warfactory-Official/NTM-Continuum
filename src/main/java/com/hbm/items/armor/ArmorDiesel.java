@@ -3,8 +3,6 @@ package com.hbm.items.armor;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModArmorSetBItems;
-import com.hbm.items.gear.ArmorFSB;
-import com.hbm.items.gear.ArmorFSBFueled;
 import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Attributes;

@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.material.MaterialCompletionRegistrations;
+import com.hbm.blocks.ModDecoBlocks;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.items.ModChemicalDyeItems;
 import com.hbm.items.ModDataComponents;
@@ -70,28 +70,28 @@ public final class ChemicalDyeAndComponentRecipeGameTests {
     public static void componentShapedRecipes(GameTestHelper helper) {
         List<ItemStack> white = gridWithConcrete(0);
         ItemStack whiteStairs = Recipes.craftingResult(helper.getLevel(), 3, 3, white).orElse(ItemStack.EMPTY);
-        helper.assertTrue(whiteStairs.is(MaterialCompletionRegistrations.CONCRETE_COLORED_STAIRS.get(0).get().asItem())
+        helper.assertTrue(whiteStairs.is(ModDecoBlocks.CONCRETE_COLORED_STAIRS.get(0).get().asItem())
                         && whiteStairs.getCount() == 8,
                 "component-shaped white concrete stair recipe did not assemble");
 
         List<ItemStack> orange = gridWithConcrete(1);
         ItemStack orangeStairs = Recipes.craftingResult(helper.getLevel(), 3, 3, orange).orElse(ItemStack.EMPTY);
-        helper.assertTrue(orangeStairs.is(MaterialCompletionRegistrations.CONCRETE_COLORED_STAIRS.get(1).get().asItem())
+        helper.assertTrue(orangeStairs.is(ModDecoBlocks.CONCRETE_COLORED_STAIRS.get(1).get().asItem())
                         && orangeStairs.getCount() == 8,
                 "component-shaped recipe did not select the exact orange component");
 
         List<ItemStack> mixed = gridWithConcrete(0);
-        mixed.set(8, MaterialCompletionRegistrations.concreteColoredItem(1));
+        mixed.set(8, ModDecoBlocks.concreteColoredItem(1));
         helper.assertTrue(Recipes.craftingResult(helper.getLevel(), 3, 3, mixed).isEmpty(),
                 "component-shaped recipe accepted a mixed component input");
 
         List<ItemStack> lightstone = List.of(
-                MaterialCompletionRegistrations.lightstoneItem(0),
-                MaterialCompletionRegistrations.lightstoneItem(0),
-                MaterialCompletionRegistrations.lightstoneItem(0),
-                MaterialCompletionRegistrations.lightstoneItem(0));
+                ModDecoBlocks.lightstoneItem(0),
+                ModDecoBlocks.lightstoneItem(0),
+                ModDecoBlocks.lightstoneItem(0),
+                ModDecoBlocks.lightstoneItem(0));
         ItemStack tile = Recipes.craftingResult(helper.getLevel(), 2, 2, lightstone).orElse(ItemStack.EMPTY);
-        helper.assertTrue(tile.is(MaterialCompletionRegistrations.LIGHTSTONE_ITEMS.get(1).get()) && tile.getCount() == 4,
+        helper.assertTrue(tile.is(ModDecoBlocks.LIGHTSTONE_ITEMS.get(1).get()) && tile.getCount() == 4,
                 "lightstone tile recipe did not give four lightstone_tile");
 
         List<ItemStack> tankRecipe = new ArrayList<>();
@@ -115,7 +115,7 @@ public final class ChemicalDyeAndComponentRecipeGameTests {
         List<ItemStack> grid = new ArrayList<>();
         for (int i = 0; i < 9; i++) grid.add(ItemStack.EMPTY);
         int[] occupied = {0, 3, 4, 6, 7, 8};
-        for (int slot : occupied) grid.set(slot, MaterialCompletionRegistrations.concreteColoredItem(variant));
+        for (int slot : occupied) grid.set(slot, ModDecoBlocks.concreteColoredItem(variant));
         return grid;
     }
 }

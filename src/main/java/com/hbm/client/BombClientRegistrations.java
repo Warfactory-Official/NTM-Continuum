@@ -6,7 +6,7 @@ import com.hbm.client.render.BombObjRenderer;
 import com.hbm.client.render.HbmBlockEntityRenderers;
 import com.hbm.client.render.HbmEntityRenderers;
 import com.hbm.client.render.PrimedExplosiveRenderer;
-import com.hbm.entity.explosive.ModExplosiveEntities;
+import com.hbm.entity.ModEntities;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.gui.GUINukeMike;
 import com.hbm.tileentity.ModBlockEntities;
@@ -32,6 +32,6 @@ public final class BombClientRegistrations {
     }
 
     public static void registerEntityRenderers(HbmEntityRenderers.Sink sink) {
-        HbmEntityRenderers.regGem(sink, ModExplosiveEntities.PRIMED_EXPLOSIVE.get(), PrimedExplosiveRenderer::new);
+        HbmEntityRenderers.regGem(sink, ModEntities.PRIMED_EXPLOSIVE.get(), PrimedExplosiveRenderer::new);
     }
 }

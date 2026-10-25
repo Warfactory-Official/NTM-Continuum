@@ -1,7 +1,5 @@
 package com.hbm.world.feature;
 
-import com.hbm.registration.Reg;
-import com.hbm.Constants;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.blocks.ModDungeonBlocks;
 import com.hbm.blocks.ModExplosivesBlocks;
@@ -18,13 +16,10 @@ import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
 import com.hbm.util.LootGenerator;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import dev.golem.core.registry.DeferredRegister;
-import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.GenerationOptions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
@@ -55,26 +50,6 @@ import static com.hbm.world.feature.FeatureCodecs.lazy;
  * everything after it is here. 1.7's {@code canPlaceTorchOnTop} is vanilla's torch rule, {@link Block#canSupportCenter}.
  */
 public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extends Feature<C> {
-
-    public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, Constants.MOD_ID);
-    private static final Reg REG = Reg.of(FEATURES);
-
-    public static final RegistryObject<Feature<LockedSafe.Config>> LOCKED_SAFE =
-            REG.register(Registries.FEATURE, "locked_safe", LockedSafe::new);
-    public static final RegistryObject<Feature<Landmine.Config>> LANDMINE_AP =
-            REG.register(Registries.FEATURE, "landmine_ap", () -> new Landmine(Landmine.AP_CODEC));
-    public static final RegistryObject<Feature<Landmine.Config>> LANDMINE_HE =
-            REG.register(Registries.FEATURE, "landmine_he", () -> new Landmine(Landmine.HE_CODEC));
-    public static final RegistryObject<Feature<BrokenLantern.Config>> BROKEN_LANTERN =
-            REG.register(Registries.FEATURE, "broken_lantern", BrokenLantern::new);
-    public static final RegistryObject<Feature<LandedCapsule.Config>> LANDED_CAPSULE =
-            REG.register(Registries.FEATURE, "landed_capsule", LandedCapsule::new);
-    public static final RegistryObject<Feature<Broadcaster.Config>> CORRUPTED_BROADCASTER =
-            REG.register(Registries.FEATURE, "corrupted_broadcaster", Broadcaster::new);
-    public static final RegistryObject<Feature<BlueprintChest.Config>> BLUEPRINT_CHEST =
-            REG.register(Registries.FEATURE, "blueprint_chest", BlueprintChest::new);
-
-    public static void init() {}
 
     protected DungeonBlockFeature(Codec<C> codec) {
         super(codec);

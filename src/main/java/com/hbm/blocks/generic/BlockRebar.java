@@ -9,8 +9,6 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import com.hbm.api.fluidmk2.IFluidPipeMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.blocks.ModDecoContent;
-import com.hbm.blocks.material.BlockConcreteColored;
-import com.hbm.blocks.material.BlockConcreteColoredExt;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;

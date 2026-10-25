@@ -2,6 +2,9 @@ package com.hbm.items;
 
 import com.hbm.explosion.BlastInfo;
 import com.hbm.items.tool.ItemDetonator;
+import net.minecraft.world.item.Item;
+import com.hbm.items.special.ItemSoyuz;
+import com.hbm.items.ItemEnums.SoyuzSkinType;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import com.hbm.Constants;
@@ -175,6 +178,28 @@ public final class ModMissileItems {
                 missile_nuclear, missile_nuclear_cluster, missile_volcano, missile_doomsday, missile_doomsday_rusted}) {
             ModTabs.addTo(HbmTab.MISSILES, missile);
         }
+    }
+
+    /** 1.7 {@code missile_soyuz} metadata 0..2 (its paint), one item each as in ntm-next, each with its 1.7 sprite. */
+    public static final ItemFamily<SoyuzSkinType, ItemSoyuz> missile_soyuz = ItemFamily.of(
+            SoyuzSkinType.class, type -> REG.item("missile_soyuz_" + switch (type) {
+                        case NORMAL -> 0;
+                        case LUNAR -> 1;
+                        case POST_WAR -> 2;
+                    }, p -> new ItemSoyuz(p, type), p -> p.stacksTo(1))
+                    .transform(Presets.sprite("hbm:items/missile_soyuz_" + switch (type) {
+                        case NORMAL -> "normal";
+                        case LUNAR -> "lunar";
+                        case POST_WAR -> "post_war";
+                    })));
+
+    /** 1.7 {@code missile_lambda}, the Lambda-98 the Lambda launch pad erects. */
+    public static final RegistryObject<Item> missile_lambda = REG.item("missile_lambda", Item::new, p -> p.stacksTo(1))
+            .transform(Presets.sprite("hbm:items/lambda_rocket"));
+
+    static {
+        ModTabs.addStacksTo(HbmTab.MISSILES, missile_soyuz::stacks);
+        ModTabs.addTo(HbmTab.MISSILES, missile_lambda);
     }
 
     public static void init() {}

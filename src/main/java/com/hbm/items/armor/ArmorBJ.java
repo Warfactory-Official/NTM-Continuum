@@ -1,8 +1,6 @@
 package com.hbm.items.armor;
 
 import com.hbm.items.ModArmorItems;
-import com.hbm.items.gear.ArmorFSB;
-import com.hbm.items.gear.ArmorFSBPowered;
 import dev.golem.core.world.ArmorSlot;
 import com.hbm.lib.ModDamageSources;
 import dev.golem.core.world.Compat;

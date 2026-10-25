@@ -1,7 +1,7 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct;
+import com.hbm.tileentity.machine.TileEntitySoyuzStruct;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;

@@ -10,7 +10,6 @@ import com.hbm.interfaces.IControlReceiver;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.inventory.container.RadioControllerMenu;
-import com.hbm.tileentity.network.RadioTargets;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.mojang.serialization.Codec;
 import dev.golem.core.data.DataIn;

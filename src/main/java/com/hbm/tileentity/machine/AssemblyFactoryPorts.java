@@ -4,7 +4,6 @@ import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
 import net.minecraft.core.BlockPos;
 
 /** Port matching shared by the factory block's energy and fluid connector views. */

@@ -1,5 +1,6 @@
-package com.hbm.blocks.material;
+package com.hbm.blocks.generic;
 
+import com.hbm.blocks.ModDecoBlocks;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
@@ -15,23 +16,23 @@ import net.minecraft.world.level.storage.loot.LootParams;
 
 import java.util.List;
 
-/** The old five-entry lightstone enum. Despite its name, the legacy block emits no light. */
-public final class BlockLightstone extends CompatBlock {
+/** The old eight-entry extended concrete enum, including the machine-stripe face contract. */
+public final class BlockConcreteColoredExt extends CompatBlock {
 
-    public static final EnumProperty<LightstoneType> TYPE =
-            EnumProperty.create("type", LightstoneType.class);
+    public static final EnumProperty<EnumConcreteType> TYPE =
+            EnumProperty.create("type", EnumConcreteType.class);
 
-    public BlockLightstone(Properties properties) {
+    public BlockConcreteColoredExt(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(TYPE, LightstoneType.UNREFINED));
+        registerDefaultState(stateDefinition.any().setValue(TYPE, EnumConcreteType.MACHINE));
     }
 
     public static int variant(BlockState state) {
         return state.getValue(TYPE).ordinal();
     }
 
-    public static LightstoneType type(int variant) {
-        LightstoneType[] values = LightstoneType.values();
+    public static EnumConcreteType type(int variant) {
+        EnumConcreteType[] values = EnumConcreteType.values();
         return values[Math.floorMod(variant, values.length)];
     }
 
@@ -50,12 +51,12 @@ public final class BlockLightstone extends CompatBlock {
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        return List.of(MaterialCompletionRegistrations.lightstoneItem(variant(state)));
+        return List.of(ModDecoBlocks.concreteColoredExtItem(variant(state)));
     }
 
     @Override
     protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
-        return MaterialCompletionRegistrations.lightstoneItem(variant(state));
+        return ModDecoBlocks.concreteColoredExtItem(variant(state));
     }
 
     @Override
@@ -63,18 +64,21 @@ public final class BlockLightstone extends CompatBlock {
         builder.add(TYPE);
     }
 
-    public enum LightstoneType implements StringRepresentable {
-        UNREFINED("unrefined"),
-        TILE("tile"),
-        BRICKS("bricks"),
-        BRICKS_CHISELED("bricks_chiseled"),
-        CHISELED("chiseled");
+    public enum EnumConcreteType implements StringRepresentable {
+        MACHINE("machine"),
+        MACHINE_STRIPE("machine_stripe"),
+        INDIGO("indigo"),
+        PURPLE("purple"),
+        PINK("pink"),
+        HAZARD("hazard"),
+        SAND("sand"),
+        BRONZE("bronze");
 
-        public static final LightstoneType[] VALUES = values();
+        public static final EnumConcreteType[] VALUES = values();
 
         private final String name;
 
-        LightstoneType(String name) {
+        EnumConcreteType(String name) {
             this.name = name;
         }
 

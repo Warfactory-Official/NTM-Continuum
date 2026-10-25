@@ -10,7 +10,7 @@ import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
-import com.hbm.entity.explosive.ModExplosiveEntities;
+import com.hbm.entity.ModEntities;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.interfaces.IBomb;
 import com.hbm.inventory.container.ContainerNukeMike;
@@ -431,7 +431,7 @@ public final class ExplosiveContentGameTests {
 
     private static final class PersistenceProbe extends EntityPrimedExplosive {
         private PersistenceProbe(GameTestHelper helper) {
-            super(ModExplosiveEntities.PRIMED_EXPLOSIVE.get(), helper.getLevel());
+            super(ModEntities.PRIMED_EXPLOSIVE.get(), helper.getLevel());
         }
         private PersistenceProbe(GameTestHelper helper, Player owner, BlockState state) {
             super(helper.getLevel(), 2.5, 3, 14.5, owner, state);

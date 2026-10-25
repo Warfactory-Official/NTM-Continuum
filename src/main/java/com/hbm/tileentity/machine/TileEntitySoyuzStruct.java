@@ -1,10 +1,10 @@
-package com.hbm.tileentity.machine.soyuz;
+package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
-import com.hbm.blocks.machine.soyuz.SoyuzLauncher;
+import com.hbm.blocks.machine.SoyuzLauncher;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -76,7 +76,7 @@ public class TileEntitySoyuzStruct extends TileEntityLoadedBase {
     }
 
     private void raiseLauncher(Level level, BlockPos pos) {
-        SoyuzLauncher launcher = ModSoyuzBlocks.soyuz_launcher.get();
+        SoyuzLauncher launcher = ModMachineBlocks.soyuz_launcher.get();
         BlockPos core = pos.above(SoyuzLauncher.HEIGHT);
 
         BlockMultiblockCore.withoutTeardown(() -> {

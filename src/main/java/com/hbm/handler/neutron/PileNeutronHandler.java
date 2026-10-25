@@ -3,7 +3,7 @@ package com.hbm.handler.neutron;
 import com.hbm.api.block.IPileNeutronReceiver;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModHazardBlocks;
-import com.hbm.blocks.material.MaterialCompletionRegistrations;
+import com.hbm.blocks.ModDecoBlocks;
 import com.hbm.handler.neutron.NeutronNodeWorld.StreamWorld;
 import com.hbm.blocks.ModNuclearMiscBlocks;
 import com.hbm.blocks.machine.pile.BlockGraphiteDrilledBase;
@@ -78,7 +78,7 @@ public final class PileNeutronHandler {
                     if (block == ModHazardBlocks.block_boron.get()) return;
                     else if (block == ModBlocks.concrete.get() || block == ModBlocks.concrete_smooth.get()
                             || block == ModBlocks.concrete_asbestos.get()
-                            || block == MaterialCompletionRegistrations.CONCRETE_COLORED.get()
+                            || block == ModDecoBlocks.CONCRETE_COLORED.get()
                             || block == ModHazardBlocks.brick_concrete.get())
                         fluxQuantity *= 0.25;
                     if (block == ModNuclearMiscBlocks.BLOCK_GRAPHITE_ROD.get() && !out) return;

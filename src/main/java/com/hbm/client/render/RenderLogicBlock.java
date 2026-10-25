@@ -40,7 +40,7 @@ public class RenderLogicBlock implements CompatBER<TileEntityLogicBlock, RenderL
     public void extract(TileEntityLogicBlock logic, State state, float partialTicks, Vec3 cameraPosition) {
         state.invisible = logic.getBlockState().getBlock() instanceof LogicBlock block && block.isInvisible();
         state.disguised = logic.disguise != null;
-        state.disguise.extract(logic.disguise == null ? null : logic.disguise.defaultBlockState());
+        state.disguise.extract(logic.disguise);
     }
 
     @Override

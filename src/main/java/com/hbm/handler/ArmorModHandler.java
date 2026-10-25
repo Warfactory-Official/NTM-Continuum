@@ -3,7 +3,7 @@ package com.hbm.handler;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.armor.ItemArmorMod;
 import com.hbm.items.armor.JetpackBase;
-import com.hbm.items.gear.JetpackGlider;
+import com.hbm.items.armor.JetpackGlider;
 import dev.golem.core.data.ItemContents;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Armors;

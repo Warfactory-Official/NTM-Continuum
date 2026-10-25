@@ -5,7 +5,6 @@ import com.hbm.blocks.ModCustomMissileBlocks;
 import com.hbm.blocks.ModIcfBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.fusion.MachineFusionTorus;
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
@@ -72,7 +71,7 @@ public class ConstructionRecipeHandler extends JEIUniversalHandler<ConstructionR
                 stack(ModBlocks.struct_launcher.get(), 16), stack(ModBlocks.struct_launcher.get(), 64),
                 stack(ModBlocks.struct_scaffold.get(), 11)));
 
-        rows.add(row(ModSoyuzBlocks.soyuz_launcher.get(), ModSoyuzBlocks.struct_soyuz_core.get(),
+        rows.add(row(ModMachineBlocks.soyuz_launcher.get(), ModMachineBlocks.struct_soyuz_core.get(),
                 stack(ModBlocks.struct_launcher.get(), 30), stack(ModBlocks.struct_launcher.get(), 384),
                 stack(ModBlocks.struct_scaffold.get(), 63), stack(ModBlocks.struct_scaffold.get(), 384),
                 stack(ModBlocks.concrete_smooth.get(), 38), stack(ModBlocks.concrete_smooth.get(), 320)));

@@ -13,6 +13,7 @@ import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.config.ServerConfig;
 import com.hbm.config.StructureConfig;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.util.SavedIds;
 import com.hbm.world.gen.LegacyBiomes;
 import com.hbm.world.gen.NTMStructureDeclarations;
 import com.hbm.world.gen.NTMWorldGenerator;
@@ -340,7 +341,10 @@ public class NBTStructure {
 
                         int selectionPriority = Tags.getIntOr(nbt, "selection", 0);
                         int placementPriority = Tags.getIntOr(nbt, "placement", 0);
-                        ForgeDirection direction = ForgeDirection.getOrientation(Tags.getIntOr(nbt, "direction", 0));
+                        // 1.7 files number the direction, port files name it
+                        ForgeDirection direction = Tags.hasInt(nbt, "direction")
+                                ? ForgeDirection.getOrientation(Tags.getIntOr(nbt, "direction", 0))
+                                : SavedIds.getEnum(nbt, "direction", ForgeDirection.DOWN);
                         String poolName = Tags.getStringOr(nbt, "pool", "");
                         String ourName = Tags.getStringOr(nbt, "name", "");
                         String targetName = Tags.getStringOr(nbt, "target", "");

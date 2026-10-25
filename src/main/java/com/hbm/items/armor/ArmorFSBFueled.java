@@ -1,4 +1,4 @@
-package com.hbm.items.gear;
+package com.hbm.items.armor;
 
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.ModDataComponents;

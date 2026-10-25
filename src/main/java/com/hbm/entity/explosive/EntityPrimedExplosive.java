@@ -1,5 +1,6 @@
 package com.hbm.entity.explosive;
 
+import com.hbm.entity.ModEntities;
 import com.hbm.blocks.ModExplosivesBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
 import dev.golem.core.data.SynchedData;
@@ -50,7 +51,7 @@ public class EntityPrimedExplosive extends CompatEntity {
 
     public EntityPrimedExplosive(Level level, double x, double y, double z, @Nullable LivingEntity owner,
                                  BlockState state) {
-        this(ModExplosiveEntities.PRIMED_EXPLOSIVE.get(), level);
+        this(ModEntities.PRIMED_EXPLOSIVE.get(), level);
         setPos(x, y, z);
         double angle = level.getRandom().nextDouble() * (float) (Math.PI * 2.0D);
         setDeltaMovement(-Math.sin(angle) * 0.02D, 0.2F, -Math.cos(angle) * 0.02D);

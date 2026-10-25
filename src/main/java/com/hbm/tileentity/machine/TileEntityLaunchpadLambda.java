@@ -1,8 +1,8 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.items.ModMissileItems;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.missile.EntityRocketLambda;
 import com.hbm.interfaces.IControlReceiver;
@@ -119,7 +119,7 @@ public class TileEntityLaunchpadLambda extends TileEntityMachineBase
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        if (slot == 0) return stack.is(ModSoyuzBlocks.missile_lambda.get());
+        if (slot == 0) return stack.is(ModMissileItems.missile_lambda.get());
         if (slot == 1) return stack.getItem() instanceof ISatChip && !TileEntityLaunchpadSoyuz.needsOrbiter(stack);
         if (slot == 2) return TileEntityLaunchpadSoyuz.isFluidContainer(stack, tanks[0]);
         if (slot == 3) return false;
@@ -480,7 +480,7 @@ public class TileEntityLaunchpadLambda extends TileEntityMachineBase
         return !TileEntityLaunchpadSoyuz.needsOrbiter(sat);
     }
 
-    public boolean hasRocketLoaded() { return inventory.getStackInSlot(0).is(ModSoyuzBlocks.missile_lambda.get()); }
+    public boolean hasRocketLoaded() { return inventory.getStackInSlot(0).is(ModMissileItems.missile_lambda.get()); }
     public boolean finishedMoving(int index) { return this.positions[index] == this.target[index]; }
     public boolean wasMoving(int index) { return this.positions[index] != this.prevPositions[index]; }
 

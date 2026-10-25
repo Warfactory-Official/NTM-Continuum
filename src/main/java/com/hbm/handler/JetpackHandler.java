@@ -13,7 +13,7 @@ import com.hbm.items.armor.ArmorBJJetpack;
 import com.hbm.items.armor.ArmorDNT;
 import com.hbm.items.armor.JetpackBase;
 import com.hbm.items.armor.JetpackFueledBase;
-import com.hbm.items.gear.JetpackGlider;
+import com.hbm.items.armor.JetpackGlider;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.packet.JetpackExhaustPayload;
 import com.hbm.packet.JetpackInputPayload;

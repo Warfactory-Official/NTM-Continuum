@@ -1,7 +1,7 @@
 package com.hbm.entity.missile;
 
+import com.hbm.items.ModMissileItems;
 import com.hbm.blocks.ModRadarUtilityBlocks;
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.items.ItemEnums;
 import com.hbm.tileentity.machine.storage.TileEntitySoyuzCapsule;
 import com.hbm.util.SavedIds;
@@ -88,7 +88,7 @@ public class EntitySoyuzCapsule extends CompatThrowableProjectile implements Sto
                         capsule.setItem(i, payload[i] == null ? ItemStack.EMPTY : payload[i]);
                     }
                     ItemEnums.SoyuzSkinType[] skins = ItemEnums.SoyuzSkinType.VALUES;
-                    capsule.setItem(18, ModSoyuzBlocks.missile_soyuz
+                    capsule.setItem(18, ModMissileItems.missile_soyuz
                             .stack(skins[Math.floorMod(soyuz, skins.length)]));
                 }
             }

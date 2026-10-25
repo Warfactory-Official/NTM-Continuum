@@ -7,20 +7,16 @@ import com.hbm.util.SavedIds;
 import com.hbm.world.gen.util.LogicBlockActions;
 import com.hbm.world.gen.util.LogicBlockConditions;
 import com.hbm.world.gen.util.LogicBlockInteractions;
-import dev.golem.core.Ids;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -86,8 +82,7 @@ public class LogicBlock extends CompatBlock implements TickingBlock {
         public int phase = 0;
         public int timer = 0;
 
-        public @Nullable Block disguise;
-        public int disguiseMeta;
+        public @Nullable BlockState disguise;
 
         /** Actions always get called before conditions, use the phase and timer variables to control behaviour. */
         public String conditionID = "PLAYER_CUBE_5";
@@ -144,11 +139,8 @@ public class LogicBlock extends CompatBlock implements TickingBlock {
             nbt.putString("actionID", actionID);
             nbt.putString("conditionID", conditionID);
             if (interactionID != null) nbt.putString("interactionID", interactionID);
-            SavedIds.putEnum(nbt, "direction", direction); // by name, never an ordinal (History 19ej-ids)
-            if (disguise != null) {
-                nbt.putInt("disguiseMeta", disguiseMeta);
-                nbt.putString("disguise", BuiltInRegistries.BLOCK.getKey(disguise).toString());
-            }
+            SavedIds.putEnum(nbt, "direction", direction);
+            if (disguise != null) SavedIds.putState(nbt, "disguise", disguise);
         }
 
         @Override
@@ -160,14 +152,8 @@ public class LogicBlock extends CompatBlock implements TickingBlock {
             String interactionId = nbt.getStringOr("interactionID", "");
             this.interactionID = interactionId.isEmpty() ? null : interactionId;
             this.direction = SavedIds.getEnum(nbt, "direction", ForgeDirection.UNKNOWN);
-            String disguiseId = nbt.getStringOr("disguise", "");
-            if (!disguiseId.isEmpty()) {
-                this.disguiseMeta = nbt.getIntOr("disguiseMeta", 0);
-                Identifier id = Ids.parse(disguiseId);
-                this.disguise = BuiltInRegistries.BLOCK.getOptional(id).orElse(null);
-            } else {
-                this.disguise = null;
-            }
+            BlockState state = SavedIds.getState(nbt, "disguise", null);
+            this.disguise = state == null || state.isAir() ? null : state;
             // a changed script takes effect on the next tick
             this.action = null;
             this.condition = null;

@@ -1,9 +1,9 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.material.BlockConcreteColored;
-import com.hbm.blocks.material.BlockConcreteColoredExt;
-import com.hbm.blocks.material.BlockLightstone;
-import com.hbm.blocks.material.MaterialCompletionRegistrations;
+import com.hbm.blocks.generic.BlockConcreteColored;
+import com.hbm.blocks.generic.BlockConcreteColoredExt;
+import com.hbm.blocks.generic.BlockLightstone;
+import com.hbm.blocks.ModDecoBlocks;
 import com.hbm.blocks.generic.HbmStairBlock;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFallingBlocks;
@@ -35,11 +35,10 @@ import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMedicineItems;
 import com.hbm.items.ModOilItems;
-import com.hbm.items.material.FuelAdditiveItem;
+import com.hbm.items.special.FuelAdditiveItem;
 import com.hbm.items.special.BedrockOreType;
 import com.hbm.items.special.ItemAutogen;
-import com.hbm.items.material.FuelAdditiveItems;
-import com.hbm.inventory.recipes.material.FuelAdditiveRecipes;
+import com.hbm.inventory.recipes.FuelAdditiveRecipes;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.items.machine.ModStampItems;
 import com.hbm.inventory.fluid.FluidType;
@@ -100,12 +99,12 @@ public final class MaterialCompletionGameTests {
                 "Extended concrete must retain eight variants");
         helper.assertTrue(BlockLightstone.LightstoneType.values().length == 5,
                 "Lightstone must retain five variants");
-        helper.assertTrue(MaterialCompletionRegistrations.CONCRETE_COLORED_STAIRS.size() == 16
-                        && MaterialCompletionRegistrations.CONCRETE_COLORED_EXT_STAIRS.size() == 8,
+        helper.assertTrue(ModDecoBlocks.CONCRETE_COLORED_STAIRS.size() == 16
+                        && ModDecoBlocks.CONCRETE_COLORED_EXT_STAIRS.size() == 8,
                 "Flattened colored stair count changed");
-        BlockConcreteColored block = MaterialCompletionRegistrations.CONCRETE_COLORED.get();
+        BlockConcreteColored block = ModDecoBlocks.CONCRETE_COLORED.get();
         for (int variant = 0; variant < DyeColor.values().length; variant++) {
-            ItemStack stack = MaterialCompletionRegistrations.concreteColoredItem(variant);
+            ItemStack stack = ModDecoBlocks.concreteColoredItem(variant);
             helper.assertTrue(LegacyMeta.of(stack) == variant,
                     "Concrete item lost variant " + variant);
             helper.assertTrue(BlockConcreteColored.variant(block.stateForItem(stack)) == variant,
@@ -125,35 +124,35 @@ public final class MaterialCompletionGameTests {
         List<String> colours = List.of("white", "orange", "magenta", "light_blue", "yellow", "lime", "pink",
                 "gray", "silver", "cyan", "purple", "blue", "brown", "green", "red", "black");
         for (int i = 0; i < colours.size(); i++) {
-            RegistryObject<Block> stair = MaterialCompletionRegistrations.CONCRETE_COLORED_STAIRS.get(i);
+            RegistryObject<Block> stair = ModDecoBlocks.CONCRETE_COLORED_STAIRS.get(i);
             helper.assertTrue(stair.getId().equals(Ids.of("hbm", "concrete_colored_stairs_" + colours.get(i))),
                     "Wrong colored stair id at " + i);
-            helper.assertTrue(MaterialCompletionRegistrations.concreteColoredStairTexture(i)
+            helper.assertTrue(ModDecoBlocks.concreteColoredStairTexture(i)
                             .equals("hbm:blocks/concrete_" + colours.get(i)),
                     "Wrong colored stair texture at " + i);
             helper.assertTrue(stair.get() instanceof HbmStairBlock, "Colored stair is not a vanilla stair block");
         }
         for (int i = 0; i < BlockConcreteColoredExt.EnumConcreteType.values().length; i++) {
             String name = BlockConcreteColoredExt.EnumConcreteType.values()[i].getSerializedName();
-            helper.assertTrue(MaterialCompletionRegistrations.CONCRETE_COLORED_EXT_STAIRS.get(i).getId()
+            helper.assertTrue(ModDecoBlocks.CONCRETE_COLORED_EXT_STAIRS.get(i).getId()
                             .equals(Ids.of("hbm", "concrete_colored_ext_stairs_" + name)),
                     "Wrong extended stair id at " + i);
-            helper.assertTrue(MaterialCompletionRegistrations.concreteColoredExtStairTexture(i)
+            helper.assertTrue(ModDecoBlocks.concreteColoredExtStairTexture(i)
                             .equals("hbm:blocks/concrete_colored_ext." + name),
                     "Wrong extended stair texture at " + i);
         }
-        helper.assertTrue(MaterialCompletionRegistrations.lightstoneStairTexture(false)
+        helper.assertTrue(ModDecoBlocks.lightstoneStairTexture(false)
                         .equals("hbm:blocks/lightstone.tile")
-                        && MaterialCompletionRegistrations.lightstoneStairTexture(true)
+                        && ModDecoBlocks.lightstoneStairTexture(true)
                         .equals("hbm:blocks/lightstone.bricks"),
                 "Wrong lightstone stair texture mapping");
         helper.succeed();
     }
 
     public static void lightstoneRoundTripAndLight(GameTestHelper helper) {
-        BlockLightstone block = MaterialCompletionRegistrations.LIGHTSTONE.get();
+        BlockLightstone block = ModDecoBlocks.LIGHTSTONE.get();
         for (int variant = 0; variant < BlockLightstone.LightstoneType.values().length; variant++) {
-            ItemStack stack = MaterialCompletionRegistrations.lightstoneItem(variant);
+            ItemStack stack = ModDecoBlocks.lightstoneItem(variant);
             helper.assertTrue(BlockLightstone.variant(block.stateForItem(stack)) == variant,
                     "Lightstone placement changed variant " + variant);
             helper.assertTrue(block.stateForVariant(variant).getLightEmission() == 0,
@@ -189,25 +188,25 @@ public final class MaterialCompletionGameTests {
     }
 
     public static void fuelAdditiveVariants(GameTestHelper helper) {
-        helper.assertTrue(FuelAdditiveItems.Variant.values().length == 2,
+        helper.assertTrue(ModFuelItems.FuelAdditive.values().length == 2,
                 "Fuel additive must retain exactly two variants");
-        for (FuelAdditiveItems.Variant variant : FuelAdditiveItems.Variant.values()) {
-            var item = FuelAdditiveItems.get(variant);
+        for (ModFuelItems.FuelAdditive variant : ModFuelItems.FuelAdditive.values()) {
+            var item = ModFuelItems.fuelAdditive(variant);
             helper.assertTrue(item.getClass().equals(FuelAdditiveItem.class),
                     "Fuel additive is not a plain feature item");
             helper.assertTrue(BuiltInRegistries.ITEM.getKey(item).equals(Ids.of("hbm", variant.id)),
                     "Wrong fuel additive id for " + variant);
         }
-        helper.assertTrue(FuelAdditiveItems.get(FuelAdditiveItems.Variant.ANTIKNOCK)
-                        != FuelAdditiveItems.get(FuelAdditiveItems.Variant.DEICER),
+        helper.assertTrue(ModFuelItems.fuelAdditive(ModFuelItems.FuelAdditive.ANTIKNOCK)
+                        != ModFuelItems.fuelAdditive(ModFuelItems.FuelAdditive.DEICER),
                 "Flattened fuel additives must be distinct items");
         // the two chemical plant rows are datapack recipes (data/hbm/recipe/chemical_plant/tel, deicer)
         ChemicalPlantRecipes.INSTANCE.registerRecipes();
         var tel = ChemicalPlantRecipes.INSTANCE.getRecipe("chem.tel");
         var deicer = ChemicalPlantRecipes.INSTANCE.getRecipe("chem.deicer");
         helper.assertTrue(tel != null && deicer != null
-                        && tel.outputItem[0].getItem() == FuelAdditiveItems.get(FuelAdditiveItems.Variant.ANTIKNOCK)
-                        && deicer.outputItem[0].getItem() == FuelAdditiveItems.get(FuelAdditiveItems.Variant.DEICER),
+                        && tel.outputItem[0].getItem() == ModFuelItems.fuelAdditive(ModFuelItems.FuelAdditive.ANTIKNOCK)
+                        && deicer.outputItem[0].getItem() == ModFuelItems.fuelAdditive(ModFuelItems.FuelAdditive.DEICER),
                 "Fuel additive chemical recipe IDs changed");
         var mixer = FuelAdditiveRecipes.mixerRecipes();
         helper.assertTrue(mixer.size() == 3
@@ -218,7 +217,7 @@ public final class MaterialCompletionGameTests {
                         && mixer.get(1).input() == Fluids.GASOLINE
                         && mixer.get(2).input() == Fluids.COALGAS
                         && mixer.stream().allMatch(recipe ->
-                        recipe.additive() == FuelAdditiveItems.Variant.ANTIKNOCK
+                        recipe.additive() == ModFuelItems.FuelAdditive.ANTIKNOCK
                                 && recipe.outputAmount() == 12_000
                                 && recipe.inputAmount() == 10_000
                                 && recipe.processTime() == 40),

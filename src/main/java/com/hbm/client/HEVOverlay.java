@@ -1,7 +1,7 @@
 package com.hbm.client;
 
 import com.hbm.capability.HbmLivingProps;
-import com.hbm.items.gear.ArmorFSBPowered;
+import com.hbm.items.armor.ArmorFSBPowered;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

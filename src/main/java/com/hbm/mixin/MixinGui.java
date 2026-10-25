@@ -26,6 +26,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * shifting that pose during extraction moves the whole HUD, the cross-loader equivalent of the old GL
  * translate. Divergence from 1.12.2: the original only shifted from the hotbar onward (a GL-state leak);
  * this shifts the entire HUD.
+ *
+ * <p>Why a mixin: vanilla has no HUD hook and Fabric before 26.1 only calls back after the HUD, so on those nodes
+ * nothing else can wrap the whole HUD in one pose push and pop; one mixin keeps every node the same.
  */
 @Mixin(Gui.class)
 public class MixinGui {

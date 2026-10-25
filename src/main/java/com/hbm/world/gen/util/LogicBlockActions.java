@@ -366,7 +366,7 @@ public class LogicBlockActions {
                 bomb.timer = 2400;
                 bomb.started = true;
             }
-            world.setBlockAndUpdate(pos, tile.disguise != null ? tile.disguise.defaultBlockState() : Blocks.AIR.defaultBlockState());
+            world.setBlockAndUpdate(pos, tile.disguise != null ? tile.disguise : Blocks.AIR.defaultBlockState());
         }
     };
 

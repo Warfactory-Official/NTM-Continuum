@@ -1,4 +1,4 @@
-package com.hbm.tileentity.machine.soyuz;
+package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.item.IDesignatorItem;
@@ -11,7 +11,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModSatelliteItems;
 import com.hbm.items.special.ItemSoyuz;
-import com.hbm.blocks.machine.soyuz.SoyuzLauncher;
+import com.hbm.blocks.machine.SoyuzLauncher;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -20,8 +20,6 @@ import com.hbm.sound.ModPowerGenSounds;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.tileentity.machine.TileEntityLaunchpadSoyuz;
-import com.hbm.tileentity.machine.MachineFluidContainerIO;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;

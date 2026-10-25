@@ -1,4 +1,4 @@
-package com.hbm.items.material;
+package com.hbm.items.special;
 
 import net.minecraft.world.item.Item;
 

@@ -50,10 +50,8 @@ import com.hbm.blocks.machine.ModWeaponTableBlocks;
 import com.hbm.blocks.machine.dfc.ModDFCBlocks;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.blocks.machine.storage.ModBatteryBlocks;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
-import com.hbm.blocks.material.MaterialCompletionRegistrations;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.capability.ForeignFluids;
 import com.hbm.capability.ForeignItems;
@@ -76,7 +74,6 @@ import com.hbm.entity.ModEntities;
 import com.hbm.entity.ModMobSpawns;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.ModRBMKEntities;
-import com.hbm.entity.NtmToolEntityCatalog;
 import com.hbm.entity.missile.ModMissileEntities;
 import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.handler.BossSpawnHandler;
@@ -266,7 +263,6 @@ public final class MainRegistry {
         ModDFCBlocks.init();
         ModSatelliteItems.init();
         ModSatelliteContent.init(); // satellites: ID manager, cargo pad, orbital laser, /ntmsatellites
-        ModSoyuzBlocks.init();
         ModBatteryBlocks.init();   // energy-storage machine blocks (battery socket)
         ModTurretBlocks.init(); // turret pad cell and the turrets on it
         ModStorageBlocks.init();   // storage crates (iron / steel / desh)
@@ -296,7 +292,6 @@ public final class MainRegistry {
         ModRBMKBlocks.init(); // reactor columns/peripherals before their block items and BE types
         ModDataComponents.init();  // custom item data components (referenced by hand items below)
         ItemHot.init(); // declare the hot-item component before Fabric's registry flush
-        MaterialCompletionRegistrations.init();
         ModRecipes.init(); // custom crafting serializers
         ModItems.init();
         // After ModItems: its container items name ModItems empties as craft remainders at registration time.
@@ -368,7 +363,6 @@ public final class MainRegistry {
         ModEntities.init();        // entity types (the explosion + fallout entities)
         ModRBMKEntities.init();
         ModMissileEntities.init(); // the missiles
-        NtmToolEntityCatalog.init(); // NI4NI's throwable coin, separate from ModEntities
         ModNtmEntities.init(); // the ntm-next entity port (mobs, vehicles, effects, remaining projectiles)
         HbmParticles.init();
         ModEffects.init(); // status effects (radiation)

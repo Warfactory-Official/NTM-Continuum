@@ -5,7 +5,6 @@ import com.hbm.packet.ProjectileStatePayload;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModEntities;
-import com.hbm.entity.projectile.EntityCoin;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 import dev.golem.core.data.CompatEntity;

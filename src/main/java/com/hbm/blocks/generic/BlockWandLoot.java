@@ -311,7 +311,6 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
         protected void saveData(DataOut out) {
             super.saveData(out);
             out.putString("block", LegacyStructurePalette.stateString(replaceState));
-            out.putInt("meta", replaceMeta);
             out.putInt("min", minItems);
             out.putInt("max", maxItems);
             out.putString("pool", poolName);
@@ -329,7 +328,6 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
             super.loadData(in);
             BlockState state = LegacyStructurePalette.parseState(in.getStringOr("block", ""));
             replaceState = state.isAir() ? ModDungeonBlocks.deco_loot.get().defaultBlockState() : state;
-            replaceMeta = in.getIntOr("meta", 0);
             minItems = in.getIntOr("min", 0);
             maxItems = in.getIntOr("max", 0);
             poolName = in.getStringOr("pool", "");
@@ -390,7 +388,6 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
         public @Nullable CompoundTag getSettings(Level level, BlockPos pos) {
             CompoundTag nbt = new CompoundTag();
             nbt.putString("replaceBlock", LegacyStructurePalette.stateString(replaceState));
-            nbt.putInt("replaceMeta", replaceMeta);
             nbt.putInt("minItems", minItems);
             nbt.putInt("maxItems", maxItems);
             nbt.putString("poolName", poolName);
@@ -405,7 +402,6 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
         @Override
         public void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
             replaceState = LegacyStructurePalette.parseState(Tags.getStringOr(nbt, "replaceBlock", ""));
-            replaceMeta = Tags.getIntOr(nbt, "replaceMeta", 0);
             minItems = Tags.getIntOr(nbt, "minItems", 0);
             maxItems = Tags.getIntOr(nbt, "maxItems", 0);
             poolName = Tags.getStringOr(nbt, "poolName", "");

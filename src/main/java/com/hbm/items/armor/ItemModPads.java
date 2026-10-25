@@ -1,8 +1,6 @@
 package com.hbm.items.armor;
 
 import com.hbm.handler.ArmorModHandler;
-import com.hbm.items.gear.ArmorFSB;
-import com.hbm.items.gear.ArmorFSBPowered;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.DamageEvents;
 import java.util.List;

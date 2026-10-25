@@ -1,8 +1,8 @@
 package com.hbm.inventory.container;
 
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
-import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
+import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -96,7 +96,7 @@ public class ContainerSoyuzLauncher extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModSoyuzBlocks.soyuz_launcher.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.soyuz_launcher.get());
     }
 
     @Override

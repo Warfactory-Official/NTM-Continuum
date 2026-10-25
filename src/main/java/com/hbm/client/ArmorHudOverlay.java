@@ -2,8 +2,8 @@ package com.hbm.client;
 
 import com.hbm.client.jetpack.JetpackClientBridge;
 import com.hbm.client.jetpack.JetpackClientVisuals;
-import com.hbm.items.gear.ArmorFSB;
-import com.hbm.items.gear.ArmorFSBPowered;
+import com.hbm.items.armor.ArmorFSB;
+import com.hbm.items.armor.ArmorFSBPowered;
 import dev.golem.core.gui.GuiDraw;
 import java.util.ArrayList;
 import java.util.List;

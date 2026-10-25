@@ -11,6 +11,7 @@ import com.hbm.tileentity.machine.TileEntityMachinePress;
 import com.hbm.tileentity.machine.TileEntityMachineStrandCaster;
 import dev.golem.core.platform.Platform;
 import dev.golem.core.world.ItemExposure;
+import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -161,7 +162,7 @@ public final class ForeignItemsGameTests {
         List<ItemStack> total = new ArrayList<>();
         for (List<ItemStack> view : views) {
             for (ItemStack stack : view) {
-                ItemStack match = total.stream().filter(t -> ItemStack.isSameItemSameComponents(t, stack)).findFirst().orElse(null);
+                ItemStack match = total.stream().filter(t -> ItemStacks.sameItemAndData(t, stack)).findFirst().orElse(null);
                 if (match != null) match.grow(stack.getCount());
                 else total.add(stack.copy());
             }
@@ -172,7 +173,7 @@ public final class ForeignItemsGameTests {
     private static boolean sameView(List<ItemStack> a, List<ItemStack> b) {
         if (a.size() != b.size()) return false;
         for (int i = 0; i < a.size(); i++) {
-            if (a.get(i).getCount() != b.get(i).getCount() || !ItemStack.isSameItemSameComponents(a.get(i), b.get(i))) return false;
+            if (a.get(i).getCount() != b.get(i).getCount() || !ItemStacks.sameItemAndData(a.get(i), b.get(i))) return false;
         }
         return true;
     }

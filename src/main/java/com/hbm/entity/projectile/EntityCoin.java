@@ -1,6 +1,6 @@
 package com.hbm.entity.projectile;
 
-import com.hbm.entity.NtmToolEntityCatalog;
+import com.hbm.entity.ModEntities;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -15,7 +15,7 @@ public class EntityCoin extends EntityThrowableNT {
         setBoundingBox(makeBoundingBox(position()));
     }
 
-    public EntityCoin(Level level) { this(NtmToolEntityCatalog.COIN.get(), level); }
+    public EntityCoin(Level level) { this(ModEntities.COIN.get(), level); }
 
     public void setThrower(LivingEntity thrower) { this.thrower = thrower; }
     public LivingEntity getThrower() { return thrower; }

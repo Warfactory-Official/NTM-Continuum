@@ -1,6 +1,8 @@
 package com.hbm.entity;
 
 import com.hbm.entity.effect.EntityFalloutRain;
+import com.hbm.entity.explosive.EntityPrimedExplosive;
+import com.hbm.entity.projectile.EntityCoin;
 import com.hbm.entity.effect.EntityFireLingering;
 import com.hbm.entity.effect.EntityMist;
 import com.hbm.entity.effect.EntityNukeTorex;
@@ -234,6 +236,20 @@ public final class ModEntities {
                             .fireImmune()
                             .clientTrackingRange(64)
                             .updateInterval(1), key));
+
+    /** NI4NI's throwable coin. */
+    public static final RegistryObject<EntityType<EntityCoin>> COIN = REG.entity("entity_coin", key ->
+            Entities.build(EntityType.Builder.<EntityCoin>of(EntityCoin::new, MobCategory.MISC)
+                    .sized(1F, 1F).clientTrackingRange(1000).updateInterval(1), key));
+
+    public static final RegistryObject<EntityType<EntityPrimedExplosive>> PRIMED_EXPLOSIVE =
+            REG.entity("entity_ntm_tnt_primed", key -> Entities.build(
+                    Entities.trackDeltas(
+                            EntityType.Builder.<EntityPrimedExplosive>of(EntityPrimedExplosive::new, MobCategory.MISC)
+                                    .fireImmune()
+                                    .sized(0.98F, 0.98F)
+                                    .clientTrackingRange(10)
+                                    .updateInterval(10)), key));
 
     public static void init() {}
 }

@@ -28,7 +28,6 @@ import com.hbm.items.ModMedicineItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import com.hbm.items.machine.ItemFluidContainerNT;
 import com.hbm.items.machine.ItemFluidIcon;
-import com.hbm.items.material.FuelAdditiveItems;
 import com.hbm.inventory.recipes.loader.GenericTableSource;
 import dev.golem.core.Ids;
 import java.util.function.Function;
@@ -151,11 +150,11 @@ public final class ChemicalPlantTable extends GenericTableSource<GenericRecipe> 
         this.register(new GenericRecipe("chem.tel").setup(40, 100)
                 .inputItems(new TagStack(ANY_TAR), PB.dust())
                 .inputFluids(new FluidStack(Fluids.PETROLEUM, 100), new FluidStack(Fluids.STEAM, 1000))
-                .outputItems(new ItemStack(FuelAdditiveItems.get(FuelAdditiveItems.Variant.ANTIKNOCK))));
+                .outputItems(new ItemStack(ModFuelItems.fuelAdditive(ModFuelItems.FuelAdditive.ANTIKNOCK))));
 
         this.register(new GenericRecipe("chem.deicer").setup(40, 100)
                 .inputFluids(new FluidStack(Fluids.GAS, 100), new FluidStack(Fluids.HYDROGEN, 50))
-                .outputItems(new ItemStack(FuelAdditiveItems.get(FuelAdditiveItems.Variant.DEICER))));
+                .outputItems(new ItemStack(ModFuelItems.fuelAdditive(ModFuelItems.FuelAdditive.DEICER))));
 
         /// THE CONC AND ASPHALE ///
         this.register(new GenericRecipe("chem.cobble").setup(20, 100)

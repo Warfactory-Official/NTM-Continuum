@@ -1,7 +1,6 @@
 package com.hbm.items.armor;
 
 import com.hbm.client.ClientPlayerAccess;
-import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.ModArmorItems;
 import java.util.IdentityHashMap;
 import java.util.Map;

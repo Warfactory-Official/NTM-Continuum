@@ -3,7 +3,6 @@ package com.hbm.items.special;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.items.ModAutogenItems;
-import com.hbm.items.special.ItemAutogen;
 import java.util.Objects;
 import java.util.stream.Stream;
 import net.minecraft.world.item.ItemStack;

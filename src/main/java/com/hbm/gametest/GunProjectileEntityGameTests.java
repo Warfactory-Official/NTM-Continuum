@@ -1,7 +1,6 @@
 package com.hbm.gametest;
 
 import com.hbm.entity.ModEntities;
-import com.hbm.entity.NtmToolEntityCatalog;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.entity.projectile.EntityBulletBaseMK4CL;
 import com.hbm.entity.projectile.EntityChemical;
@@ -26,7 +25,7 @@ public final class GunProjectileEntityGameTests {
         helper.assertTrue(ModEntities.BULLET_MK4_CL.get() != null, "MK4 chunkloading entity is missing");
         helper.assertTrue(ModEntities.BEAM_MK4.get() != null, "MK4 beam entity is missing");
         helper.assertTrue(ModEntities.CHEMICAL.get() != null, "chemical projectile entity is missing");
-        helper.assertTrue(NtmToolEntityCatalog.COIN.get() != null,
+        helper.assertTrue(ModEntities.COIN.get() != null,
                 "NI4NI coin entity is missing");
         helper.assertTrue(XFactoryAccelerator.ni4ni_arc != null
                         && "hbm:ni4ni_arc".equals(XFactoryAccelerator.ni4ni_arc.id.toString())

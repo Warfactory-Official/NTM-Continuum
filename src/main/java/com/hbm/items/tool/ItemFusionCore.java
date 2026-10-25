@@ -1,8 +1,8 @@
 package com.hbm.items.tool;
 
 import com.hbm.api.energymk2.IBatteryItem;
-import com.hbm.items.gear.ArmorFSB;
-import com.hbm.items.gear.ArmorFSBPowered;
+import com.hbm.items.armor.ArmorFSB;
+import com.hbm.items.armor.ArmorFSBPowered;
 import com.hbm.lib.Library;
 import com.hbm.sound.EnergyNetSounds;
 import dev.golem.core.world.CompatItem;

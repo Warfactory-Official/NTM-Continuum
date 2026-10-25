@@ -2,7 +2,7 @@ package com.hbm.items.food;
 
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.items.ModArmorItems;
-import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.armor.ArmorFSB;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.ChatFormatting;

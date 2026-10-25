@@ -26,7 +26,6 @@ import com.hbm.blocks.generic.BlockCap;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
-import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.inventory.FluidContainerStack;
@@ -1045,7 +1044,7 @@ public final class AssemblyMachineTable extends GenericTableSource<GenericRecipe
         this.register(new GenericRecipe("ass.titaniumconstruction").setupNamed(600, 1_000).outputItems(ModIngredientItems.part(EnumPartType.ALCLAD, 1))
                 .inputItems(TI.plate().count(4), ANY_PLASTIC.ingot().count(8)));
 
-        this.register(new GenericRecipe("ass.soyuz").setup(6_000, 25_000).outputItems(new ItemStack(ModSoyuzBlocks.missile_soyuz.get(SoyuzSkinType.NORMAL), 1))
+        this.register(new GenericRecipe("ass.soyuz").setup(6_000, 25_000).outputItems(new ItemStack(ModMissileItems.missile_soyuz.get(SoyuzSkinType.NORMAL), 1))
                 .inputItems(TI.shell().count(32),
                         RUBBER.ingot().count(64),
                         new ComparableStack(ModFuelItems.rocket_fuel.get(), 64),
@@ -1062,7 +1061,7 @@ public final class AssemblyMachineTable extends GenericTableSource<GenericRecipe
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 3),
                         new ComparableStack(ModIngredientItems.part(EnumPartType.LDE), 12),
                         new ComparableStack(ModIntermediateItems.drive(EnumDriveType.FLASH_FLIGHTSIM), 8)).setPools528(GenericRecipes.POOL_PREFIX_528 + "soyuz"));
-        this.register(new GenericRecipe("ass.lambdarocket").setup(1_200, 50_000).outputItems(new ItemStack(ModSoyuzBlocks.missile_lambda.get(), 1))
+        this.register(new GenericRecipe("ass.lambdarocket").setup(1_200, 50_000).outputItems(new ItemStack(ModMissileItems.missile_lambda.get(), 1))
                 .inputItems(new ComparableStack(ModIngredientItems.part(EnumPartType.ALCLAD), 32),
                         new ComparableStack(ModItems.ingot_tungsten_carbide.get(), 12),
                         new ComparableStack(ModFuelItems.rocket_fuel.get(), 64),

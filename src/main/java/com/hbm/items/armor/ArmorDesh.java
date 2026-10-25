@@ -1,7 +1,6 @@
 package com.hbm.items.armor;
 
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.items.gear.ArmorFSBFueled;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Attributes;
 import dev.golem.core.world.GolemArmorMaterial;

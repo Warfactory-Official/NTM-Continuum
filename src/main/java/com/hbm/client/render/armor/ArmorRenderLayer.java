@@ -1,7 +1,7 @@
 package com.hbm.client.render.armor;
 
 import com.hbm.client.jetpack.JetpackClientVisuals;
-import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.armor.ArmorFSB;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.CompatHumanoidLayer;
 import dev.golem.core.render.CameraInfo;

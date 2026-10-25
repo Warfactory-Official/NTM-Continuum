@@ -1,4 +1,4 @@
-package com.hbm.items.gear;
+package com.hbm.items.armor;
 
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.ArmorModHandler;
@@ -56,7 +56,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Full-set-bonus armour: the base every modelled HBM suit is built on.
  *
- * <p>Ported 1:1 from 1.12.2 {@code com.hbm.items.gear.ArmorFSB}. The idea is that a suit does nothing
+ * <p>Ported 1:1 from 1.12.2 {@code com.hbm.items.armor.ArmorFSB}. The idea is that a suit does nothing
  * special piece by piece: wear <em>all four</em> pieces of the same material and the chestplate's
  * configuration switches on for the whole set. That covers potion effects re-applied every tick, radiation
  * resistance, hazard-class protection, footstep sounds and the hard-landing shockwave.
