@@ -32,6 +32,7 @@ import com.hbm.client.render.TorexBenchmarkClient;
 import com.hbm.client.render.armor.ArmorModRenderLayer;
 import com.hbm.client.render.armor.ArmorRenderLayer;
 import com.hbm.client.render.armor.ArmorRenderers;
+import com.hbm.client.render.armor.ModelMan;
 import com.hbm.client.render.armor.WornModelRenderLayer;
 import com.hbm.client.render.entity.EntityRenderSmokeClient;
 import com.hbm.client.render.projectile.TracerRegistry;
@@ -539,6 +540,7 @@ public final class HbmClientRegistrations {
         PlayerRenderHooks.POSE.addPhaseOrdering("hbm:player", Hook.DEFAULT_PHASE);
         PlayerRenderHooks.POSE.register("hbm:player",
                 JetpackClientVisuals::applyPlayerPose);
+        PlayerRenderHooks.POSE.register("hbm:player", (player, pose, partialTick) -> ModelMan.posing(player));
         PlayerRenderHooks.MODEL.addPhaseOrdering("hbm:player", Hook.DEFAULT_PHASE);
         PlayerRenderHooks.MODEL.register("hbm:player", parts -> {
             // The source applies gun aimedBow during model setup; keep its arm pose after the glider's

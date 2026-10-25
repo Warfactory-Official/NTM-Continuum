@@ -1245,8 +1245,7 @@ public final class ModMachineBlocks {
         REG.<BlockMachineBattery, BlockItem>blockItem(machine_battery,
                         (block, p) -> new EnergyNetBlockItem(block, p,
                                 stack -> machine_battery.get().persistentInfo(stack)),
-                        p -> Compat.blockDescription(p))
-                .tab(HbmTab.MACHINES);
+                        p -> Compat.blockDescription(p));
         tabItem(machine_radgen);
         tabItem(machine_minirtg);
         tabItem(rtg_polonium);

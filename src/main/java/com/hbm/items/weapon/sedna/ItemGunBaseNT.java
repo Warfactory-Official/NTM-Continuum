@@ -17,7 +17,6 @@ import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemFluidIcon;
-import com.hbm.items.machine.ItemFluidId;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import com.hbm.items.ModBatteryItems;
 import com.hbm.lib.Library;
@@ -214,10 +213,6 @@ public class ItemGunBaseNT extends CompatItem implements IKeybindReceiver {
         if (magazine instanceof MagazineEnergy
                 || magazine instanceof MagazineElectricEngine) {
             return new ItemStack(ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_REDSTONE).get());
-        }
-        if (magazine instanceof MagazineFluid fluidMagazine) {
-            FluidType fluid = fluidMagazine.getType(stack, null);
-            return fluid == null || fluid == Fluids.NONE ? ItemStack.EMPTY : ItemFluidId.make(fluid);
         }
         return ItemStack.EMPTY;
     }

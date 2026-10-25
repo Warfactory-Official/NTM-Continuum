@@ -1,5 +1,5 @@
 {
   "parent": "hbm:item/gun_obj_base",
-  "gui_light": "side",
+  "gui_light": "front",
   "textures": { "particle": "hbm:items/gun_b92" }
 }

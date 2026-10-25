@@ -97,6 +97,7 @@ public final class HooksGameTests {
     public static final GameTests.Function DUCK = TESTS.function("hooks_duck_lays_plain_egg", 20, () -> HooksGameTests::duck);
     public static final GameTests.Function JEI = TESTS.function("hooks_jei_fuel_pool_and_arc_furnace_pass", 20, () -> HooksGameTests::jeiPages);
     public static final GameTests.Function STRUCTURES = TESTS.function("hooks_structure_placement_reads_cfg", 20, () -> HooksGameTests::structures);
+    public static final GameTests.Function MANLY = TESTS.function("hooks_astolfization_player_list", 20, () -> HooksGameTests::manly);
 
     public static void init() {}
 
@@ -129,6 +130,21 @@ public final class HooksGameTests {
                 && Effects.getRegistered(victim, ModEffects.DEATH.get()).getDuration() == 60 * 60 * 20, "red pill: death effect for an hour");
         ItemUses.finished(victim, laced);
         helper.assertTrue(victim.getHealth() <= 0 || !victim.isAlive(), "cyanide: ten 1000-point hits kill");
+        helper.succeed();
+    }
+
+    // Astolfization
+
+    private static void manly(GameTestHelper helper) {
+        ServerPlayer manly = GameTestHelpers.survivalServerPlayerInLevel(helper);
+        ServerPlayer plain = GameTestHelpers.survivalServerPlayerInLevel(helper);
+        Effects.addRegistered(manly, ModEffects.DEATH.get(), 200, 0);
+        List<Integer> ids = ModEventHandlerHooks.manlyIds(helper.getLevel());
+        helper.assertTrue(ids.contains(manly.getId()), "the player under Astolfization is listed");
+        helper.assertTrue(!ids.contains(plain.getId()), "a player without it is not");
+        manly.removeAllEffects();
+        helper.assertTrue(!ModEventHandlerHooks.manlyIds(helper.getLevel()).contains(manly.getId()),
+                "the effect ending drops the player");
         helper.succeed();
     }
 

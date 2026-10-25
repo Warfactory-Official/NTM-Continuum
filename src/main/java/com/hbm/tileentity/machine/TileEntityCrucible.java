@@ -19,9 +19,11 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,6 +37,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 import com.hbm.util.CrucibleUtil;
 import com.hbm.util.TickPhase;
 
@@ -54,7 +57,8 @@ import com.hbm.tileentity.IConfigurableMachine;
  * the original); thrown items landing in the basin are vacuumed in. Configured as {@code crucible} in
  * {@code hbmMachines.json}. Each non-empty pour stack adds 1.7's {@code SOOT_PER_SECOND / 20} soot every tick.
  */
-public class TileEntityCrucible extends TileEntityMachineBase implements MenuProvider, ICrucibleAcceptor, IControlReceiver {
+public class TileEntityCrucible extends TileEntityMachineBase implements MenuProvider, ICrucibleAcceptor, IControlReceiver,
+        WorldlyContainer {
 
     public int heat;
     public int progress;
@@ -413,6 +417,22 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     @Override
     public int[] getAccessibleSlotsFromSide(int side) {
         return new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    }
+
+    @Override
+    public int[] getSlotsForFace(Direction side) {
+        return getAccessibleSlotsFromSide(side.ordinal());
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
+        return isItemValidForSlot(slot, stack);
+    }
+
+    /** 1.7 keeps TileEntityMachineBase's canExtractItem: nothing leaves through automation. */
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
+        return false;
     }
 
     // --- ICrucibleAcceptor (the crucible itself can be poured into from the top) ---

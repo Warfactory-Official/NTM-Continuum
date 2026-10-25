@@ -2,13 +2,15 @@ package com.hbm.client.render.armor;
 
 import com.hbm.items.armor.IArmorDisableModel;
 import com.hbm.items.armor.IArmorDisableModel.EnumPlayerPart;
+import dev.golem.core.render.HumanoidPose;
 import dev.golem.core.render.Worn;
 import dev.golem.core.world.ArmorSlot;
-import java.util.EnumMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -34,46 +36,45 @@ public final class ArmorPartHiding {
      * <p>Weakly keyed: models belong to renderers that are rebuilt on resource reload, and a strong
      * reference here would pin every one of them for the session.
      */
-    private static final Map<HumanoidModel<?>, EnumMap<EnumPlayerPart, Boolean>> HIDDEN =
-            new WeakHashMap<>();
+    private static final Map<HumanoidModel<?>, Map<ModelPart, Boolean>> HIDDEN = new WeakHashMap<>();
 
     private static final EnumPlayerPart[] PARTS = EnumPlayerPart.values();
     private static final ArmorSlot[] SLOTS = ArmorSlot.values();
 
-    /** Restores anything hidden last frame, then hides what this frame's armour asks for. */
-    public static void apply(HumanoidModel<?> model, ItemStack head, ItemStack chest, ItemStack legs,
-            ItemStack feet) {
+    /** Restores last frame's hiding, then hides what the armour asks for, or everything for an Astolfized player. */
+    public static void apply(HumanoidModel<?> model, Player player, ItemStack head, ItemStack chest,
+            ItemStack legs, ItemStack feet) {
 
-        EnumMap<EnumPlayerPart, Boolean> previous = HIDDEN.remove(model);
+        Map<ModelPart, Boolean> previous = HIDDEN.remove(model);
         if (previous != null) {
-            for (Map.Entry<EnumPlayerPart, Boolean> entry : previous.entrySet()) {
-                ModelPart part = part(model, entry.getKey());
-                if (part != null) part.visible = entry.getValue();
+            for (Map.Entry<ModelPart, Boolean> entry : previous.entrySet()) entry.getKey().visible = entry.getValue();
+        }
+
+        Map<ModelPart, Boolean> hidden = new IdentityHashMap<>();
+        if (ModelMan.isManly(player) && ModelMan.isSkinModel(model)) {
+            for (EnumPlayerPart which : PARTS) hide(part(model, which), hidden);
+            for (ModelPart layer : HumanoidPose.skinLayers(model)) hide(layer, hidden);
+        } else {
+            Worn worn = new Worn(head, chest, legs, feet);
+            if (worn.isEmpty()) return;
+
+            for (ArmorSlot slot : SLOTS) {
+                ItemStack stack = worn.get(slot);
+                if (!(stack.getItem() instanceof IArmorDisableModel armor)) continue;
+
+                for (EnumPlayerPart which : PARTS) {
+                    if (armor.disablesPart(worn, stack, which)) hide(part(model, which), hidden);
+                }
             }
         }
 
-        Worn worn = new Worn(head, chest, legs, feet);
-        if (worn.isEmpty()) return;
+        if (!hidden.isEmpty()) HIDDEN.put(model, hidden);
+    }
 
-        EnumMap<EnumPlayerPart, Boolean> hidden = null;
-
-        for (ArmorSlot slot : SLOTS) {
-            ItemStack stack = worn.get(slot);
-            if (!(stack.getItem() instanceof IArmorDisableModel armor)) continue;
-
-            for (EnumPlayerPart which : PARTS) {
-                if (!armor.disablesPart(worn, stack, which)) continue;
-
-                ModelPart part = part(model, which);
-                if (part == null || !part.visible) continue;
-
-                if (hidden == null) hidden = new EnumMap<>(EnumPlayerPart.class);
-                hidden.put(which, part.visible);
-                part.visible = false;
-            }
-        }
-
-        if (hidden != null) HIDDEN.put(model, hidden);
+    private static void hide(ModelPart part, Map<ModelPart, Boolean> hidden) {
+        if (!part.visible) return;
+        hidden.put(part, true);
+        part.visible = false;
     }
 
     /** 1.12.2's {@code getBoxFromType}, against the modern part names. */

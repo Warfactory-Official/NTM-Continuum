@@ -47,6 +47,12 @@ public final class WeaponPose {
         return buses.computeIfAbsent(name, key -> HbmAnimations.getRelevantTransformation(name, hand, 0));
     }
 
+    /** Whether the running animation has this bus at all; a missing bus reads as zeros, not as rest. */
+    public boolean has(String name) {
+        HbmAnimations.Animation running = animated ? HbmAnimations.getRelevantAnim(hand, 0) : null;
+        return running != null && running.animation.getBus(name) != null;
+    }
+
     public double[] bus(String name, int rail) {
         if (!animated) return REST;
         return buses.computeIfAbsent(name + "#" + rail,

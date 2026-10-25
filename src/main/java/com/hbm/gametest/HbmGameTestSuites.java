@@ -56,6 +56,7 @@ public final class HbmGameTestSuites {
             list.add(Fix7MobGameTests.TESTS);
             list.add(RecipeContentGameTests.TESTS);
             list.add(RecipeViewerGameTests.TESTS);
+            list.add(RecipeGapIssueGameTests.TESTS);
             list.add(UtilityToolGameTests.TESTS);
             list.add(AssemblyFactoryGameTests.TESTS);
             list.add(ChemicalFactoryGameTests.TESTS);
@@ -114,6 +115,7 @@ public final class HbmGameTestSuites {
             list.add(WeaponTableGameTests.TESTS);
             list.add(PollutionGameTests.TESTS);
             list.add(ToxinGameTests.TESTS);
+            list.add(MachineAutomationGameTests.TESTS);
             suites = List.copyOf(list);
         }
         return suites;
@@ -155,6 +157,7 @@ public final class HbmGameTestSuites {
         Fix7MobGameTests.init();
         RecipeContentGameTests.init();
         RecipeViewerGameTests.init();
+        RecipeGapIssueGameTests.init();
         UtilityToolGameTests.init();
         AssemblyFactoryGameTests.init();
         ChemicalFactoryGameTests.init();
@@ -214,5 +217,6 @@ public final class HbmGameTestSuites {
         GunSupportGameTests.init();
         PollutionGameTests.init();
         ToxinGameTests.init();
+        MachineAutomationGameTests.init();
     }
 }

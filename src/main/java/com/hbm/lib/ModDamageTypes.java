@@ -43,13 +43,15 @@ public final class ModDamageTypes {
         }
         declared = true;
 
+        // 1.7 setDamageIsAbsolute is BYPASSES_EFFECTS (it skips potions and enchantments), setDamageAllowedInCreativeMode
+        // is BYPASSES_INVULNERABILITY
         Damage.declare(NS,
                 type("acid"),
-                type("ams").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
+                type("ams").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("ams_core").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("asbestos").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("bang").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("blackhole").tags(BYPASSES_ARMOR),
+                type("blackhole").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("blacklung").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("blender").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 // 1.12.2 ModDamageSource crucible/slicer: setDamageIsAbsolute().setDamageBypassesArmor()
@@ -62,12 +64,12 @@ public final class ModDamageTypes {
                 type("digamma").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
                 type("electricity").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("enervation").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("euthanized_self").message("euthanizedSelf").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("euthanized_self2").message("euthanizedSelf2").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("euthanized_self").message("euthanizedSelf").tags(BYPASSES_ARMOR),
+                type("euthanized_self2").message("euthanizedSelf2").tags(BYPASSES_ARMOR),
                 type("hard_landing").scaling(BY_LIVING_NON_PLAYER).tags(BYPASSES_ARMOR),
                 type("ice"),
                 type("lead").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("lunar").tags(BYPASSES_ARMOR),
+                type("lunar").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("microwave").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("mku").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("monoxide").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),

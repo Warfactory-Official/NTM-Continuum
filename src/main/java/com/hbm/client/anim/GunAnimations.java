@@ -700,13 +700,61 @@ public final class GunAnimations {
     }
 
     private static BusAnimation liberator(ItemStack stack, GunAnimation type, int rail) {
+        int ammo = heldAmmo(stack, rail);
         return switch (type) {
             case EQUIP -> new BusAnimation().addBus("EQUIP", seq().addPos(60, 0, 0, 0)
                     .addPos(0, 0, 0, 500, IType.SIN_DOWN));
             case CYCLE -> new BusAnimation().addBus("RECOIL", seq().addPos(0, 0, -2.5, 50, IType.SIN_DOWN)
                     .addPos(0, 0, 0, 350, IType.SIN_FULL));
+            case CYCLE_DRY -> new BusAnimation();
+            // 1.7's RELOAD case falls through to RELOAD_CYCLE, which has no row for a full chamber either
+            case RELOAD -> ammo > 3 ? null : liberatorLoad(ammo, true);
+            case RELOAD_CYCLE -> ammo > 2 ? null : liberatorLoad(ammo + 1, false);
+            case RELOAD_END -> liberatorShells(new BusAnimation()
+                    .addBus("LATCH", seq().addPos(15, 0, 0, 0).addPos(15, 0, 0, 250).addPos(0, 0, 0, 50))
+                    .addBus("BREAK", seq().addPos(60, 0, 0, 0).addPos(0, 0, 0, 250, IType.SIN_UP)), ammo + 1);
+            case JAMMED -> liberatorShells(new BusAnimation()
+                    .addBus("LATCH", seq().addPos(15, 0, 0, 0).addPos(15, 0, 0, 250).addPos(0, 0, 0, 50)
+                            .addPos(0, 0, 0, 550).addPos(15, 0, 0, 100).addPos(15, 0, 0, 600).addPos(0, 0, 0, 50))
+                    .addBus("BREAK", seq().addPos(60, 0, 0, 0).addPos(0, 0, 0, 250, IType.SIN_UP).addPos(0, 0, 0, 600)
+                            .addPos(45, 0, 0, 250, IType.SIN_DOWN).addPos(45, 0, 0, 300).addPos(0, 0, 0, 150, IType.SIN_UP)),
+                    ammo + 1);
+            case INSPECT -> liberatorShells(new BusAnimation()
+                    .addBus("LATCH", seq().addPos(15, 0, 0, 100).addPos(15, 0, 0, 1100).addPos(0, 0, 0, 50))
+                    .addBus("BREAK", seq().addPos(0, 0, 0, 100).addPos(60, 0, 0, 350, IType.SIN_DOWN)
+                            .addPos(60, 0, 0, 500).addPos(0, 0, 0, 250, IType.SIN_UP)), ammo);
             default -> null;
         };
+    }
+
+    /**
+     * 1.7's reload rows: shells below {@code loading} sit in the barrel, shell {@code loading} slides in from below
+     * and the rest wait below. The first row also breaks the action open; the cycle rows start open.
+     */
+    private static BusAnimation liberatorLoad(int loading, boolean opening) {
+        BusAnimation animation = new BusAnimation()
+                .addBus("LATCH", opening ? seq().addPos(15, 0, 0, 100) : seq().addPos(15, 0, 0, 0))
+                .addBus("BREAK", opening ? seq().addPos(0, 0, 0, 100).addPos(60, 0, 0, 350, IType.SIN_DOWN)
+                        : seq().addPos(60, 0, 0, 0));
+        for (int shell = 0; shell < 4; shell++) {
+            BusAnimationSequence seq;
+            if (shell < loading) seq = seq().addPos(0, 0, 0, 0);
+            else if (shell == loading && opening) seq = seq().addPos(2, -4, -2, 0).addPos(2, -4, -2, 400)
+                    .addPos(0, 0, -2, 450, IType.SIN_FULL).addPos(0, 0, 0, 50, IType.SIN_UP);
+            else if (shell == loading) seq = seq().addPos(2, -4, -2, 0)
+                    .addPos(0, 0, -2, 450, IType.SIN_FULL).addPos(0, 0, 0, 50, IType.SIN_UP);
+            else seq = seq().addPos(2, -4, -2, 0);
+            animation.addBus("SHELL" + (shell + 1), seq);
+        }
+        return animation;
+    }
+
+    /** The first {@code chambered} shells sit in the barrel, the others hang out of sight below it. */
+    private static BusAnimation liberatorShells(BusAnimation animation, int chambered) {
+        for (int shell = 0; shell < 4; shell++) {
+            animation.addBus("SHELL" + (shell + 1), shell < chambered ? seq().addPos(0, 0, 0, 0) : seq().addPos(2, -8, -2, 0));
+        }
+        return animation;
     }
 
     private static BusAnimation flamer(ItemStack stack, GunAnimation type, int rail) {

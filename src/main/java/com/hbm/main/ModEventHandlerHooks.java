@@ -13,6 +13,7 @@ import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.packet.ManlySyncPayload;
 import com.hbm.packet.PollutionSyncPayload;
 import com.hbm.potion.ModEffects;
 import com.hbm.util.ArmorRegistry;
@@ -27,8 +28,10 @@ import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.ItemUses;
 import dev.golem.core.world.Sleeps;
 import dev.golem.core.world.Spawns;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -43,6 +46,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -77,7 +81,11 @@ public final class ModEventHandlerHooks {
         Spawns.onPotentialSpawns((level, category, pos) -> PollutionHandler.rampantScoutPopulator(level, pos));
         ItemFirstUse.registerBlockClick(ModEventHandlerHooks::explosiveEnergistics);
         Lifecycle.onServerTick(ModEventHandlerHooks::syncPollution);
-        Lifecycle.onServerStopping(server -> SENT_POLLUTION.clear());
+        Lifecycle.onServerTick(ModEventHandlerHooks::syncManly);
+        Lifecycle.onServerStopping(server -> {
+            SENT_POLLUTION.clear();
+            SENT_MANLY.clear();
+        });
     }
 
     private static final Map<UUID, float[]> SENT_POLLUTION = new HashMap<>();
@@ -96,6 +104,28 @@ public final class ModEventHandlerHooks {
             SENT_POLLUTION.put(player.getUUID(), now);
             GolemNetwork.sendToPlayer(player, PollutionSyncPayload.CODEC,
                     new PollutionSyncPayload(now[0], now[1], now[2], now[3]));
+        }
+    }
+
+    private static final Map<UUID, Object[]> SENT_MANLY = new HashMap<>();
+
+    /** 1.7 {@code PermaSyncHandler}'s "SHITTY MEMES" block: the players of a level under Astolfization. */
+    public static List<Integer> manlyIds(Level level) {
+        List<Integer> ids = new ArrayList<>();
+        for (Player player : level.players()) {
+            if (Effects.hasRegistered(player, ModEffects.DEATH.get())) ids.add(player.getId());
+        }
+        return ids;
+    }
+
+    private static void syncManly(MinecraftServer server) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            Level level = player.level();
+            List<Integer> ids = manlyIds(level);
+            Object[] last = SENT_MANLY.get(player.getUUID());
+            if (last != null && last[0] == level && last[1].equals(ids)) continue;
+            SENT_MANLY.put(player.getUUID(), new Object[] {level, ids});
+            GolemNetwork.sendToPlayer(player, ManlySyncPayload.CODEC, new ManlySyncPayload(ids));
         }
     }
 

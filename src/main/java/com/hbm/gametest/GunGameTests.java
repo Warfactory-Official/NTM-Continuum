@@ -12,6 +12,7 @@ import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModAmmoItems;
+import com.hbm.items.ModFluidItems;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -1014,8 +1016,14 @@ public final class GunGameTests {
         Player player = player(helper);
         helper.assertTrue((moved + "mB").equals(magazine.reportAmmoStateForHUD(stack, player)),
                 "the HUD readout must be " + moved + "mB, is " + magazine.reportAmmoStateForHUD(stack, player));
-        helper.assertTrue(!magazine.getIconForHUD(stack, player).isEmpty(),
-                "a filled tank must give the HUD an icon to draw");
+        ItemStack icon = magazine.getIconForHUD(stack, player);
+        helper.assertTrue(!icon.isEmpty(), "a filled tank must give the HUD an icon to draw");
+        String line = Component.translatable("gui.weapon.ammo").append(": ").append(icon.getHoverName())
+                .append(" " + magazine.reportAmmoStateForHUD(stack, player)).getString();
+        String expected = Component.translatable("gui.weapon.ammo").append(": ").append(Fluids.DIESEL.getDisplayName())
+                .append(" " + moved + "mB").getString();
+        helper.assertTrue(icon.is(ModFluidItems.fluid_icon.get()) && line.equals(expected),
+                "the ammo line must read \"" + expected + "\", reads \"" + line + "\"");
 
         gun.tryEmpty(Fluids.DIESEL, 5_000, stack);
         helper.assertTrue(magazine.getAmount(stack, null) == 0,

@@ -19,6 +19,7 @@ import com.hbm.inventory.recipes.PressRecipes;
 import com.hbm.inventory.recipes.AmmoPressRecipes;
 import com.hbm.inventory.recipes.RotaryFurnaceRecipes;
 import com.hbm.inventory.recipes.SILEXRecipes;
+import com.hbm.inventory.recipes.CombinationRecipes;
 import com.hbm.inventory.recipes.SawmillRecipes;
 import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
@@ -129,5 +130,7 @@ public final class HbmJeiRecipeTypes {
     public static final ViewerType<HydrotreatingRecipeHandler.Entry> HYDROTREATING = type("hydrotreating", HydrotreatingRecipeHandler.Entry.class);
     public static final ViewerType<CokerRecipeHandler.Entry> COKER = type("coker", CokerRecipeHandler.Entry.class);
     public static final ViewerType<PyrolysisRecipeHandler.Entry> PYROLYSIS = type("pyrolysis", PyrolysisRecipeHandler.Entry.class);
+    public static final ViewerType<CombinationRecipes.CombinationRecipe> COMBINATION =
+            type("combination", CombinationRecipes.CombinationRecipe.class);
     public static final ViewerType<CompressorRecipeHandler.Entry> COMPRESSOR = type("compressor", CompressorRecipeHandler.Entry.class);
 }

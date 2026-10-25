@@ -135,6 +135,9 @@ public final class ModShapelessRecipes {
                 VanillaIds.clay_ball, VanillaIds.clay_ball, VanillaIds.clay_ball, TagIds.dusts_aluminium);
         shapeless(NS, "ball_fireclay_1", ItemIds.ball_fireclay, 4,
                 VanillaIds.clay_ball, VanillaIds.clay_ball, VanillaIds.clay_ball, TagIds.ores_aluminium);
+        // port: ntm-next's raw ore row, at the ore's full yield like ntm-next (raw ores are the default drop)
+        shapeless(NS, "ball_fireclay_raw", ItemIds.ball_fireclay, 4,
+                VanillaIds.clay_ball, VanillaIds.clay_ball, VanillaIds.clay_ball, TagIds.raw_materials_aluminium);
         shapeless(NS, "ballistite", ItemIds.ballistite, 3, VanillaIds.gunpowder, TagIds.dusts_niter, VanillaIds.sugar);
         shapeless(NS, "billet_am_mix_2", ItemIds.billet_am_mix, 3,
                 ItemIds.billet_am241, ItemIds.billet_am242, ItemIds.billet_am242);

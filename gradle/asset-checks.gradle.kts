@@ -881,16 +881,9 @@ fun Project.registerGunObjTransformChecks() {
                 check(model["base"] == base) {
                     "$definition must reference $base, not ${model["base"]}"
                 }
-                @Suppress("UNCHECKED_CAST")
-                val slotModel = ((root["model"] as? Map<String, Any?>)
-                    ?.takeIf { it["type"] == "minecraft:select" }
-                    ?.get("cases") as? List<Map<String, Any?>>)
-                    ?.firstOrNull()
-                    ?.let { (it["model"] as? Map<String, Any?>)?.get("model") as? String }
+                // a sprite slot behind a select is drawn by GunLegacyModels, so the item keeps the gun base too
                 val legacy = parentModelOf(definition)
-                check(legacy == base || legacy == slotModel) {
-                    "Legacy conversion must retain ${slotModel ?: base} for $item, not $legacy"
-                }
+                check(legacy == base) { "Legacy conversion must retain $base for $item, not $legacy" }
             }
 
             gunBaseChain.forEach { name ->

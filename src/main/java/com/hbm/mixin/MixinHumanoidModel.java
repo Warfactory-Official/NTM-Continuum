@@ -46,14 +46,19 @@ public class MixinHumanoidModel {
     //? if >=26.1 {
     @Inject(method = "setupAnim", at = @At("TAIL"))
     private void hbm$hideParts(HumanoidRenderState state, CallbackInfo ci) {
-        ArmorPartHiding.apply((HumanoidModel<?>) (Object) this, state.headEquipment,
+        ArmorPartHiding.apply((HumanoidModel<?>) (Object) this,
+                dev.golem.core.client.PlayerRenderHooks.playerForState(state), state.headEquipment,
                 state.chestEquipment, state.legsEquipment, state.feetEquipment);
     }
     //?} else {
     /*@Inject(method = "setupAnim", at = @At("TAIL"))
     private void hbm$hideParts(LivingEntity entity, float limbSwing, float limbSwingAmount,
             float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
+        // the first-person hand runs setupAnim too, but without the third-person pose hook first
         ArmorPartHiding.apply((HumanoidModel<?>) (Object) this,
+                entity instanceof net.minecraft.world.entity.player.Player player
+                        && com.hbm.client.render.armor.ModelMan.takePosed(player)
+                        ? player : null,
                 entity.getItemBySlot(EquipmentSlot.HEAD), entity.getItemBySlot(EquipmentSlot.CHEST),
                 entity.getItemBySlot(EquipmentSlot.LEGS), entity.getItemBySlot(EquipmentSlot.FEET));
     }

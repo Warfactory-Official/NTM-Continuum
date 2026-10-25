@@ -20,10 +20,79 @@ public final class Mk108WeaponRenderer extends WeaponRenderer {
     @Override protected float getTurnMagnitude(ItemStack s){return ItemGunBaseNT.getIsAiming(s)?2.5F:-.25F;}
     @Override public float viewFov(ItemStack s,float f,float p){return aimingFov(s,f,p,.33F);}
     @Override public void setupFirstPerson(ItemStack s,PoseStack p){p.translate(0,0,.875);float o=.8F;standardAimingTransform(s,p,-1F*o,-1.5F*o,2.5F*o,-.75F,-.75F,1.5F);}
-    @Override protected void setup(Gem.Model<WeaponPose>d){WavefrontObj o=model();Gem.Part<WeaponPose>g=d.joint().visibleIf(s->s.animated).stretch(s->.375F).spin(Gem.Axes.X,0,-1,-8,s->(float)s.bus("EQUIP")[0]).spin(Gem.Axes.X,0,1,-4,s->(float)s.bus("LIFT")[0]).slide(Gem.Axes.Z,s->(float)s.bus("RECOIL")[2]);g.child(o.part("Gun"),BODY);g.child(o.part("Barrel"),BODY).slide(Gem.Axes.Z,s->(float)s.bus("BARREL")[2]*2);g.child(o.part("Lid"),BODY).spin(Gem.Axes.X,0,.6875F,-1F,s->(float)s.bus("LID")[0]);for(int i=1;i<=3;i++){final int n=i;Gem.Part<WeaponPose>grenade=g.joint().visibleIf(s->grenadeVisible(s,n)).slide(Gem.Axes.X,s->(float)s.bus("GRENH"+n)[0]).slide(Gem.Axes.Y,s->(float)s.bus("GRENV"+n)[1]).spin(Gem.Axes.X,0,0,-2.3125F,s->-90F).spin(Gem.Axes.Y,0,0,-2.3125F,s->-(float)s.bus("GRENS"+n)[0]);grenade.child(o.part("Grenade"),BODY);}Gem.Part<WeaponPose>drum=g.joint().slide(Gem.Axes.X,s->(float)s.bus("DRUM")[0]).slide(Gem.Axes.Y,s->(float)s.bus("DRUM")[1]).slide(Gem.Axes.Z,s->(float)s.bus("DRUM")[2]);drum.child(o.part("Drum"),BODY);for(int i=0;i<8;i++){final int n=i;drum.child(o.part("Belt"),BODY).pose(s->beltPose(s,n));drum.child(o.part("Grenade"),BODY).visibleIf(s->9-n<SpecialWeaponRenderers.shellCount(s,0)+2).pose(s->beltPose(s,n));}d.part(o.parts("Gun","Barrel","Lid","Drum"),BODY).visibleIf(s->!s.animated);for(int i=0;i<8;i++){final int n=i;d.part(o.part("Belt"),BODY).visibleIf(s->!s.animated).pose(s->staticBeltPose(n));d.part(o.part("Grenade"),BODY).visibleIf(s->!s.animated&&9-n<SpecialWeaponRenderers.shellCount(s,0)+2).pose(s->staticBeltPose(n));}}
-    private static Matrix4f beltPose(WeaponPose s,int index){double[]loaded={0,0,-5,0,-5,60,45,-10,0},unloaded={0,-30,-60,-45,-45,0,0,0,0};double progress=s.animated?s.bus("BELT")[0]:1;double x=.0625*22,y=.0625*-46,angle=0;float vx=0,vy=.53125F;double[]xs=new double[9],ys=new double[9],as=new double[9];for(int n=0;n<9;n++){xs[n]=x;ys[n]=y;as[n]=angle-90;double delta=unloaded[n]+(loaded[n]-unloaded[n])*progress;angle+=delta;double r=Math.toRadians(-delta),nx=vx*Math.cos(r)-vy*Math.sin(r),ny=vx*Math.sin(r)+vy*Math.cos(r);vx=(float)nx;vy=(float)ny;x+=vx;y+=vy;}double cycle=s.animated?s.bus("CYCLE")[0]:1;double xx=xs[index]+(xs[index+1]-xs[index])*cycle,yy=ys[index]+(ys[index+1]-ys[index])*cycle,aa=as[index]+(as[index+1]-as[index])*cycle;return new Matrix4f().translate((float)xx,(float)yy,0).rotateZ((float)Math.toRadians(aa));}
-    private static Matrix4f staticBeltPose(int i){return beltPose(new WeaponPose(),i);}
-    private static boolean grenadeVisible(WeaponPose s,int i){if(!s.animated)return false;return s.bus("GRENH"+i)[0]!=0&&s.bus("GRENH"+i)[0]>-4;}
+    @Override
+    protected void setup(Gem.Model<WeaponPose> d) {
+        WavefrontObj o = model();
+        Gem.Part<WeaponPose> held = d.joint().visibleIf(s -> s.animated).stretch(s -> .375F);
+        // 1.7 throws the inspect grenades before the equip, lift and recoil transforms
+        for (int i = 1; i <= 3; i++) {
+            int n = i;
+            held.joint().visibleIf(s -> s.has("GRENH1") && s.bus("GRENH" + n)[0] > -4)
+                    .slide(Gem.Axes.X, s -> (float) s.bus("GRENH" + n)[0])
+                    .slide(Gem.Axes.Y, s -> (float) s.bus("GRENV" + n)[1])
+                    .spin(Gem.Axes.X, 0, 0, -2.3125F, s -> -90F)
+                    .spin(Gem.Axes.Y, 0, 0, -2.3125F, s -> -(float) s.bus("GRENS" + n)[0])
+                    .child(o.part("Grenade"), BODY);
+        }
+        Gem.Part<WeaponPose> gun = held.joint()
+                .spin(Gem.Axes.X, 0, -1, -8, s -> (float) s.bus("EQUIP")[0])
+                .spin(Gem.Axes.X, 0, 1, -4, s -> (float) s.bus("LIFT")[0])
+                .slide(Gem.Axes.Z, s -> (float) s.bus("RECOIL")[2]);
+        gun.child(o.part("Gun"), BODY);
+        gun.child(o.part("Barrel"), BODY).slide(Gem.Axes.Z, s -> (float) s.bus("BARREL")[2] * 2);
+        gun.child(o.part("Lid"), BODY).spin(Gem.Axes.X, 0, .6875F, -1F, s -> (float) s.bus("LID")[0]);
+        Gem.Part<WeaponPose> drum = gun.joint()
+                .slide(Gem.Axes.X, s -> (float) s.bus("DRUM")[0])
+                .slide(Gem.Axes.Y, s -> (float) s.bus("DRUM")[1])
+                .slide(Gem.Axes.Z, s -> (float) s.bus("DRUM")[2]);
+        drum.child(o.part("Drum"), BODY);
+        for (int i = 0; i < 8; i++) {
+            int n = i;
+            drum.child(o.part("Belt"), BODY).pose(s -> heldBeltPose(s, n));
+            drum.child(o.part("Grenade"), BODY).visibleIf(s -> 9 - n < SpecialWeaponRenderers.shellCount(s, 0) + 2)
+                    .pose(s -> heldBeltPose(s, n));
+        }
+
+        d.part(o.parts("Gun", "Barrel", "Lid", "Drum"), BODY).visibleIf(s -> !s.animated);
+        for (int i = 0; i < 8; i++) {
+            Matrix4f link = beltPose(1, 0, i);
+            d.part(o.part("Belt"), BODY).visibleIf(s -> !s.animated).pose(s -> link);
+            d.part(o.part("Grenade"), BODY).visibleIf(s -> !s.animated).pose(s -> link);
+        }
+    }
+
+    // 1.7 holds the belt loaded and fully cycled while the running animation has no BELT or CYCLE bus
+    private static Matrix4f heldBeltPose(WeaponPose s, int index) {
+        return beltPose(s.has("BELT") ? s.bus("BELT")[0] : 1, s.has("CYCLE") ? s.bus("CYCLE")[0] : 1, index);
+    }
+
+    /** Link {@code index} of the nine-link chain, moved {@code cycle} of the way towards the next link. */
+    private static Matrix4f beltPose(double reload, double cycle, int index) {
+        double[] loaded = {0, 0, -5, 0, -5, 60, 45, -10, 0};
+        double[] unloaded = {0, -30, -60, -45, -45, 0, 0, 0, 0};
+        double x = .0625 * 22, y = .0625 * -46, angle = 0;
+        double vx = 0, vy = .53125;
+        double[] xs = new double[9], ys = new double[9], as = new double[9];
+        for (int n = 0; n < 9; n++) {
+            xs[n] = x;
+            ys[n] = y;
+            as[n] = angle - 90;
+            double delta = unloaded[n] + (loaded[n] - unloaded[n]) * reload;
+            angle += delta;
+            // 1.7's Vec3NT.rotateAroundZDeg(-delta) turns the link vector by +delta, with the link itself
+            double r = Math.toRadians(delta);
+            double nx = vx * Math.cos(r) - vy * Math.sin(r);
+            double ny = vx * Math.sin(r) + vy * Math.cos(r);
+            vx = nx;
+            vy = ny;
+            x += vx;
+            y += vy;
+        }
+        double xx = xs[index] + (xs[index + 1] - xs[index]) * cycle;
+        double yy = ys[index] + (ys[index + 1] - ys[index]) * cycle;
+        double aa = as[index] + (as[index + 1] - as[index]) * cycle;
+        return new Matrix4f().translate((float) xx, (float) yy, 0).rotateZ((float) Math.toRadians(aa));
+    }
 
     @Override
     protected void setupInv(PoseStack pose, ItemStack stack) {

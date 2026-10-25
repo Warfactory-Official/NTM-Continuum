@@ -2,7 +2,7 @@ package com.hbm.items.weapon.sedna.mags;
 
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.items.machine.ItemFluidId;
+import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -36,7 +36,7 @@ public class MagazineFluid implements IMagazine<FluidType> {
     @Override public void reloadAction(ItemStack stack, Container inventory) {}
     @Override public ItemStack getIconForHUD(ItemStack stack, Player player) {
         FluidType type = getType(stack, player.getInventory());
-        return type == null || type == Fluids.NONE ? ItemStack.EMPTY : ItemFluidId.make(type);
+        return type == null || type == Fluids.NONE ? ItemStack.EMPTY : ItemFluidIcon.make(type);
     }
     @Override public String reportAmmoStateForHUD(ItemStack stack, Player player) {
         return getAmount(stack, player.getInventory()) + "mB";

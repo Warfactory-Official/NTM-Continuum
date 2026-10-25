@@ -69,6 +69,8 @@ public final class HbmEffect extends CompatMobEffect {
             case BANG -> {
                 // 1.7: 1000 bang damage, health forced to 0, any non-player removed outright; a cow drops cheese
                 // (10 for a calf, 3 for an adult) on its way out.
+                // port: a creative or spectator player is not forced to 0, as vanilla spares them any damage
+                if (entity instanceof Player player && player.getAbilities().invulnerable) return true;
                 Compat.hurt(entity, level, ModDamageSources.bang(level), 1000F);
                 entity.setHealth(0.0F);
                 level.playSound(null, entity.blockPosition(), ModSounds.LASER_BANG.get(),

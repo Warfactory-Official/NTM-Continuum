@@ -535,7 +535,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
      * The sprite over the slot's sixteen pixels, facing the viewer. The weapon frame's inventory space runs y
      * down from the slot's corner, so pixel {@code (0, 0)} takes the texture's top left.
      ^/
-    private static void customSprite(com.mojang.blaze3d.vertex.PoseStack pose, dev.golem.core.render.SubmitSink sink, Identifier texture, int light, int overlay) {
+    public static void customSprite(com.mojang.blaze3d.vertex.PoseStack pose, dev.golem.core.render.SubmitSink sink, Identifier texture, int light, int overlay) {
         sink.submitCustomGeometry(pose, dev.golem.core.render.CompatRenderTypes.entityCutoutNoCull(texture), (p, buffer) -> {
             dev.golem.core.render.Vertexes.vertex(buffer, p, 0F, 0F, 0F, 0xFFFFFFFF, 0F, 0F, overlay, light, 0F, 0F, 1F);
             dev.golem.core.render.Vertexes.vertex(buffer, p, 0F, 16F, 0F, 0xFFFFFFFF, 0F, 1F, overlay, light, 0F, 0F, 1F);

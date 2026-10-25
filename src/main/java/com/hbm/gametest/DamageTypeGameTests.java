@@ -3,16 +3,29 @@ package com.hbm.gametest;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.hbm.Constants;
+import com.hbm.capability.HbmLivingProps;
+import com.hbm.handler.EntityEffectHandler;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.lib.ModDamageTypes;
 import dev.golem.core.Ids;
 import dev.golem.core.dejson.Data;
+import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.world.Compat;
+import dev.golem.core.world.Effects;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -100,6 +113,57 @@ public final class DamageTypeGameTests {
         Constants.LOG.info("[DAMAGE] {} declared types, all keyed, and every membership in {} vanilla "
                 + "tags is exactly what was declared", checked, tagPaths.size());
         helper.succeed();
+    }
+
+    /**
+     * 1.7 radiation is only setDamageBypassesArmor, so Resistance X (the AWESOME syringe) cancels the 1000 damage at
+     * 1000 RAD before the RAD is cleared; a black hole is setDamageIsAbsolute, which skips potions and enchantments.
+     * Neither sets setDamageAllowedInCreativeMode, so a totem of undying fires for both.
+     */
+    public static void absoluteDamageFollows17(GameTestHelper helper) {
+        Player bare = survivalPlayer(helper);
+        HbmLivingProps.setRadiation(bare, 1000);
+        EntityEffectHandler.onUpdate(bare);
+        helper.assertTrue(bare.getHealth() <= 0, "a player at 1000 RAD dies, health " + bare.getHealth());
+        helper.assertTrue(HbmLivingProps.getRadiation(bare) == 0, "the RAD is cleared after the hit");
+
+        Player awesome = survivalPlayer(helper);
+        Effects.add(awesome, Effects.resistance(), 50 * 20, 9);
+        HbmLivingProps.setRadiation(awesome, 1000);
+        EntityEffectHandler.onUpdate(awesome);
+        helper.assertTrue(awesome.getHealth() == awesome.getMaxHealth(),
+                "Resistance X cancels radiation as in 1.7, health " + awesome.getHealth());
+        helper.assertTrue(HbmLivingProps.getRadiation(awesome) == 0, "the RAD is cleared even when the hit did nothing");
+
+        Player totem = survivalPlayer(helper);
+        totem.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.TOTEM_OF_UNDYING));
+        HbmLivingProps.setRadiation(totem, 1000);
+        EntityEffectHandler.onUpdate(totem);
+        helper.assertTrue(totem.getHealth() > 0 && totem.getMainHandItem().isEmpty(),
+                "radiation does not bypass invulnerability, so the totem is used");
+
+        LivingEntity pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 2, 1));
+        Effects.add(pig, Effects.resistance(), 50 * 20, 9);
+        HbmLivingProps.setRadiation(pig, 1000);
+        EntityEffectHandler.onUpdate(pig);
+        helper.assertTrue(pig.getHealth() <= 0, "1.7 kills a mob at 1000 RAD whatever the hit did");
+
+        Player hole = survivalPlayer(helper);
+        Effects.add(hole, Effects.resistance(), 50 * 20, 9);
+        Compat.hurt(hole, helper.getLevel(), ModDamageSources.blackhole(helper.getLevel()), 1000F);
+        helper.assertTrue(hole.getHealth() <= 0, "black hole damage is absolute and ignores Resistance X");
+
+        Player lunar = survivalPlayer(helper);
+        Effects.add(lunar, Effects.resistance(), 50 * 20, 9);
+        Compat.hurt(lunar, helper.getLevel(), ModDamageSources.lunar(helper.getLevel()), 1000F);
+        helper.assertTrue(lunar.getHealth() <= 0, "lunar damage is absolute and ignores Resistance X");
+        helper.succeed();
+    }
+
+    private static Player survivalPlayer(GameTestHelper helper) {
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        player.setHealth(player.getMaxHealth());
+        return player;
     }
 
     /**

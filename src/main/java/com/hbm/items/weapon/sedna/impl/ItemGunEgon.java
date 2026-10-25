@@ -135,7 +135,7 @@ public class ItemGunEgon extends ItemGunBaseNT {
     /**
      * 1.12.2 {@code Library.rayTraceIncludeEntitiesCustomDirection(player, look, 50, partialTicks)}: blocks by their
      * collision shape, then any alive living entity whose box grown by 0.3 the shortened segment crosses, nearest
-     * first; null when nothing was hit.
+     * first, spectators passed through; null when nothing was hit.
      */
     public static @Nullable Hit trace(Level level, Player player, Vec3 look, float partialTicks) {
         Vec3 start = player.getEyePosition(partialTicks);
@@ -147,7 +147,8 @@ public class ItemGunEgon extends ItemGunBaseNT {
             result = new Hit(end, block.getDirection(), null);
         }
         AABB area = new AABB(start, end).inflate(1D);
-        for (Entity entity : level.getEntities(player, area, e -> e instanceof LivingEntity living && living.isAlive())) {
+        for (Entity entity : level.getEntities(player, area,
+                e -> e instanceof LivingEntity living && living.isAlive() && !living.isSpectator())) {
             AABB box = entity.getBoundingBox().inflate(0.3D);
             Optional<Vec3> crossing = box.clip(start, end);
             if (crossing.isEmpty()) continue;

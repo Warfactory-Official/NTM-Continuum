@@ -41,6 +41,7 @@ public final class ArmorRenderers {
         RENDERERS.put("nossy_hat", new HeadModelArmorRenderer("hat", "hat"));
         RENDERERS.put("no9", new No9ArmorRenderer());
         RENDERERS.put("back_tesla", new BackTeslaRenderer()); // armor module, drawn by ArmorModRenderLayer
+        RENDERERS.put("manly", new ModelMan()); // Astolfization, drawn by ArmorRenderLayer
     }
 
     public static void reload() {

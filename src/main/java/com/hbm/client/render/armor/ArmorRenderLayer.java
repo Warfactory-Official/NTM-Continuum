@@ -25,14 +25,22 @@ public class ArmorRenderLayer extends CompatHumanoidLayer {
     @SuppressWarnings("rawtypes")
     public ArmorRenderLayer(RenderLayerParent parent) {
         super(parent);
+        ModelMan.addSkinModel(humanoidModel());
     }
 
     private static final ArmorSlot[] SLOTS = ArmorSlot.values();
 
     @Override
+    protected boolean drawsUnequipped() {
+        return true;
+    }
+
+    @Override
     public void submit(Worn worn, PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
             CameraInfo camera) {
-        if (parts.invisible) return;
+        boolean manly = ModelMan.isManly(parts.player());
+        // 1.7 draws ModelMan in the armour pass, which also runs for invisible players
+        if (parts.invisible && !manly) return;
 
         boolean crouching = parts.sneaking
                 && !JetpackClientVisuals.freezesPlayerPose(parts.player());
@@ -41,6 +49,12 @@ public class ArmorRenderLayer extends CompatHumanoidLayer {
         pose.pushPose();
         // ModelArmorBase applies the same global offset after copying the live crouched bones.
         if (crouching && !parts.baby) pose.translate(0F, 0.2F, 0F);
+        if (manly) ArmorRenderers.get("manly").submit(ArmorSlot.CHESTPLATE, pose, sink, light, armorPose);
+        if (!parts.invisible) submitSuits(worn, pose, sink, light, armorPose);
+        pose.popPose();
+    }
+
+    private static void submitSuits(Worn worn, PoseStack pose, SubmitSink sink, int light, HumanoidPose armorPose) {
         for (ArmorSlot slot : SLOTS) {
             ItemStack stack = worn.get(slot);
             if (!(stack.getItem() instanceof ArmorFSB piece)) continue;
@@ -56,6 +70,5 @@ public class ArmorRenderLayer extends CompatHumanoidLayer {
 
             renderer.submit(slot, pose, sink, light, armorPose);
         }
-        pose.popPose();
     }
 }

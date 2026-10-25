@@ -95,6 +95,10 @@ public final class MobSlicer {
             LivingEntity hit = rayTraceLiving(player, eye, eye.add(dir.scale(3)));
             if (hit != null && !attack.contains(hit)) attack.add(hit);
         }
+        ServerLevel level = (ServerLevel) player.level();
+        DamageSource source = ModDamageSources.source(level, tex == 1 ? ModDamageSources.CRUCIBLE : ModDamageSources.SLICER);
+        // port: 1.12.2 set health 0 on anyone in the cut; creative players are spared like any vanilla attack spares them
+        attack.removeIf(victim -> victim instanceof Player target && target.getAbilities().invulnerable);
         List<Cut> cuts = new ArrayList<>();
         // the server also starts its record of the cutting swing ("swing": SWING 150 + 500 ms) the client plays
         ItemSwordCutter.busStarted(player, 650);
@@ -107,13 +111,11 @@ public final class MobSlicer {
                 if (ItemCrucible.getCharges(heldStack) == 0) ItemCrucible.clearSpecialClick(player);
             }
         }
-        ServerLevel level = (ServerLevel) player.level();
         for (LivingEntity victim : attack) {
             SLICED.add(victim);
             Vec3 rel = pos.subtract(victim.getX(), victim.getY(), victim.getZ());
             float[] data = new float[]{(float) norm.x, (float) norm.y, (float) norm.z, -(float) norm.dot(rel),
                     Float.intBitsToFloat(tex)};
-            DamageSource source = ModDamageSources.source(level, tex == 1 ? ModDamageSources.CRUCIBLE : ModDamageSources.SLICER);
             // 1.12's setDead() only flagged the entity, so the cut reached the clients before the removal did; a modern
             // removal is broadcast at once, so the cut is sent first
             sendToTrackers(level, victim, new SpecialDeathPayload(victim.getId(), SpecialDeathPayload.SLICED, data));
@@ -164,7 +166,7 @@ public final class MobSlicer {
         }
     }
 
-    /** {@code Library.rayTraceIncludeEntities} for living, alive entities, the player excluded. */
+    /** {@code Library.rayTraceIncludeEntities} for living, alive entities, the player and spectators excluded. */
     static @Nullable LivingEntity rayTraceLiving(ServerPlayer player, Vec3 start, Vec3 end) {
         BlockHitResult block = player.level().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER,
                 ClipContext.Fluid.NONE, player));
@@ -173,7 +175,7 @@ public final class MobSlicer {
         double bestDist = Double.MAX_VALUE;
         AABB area = new AABB(start, end).inflate(2.3D);
         for (Entity entity : player.level().getEntities(player, area,
-                e -> e instanceof LivingEntity living && living.isAlive())) {
+                e -> e instanceof LivingEntity living && living.isAlive() && !living.isSpectator())) {
             Optional<Vec3> hit = entity.getBoundingBox().inflate(0.3D).clip(start, end);
             if (hit.isEmpty()) continue;
             double dist = start.distanceToSqr(hit.get());

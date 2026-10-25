@@ -1,14 +1,18 @@
 package com.hbm.client;
 
+import com.hbm.Constants;
 import com.hbm.client.jetpack.JetpackClientBridge;
 import com.hbm.client.jetpack.JetpackClientVisuals;
+import com.hbm.items.ModGearItems;
 import com.hbm.items.armor.ArmorFSB;
 import com.hbm.items.armor.ArmorFSBPowered;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -55,6 +59,7 @@ public final class ArmorHudOverlay {
     private static final int ROW_PITCH = 4;
     /** Upstream's dark track colour, 0.25 grey, with alpha. */
     private static final int TRACK = 0xFF404040;
+    private static final Identifier HAZMAT = Ids.of(Constants.MOD_ID, "textures/misc/overlay_hazmat.png");
 
     private static final EquipmentSlot[] SLOTS = {
             EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD};
@@ -64,12 +69,11 @@ public final class ArmorHudOverlay {
         if (mc.level == null || mc.player == null || mc.options.hideGui) return;
 
         Player player = mc.player;
-        ArmorFSB helmet = player.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof ArmorFSB fsb ? fsb : null;
-        // Forge only ran renderHelmetOverlay in first person, like vanilla's pumpkin blur.
-        if (helmet != null && helmet.overlay() != null && mc.options.getCameraType().isFirstPerson()) {
-            int width = mc.getWindow().getGuiScaledWidth();
-            int height = mc.getWindow().getGuiScaledHeight();
-            GuiDraw.blit(graphics, helmet.overlay(), 0, 0, 0F, 0F, width, height, 256, 256);
+        Identifier overlay = helmetOverlay(player.getItemBySlot(EquipmentSlot.HEAD));
+        // Forge only ran renderHelmetOverlay in first person, like vanilla's pumpkin blur. 1.7 stretches the
+        // whole texture over the screen with alpha blending.
+        if (overlay != null && mc.options.getCameraType().isFirstPerson()) {
+            GuiDraw.blitUvFullscreen(graphics, overlay, 0F, 0F, 1F, 1F);
         }
         // Creative never spends charge (ArmorFSBPowered.armorTick returns early there), so the bars
         // would sit permanently full and tell the player nothing. Hiding them is a deliberate departure
@@ -126,6 +130,12 @@ public final class ArmorHudOverlay {
             }
         }
         return null;
+    }
+
+    private static Identifier helmetOverlay(ItemStack helmet) {
+        if (helmet.getItem() instanceof ArmorFSB fsb) return fsb.overlay();
+        // 1.7 hazmat_helmet is an ArmorHazmatMask; the port registers it as plain armour
+        return helmet.getItem() == ModGearItems.hazmat_helmet.get() ? HAZMAT : null;
     }
 
     private record Row(float fill, int color) {}

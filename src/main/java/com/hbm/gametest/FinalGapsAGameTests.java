@@ -43,6 +43,7 @@ import com.hbm.items.special.ItemCell;
 import com.hbm.items.weapon.ItemCrucible;
 import com.hbm.items.weapon.ItemSwordCutter;
 import com.hbm.items.weapon.MobSlicer;
+import com.hbm.items.weapon.sedna.impl.ItemGunEgon;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.module.machine.ModuleMachineBase;
@@ -114,6 +115,8 @@ public final class FinalGapsAGameTests {
             TESTS.function("gapsa_crucible_hit", 40, () -> FinalGapsAGameTests::crucibleHit);
     public static final GameTests.Function CRUCIBLE_SLICE_KILL =
             TESTS.function("gapsa_crucible_slice_kill", 40, () -> FinalGapsAGameTests::crucibleSliceKill);
+    public static final GameTests.Function CRUCIBLE_SLICE_PLAYERS =
+            TESTS.function("gapsa_crucible_slice_players", 40, () -> FinalGapsAGameTests::crucibleSlicePlayers);
     public static final GameTests.Function CRUCIBLE_SLICE_PACKET =
             TESTS.function("gapsa_crucible_slice_packet", 40, () -> FinalGapsAGameTests::crucibleSlicePacket);
     public static final GameTests.Function SWORD_STEPS =
@@ -367,6 +370,53 @@ public final class FinalGapsAGameTests {
         helper.assertTrue(helper.getLevel().getEntitiesOfClass(ExperienceOrb.class, around).isEmpty(),
                 "no experience: nothing hit it as a player");
         far.discard();
+        helper.succeed();
+    }
+
+    /**
+     * The cut of {@link #crucibleSlice} on players two blocks ahead: a spectator is passed through (also by the gluon
+     * beam) and a creative player is spared, neither costing a charge; a survival player dies as 1.12.2's cut killed.
+     */
+    public static void crucibleSlicePlayers(GameTestHelper helper) {
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        Vec3 at = helper.absoluteVec(new Vec3(1.5, 2, 1.5));
+        player.teleportTo(at.x, at.y, at.z);
+        player.setYRot(-90F);
+        player.setXRot(20F);
+        player.setYHeadRot(-90F);
+        ItemStack crucible = ModAbilityToolItems.crucible.get().creativeStack();
+        player.setItemSlot(EquipmentSlot.MAINHAND, crucible);
+        Vec3 pos = player.getEyePosition(1F).add(1, 0, 0);
+        Vec3 norm = new Vec3(1, 0, 0).cross(player.getViewVector(1F)).normalize();
+        Vec3 ahead = at.add(2, 0, 0);
+        Vec3 away = at.add(12, 0, 0);
+
+        ServerPlayer spectator = GameTestHelpers.serverPlayerInLevel(helper, GameType.SPECTATOR);
+        spectator.teleportTo(ahead.x, ahead.y, ahead.z);
+        helper.assertTrue(spectator.isSpectator(), "the victim is a spectator");
+        ItemGunEgon.Hit beam = ItemGunEgon.trace(helper.getLevel(), player, player.getViewVector(1F), 1F);
+        helper.assertTrue(beam == null || beam.entity() != spectator, "the gluon beam passes through a spectator");
+        helper.assertTrue(MobSlicer.slice(player, pos, norm, (byte) 1).isEmpty(), "a spectator is not cut");
+        helper.assertTrue(spectator.isAlive() && spectator.getHealth() == spectator.getMaxHealth(),
+                "the spectator is unhurt: " + spectator.getHealth());
+        spectator.teleportTo(away.x, away.y, away.z);
+
+        ServerPlayer creative = GameTestHelpers.serverPlayerInLevel(helper, GameType.CREATIVE);
+        creative.teleportTo(ahead.x, ahead.y, ahead.z);
+        helper.assertTrue(creative.isCreative() && creative.getAbilities().invulnerable, "the victim is creative");
+        helper.assertTrue(MobSlicer.slice(player, pos, norm, (byte) 1).isEmpty(), "a creative player is not cut");
+        helper.assertTrue(creative.isAlive() && creative.getHealth() == creative.getMaxHealth(),
+                "the creative player is unhurt: " + creative.getHealth());
+        helper.assertTrue(ItemCrucible.getCharges(crucible) == 16,
+                "sparing spends no charge: " + ItemCrucible.getCharges(crucible));
+        creative.teleportTo(away.x, away.y + 4, away.z);
+
+        ServerPlayer survival = GameTestHelpers.serverPlayerInLevel(helper, GameType.SURVIVAL);
+        survival.teleportTo(ahead.x, ahead.y, ahead.z);
+        List<MobSlicer.Cut> cuts = MobSlicer.slice(player, pos, norm, (byte) 1);
+        helper.assertTrue(cuts.size() == 1 && cuts.get(0).victim() == survival, "the survival player is cut: " + cuts.size());
+        helper.assertTrue(survival.isDeadOrDying() && survival.getHealth() == 0F, "the survival player dies");
+        helper.assertTrue(ItemCrucible.getCharges(crucible) == 15, "one charge spent: " + ItemCrucible.getCharges(crucible));
         helper.succeed();
     }
 

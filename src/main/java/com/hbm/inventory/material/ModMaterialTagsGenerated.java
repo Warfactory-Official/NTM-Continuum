@@ -325,7 +325,7 @@ final class ModMaterialTagsGenerated {
         tag("ingots/any_plastic", "#c:ingots/polymer", "#c:ingots/bakelite");
         tag("ingots/any_plasticexplosive", "hbm:ingot_semtex", "hbm:ingot_c4");
         tag("ingots/any_resistant_alloy", "#c:ingots/tcalloy", "#c:ingots/cdalloy");
-        tag("ingots/any_rubber", "#c:ingots/rubber");
+        tag("ingots/any_rubber", "#c:ingots/latex", "#c:ingots/rubber");
         tag("ingots/borax", "hbm:ingot_raw_borax");
         tag("ingots/carbon", "hbm:ingot_graphite");
         tag("ingots/coltan", "hbm:fragment_coltan");

@@ -32,6 +32,7 @@ import com.hbm.inventory.gui.GUIMachineRotaryFurnace;
 import com.hbm.inventory.gui.GUIMixer;
 import com.hbm.inventory.gui.GUISILEX;
 import com.hbm.inventory.gui.GUIBook;
+import com.hbm.inventory.gui.GUIFurnaceCombination;
 import com.hbm.inventory.gui.GUIPADetector;
 import com.hbm.inventory.gui.GUIPASource;
 import com.hbm.inventory.recipes.ArcFurnaceRecipes;
@@ -141,6 +142,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
     private static HydrotreatingRecipeHandler hydrotreating;
     private static CokerRecipeHandler coker;
     private static PyrolysisRecipeHandler pyrolysis;
+    private static CombinationRecipeHandler combination;
     private static CompressorRecipeHandler compressor;
     private static StorageDrumRecipeHandler storageDrum;
     private static FuelPoolRecipeHandler fuelPool;
@@ -309,6 +311,9 @@ public final class HbmRecipeViewer implements ViewerPlugin {
                 title("coker"), stack(ModMachineBlocks.machine_coker.get()));
         pyrolysis = new PyrolysisRecipeHandler(HbmJeiRecipeTypes.PYROLYSIS,
                 title("pyrolysis"), stack(ModMachineBlocks.machine_pyrooven.get()));
+        combination = new CombinationRecipeHandler(HbmJeiRecipeTypes.COMBINATION,
+                Component.translatable("block.hbm.machine_furnace_combination"),
+                stack(ModMachineBlocks.machine_furnace_combination.get()));
         compressor = new CompressorRecipeHandler(HbmJeiRecipeTypes.COMPRESSOR,
                 title("compressor"), stack(ModMachineBlocks.machine_compressor.get()));
         storageDrum = new StorageDrumRecipeHandler(HbmJeiRecipeTypes.STORAGE_DRUM,
@@ -331,7 +336,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
 
           reg.add(assembly, precisionAssembler, chemplant, mixer, exposure, purex, rockMill, superComputer, fusion, fusionBreeder, plasmaForge, spaceAssembler, blastFurnace, press, ammoPress, soldering, crystallizer, centrifuge, cyclotron, particleAccelerator, gasCentrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
                  electrolyserFluid, electrolyserMetal, refinery, fractioning, liquefaction, solidification, boiling, cooling,
-                 vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor, storageDrum, fuelPool,
+                 vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, combination, compressor, storageDrum, fuelPool,
                  arcWelder, arcFurnaceSolid, arcFurnaceFluid, diFurnace, rotaryFurnace,
                  fluidContainers, construction, tooling, ashpit, crucibleSmelting, crucibleCasting, book);
         RTGJeiIntegration.registerCategory(reg);
@@ -414,6 +419,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         reg.add(HbmJeiRecipeTypes.HYDROTREATING, HydrotreatingRecipeHandler.buildRecipes());
         reg.add(HbmJeiRecipeTypes.COKER, CokerRecipeHandler.buildRecipes());
         reg.add(HbmJeiRecipeTypes.PYROLYSIS, PyrolysisRecipeHandler.buildRecipes());
+        reg.add(HbmJeiRecipeTypes.COMBINATION, CombinationRecipeHandler.buildRecipes());
          reg.add(HbmJeiRecipeTypes.COMPRESSOR, CompressorRecipeHandler.buildRecipes());
          reg.add(HbmJeiRecipeTypes.STORAGE_DRUM, StorageDrumRecipeHandler.buildRecipes());
          reg.add(HbmJeiRecipeTypes.FUEL_POOL, FuelPoolRecipeHandler.buildRecipes());
@@ -468,6 +474,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         // 1.7 NEI rects, offset by NEI's (5, 11) recipe origin
         reg.add(GUISILEX.class, 44, 71, 60, 50, HbmJeiRecipeTypes.SILEX);
         reg.add(GUIBook.class, 89, 34, 24, 18, HbmJeiRecipeTypes.BOOK);
+        reg.add(GUIFurnaceCombination.class, 49, 44, 18, 18, HbmJeiRecipeTypes.COMBINATION);
         RTGJeiIntegration.registerGuiHandler(reg);
     }
 
@@ -601,6 +608,7 @@ public final class HbmRecipeViewer implements ViewerPlugin {
         reg.add(HbmJeiRecipeTypes.HYDROTREATING, stack(ModMachineBlocks.machine_hydrotreater.get()));
         reg.add(HbmJeiRecipeTypes.COKER, stack(ModMachineBlocks.machine_coker.get()));
         reg.add(HbmJeiRecipeTypes.PYROLYSIS, stack(ModMachineBlocks.machine_pyrooven.get()));
+        reg.add(HbmJeiRecipeTypes.COMBINATION, stack(ModMachineBlocks.machine_furnace_combination.get()));
         reg.add(HbmJeiRecipeTypes.COMPRESSOR, stack(ModMachineBlocks.machine_compressor.get()));
         reg.add(HbmJeiRecipeTypes.BOILING, stack(ModMachineBlocks.machine_boiler.get()),
                 stack(ModMachineBlocks.heater_firebox.get()), stack(ModMachineBlocks.heater_electric.get()),

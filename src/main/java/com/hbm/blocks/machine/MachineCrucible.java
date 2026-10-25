@@ -14,10 +14,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -35,7 +38,7 @@ import java.util.List;
  * scraps instead. The block face is an {@link ICrucibleAcceptor} so channels/outlets can pour into the
  * basin from above (delegating to the core BlockEntity).
  */
-public class MachineCrucible extends BlockMultiblockMachine implements ICrucibleAcceptor, ITooltipProvider {
+public class MachineCrucible extends BlockMultiblockMachine implements ICrucibleAcceptor, ITooltipProvider, WorldlyContainerHolder {
 
     public MachineCrucible(Properties properties) {
         super(properties);
@@ -51,6 +54,13 @@ public class MachineCrucible extends BlockMultiblockMachine implements ICrucible
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityCrucible(pos, state);
+    }
+
+    /** Every 1.7 crucible dummy is a TileEntityProxyCombo inventory proxy, so hoppers reach the core from any cell. */
+    @Override
+    public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityCrucible crucible ? crucible : null;
     }
 
     @Override

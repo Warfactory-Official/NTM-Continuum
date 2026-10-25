@@ -14,6 +14,7 @@ import com.hbm.client.anim.GunAnimationHandler;
 import com.hbm.client.crucible.SlicedMobs;
 import com.hbm.client.particle.GluonParticles;
 import com.hbm.client.particle.PlasmaBlastClient;
+import com.hbm.client.render.armor.ModelMan;
 import com.hbm.config.ClientConfig;
 import com.hbm.config.MachineDynConfig;
 import com.hbm.extprop.HbmPlayerProps;
@@ -93,6 +94,7 @@ public final class HbmPackets {
             GolemNetwork.sendToPlayer(player, MachineConfigPayload.CODEC, new MachineConfigPayload(MachineDynConfig.values()));
         });
         GolemNetwork.declarePlayToClient(PollutionSyncPayload.CODEC);
+        GolemNetwork.declarePlayToClient(ManlySyncPayload.CODEC);
         GolemNetwork.registerPlayToServer(ControlEventPayload.CODEC,
                 (payload, player) -> handleControl(player, payload));
         GolemNetwork.registerPlayToServer(AnvilCraftPayload.CODEC,
@@ -215,6 +217,7 @@ public final class HbmPackets {
             SmogFog.pollution[2] = payload.heavyMetal();
             SmogFog.pollution[3] = payload.fallout();
         });
+        GolemNetwork.registerPlayToClient(ManlySyncPayload.CODEC, (payload, context) -> ModelMan.setPlayers(payload.ids()));
         GolemNetwork.registerPlayToClient(GunAnimationPayload.CODEC,
                 (payload, context) -> GunAnimationHandler.handle(payload));
         GolemNetwork.registerPlayToClient(PlasmaBlastPayload.CODEC,

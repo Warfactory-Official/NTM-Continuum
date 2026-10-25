@@ -1406,6 +1406,8 @@ public final class HbmGameTestFunctions {
     // --- code-declared damage types (implementations live in DamageTypeGameTests) ---
     public static final GameTests.Function DAMAGE_TYPES_KEYED =
             TESTS.function("damage_types_keyed", 40, () -> DamageTypeGameTests::everyDamageTypeIsKeyedAndTagged);
+    public static final GameTests.Function DAMAGE_ABSOLUTE_1_7 =
+            TESTS.function("damage_absolute_1_7", 40, () -> DamageTypeGameTests::absoluteDamageFollows17);
 
     // --- creative wands + missile_test (implementations live in WandGameTests) ---
     public static final GameTests.Function WAND_K_FILLS_BOX =
