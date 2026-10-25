@@ -48,7 +48,14 @@ import java.util.Random;
  */
 public final class CrateHeldOpening {
 
+    /** 1.7 {@code InventoryCrate} "stacklock": a random value that keeps anything from merging into the crate. */
+    public static final String STACKLOCK = "stacklock";
+
     private CrateHeldOpening() {}
+
+    public static void stamp(ItemStack crate, Level level) {
+        ItemStacks.setCarriedLong(crate, STACKLOCK, level.getRandom().nextLong());
+    }
 
     /** Which crate a stack is, for the held menus; null when it is none of the five. */
     public enum Kind { IRON, STEEL, DESH, TUNGSTEN, SAFE }
@@ -175,6 +182,8 @@ public final class CrateHeldOpening {
             NonNullList<ItemStack> items = ItemStacks.carriedItems(crate, "inventory", slots);
             for (int i = 0; i < slots; i++) super.setItem(i, items.get(i));
             this.loaded = true;
+            // 1.7 stamped only a tagless crate, so a renamed one could still take a merge while open
+            stamp(target, player.level());
             playSound(ModSounds.CRATE_OPEN.get()); // 1.7 openInventory: only the server builds one of these
         }
 
@@ -186,17 +195,22 @@ public final class CrateHeldOpening {
             List<ItemStack> list = new ArrayList<>(getContainerSize());
             for (int i = 0; i < getContainerSize(); i++) list.add(getItem(i).copy());
             ItemStacks.setCarriedItems(target, "inventory", list);
+            stamp(target, player.level());
         }
 
-        /** 1.7 {@code isUseableByPlayer}: while the crate is still the held item. */
+        /** 1.7 {@code isUseableByPlayer}: while the crate is still the held item, and still one crate. */
         @Override
         public boolean stillValid(Player player) {
-            return player == this.player && player.getMainHandItem() == target;
+            return player == this.player && player.getMainHandItem() == target && target.getCount() == 1;
         }
 
         /** Called by the held menus when they close (1.7 {@code closeInventory}). */
         public void closed() {
             playSound(ModSounds.CRATE_CLOSE.get());
+            if (player.level().isClientSide()) return;
+            // an emptied, unnamed, unlocked crate stacks again
+            ItemStacks.removeCarried(target, STACKLOCK);
+            if (!ItemStacks.isPlain(target)) stamp(target, player.level());
         }
 
         /** 1.7 {@code ItemInventory.openInventory}/{@code closeInventory}: at the player, pitch 0.8. */

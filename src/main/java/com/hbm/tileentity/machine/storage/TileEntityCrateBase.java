@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine.storage;
 
 import com.hbm.inventory.NTMItemHandler;
+import com.hbm.items.block.CrateHeldOpening;
+import com.hbm.items.block.ItemBlockLockableCrate;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.machine.TileEntityLockableBase;
 import dev.golem.core.data.DataIn;
@@ -132,6 +134,11 @@ public abstract class TileEntityCrateBase extends TileEntityLockableBase impleme
         }
         // Saves memory and ensures consistency between crafted crates and mined ones
         if (hasSpiders) tag.putBoolean("spiders", true);
+        // 1.7 BlockStorageCrate.removedByPlayer: a crate that carries anything never stacks
+        if (level != null && getBlockState().getBlock().asItem() instanceof ItemBlockLockableCrate
+                && (!tag.isEmpty() || !isEmpty())) {
+            tag.putLong(CrateHeldOpening.STACKLOCK, level.getRandom().nextLong());
+        }
         return tag.isEmpty() ? null : tag;
     }
 
