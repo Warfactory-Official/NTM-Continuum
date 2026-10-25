@@ -4831,8 +4831,6 @@
   "hbm.rigged_fat_man.leashed": "Untie the Fat Man before setting it down",
   "hbm.rigged_fat_man.no_room": "There is no room to set the Fat Man down here",
   "entity.hbm.entity_siege_laser": "Siege Laser",
-  "entity.hbm.entity_siege_craft": "Siege Craft",
-  "entity.hbm.entity_siege_tunneler": "Siege Tunneler",
   "entity.hbm.entity_tom_the_moonstone": "Tom the Moonstone",
   "entity.hbm.entity_soyuz": "Soyuz",
   "entity.hbm.entity_soyuz_capsule": "Soyuz Capsule",

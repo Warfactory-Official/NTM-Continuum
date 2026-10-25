@@ -125,8 +125,6 @@ public final class NtmEntityRenderers {
         sink.register(ModNtmEntities.BALLS_O_TRON.get(), RenderBOTPrime::head);
         sink.register(ModNtmEntities.BALLS_O_TRON_SEG.get(), RenderBOTPrime::body);
         sink.register(ModNtmEntities.HUNTER_CHOPPER.get(), RenderHunterChopper::new);
-        sink.register(ModNtmEntities.SIEGE_CRAFT.get(), RenderSiegeCraft::new);
-        sink.register(ModNtmEntities.SIEGE_TUNNELER.get(), RenderSiegeTunneler::new);
 
         // Vehicles, planes and props.
         sink.register(ModNtmEntities.CARGO_TRAM.get(), ctx -> new RenderTrainCargoTram<>(ctx));

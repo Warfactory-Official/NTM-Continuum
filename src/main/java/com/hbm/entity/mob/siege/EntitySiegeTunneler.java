@@ -24,8 +24,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A no-clip drill that swims through terrain toward players and rams them; it breaks no blocks. 1.7 registers
- * neither siege mob and spawns none; here both are registered so they can be summoned.
+ * A no-clip drill that swims through terrain toward players and rams them; it breaks no blocks. Like 1.7, neither
+ * siege mob is registered.
  */
 public class EntitySiegeTunneler extends EntityBurrowingSwingingBase {
 
