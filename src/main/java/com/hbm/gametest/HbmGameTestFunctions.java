@@ -9,6 +9,7 @@ import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.machine.fusion.MachineFusionTorus;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.inventory.container.ContainerFurnaceCombination;
@@ -79,9 +80,11 @@ import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -541,6 +544,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("blowtorch_fuel", 20, () -> HbmGameTestFunctions::blowtorchFuel);
     public static final GameTests.Function MULTIBLOCK_INTERACTION_RANGE =
             TESTS.function("multiblock_interaction_range", 40, 26, () -> HbmGameTestFunctions::multiblockInteractionRange);
+    public static final GameTests.Function MULTIBLOCK_CELLS_MATCH_OUTLINE =
+            TESTS.function("multiblock_cells_match_outline", 20, () -> HbmGameTestFunctions::multiblockCellsMatchOutline);
     public static final GameTests.Function FUSION_TORUS_LAYOUT =
             TESTS.function("fusion_torus_layout", 200, 20, () -> HbmGameTestFunctions::fusionTorusLayout);
     public static final GameTests.Function FUSION_STRUCT_ASSEMBLY =
@@ -2336,6 +2341,33 @@ public final class HbmGameTestFunctions {
      * <p>Checks all three axes: the horizontal footprint alone would miss the tall machines (coker 22 high over a
      * 1-block footprint, gas flare, oil well).
      */
+    /** 1.7 fills the same boxes its placement highlight outlines, so a machine with several boxes occupies exactly them. */
+    private static void multiblockCellsMatchOutline(GameTestHelper helper) {
+        List<String> wrong = new ArrayList<>();
+        BlockPos core = helper.absolutePos(new BlockPos(1, 1, 1));
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (!(block instanceof BlockMultiblockCore machine)) continue;
+            int[][] boxes = machine.getAllDimensions();
+            boolean plain = boxes.length > 1;
+            for (int[] box : boxes) plain &= box.length == 6;
+            if (!plain) continue;
+            for (Direction facing : Direction.Plane.HORIZONTAL) {
+                Set<BlockPos> outlined = new HashSet<>();
+                for (int[] box : boxes) MultiblockHandlerXR.visitBox(core, box, facing, (pos, toward) -> outlined.add(pos.immutable()));
+                Set<BlockPos> cells = new HashSet<>();
+                machine.visitPlacedCells(helper.getLevel(), core, facing, (pos, mask) -> cells.add(pos.immutable()));
+                if (outlined.equals(cells)) continue;
+                Set<BlockPos> missing = new HashSet<>(outlined);
+                missing.removeAll(cells);
+                cells.removeAll(outlined);
+                wrong.add(BuiltInRegistries.BLOCK.getKey(block) + " " + facing + ": " + missing.size() + " outlined but not occupied, "
+                        + cells.size() + " occupied but not outlined");
+            }
+        }
+        helper.assertTrue(wrong.isEmpty(), String.join("; ", wrong));
+        helper.succeed();
+    }
+
     private static void multiblockInteractionRange(GameTestHelper helper) {
         // Every multiblock must be usable from any cell it occupies, plus a player's reach.
         // Mixed while the migration runs: a folded core answers its own range, a dummyable the old one.

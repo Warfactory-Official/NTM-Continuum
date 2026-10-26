@@ -81,7 +81,7 @@ public class MachineCatalyticCracker extends BlockMultiblockMachine implements I
 
     /** 1.7: the tower shaft, the chimney and the two wings beyond getDimensions. */
     private static final int[][] EXTRA_BOXES = {
-            {4, -1, 3, -1, 1, 1},
+            {8, -1, 3, -1, 2, 0},
             {13, 0, 0, 3, 2, 1},
             {14, -13, -1, 2, 1, 0},
             {3, -1, 2, 3, -1, 3}};
