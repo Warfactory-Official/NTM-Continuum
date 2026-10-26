@@ -2,11 +2,15 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.api.fluidmk2.FluidNetwork;
+import com.hbm.api.fluidmk2.IFluidPipeMK2;
+import com.hbm.api.fluidmk2.IFluidUserMK2;
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.capability.ForeignFluids;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -25,6 +29,7 @@ import dev.golem.core.fluid.FluidView;
 import dev.golem.core.fluid.TokenFluids;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.BlockEntities;
+import dev.golem.core.world.ItemExposure;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -33,13 +38,17 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -72,6 +81,12 @@ public final class ForeignFluidGameTests {
             TESTS.function("fluid_net_consumer_input_not_drained", 200, 8, () -> ForeignFluidGameTests::inputNotDrained);
     public static final GameTests.Function INPUT_NOT_PROVIDED =
             TESTS.function("fluid_providers_offer_only_sending_tanks", 20, () -> ForeignFluidGameTests::inputNotProvided);
+    public static final GameTests.Function EVERY_MACHINE =
+            TESTS.function("foreign_every_machine_has_a_face", 24_000, 24, () -> ForeignFluidGameTests::everyMachine);
+    /** 1.7: tubes take air only once set as compressors, the PWR only through its pwr_port blocks. */
+    private static final Set<String> NO_OWN_FLUID_FACE = Set.of("pneumatic_tube", "pneumatic_tube_paintable", "pwr_controller");
+    /** 1.7: these accelerator parts list no slot on any side (TileEntityMachineBase), so no automation reaches them. */
+    private static final Set<String> NO_ITEM_FACE = Set.of("pa_rfc", "pa_quadrupole", "pa_dipole");
 
     public static void init() {}
 
@@ -395,5 +410,71 @@ public final class ForeignFluidGameTests {
 
     private static Direction direction(ForgeDirection dir) {
         return Direction.from3DDataValue(dir.ordinal());
+    }
+
+    /**
+     * Every HBM machine with tanks or an inventory, placed (a multiblock assembled), offers another mod's pipe a fluid
+     * handler, and an item handler, on at least one outward face of its core or cells once its ports are up. One at a
+     * time in the same spot.
+     */
+    private static void everyMachine(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        List<Block> machines = new ArrayList<>();
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (!Constants.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(block).getNamespace())) continue;
+            BlockEntity sample = sample(block);
+            if (isFluidUser(sample) || sample instanceof Container) machines.add(block);
+        }
+        tryMachine(helper, level, machines, 0, new ArrayList<>(), new ArrayList<>(), new int[2]);
+    }
+
+    private static @Nullable BlockEntity sample(Block block) {
+        if (block instanceof BlockMultiblockMachine machine) return machine.newBlockEntity(BlockPos.ZERO, machine.defaultBlockState());
+        if (block instanceof BlockMultiblockCore || !(block instanceof EntityBlock entity)) return null;
+        return entity.newBlockEntity(BlockPos.ZERO, block.defaultBlockState());
+    }
+
+    private static boolean isFluidUser(@Nullable BlockEntity be) {
+        if (!(be instanceof IFluidUserMK2 user) || be instanceof IFluidPipeMK2) return false;
+        FluidTankNTM[] tanks = user.getAllTanks();
+        return tanks != null && tanks.length > 0;
+    }
+
+    private static void tryMachine(GameTestHelper helper, ServerLevel level, List<Block> machines, int index,
+                                   List<String> noFluidFace, List<String> noItemFace, int[] faces) {
+        if (index >= machines.size()) {
+            // the totals compare loaders: a face missing on one loader shows as a smaller count
+            Constants.LOG.info("[foreign faces] {} machines, {} fluid faces, {} item faces", machines.size(), faces[0], faces[1]);
+            helper.assertTrue(noFluidFace.isEmpty() && noItemFace.isEmpty(), machines.size() + " machines; no fluid face: "
+                    + noFluidFace + "; no item face: " + noItemFace);
+            helper.succeed();
+            return;
+        }
+        Block block = machines.get(index);
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        BlockPos core = helper.absolutePos(new BlockPos(24, 4, 24));
+        Set<BlockPos> parts = new HashSet<>();
+        parts.add(core);
+        if (block instanceof BlockMultiblockCore multiblock) {
+            FoldedTestSupport.assemble(helper, multiblock, new BlockPos(24, 4, 24));
+            multiblock.visitPlacedCells(level, core, Direction.NORTH, (cell, mask) -> parts.add(cell.immutable()));
+        } else {
+            level.setBlock(core, block.defaultBlockState(), 3);
+        }
+        helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
+            BlockEntity be = level.getBlockEntity(core);
+            boolean fluids = !isFluidUser(be) || NO_OWN_FLUID_FACE.contains(name), items = !(be instanceof Container) || NO_ITEM_FACE.contains(name);
+            for (BlockPos part : parts) {
+                for (Direction side : Direction.values()) {
+                    if (parts.contains(part.relative(side))) continue;
+                    if (FluidCompat.find(level, part, side) != null) { fluids = true; faces[0]++; }
+                    if (ItemExposure.extract(level, part, side, 0) != null) { items = true; faces[1]++; }
+                }
+            }
+            if (!fluids) noFluidFace.add(name);
+            if (!items) noItemFace.add(name);
+            for (BlockPos part : parts) level.setBlock(part, Blocks.AIR.defaultBlockState(), 2 | 16);
+            helper.runAfterDelay(1, () -> tryMachine(helper, level, machines, index + 1, noFluidFace, noItemFace, faces));
+        });
     }
 }

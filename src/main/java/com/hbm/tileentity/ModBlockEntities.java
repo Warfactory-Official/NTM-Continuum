@@ -1,5 +1,6 @@
 package com.hbm.tileentity;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.Constants;
 import com.hbm.blocks.ModAnvilBlocks;
 import com.hbm.blocks.ModBlocks;
@@ -193,6 +194,7 @@ import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.tileentity.network.TileEntityFluidValve;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -371,14 +373,11 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityWatz>> WATZ =
             REG.blockEntity("watz",
                     () -> BlockEntities.serverTicking(TileEntityWatz::new, TileEntityWatz::serverTick, ModMachineBlocks.watz.get()));
-    /** The cells of the AE2-reachable multiblocks, on loaders whose AE2 needs a block entity there. */
+    /** The cells of every folded multiblock, any mod's, on loaders that find capabilities only on block entities. */
     public static final RegistryObject<BlockEntityType<TileEntityProxyCell>> PROXY_CELL =
             REG.blockEntity("proxy_cell",
-                    () -> BlockEntities.type(TileEntityProxyCell::new, ModMachineBlocks.machine_assembly_machine.get(),
-                            ModMachineBlocks.machine_precass.get(), ModMachineBlocks.machine_chemical_plant.get(),
-                            ModMachineBlocks.machine_rockmill.get(), ModMachineBlocks.machine_purex.get(),
-                            ModMachineBlocks.fusion_torus.get(), ModMachineBlocks.fusion_plasma_forge.get(),
-                            ModMachineBlocks.machine_arc_furnace.get()));
+                    () -> BlockEntities.type(TileEntityProxyCell::new, BuiltInRegistries.BLOCK.stream()
+                            .filter(block -> block instanceof BlockMultiblockMachine machine && machine.proxiesCells()).toArray(Block[]::new)));
     public static final RegistryObject<BlockEntityType<TileEntityWatzPump>> WATZ_PUMP =
             REG.blockEntity("watz_pump",
                     () -> BlockEntities.type(TileEntityWatzPump::new, ModMachineBlocks.watz_pump.get()));

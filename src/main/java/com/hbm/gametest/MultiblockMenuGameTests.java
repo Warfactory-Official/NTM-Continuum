@@ -6,6 +6,7 @@ import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.tileentity.TileEntityProxyCell;
 import com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKConsole;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -19,6 +20,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
@@ -69,8 +71,9 @@ public final class MultiblockMenuGameTests {
                     + " the clicked position holds " + level.getBlockState(clickedAbs));
             helper.assertFalse(core.equals(clickedAbs),
                     "the clicked position has to be a cell rather than the core, or this tests nothing");
-            helper.assertTrue(level.getBlockEntity(clickedAbs) == null,
-                    "a folded cell carries no block entity, which is why the click has to be carried");
+            BlockEntity cellEntity = level.getBlockEntity(clickedAbs);
+            helper.assertTrue(cellEntity == null || cellEntity instanceof TileEntityProxyCell,
+                    "a folded cell carries no menu of its own (at most a proxy for capabilities), so the click has to be carried");
 
             mock.drainOutbound();
             helper.useBlock(clicked, mock.player());

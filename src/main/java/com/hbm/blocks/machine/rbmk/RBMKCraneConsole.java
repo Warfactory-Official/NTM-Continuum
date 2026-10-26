@@ -20,6 +20,9 @@ import net.minecraft.world.phys.Vec3;
 /** Crane desk with its tall body and ground desk folded into the core. */
 public class RBMKCraneConsole extends BlockMultiblockMachine implements IToolable {
 
+    /** The console has no inventory or tanks, and its desk removes block entities found at its cells. */
+    @Override public boolean proxiesCells() { return false; }
+
     private static final int[] DIMENSIONS = {1, 0, 0, 0, 1, 1};
     private static final int[] DESK = {0, 0, 0, 1, 1, 1};
 

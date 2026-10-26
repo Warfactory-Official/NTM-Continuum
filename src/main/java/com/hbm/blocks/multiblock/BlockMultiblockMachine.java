@@ -66,7 +66,13 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
     }
 
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return state.getValue(CELL) ? TileEntityProxyCell.at(pos, state) : createCoreBlockEntity(pos, state);
+        if (!state.getValue(CELL)) return createCoreBlockEntity(pos, state);
+        return proxiesCells() ? TileEntityProxyCell.at(pos, state) : null;
+    }
+
+    /** Whether the cells carry {@link TileEntityProxyCell} where the loader needs one. Off for machines that move or police their cells. */
+    public boolean proxiesCells() {
+        return true;
     }
 
     protected abstract BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state);

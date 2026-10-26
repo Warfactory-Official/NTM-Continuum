@@ -7,7 +7,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** 1.12.2 {@code TileEntityProxyCombo} for AE2 where it finds machines only through block entities (1.20.1 Forge). */
+/**
+ * A folded multiblock cell's block entity on 1.20.1 Forge, where capabilities hang only on block entities: other mods'
+ * pipes, storage buses and AE2 then reach the machine through its cells, as through 1.7's {@code TileEntityProxyCombo}.
+ * Its item and fluid capabilities forward to the core. Elsewhere cells carry none.
+ */
 public class TileEntityProxyCell extends CompatBlockEntity {
 
     public TileEntityProxyCell(BlockPos pos, BlockState state) {
@@ -15,8 +19,7 @@ public class TileEntityProxyCell extends CompatBlockEntity {
     }
 
     public static @Nullable TileEntityProxyCell at(BlockPos pos, BlockState state) {
-        if (!(state.getBlock() instanceof BlockMultiblockMachine) || CraftingMachines.reachesBlocksWithoutBlockEntity()
-                || !CraftingMachines.available() || !ModBlockEntities.PROXY_CELL.get().isValid(state)) return null;
+        if (!(state.getBlock() instanceof BlockMultiblockMachine) || CraftingMachines.reachesBlocksWithoutBlockEntity()) return null;
         return new TileEntityProxyCell(pos, state);
     }
 }

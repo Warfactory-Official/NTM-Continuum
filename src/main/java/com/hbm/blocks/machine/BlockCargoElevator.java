@@ -38,6 +38,9 @@ import org.jspecify.annotations.Nullable;
  */
 public class BlockCargoElevator extends BlockMultiblockMachine {
 
+    /** The elevator splices its cells as it moves. */
+    @Override public boolean proxiesCells() { return false; }
+
     private static final int[] DIMENSIONS = {0, 0, 1, 1, 1, 1};
 
     public BlockCargoElevator(Properties properties) {

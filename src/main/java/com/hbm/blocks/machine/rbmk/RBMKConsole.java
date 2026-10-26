@@ -24,6 +24,9 @@ import net.minecraft.world.phys.Vec3;
 /** RBMK control desk with its tall cabinet and ground desk folded into the core. */
 public class RBMKConsole extends BlockMultiblockMachine implements IToolable {
 
+    /** The console has no inventory or tanks, and its desk removes block entities found at its cells. */
+    @Override public boolean proxiesCells() { return false; }
+
     private static final int[] DIMENSIONS = {3, 0, 0, 0, 2, 2};
     private static final int[] DESK = {0, 0, 0, 1, 2, 2};
 
