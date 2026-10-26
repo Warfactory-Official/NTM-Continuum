@@ -468,7 +468,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     /** This cell's world-frame geometry, or null for a plain full cube. */
     public @Nullable VoxelShape cellShape(int lx, int ly, int lz, Direction facing, boolean open, boolean forCollision) {
         if (bounding.isEmpty()) return null;
-        return MultiblockHandlerXR.boundingSilhouette(bounding,
+        return MultiblockHandlerXR.boundingSilhouette(bounding, facing,
                 -MultiblockMaskTable.worldX(lx, ly, lz, facing), -ly,
                 -MultiblockMaskTable.worldZ(lx, ly, lz, facing));
     }

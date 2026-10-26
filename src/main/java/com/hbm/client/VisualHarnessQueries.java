@@ -14,6 +14,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -44,7 +45,7 @@ public final class VisualHarnessQueries {
         LensBenchmark.register();
     }
 
-    /** Client-side state of every Torex cloud: local tick, synced age, replay readiness and cloudlet count. */
+    /** Client-side state of every Torex cloud: local tick, synced age, replay readiness, cloudlet count, shockwave clouds per block y. */
     private static JsonObject torex(Minecraft mc, JsonObject params) {
         JsonObject json = new JsonObject();
         JsonArray clouds = new JsonArray();
@@ -58,6 +59,13 @@ public final class VisualHarnessQueries {
                 o.addProperty("ready", torex.isClientAnimationReady());
                 o.addProperty("cloudlets", torex.cloudlets.size());
                 o.addProperty("distance", Math.sqrt(e.distanceToSqr(mc.player)));
+                JsonObject shockY = new JsonObject();
+                for (EntityNukeTorex.Cloudlet cloud : torex.cloudlets) {
+                    if (cloud.type != EntityNukeTorex.TorexType.SHOCK) continue;
+                    String y = Integer.toString(Mth.floor(cloud.posY));
+                    shockY.addProperty(y, (shockY.has(y) ? shockY.get(y).getAsInt() : 0) + 1);
+                }
+                o.add("shock_y", shockY);
                 clouds.add(o);
             }
         }

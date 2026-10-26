@@ -241,8 +241,9 @@ public class EntityNukeTorex extends CompatEntity {
                 double vx = (this.tickCount * 1.5 + visualRandom.nextDouble()) * 1.5;
                 float rot = (float) (Math.PI * 2 * visualRandom.nextDouble());
                 double[] vec = rotateAroundY(vx, 0, 0, rot);
+                // 1.7 reads this client's own heightmap per cloud, so the ring follows the terrain it crosses
                 this.cloudlets.add(new Cloudlet(vec[0] + getX(),
-                        replaySurfaceHeight((int) (vec[0] + getX()) + 1, (int) (vec[2] + getZ())),
+                        level().getHeight(Heightmap.Types.MOTION_BLOCKING, (int) (vec[0] + getX()) + 1, (int) (vec[2] + getZ())),
                         vec[2] + getZ(), rot, 0, shockLife, TorexType.SHOCK)
                         .setScale(7F, 2F)
                         .setMotion(this.tickCount > 15 ? 0.75 : 0));
@@ -359,15 +360,6 @@ public class EntityNukeTorex extends CompatEntity {
         if (clientHistoricalTimeline && target != Integer.MIN_VALUE) return target;
         return Math.max(level().getHeight(Heightmap.Types.MOTION_BLOCKING,
                 (int) Math.floor(getX()), (int) Math.floor(getZ())) - 3, level().getMinY() + 1);
-    }
-
-    private int replaySurfaceHeight(int x, int z) {
-        int terrainChangeAge = this.entityData.get(TERRAIN_CHANGE_AGE);
-        int initial = this.entityData.get(INITIAL_SPAWN_TARGET);
-        int target = terrainChangeAge < 0 || this.tickCount < terrainChangeAge
-                ? initial : this.entityData.get(FINAL_SPAWN_TARGET);
-        if (clientHistoricalTimeline && target != Integer.MIN_VALUE) return target + 3;
-        return level().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
     }
 
     /** Called from both tick and renderer extraction so no age-zero frame can be submitted on retrack. */

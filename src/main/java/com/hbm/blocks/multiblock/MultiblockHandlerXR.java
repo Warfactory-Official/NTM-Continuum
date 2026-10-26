@@ -93,20 +93,11 @@ public final class MultiblockHandlerXR {
     }
 
     /**
-     * 1.7's {@code BlockDummyable#bounding} silhouette in one cell's frame; one implementation for both
-     * bases, since a second rotation table would drift silently.
+     * 1.7's {@code BlockDummyable#bounding} silhouette in one cell's frame: the authored boxes turned by
+     * {@code dir.getRotation(UP)} ({@code facing.getClockWise()}) and moved by the cell's offset from the core.
      */
-    /**
-     * The silhouette translated into a cell's frame and NOT rotated, as 1.7 {@code BlockDummyable#getShape}
-     * moves the authored boxes by the core offset and leaves their orientation alone, so a machine whose
-     * box is not rotationally symmetric keeps the same hitbox at all four facings. A machine that wants
-     * its box to turn with it says so.
-     */
-    public static VoxelShape boundingSilhouette(List<AABB> bounding, int dx, int dy, int dz) {
-        return boundingSilhouette(bounding, Direction.SOUTH, dx, dy, dz);
-    }
-
-    public static VoxelShape boundingSilhouette(List<AABB> bounding, Direction rot, int dx, int dy, int dz) {
+    public static VoxelShape boundingSilhouette(List<AABB> bounding, Direction facing, int dx, int dy, int dz) {
+        Direction rot = facing.getClockWise();
         VoxelShape shape = Shapes.empty();
         for (AABB aabb : bounding) {
             shape = Shapes.joinUnoptimized(shape,
@@ -115,12 +106,12 @@ public final class MultiblockHandlerXR {
         return shape.optimize();
     }
 
-    /** Rotates a core-frame box about the vertical axis, {@code rot} read as a rotation away from south. */
+    /** 1.7 {@code BlockDummyable.getAABBRotationOffset}: a core-frame box turned to {@code rot}, north as authored. */
     public static AABB rotateAabb(AABB box, Direction rot) {
         return switch (rot) {
-            case WEST -> new AABB(box.minZ, box.minY, -box.maxX, box.maxZ, box.maxY, -box.minX);
-            case NORTH -> new AABB(-box.maxX, box.minY, -box.maxZ, -box.minX, box.maxY, -box.minZ);
             case EAST -> new AABB(-box.maxZ, box.minY, box.minX, -box.minZ, box.maxY, box.maxX);
+            case SOUTH -> new AABB(-box.maxX, box.minY, -box.maxZ, -box.minX, box.maxY, -box.minZ);
+            case WEST -> new AABB(box.minZ, box.minY, -box.maxX, box.maxZ, box.maxY, -box.minX);
             default -> box;
         };
     }

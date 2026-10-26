@@ -107,10 +107,15 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
      * {@link #bounding} states one silhouette in the core's frame, so a cell reports it translated by its
      * own offset from the core and the union over the footprint is the structure. A cell that cannot find
      * its core reports a full cube rather than nothing, so a broken index never opens a hole to fall into.
+     * A core state not yet in the world is vanilla's placement test at the clicked cell, which 1.7 ran
+     * against a full block there; the whole silhouette would refuse a player standing in front of it.
      */
     private VoxelShape shapeAt(BlockState state, BlockGetter level, BlockPos pos, boolean forCollision) {
         if (bounding.isEmpty()) return Shapes.block();
-        if (!state.getValue(CELL)) return cachedCellShape(0, 0, 0, state.getValue(FACING), forCollision);
+        if (!state.getValue(CELL)) {
+            if (forCollision && level.getBlockState(pos) != state) return Shapes.block();
+            return cachedCellShape(0, 0, 0, state.getValue(FACING), forCollision);
+        }
         BlockPos core = MultiblockSurface.coreOfCell(level, pos);
         if (core == null) return Shapes.block();
         BlockMultiblockCore block = MultiblockSurface.foldedCore(level.getBlockState(core));
