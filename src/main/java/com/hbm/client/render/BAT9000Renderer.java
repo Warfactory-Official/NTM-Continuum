@@ -58,7 +58,7 @@ public final class BAT9000Renderer extends GiantTankRenderer<TileEntityMachineBA
     protected void submitFluid(GiantTankRenderState state, PoseStack poseStack, SubmitSink collector) {
         float height = fillHeight(state, 1.5F);
         if (height <= 0F) return;
-        int color = 0xFF000000 | (state.fluidType.getColor() & 0xFFFFFF);
+        int color = 0xFF000000 | (state.fluidType.clientMetadata().getColor() & 0xFFFFFF);
         collector.submitCustomGeometry(poseStack, WHITE,
                 (pose, buffer) -> {
                     quad(buffer, pose, -2.2F, 1.5F, -0.5F, -2.2F, 1.5F + height, -0.5F,

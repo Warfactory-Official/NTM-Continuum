@@ -254,7 +254,7 @@ public class CannerySILEX extends CanneryBase {
             state.length = Tags.getIntOr(data, "length", 0);
             state.beam = mode > 0 && mode < 6;
             if (state.beam) {
-                EnumWavelengths wave = EnumWavelengths.values().get(mode);
+                EnumWavelengths wave = EnumWavelengths.legacy(mode);
                 int color = wave.guiColor;
                 if (color == 0) {
                     long time = Minecraft.getInstance().level != null ? Minecraft.getInstance().level.getGameTime() : 0L;

@@ -1,5 +1,7 @@
 package com.hbm.blocks.network;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.inventory.fluid.FluidType;
@@ -39,7 +41,7 @@ import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
  * its block model here, the camo and overlays added where it stands.
  */
 public class PneumoTubePaintableBlock extends CompatBlock
-        implements TickingBlock, IToolable, IFluidConnectorBlockMK2, IPneumaticConnector {
+        implements TickingBlock, IToolable, IFluidConnectorBlockMK2, IPneumaticConnector, ICapabilityBlock {
 
     /** 1.7 meta 1: the DEFUSER hides the overlay pass. */
     public static final BooleanProperty OVERLAY = BooleanProperty.create("overlay");
@@ -132,4 +134,7 @@ public class PneumoTubePaintableBlock extends CompatBlock
         return world.getBlockEntity(new BlockPos(x, y, z)) instanceof TileEntityPneumoTube tube
                 && tube.canConnect(type, dir);
     }
+
+    @Override
+    public MachineCaps caps() { return PneumoTube.CAPS; }
 }

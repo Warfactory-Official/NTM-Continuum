@@ -95,8 +95,8 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
         int right = rec.right().fill;
 
         for (int i = 0; i < 2; i++) {
-            if (tanks[0].getFill() >= 100 && tanks[1].getFill() >= 200 && hasSpace(left, right)) {
-                tanks[0].setFill(tanks[0].getFill() - 100);
+            if (tanks[0].getFill() >= CrackingRecipes.FILL_PER_OP && tanks[1].getFill() >= 200 && hasSpace(left, right)) {
+                tanks[0].setFill(tanks[0].getFill() - CrackingRecipes.FILL_PER_OP);
                 tanks[1].setFill(tanks[1].getFill() - 200);
                 tanks[2].setFill(tanks[2].getFill() + left);
                 tanks[3].setFill(tanks[3].getFill() + right);

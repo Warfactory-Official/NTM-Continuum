@@ -1,7 +1,9 @@
 package com.hbm.inventory.recipes.loader;
 
 import dev.golem.core.world.RecipeSource;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * The {@link RecipeSource} of a {@link GenericRecipe} table (HBM's tables in {@code src/recipes}, and an addon's rows for
@@ -13,6 +15,8 @@ import java.util.Locale;
  * @param <T> the row type ({@link GenericRecipe}, or a subclass with fields of its own)
  */
 public abstract class GenericTableSource<T extends GenericRecipe> extends RecipeSource<T> {
+
+    private final Map<String, Integer> slotsAfter = new HashMap<>();
 
     protected GenericTableSource(DataGenericRecipes<T> recipes) {
         super(recipes.table);
@@ -26,9 +30,28 @@ public abstract class GenericTableSource<T extends GenericRecipe> extends Recipe
     /** A row under an id of its own (two rows of one name, told apart by their {@code requires}). */
     @Override
     public void register(String id, T recipe) {
-        if (ordered()) recipe.order = nextOrder();
+        if (ordered()) recipe.order = Math.multiplyExact(nextOrder(), orderStride());
         add(id, recipe);
     }
+
+    /**
+     * Adds an authored addon row immediately after a loaded base anchor, retaining registration order within
+     * that anchor's reserved stride. The base source opts into the stride through {@link #orderStride}.
+     */
+    protected final void registerAfter(String anchor, String id, T recipe, int stride) {
+        var baseOrder = orderOf(anchor);
+        if (baseOrder % stride != 0) {
+            throw new IllegalStateException("Base anchor does not reserve addon positions: " + anchor
+                    + "; regenerate the base table with its ordered source");
+        }
+        var slot = slotsAfter.merge(anchor, 1, Integer::sum);
+        if (slot >= stride) throw new IllegalStateException(slot + " addon rows after " + anchor);
+        recipe.order = Math.addExact(baseOrder, slot);
+        add(id, recipe);
+    }
+
+    /** A table reserving positions for addon insertion overrides this with its runtime ordering stride. */
+    protected int orderStride() { return 1; }
 
     /**
      * The {@code order} of a loaded row ({@link #loaded}), e.g. {@code hbm:press/plate_titanium}: an addon row that

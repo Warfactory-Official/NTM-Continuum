@@ -33,7 +33,7 @@ public class EntityBalefire extends EntityExplosionChunkloading {
      */
     public @Nullable Identifier variant;
 
-    /** A listener on every balefire tick (ADDON-API-INVENTORY H-66). */
+    /** A listener on every balefire tick. */
     @FunctionalInterface
     public interface Tick {
         /**
@@ -65,7 +65,7 @@ public class EntityBalefire extends EntityExplosionChunkloading {
                 Constants.LOG.info("[NUKE] Initialized BF explosion at {} / {} / {} with strength {}!", getX(),
                         getY(), getZ(), destructionRange);
 
-            exp = new ExplosionBalefire((int) getX(), (int) getY(), (int) getZ(), level(), this.destructionRange);
+            exp = createExplosion();
             exp.variant = ExplosionBalefire.variant(this.variant);
             SubLevelBlasts.crater(level(), position(), destructionRange);
 
@@ -96,6 +96,11 @@ public class EntityBalefire extends EntityExplosionChunkloading {
         age++;
     }
 
+    /** The crater owned by this entity, also reconstructed through this factory when loaded. */
+    protected ExplosionBalefire createExplosion() {
+        return new ExplosionBalefire((int) getX(), (int) getY(), (int) getZ(), level(), destructionRange);
+    }
+
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
@@ -106,7 +111,7 @@ public class EntityBalefire extends EntityExplosionChunkloading {
         String variantName = input.getStringOr("variant", "");
         variant = variantName.isEmpty() ? null : parseVariant(variantName);
 
-        exp = new ExplosionBalefire((int) getX(), (int) getY(), (int) getZ(), level(), this.destructionRange);
+        exp = createExplosion();
         exp.variant = ExplosionBalefire.variant(this.variant);
         exp.readFromNbt(input, "exp_");
 

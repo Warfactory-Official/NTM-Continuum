@@ -31,9 +31,8 @@ public class ItemBedrockOreGraded extends CompatItem {
     /** 1.7: {@code item.bedrock_ore.grade.<grade>.name} formatted with {@code item.bedrock_ore.type.<suffix>.name}. */
     @Override
     public Component getName(ItemStack stack) {
-        Component typeName = Component.translatableWithFallback("item.bedrock_ore.type." + type.suffix + ".name", type.displayName);
-        return Component.translatableWithFallback("item.bedrock_ore.grade." + grade.name().toLowerCase(Locale.ROOT) + ".name",
-                "%s Bedrock Ore", typeName);
+        return Component.translatableWithFallback("item.hbm.bedrock_ore.grade." + grade.name().toLowerCase(Locale.ROOT),
+                "%s Bedrock Ore", type.typeName());
     }
 
     @Override

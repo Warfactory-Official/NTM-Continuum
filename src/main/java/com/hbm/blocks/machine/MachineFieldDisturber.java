@@ -15,12 +15,14 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class MachineFieldDisturber extends CompatBlock {
 
+    public static final int TICK_RATE = 10;
+
     public MachineFieldDisturber(Properties properties) {
         super(properties);
     }
 
     public int tickRate() {
-        return 10;
+        return TICK_RATE;
     }
 
     @Override

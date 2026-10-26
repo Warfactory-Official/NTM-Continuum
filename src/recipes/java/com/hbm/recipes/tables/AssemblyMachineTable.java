@@ -135,6 +135,9 @@ public final class AssemblyMachineTable extends GenericTableSource<GenericRecipe
     }
 
     @Override
+    protected int orderStride() { return AssemblyMachineRecipes.ORDER_STRIDE; }
+
+    @Override
     protected void registerDefaults() {
         // 1.7: boolean no528 = !GeneralConfig.enable528; its two branches' rows carry "requires": ["!enable_528"]
 

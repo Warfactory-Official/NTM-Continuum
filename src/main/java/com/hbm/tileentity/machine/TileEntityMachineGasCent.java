@@ -320,4 +320,9 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
             setFill(input.getIntOr(name, 0));
         }
     }
+
+    @Override
+    public boolean canConnect(FluidType fluid, ForgeDirection side) {
+        return side != ForgeDirection.UNKNOWN && tank.joins(fluid) && GasCentrifugeRecipes.FLUID_CONVERSIONS.containsValue(inputTank.getTankType());
+    }
 }

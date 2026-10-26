@@ -1,11 +1,14 @@
 package com.hbm.api.environment;
 
+import net.minecraft.network.chat.Component;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import dev.golem.core.hook.Hook;
 import dev.golem.core.hook.Verdict;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -29,6 +32,12 @@ import org.jetbrains.annotations.Nullable;
 public final class Environment {
 
     private Environment() {}
+
+    /** An addon's terrain-fog range takes precedence over the local soot range in this level. */
+    public static final Hook<Predicate<Level>> TERRAIN_FOG_RANGE = Hook.of(listeners -> level -> {
+        for (var listener : listeners) if (listener.test(level)) return true;
+        return false;
+    });
 
     // Breathing (hbm-space TileEntityMachineBase.breatheAir, ChunkAtmosphereManager.canBreathe)
 
@@ -65,6 +74,19 @@ public final class Environment {
      */
     public static boolean breatheAir(Level level, BlockPos pos, int amount, boolean unanswered) {
         return BREATHING.invoker().breathe(level, pos, amount).orElse(unanswered);
+    }
+
+    /**
+     * Whether an enabled oil-fired heater below its heat cap cools with an empty fuel tank. Plain HBM retains its
+     * heat; hbm-space's oil burner cools. Any listener requesting cooling enables that rule.
+     */
+    public static final Hook<BooleanSupplier> EMPTY_OILBURNER_COOLING = Hook.of(listeners -> () -> {
+        for (var listener : listeners) if (listener.getAsBoolean()) return true;
+        return false;
+    });
+
+    public static boolean coolEmptyOilburner() {
+        return EMPTY_OILBURNER_COOLING.invoker().getAsBoolean();
     }
 
     // Pressure (hbm-space CBT_Atmosphere.getPressure)
@@ -104,6 +126,22 @@ public final class Environment {
         return inOrbit(level) || pressure(level, pos) < VACUUM_PRESSURE;
     }
 
+    /** An additional cause of condenser evaporation, even for a vacuum-optimised machine. */
+    @FunctionalInterface
+    public interface Evaporation {
+        boolean evaporates(Level level, BlockPos pos, boolean vacuumProof);
+    }
+
+    /** Addons can contribute evaporation causes such as Space's exposed Tom firestorm. */
+    public static final Hook<Evaporation> EVAPORATION = Hook.of(listeners -> (level, pos, vacuumProof) -> {
+        for (var listener : listeners) if (listener.evaporates(level, pos, vacuumProof)) return true;
+        return false;
+    });
+
+    public static boolean evaporates(Level level, BlockPos pos, boolean vacuumProof) {
+        return EVAPORATION.invoker().evaporates(level, pos, vacuumProof) || !vacuumProof && isVacuum(level, pos);
+    }
+
     // Surface and orbit (1.7 provider.isSurfaceWorld / dimensionId == 0; hbm-space CelestialBody.inOrbit)
 
     /** A listener's answer to "is this level a surface world?" ({@link Verdict#PASS} leaves it to the next one). */
@@ -138,6 +176,26 @@ public final class Environment {
     /** hbm-space's {@code CelestialBody.inOrbit(world)}: no tilt, no groundwater, no condensing, no infinite water. */
     public static boolean inOrbit(Level level) {
         return ORBIT.invoker().orbit(level).orElse(false);
+    }
+
+    /** A reason an off-world delivery cannot arrive, or null to accept the level. */
+    @FunctionalInterface
+    public interface DeliveryRefusal {
+        @Nullable Component refuse(ServerLevel level);
+    }
+
+    /** The first delivery restriction wins; plain HBM accepts every level. */
+    public static final Hook<DeliveryRefusal> DELIVERY_REFUSAL = Hook.of(listeners -> level -> {
+        for (var listener : listeners) {
+            var reason = listener.refuse(level);
+            if (reason != null) return reason;
+        }
+        return null;
+    });
+
+    /** Queried before Bobmazon charges caps or launches a delivery drone. */
+    public static @Nullable Component deliveryRefusal(ServerLevel level) {
+        return DELIVERY_REFUSAL.invoker().refuse(level);
     }
 
     // Sunlight (hbm-space WorldProviderCelestial.getSunPower)
@@ -286,6 +344,25 @@ public final class Environment {
     /** Whether seed slurry may grow grass at {@code pos} (hbm-space {@code EntityChemical} seed-slurry branch). */
     public static boolean canGrow(Level level, BlockPos pos) {
         return GROWTH.invoker().grow(level, pos).orElse(true);
+    }
+
+    /** Addon fluid traits applied when an actual chemical projectile hits a block. */
+    @FunctionalInterface
+    public interface ChemicalImpact {
+        void impact(ServerLevel level, BlockPos pos, FluidType type);
+    }
+
+    public static final Hook<ChemicalImpact> CHEMICAL_IMPACT = Hook.notifying();
+
+    public static void chemicalImpact(ServerLevel level, BlockPos pos, FluidType type) {
+        for (ChemicalImpact listener : CHEMICAL_IMPACT) listener.impact(level, pos, type);
+    }
+
+    /** Living-entity tick HEAD, on both sides and before vanilla movement and potion ticking. */
+    public static final Hook<Consumer<LivingEntity>> LIVING_TICK_START = Hook.notifying();
+
+    public static void livingTickStart(LivingEntity entity) {
+        for (Consumer<LivingEntity> listener : LIVING_TICK_START) listener.accept(entity);
     }
 
     // Living entities (hbm-space EntityEffectHandler.handleOxy / handleCorrosion / celestial sun radiation)

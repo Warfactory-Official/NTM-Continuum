@@ -63,6 +63,7 @@ public abstract class DataGenericRecipes<T extends GenericRecipe> extends Generi
         for (RecipeTables.Entry<T> entry : table.entries()) {
             T recipe = entry.value();
             if (!present(recipe)) continue;
+            recipe.bindRecipeId(entry.id());
             recipe.bindStacks();
             recipe.applyModes(expensive, mode528);
             recipes.add(recipe);
@@ -97,6 +98,12 @@ public abstract class DataGenericRecipes<T extends GenericRecipe> extends Generi
         List<T> rows = new ArrayList<>();
         for (GenericRecipe recipe : recipeOrderedList) rows.add((T) recipe);
         return rows;
+    }
+
+    @Override
+    public GenericRecipe getRecipe(String name) {
+        registerRecipes();
+        return super.getRecipe(name);
     }
 
     /**

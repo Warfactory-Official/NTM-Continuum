@@ -170,7 +170,7 @@ public final class ModEnergyNetBlocks {
     // 1.7 capacitor_copper/gold/niobium; the block ids carry a machine_ prefix because the bare names are the
     // battery-capacitor items in this port. Only copper sits on a tab, as upstream.
     public static final RegistryObject<MachineCapacitor> machine_capacitor_copper = REG.block("machine_capacitor_copper",
-            MachineCapacitor::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
+            p -> new MachineCapacitor(p, 1_000_000L), p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
             .transform(CAPACITOR).tag(BlockTag.PICKAXE);
     public static final RegistryObject<MachineCapacitor> machine_capacitor_gold = REG.block("machine_capacitor_gold",
             MachineCapacitor::new, p -> p.requiresCorrectToolForDrops().strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion())
@@ -236,7 +236,7 @@ public final class ModEnergyNetBlocks {
 
         // 1.7 registered the legacy storage tiers with no creative tab; they stay reachable by id and pick-block.
         item(null, "capacitor_bus", capacitor_bus);
-        item(HbmTab.MACHINES, "machine_capacitor_copper", machine_capacitor_copper);
+        item(HbmTab.MACHINES, "machine_capacitor_copper", machine_capacitor_copper, () -> stack -> machine_capacitor_copper.get().persistentInfo(stack));
         item(null, "machine_capacitor_gold", machine_capacitor_gold);
         item(null, "machine_capacitor_niobium", machine_capacitor_niobium);
         item(null, "capacitor_tantalium", capacitor_tantalium);

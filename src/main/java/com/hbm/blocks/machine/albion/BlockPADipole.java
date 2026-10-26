@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine.albion;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -20,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The bending magnet: a 3x3x3 cube that takes the beam from any horizontal side. */
-public class BlockPADipole extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider {
+public class BlockPADipole extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider, ICapabilityBlock {
 
     public BlockPADipole(Properties properties) {
         super(properties);
@@ -109,4 +111,12 @@ public class BlockPADipole extends BlockMultiblockMachine implements IEnergyConn
                 {0.9, 0.1, -1.5, -1.5, -0.4, 0.4},
         };
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().fluidOut().fe()
+            .faces(BlockEntity.class, (be, side) -> side.getAxis() == Direction.Axis.Y)
+            .fluidFaces(BlockEntity.class, (be, side) -> side == Direction.UP || side == Direction.DOWN);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

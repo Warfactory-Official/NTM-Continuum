@@ -182,8 +182,8 @@ public final class CoreComponentRenderers {
         @Override
         protected void extractBeam(TileEntityCoreInjector be, CoreComponentRenderState state) {
             state.beam = be.beam;
-            state.fluidColorA = be.tanks[0].getFill() > 0 ? be.tanks[0].getTankType().getColor() : -1;
-            state.fluidColorB = be.tanks[1].getFill() > 0 ? be.tanks[1].getTankType().getColor() : -1;
+            state.fluidColorA = be.tanks[0].getFill() > 0 ? be.tanks[0].getTankType().clientMetadata().getColor() : -1;
+            state.fluidColorB = be.tanks[1].getFill() > 0 ? be.tanks[1].getTankType().clientMetadata().getColor() : -1;
         }
 
         @Override

@@ -281,7 +281,7 @@ public class BlockRebar extends CompatBlock implements TickingBlock, SimpleWater
 
         @Override
         public long getDemand(FluidType type, int pressure) {
-            return 10_000;
+            return type == Fluids.CONCRETE && pressure == 0 ? 10_000L : 0L;
         }
     }
 }

@@ -78,7 +78,7 @@ public class ModulePortManFluidAdaptive {
                 for (int i = 0; i < inPorts.length; i++) {
                     TilePort port = inPorts[i];
                     if (port != null) port.disableIfPresent(world);
-                    inPorts[i] = new TilePort().setupOwner(owner).setupType(FluidNetProvider.of(inTanks[i].getTankType()))
+                    inPorts[i] = new TilePort().setupOwner(owner)
                             .setupPositions(unified.portPositions).setupConnections(unified.portConnections);
                 }
             }
@@ -86,7 +86,7 @@ public class ModulePortManFluidAdaptive {
                 for (int i = 0; i < outPorts.length; i++) {
                     TilePort port = outPorts[i];
                     if (port != null) port.disableIfPresent(world);
-                    outPorts[i] = new TilePort().setupOwner(owner).setupType(FluidNetProvider.of(outTanks[i].getTankType()))
+                    outPorts[i] = new TilePort().setupOwner(owner)
                             .setupPositions(unified.portPositions).setupConnections(unified.portConnections);
                 }
             }
@@ -96,7 +96,7 @@ public class ModulePortManFluidAdaptive {
             for (int i = 0; i < inPorts.length; i++) {
                 TilePort port = inPorts[i];
                 if (port == null) continue;
-                port.setupType(FluidNetProvider.of(inTanks[i].getTankType()));
+                port.setupFluids(inTanks[i], world);
                 if (inEnabled[i]) port.enable(); else port.disable();
                 port.update(world);
                 port.checkSubscribe(world);
@@ -107,7 +107,7 @@ public class ModulePortManFluidAdaptive {
             for (int i = 0; i < outPorts.length; i++) {
                 TilePort port = outPorts[i];
                 if (port == null) continue;
-                port.setupType(FluidNetProvider.of(outTanks[i].getTankType()));
+                port.setupFluids(outTanks[i], world);
                 if (outEnabled[i]) port.enable(); else port.disable();
                 port.update(world);
                 port.checkProvide(world);

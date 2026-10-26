@@ -111,7 +111,7 @@ public final class ModFuelItems {
     /** 1.7 {@code ItemLemon(2, 0.5F, false)}: edible, 2 hunger / 0.5 saturation. */
     public static final RegistryObject<ItemLemon> powder_cement = REG.item("powder_cement",
             p -> new ItemLemon(p, "powder_cement"), p -> CompatConsumables.food(p, 2, 0.5F, List.of()))
-            .transform(Presets.sprite());
+            .transform(Presets.sprite()).tab(HbmTab.MATERIALS);
 
     private static Reg.Handle<Item> plain(String name) {
         Reg.Handle<Item> ro = REG.item(name);

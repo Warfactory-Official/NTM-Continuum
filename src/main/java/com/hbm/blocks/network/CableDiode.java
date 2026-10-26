@@ -1,6 +1,13 @@
 package com.hbm.blocks.network;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
+import com.hbm.tileentity.network.TileEntityDiode;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.BlockHitResult;
+import java.util.function.Consumer;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import dev.golem.core.registry.TickingBlock;
@@ -21,15 +28,17 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.Nullable;
 
-import com.hbm.tileentity.network.TileEntityDiode;
-
-/**
- * {@code cable_diode}, deprecated in 1.7: a plain cable that keeps its model. {@link #FACING} is 1.7's piston
- * metadata, the side facing the placer.
- */
-public class CableDiode extends CompatBlock implements TickingBlock, IEnergyConnectorBlock {
+/** A directional relay with one output and five input faces. */
+public class CableDiode extends CompatBlock implements TickingBlock, IEnergyConnectorBlock, ICapabilityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
+    /** Installed by the actual client screen registrations. */
+    public static Consumer<TileEntityDiode> OPEN_SCREEN;
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().powerOut()
+            .roleFaces(TileEntityDiode.class, TileEntityDiode::acceptsFace);
+
+    @Override public MachineCaps caps() { return CAPS; }
+
 
     public CableDiode(Properties properties) {
         super(properties);
@@ -64,7 +73,15 @@ public class CableDiode extends CompatBlock implements TickingBlock, IEnergyConn
 
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return true;
+        return dir != ForgeDirection.UNKNOWN;
+    }
+
+    @Override
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (player.isShiftKeyDown() || !(level.getBlockEntity(pos) instanceof TileEntityDiode diode))
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (level.isClientSide()) OPEN_SCREEN.accept(diode);
+        return InteractionResult.SUCCESS;
     }
 
     @Override

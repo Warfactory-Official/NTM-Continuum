@@ -1,5 +1,10 @@
 package com.hbm.world.gen;
 
+import com.hbm.world.gen.nbt.DuctFluidProcessor;
+import com.hbm.world.gen.nbt.LegacyBlockTableProcessor;
+import com.hbm.world.gen.nbt.MultiblockAssemblyProcessor;
+import com.hbm.world.gen.nbt.PedestalStockProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.main.StructureManager;
@@ -38,7 +43,26 @@ public final class NTMWorldGenerator {
             DeferredRegister.create(Registries.STRUCTURE_TYPE, Constants.MOD_ID);
     public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES =
             DeferredRegister.create(Registries.STRUCTURE_PIECE, Constants.MOD_ID);
-    private static final Reg REG = Reg.of(STRUCTURE_TYPES, STRUCTURE_PIECES);
+    public static final DeferredRegister<StructureProcessorType<?>> STRUCTURE_PROCESSORS =
+            DeferredRegister.create(Registries.STRUCTURE_PROCESSOR, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(STRUCTURE_TYPES, STRUCTURE_PIECES, STRUCTURE_PROCESSORS);
+
+    public static final RegistryObject<StructureProcessorType<MultiblockAssemblyProcessor>> MULTIBLOCK_ASSEMBLY =
+            REG.register(Registries.STRUCTURE_PROCESSOR, "multiblock_assembly",
+                    () -> Structures.processorType(MultiblockAssemblyProcessor.MAP_CODEC));
+
+    public static final RegistryObject<StructureProcessorType<DuctFluidProcessor>> DUCT_FLUID =
+            REG.register(Registries.STRUCTURE_PROCESSOR, "duct_fluid",
+                    () -> Structures.processorType(DuctFluidProcessor.MAP_CODEC));
+
+    public static final RegistryObject<StructureProcessorType<LegacyBlockTableProcessor>> LEGACY_BLOCK_TABLE =
+            REG.register(Registries.STRUCTURE_PROCESSOR, "legacy_block_table",
+                    () -> Structures.processorType(LegacyBlockTableProcessor.MAP_CODEC));
+
+    /** Stocks placed pedestals (Ike's divine shard); the item rides the processor list entry. */
+    public static final RegistryObject<StructureProcessorType<PedestalStockProcessor>> PEDESTAL_STOCK =
+            REG.register(Registries.STRUCTURE_PROCESSOR, "pedestal_stock",
+                    () -> Structures.processorType(PedestalStockProcessor.MAP_CODEC));
 
     /** {@code hbm:nbt}: one registered {@link SpawnCondition} as a vanilla structure. */
     public static final RegistryObject<StructureType<NBTStructure.GenStructure>> NBT_STRUCTURE =

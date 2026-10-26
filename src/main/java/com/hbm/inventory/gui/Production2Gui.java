@@ -16,8 +16,8 @@ public final class Production2Gui {
         int level = tank.getMaxFill() <= 0 ? 0 : (int) ((long) tank.getFill() * height / tank.getMaxFill());
         if (level <= 0) return;
         int top = yBottom - level;
-        Identifier texture = tank.getTankType().getTexture();
-        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
+        Identifier texture = tank.getTankType().clientMetadata().getTexture();
+        int tint = 0xFF000000 | (tank.getTankType().clientMetadata().getTint() & 0xFFFFFF);
         if (Minecraft.getInstance().getResourceManager().getResource(texture).isPresent()) {
             graphics.enableScissor(x, top, x + width, yBottom);
             for (int tileY = yBottom - 16; tileY > top - 16; tileY -= 16) {

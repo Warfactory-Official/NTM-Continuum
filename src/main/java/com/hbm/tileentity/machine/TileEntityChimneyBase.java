@@ -78,6 +78,12 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
             Fluids.SMOKE, Fluids.SMOKE_LEADED, Fluids.SMOKE_POISON
     };
 
+    @Override
+    public boolean exposesAnyFluidContact(ForgeDirection dir) {
+        for (var type : SMOKE_TYPES) if (canConnect(type, dir)) return true;
+        return false;
+    }
+
     /** The old misspelling is retained because it is part of the concrete chimney contract. */
     public boolean cpaturesAsh() { return true; }
 

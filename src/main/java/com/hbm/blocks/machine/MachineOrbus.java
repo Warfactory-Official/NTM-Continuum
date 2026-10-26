@@ -1,5 +1,8 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.tileentity.machine.storage.TileEntityBarrel;
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.inventory.fluid.FluidType;
@@ -26,7 +29,7 @@ import net.minecraft.world.phys.BlockHitResult;
  * four take ducts from below, the top four from above. A plain click opens the barrel menu; a sneaking click
  * with a fluid identifier retypes the tank, as it did for barrels.
  */
-public class MachineOrbus extends BlockMultiblockMachine implements IFluidConnectorBlockMK2 {
+public class MachineOrbus extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ICapabilityBlock {
 
     public MachineOrbus(Properties properties) {
         super(properties);
@@ -108,4 +111,11 @@ public class MachineOrbus extends BlockMultiblockMachine implements IFluidConnec
                 {1, 4, 0, ForgeDirection.UP.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn().fluidOut().items()
+            .fluidContacts(TileEntityBarrel.class);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

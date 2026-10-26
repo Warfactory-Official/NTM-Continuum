@@ -46,7 +46,7 @@ public class GUIMachineStrandCaster extends CompatContainerScreen<ContainerMachi
                           int x, int bottom) {
         int height = tank.getMaxFill() <= 0 ? 0 : tank.getFill() * 24 / tank.getMaxFill();
         if (height <= 0) return;
-        int color = 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF);
+        int color = 0xFF000000 | (tank.getTankType().clientMetadata().getColor() & 0xFFFFFF);
         graphics.fill(leftPos + x, topPos + bottom - height, leftPos + x + 16, topPos + bottom, color);
     }
 

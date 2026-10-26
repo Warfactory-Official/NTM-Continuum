@@ -1,5 +1,6 @@
 package com.hbm.client;
 
+import dev.golem.core.Ids;
 import com.hbm.Constants;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -71,6 +72,13 @@ public final class FluidSprites {
 
     /** Draws {@code fluid}'s droplet stretched into a rectangle of its own. */
     public static void draw(GuiGraphicsExtractor graphics, FluidType fluid, int x, int y, int width, int height) {
-        GuiDraw.blitSprite(graphics, Sprites.Atlas.ITEMS, fluid.getIconSprite(), x, y, width, height);
+        var art = Sprites.sprite(Sprites.Atlas.ITEMS, Ids.parse(ART));
+        var u0 = art.getU0();
+        var v0 = art.getV0();
+        var u1 = art.getU1();
+        var v1 = art.getV1();
+        GuiDraw.blitUv(graphics, art.atlasLocation(), x, y, width, height, u0, v0, u1, v1,
+                Math.round(art.contents().width() / (u1 - u0)), Math.round(art.contents().height() / (v1 - v0)),
+                false, 0xFF000000 | fluid.clientMetadata().getColor());
     }
 }

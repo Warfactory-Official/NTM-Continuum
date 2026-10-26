@@ -3,6 +3,7 @@ package com.hbm.tileentity;
 import com.hbm.Constants;
 import com.hbm.registration.Reg;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
+import com.hbm.tileentity.machine.storage.TileEntityMachineCapacitor;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -68,13 +69,18 @@ public final class ModEnergyNetBlockEntities {
             REG.blockEntity("cable_switch", () -> BlockEntities.type(TileEntityCableSwitch::new,
                     ModEnergyNetBlocks.cable_switch.get(), ModEnergyNetBlocks.cable_detector.get()));
     public static final RegistryObject<BlockEntityType<TileEntityDiode>> CABLE_DIODE =
-            REG.blockEntity("cable_diode", () -> BlockEntities.type(TileEntityDiode::new, ModEnergyNetBlocks.cable_diode.get()));
+            REG.blockEntity("cable_diode", () -> BlockEntities.serverTicking(TileEntityDiode::new,
+                    TileEntityDiode::serverTick, ModEnergyNetBlocks.cable_diode.get()));
     public static final RegistryObject<BlockEntityType<TileEntityNetworkSeparator>> NETWORK_SEPARATOR =
             REG.blockEntity("network_separator", () -> BlockEntities.serverTicking(TileEntityNetworkSeparator::new,
                     TileEntityNetworkSeparator::serverTick, ModEnergyNetBlocks.network_separator.get()));
     public static final RegistryObject<BlockEntityType<TileEntityMachineDetector>> MACHINE_DETECTOR =
             REG.blockEntity("machine_detector", () -> BlockEntities.serverTicking(TileEntityMachineDetector::new,
                     TileEntityMachineDetector::serverTick, ModEnergyNetBlocks.machine_detector.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityMachineCapacitor>> CAPACITOR =
+            REG.blockEntity("capacitor", () -> BlockEntities.serverTicking(TileEntityMachineCapacitor::new,
+                    TileEntityMachineCapacitor::serverTick, ModEnergyNetBlocks.machine_capacitor_copper.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityBatteryTier>> BATTERY_TIER =
             REG.blockEntity("machine_battery_tier", () -> BlockEntities.serverTicking(TileEntityBatteryTier::new,

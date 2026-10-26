@@ -31,7 +31,7 @@ public final class RenderLPW2 extends GemBER<TileEntityMachineLPW2, LPW2RenderSt
     private static final float LENGTH = 0.6875F;
     private static final float SERVER_SWAY = 0.0625F * 0.25F;
 
-    private final WavefrontObj model = WavefrontObj.load(
+    public final WavefrontObj model = WavefrontObj.load(
             Ids.of(Constants.MOD_ID, "models/machines/lpw2.obj"));
     private final Surface surface = Surface.cutoutCull(
             Constants.MOD_ID + ":textures/models/machines/lpw2.png");

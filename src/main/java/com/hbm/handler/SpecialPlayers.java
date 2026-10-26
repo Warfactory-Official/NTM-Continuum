@@ -1,5 +1,7 @@
 package com.hbm.handler;
 
+import dev.golem.core.hook.Hook;
+import java.util.function.Consumer;
 import com.hbm.items.ModArmorSetBItems;
 import com.hbm.potion.ModEffects;
 import com.hbm.util.ShadyUtil;
@@ -27,6 +29,20 @@ import net.minecraft.world.phys.Vec3;
 public final class SpecialPlayers {
 
     private SpecialPlayers() {}
+
+    /** Player.tick HEAD and TAIL on both logical sides. */
+    public static final Hook<Consumer<Player>> TICK_START =
+            Hook.notifying();
+    public static final Hook<Consumer<Player>> TICK_END =
+            Hook.notifying();
+
+    public static void tickStart(Player player) {
+        for (var listener : TICK_START) listener.accept(player);
+    }
+
+    public static void tickEnd(Player player) {
+        for (var listener : TICK_END) listener.accept(player);
+    }
 
     /** 1.7 {@code fopSpeed} ({@code e5a8c95d-c7a0-4ecf-8126-76fb8c949389}, "FOP SPEED"). */
     private static final String FOP_SPEED = "hbm:fop_speed";

@@ -91,6 +91,6 @@ public abstract class GiantTankRenderer<T extends TileEntityMachineGiantTank>
 
     /** 1.7 {@code type.poison, type.flammability, type.reactivity, type.symbol}: the fluid's own diamond values. */
     protected static FluidHazard hazardFor(FluidType type) {
-        return type == null ? FluidHazard.NONE : type.getHazard();
+        return type == null ? FluidHazard.NONE : type.clientMetadata().getHazard();
     }
 }

@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -21,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Hydrotreater block: 3×3×7 the folded core (dims {@code {6,0,1,1,1,1}}, offset 1) with the
  * 4 base corners marked as extras (the fluid ports). */
-public class MachineHydrotreater extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public class MachineHydrotreater extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder, ICapabilityBlock {
 
     public MachineHydrotreater(Properties properties) {
         super(properties);
@@ -75,4 +77,12 @@ public class MachineHydrotreater extends BlockMultiblockMachine implements IEner
                 {-1, 0, -1, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().fluidOut().items().fe()
+            .faces(BlockEntity.class, (be, side) -> side != Direction.DOWN)
+            .fluidFaces(BlockEntity.class, (be, side) -> side != Direction.DOWN);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

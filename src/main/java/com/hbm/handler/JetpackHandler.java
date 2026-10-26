@@ -383,7 +383,12 @@ public final class JetpackHandler {
 
     /** Whether any direct or armor-module jetpack is worn in the chest slot. */
     public static boolean hasJetpack(Player player) {
-        return findJetpack(player).stack() != null;
+        return currentJetpack(player) != null;
+    }
+
+    /** The actual direct or installed chest jetpack, or null when none is worn. */
+    public static ItemStack currentJetpack(Player player) {
+        return findJetpack(player).stack();
     }
 
     public static boolean hasGlider(Player player) {

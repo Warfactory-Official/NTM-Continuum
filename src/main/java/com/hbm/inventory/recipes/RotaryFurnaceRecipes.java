@@ -66,8 +66,10 @@ public final class RotaryFurnaceRecipes {
     private static void reindex() {
         List<RotaryFurnaceRecipe> next = new ArrayList<>();
         for (Row row : RecipeText.ordered(TABLE.rows(), Row::order)) {
-            next.add(new RotaryFurnaceRecipe(row.output(), row.duration(), row.steam(), row.fluid().orElse(null),
-                    row.inputs().toArray(AStack[]::new)));
+            RotaryFurnaceRecipe recipe = new RotaryFurnaceRecipe(row.output(), row.duration(), row.steam(), row.fluid().orElse(null),
+                    row.inputs().toArray(AStack[]::new));
+            recipe.order = row.order();
+            next.add(recipe);
         }
         recipes = List.copyOf(next);
     }
@@ -115,13 +117,18 @@ public final class RotaryFurnaceRecipes {
 
     public static final class RotaryFurnaceRecipe {
         public final AStack[] ingredients;
+        /** 1.7's name for {@link #ingredients}, kept for its readers. */
+        public final AStack[] inputItem;
         public final @Nullable FluidStack fluid;
         public final MaterialStack output;
         public final int duration;
         public final int steam;
+        /** The table order, for 1.7's place comparisons. */
+        public int order = Integer.MAX_VALUE;
 
         public RotaryFurnaceRecipe(MaterialStack output, int duration, int steam, @Nullable FluidStack fluid, AStack... ingredients) {
             this.ingredients = ingredients;
+            this.inputItem = ingredients;
             this.fluid = fluid;
             this.output = output;
             this.duration = duration;

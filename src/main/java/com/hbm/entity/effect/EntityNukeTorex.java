@@ -718,6 +718,7 @@ public class EntityNukeTorex extends CompatEntity {
         }
 
         public Cloudlet(double posX, double posY, double posZ, float angle, int age, int maxAge, TorexType type) {
+            ensureVisualRandom();
             this.posX = posX;
             this.posY = posY;
             this.posZ = posZ;

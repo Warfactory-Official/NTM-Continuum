@@ -60,6 +60,9 @@ public class TileEntityCMPort extends TileEntityLoadedBase
         return be instanceof TileEntityCustomMachine machine ? machine : null;
     }
 
+    // The core owns the charge; this port only delegates to it.
+    @Override public boolean ownsEnergyBuffer() { return false; }
+
     // --- power ---
 
     @Override public long getPower() { TileEntityCustomMachine c = getCore(); return c != null ? c.getPower() : 0; }

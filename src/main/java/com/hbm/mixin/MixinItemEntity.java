@@ -1,5 +1,6 @@
 package com.hbm.mixin;
 
+import com.hbm.handler.DroppedItemHooks;
 import com.hbm.hazard.HazardSystem;
 import net.minecraft.world.entity.item.ItemEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,6 +14,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(ItemEntity.class)
 public class MixinItemEntity {
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void hbm$tickStart(CallbackInfo ci) {
+        DroppedItemHooks.beforeTick((ItemEntity) (Object) this);
+    }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void hbm$tick(CallbackInfo ci) {

@@ -1,77 +1,120 @@
 package com.hbm.inventory.fluid.tank;
 
-import dev.golem.core.data.Tags;
-import net.minecraft.nbt.CompoundTag;
-
+import io.netty.buffer.ByteBuf;
+import net.minecraft.world.level.material.Fluid;
+import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.NTMItemHandler;
 import com.hbm.items.machine.IItemFluidId;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.util.Mth;
+import com.hbm.blocks.network.BlockFluidDuct;
+import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
-import org.jspecify.annotations.NonNull;
+import dev.golem.core.data.Tags;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jspecify.annotations.Nullable;
 
-/**
- * HBM's fluid tank: a typed, pressurised fill buffer used by every fluid machine/pipe. It holds a
- * {@link FluidType}, a fill amount, a capacity, and a pressure level.
- *
- * <p>Slimmer than the 1.12.2 original, which implemented Forge's {@code IFluidHandler}/{@code IFluidTank},
- * carried GL tank rendering and handled canister item fill/unload: the network and machines only need the
- * typed buffer and its persistence. Persistence is via {@code DataOut}/{@code DataIn} (NBT) and
- * {@code RegistryFriendlyByteBuf} (the per-tick BufPacket sync).
- *
- * @author hbm, mlbv
- */
+/** A kind-typed buffer which retains the exact resource it holds and an optional identifier pin. */
 public class FluidTankNTM implements Cloneable {
-
-    @NonNull
     private FluidType type;
+    private @Nullable FluidType pin;
+    private @Nullable FluidType held;
+    private @Nullable FluidType[] pinnedConnections;
+    private transient @Nullable BlockEntity owner;
     private int fluid;
     private int maxFluid;
-    private int pressure = 0;
+    private int pressure;
 
-    public FluidTankNTM(@NonNull FluidType type, int maxFluid) {
+    public FluidTankNTM(FluidType type, int maxFluid) {
         this.type = type;
         this.maxFluid = maxFluid;
     }
 
     public byte getRedstoneComparatorPower() {
         if (getFill() == 0) return 0;
-        double frac = (double) getFill() / (double) getMaxFill() * 15D;
-        return (byte) Mth.clamp((int) frac, 1, 15);
+        var fraction = (double) getFill() / getMaxFill() * 15D;
+        return (byte) Mth.clamp((int) fraction, 1, 15);
     }
 
     public FluidTankNTM withPressure(int pressure) {
-        if (this.pressure != pressure) this.setFill(0);
+        if (this.pressure != pressure) setFill(0);
         this.pressure = pressure;
         return this;
     }
 
-    @NonNull
-    public FluidType getTankType() {
-        return type;
+    /** The stored kind/filter used by recipes and machine logic; held resources do not retype it. */
+    public FluidType getTankType() { return type; }
+    /** The held resource, else the identifier choice, else the native kind. */
+    public FluidType getFluid() { return held != null ? held : pin != null ? pin : type; }
+    public FluidType getDeclaredFluid() { return pin != null ? pin : type; }
+    public boolean isStrict() { return pin != null; }
+
+    public void bindOwner(BlockEntity owner) {
+        if (this.owner != null && this.owner != owner) throw new IllegalStateException("Tank already has an owner");
+        this.owner = owner;
     }
 
-    public void setTankType(FluidType type) {
-        if (type == null) type = Fluids.NONE;
-        if (this.type == type) return;
-        this.type = type;
-        this.setFill(0);
+    /** Stable cached resource identities for the physical ports, independent of fill. */
+    public FluidType[] connectionTypes() {
+        if (pin != null) return pinnedConnections;
+        if (type.isForeign() && Fluids.kindOf(type) != type) {
+            // A formerly unshared declaration remains that exact filter after sharing metadata changes.
+            if (pinnedConnections == null || pinnedConnections[0] != type) pinnedConnections = new FluidType[]{type};
+            return pinnedConnections;
+        }
+        return Fluids.equivalentResources(type);
     }
 
-    /** 1.7 {@code setType(in, out, slots)}: an identifier in {@code in} retypes the tank, then moves to {@code out}. */
-    public boolean setType(NTMItemHandler slots, int in, int out) {
-        ItemStack stack = slots.getStackInSlot(in);
-        if (!(stack.getItem() instanceof IItemFluidId id)) return false;
-        if (in != out && !slots.getStackInSlot(out).isEmpty()) return false;
-        FluidType newType = id.getType(null, 0, 0, 0, stack);
-        if (type == newType) return false;
-        type = newType;
+    private void declaredChanged() {
+        if (owner == null) return;
+        owner.setChanged();
+        if (!(owner.getLevel() instanceof ServerLevel level)) return;
+        if (owner instanceof TileEntityLoadedBase loaded) loaded.refreshFluidPorts();
+        for (var side : Direction.values()) BlockFluidDuct.portChanged(level, owner.getBlockPos().relative(side));
+    }
+
+    /** Code and recipe typing keeps existing contents and pins when the kind is unchanged. */
+    public void setTankType(@Nullable FluidType incoming) {
+        if (incoming == type) return;
+        var kind = incoming == null ? Fluids.NONE : Fluids.kindOf(incoming);
+        if (type == kind) return;
+        type = kind;
+        pin = null;
+        pinnedConnections = null;
+        held = null;
         fluid = 0;
+        declaredChanged();
+    }
+
+    /** A player's identifier chooses one exact resource; incompatible contents are discarded. */
+    public void setTankTypeByIdentifier(@Nullable FluidType incoming) {
+        var exact = incoming == null || incoming == Fluids.NONE ? null : incoming;
+        var kind = exact == null ? Fluids.NONE : Fluids.kindOf(exact);
+        if (type == kind && pin == exact) return;
+        if (type != kind || fluid > 0 && getFluid() != exact) {
+            held = null;
+            fluid = 0;
+        }
+        type = kind;
+        pin = exact;
+        pinnedConnections = pin == null ? null : new FluidType[]{pin};
+        declaredChanged();
+    }
+
+    public boolean setType(NTMItemHandler slots, int in, int out) {
+        var stack = slots.getStackInSlot(in);
+        if (!(stack.getItem() instanceof IItemFluidId identifier)) return false;
+        if (in != out && !slots.getStackInSlot(out).isEmpty()) return false;
+        var chosen = identifier.getType(null, 0, 0, 0, stack);
+        if (pin == chosen || chosen == Fluids.NONE && type == Fluids.NONE) return false;
+        setTankTypeByIdentifier(chosen);
         if (in != out) {
             slots.setStackInSlot(out, stack.copy());
             slots.setStackInSlot(in, ItemStack.EMPTY);
@@ -79,117 +122,182 @@ public class FluidTankNTM implements Cloneable {
         return true;
     }
 
+    public boolean accepts(Fluid incoming) {
+        return accepts(Fluids.fromVanillaExact(incoming));
+    }
+    public boolean provides(Fluid incoming) {
+        return provides(Fluids.fromVanillaExact(incoming));
+    }
+    public boolean joins(Fluid incoming) {
+        return joins(Fluids.fromVanillaExact(incoming));
+    }
+
+    public boolean accepts(@Nullable FluidType incoming) {
+        if (incoming == null || incoming == Fluids.NONE || type == Fluids.NONE) return false;
+        if (fluid > 0) return incoming == getFluid();
+        return pin != null ? incoming == pin : incoming == type || Fluids.kindOf(incoming) == type;
+    }
+    public boolean provides(@Nullable FluidType incoming) {
+        return incoming != null && type != Fluids.NONE && incoming == getFluid();
+    }
+    /** Physical connection ignores stored content; a strict identifier still limits the resource. */
+    public boolean joins(@Nullable FluidType incoming) {
+        if (incoming == null || incoming == Fluids.NONE || type == Fluids.NONE) return false;
+        return pin != null ? incoming == pin : incoming == type || Fluids.kindOf(incoming) == type;
+    }
+
     public void resetTank() {
-        this.type = Fluids.NONE;
-        this.fluid = 0;
-        this.pressure = 0;
+        var changed = type != Fluids.NONE || pin != null;
+        type = Fluids.NONE;
+        pin = null;
+        pinnedConnections = null;
+        held = null;
+        fluid = 0;
+        pressure = 0;
+        if (changed) declaredChanged();
     }
-
-    /** Changes type and pressure based on a fluid stack, useful for changing tank types based on recipes. */
     public FluidTankNTM conform(FluidStack stack) {
-        this.setTankType(stack.type);
-        this.withPressure(stack.pressure);
-        return this;
+        setTankType(stack.type);
+        return withPressure(stack.pressure);
     }
-
     public int getFill() { return fluid; }
-
-    public void setFill(int i) { fluid = i; }
-
+    public void setFill(int amount) {
+        if (fluid == 0 && amount > 0 && type.isForeign()) held = type;
+        fluid = Mth.clamp(amount, 0, maxFluid);
+        if (fluid == 0) held = null;
+    }
     public int getMaxFill() { return maxFluid; }
-
     public int getPressure() { return pressure; }
-
     public int changeTankSize(int size) {
         maxFluid = size;
-        if (fluid > maxFluid) {
-            int dif = fluid - maxFluid;
-            fluid = maxFluid;
-            return dif;
-        }
-        return 0;
+        var excess = Math.max(0, fluid - maxFluid);
+        if (excess > 0) setFill(maxFluid);
+        return excess;
+    }
+    public int receive(FluidType incoming, int amount) {
+        if (!accepts(incoming)) return 0;
+        var accepted = Math.min(amount, maxFluid - fluid);
+        if (accepted <= 0) return 0;
+        if (fluid == 0) held = incoming.isForeign() || incoming != type ? incoming : null;
+        fluid += accepted;
+        return accepted;
+    }
+    /** Moves actual contents without changing either tank's typing or pressure setting. */
+    public int transferTo(FluidTankNTM target, int amount) {
+        var moved = target.receive(getFluid(), Math.min(amount, fluid));
+        if (moved > 0) setFill(fluid - moved);
+        return moved;
     }
 
-    /**
-     * Fills this tank with {@code amount} of {@code incomingType}, returns how much was accepted. If the
-     * tank is empty it adopts the incoming type; otherwise the types must match.
-     */
-    public int fill(FluidType incomingType, int amount, boolean doFill) {
-        if (incomingType == null || incomingType == Fluids.NONE || amount <= 0) return 0;
-        if (this.type == Fluids.NONE) {
-            int toTransfer = Math.min(getMaxFill(), amount);
-            if (doFill) {
-                this.type = incomingType;
-                this.setFill(toTransfer);
+    /** Capacity-proportional balancing with exact identity and integer conservation. */
+    public int balanceWith(FluidTankNTM other) {
+        if (getTankType() != other.getTankType()) return 0;
+        var total = (long) fluid + other.fluid;
+        if (total == 0) return 0;
+        var resource = fluid > 0 ? getFluid() : other.getFluid();
+        if (!accepts(resource) || !other.accepts(resource)) return 0;
+        var capacity = (long) maxFluid + other.maxFluid;
+        var wanted = (int) ((total * maxFluid + capacity - 1) / capacity);
+        return wanted > fluid ? other.transferTo(this, wanted - fluid) : transferTo(other, fluid - wanted);
+    }
+
+    public int fill(FluidType incoming, int amount, boolean doFill) {
+        if (incoming == null || incoming == Fluids.NONE || amount <= 0) return 0;
+        if (type == Fluids.NONE) {
+            var accepted = Math.min(maxFluid, amount);
+            if (doFill && accepted > 0) {
+                type = Fluids.kindOf(incoming);
+                held = incoming.isForeign() || incoming != type ? incoming : null;
+                fluid = accepted;
+                declaredChanged();
             }
-            return toTransfer;
-        } else {
-            if (!this.type.equals(incomingType)) return 0;
-            int toTransfer = Math.min(getMaxFill() - getFill(), amount);
-            if (doFill && toTransfer > 0) setFill(getFill() + toTransfer);
-            return toTransfer;
+            return accepted;
+        }
+        if (!accepts(incoming)) return 0;
+        return doFill ? receive(incoming, amount) : Math.min(amount, maxFluid - fluid);
+    }
+
+    private static @Nullable FluidType resource(String id) {
+        var exact = id.isEmpty() ? Fluids.NONE : Fluids.byRegistryNameExact(id);
+        return exact == Fluids.NONE ? null : exact;
+    }
+    private void restoreIdentities(@Nullable FluidType pin, @Nullable FluidType held, boolean missingHeld) {
+        this.pin = pin;
+        pinnedConnections = pin == null ? null : new FluidType[]{pin};
+        this.held = held != null ? held : fluid > 0 && type.isForeign() ? type : null;
+        if (missingHeld) fluid = 0;
+        setFill(fluid);
+        if (pin != null && this.held != null && pin != this.held) {
+            throw new IllegalStateException("Tank contents do not match its exact identifier pin");
         }
     }
-
-    // --- persistence (NBT) ---
-
-    /** Writes fill/max/type/pressure under keys prefixed by {@code s}. */
-    public void writeToNBT(DataOut nbt, String s) {
-        nbt.putInt(s, fluid);
-        nbt.putInt(s + "_max", maxFluid);
-        Fluids.write(nbt, s + "_type", type); // registry name, never the numeric id
-        nbt.putShort(s + "_p", (short) pressure);
+    public void writeToNBT(DataOut out, String key) {
+        out.putInt(key, fluid);
+        out.putInt(key + "_max", maxFluid);
+        Fluids.write(out, key + "_type", type);
+        out.putShort(key + "_p", (short) pressure);
+        if (pin != null) Fluids.write(out, key + "_pin", pin);
+        if (held != null) Fluids.write(out, key + "_held", held);
     }
-
-    /** Writes fill, capacity and type under {@code key} into an item's carried data. */
-    public void writeCarried(CompoundTag tag, String key) {
-        tag.putInt(key, fluid);
-        tag.putInt(key + "_max", maxFluid);
-        Fluids.write(tag, key + "_type", type);
+    public void writeCarried(CompoundTag out, String key) {
+        out.putInt(key, fluid);
+        out.putInt(key + "_max", maxFluid);
+        Fluids.write(out, key + "_type", type);
+        if (pin != null) Fluids.write(out, key + "_pin", pin);
+        if (held != null) Fluids.write(out, key + "_held", held);
     }
-
-    /** Reads what {@link #writeCarried} wrote; the capacity stays the tile's own. */
-    public void readCarried(CompoundTag tag, String key) {
-        type = Fluids.read(tag, key + "_type");
-        fluid = Math.min(Tags.getIntOr(tag, key, 0), maxFluid);
+    public void readCarried(CompoundTag in, String key) {
+        type = Fluids.readExact(in, key + "_type");
+        fluid = Tags.getIntOr(in, key, 0);
+        var heldId = Tags.getStringOr(in, key + "_held", "");
+        var held = resource(heldId);
+        restoreIdentities(resource(Tags.getStringOr(in, key + "_pin", "")), held, !heldId.isEmpty() && held == null);
     }
-
-    public void readFromNBT(DataIn nbt, String s) {
-        fluid = nbt.getIntOr(s, 0);
-        int max = nbt.getIntOr(s + "_max", 0);
-        if (max > 0) maxFluid = max;
-        fluid = Mth.clamp(fluid, 0, maxFluid);
-        type = Fluids.read(nbt, s + "_type");
-        this.pressure = nbt.getShortOr(s + "_p", (short) 0);
+    public void readFromNBT(DataIn in, String key) {
+        fluid = in.getIntOr(key, 0);
+        var maximum = in.getIntOr(key + "_max", 0);
+        if (maximum > 0) maxFluid = maximum;
+        type = Fluids.readExact(in, key + "_type");
+        pressure = in.getShortOr(key + "_p", (short) 0);
+        var heldId = in.getStringOr(key + "_held", "");
+        var held = resource(heldId);
+        restoreIdentities(resource(in.getStringOr(key + "_pin", "")), held, !heldId.isEmpty() && held == null);
     }
-
-    // --- per-tick sync ---
-
-    public void serialize(RegistryFriendlyByteBuf buf) {
-        serialize(buf, fluid);
+    public void serialize(RegistryFriendlyByteBuf buffer) { serialize(buffer, fluid); }
+    public void serialize(RegistryFriendlyByteBuf buffer, int fill) {
+        serialize(buffer, fill, getFluid(), pin);
     }
-
-    /** Same wire format as {@link #serialize(RegistryFriendlyByteBuf)} but with a caller-supplied fill (a pre-tick snapshot). */
-    public void serialize(RegistryFriendlyByteBuf buf, int fill) {
-        buf.writeInt(fill);
-        buf.writeInt(maxFluid);
-        buf.writeInt(Fluids.networkId(type));
-        buf.writeShort(pressure);
+    /** The resource and pin accompany a caller's pre-processing fill snapshot without allocating per tick. */
+    public void serialize(RegistryFriendlyByteBuf buffer, int fill, FluidType resource, @Nullable FluidType snapshotPin) {
+        packetSerialize(buffer, fill, resource, snapshotPin);
     }
-
-    public void deserialize(RegistryFriendlyByteBuf buf) {
-        fluid = buf.readInt();
-        maxFluid = buf.readInt();
-        type = Fluids.byNetworkId(buf.readInt());
-        pressure = buf.readShort();
+    /** The same native tank payload in an independently encoded state unit. */
+    public void packetSerialize(ByteBuf buffer) { packetSerialize(buffer, fluid, getFluid(), pin); }
+    private void packetSerialize(ByteBuf buffer, int fill, FluidType resource, @Nullable FluidType snapshotPin) {
+        buffer.writeInt(fill);
+        buffer.writeInt(maxFluid);
+        buffer.writeInt(Fluids.networkId(type));
+        buffer.writeShort(pressure);
+        buffer.writeInt(snapshotPin == null ? -1 : Fluids.networkId(snapshotPin));
+        var snapshotHeld = fill > 0 && (resource.isForeign() || resource != type) ? resource : null;
+        buffer.writeInt(snapshotHeld == null ? -1 : Fluids.networkId(snapshotHeld));
     }
-
-    @Override
-    public FluidTankNTM clone() {
+    public void deserialize(RegistryFriendlyByteBuf buffer) { packetDeserialize(buffer); }
+    public void packetDeserialize(ByteBuf buffer) {
+        fluid = buffer.readInt();
+        maxFluid = buffer.readInt();
+        type = Fluids.byNetworkIdExact(buffer.readInt());
+        pressure = buffer.readShort();
+        var pinId = buffer.readInt();
+        var heldId = buffer.readInt();
+        var held = heldId < 0 ? null : Fluids.byNetworkIdExact(heldId);
+        restoreIdentities(pinId < 0 ? null : Fluids.byNetworkIdExact(pinId), held, heldId >= 0 && held == Fluids.NONE);
+    }
+    @Override public FluidTankNTM clone() {
         try {
-            return (FluidTankNTM) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
+            var copy = (FluidTankNTM) super.clone();
+            copy.owner = null;
+            return copy;
+        } catch (CloneNotSupportedException error) { throw new AssertionError(error); }
     }
 }

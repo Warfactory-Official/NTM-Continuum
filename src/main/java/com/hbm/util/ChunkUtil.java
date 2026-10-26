@@ -2,6 +2,7 @@ package com.hbm.util;
 
 import com.hbm.world.chunk.ChunkLoaderTicket;
 import com.hbm.world.chunk.ChunkLoadingManager;
+import dev.golem.core.world.Chunks;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -72,13 +73,9 @@ public final class ChunkUtil {
         drop(claims, chunkPos);
     }
 
-    /**
-     * Blocks until {@code chunkPos} is loaded. ntm-next additionally waited for the entity-ticking future;
-     * here the accompanying anchor keeps the chunk at ticking level and the blocking load is enough for the
-     * one-tick spawn that follows.
-     */
+    /** Waits for the caller's held chunk to tick entities and finish loading its stored entities. */
     public static void loadEntityTickingChunk(ServerLevel level, long chunkPos) {
-        level.getChunk(ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
+        Chunks.loadEntityTicking(level, ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
     }
 
     /** Force-loads {@code chunkPos} for one of our own holders; always ours, so always {@code true}. */
@@ -101,6 +98,16 @@ public final class ChunkUtil {
         }
         claims.forced.remove(chunkPos);
         drop(claims, chunkPos);
+    }
+
+    /** Holds a blast's chunk loaded without simulating it; paired with {@link #releaseChunkAsync}. */
+    public static void addBlastTicket(ServerLevel level, long chunkPos) {
+        Chunks.claimForLoading(level, ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
+    }
+
+    /** Releases one loading-only blast claim without waiting for a chunk to unload. */
+    public static void releaseChunkAsync(ServerLevel level, long chunkPos) {
+        Chunks.releaseForLoading(level, ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos));
     }
 
     /** Forgets every claim; the manager already released the tickets with the level. */

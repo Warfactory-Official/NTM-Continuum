@@ -1,5 +1,7 @@
 package com.hbm.api.energymk2;
 
+import com.hbm.capability.MachineEnergyExposure;
+import com.hbm.capability.CapRole;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.capability.MachineCaps;
@@ -81,6 +83,7 @@ public final class PowerNetwork {
 
     public static void init() {
         EndpointRegistry.init();
+        MachineEnergyExposure.init();
         EnergyExposure.expose(PowerEnergySource.INSTANCE,
                 () -> new Block[]{
                         ModMachineBlocks.red_cable.get()});
@@ -100,8 +103,8 @@ public final class PowerNetwork {
     }
 
     /**
-     * A merge discards the drained net's object and its bridge; the pools it carries are position-blind,
-     * so adding them onto the survivor's is exact conservation.
+     * A merge discards the drained net's graph object. Its position-blind bridge pools join the survivor once
+     * any loader snapshots of either owner have closed, so rollback cannot restore a pool already absorbed.
      */
     public static void mergeBridges(NodeNetwork<CableData> keep, NodeNetwork<CableData> drain) {
         if (BRIDGES.isEmpty()) return;
@@ -171,11 +174,14 @@ public final class PowerNetwork {
                         // a machine with power ports is connected by them alone
                         if (handler.isLoaded() && !PortNodes.isPorted(level, handler, true)) {
                             // each role once per round, whichever of its faces carries it
+                            var side = d == EdgeFaces.SELF ? null : DIRS[d].getOpposite();
                             boolean provide = handler instanceof IEnergyProviderMK2
+                                    && MachineCaps.accepts(be, side, CapRole.POWER_OUT)
                                     && !gather.seenProviding.contains(handler)
-                                    && Math.min(handler.getPower(), handler.getProviderSpeed()) > 0L
+                                    && handler.getPowerAvailable() > 0L
                                     && gather.seenProviding.add(handler);
                             boolean receive = handler instanceof IEnergyReceiverMK2
+                                    && MachineCaps.accepts(be, side, CapRole.POWER_IN)
                                     && !gather.seenReceiving.contains(handler)
                                     && Math.min(handler.getMaxPower() - handler.getPower(), handler.getReceiverSpeed()) > 0L
                                     && gather.seenReceiving.add(handler);
@@ -211,7 +217,7 @@ public final class PowerNetwork {
         long before = 0L;
         for (Object entry : net.providerEntries) {
             IEnergyHandlerMK2 provider = (IEnergyHandlerMK2) entry;
-            if (Math.min(provider.getPower(), provider.getProviderSpeed()) > 0L) before += provider.getPower();
+            if (provider.getPowerAvailable() > 0L) before += provider.getTrackedPower();
         }
 
         long supply = gather.totalSupply();
@@ -246,7 +252,7 @@ public final class PowerNetwork {
 
         // 1.7 sums every provider afterwards, also one whose speed is zero (a battery set to input)
         long after = 0L;
-        for (Object entry : net.providerEntries) after += Math.max(((IEnergyHandlerMK2) entry).getPower(), 0L);
+        for (Object entry : net.providerEntries) after += Math.max(((IEnergyHandlerMK2) entry).getTrackedPower(), 0L);
         net.tracker = net.providerEntries.isEmpty() || net.receiverEntries.isEmpty() ? 0L : before - after;
         for (NodeNetwork<CableData> cables : net.nets) {
             cables.tracker = net.tracker;
@@ -260,7 +266,7 @@ public final class PowerNetwork {
             if (!(owner instanceof IEnergyHandlerMK2 handler) || !handler.isLoaded()) continue;
             if (provide) {
                 if (!(handler instanceof IEnergyProviderMK2) || !net.providerEntries.add(handler)) continue;
-                if (Math.min(handler.getPower(), handler.getProviderSpeed()) > 0L && gather.seenProviding.add(handler)) {
+                if (handler.getPowerAvailable() > 0L && gather.seenProviding.add(handler)) {
                     gather.offer(handler, true, false);
                 }
             } else {
@@ -344,13 +350,19 @@ public final class PowerNetwork {
     }
 
     private static @Nullable BlockEntity handlerAt(ServerLevel level, BlockPos pos, int faceOrdinal) {
-        Direction face = faceOrdinal == EdgeFaces.SELF ? null : DIRS[faceOrdinal].getOpposite();
+        return handlerAtFace(level, pos, faceOrdinal == EdgeFaces.SELF ? null : DIRS[faceOrdinal].getOpposite());
+    }
+
+    /** The native network's owner lookup, using the queried block's own side. */
+    public static @Nullable BlockEntity handlerAtFace(ServerLevel level, BlockPos pos, @Nullable Direction face) {
         BlockEntity declared = EndpointRegistry.of(level).resolve(level, pos.asLong(), face, POWER);
-        if (declared instanceof IEnergyHandlerMK2) return declared;
+        if (declared instanceof IEnergyHandlerMK2 handler) {
+            return acceptsPower(declared, handler, face) ? declared : null;
+        }
 
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof IEnergyHandlerMK2 handler) {
-            return face == null || handler.canConnect(ForgeDirection.getOrientation(face)) ? be : null;
+            return acceptsPower(be, handler, face) ? be : null;
         }
         if (face == null) return null;
 
@@ -361,7 +373,13 @@ public final class PowerNetwork {
             return null;
         }
         BlockEntity core = MachineCore.at(level, pos, state);
-        return core instanceof IEnergyHandlerMK2 ? core : null;
+        return core instanceof IEnergyHandlerMK2 handler && acceptsPower(core, handler, face) ? core : null;
+    }
+
+    private static boolean acceptsPower(BlockEntity owner, IEnergyHandlerMK2 handler, @Nullable Direction face) {
+        return face == null || ((handler instanceof IEnergyReceiverMK2 && MachineCaps.accepts(owner, face, CapRole.POWER_IN))
+                || (handler instanceof IEnergyProviderMK2 && MachineCaps.accepts(owner, face, CapRole.POWER_OUT)))
+                && handler.canConnect(ForgeDirection.getOrientation(face));
     }
 
     private static BlockPos neighbourOf(long cellPos, int faceOrdinal) {
@@ -409,7 +427,7 @@ public final class PowerNetwork {
             // and IEnergyReceiverMK2.trySubscribe: a consumer's stored power is never supply, and a generator's
             // headroom is never demand, whatever its speeds say: a battery must not drain a machine.
             long supply = provide && handler instanceof IEnergyProviderMK2
-                    ? Math.min(handler.getPower(), handler.getProviderSpeed()) : 0L;
+                    ? handler.getPowerAvailable() : 0L;
             if (supply > 0L) {
                 if (buffer) {
                     bufferProviders[tier].add(new Distribution.Share<>(handler, supply));

@@ -38,3 +38,12 @@ To edit against another version, run the Stonecutter task `Set active project to
 `Reset active project` before committing.
 
 The in-game test harness is documented in [`../Golem-Core/harness/README.md`](../Golem-Core/harness/README.md).
+
+## Addon policies
+
+Addons provide environment policy through `Environment` hooks. `TERRAIN_FOG_RANGE` lets an addon own the
+terrain fog range while HBM's soot color remains active; without a listener, HBM retains its default range.
+Fog ranges use Golem Core's linear fog facade for compatibility with shader packs.
+
+Material ingredients accept every item in their common material tag. Their typed material/shape recipe
+declarations retain the canonical item used to generate recipe names.

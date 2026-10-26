@@ -1,5 +1,10 @@
 package com.hbm.util;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.world.entity.Entity;
@@ -9,10 +14,15 @@ import net.minecraft.world.entity.Entity;
  * plus the four 1.12.2 added (Golem, movblock, Hacker6329, EOS). The capes are in
  * {@code RenderAccessoryUtility}, the effects in {@link com.hbm.handler.SpecialPlayers}.
  *
- * <p>Not ported: the sign hashes and {@code smoosh} that unlocked the hidden Bobmazon
- * catalogue, Bob's {@code !gv} debug chat command, and everything to do with Alcater.
+ * <p>The sign hashes and {@code smoosh} also retain the hidden Bobmazon catalogue's authored acquisition.
+ * Bob's {@code !gv} debug chat command and Alcater's effects are not included.
  */
 public final class ShadyUtil {
+
+    // 1.7 ShadyUtil:54-56
+    public static final Set<String> HASHES = new HashSet<>(Set.of(
+            "41de5c372b0589bbdb80571e87efa95ea9e34b0d74c6005b8eab495b7afd9994",
+            "31da6223a100ed348ceb3254ceab67c9cc102cb2a04ac24de0df3ef3479b1036"));
 
     private ShadyUtil() {}
 
@@ -69,5 +79,47 @@ public final class ShadyUtil {
 
     public static boolean is(UUID id, String uuid) {
         return id != null && id.toString().equals(uuid);
+    }
+
+    /**
+     * 1.7 charset was the platform default; UTF-8 is pinned so the digest does not move with the JVM.
+     * Only {@code b[0]} of each line feeds a seed, so any single-byte-compatible line agrees with 1.7.
+     */
+    public static String smoosh(String s1, String s2, String s3, String s4) {
+
+        var rand = new Random();
+        StringBuilder s = new StringBuilder();
+
+        byte[] b1 = s1.getBytes(StandardCharsets.UTF_8);
+        byte[] b2 = s2.getBytes(StandardCharsets.UTF_8);
+        byte[] b3 = s3.getBytes(StandardCharsets.UTF_8);
+        byte[] b4 = s4.getBytes(StandardCharsets.UTF_8);
+
+        if (b1.length == 0 || b2.length == 0 || b3.length == 0 || b4.length == 0) return "";
+
+        s.append(s1);
+        rand.setSeed(b1[0]);
+        s.append(rand.nextInt(0xffffff));
+        s.append(s2);
+        rand.setSeed(rand.nextInt(0xffffff) + b2[0]);
+        s.append(rand.nextInt(0xffffff));
+        s.append(s3);
+        rand.setSeed(rand.nextInt(0xffffff) + b3[0]);
+        s.append(rand.nextInt(0xffffff));
+        s.append(s4);
+        rand.setSeed(rand.nextInt(0xffffff) + b4[0]);
+        s.append(rand.nextInt(0xffffff));
+        return getHash(s.toString());
+    }
+
+    public static String getHash(String input) {
+        try {
+            byte[] bytes = MessageDigest.getInstance("SHA-256").digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder str = new StringBuilder(bytes.length * 2);
+            for (int b : bytes) str.append(Integer.toString((b & 0xFF) + 256, 16).substring(1));
+            return str.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 is unavailable", e);
+        }
     }
 }

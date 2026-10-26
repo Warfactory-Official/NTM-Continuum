@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -35,7 +37,7 @@ import java.util.Locale;
 
 /** The 7x4x4 industrial steam turbine multiblock. */
 public class MachineIndustrialTurbine extends BlockMultiblockMachine
-        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider {
+        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider, ICapabilityBlock {
 
     public MachineIndustrialTurbine(Properties properties) {
         super(properties);
@@ -166,4 +168,12 @@ public class MachineIndustrialTurbine extends BlockMultiblockMachine
                 {0, 1, -3, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerOut().fluidIn().fluidOut().fe()
+            .faces(TileEntityMachineIndustrialTurbine.class, (be, side) -> be.canConnect(ForgeDirection.getOrientation(side)))
+            .fluidContacts(TileEntityMachineIndustrialTurbine.class);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

@@ -55,6 +55,6 @@ public class CrystallizerRenderer extends GemBER<TileEntityMachineCrystallizer, 
         };
         state.angle = be.prevAngle + (be.angle - be.prevAngle) * partialTicks;
         state.processing = be.isOn;
-        state.fluidColor = be.tank.getTankType().getColor();
+        state.fluidColor = be.tank.getTankType().clientMetadata().getColor();
     }
 }

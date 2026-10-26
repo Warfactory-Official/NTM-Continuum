@@ -1,5 +1,8 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.inventory.fluid.Fluids;
@@ -32,7 +35,7 @@ import com.hbm.tileentity.TilePortShapes;
  * {@code LAVA} per tick into whatever fluid receiver sits on top of it. The Hephaestus counts it as a
  * 300-heat source by registry id.
  */
-public class BlockFissure extends CompatBlock implements TickingBlock {
+public class BlockFissure extends CompatBlock implements TickingBlock, ICapabilityBlock {
 
     public static final BooleanProperty CRATER = BooleanProperty.create("crater");
 
@@ -86,4 +89,11 @@ public class BlockFissure extends CompatBlock implements TickingBlock {
         @Override public @NonNull FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{lava}; }
         @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{lava}; }
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidOut()
+            .fluidFaces(BlockEntity.class, (be, side) -> side == Direction.DOWN);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

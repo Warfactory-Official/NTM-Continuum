@@ -55,6 +55,8 @@ import com.hbm.tileentity.TilePort.PortDef;
 public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineBase
         implements IEnergyReceiverMK2, IFluidStandardReceiverMK2 {
 
+    public static final int SLOT_MISSILE = 0;
+
     public long power;
     public static final long maxPower = 100000;
     public int solid;
@@ -181,7 +183,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
                 worldPosition.getY() + 2.5D, worldPosition.getZ() + 0.5D);
         int x = (int) Math.floor(spawn.x), z = (int) Math.floor(spawn.z);
 
-        ItemStack missileStack = inventory.getStackInSlot(0);
+        ItemStack missileStack = inventory.getStackInSlot(SLOT_MISSILE);
         ItemCustomMissilePart chip = ItemCustomMissile.chip(missileStack);
         float c = chip != null ? chip.inaccuracy() : 0F;
         float f = 1.0F;
@@ -206,7 +208,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
 
         subtractFuel();
 
-        inventory.setStackInSlot(0, ItemStack.EMPTY);
+        inventory.setStackInSlot(SLOT_MISSILE, ItemStack.EMPTY);
         setChanged();
     }
 
@@ -219,7 +221,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
     }
 
     private void subtractFuel() {
-        MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
+        MissileStruct multipart = getStruct(inventory.getStackInSlot(SLOT_MISSILE));
         if (multipart == null || multipart.fuselage() == null) return;
 
         ItemCustomMissilePart fuselage = multipart.fuselage();
@@ -242,7 +244,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
     }
 
     public boolean isMissileValid() {
-        MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
+        MissileStruct multipart = getStruct(inventory.getStackInSlot(SLOT_MISSILE));
         if (multipart == null || multipart.fuselage() == null) return false;
         return multipart.fuselage().top == acceptedSize();
     }
@@ -254,8 +256,10 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
     }
 
     /** 1 = enough, 0 = not enough, -1 = this missile burns no solid fuel (or there is none). */
-    public int solidState() {
-        MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
+    public int solidState() { return solidState(inventory.getStackInSlot(SLOT_MISSILE)); }
+
+    public int solidState(ItemStack missile) {
+        MissileStruct multipart = getStruct(missile);
         if (multipart == null || multipart.fuselage() == null) return -1;
         ItemCustomMissilePart fuselage = multipart.fuselage();
         if (fuselage.fuelType() == ItemCustomMissilePart.FuelType.SOLID) {
@@ -264,22 +268,26 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
         return -1;
     }
 
-    public int liquidState() {
-        MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
+    public int liquidState() { return liquidState(inventory.getStackInSlot(SLOT_MISSILE)); }
+
+    public int liquidState(ItemStack missile) {
+        MissileStruct multipart = getStruct(missile);
         if (multipart == null || multipart.fuselage() == null) return -1;
         ItemCustomMissilePart fuselage = multipart.fuselage();
         return !fuselage.fuelType().solid() ? (tanks[0].getFill() >= fuselage.fuelAmount() ? 1 : 0) : -1;
     }
 
-    public int oxidizerState() {
-        MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
+    public int oxidizerState() { return oxidizerState(inventory.getStackInSlot(SLOT_MISSILE)); }
+
+    public int oxidizerState(ItemStack missile) {
+        MissileStruct multipart = getStruct(missile);
         if (multipart == null || multipart.fuselage() == null) return -1;
         ItemCustomMissilePart fuselage = multipart.fuselage();
         return fuselage.fuelType().oxidizer != null ? (tanks[1].getFill() >= fuselage.fuelAmount() ? 1 : 0) : -1;
     }
 
     public void updateTypes() {
-        MissileStruct multipart = getStruct(inventory.getStackInSlot(0));
+        MissileStruct multipart = getStruct(inventory.getStackInSlot(SLOT_MISSILE));
         if (multipart == null || multipart.fuselage() == null) return;
 
         // 1.7 updateTypes: each fuel names its tanks' fluids; solid fuel and a missing oxidiser leave a tank alone
@@ -323,7 +331,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
         tanks[0].serialize(buf);
         tanks[1].serialize(buf);
         // 1.7 sent the struct in its own packet every tick, an all-empty one when the slot was empty
-        MissileStruct struct = getStruct(inventory.getStackInSlot(0));
+        MissileStruct struct = getStruct(inventory.getStackInSlot(SLOT_MISSILE));
         writeStruct(buf, struct == null ? MissileStruct.EMPTY : struct);
     }
 
@@ -371,7 +379,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
         solid = input.getIntOr("solidfuel", 0);
         power = input.getLongOr("power", 0L);
         // chunk-load tag on the client: the pad shows its missile before the first pack arrives
-        MissileStruct struct = getStruct(inventory.getStackInSlot(0));
+        MissileStruct struct = getStruct(inventory.getStackInSlot(SLOT_MISSILE));
         load = struct;
     }
 }

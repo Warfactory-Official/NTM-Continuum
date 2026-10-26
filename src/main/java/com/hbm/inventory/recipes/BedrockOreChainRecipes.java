@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
@@ -79,12 +80,19 @@ public final class BedrockOreChainRecipes {
 
     public static void pyroOven(List<PyroOvenRecipe> recipes) {
         for (BedrockOreType type : CHAIN_TYPES) {
-            recipes.add(new PyroOvenRecipe(10).in(in(BASE, type)).out(new FluidStack(Fluids.VITRIOL, 50)).out(make(BASE_ROASTED, type)));
-            recipes.add(new PyroOvenRecipe(10).in(in(PRIMARY, type)).out(new FluidStack(Fluids.VITRIOL, 50)).out(make(PRIMARY_ROASTED, type)));
-            recipes.add(new PyroOvenRecipe(10).in(in(SULFURIC_BYPRODUCT, type)).out(new FluidStack(Fluids.VITRIOL, 50)).out(make(SULFURIC_ROASTED, type)));
-            recipes.add(new PyroOvenRecipe(10).in(in(SOLVENT_BYPRODUCT, type)).out(new FluidStack(Fluids.VITRIOL, 50)).out(make(SOLVENT_ROASTED, type)));
-            recipes.add(new PyroOvenRecipe(10).in(in(RAD_BYPRODUCT, type)).out(new FluidStack(Fluids.VITRIOL, 50)).out(make(RAD_ROASTED, type)));
+            roast(recipes, type, BASE, BASE_ROASTED);
+            roast(recipes, type, PRIMARY, PRIMARY_ROASTED);
+            roast(recipes, type, SULFURIC_BYPRODUCT, SULFURIC_ROASTED);
+            roast(recipes, type, SOLVENT_BYPRODUCT, SOLVENT_ROASTED);
+            roast(recipes, type, RAD_BYPRODUCT, RAD_ROASTED);
         }
+    }
+
+    private static void roast(List<PyroOvenRecipe> recipes, BedrockOreType type, Grade inputGrade, Grade outputGrade) {
+        var input = in(inputGrade, type);
+        var itemId = BuiltInRegistries.ITEM.getKey(input.item);
+        recipes.add(new PyroOvenRecipe(10).identifiedBy(itemId.getNamespace() + ":pyrolysis/" + itemId.getPath())
+                .in(input).out(new FluidStack(Fluids.VITRIOL, 50)).out(make(outputGrade, type)));
     }
 
     // --- 1.7 CrystallizerRecipes, CentrifugeRecipes, ArcFurnaceRecipes, ElectrolyserMetalRecipes, ShredderRecipes ---

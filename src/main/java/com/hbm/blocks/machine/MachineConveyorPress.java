@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
@@ -39,7 +41,7 @@ import com.hbm.tileentity.machine.TileEntityConveyorPress;
  * A stamp is installed by right-clicking with it and removed with a screwdriver.
  */
 public final class MachineConveyorPress extends BlockMultiblockMachine
-        implements IConveyorBelt, IEnergyConnectorBlock, ILookOverlay, IToolable, ITooltipProvider {
+        implements IConveyorBelt, IEnergyConnectorBlock, ILookOverlay, IToolable, ITooltipProvider, ICapabilityBlock {
 
     private static final int[] DIMENSIONS = {2, 0, 0, 0, 0, 0};
 
@@ -167,4 +169,11 @@ public final class MachineConveyorPress extends BlockMultiblockMachine
                 {0, 0, 0, ForgeDirection.DOWN.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fe()
+            .faces(BlockEntity.class, (be, side) -> side != Direction.DOWN);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

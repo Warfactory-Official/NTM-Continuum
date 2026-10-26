@@ -104,16 +104,18 @@ public class RecipesCommon {
         }
     }
 
-    /** Matches any item in a {@link TagKey} (the ore-dictionary replacement). */
-    public static class TagStack extends AStack {
+    /** Shared tag matching and cycling display for dictionary and material ingredients. */
+    public static abstract class TagIngredient extends AStack {
         public final TagKey<Item> tag;
 
         /** Cached tag membership for display, resolved lazily once the tag is non-empty (tags load with
-         * the world; computing this fresh every frame for each ghost slot would scan the whole item registry). */
+         * the world; ghost slots reuse the resolved members rather than allocating stacks every frame). */
         private List<ItemStack> displayCache;
 
-        public TagStack(TagKey<Item> tag) { this(tag, 1); }
-        public TagStack(TagKey<Item> tag, int stacksize) { this.tag = tag; this.stacksize = stacksize; }
+        protected TagIngredient(TagKey<Item> tag, int stacksize) {
+            this.tag = tag;
+            this.stacksize = stacksize;
+        }
 
         @Override
         public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
@@ -125,45 +127,41 @@ public class RecipesCommon {
         public List<ItemStack> getDisplayStacks() {
             if (displayCache != null && !displayCache.isEmpty()) return displayCache;
             List<ItemStack> list = new ArrayList<>();
-            for (Item item : BuiltInRegistries.ITEM) {
-                ItemStack s = new ItemStack(item, stacksize);
-                if (s.is(tag)) list.add(s);
+            for (var holder : BuiltInRegistries.ITEM.getTagOrEmpty(tag)) {
+                list.add(new ItemStack(holder.value(), stacksize));
             }
-            // Only cache once non-empty. Before the world (and its tags) load, this scan finds nothing.
+            // Only cache once non-empty. Before the world (and its tags) load, there are no members.
             if (!list.isEmpty()) displayCache = list;
             return list;
         }
     }
 
+    /** Matches any item in a {@link TagKey} (the ore-dictionary replacement). */
+    public static class TagStack extends TagIngredient {
+        public TagStack(TagKey<Item> tag) { this(tag, 1); }
+        public TagStack(TagKey<Item> tag, int stacksize) { super(tag, stacksize); }
+    }
+
     /**
-     * Matches an HBM <b>autogen</b> metal-shape item ({@link ItemAutogen}) of a given {@link NTMMaterial} +
-     * {@link MaterialShapes shape}: the ingredient for shapes that are one item recoloured per material
-     * (cast/welded plate, shell, pipe, wire, …) and so can't be distinguished by item tags. Matching is by
-     * the item's {@link com.hbm.items.ModDataComponents#MATERIAL} component.
+     * A material/shape declaration with the same tag-wide acceptance as 1.7's ore-dictionary ingredients.
+     * Its typed identity is retained for recipe data and generated row names; cycling displays use all tag members.
      */
-    public static class MaterialStack extends AStack {
+    public static class MaterialStack extends TagIngredient {
         public final NTMMaterial material;
         public final MaterialShapes shape;
 
         public MaterialStack(NTMMaterial material, MaterialShapes shape) { this(material, shape, 1); }
         public MaterialStack(NTMMaterial material, MaterialShapes shape, int stacksize) {
+            super(material.tag(shape), stacksize);
             this.material = material;
             this.shape = shape;
-            this.stacksize = stacksize;
         }
 
+        /** Stable owned prototype for generated row names, which are resolved before live tags load. */
         @Override
-        public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
+        public ItemStack getDisplayStack() {
             ItemAutogen item = ModAutogenItems.get(shape, material);
-            if (item == null || stack.isEmpty() || stack.getItem() != item) return false;
-            return ignoreSize || stack.getCount() >= stacksize;
-        }
-
-        @Override
-        public List<ItemStack> getDisplayStacks() {
-            ItemAutogen item = ModAutogenItems.get(shape, material);
-            if (item == null) return List.of();
-            return List.of(new ItemStack(item, stacksize));
+            return item == null ? ItemStack.EMPTY : new ItemStack(item, stacksize);
         }
     }
 }

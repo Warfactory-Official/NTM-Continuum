@@ -176,7 +176,7 @@ public final class ScriptHookGameTests {
         helper.assertTrue(api.fluids().contains("hbm:oil") && !api.fluids().contains("hbm:none"), "fluids() lists hbm:oil");
         Map<String, Object> oil = api.fluid("oil");
         helper.assertTrue(oil != null && "hbm:oil".equals(oil.get("id"))
-                        && oil.get("temperature").equals(Fluids.OIL.temperature),
+                        && oil.get("temperature").equals(Fluids.OIL.getTemperature()),
                 "fluid('oil') must read hbm:oil: " + oil);
         helper.assertTrue(api.fluid("hbm:no_such_fluid") == null && !api.hasFluid("bad id!"), "unknown fluids read as null");
         helper.assertTrue(api.fluidTraits("hbm:oil").contains("liquid"), "oil is a liquid: " + api.fluidTraits("hbm:oil"));

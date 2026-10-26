@@ -184,7 +184,8 @@ public final class ModBlocks {
     public static final RegistryObject<Block> block_combine_steel = block("block_combine_steel", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 360.0F).sound(SoundType.METAL))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> block_desh = block("block_desh", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 180.0F).sound(SoundType.METAL))
-            .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
+            .transform(Presets.cubeAll()).loot(Loot.self())
+            .tag(BlockTag.PICKAXE).tag(BlockTag.of("c:storage_blocks/desh"));
     public static final RegistryObject<Block> block_dura_steel = block("block_dura_steel", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(5.0F, 120.0F).sound(SoundType.METAL))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> block_saturnite = block("block_saturnite", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(6.0F, 240.0F).sound(SoundType.METAL))

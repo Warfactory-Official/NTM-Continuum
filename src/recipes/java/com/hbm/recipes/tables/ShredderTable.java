@@ -22,6 +22,8 @@ import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.BedrockOreType;
 import com.hbm.items.special.ItemBedrockOreGraded.Grade;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 import dev.golem.core.Ids;
 import dev.golem.core.world.RecipeSource;
 import com.mojang.datafixers.util.Either;
@@ -266,6 +268,10 @@ public final class ShredderTable extends RecipeSource<Row> {
         setRecipe(Items.COBBLED_DEEPSLATE, new ItemStack(Items.GRAVEL));
         // port: ntm-next's raw aluminium grinds like its ore; the other raw ores go through the raw_materials sweep
         setRecipe(ModItems.raw_aluminium.get(), ModIntermediateItems.chunk(EnumChunkType.CRYOLITE, 2));
+        // 1.7 registerPost ingot sweep, copper stays NTM's (Space's table adds only Space metals).
+        // Tag input: the autogen ingot is not registered yet when data generates.
+        register("ingots_copper", new Row(Either.left(TagKey.create(Registries.ITEM, Ids.parse("c:ingots/copper"))),
+                ItemOut.of(new ItemStack(ModItems.powder_copper.get()))));
     }
 
     /** 1.7 {@code ShredderRecipes.setRecipe}: the first row of an input wins. */

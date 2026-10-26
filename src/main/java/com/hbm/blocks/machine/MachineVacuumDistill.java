@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -21,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Vacuum Distiller block: 3×3×9, the folded core (dims {@code {8,0,1,1,1,1}}, offset 1), with the
  * 4 base corners marked as extras (the fluid ports). Mirrors {@link MachineRefinery}. */
-public class MachineVacuumDistill extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public class MachineVacuumDistill extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder, ICapabilityBlock {
 
     public MachineVacuumDistill(Properties properties) {
         super(properties);
@@ -75,4 +77,12 @@ public class MachineVacuumDistill extends BlockMultiblockMachine implements IEne
                 {-1, 0, 1, ForgeDirection.WEST.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().fluidOut().items().fe()
+            .faces(BlockEntity.class, (be, side) -> side != Direction.DOWN)
+            .fluidFaces(BlockEntity.class, (be, side) -> side != Direction.DOWN);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

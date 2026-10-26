@@ -94,6 +94,11 @@ public final class RefineryRecipes {
         return VACUUM.get(oil);
     }
 
+    /** Input consumed by one vacuum-distillation operation. */
+    public static int getVacuumInputAmount() {
+        return 100;
+    }
+
     /** Read-only view for JEI display. */
     public static Map<FluidType, RefineryRecipe> getAll() {
         return TABLE.all();

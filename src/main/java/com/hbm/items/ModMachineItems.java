@@ -111,8 +111,7 @@ public final class ModMachineItems {
     /** Foundry scraps: solidified molten material (material + quanta amount in data components). */
     public static final RegistryObject<ItemScraps> scraps = REG.<ItemScraps>item(
             "scraps", ItemScraps::new, p -> p.stacksTo(64))
-            .icon(d -> d.models(Models.generated("hbm:items/scraps"))
-                    .definition(ItemModels.customModelDataFlag(0, ItemModels.model("hbm:item/scraps_liquid", Tints.customModelData(0, 16777215)), ItemModels.model("hbm:item/scraps", Tints.customModelData(0, 16777215)))));
+            .icon(declaration -> declaration.definition(ScrapsModels.definition(null)));
 
     // FEL laser crystals: the wavelength "lens" a Free Electron Laser is loaded with. Each one
     // unlocks the SILEX recipes at or below its wavelength and multiplies the speed of the weaker
@@ -139,6 +138,9 @@ public final class ModMachineItems {
 
     public static final RegistryObject<ItemArcElectrode> arc_electrode =
             arcElectrode("arc_electrode", ItemArcElectrode.ElectrodeType.GRAPHITE);
+    /** 1.7's graphite electrode under its family id (structure crates and recipes name it explicitly). */
+    public static final RegistryObject<ItemArcElectrode> arc_electrode_graphite =
+            arcElectrode("arc_electrode_graphite", ItemArcElectrode.ElectrodeType.GRAPHITE);
     public static final RegistryObject<ItemArcElectrode> arc_electrode_lanthanium =
             arcElectrode("arc_electrode_lanthanium", ItemArcElectrode.ElectrodeType.LANTHANIUM);
     public static final RegistryObject<ItemArcElectrode> arc_electrode_desh =
@@ -206,6 +208,7 @@ public final class ModMachineItems {
         ModTabs.addTo(HbmTab.CONTROL, blades_titanium);
         ModTabs.addTo(HbmTab.CONTROL, blades_desh);
         ModTabs.addTo(HbmTab.CONTROL, arc_electrode);
+        ModTabs.addTo(HbmTab.CONTROL, arc_electrode_graphite);
         ModTabs.addTo(HbmTab.CONTROL, arc_electrode_lanthanium);
         ModTabs.addTo(HbmTab.CONTROL, arc_electrode_desh);
         ModTabs.addTo(HbmTab.CONTROL, arc_electrode_saturnite);

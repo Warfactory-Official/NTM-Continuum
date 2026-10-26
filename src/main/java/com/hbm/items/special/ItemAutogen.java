@@ -21,15 +21,10 @@ import net.minecraft.world.item.ItemStack;
  * Recipes match these via {@link com.hbm.inventory.RecipesCommon.MaterialStack} (which resolves the exact
  * item for a material+shape).
  */
-public class ItemAutogen extends Item {
-
-    public final MaterialShapes shape;
-    public final NTMMaterial material;
+public class ItemAutogen extends MaterialShapeItem {
 
     public ItemAutogen(Properties properties, MaterialShapes shape, NTMMaterial material) {
-        super(properties);
-        this.shape = shape;
-        this.material = material;
+        super(properties, material, shape);
     }
 
     @Override

@@ -17,6 +17,8 @@ import java.util.Map;
  */
 public final class ReformingRecipes {
 
+    public static final int FILL_PER_OP = 100;
+
     private ReformingRecipes() {}
 
     /** Three fluid outputs per 100 mB input. */

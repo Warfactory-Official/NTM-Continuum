@@ -98,7 +98,7 @@ public class FluidTankRenderer extends GemBER<TileEntityMachineFluidTank, FluidT
         state.bodyTexture = bodyTextureFor(be.tank.getTankType());
         state.exploded = be.hasExploded;
         FluidType type = be.tank.getTankType();
-        state.hazard = type == null || type == Fluids.NONE ? null : type.getHazard();
+        state.hazard = type == null || type == Fluids.NONE ? null : type.clientMetadata().getHazard();
     }
 
     /**

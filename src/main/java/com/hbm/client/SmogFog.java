@@ -1,5 +1,6 @@
 package com.hbm.client;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.config.RadiationConfig;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.Fogs;
@@ -80,6 +81,7 @@ public final class SmogFog implements Fogs.Modifier {
 
     @Override
     public float far(Entity camera, float renderDistanceBlocks) {
+        if (Environment.TERRAIN_FOG_RANGE.invoker().test(camera.level())) return Float.NaN;
         if (camera instanceof LivingEntity living && living.hasEffect(MobEffects.BLINDNESS)) return Float.NaN;
         return fogEnd(renderSoot, renderDistanceBlocks);
     }

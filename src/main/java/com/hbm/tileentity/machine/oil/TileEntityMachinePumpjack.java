@@ -125,6 +125,20 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
         suckDeposit(pos, deposit, oilPerDeposit, gasPerDepositMin, gasPerDepositMax, drainChance);
     }
 
+    // A Space reserve states the derrick's rates. Scale the sampled amount, not its random range's endpoints.
+    @Override
+    protected int reservePrimary(DepositDataMaps.Reserve reserve) {
+        return (int) (super.reservePrimary(reserve) * 1.5D);
+    }
+
+    @Override
+    protected int reserveSecondary(DepositDataMaps.Reserve reserve) {
+        return (int) (super.reserveSecondary(reserve) * 0.5D);
+    }
+
+    @Override
+    protected double reserveDrainMultiplier() { return 0.5D; }
+
     protected PortDef[] cachedPorts;
     @Override
     public PortDef[] getPorts() {

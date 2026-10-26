@@ -109,6 +109,11 @@ public final class ArcFurnaceRecipes {
         return current;
     }
 
+    /** The actual current explicit and rule rows, in the order the machine looks them up. */
+    public static List<ArcFurnaceRecipe> getRecipes() {
+        return recipes();
+    }
+
     /** The recipe list being built, with 1.7's per-mode first-wins input sets. */
     static final class Builder {
         final List<ArcFurnaceRecipe> recipes = new ArrayList<>();

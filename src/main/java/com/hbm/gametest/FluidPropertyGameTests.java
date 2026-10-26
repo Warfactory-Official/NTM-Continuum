@@ -53,7 +53,7 @@ public final class FluidPropertyGameTests {
         helper.assertTrue(water != null && water.steps().size() == 4 && water.getFirstStep().heatReq == 200
                         && water.getFirstStep().typeProduced == Fluids.STEAM && water.getFirstStep().amountProduced == 100,
                 "water's boiling steps did not come from its property file");
-        helper.assertTrue(Fluids.LAVA.temperature == 1200 && Fluids.AIRBLAST.temperature == 1200,
+        helper.assertTrue(Fluids.LAVA.getTemperature() == 1200 && Fluids.AIRBLAST.getTemperature() == 1200,
                 "temperatures did not come from the property files");
         helper.succeed();
     }
@@ -185,7 +185,7 @@ public final class FluidPropertyGameTests {
         helper.assertTrue(acid.hasTrait(FluidTraitSimple.FT_Gaseous.class) && !acid.hasTrait(FluidTraitSimple.FT_Liquid.class),
                 "the patch did not change the phase" + when);
         helper.assertTrue(!acid.hasTrait(FluidTraitSimple.FT_Viscous.class), "the second patch was not applied after the first" + when);
-        helper.assertTrue(acid.temperature == 50, "the patch did not override the temperature" + when);
+        helper.assertTrue(acid.getTemperature() == 50, "the patch did not override the temperature" + when);
         helper.assertTrue(acid.isCorrosive() && acid.getHazard().equals(hazard), "the patch touched what it did not name" + when);
     }
 

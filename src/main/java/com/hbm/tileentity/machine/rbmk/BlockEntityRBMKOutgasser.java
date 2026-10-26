@@ -77,8 +77,8 @@ public class BlockEntityRBMKOutgasser extends BlockEntityRBMKBase implements IRB
     @Override public boolean isItemValidForSlot(int slot, ItemStack stack) { return slot == SLOT_INPUT && OutgasserRecipes.INSTANCE.getRecipe(stack) != null; }
     public int[] getSlotsForFace(Direction side) { return new int[]{SLOT_INPUT, SLOT_OUTPUT}; }
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == SLOT_OUTPUT; }
-    @Override public long getFluidAvailable(FluidType type, int pressure) { return type == gas.getTankType() && pressure == gas.getPressure() ? gas.getFill() : 0L; }
-    @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (type == gas.getTankType() && pressure == gas.getPressure()) { gas.setFill(gas.getFill() - (int) Math.min(amount, gas.getFill())); markChanged(); } }
+    @Override public long getFluidAvailable(FluidType type, int pressure) { return gas.provides(type) && pressure == gas.getPressure() ? gas.getFill() : 0L; }
+    @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (gas.provides(type) && pressure == gas.getPressure()) { gas.setFill(gas.getFill() - (int) Math.min(amount, gas.getFill())); markChanged(); } }
     @Override protected void saveData(DataOut output) { super.saveData(output); output.putDouble("progress", progress); gas.writeToNBT(output, "gas"); }
     @Override protected void loadData(DataIn input) { super.loadData(input); progress = input.getDoubleOr("progress", progress); gas.readFromNBT(input, "gas"); }
     @Override public void serialize(RegistryFriendlyByteBuf buffer) { super.serialize(buffer); gas.serialize(buffer); buffer.writeDouble(progress); }

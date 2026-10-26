@@ -1,5 +1,8 @@
 package com.hbm.items.special;
 
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import com.hbm.items.ModRadarUtilityItems;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.machine.TileEntityMachineTeleporter;
@@ -68,11 +71,9 @@ public class ItemTeleLink extends CompatItem {
             return InteractionResult.FAIL;
         }
 
-        tele.targetX = Tags.getIntOr(tag, "x", 0);
-        tele.targetY = Tags.getIntOr(tag, "y", 0);
-        tele.targetZ = Tags.getIntOr(tag, "z", 0);
-        tele.targetDim = Tags.getStringOr(tag, "dim", "minecraft:overworld");
-        tele.setChanged();
+        tele.setTarget(GlobalPos.of(ResourceKey.create(
+                Registries.DIMENSION, Ids.parse(Tags.getStringOr(tag, "dim", "minecraft:overworld"))),
+                new BlockPos(Tags.getIntOr(tag, "x", 0), Tags.getIntOr(tag, "y", 0), Tags.getIntOr(tag, "z", 0))));
         level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
                 SoundSource.PLAYERS, 1.0F, 1.0F);
         player.sendSystemMessage(Component.literal("[TeleLink] Teleporters destination has been set!")

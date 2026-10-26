@@ -1,5 +1,7 @@
 package com.hbm.inventory.material;
 
+import com.hbm.items.special.MaterialShapeItem;
+import java.util.Comparator;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.inventory.material.NTMMaterial.SmeltingBehavior;
 import com.hbm.items.ItemEnums.EnumAshType;
@@ -371,6 +373,42 @@ public final class Mats {
             .setAutogen(FRAGMENT);
     // END GENERATED MATERIAL COMPLETION
 
+    /*
+     * 1.7 declaration order (NTM 1.7 Mats sequence). Autogen families, tabs and shape listings iterate
+     * orderedList, so the list is sorted once all declarations have run; later runtime registrations
+     * (compat materials) append after it, and NTMMaterial.after() still repositions from there.
+     * MAT_RED_COPPER has no 1.7 position; it keeps its declaration neighbour. MAT_SATURNITE takes 1.7
+     * MAT_SATURN's position (same alloy under our name).
+     * The size check fails loudly if a material is added without extending ORDER_1_7 below.
+     */
+    private static final List<NTMMaterial> ORDER_1_7 = List.of(
+            MAT_WOOD, MAT_IVORY, MAT_STONE, MAT_CARBON, MAT_COAL, MAT_LIGNITE,
+            MAT_COALCOKE, MAT_PETCOKE, MAT_LIGCOKE, MAT_GRAPHITE, MAT_DIAMOND, MAT_IRON,
+            MAT_GOLD, MAT_REDSTONE, MAT_OBSIDIAN, MAT_HEMATITE, MAT_WROUGHTIRON, MAT_PIGIRON,
+            MAT_METEORICIRON, MAT_MALACHITE, MAT_BAUXITE, MAT_CRYOLITE, MAT_ILMENITE, MAT_URANIUM,
+            MAT_U233, MAT_U235, MAT_U238, MAT_THORIUM, MAT_PLUTONIUM, MAT_RGP,
+            MAT_PU238, MAT_PU239, MAT_PU240, MAT_PU241, MAT_RGA, MAT_AM241,
+            MAT_AM242, MAT_NEPTUNIUM, MAT_POLONIUM, MAT_TECHNETIUM, MAT_RADIUM, MAT_ACTINIUM,
+            MAT_CO60, MAT_AU198, MAT_PB209, MAT_SCHRABIDIUM, MAT_SOLINIUM, MAT_SCHRABIDATE,
+            MAT_SCHRARANIUM, MAT_GHIORSIUM, MAT_TITANIUM, MAT_COPPER, MAT_TUNGSTEN, MAT_ALUMINIUM,
+            MAT_LEAD, MAT_BISMUTH, MAT_ARSENIC, MAT_TANTALIUM, MAT_NEODYMIUM, MAT_NIOBIUM,
+            MAT_BERYLLIUM, MAT_EMERALD, MAT_COBALT, MAT_BORON, MAT_BORAX, MAT_LANTHANIUM,
+            MAT_ZIRCONIUM, MAT_SODIUM, MAT_SODALITE, MAT_STRONTIUM, MAT_CALCIUM, MAT_LITHIUM,
+            MAT_SULFUR, MAT_KNO, MAT_FLUORITE, MAT_PHOSPHORUS, MAT_CHLOROCALCITE, MAT_MOLYSITE,
+            MAT_CINNABAR, MAT_CADMIUM, MAT_SILICON, MAT_ASBESTOS, MAT_OSMIRIDIUM, MAT_STEEL,
+            MAT_DURA, MAT_DESH, MAT_RED_COPPER, MAT_STAR, MAT_FERRO,
+            MAT_TCALLOY, MAT_CDALLOY, MAT_BBRONZE, MAT_ABRONZE, MAT_BSCCO, MAT_MAGTUNG,
+            MAT_CMB, MAT_DNT, MAT_FLUX, MAT_SLAG, MAT_MUD, MAT_GUNMETAL,
+            MAT_WEAPONSTEEL, MAT_SATURNITE, MAT_RAREEARTH, MAT_POLYMER, MAT_BAKELITE, MAT_RUBBER, MAT_HARDPLASTIC,
+            MAT_PVC);
+    static {
+        if (ORDER_1_7.size() != orderedList.size() || !orderedList.containsAll(ORDER_1_7)) {
+            throw new IllegalStateException("Mats.ORDER_1_7 (" + ORDER_1_7.size() + ") no longer covers orderedList ("
+                    + orderedList.size() + "); extend it with the new material in 1.7 position");
+        }
+        orderedList.sort(Comparator.comparingInt(ORDER_1_7::indexOf));
+    }
+
     // BEGIN GENERATED MATERIAL DISPLAY NAMES
     static {
         MAT_WOOD.displayName("Wood");
@@ -552,11 +590,11 @@ public final class Mats {
         List<MaterialStack> entries = materialEntries.get(stack.getItem());
         if (entries != null) for (MaterialStack ms : entries) list.add(ms.copy());
 
-        if (list.isEmpty() && stack.getItem() instanceof com.hbm.items.special.ItemAutogen autogen) {
-            NTMMaterial material = autogen.material;
+        if (list.isEmpty() && stack.getItem() instanceof MaterialShapeItem materialItem) {
+            NTMMaterial material = materialItem.material;
             if (material.smeltsInto.smeltable == SmeltingBehavior.SMELTABLE
                     || material.smeltsInto.smeltable == SmeltingBehavior.ADDITIVE) {
-                list.add(new MaterialStack(material, autogen.shape.quantity));
+                list.add(new MaterialStack(material, materialItem.shape.quantity));
             }
         }
 

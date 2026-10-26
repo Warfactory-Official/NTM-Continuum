@@ -1,10 +1,18 @@
 package com.hbm.mixin;
 
+import com.hbm.handler.SpecialPlayers;
+import java.util.Arrays;
+import com.hbm.blocks.multiblock.MultiblockPlacementEscape;
 import com.hbm.items.armor.ArmorFSB;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
@@ -19,11 +27,85 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * <p>HEAD, because vanilla resets {@code fallDistance} immediately afterwards.
  *
  * <p>The two branches are a descriptor guard: the first parameter widened from {@code float} to
- * {@code double} at 26.1, and a mixin injector's parameters must match its target exactly. AGENTS.md §1
- * lists that as the one era-guard category that legitimately belongs in HBM.
+ * {@code double} at 26.1, and a mixin injector's parameters must match its target exactly.
  */
 @Mixin(Player.class)
-public class MixinPlayer {
+public class MixinPlayer implements MultiblockPlacementEscape.State {
+
+    @Unique private @Nullable long[] hbm$escapeCores;
+    @Unique private int hbm$escapeCount;
+    @Unique private @Nullable Level hbm$escapeLevel;
+
+    @Override
+    public void hbm$grantPlacementEscape(Level level, long core) {
+        if (hbm$escapeLevel != level) {
+            hbm$escapeCount = 0;
+            hbm$escapeLevel = level;
+        }
+        for (var i = 0; i < hbm$escapeCount; i++) {
+            if (hbm$escapeCores[i] == core) return;
+        }
+        if (hbm$escapeCores == null) hbm$escapeCores = new long[2];
+        else if (hbm$escapeCount == hbm$escapeCores.length) {
+            hbm$escapeCores = Arrays.copyOf(hbm$escapeCores, hbm$escapeCount * 2);
+        }
+        hbm$escapeCores[hbm$escapeCount++] = core;
+    }
+
+    @Override
+    public void hbm$refreshPlacementEscape() {
+        if (hbm$escapeCount == 0) return;
+        var player = (Player) (Object) this;
+        if (hbm$escapeLevel != player.level()) {
+            hbm$escapeCount = 0;
+            hbm$escapeLevel = null;
+            return;
+        }
+        var feet = BlockPos.containing(player.getX(), player.getY() + 0.1D, player.getZ());
+        var feetOwner = MultiblockPlacementEscape.ownerAt(player.level(), feet);
+        var headOwner = MultiblockPlacementEscape.ownerAt(player.level(), feet.above());
+        if (feetOwner == MultiblockPlacementEscape.UNRESOLVED || headOwner == MultiblockPlacementEscape.UNRESOLVED) {
+            return;
+        }
+        var kept = 0;
+        for (var i = 0; i < hbm$escapeCount; i++) {
+            var core = hbm$escapeCores[i];
+            if (core == feetOwner || core == headOwner) hbm$escapeCores[kept++] = core;
+        }
+        hbm$escapeCount = kept;
+        if (kept == 0) hbm$escapeLevel = null;
+    }
+
+    @Override
+    public boolean hbm$hasPlacementEscape() {
+        hbm$refreshPlacementEscape();
+        return hbm$escapeCount != 0;
+    }
+
+    @Override
+    public boolean hbm$ignoresPlacementCollision(Level level, BlockPos pos) {
+        if (hbm$escapeCount == 0 || level != ((Player) (Object) this).level()) return false;
+        hbm$refreshPlacementEscape();
+        if (hbm$escapeCount == 0) return false;
+        var owner = MultiblockPlacementEscape.ownerAt(level, pos);
+        if (owner == MultiblockPlacementEscape.NO_CORE || owner == MultiblockPlacementEscape.UNRESOLVED) return false;
+        for (var i = 0; i < hbm$escapeCount; i++) {
+            if (hbm$escapeCores[i] == owner) return true;
+        }
+        return false;
+    }
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void hbm$playerTickStart(CallbackInfo ci) {
+        SpecialPlayers.tickStart((Player) (Object) this);
+        hbm$refreshPlacementEscape();
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void hbm$playerTickEnd(CallbackInfo ci) {
+        SpecialPlayers.tickEnd((Player) (Object) this);
+    }
+
 
     @Inject(method = "causeFallDamage", at = @At("HEAD"))
     //? if >=26.1 {

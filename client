@@ -3,7 +3,7 @@
 #
 # Core cannot be built inside the same invocation that launches the client. On the obfuscated Fabric
 # nodes Loom resolves and remaps Core's jar during configuration, before any task could rebuild it —
-# see checkGolemJarFreshness in build.fabric.gradle.kts, which exists to stop a run that would
+# see checkCompositeJarFreshness in Golem Core's shared build layer, which exists to stop a run that would
 # silently compile against the previous jar. Two invocations is the only order that works, so this
 # does both rather than leaving it to be remembered.
 #

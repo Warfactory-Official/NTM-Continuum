@@ -3,6 +3,7 @@ package com.hbm.world.gen.nbt;
 import com.hbm.Constants;
 import com.hbm.blocks.ModDecoContent;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.machine.rbmk.RBMKBase;
 import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
 import dev.golem.core.world.LegacyBlockStates;
@@ -72,6 +73,8 @@ public final class LegacyStructurePalette {
     public enum Kind {
         /** Place {@link Resolved#state()} as-is. */
         STATE,
+        /** Unresolved legacy block: runtime retains the authored air fallback; conversion must report it. */
+        UNKNOWN,
         /** A multiblock core: place the state, then let the multiblock fill its own cells. */
         CORE,
         /** A multiblock cell the core fills: place nothing. */
@@ -208,12 +211,10 @@ public final class LegacyStructurePalette {
     static {
         // 1.7 DecoBlock: meta = ForgeDirection of the look direction; port facing = the same direction
         for (String s : List.of("steel_beam", "steel_wall", "steel_corner", "steel_roof")) rule(s, Rot.DECO, FACING);
-        // 1.7 DecoPoleSatelliteReceiver/DecoTapeRecorder (INBTBlockTransformable) and DecoSteelPoles/DecoPoleTop
-        // (not): meta = ForgeDirection opposite to the look; DecoModelBlock's facing is the look direction
-        rule("pole_satellite_receiver", Rot.DECO, FACING_OPPOSITE);
-        rule("tape_recorder", Rot.DECO, FACING_OPPOSITE);
-        rule("steel_poles", Rot.NONE, FACING_OPPOSITE);
-        rule("pole_top", Rot.NONE, FACING_OPPOSITE);
+        // 1.7 DecoPoleSatelliteReceiver/DecoTapeRecorder/DecoSteelPoles: meta = the facing ForgeDirection
+        rule("pole_satellite_receiver", Rot.DECO, FACING);
+        rule("tape_recorder", Rot.DECO, FACING);
+        rule("steel_poles", Rot.NONE, FACING);
         rule("charger", Rot.DECO, FACING);
         // BlockMachineBase subclasses rotate; the BlockContainer machines did not implement INBTBlockTransformable
         rule("machine_diesel", Rot.DECO, FACING);
@@ -224,9 +225,17 @@ public final class LegacyStructurePalette {
         rule("wood_barrier", Rot.NONE, FACING_OPPOSITE); // meta = the clicked side; the port faces away from it
         rule("red_connector", Rot.NONE, FACING6);
         rule("fluid_duct_gauge", Rot.DECO, (base, meta) -> meta <= 5 ? with(base, "gauge", forge(meta)) : base);
+        // 1.7 FluidDuctBox: meta % 3 = material (silver, copper, white), meta / 3 = size.
+        rule("fluid_duct_box", Rot.NONE,
+                meta -> meta < 15
+                        ? "fluid_duct_box_" + new String[]{"silver", "copper", "white"}[meta % 3] + "_" + meta / 3
+                        : null,
+                (base, meta) -> base);
         // BlockLadder / BlockTrapDoor / BlockRailBase subclasses: vanilla's own metadata layout
         rule("ladder_steel", Rot.DECO, analog(65));
         rule("ladder_tungsten", Rot.DECO, analog(65));
+        // 1.7 BlockLadder subclasses with vanilla's metadata layout (2 north, 3 south, 4 west, 5 east).
+        rule("ladder_aluminium", Rot.DECO, FACING);
         rule("trapdoor_steel", Rot.TRAPDOOR, analog(96));
         rule("rail_narrow", Rot.NONE, analog(66));
         for (String s : List.of("door_bunker", "door_metal", "door_office")) {
@@ -392,6 +401,16 @@ public final class LegacyStructurePalette {
         // port: HBM copper ore and storage block fold onto vanilla copper
         if (hbm.equals("ore_copper")) return Resolved.of(Blocks.COPPER_ORE.defaultBlockState());
         if (hbm.equals("block_copper")) return Resolved.of(Blocks.COPPER_BLOCK.defaultBlockState());
+        // hbm-space re-registers the aluminium ladder under its own namespace and its structures keep
+        // referring to it by the 1.7 name; prefer it when present, HBM's stays for HBM's content.
+        if (hbm.equals("ladder_aluminium")) {
+            Block space = BuiltInRegistries.BLOCK.getOptional(Ids.of("ntmspace", "ladder_aluminium")).orElse(null);
+            if (space != null) {
+                Rule ladder = RULES.get(hbm);
+                BlockState base = space.defaultBlockState();
+                return ladder != null ? Resolved.of(ladder.mapper().map(base, meta)) : fromBlock(space, meta);
+            }
+        }
 
         Rule rule = RULES.get(hbm);
         String id = rule != null && rule.id() != null ? rule.id().apply(meta) : hbm;
@@ -407,6 +426,12 @@ public final class LegacyStructurePalette {
     /** The rule-less mapping: multiblock core/cell, stairs, otherwise the generic per-property rule. */
     private static Resolved fromBlock(Block block, int meta) {
         BlockState base = block.defaultBlockState();
+        if (block instanceof RBMKBase) {
+            if (meta < 12) return new Resolved(Blocks.AIR.defaultBlockState(), Kind.CELL);
+            var lid = meta == 13 ? RBMKBase.Lid.GLASS : meta == 15 ? RBMKBase.Lid.CONCRETE : RBMKBase.Lid.NONE;
+            return new Resolved(base.setValue(BlockMultiblockCore.FACING, RBMKBase.DIR_NO_LID)
+                    .setValue(RBMKBase.LID, lid), Kind.CORE);
+        }
         if (block instanceof BlockMultiblockCore) {
             // 1.7 BlockDummyable: the core carries ForgeDirection + 10; every other meta is a cell the core fills
             if (meta >= 12) return new Resolved(with(base, "facing", forge(meta - 10)), Kind.CORE);
@@ -418,7 +443,7 @@ public final class LegacyStructurePalette {
 
     private static Resolved unknown(String name) {
         if (WARNED.add(name)) Constants.LOG.warn("[NBTStructure] no port block for 1.7 structure block {}, placing air", name);
-        return Resolved.of(Blocks.AIR.defaultBlockState());
+        return new Resolved(Blocks.AIR.defaultBlockState(), Kind.UNKNOWN);
     }
 
     /**

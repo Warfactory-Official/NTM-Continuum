@@ -37,7 +37,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * needs {@code power ≥ 20k}, {@code tank0 ≥ 100} and a {@code catalytic_converter} in slot 10; drains
  * 100 mB + 20k HE. maxPower 1M.
  *
- * <p>Not ported (IMPLEMENTATION.md §20): IPersistentNBT/IFluidCopiable.
+ * <p>Not ported: IPersistentNBT/IFluidCopiable.
  */
 public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, WorldlyContainer {
@@ -108,13 +108,13 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
         tanks[2].setTankType(out.out2().type);
         tanks[3].setTankType(out.out3().type);
 
-        if (power < 20_000 || tanks[0].getFill() < 100) return;
+        if (power < 20_000 || tanks[0].getFill() < ReformingRecipes.FILL_PER_OP) return;
         if (inventory.getStackInSlot(10).isEmpty() || inventory.getStackInSlot(10).getItem() != ModItems.catalytic_converter.get()) return;
         if (tanks[1].getFill() + out.out1().fill > tanks[1].getMaxFill()) return;
         if (tanks[2].getFill() + out.out2().fill > tanks[2].getMaxFill()) return;
         if (tanks[3].getFill() + out.out3().fill > tanks[3].getMaxFill()) return;
 
-        tanks[0].setFill(tanks[0].getFill() - 100);
+        tanks[0].setFill(tanks[0].getFill() - ReformingRecipes.FILL_PER_OP);
         tanks[1].setFill(tanks[1].getFill() + out.out1().fill);
         tanks[2].setFill(tanks[2].getFill() + out.out2().fill);
         tanks[3].setFill(tanks[3].getFill() + out.out3().fill);

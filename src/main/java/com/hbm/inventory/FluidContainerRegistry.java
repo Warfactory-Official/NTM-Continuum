@@ -19,6 +19,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.BucketItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         var map = FluidDataMaps.FLUID_CONTAINER.byId();
         for (String full : new TreeSet<>(map.keySet())) {
             FluidDataMaps.Container c = map.get(full);
-            FluidType type = Fluids.byRegistryName(c.fluid());
+            FluidType type = Fluids.byRegistryNameExact(c.fluid());
             if (type == Fluids.NONE) continue;
             rows.add(new Fixed(full, c.empty().orElse(""), type.getName(), c.amount()));
         }
@@ -200,7 +201,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
     public record ForeignFill(Item empty, ItemFluidTank family, Predicate<FluidType> admits) {}
 
     /**
-     * The fixed rows whose full item is not vanilla's: vanilla's own items (buckets, bottles, potions) keep the handlers their
+     * The fixed rows whose full item needs our handler: vanilla items and physical buckets keep the handlers their
      * loader gives them. The empty item is whatever 1.7 left ({@link ItemStack#EMPTY} when the container is used up).
      */
     public List<ForeignRow> foreignRows() {
@@ -210,6 +211,8 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
             if (fixed.full.startsWith("minecraft:")) continue;
             ItemStack full = item(fixed.full);
             if (full.isEmpty()) continue;
+            // A physical bucket keeps its loader's handler and the exact placed fluid it contains.
+            if (full.getItem() instanceof BucketItem) continue;
             rows.add(new ForeignRow(full.getItem(), item(fixed.container), Fluids.fromName(fixed.fluid), fixed.amount));
         }
         return rows;

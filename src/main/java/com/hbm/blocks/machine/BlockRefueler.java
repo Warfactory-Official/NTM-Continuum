@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.lib.DirPos;
 import dev.golem.core.registry.TickingBlock;
@@ -43,7 +45,7 @@ import org.jspecify.annotations.Nullable;
  * fuel pad drawn by {@code RefuelerRenderer}. Fluid-ID right-click retypes the tank. Collision is a
  * 12/16-tall slab (the directional slab is simplified to a uniform pad).
  */
-public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidConnectorBlockMK2 {
+public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidConnectorBlockMK2, ICapabilityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 12, 16);
@@ -117,4 +119,11 @@ public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidCo
         BlockPos p = te.getBlockPos();
         return new DirPos[]{ new DirPos(p.getX() + dir.offsetX, p.getY(), p.getZ() + dir.offsetZ, dir) };
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn()
+            .fluidFaces(BlockEntity.class, (be, side) -> side == be.getBlockState().getValue(FACING).getOpposite());
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

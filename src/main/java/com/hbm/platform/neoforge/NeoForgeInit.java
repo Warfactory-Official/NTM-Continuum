@@ -97,17 +97,7 @@ public class NeoForgeInit {
     }
 
     private void onBuildTabContents(BuildCreativeModeTabContentsEvent event) {
-        List<RegistryObject<? extends Item>> contents = ModTabs.CONTENTS.get(event.getTabKey());
-        if (contents != null) {
-            contents.forEach(item -> {
-                Item resolved = item.get();
-                if (ModTabs.shouldDisplay(event.getTabKey(), resolved)) event.accept(resolved);
-            });
-        }
-        var stacks = ModTabs.STACK_CONTENTS.get(event.getTabKey());
-        if (stacks != null) {
-            stacks.forEach(supplier -> supplier.get().forEach(event::accept));
-        }
+        ModTabs.accept(event.getTabKey(), event::accept);
     }
 }
 //?}

@@ -97,7 +97,7 @@ public abstract class GUICustomMissileLauncher<M extends ContainerCustomMissileL
         TankDisplay.Fill visible = TankDisplay.visibleFill(tank, x, y, width, height);
         if (visible == null) return;
         int x0 = leftPos + visible.x(), top = topPos + visible.top(), bottom = topPos + visible.bottom();
-        Identifier fluid = tank.getTankType().getTexture();
+        Identifier fluid = tank.getTankType().clientMetadata().getTexture();
         if (Minecraft.getInstance().getResourceManager().getResource(fluid).isPresent()) {
             graphics.enableScissor(x0, top, x0 + visible.width(), bottom);
             for (int ty = bottom - 16; ty > top - 16; ty -= 16)

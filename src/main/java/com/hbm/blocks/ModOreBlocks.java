@@ -71,7 +71,7 @@ public final class ModOreBlocks {
     private static final Map<String, RegistryObject<? extends Block>> ALL = new LinkedHashMap<>();
 
     /** Ids that get no block item: a floating gas cell is worldgen-only and drops nothing upstream. */
-    private static final Set<String> NO_ITEM = Set.of("gas_flammable", "gas_explosive");
+    private static final Set<String> NO_ITEM = Set.of("gas_flammable");
 
     // Clusters (hardness 5, blast 35)
 

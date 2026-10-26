@@ -155,7 +155,7 @@ public class GUISILEX extends CompatContainerScreen<ContainerSILEX> {
 
         if (this.isHovering(TANK_X, TANK_Y, TANK_W, TANK_H, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font, List.of(
-                    te.tank.getTankType().getDisplayName(),
+                    te.tank.getTankType().clientMetadata().getDisplayName(),
                     Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")),
                     Optional.empty(), mouseX, mouseY);
         } else if (te.current != null && this.isHovering(POOL_X + 1, POOL_TOP, POOL_W, POOL_H, mouseX, mouseY)) {

@@ -4,6 +4,7 @@ import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,6 +101,15 @@ public final class RenderInfoSystem {
         InfoEntry entry = new InfoEntry(msg, millis <= 0 ? 1000 : millis);
         if (id != 0) push(entry, id);
         else push(entry);
+    }
+
+    /** The current message for an ID, with a pending replacement taking precedence. */
+    public static @Nullable Component message(int id) {
+        synchronized (inbox) {
+            var entry = inbox.get(id);
+            if (entry == null) entry = messages.get(id);
+            return entry == null ? null : entry.text;
+        }
     }
 
     /** The texts currently shown, oldest-sorted as drawn; for tests and the harness. */

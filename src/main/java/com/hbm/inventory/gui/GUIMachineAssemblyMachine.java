@@ -116,7 +116,7 @@ public class GUIMachineAssemblyMachine extends CompatContainerScreen<ContainerMa
         int w = max <= 0 ? 0 : tank.getFill() * 52 / max;
         if (w <= 0) return;
         int x0 = this.leftPos + x, y0 = this.topPos + y;
-        Identifier fluidTex = tank.getTankType().getTexture();
+        Identifier fluidTex = tank.getTankType().clientMetadata().getTexture();
         int tint = TankDisplay.tint(tank);
         graphics.enableScissor(x0, y0, x0 + w, y0 + 16);
         for (int tx = x0; tx < x0 + w; tx += 16) {

@@ -70,7 +70,7 @@ public abstract class PneumaticScreenBase<T extends AbstractContainerMenu> exten
         int x0 = leftPos + x;
         int yBottom = topPos + bottom;
         int yTop = yBottom - h;
-        var fluidTex = tank.getTankType().getTexture();
+        var fluidTex = tank.getTankType().clientMetadata().getTexture();
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + width, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
@@ -81,7 +81,7 @@ public abstract class PneumaticScreenBase<T extends AbstractContainerMenu> exten
             }
             graphics.disableScissor();
         } else {
-            GuiDraw.fill(graphics, x0, yTop, x0 + width, yBottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
+            GuiDraw.fill(graphics, x0, yTop, x0 + width, yBottom, 0xFF000000 | (tank.getTankType().clientMetadata().getColor() & 0xFFFFFF));
         }
     }
 

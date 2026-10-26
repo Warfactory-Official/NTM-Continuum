@@ -3,6 +3,7 @@ package com.hbm.items;
 import com.hbm.Constants;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.machine.FluidIdentifierData;
 import com.hbm.items.machine.ItemRBMKPellet;
 import com.hbm.items.machine.RBMKFuelData;
 import com.hbm.items.tool.ItemModMinecart;
@@ -30,7 +31,7 @@ public final class ModDataComponents {
      * {@code "minecraft:water"}), never as an int id: numeric ids are never persisted.
      */
     public static final GolemComponent<FluidType> FLUID =
-            GolemComponent.of(Constants.MOD_ID, "fluid", () -> Fluids.CODEC);
+            GolemComponent.of(Constants.MOD_ID, "fluid", () -> Fluids.EXACT_CODEC);
     public static final GolemComponent<Integer> FLUID_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "fluid_amount");
     public static final GolemComponent<Integer> FLUID_PRESSURE = GolemComponent.integer(Constants.MOD_ID, "fluid_pressure");
     /** Filled giant-tank block state carried when a giant tank is broken and picked up. */
@@ -45,6 +46,9 @@ public final class ModDataComponents {
     public static final GolemComponent<Float> HAZARD_RADIATION = GolemComponent.floatValue(Constants.MOD_ID, "hazard_radiation");
     public static final GolemComponent<Integer> ZIRNOX_LIFE = GolemComponent.integer(Constants.MOD_ID, "zirnox_life");
     public static final GolemComponent<RBMKFuelData> RBMK_FUEL = GolemComponent.of(Constants.MOD_ID, "rbmk_fuel", RBMKFuelData.CODEC);
+    /** The fluid identifier's picked pair (1.7 fluid1/fluid2); kept beside the legacy compound. */
+    public static final GolemComponent<FluidIdentifierData> FLUID_IDENTIFIER =
+            GolemComponent.of(Constants.MOD_ID, "fluid_identifier", FluidIdentifierData.CODEC);
     /** The universal grenade's four 1.7 NBT selectors (shell, filling, fuze, extra). */
     public static final GolemComponent<GrenadeData> GRENADE =
             GolemComponent.of(Constants.MOD_ID, "grenade", GrenadeData.CODEC);
@@ -65,7 +69,7 @@ public final class ModDataComponents {
     public static final GolemComponent<Boolean> HAS_BLADE = GolemComponent.of(Constants.MOD_ID, "has_blade", Codec.BOOL);
     /** hbm-space: the wrong water table a table-bound infinite water item found (ItemInfiniteFluid), saved by name. */
     public static final GolemComponent<FluidType> WRONG_WATER_TABLE =
-            GolemComponent.of(Constants.MOD_ID, "wrong_water_table", () -> Fluids.CODEC);
+            GolemComponent.of(Constants.MOD_ID, "wrong_water_table", () -> Fluids.EXACT_CODEC);
     /** 1.7 ItemToolBox metadata 1: the box is open. ntm-next TOOLBOX_OPEN. */
     public static final GolemComponent<Boolean> TOOLBOX_OPEN = GolemComponent.of(Constants.MOD_ID, "toolbox_open", Codec.BOOL);
     /** An RBMK recycling pellet's depletion stage and xenon poisoning (1.7 metadata 0..9). ntm-next RBMK_PELLET. */

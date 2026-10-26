@@ -15,10 +15,18 @@ public final class FluidContainers {
 
     private FluidContainers() {}
 
-    private static FluidDataMaps.Containers of(FluidType type) {
+    public static FluidDataMaps.Containers of(FluidType type) {
         if (type == null || type == Fluids.NONE) return null;
-        return FluidDataMaps.FLUID_CONTAINERS.get(Fluids.toVanilla(type));
+        var own = FluidDataMaps.FLUID_CONTAINERS.get(Fluids.toVanilla(type));
+        if (own != null) return own;
+        var metadata = type.metadataType();
+        return metadata == type ? null : FluidDataMaps.FLUID_CONTAINERS.get(Fluids.toVanilla(metadata));
     }
+
+    /** The server-resolved container palette, installed before the client's first world lookup. */
+    public static FluidDataMaps.Containers clientOf(FluidType type) { return type.clientMetadata().containers(); }
+    public static boolean clientHasCanister(FluidType type) { var c = clientOf(type); return c != null && c.canister().isPresent(); }
+    public static int clientCanisterColor(FluidType type) { var c = clientOf(type); return c == null ? 0xFFFFFF : c.canister().orElse(0xFFFFFF); }
 
     public static boolean hasCanister(FluidType type) { var c = of(type); return c != null && c.canister().isPresent(); }
     public static boolean hasGasTank(FluidType type) { var c = of(type); return c != null && c.gasBottle().isPresent(); }

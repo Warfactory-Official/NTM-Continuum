@@ -18,7 +18,7 @@ public final class ChemicalClientEffects {
         EntityChemical.ChemicalStyle style = chemical.style();
         if (style == EntityChemical.ChemicalStyle.LIQUID) {
             FluidType type = chemical.getFluid();
-            Color color = new Color(type.getColor());
+            Color color = new Color(type.clientMetadata().getColor());
             Particles.dust(level, chemical.getX(), chemical.getY(), chemical.getZ(),
                     color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F, 1F,
                     chemical.getDeltaMovement().x + level.getRandom().nextGaussian() * 0.05D,

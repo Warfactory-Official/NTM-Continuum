@@ -65,8 +65,13 @@ public final class EnergyConversion {
      * {@code value * mul / div}, floored, saturating instead of wrapping.
      */
     private static long scale(long value, long mul, long div) {
-        if (value > Long.MAX_VALUE / mul) return Long.MAX_VALUE;
-        return value * mul / div;
+        var quotient = value / div;
+        var remainder = value % div;
+        if (quotient > Long.MAX_VALUE / mul) return Long.MAX_VALUE;
+        var whole = quotient * mul;
+        // The positive ratio terms are ints, so remainder * mul fits in a long.
+        var fraction = remainder * mul / div;
+        return whole > Long.MAX_VALUE - fraction ? Long.MAX_VALUE : whole + fraction;
     }
 
     /**
@@ -74,11 +79,16 @@ public final class EnergyConversion {
      */
     static long convert(long amount, long mul, long div, long[] carry) {
         if (amount <= 0) return 0;
-        long banked = carry[0];
-        if (amount > (Long.MAX_VALUE - banked) / mul) return Long.MAX_VALUE;
-        long numerator = amount * mul + banked;
+        var quotient = amount / div;
+        var remainder = amount % div;
+        if (quotient > Long.MAX_VALUE / mul) return Long.MAX_VALUE;
+        var whole = quotient * mul;
+        // Ratio terms are positive ints; this remainder numerator fits in a long.
+        var numerator = remainder * mul + carry[0];
+        var fraction = numerator / div;
+        if (whole > Long.MAX_VALUE - fraction) return Long.MAX_VALUE;
         carry[0] = numerator % div;
-        return numerator / div;
+        return whole + fraction;
     }
 
     /**

@@ -155,11 +155,13 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalFactory te) {
         te.setupPowerPorts(te.getPowerPorts());
         te.setupFluidPorts(te.getFluidPorts());
-        if (te.coolantInPort == null) te.coolantInPort = new TilePort().setupOwner(te.coolantDelegate).setupPort(te.getCoolantPort()).setupType(FluidNetProvider.of(te.water.getTankType()));
-        if (te.coolantOutPort == null) te.coolantOutPort = new TilePort().setupOwner(te.coolantDelegate).setupPort(te.getCoolantPort()).setupType(FluidNetProvider.of(te.lps.getTankType()));
+        if (te.coolantInPort == null) te.coolantInPort = new TilePort().setupOwner(te.coolantDelegate).setupPort(te.getCoolantPort());
+        if (te.coolantOutPort == null) te.coolantOutPort = new TilePort().setupOwner(te.coolantDelegate).setupPort(te.getCoolantPort());
         te.updatePortPIFIFO();
+        te.coolantInPort.setupFluids(te.water, level);
         te.coolantInPort.update(level);
         te.coolantInPort.checkSubscribe(level);
+        te.coolantOutPort.setupFluids(te.lps, level);
         te.coolantOutPort.update(level);
         te.coolantOutPort.checkProvide(level);
 

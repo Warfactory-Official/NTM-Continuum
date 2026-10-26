@@ -1,5 +1,6 @@
 package com.hbm.handler;
 
+import net.minecraft.world.item.Item;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.armor.ItemArmorMod;
 import com.hbm.items.armor.JetpackBase;
@@ -119,6 +120,11 @@ public final class ArmorModHandler {
 
     public static boolean hasMods(ItemStack armor) {
         return armor != null && ModDataComponents.ARMOR_MODS.has(armor);
+    }
+
+    /** The installed module's item identity, without copying the armour's module stacks. */
+    public static Item modItem(ItemStack armor, int slot) {
+        return ModDataComponents.ARMOR_MODS.getOr(armor, ItemContents.EMPTY).itemAt(slot);
     }
 
     public static ItemStack[] pryMods(ItemStack armor) {

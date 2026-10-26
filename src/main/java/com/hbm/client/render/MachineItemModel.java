@@ -124,8 +124,19 @@ public final class MachineItemModel {
     private final HashMap<ItemDisplayContext, Vector3fc[]> extentsByContext = new HashMap<>();
 
     /** A legacy renderer adjustment applied after the context display matrix and before the model pose. */
-    public record ContextTransform(Vector3f rotation, Vector3f translation, float scale) {
+    public record ContextTransform(Vector3f rotation, Vector3f translation, float scale, boolean rawMesh) {
+        public ContextTransform(Vector3f rotation, Vector3f translation, float scale) {
+            this(rotation, translation, scale, false);
+        }
+
+        public ContextTransform {
+            if (rawMesh && (rotation.lengthSquared() != 0F || translation.lengthSquared() != 0F || scale != 1F)) {
+                throw new IllegalArgumentException("raw_mesh is a body policy, not a numeric context transform");
+            }
+        }
+
         public void apply(PoseStack poseStack) {
+            if (rawMesh) throw new IllegalArgumentException("raw_mesh is supported only for NONE");
             if (rotation.x() != 0F) poseStack.mulPose(Axis.XP.rotationDegrees(rotation.x()));
             if (rotation.y() != 0F) poseStack.mulPose(Axis.YP.rotationDegrees(rotation.y()));
             if (rotation.z() != 0F) poseStack.mulPose(Axis.ZP.rotationDegrees(rotation.z()));
@@ -683,6 +694,15 @@ public final class MachineItemModel {
     }
 
     private void applyTransform(PoseStack poseStack, @Nullable ItemDisplayContext context, float spinDegrees) {
+        var none = context == ItemDisplayContext.NONE ? contextTransforms.get("none") : null;
+        if (none != null && none.rawMesh()) {
+            var min = model.boundsMin();
+            var max = model.boundsMax();
+            // The item layer subtracts its block center. NONE keeps the primary OBJ unscaled and centered.
+            poseStack.translate(0.5F - (min[0] + max[0]) * 0.5F,
+                    0.5F - (min[1] + max[1]) * 0.5F, 0.5F - (min[2] + max[2]) * 0.5F);
+            return;
+        }
         if (!blockFramed && animation.startsWith("armor_")) {
             applyArmorItemTransform(poseStack, context);
             return;

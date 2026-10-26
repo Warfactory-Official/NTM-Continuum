@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import com.hbm.blocks.StandardInfo;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemFluidIDMulti;
@@ -140,7 +141,7 @@ public class GUIScreenFluid extends CompatScreen {
             if (inSlot(k, i, j)) {
                 List<Component> tooltip = new ArrayList<>();
                 tooltip.add(this.searchArray[k].getDisplayName());
-                this.searchArray[k].addInfo(tooltip);
+                this.searchArray[k].clientMetadata().addInfo(tooltip, StandardInfo.shiftHeld());
                 GuiDraw.tooltip(graphics, font, tooltip, Optional.empty(), i, j);
             }
         }
@@ -159,7 +160,7 @@ public class GUIScreenFluid extends CompatScreen {
 
             int col = k % 9, row = k / 9 * 18;
             GuiDraw.blit(graphics, TEXTURE, guiLeft + 12 + col * 18, guiTop + 31 + row, 12F + col * 18, 74F, 8, 14, 256, 256,
-                    0xFF000000 | (type.getColor() & 0xFFFFFF));
+                    0xFF000000 | (type.clientMetadata().getColor() & 0xFFFFFF));
 
             if (type == this.primary && type == this.secondary) {
                 GuiDraw.blit(graphics, TEXTURE, guiLeft + 7 + col * 18, guiTop + 29 + row, 176F, 36F, 18, 18, 256, 256);

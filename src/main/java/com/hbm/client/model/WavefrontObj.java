@@ -34,22 +34,24 @@ import org.jspecify.annotations.Nullable;
  * 3rd) because entity render types draw in QUADS mode. UV V is flipped ({@code 1 - v}) to match the
  * old loader.
  */
-public final class WavefrontObj {
+public final class WavefrontObj implements Geometry.Groups {
 
     /** One OBJ object/group: a name and its faces (each face = vertex refs of [posIdx, uvIdx, normalIdx]).
      * A {@code usemtl} directive starts a new group with the same name but a new {@link #material}, so
-     * multi-texture models can be drawn one material at a time ({@link #renderMaterial}). */
-    private static final class Group {
-        final String name;
-        final String material;
-        final List<int[][]> faces = new ArrayList<>();
-        Group(String name, String material) { this.name = name; this.material = material; }
+     * multi-texture models can be drawn one material at a time ({@link WavefrontObj#renderMaterial}). */
+    public static final class Group {
+        public final String name;
+        public final String material;
+        private final List<int[][]> faces = new ArrayList<>();
+        private Group(String name, String material) { this.name = name; this.material = material; }
+        /** Authored faces in this material run, before fan triangulation. */
+        public int faceCount() { return faces.size(); }
     }
 
     private final float[][] positions;
     private final float[][] uvs;
     private final float[][] normals;
-    private final List<Group> groups;
+    public final List<Group> groups;
     private final float[] min;
     private final float[] max;
     private Identifier source = Ids.of("minecraft", "unknown");
@@ -58,7 +60,7 @@ public final class WavefrontObj {
         this.positions = pos.toArray(new float[0][]);
         this.uvs = uv.toArray(new float[0][]);
         this.normals = norm.toArray(new float[0][]);
-        this.groups = groups;
+        this.groups = List.copyOf(groups);
         float[] mn = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
         float[] mx = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
         for (float[] p : this.positions) {
@@ -335,6 +337,7 @@ public final class WavefrontObj {
     }
 
     /** Unlike {@link #renderPart}, a name this model does not have throws rather than drawing nothing. */
+    @Override
     public Geometry parts(String... names) {
         return parts(Set.of(names), false);
     }

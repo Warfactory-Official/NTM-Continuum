@@ -187,19 +187,19 @@ public class TileEntityPneumoTube extends TileEntityMachineBase
     @Override
     public boolean canConnect(FluidType type, ForgeDirection dir) {
         Direction side = dir.toDirection();
-        return side != null && side != this.insertionDir && side != this.ejectionDir && type == gas()
+        return side != this.insertionDir && side != this.ejectionDir && compair.joins(type)
                 && this.isCompressor();
     }
 
     /**
-     * hbm-space: a compressor runs on the gas a fluid identifier picked (ADDON-API-INVENTORY V-177), not only on
+     * hbm-space: a compressor runs on the gas a fluid identifier picked, not only on
      * compressed air. Off in plain HBM (1.7: air only); NTM: Space turns it on, since off Earth there may be no air.
      */
     public static boolean anyGas = false;
 
     /** The gas this compressor takes: its tank's type with {@link #anyGas}, else 1.7's air. */
     public FluidType gas() {
-        return anyGas ? this.compair.getTankType() : Fluids.AIR;
+        return anyGas ? this.compair.getDeclaredFluid() : Fluids.AIR;
     }
 
     public boolean isCompressor() {

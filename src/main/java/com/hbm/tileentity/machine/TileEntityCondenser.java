@@ -104,10 +104,11 @@ public class TileEntityCondenser extends TileEntityMachineBase implements IFluid
     /**
      * hbm-space's vacuum rule for condensers and cooling towers: in orbit or under 0.01 atm the steam evaporates
      * instead of condensing, unless the machine is {@link #vacuumOptimised} (com.hbm.api.environment.Environment;
-     * never on plain HBM). hbm-space's Tom-firestorm evaporation is the fork's own addition, not 1.7, and is not here.
+     * never on plain HBM). Addons may also supply a cause that applies to vacuum-optimised machines (Space's exposed
+     * Tom-firestorm evaporation).
      */
     public boolean evaporates(Level level, BlockPos pos) {
-        return !vacuumOptimised && Environment.isVacuum(level, pos);
+        return Environment.evaporates(level, pos, vacuumOptimised);
     }
 
     protected boolean extraCondition(int amount) { return true; }
