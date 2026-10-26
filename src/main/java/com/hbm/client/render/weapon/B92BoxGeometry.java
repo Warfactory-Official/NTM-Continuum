@@ -5,39 +5,35 @@ import dev.golem.core.render.gem.Quads;
 import java.util.List;
 
 /**
- * Source-compatible form of 1.7's Techne {@code ModelB92}.
- *
- * <p>The old model is a tree of twenty textured boxes, not an OBJ. Keeping the boxes as GEM quads
- * preserves the authored pivots and lets the same model run through vanilla and the optional instanced
- * backend without a version-specific {@code ModelRenderer} dependency.
+ * 1.7's Techne {@code ModelB92} as GEM quads: twenty-one mirrored boxes on a 64 by 64 sheet, each in its
+ * part's own space (the box offset from {@code addBox}, before the rotation point).
  */
 final class B92BoxGeometry {
 
-    private record Box(String name, float x, float y, float z, float width, float height, float depth,
-                       float u, float v) {}
+    private record Box(String name, float x, float y, float z, int width, int height, int depth, int u, int v) {}
 
     private static final List<Box> BOXES = List.of(
-            new Box("Muzzle1", 0F, 0F, 0F, 2F, 3F, 2F, 22F, 36F),
-            new Box("Barrel1", 0F, 0F, 0F, 24F, 2F, 3F, 0F, 0F),
-            new Box("Barrel2", 0F, 0F, 0F, 22F, 1F, 2F, 0F, 5F),
-            new Box("Grip", 0F, 0F, 0F, 20F, 3F, 4F, 0F, 8F),
-            new Box("Front1", 0F, 0F, 0F, 2F, 4F, 4F, 10F, 36F),
-            new Box("Front2", 0F, 0F, 0F, 2F, 6F, 3F, 0F, 36F),
-            new Box("Body", 0F, 0F, 0F, 15F, 7F, 4F, 0F, 15F),
-            new Box("Top", 0F, 0F, 0F, 15F, 1F, 3F, 28F, 60F),
-            new Box("GripBottom", 0F, 0F, 0F, 18F, 1F, 2F, 24F, 43F),
-            new Box("Handle", 0F, 0F, 0F, 6F, 15F, 4F, 0F, 45F),
-            new Box("HandleBack", 5.5F, 0F, 0F, 1F, 15F, 3F, 20F, 46F),
-            new Box("Frame1", 0F, 0F, 0F, 7F, 1F, 2F, 28F, 57F),
-            new Box("Frame2", 0F, 0F, 0F, 2F, 4F, 2F, 28F, 51F),
-            new Box("Frame3", 0F, -1F, 0F, 3F, 1F, 2F, 46F, 57F),
-            new Box("Trigger", 0F, 0F, 0F, 2F, 3F, 1F, 36F, 53F),
-            new Box("BackPlate1", -1F, 0F, 0F, 1F, 4F, 3F, 56F, 53F),
-            new Box("Back", 0F, 0F, 0F, 2F, 4F, 4F, 42F, 49F),
-            new Box("BackPlate2", -2F, 0F, 0F, 2F, 4F, 4F, 48F, 5F),
-            new Box("Pump1", 0F, 0F, 0F, 7F, 2F, 2F, 46F, 29F),
-            new Box("Pump2", 0F, 0F, 0F, 3F, 3F, 7F, 44F, 33F),
-            new Box("BodyPlate", 0F, 0F, 0F, 14F, 5F, 5F, 0F, 26F));
+            new Box("Muzzle1", 0F, 0F, 0F, 2, 3, 2, 22, 36),
+            new Box("Barrel1", 0F, 0F, 0F, 24, 2, 3, 0, 0),
+            new Box("Barrel2", 0F, 0F, 0F, 22, 1, 2, 0, 5),
+            new Box("Grip", 0F, 0F, 0F, 20, 3, 4, 0, 8),
+            new Box("Front1", 0F, 0F, 0F, 2, 4, 4, 10, 36),
+            new Box("Front2", 0F, 0F, 0F, 2, 6, 3, 0, 36),
+            new Box("Body", 0F, 0F, 0F, 15, 7, 4, 0, 15),
+            new Box("Top", 0F, 0F, 0F, 15, 1, 3, 28, 60),
+            new Box("GripBottom", 0F, 0F, 0F, 18, 1, 2, 24, 43),
+            new Box("Handle", 0F, 0F, 0F, 6, 15, 4, 0, 45),
+            new Box("HandleBack", 5.5F, 0F, 0F, 1, 15, 3, 20, 46),
+            new Box("Frame1", 0F, 0F, 0F, 7, 1, 2, 28, 57),
+            new Box("Frame2", 0F, 0F, 0F, 2, 4, 2, 28, 51),
+            new Box("Frame3", 0F, -1F, 0F, 3, 1, 2, 46, 57),
+            new Box("Trigger", 0F, 0F, 0F, 2, 3, 1, 36, 53),
+            new Box("BackPlate1", -1F, 0F, 0F, 1, 4, 3, 56, 53),
+            new Box("Back", 0F, 0F, 0F, 2, 4, 4, 42, 49),
+            new Box("BackPlate2", -2F, 0F, 0F, 2, 4, 4, 48, 5),
+            new Box("Pump1", 0F, 0F, 0F, 7, 2, 2, 46, 29),
+            new Box("Pump2", 0F, 0F, 0F, 3, 3, 7, 44, 33),
+            new Box("BodyPlate", 0F, 0F, 0F, 14, 5, 5, 0, 26));
 
     private B92BoxGeometry() {}
 
@@ -47,35 +43,38 @@ final class B92BoxGeometry {
         return box(box, "hbm:b92/" + name);
     }
 
+    /** 1.7 {@code ModelBox} with {@code mirror}: x swapped, the usual six-face unwrap, every face flipped. */
     private static Geometry box(Box box, String name) {
-        Quads.Builder builder = Quads.named(name);
-        float x0 = box.x;
-        float y0 = box.y;
-        float z0 = box.z;
-        float x1 = x0 + box.width;
-        float y1 = y0 + box.height;
-        float z1 = z0 + box.depth;
-        float u0 = box.u / 64F;
-        float v0 = box.v / 64F;
-        float u1 = (box.u + box.width) / 64F;
-        float v1 = (box.v + box.height) / 64F;
+        float x = box.x + box.width, x2 = box.x;
+        float y = box.y, y2 = box.y + box.height;
+        float z = box.z, z2 = box.z + box.depth;
+        float[][] p = {
+                {x, y, z}, {x2, y, z}, {x2, y2, z}, {x, y2, z},
+                {x, y, z2}, {x2, y, z2}, {x2, y2, z2}, {x, y2, z2}};
+        int u = box.u, v = box.v, dx = box.width, dy = box.height, dz = box.depth;
 
-        face(builder, 0F, 0F, 1F, x0, y0, z1, x1, y1, z1, u0, v0, u1, v1);
-        face(builder, 0F, 0F, -1F, x1, y0, z0, x0, y1, z0, u0, v0, u1, v1);
-        face(builder, 1F, 0F, 0F, x1, y0, z1, x1, y1, z0, u0, v0, u1, v1);
-        face(builder, -1F, 0F, 0F, x0, y0, z0, x0, y1, z1, u0, v0, u1, v1);
-        face(builder, 0F, 1F, 0F, x0, y1, z1, x1, y1, z0, u0, v0, u1, v1);
-        face(builder, 0F, -1F, 0F, x0, y0, z0, x1, y0, z1, u0, v0, u1, v1);
+        Quads.Builder builder = Quads.named(name);
+        face(builder, p, new int[] {5, 1, 2, 6}, u + dz + dx, v + dz, u + dz + dx + dz, v + dz + dy);
+        face(builder, p, new int[] {0, 4, 7, 3}, u, v + dz, u + dz, v + dz + dy);
+        face(builder, p, new int[] {5, 4, 0, 1}, u + dz, v, u + dz + dx, v + dz);
+        face(builder, p, new int[] {2, 3, 7, 6}, u + dz + dx, v + dz, u + dz + dx + dx, v);
+        face(builder, p, new int[] {1, 0, 3, 2}, u + dz, v + dz, u + dz + dx, v + dz + dy);
+        face(builder, p, new int[] {4, 5, 6, 7}, u + dz + dx + dz, v + dz, u + dz + dx + dz + dx, v + dz + dy);
         return builder.build();
     }
 
-    private static void face(Quads.Builder builder, float nx, float ny, float nz,
-                             float x0, float y0, float z0, float x1, float y1, float z1,
-                             float u0, float v0, float u1, float v1) {
-        builder.normal(nx, ny, nz)
-                .vertex(x0, y0, z0, u0, v1)
-                .vertex(x1, y0, z1, u1, v1)
-                .vertex(x1, y1, z1, u1, v0)
-                .vertex(x0, y1, z0, u0, v0);
+    /** 1.7 {@code TexturedQuad} then {@code flipFace}: corners take (u2,v1) (u1,v1) (u1,v2) (u2,v2), drawn in reverse. */
+    private static void face(Quads.Builder builder, float[][] p, int[] corners, int u1, int v1, int u2, int v2) {
+        float[][] uv = {{u2, v1}, {u1, v1}, {u1, v2}, {u2, v2}};
+        float[] a = p[corners[3]], b = p[corners[2]], c = p[corners[1]];
+        float ax = b[0] - a[0], ay = b[1] - a[1], az = b[2] - a[2];
+        float bx = b[0] - c[0], by = b[1] - c[1], bz = b[2] - c[2];
+        float nx = by * az - bz * ay, ny = bz * ax - bx * az, nz = bx * ay - by * ax;
+        float length = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+        builder.normal(nx / length, ny / length, nz / length);
+        for (int i = 3; i >= 0; i--) {
+            float[] corner = p[corners[i]];
+            builder.vertex(corner[0], corner[1], corner[2], uv[i][0] / 64F, uv[i][1] / 64F);
+        }
     }
 }

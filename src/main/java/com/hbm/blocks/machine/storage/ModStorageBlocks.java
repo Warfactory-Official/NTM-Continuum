@@ -69,7 +69,7 @@ public final class ModStorageBlocks {
     public static final RegistryObject<BlockCrateSupply> crate_supply = REG.<BlockCrateSupply>block(
             "crate_supply", BlockCrateSupply::new,
             p -> p.strength(1.0F, 1.5F).sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).noOcclusion().ignitedByLava())
-            .transform(RENDERED_SIMPLE).tag(BlockTag.AXE);
+            .transform(RENDERED_SIMPLE).loot(CRATE_LOOT).tag(BlockTag.AXE);
 
     public static final RegistryObject<BlockMassStorage> mass_storage_wood = massStorage(MassStorageType.WOOD);
     public static final RegistryObject<BlockMassStorage> mass_storage_iron = massStorage(MassStorageType.IRON);
