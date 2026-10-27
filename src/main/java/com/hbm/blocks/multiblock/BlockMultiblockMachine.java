@@ -105,6 +105,7 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
 
     @Override public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos,
                                                   CollisionContext context) {
+        if (ignoresCollision(context)) return Shapes.empty(); // hbm-space internalPlayers
         return shapeAt(state, level, pos, true);
     }
 

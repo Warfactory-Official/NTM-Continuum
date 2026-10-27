@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ItemEntity.class)
 public class MixinItemEntity {
 
+    // Rung 2 fails: Fabric has no entity tick event.
     @Inject(method = "tick", at = @At("HEAD"))
     private void hbm$tickStart(CallbackInfo ci) {
         DroppedItemHooks.beforeTick((ItemEntity) (Object) this);

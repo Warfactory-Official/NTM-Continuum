@@ -39,7 +39,7 @@ public class MagazineElectricEngine implements IMagazine<Object> {
     @Override public void initNewType(ItemStack stack, Container inventory) {}
     @Override public void reloadAction(ItemStack stack, Container inventory) {}
     @Override public ItemStack getIconForHUD(ItemStack stack, Player player) {
-        // ntm-next uses ModItems.BATTERY_CREATIVE; that registry entry is not in new-hbm.
+        // ntm-next uses ModItems.BATTERY_CREATIVE; that registry entry is not in NTM-Continuum.
         return ItemStack.EMPTY;
     }
     @Override public String reportAmmoStateForHUD(ItemStack stack, Player player) {

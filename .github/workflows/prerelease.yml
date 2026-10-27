@@ -39,7 +39,7 @@ jobs:
       # out side by side exactly as in the development layout.
       - uses: actions/checkout@v4
         with:
-          path: new-hbm
+          path: NTM-Continuum
 
       - uses: actions/checkout@v4
         with:
@@ -78,7 +78,7 @@ jobs:
         # 1.20.1 Forge tests) and loses parameter names, so build with the local recompile pipeline.
         env:
           CI: "false"
-        working-directory: new-hbm
+        working-directory: NTM-Continuum
         run: bash ./gradlew chiseledBuild --no-daemon --stacktrace
 
       # Builds count from 1 for each mod.version: the next number follows the newest pre-release of the same version
@@ -89,7 +89,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
-          version=$(grep -E '^mod.version=' new-hbm/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          version=$(grep -E '^mod.version=' NTM-Continuum/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
           last=$(gh release list --repo "$REPO" --limit 200 --json tagName,isPrerelease \
             --jq '.[] | select(.isPrerelease) | .tagName' \
             | awk -v p="v${version}-build." 'index($0, p) == 1 && substr($0, length(p) + 1) ~ /^[0-9]+$/ { print substr($0, length(p) + 1) }' \
@@ -102,7 +102,7 @@ jobs:
         run: |
           mkdir -p dist
           # build/libs holds the release jar per node (remapJar/reobfJar/jar); devlibs is not shipped.
-          for repo in new-hbm Golem-Core; do
+          for repo in NTM-Continuum Golem-Core; do
             find $repo/versions/*/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
           done
           # Tag every jar with this build's number, so jars from different builds never share a file name:
@@ -112,7 +112,7 @@ jobs:
           done
           ls -l dist
           ls dist | grep -q '^hbm-' || { echo "No HBM jars produced"; exit 1; }
-          version=$(grep -E '^mod.version=' new-hbm/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          version=$(grep -E '^mod.version=' NTM-Continuum/gradle.properties | cut -d= -f2 | tr -d '[:space:]')
           echo "tag=v${version}-build.${{ steps.build.outputs.number }}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "golem=$(git -C Golem-Core rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"

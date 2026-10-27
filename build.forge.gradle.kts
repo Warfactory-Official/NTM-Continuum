@@ -271,6 +271,7 @@ tasks.compileJava {
     dependsOn(tasks.named("stonecutterGenerate"))
     options.release = javaVersion
     options.isFork = true
+    // 1.20.1 Forge runs javac out of memory inside the Gradle daemon's heap.
     options.forkOptions.memoryMaximumSize = "6g"
     options.compilerArgs.addAll(listOf("-Xmaxerrs", "2000"))
 }

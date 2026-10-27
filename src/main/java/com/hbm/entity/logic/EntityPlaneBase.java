@@ -191,11 +191,12 @@ public abstract class EntityPlaneBase extends CompatEntity {
     public void forceSpawnChunk() {
         slideForcedChunk();
         if (level() instanceof ServerLevel server) {
+            var loaded = false;
             try {
                 ChunkUtil.loadEntityTickingChunk(server, forcedChunk);
-            } catch (RuntimeException | Error failure) {
-                releaseForcedChunk();
-                throw failure;
+                loaded = true;
+            } finally {
+                if (!loaded) releaseForcedChunk();
             }
         }
     }

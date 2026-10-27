@@ -186,8 +186,16 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
     protected void loadData(DataIn input) {
         super.loadData(input);
         power = input.getLongOr("power", 0L);
-        target = input.read("target", GlobalPos.CODEC).orElse(null);
+        target = input.read("target", GlobalPos.CODEC).orElseGet(() -> legacyTarget(input));
         if (crossingTank != null) crossingTank.readFromNBT(input, "tt");
+    }
+
+    // Saves before the GlobalPos key kept the link as x1/y1/z1/dim, y1 = -1 for unlinked.
+    private static @Nullable GlobalPos legacyTarget(DataIn input) {
+        int y = input.getIntOr("y1", -1);
+        if (y == -1) return null;
+        var dim = ResourceKey.create(Registries.DIMENSION, Ids.parse(input.getStringOr("dim", "minecraft:overworld")));
+        return GlobalPos.of(dim, new BlockPos(input.getIntOr("x1", 0), y, input.getIntOr("z1", 0)));
     }
 
     @Override

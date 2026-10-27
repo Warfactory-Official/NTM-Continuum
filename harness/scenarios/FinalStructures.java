@@ -340,7 +340,7 @@ public final class FinalStructures implements Scenario {
 
     private static void bundledDebugLoad(Client c) throws Exception {
         Path root = projectRoot();
-        Path source = root.resolve("new-hbm/src/main/resources/assets/hbm/structures/desert_shack_1.nbt");
+        Path source = root.resolve("NTM-Continuum/src/main/resources/assets/hbm/structures/desert_shack_1.nbt");
         Path target = runDir(c).resolve("structures/desert_shack_1.nbt");
         Files.createDirectories(target.getParent());
         Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
@@ -458,13 +458,13 @@ public final class FinalStructures implements Scenario {
 
     private static Path projectRoot() {
         Path dir = Path.of("").toAbsolutePath();
-        while (dir != null && !Files.isDirectory(dir.resolve("new-hbm"))) dir = dir.getParent();
+        while (dir != null && !Files.isDirectory(dir.resolve("NTM-Continuum"))) dir = dir.getParent();
         Expect.that(dir != null, "project root above " + Path.of("").toAbsolutePath());
         return dir;
     }
 
     private static Path runDir(Client c) {
-        Path runs = projectRoot().resolve("new-hbm/versions/" + c.node() + "/runs");
+        Path runs = projectRoot().resolve("NTM-Continuum/versions/" + c.node() + "/runs");
         return Files.isDirectory(runs.resolve("harness")) ? runs.resolve("harness") : runs.resolve("client");
     }
 

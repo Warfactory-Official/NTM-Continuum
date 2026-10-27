@@ -53,6 +53,11 @@ public class MachineMiningLaser extends BlockMultiblockMachine implements IEnerg
         return -1;
     }
 
+    @Override
+    protected boolean hangsFromCeiling() {
+        return false;
+    }
+
     /** Any face of the multiblock exposes the core's inventory to hoppers (extract the 21 output slots). */
     @Override
     @Nullable

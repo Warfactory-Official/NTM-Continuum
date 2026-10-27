@@ -323,9 +323,9 @@ public final class FinalWands implements Scenario {
 
     private static Path runDir(Client c) {
         Path dir = Path.of("").toAbsolutePath();
-        while (dir != null && !Files.isDirectory(dir.resolve("new-hbm"))) dir = dir.getParent();
+        while (dir != null && !Files.isDirectory(dir.resolve("NTM-Continuum"))) dir = dir.getParent();
         Expect.that(dir != null, "project root above " + Path.of("").toAbsolutePath());
-        Path runs = dir.resolve("new-hbm/versions/" + c.node() + "/runs");
+        Path runs = dir.resolve("NTM-Continuum/versions/" + c.node() + "/runs");
         return Files.isDirectory(runs.resolve("harness")) ? runs.resolve("harness") : runs.resolve("client");
     }
 

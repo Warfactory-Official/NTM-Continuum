@@ -39,6 +39,7 @@ public class MixinLivingEntity {
         }
     }
 
+    // Rung 2 fails: Fabric has no entity tick event.
     @Inject(method = "tick", at = @At("HEAD"))
     private void hbm$tickStart(CallbackInfo ci) {
         Environment.livingTickStart((LivingEntity) (Object) this);

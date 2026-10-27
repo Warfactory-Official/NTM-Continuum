@@ -56,7 +56,7 @@ jobs:
       # settings.gradle.kts includes ../Golem-Core as a composite build: check both out side by side.
       - uses: actions/checkout@v4
         with:
-          path: new-hbm
+          path: NTM-Continuum
 
       - uses: actions/checkout@v4
         with:
@@ -83,7 +83,7 @@ jobs:
           INPUT_DRY: ${{ inputs.dry_run }}
         run: |
           prop() { grep -E "^$2=" "$1/gradle.properties" | cut -d= -f2- | tr -d '[:space:]'; }
-          version=$(prop new-hbm mod.version)
+          version=$(prop NTM-Continuum mod.version)
           golem_version=$(prop Golem-Core mod.version)
           changelog="$RUNNER_TEMP/changelog.md"
           : > "$changelog"
@@ -96,8 +96,8 @@ jobs:
             esac
             case "$tag" in *alpha*) type=alpha ;; *beta*|*pre*|*rc*) type=beta ;; *) type=release ;; esac
             # actions/checkout fetches the tag as a lightweight ref; fetch the annotated object for its message.
-            git -C new-hbm fetch --force origin "refs/tags/$tag:refs/tags/$tag"
-            git -C new-hbm tag -l --format='%(contents)' "$tag" | sed '/-----BEGIN PGP SIGNATURE-----/,$d' > "$changelog"
+            git -C NTM-Continuum fetch --force origin "refs/tags/$tag:refs/tags/$tag"
+            git -C NTM-Continuum tag -l --format='%(contents)' "$tag" | sed '/-----BEGIN PGP SIGNATURE-----/,$d' > "$changelog"
             dry=false
           else
             tag="v$version"
@@ -106,10 +106,10 @@ jobs:
             dry="$INPUT_DRY"
           fi
           # This version's "## <version>" section of CHANGELOG.md wins over the tag message; typed text wins over both.
-          if [ -f new-hbm/CHANGELOG.md ] && { [ "$GITHUB_EVENT_NAME" = push ] || [ -z "$INPUT_CHANGELOG" ]; }; then
+          if [ -f NTM-Continuum/CHANGELOG.md ] && { [ "$GITHUB_EVENT_NAME" = push ] || [ -z "$INPUT_CHANGELOG" ]; }; then
             awk -v v="$version" '
               /^## / { h=$2; gsub(/[][]/, "", h); sub(/^v/, "", h); if (on) exit; on = (h == v); next }
-              on' new-hbm/CHANGELOG.md > "$RUNNER_TEMP/section.md"
+              on' NTM-Continuum/CHANGELOG.md > "$RUNNER_TEMP/section.md"
             if [ -n "$(tr -d '[:space:]' < "$RUNNER_TEMP/section.md")" ]; then mv "$RUNNER_TEMP/section.md" "$changelog"; fi
           fi
           # Blank: let the Gradle script fall back to its placeholder.
@@ -135,11 +135,11 @@ jobs:
         run: bash ./gradlew chiseledBuild --no-daemon --stacktrace
 
       - name: Build HBM
-        working-directory: new-hbm
+        working-directory: NTM-Continuum
         run: bash ./gradlew chiseledBuild --no-daemon --stacktrace
 
       - name: Publish HBM
-        working-directory: new-hbm
+        working-directory: NTM-Continuum
         env:
           CHANGELOG_FILE: ${{ steps.cfg.outputs.changelog }}
         run: |
@@ -152,7 +152,7 @@ jobs:
         if: steps.cfg.outputs.dry != 'true'
         run: |
           mkdir -p dist
-          find new-hbm/versions/*/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
+          find NTM-Continuum/versions/*/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
           ls -l dist
 
       - name: GitHub release

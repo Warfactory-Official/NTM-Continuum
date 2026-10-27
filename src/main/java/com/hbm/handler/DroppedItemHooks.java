@@ -13,9 +13,9 @@ public final class DroppedItemHooks {
 
     private DroppedItemHooks() {}
 
-    /** Before vanilla's item physics each tick, with the ticking item. */
-    public static final Hook<Consumer<ItemEntity>> BEFORE_TICK = Hook.notifying();
+    private static final Hook<Consumer<ItemEntity>> BEFORE_TICK = Hook.notifying();
 
+    /** Before vanilla's item physics each tick, with the ticking item. */
     public static void onBeforeTick(Consumer<ItemEntity> listener) {
         BEFORE_TICK.register(listener);
     }

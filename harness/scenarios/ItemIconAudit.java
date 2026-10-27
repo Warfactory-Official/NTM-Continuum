@@ -22,7 +22,7 @@ import java.nio.file.Files;
  * </ul>
  * Both may be given; a stack is shown if it matches either. Labels and variant ordinals are counted over the full
  * list, so a filtered run joins the baseline's {@code items.csv} / {@code ref17.csv} rows one to one. Example (Git Bash,
- * from new-hbm): {@code ICON_AUDIT_ITEMS=watz,machine_fel ../Golem-Core/harness/harness run ItemIconAudit.java --label icon-watz}.
+ * from NTM-Continuum): {@code ICON_AUDIT_ITEMS=watz,machine_fel ../Golem-Core/harness/harness run ItemIconAudit.java --label icon-watz}.
  */
 public final class ItemIconAudit implements Scenario {
 
