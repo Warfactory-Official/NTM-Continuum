@@ -270,6 +270,8 @@ tasks.jar {
 tasks.compileJava {
     dependsOn(tasks.named("stonecutterGenerate"))
     options.release = javaVersion
+    options.isFork = true
+    options.forkOptions.memoryMaximumSize = "6g"
     options.compilerArgs.addAll(listOf("-Xmaxerrs", "2000"))
 }
 tasks.processResources { dependsOn(tasks.named("stonecutterGenerate")) }
