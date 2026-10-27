@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.generic.ItemStateBlock;
 import com.hbm.capability.ICapabilityBlock;
 import com.hbm.capability.MachineCaps;
 import com.hbm.api.block.IToolable;
@@ -74,7 +75,7 @@ public class PneumoTubePaintableBlock extends CompatBlock
             Block block = blockItem.getBlock();
             if (allowedPaint(block, this) && level.getBlockEntity(pos) instanceof TileEntityPneumoTubePaintable tube
                     && tube.getCamo() == null) {
-                if (!level.isClientSide()) tube.setCamo(block.defaultBlockState());
+                if (!level.isClientSide()) tube.setCamo(ItemStateBlock.of(blockItem, stack));
                 return InteractionResult.SUCCESS;
             }
         } else {

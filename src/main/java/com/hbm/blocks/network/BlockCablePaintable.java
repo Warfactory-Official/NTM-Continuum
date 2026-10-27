@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.generic.ItemStateBlock;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
@@ -91,7 +92,7 @@ public class BlockCablePaintable extends CompatBlock implements TickingBlock, IT
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (stack.getItem() instanceof BlockItem ib && allowedPaint(ib.getBlock(), this)
                 && level.getBlockEntity(pos) instanceof TileEntityCablePaintable pipe && pipe.getPaint() == null) {
-            if (!level.isClientSide()) pipe.setPaint(ib.getBlock());
+            if (!level.isClientSide()) pipe.setPaint(ItemStateBlock.of(ib, stack));
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.TRY_WITH_EMPTY_HAND;

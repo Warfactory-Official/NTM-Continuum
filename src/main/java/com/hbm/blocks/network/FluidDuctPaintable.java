@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.blocks.generic.ItemStateBlock;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.block.IToolable;
 import com.hbm.tileentity.network.DuctPaint;
@@ -67,7 +68,7 @@ public class FluidDuctPaintable extends BlockFluidDuct implements ITooltipProvid
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (paintable() && stack.getItem() instanceof BlockItem item && BlockCablePaintable.allowedPaint(item.getBlock(), this)
                 && level.getBlockEntity(pos) instanceof DuctPaint.Holder duct && duct.paint().get() == null) {
-            if (!level.isClientSide()) duct.paint().set((BlockEntity) duct, item.getBlock().defaultBlockState());
+            if (!level.isClientSide()) duct.paint().set((BlockEntity) duct, ItemStateBlock.of(item, stack));
             return InteractionResult.SUCCESS;
         }
         return super.onUseItem(state, level, pos, player, hand, stack, hit);

@@ -17,6 +17,14 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.items.machine.ItemFluidTank;
+import com.hbm.items.tool.ItemRebarPlacer;
+import com.hbm.blocks.ModDecoBlocks;
+import com.hbm.blocks.ModEnergyNetBlocks;
+import com.hbm.blocks.ModPneumaticBlocks;
+import com.hbm.blocks.generic.BlockConcreteColored;
+import com.hbm.tileentity.network.TileEntityCablePaintable;
+import com.hbm.tileentity.network.TileEntityPneumoTubePaintable;
+import net.minecraft.world.item.DyeColor;
 import com.hbm.items.ModFluidItems;
 import com.hbm.items.special.ItemCell;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
@@ -84,12 +92,14 @@ public final class FluidNetworkGameTests {
             TESTS.function("fluid_net_multi_user_faces", 300, 8, () -> FluidNetworkGameTests::multiUser);
     public static final GameTests.Function DUCT_PAINT =
             TESTS.function("fluid_duct_paint", 40, 8, () -> FluidNetworkGameTests::ductPaint);
+    public static final GameTests.Function COLOURED_PAINT =
+            TESTS.function("paint_takes_concrete_colour", 40, 8, () -> FluidNetworkGameTests::colouredPaint);
     public static final GameTests.Function CONTAINER_IDENTIFIES =
             TESTS.function("fluid_barrel_identifies_from_container", 60, 8, () -> FluidNetworkGameTests::containerIdentifies);
 
     private static final int Y = 5;
     private static final int JOIN_Z = 6, SPLIT_Z = 12, TYPE_Z = 18, EXHAUST_Z = 24, SPREAD_Z = 30, INTERIOR_Z = 36, MULTI_Z = 42,
-            PAINT_Z = 48, IDENTIFY_Z = 54;
+            PAINT_Z = 48, IDENTIFY_Z = 54, COLOUR_Z = 60;
 
     private FluidNetworkGameTests() {}
 
@@ -304,6 +314,39 @@ public final class FluidNetworkGameTests {
         helper.assertTrue(graph.networkAt(first.asLong()) != null
                         && graph.networkAt(first.asLong()) == graph.networkAt(first.east(4).asLong()),
                 "the typed run must form one water network");
+        helper.succeed();
+    }
+
+    /**
+     * A coloured concrete item paints a cable, a coated duct and a pneumatic tube in its own colour (1.7 painted with
+     * block + item meta), the cable keeps it through a save, and rebar takes every concrete colour.
+     */
+    private static void colouredPaint(GameTestHelper helper) {
+        Runnable release = GameTests.holdChunks(helper, -4, 12, COLOUR_Z - 6, COLOUR_Z + 6);
+        ServerLevel level = helper.getLevel();
+        BlockPos cable = helper.absolutePos(new BlockPos(2, Y, COLOUR_Z));
+        BlockPos copy = cable.east(2), duct = cable.east(4), tube = cable.east(6);
+        level.setBlock(cable, ModEnergyNetBlocks.red_cable_paintable.get().defaultBlockState(), 3);
+        level.setBlock(copy, ModEnergyNetBlocks.red_cable_paintable.get().defaultBlockState(), 3);
+        level.setBlock(duct, ModFluidNetBlocks.fluid_duct_paintable.get().defaultBlockState(), 3);
+        level.setBlock(tube, ModPneumaticBlocks.PNEUMATIC_TUBE_PAINTABLE.get().defaultBlockState(), 3);
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        ItemStack red = ModDecoBlocks.concreteColoredItem(DyeColor.RED.getId());
+        BlockState expected = ((BlockConcreteColored) ModDecoBlocks.CONCRETE_COLORED.get()).stateForVariant(DyeColor.RED.getId());
+
+        click(player, level, cable, red.copy());
+        click(player, level, duct, red.copy());
+        click(player, level, tube, red.copy());
+        var painted = (TileEntityCablePaintable) level.getBlockEntity(cable);
+        helper.assertTrue(painted.getPaint() == expected, "the cable is painted " + painted.getPaint() + ", expected red concrete");
+        helper.assertTrue(paint(level, duct) == expected, "the coated duct is painted " + paint(level, duct) + ", expected red concrete");
+        var camo = ((TileEntityPneumoTubePaintable) level.getBlockEntity(tube)).getCamo();
+        helper.assertTrue(camo == expected, "the tube is painted " + camo + ", expected red concrete");
+
+        painted.copyPersistentDataTo((TileEntityCablePaintable) level.getBlockEntity(copy));
+        helper.assertTrue(((TileEntityCablePaintable) level.getBlockEntity(copy)).getPaint() == expected, "the cable's colour did not survive a save");
+        helper.assertTrue(ItemRebarPlacer.isValidConk(red), "rebar refused red concrete");
+        release.run();
         helper.succeed();
     }
 

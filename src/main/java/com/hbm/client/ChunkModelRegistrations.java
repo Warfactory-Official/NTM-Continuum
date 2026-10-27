@@ -98,8 +98,7 @@ public final class ChunkModelRegistrations {
             @Override
             public @Nullable BlockState disguise(BlockGetter level, BlockPos pos, BlockState state) {
                 if (!state.getValue(BlockCablePaintable.PAINTED)) return null;
-                Block paint = level.getBlockEntity(pos) instanceof TileEntityCablePaintable cable ? cable.getPaint() : null;
-                return paint == null ? null : paint.defaultBlockState();
+                return level.getBlockEntity(pos) instanceof TileEntityCablePaintable cable ? cable.getPaint() : null;
             }
 
             @Override

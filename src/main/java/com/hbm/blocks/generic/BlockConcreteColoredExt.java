@@ -17,7 +17,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import java.util.List;
 
 /** The old eight-entry extended concrete enum, including the machine-stripe face contract. */
-public final class BlockConcreteColoredExt extends CompatBlock {
+public final class BlockConcreteColoredExt extends CompatBlock implements ItemStateBlock {
 
     public static final EnumProperty<EnumConcreteType> TYPE =
             EnumProperty.create("type", EnumConcreteType.class);
@@ -40,6 +40,7 @@ public final class BlockConcreteColoredExt extends CompatBlock {
         return defaultBlockState().setValue(TYPE, type(variant));
     }
 
+    @Override
     public BlockState stateForItem(ItemStack stack) {
         return stateForVariant(stack.getItem() instanceof MaterialCompletionBlockItem item ? item.variant() : 0);
     }

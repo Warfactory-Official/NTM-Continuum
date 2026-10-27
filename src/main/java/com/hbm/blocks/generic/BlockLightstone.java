@@ -17,7 +17,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import java.util.List;
 
 /** The old five-entry lightstone enum. Despite its name, the legacy block emits no light. */
-public final class BlockLightstone extends CompatBlock {
+public final class BlockLightstone extends CompatBlock implements ItemStateBlock {
 
     public static final EnumProperty<LightstoneType> TYPE =
             EnumProperty.create("type", LightstoneType.class);
@@ -40,6 +40,7 @@ public final class BlockLightstone extends CompatBlock {
         return defaultBlockState().setValue(TYPE, type(variant));
     }
 
+    @Override
     public BlockState stateForItem(ItemStack stack) {
         return stateForVariant(stack.getItem() instanceof MaterialCompletionBlockItem item ? item.variant() : 0);
     }

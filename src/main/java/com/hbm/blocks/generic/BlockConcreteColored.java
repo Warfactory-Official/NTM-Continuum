@@ -17,7 +17,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import java.util.List;
 
 /** The old 16 metadata concrete colours, retained as one block plus a state property. */
-public final class BlockConcreteColored extends CompatBlock {
+public final class BlockConcreteColored extends CompatBlock implements ItemStateBlock {
 
     public static final EnumProperty<DyeColor> COLOR = EnumProperty.create("color", DyeColor.class);
 
@@ -45,6 +45,7 @@ public final class BlockConcreteColored extends CompatBlock {
         return defaultBlockState().setValue(COLOR, color(variant));
     }
 
+    @Override
     public BlockState stateForItem(ItemStack stack) {
         return stateForVariant(stack.getItem() instanceof MaterialCompletionBlockItem item ? item.variant() : 0);
     }

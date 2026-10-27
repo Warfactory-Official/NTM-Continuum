@@ -27,6 +27,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -53,16 +54,16 @@ public class ItemRebarPlacer extends CompatItem {
         super(properties);
     }
 
-    /** 1.7 {@code isValidConk}; the coloured concretes are one item each here, their colour a component. */
+    /** 1.7 {@code isValidConk}; every colour of the coloured concretes is its own item here. */
     public static boolean isValidConk(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
         Item item = stack.getItem();
+        if (item instanceof BlockItem block && (block.getBlock() == ModDecoBlocks.CONCRETE_COLORED.get()
+                || block.getBlock() == ModDecoBlocks.CONCRETE_COLORED_EXT.get())) return true;
         return item == ModBlocks.concrete.get().asItem()
                 || item == ModDecoContent.concrete_rebar.get().asItem()
                 || item == ModBlocks.concrete_smooth.get().asItem()
-                || item == ModDecoContent.concrete_pillar.get().asItem()
-                || item == ModDecoBlocks.CONCRETE_COLORED.get().asItem()
-                || item == ModDecoBlocks.CONCRETE_COLORED_EXT.get().asItem();
+                || item == ModDecoContent.concrete_pillar.get().asItem();
     }
 
     /** Every acceptable concrete as a display stack, in 1.7's order, for the menu's empty-slot tooltip. */

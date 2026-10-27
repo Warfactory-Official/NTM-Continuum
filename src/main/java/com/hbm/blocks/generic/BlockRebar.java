@@ -195,10 +195,7 @@ public class BlockRebar extends CompatBlock implements TickingBlock, SimpleWater
         /** What the rebar becomes once full: the loaded concrete if it is a valid one, else reinforced concrete. */
         BlockState setState() {
             if (!concrete.isEmpty() && ItemRebarPlacer.isValidConk(concrete) && concrete.getItem() instanceof BlockItem item) {
-                Block block = item.getBlock();
-                if (block instanceof BlockConcreteColored colored) return colored.stateForItem(concrete);
-                if (block instanceof BlockConcreteColoredExt ext) return ext.stateForItem(concrete);
-                return block.defaultBlockState();
+                return ItemStateBlock.of(item, concrete);
             }
             return ModDecoContent.concrete_rebar.get().defaultBlockState();
         }
