@@ -4,6 +4,7 @@ import com.hbm.gametest.computer.ComputerSuites;
 import dev.golem.core.gametest.GameTests;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ServiceLoader;
 
 /**
  * Every HBM GameTest suite, in registration order. The loaders' dev hooks ({@link GameTestSetup} on NeoForge and
@@ -118,6 +119,8 @@ public final class HbmGameTestSuites {
             list.add(PollutionGameTests.TESTS);
             list.add(ToxinGameTests.TESTS);
             list.add(MachineAutomationGameTests.TESTS);
+            ServiceLoader.load(HbmGameTestExtension.class, HbmGameTestExtension.class.getClassLoader())
+                    .forEach(extension -> list.addAll(extension.suites()));
             suites = List.copyOf(list);
         }
         return suites;

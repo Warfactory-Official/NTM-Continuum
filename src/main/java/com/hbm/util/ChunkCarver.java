@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import dev.golem.core.world.BlockChanges;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatBlock;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -95,13 +96,14 @@ public final class ChunkCarver {
     /** One flag per section index; the light engine is told about exactly these at the end. */
     private final boolean[] touched;
     private final LongArrayList blockEntityCells = new LongArrayList();
-    /** Carved cells whose block has a removal hook ({@code CompatBlock}), and the state each one held. */
+    /** Raw removals with a CompatBlock callback or an interested committed-change listener. */
     private final LongArrayList hookedCells = new LongArrayList();
     private final List<BlockState> hookedStates = new ArrayList<>();
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
     private int cursor;
     private int carved;
+    private boolean changesObserved;
 
     public ChunkCarver(ServerLevel level, LevelChunk chunk, BitSet hits, int chunkX, int chunkZ, int maxY) {
         this.level = level;
@@ -128,6 +130,10 @@ public final class ChunkCarver {
         LevelChunkSection[] sections = chunk.getSections();
         int baseX = chunkX << 4;
         int baseZ = chunkZ << 4;
+        // Recheck between slices: a room registered after an earlier slice already saw that slice's geometry.
+        // With no interested listener, keep only the removal hooks the carve already needed.
+        boolean observeChanges = BlockChanges.observesChunk(level, chunkX, chunkZ);
+        changesObserved |= observeChanges;
 
         // The section is resolved once per section, not once per block: the bit order is top-down, so a
         // section's ~4096 cells arrive as one contiguous run.
@@ -158,7 +164,7 @@ public final class ChunkCarver {
                         carved++;
                         // 1.7's setBlock always ran breakBlock, so a multiblock cell tore its whole structure
                         // down. A section write runs nothing; the hook is replayed in finish().
-                        if (old.getBlock() instanceof CompatBlock) {
+                        if (observeChanges || old.getBlock() instanceof CompatBlock) {
                             hookedCells.add(BlockPos.asLong(baseX | localX, y, baseZ | localZ));
                             hookedStates.add(old);
                         }
@@ -196,12 +202,20 @@ public final class ChunkCarver {
         for (int i = 0; i < hookedCells.size(); i++) {
             long packed = hookedCells.getLong(i);
             pos.set(BlockPos.getX(packed), BlockPos.getY(packed), BlockPos.getZ(packed));
-            Compat.blockRemoved(level, pos, hookedStates.get(i));
+            var old = hookedStates.get(i);
+            if (old.getBlock() instanceof CompatBlock) Compat.blockRemoved(level, pos, old);
+        }
+        repairAndResend(level, chunk, chunkX, chunkZ, touched);
+
+        // Heightmaps and removal callbacks must see the complete carve before topology listeners consume it.
+        // Reuse the existing primitive-position/state batch and mutable cursor; untouched chunks retain no extra cells.
+        if (changesObserved) for (int i = 0; i < hookedCells.size(); i++) {
+            long packed = hookedCells.getLong(i);
+            pos.set(BlockPos.getX(packed), BlockPos.getY(packed), BlockPos.getZ(packed));
+            BlockChanges.committed(level, pos, hookedStates.get(i), chunk.getBlockState(pos));
         }
         hookedCells.clear();
         hookedStates.clear();
-
-        repairAndResend(level, chunk, chunkX, chunkZ, touched);
     }
 
     /**

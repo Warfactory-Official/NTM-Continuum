@@ -210,7 +210,8 @@ public final class DamageResistanceHandler {
         }
     }
 
-    private static void applyArmorModules(DamageEvents.DamageEvent event) {
+    /** Applies only armor-module effects to an existing damage event. */
+    public static void applyArmorModules(DamageEvents.DamageEvent event) {
         for (EquipmentSlot slot : ARMOR_SLOTS) {
             ItemStack armor = event.entity().getItemBySlot(slot);
             if (armor.isEmpty() || !ArmorModHandler.hasMods(armor)) continue;

@@ -46,10 +46,10 @@ public class GUIMachineRefinery extends CompatContainerScreen<ContainerMachineRe
 
         // pipes: heavy, naphtha, light, gaseous (1.7 func_146110_a on the 256x256 sheet)
         RefineryRecipes.RefineryRecipe recipe = RefineryRecipes.getRefinery(inputOil.getTankType());
-        int cHeavy = recipe != null ? tint(recipe.frac1().type.getColor()) : 0xFFFFFFFF;
-        int cNaph = recipe != null ? tint(recipe.frac2().type.getColor()) : 0xFFFFFFFF;
-        int cLight = recipe != null ? tint(recipe.frac3().type.getColor()) : 0xFFFFFFFF;
-        int cGas = recipe != null ? tint(recipe.frac4().type.getColor()) : 0xFFFFFFFF;
+        int cHeavy = recipe != null ? tint(recipe.frac1().type.clientMetadata().getColor()) : 0xFFFFFFFF;
+        int cNaph = recipe != null ? tint(recipe.frac2().type.clientMetadata().getColor()) : 0xFFFFFFFF;
+        int cLight = recipe != null ? tint(recipe.frac3().type.clientMetadata().getColor()) : 0xFFFFFFFF;
+        int cGas = recipe != null ? tint(recipe.frac4().type.clientMetadata().getColor()) : 0xFFFFFFFF;
         GuiDraw.blit(graphics, TEXTURE, guiLeft + 30, guiTop + 30, 0.0F, 248.0F, 43, 4, 256, 256, cHeavy);
         GuiDraw.blit(graphics, TEXTURE, guiLeft + 30, guiTop + 26, 0.0F, 240.0F, 61, 8, 256, 256, cNaph);
         GuiDraw.blit(graphics, TEXTURE, guiLeft + 30, guiTop + 22, 61.0F, 240.0F, 79, 12, 256, 256, cLight);

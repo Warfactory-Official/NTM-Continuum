@@ -7,6 +7,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.data.DataMaps;
 import dev.golem.core.data.DataMaps.DataMap;
+import dev.golem.core.hook.Hook;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -30,6 +34,53 @@ import java.util.Optional;
 public final class DepositDataMaps {
 
     private DepositDataMaps() {}
+
+    /**
+     * An absolute reservoir bound to one physical state. Metadata still comes from the merged deposit maps;
+     * its amounts may come from an independently loaded subsystem configuration instead of proportional yields.
+     */
+    public interface Reserve {
+        Deposit deposit();
+        int primaryAmount();
+        int secondaryAmount(RandomSource random);
+        double drainChance();
+
+        default FluidType primaryFluid() { return deposit().primaryFluid(); }
+        default @Nullable FluidType secondaryFluid() {
+            var fluid = deposit().secondaryFluid();
+            return fluid == Fluids.NONE ? null : fluid;
+        }
+        default boolean requiresFracking() { return deposit().frackingOnly(); }
+
+        /** An emptied state retains the live deposit's shared properties, including an addon's BODY. */
+        default void drain(Level level, BlockPos pos, RandomSource random, double multiplier) {
+            var empty = deposit().emptyBlock();
+            if (empty != null && random.nextDouble() < drainChance() * multiplier)
+                level.setBlock(pos, emptyState(level.getBlockState(pos), empty), Block.UPDATE_ALL);
+        }
+    }
+
+    @FunctionalInterface
+    public interface ReserveProvider {
+        /** Null leaves this state on the existing multiplicative deposit path. */
+        @Nullable Reserve reserve(BlockState state, Deposit metadata);
+    }
+
+    public static final Hook<ReserveProvider> RESERVES = Hook.notifying();
+
+    public static @Nullable Reserve reserve(BlockState state) {
+        var metadata = deposit(state);
+        return metadata == null ? null : reserve(state, metadata);
+    }
+
+    /** Uses the caller's resolved metadata too, so an explicit caller override is not replaced by another lookup. */
+    public static @Nullable Reserve reserve(BlockState state, Deposit metadata) {
+        for (var provider : RESERVES) {
+            var reserve = provider.reserve(state, metadata);
+            if (reserve != null) return reserve;
+        }
+        return null;
+    }
 
     /**
      * One deposit block. {@code primary} fills the drill's first tank and {@code secondary} its second

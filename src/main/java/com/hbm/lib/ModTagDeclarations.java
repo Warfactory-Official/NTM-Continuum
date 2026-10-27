@@ -53,6 +53,10 @@ public final class ModTagDeclarations {
         Tags.of("item", "hbm", "certus_quartz_clusters")
                 .optional("ae2:quartz_cluster")
                 .register();
+        // Neutron producers' shape tag for the demon core (read by the neutron activation census).
+        Tags.of("item", "hbm", "hazard/demon_core_closed")
+                .values("hbm:demon_core_closed")
+                .register();
         // 1.20.1 AE2 tags its crystals only as forge:gems/certus_quartz or c:certus_quartz
         Tags.of("item", "c", "gems/certus_quartz")
                 .optional("ae2:certus_quartz_crystal")

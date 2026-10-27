@@ -4,6 +4,7 @@ import com.hbm.api.environment.Environment;
 import com.hbm.config.GeneralConfig;
 import com.hbm.saveddata.TomSaveData;
 import dev.golem.core.world.Skies;
+import dev.golem.core.hook.Hook;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -21,19 +22,40 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class ImpactSky implements Skies.Modifier {
 
+    public static final int SKY_COLOR = 1;
+    public static final int SKY_LIGHT = 2;
+    public static final int DAYLIGHT = 4;
+    public static final int CLOUD_COLOR = 8;
+
+    /** An addon may supply particular impact effects while retaining the base world's remaining effects. */
+    @FunctionalInterface
+    public interface Ownership {
+        int ownedParts(Level level);
+    }
+
+    public static final Hook<Ownership> OWNERS = Hook.of(listeners -> level -> {
+        var parts = 0;
+        for (var listener : listeners) parts |= listener.ownedParts(level);
+        return parts;
+    });
+
+    private static boolean owned(Level level, int part) {
+        return (OWNERS.invoker().ownedParts(level) & part) != 0;
+    }
+
     private ImpactSky() {}
 
     public static void register() {
         Skies.addModifier(new ImpactSky());
     }
 
-    private static float dust(Level level) {
+    public static float dust(Level level) {
         if (level.isClientSide()) return ImpactWorldHandler.getDustForClient(level);
         TomSaveData data = level instanceof ServerLevel server ? TomSaveData.published(server) : null;
         return data == null ? 0F : data.dust;
     }
 
-    private static float fire(Level level) {
+    public static float fire(Level level) {
         if (level.isClientSide()) return ImpactWorldHandler.getFireForClient(level);
         TomSaveData data = level instanceof ServerLevel server ? TomSaveData.published(server) : null;
         return data == null ? 0F : data.fire;
@@ -49,12 +71,14 @@ public final class ImpactSky implements Skies.Modifier {
     /** 1.7 {@code getSunBrightnessFactor}: {@code sunBr * (1 - dust)}. */
     @Override
     public float daylight(Level level, float daylight) {
+        if (owned(level, DAYLIGHT)) return daylight;
         return daylight * (1 - dust(level));
     }
 
     /** 1.7 {@code getSkyColor}. */
     @Override
     public Vec3 skyColor(Level level, Vec3 sky) {
+        if (owned(level, SKY_COLOR)) return sky;
         return skyColor17(sky, dust(level), fire(level));
     }
 
@@ -95,6 +119,7 @@ public final class ImpactSky implements Skies.Modifier {
     /** 1.7 {@code drawClouds}. */
     @Override
     public Vec3 cloudColor(Level level, Vec3 clouds) {
+        if (owned(level, CLOUD_COLOR)) return clouds;
         float dust = dust(level);
         return new Vec3(clouds.x * (1 - dust), clouds.y * (1 - dust), clouds.z * (1 - dust));
     }
@@ -108,6 +133,7 @@ public final class ImpactSky implements Skies.Modifier {
     /** 1.7 {@code getSunBrightness}: {@code (sunBr * 0.8 + 0.2) * (1 - dust)}; vanilla's value is the bracket. */
     @Override
     public float skyLight(Level level, float factor) {
+        if (owned(level, SKY_LIGHT)) return factor;
         return factor * (1 - dust(level));
     }
 

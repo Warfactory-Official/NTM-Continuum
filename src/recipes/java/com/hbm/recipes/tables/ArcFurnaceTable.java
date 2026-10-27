@@ -75,14 +75,14 @@ public final class ArcFurnaceTable extends RecipeSource<Row> {
             register(new ComparableStack(ModBedrockOreItems.get(Grade.RAD_BYPRODUCT, type)), new ArcFurnaceRecipe().solid(ModBedrockOreItems.make(Grade.RAD_ARC, type, 2)));
             register(new ComparableStack(ModBedrockOreItems.get(Grade.RAD_ROASTED, type)), new ArcFurnaceRecipe().solid(ModBedrockOreItems.make(Grade.RAD_ARC, type, 4)));
 
-            register(new ComparableStack(ModBedrockOreItems.get(Grade.PRIMARY_FIRST, type)), new ArcFurnaceRecipe().fluidNull(toFluid(type.primary1, 5), toFluid(type.primary2, 2)));
-            register(new ComparableStack(ModBedrockOreItems.get(Grade.PRIMARY_SECOND, type)), new ArcFurnaceRecipe().fluidNull(toFluid(type.primary1, 2), toFluid(type.primary2, 5)));
-            register(new ComparableStack(ModBedrockOreItems.get(Grade.CRUMBS, type)), new ArcFurnaceRecipe().fluidNull(toFluid(type.primary1, 1), toFluid(type.primary2, 1)));
+            register(new ComparableStack(ModBedrockOreItems.get(Grade.PRIMARY_FIRST, type)), new ArcFurnaceRecipe().fluidNull(BedrockOreType.molten(type.primary1, 5), BedrockOreType.molten(type.primary2, 2)));
+            register(new ComparableStack(ModBedrockOreItems.get(Grade.PRIMARY_SECOND, type)), new ArcFurnaceRecipe().fluidNull(BedrockOreType.molten(type.primary1, 2), BedrockOreType.molten(type.primary2, 5)));
+            register(new ComparableStack(ModBedrockOreItems.get(Grade.CRUMBS, type)), new ArcFurnaceRecipe().fluidNull(BedrockOreType.molten(type.primary1, 1), BedrockOreType.molten(type.primary2, 1)));
 
             int i3 = 3;
-            register(new ComparableStack(ModBedrockOreItems.get(Grade.SULFURIC_WASHED, type)), new ArcFurnaceRecipe().fluidNull(toFluid(type.byproductAcid1, i3), toFluid(type.byproductAcid2, i3), toFluid(type.byproductAcid3, i3)));
-            register(new ComparableStack(ModBedrockOreItems.get(Grade.SOLVENT_WASHED, type)), new ArcFurnaceRecipe().fluidNull(toFluid(type.byproductSolvent1, i3), toFluid(type.byproductSolvent2, i3), toFluid(type.byproductSolvent3, i3)));
-            register(new ComparableStack(ModBedrockOreItems.get(Grade.RAD_WASHED, type)), new ArcFurnaceRecipe().fluidNull(toFluid(type.byproductRad1, i3), toFluid(type.byproductRad2, i3), toFluid(type.byproductRad3, i3)));
+            register(new ComparableStack(ModBedrockOreItems.get(Grade.SULFURIC_WASHED, type)), new ArcFurnaceRecipe().fluidNull(BedrockOreType.molten(type.byproductAcid1, i3), BedrockOreType.molten(type.byproductAcid2, i3), BedrockOreType.molten(type.byproductAcid3, i3)));
+            register(new ComparableStack(ModBedrockOreItems.get(Grade.SOLVENT_WASHED, type)), new ArcFurnaceRecipe().fluidNull(BedrockOreType.molten(type.byproductSolvent1, i3), BedrockOreType.molten(type.byproductSolvent2, i3), BedrockOreType.molten(type.byproductSolvent3, i3)));
+            register(new ComparableStack(ModBedrockOreItems.get(Grade.RAD_WASHED, type)), new ArcFurnaceRecipe().fluidNull(BedrockOreType.molten(type.byproductRad1, i3), BedrockOreType.molten(type.byproductRad2, i3), BedrockOreType.molten(type.byproductRad3, i3)));
         }
     }
 
@@ -109,16 +109,6 @@ public final class ArcFurnaceTable extends RecipeSource<Row> {
 
     private static TagStack tag(String namespace, String path) {
         return new TagStack(TagKey.create(Registries.ITEM, Ids.of(namespace, path)));
-    }
-
-    /** 1.7 {@code ItemBedrockOreNew.toFluid}: the molten material of a smeltable output, else nothing. */
-    private static @Nullable MaterialStack toFluid(@Nullable BedrockOreOutput o, double amount) {
-        if (o == null) return null;
-        NTMMaterial mat = o.material();
-        if (mat != null && mat.smeltable == NTMMaterial.SmeltingBehavior.SMELTABLE) {
-            return new MaterialStack(mat, (int) Math.ceil(q(MaterialShapes.FRAGMENT, o.amount()) * amount));
-        }
-        return null;
     }
 
     /** 1.7 {@code MaterialShapes.q(amount)}. */

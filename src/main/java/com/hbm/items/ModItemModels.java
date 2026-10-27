@@ -12,7 +12,6 @@ import java.util.EnumMap;
 import org.joml.Matrix4f;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -96,11 +95,7 @@ public final class ModItemModels {
             "plate_welded"
     };
 
-    private static final String[] SPRITE_ITEMS_3 = {
-            "scraps_liquid",
-            "shell",
-            "wire_dense", "wire_fine"
-    };
+    private static final String[] SPRITE_ITEMS_3 = {"shell", "wire_dense", "wire_fine"};
 
     /**
      * Items drawn as a single sprite named after the item, which is the overwhelming majority.

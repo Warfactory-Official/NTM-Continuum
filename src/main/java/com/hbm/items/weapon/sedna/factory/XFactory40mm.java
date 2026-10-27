@@ -167,7 +167,7 @@ public final class XFactory40mm {
         c130.fac(level, x, y, z, payload);
         // 1.7 WorldUtil.loadAndSpawnEntityInWorld + TrackerUtil.setTrackingRange(250): fac() force-loads the spawn
         // chunk and the C130 entity type already tracks far beyond 250 blocks.
-        level.addFreshEntity(c130);
+        c130.addToLevel();
     }
 
     public static void init() {

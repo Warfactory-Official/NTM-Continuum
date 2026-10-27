@@ -161,6 +161,8 @@ public class TileEntityCharger extends TileEntityLoadedBase implements IEnergyRe
         particles = buf.readBoolean();
     }
 
+    // Input charges equipped items; it is not an owned HE buffer.
+    @Override public boolean ownsEnergyBuffer() { return false; }
     @Override public long getPower() { return 0; }
     @Override public long getMaxPower() { return charge; }
     @Override public void setPower(long power) { }
@@ -172,6 +174,7 @@ public class TileEntityCharger extends TileEntityLoadedBase implements IEnergyRe
 
         for (Player player : players) {
             for (EquipmentSlot slot : SLOTS) {
+                if (power <= 0) return 0;
                 ItemStack stack = player.getItemBySlot(slot);
                 if (!stack.isEmpty() && stack.getItem() instanceof IBatteryItem battery) {
                     long toCharge = Math.min(battery.getMaxCharge(stack) - battery.getCharge(stack), battery.getChargeRate(stack));
@@ -185,9 +188,6 @@ public class TileEntityCharger extends TileEntityLoadedBase implements IEnergyRe
             }
         }
 
-        // 1.7 could hand back a negative remainder (several items each taking the minimum of 1 HE from an offer
-        // smaller than their count); the graph here books "offered - returned" as delivered, so the overdraw is
-        // clamped rather than minted.
-        return Math.max(power, 0);
+        return power;
     }
 }

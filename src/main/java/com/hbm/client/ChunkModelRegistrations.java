@@ -49,14 +49,14 @@ public final class ChunkModelRegistrations {
     private static final BlockTint DUCT_FLUID = new BlockTint() {
         @Override
         public int color(BlockState state) {
-            return 0xFF000000 | Fluids.NONE.getColor();
+            return 0xFF000000 | Fluids.NONE.clientMetadata().getColor();
         }
 
         @Override
         public int colorInWorld(BlockState state, BlockGetter level, BlockPos pos) {
             if (!(level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct)) return color(state);
             if (duct instanceof DuctPaint.Holder painted && painted.paint().get() != null) return 0xFFFFFFFF;
-            return 0xFF000000 | duct.getFluidType().getColor();
+            return 0xFF000000 | duct.getFluidType().clientMetadata().getColor();
         }
 
         @Override
@@ -69,13 +69,13 @@ public final class ChunkModelRegistrations {
     private static final BlockTint WHITE_BOX = new BlockTint() {
         @Override
         public int color(BlockState state) {
-            return lighten(Fluids.NONE.getColor());
+            return lighten(Fluids.NONE.clientMetadata().getColor());
         }
 
         @Override
         public int colorInWorld(BlockState state, BlockGetter level, BlockPos pos) {
             if (!(level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct)) return color(state);
-            return lighten(duct.getFluidType().getColor());
+            return lighten(duct.getFluidType().clientMetadata().getColor());
         }
 
         @Override

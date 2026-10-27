@@ -1,9 +1,17 @@
 package com.hbm.world.gen.nbt;
 
+import com.hbm.items.LegacyMetaIds;
 import com.hbm.Constants;
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
+import com.hbm.api.energymk2.IBatteryItem;
+import com.hbm.items.ModDataComponents;
+import com.hbm.items.armor.ArmorFSBFueled;
+import com.hbm.items.machine.ItemRBMKRod;
+import com.hbm.items.machine.RBMKFuelData;
+import com.hbm.items.machine.ItemFluidIDMulti;
+import com.hbm.items.tool.ItemRBMKTool;
 import com.hbm.blocks.generic.BlockBobble;
-import com.hbm.blocks.generic.BlockSkeletonHolder;
+import com.hbm.blocks.generic.BlockPedestal;
 import com.hbm.blocks.generic.DungeonSpawner;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
@@ -17,9 +25,12 @@ import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,10 +42,14 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.WallSkullBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.function.UnaryOperator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,10 +71,11 @@ import java.util.Set;
  *   resolved through the file's {@code itemPalette} (1.7 name, {@code hbm:item.x} = {@code hbm:x}, a material item's
  *   damage = its {@code Mats} id), put into the container's slots; the skeleton holder's {@code item}; a book and quill
  *   keeps its pages.</li>
+ *   <li><b>Signs</b>: 1.7 plain-string {@code Text1} through {@code Text4} become the front text.</li>
  *   <li><b>Block swaps</b>: a 1.7 flower pot held its plant in the tile entity, a 1.7 skull its type and floor rotation;
  *   the modern block carries both, so the placed block is replaced.</li>
  *   <li><b>Nothing to carry</b>: tiles whose 1.7 NBT in these files holds only defaults (cable, geiger, charger,
- *   satellite receiver, steel roof, crab spawner marker, sign with no text, ...).</li>
+ *   satellite receiver, steel roof, crab spawner marker, ...).</li>
  * </ul>
  * Returns false for a 1.7 id not listed here, which the caller logs as not migrated.
  */
@@ -75,14 +91,31 @@ public final class LegacyStructureTiles {
             "tileentity_turret_howard_damaged", "tileentity_turret_sentry_damaged", "tileentity_pipe_gauge",
             "tileentity_pipe_base", "tileentity_electric_furnace", "tileentity_microwave", "tileentity_funnel",
             "tileentity_tesla_coil", "tileentity_supply_crate", "tileentity_crate_iron", "tileentity_rotary_furnace",
-            "tileentity_ntm_door");
+            "tileentity_industrial_turbine",
+            "tileentity_ntm_door", "tileentity_crate_steel", "tileentity_safe",
+            "tileentity_rbmk_blank", "tileentity_rbmk_rod", "tileentity_rbmk_moderator", "tileentity_rbmk_control",
+            "tileentity_rbmk_reflector", "tileentity_rbmk_boiler", "tileentity_rbmk_console");
+
+    private static final Map<String, UnaryOperator<CompoundTag>> DATA_MIGRATIONS = new HashMap<>();
+
+    /** Registers an addon's transformation of bundled structure data before fluid and inventory relinking. */
+    public static void registerDataMigration(String id, UnaryOperator<CompoundTag> migration) {
+        if (KEY_COMPATIBLE.contains(id) || DATA_MIGRATIONS.putIfAbsent(id, migration) != null) {
+            throw new IllegalStateException("Structure tile migration already registered: " + id);
+        }
+    }
 
     /** 1.7 ids with nothing but defaults in the bundled files (or data the port keeps elsewhere). */
     private static final Set<String> NOTHING_TO_CARRY = Set.of(
             "tileentity_cable", "tileentity_geiger", "tileentity_ntm_charger", "tileentity_satellitereceicer",
             "tileentity_deco", "tileentity_deco_f", "tileentity_crabs", "tileentity_ntm_loot", "tileentity_data",
-            "tileentity_proxy_combo", "Sign", "Comparator", "tileentity_cable_gauge", "tileentity_cable_switch",
+            "tileentity_proxy_combo", "Comparator", "tileentity_cable_gauge", "tileentity_cable_switch",
             "tileentity_crashed_balefire", "tileentity_vending_machine", "tileentity_launchpad_rusted");
+
+    /** Whether a 1.7 tile id carries no data worth saving into a converted template. */
+    public static boolean carriesNoData(String id) {
+        return NOTHING_TO_CARRY.contains(id);
+    }
 
     /** 1.7 {@code TileEntityRadioTorchBase} keys and the port's names for them. */
     private static final String[][] RADIO_TORCH_KEYS = {{"c", "channel"}, {"p", "isPolling"}, {"m", "hasMapping"}, {"l", "lastPower"}};
@@ -91,20 +124,52 @@ public final class LegacyStructureTiles {
                                 Map<Integer, String> itemPalette, int coordBaseMode) {
         String id = Tags.getStringOr(nbt, "id", "");
 
-        if (id.equals("FlowerPot")) return flowerPot(level, pos, nbt, itemPalette);
-        if (id.equals("Skull")) return skull(level, pos, nbt, coordBaseMode);
+        if (id.equals("FlowerPot") || id.equals("Skull")) {
+            var placed = level.getBlockState(pos);
+            var upgraded = upgradeState(placed, nbt, coordBaseMode);
+            if (upgraded != placed) level.setBlock(pos, upgraded, Block.UPDATE_CLIENTS);
+            return true;
+        }
+        return applyData(be, nbt, itemPalette, level.registryAccess());
+    }
+
+    /** The data-only migration shared by world placement and structure export. */
+    public static boolean applyData(@Nullable BlockEntity be, CompoundTag nbt,
+                                    Map<Integer, String> itemPalette, HolderLookup.Provider registries) {
+        String id = Tags.getStringOr(nbt, "id", "");
         if (NOTHING_TO_CARRY.contains(id)) return true;
         if (be == null) return false;
 
-        if (id.equals("tileentity_ntm_skeleton")) {
-            if (be instanceof BlockSkeletonHolder.TileEntitySkeletonHolder holder && Tags.contains(nbt, "item")) {
+        if (id.equals("Sign")) {
+            if (!(be instanceof SignBlockEntity sign)) return false;
+            var text = sign.getFrontText();
+            for (var line = 0; line < 4; line++) {
+                text = text.setMessage(line, Component.literal(Tags.getStringOr(nbt, "Text" + (line + 1), "")));
+            }
+            if (sign.getLevel() == null) {
+                // A converter's detached sign has no world to notify; load its actual encoded text directly.
+                var data = BlockEntities.saveWithoutMetadata(sign, registries);
+                data.put("front_text", SignText.DIRECT_CODEC.encodeStart(NbtOps.INSTANCE, text).result()
+                        .orElseThrow(() -> new IllegalStateException("Could not encode legacy sign text")));
+                BlockEntities.loadWithComponents(sign, data, registries);
+            } else {
+                sign.setText(text, true);
+            }
+            return true;
+        }
+
+        if (id.equals("tileentity_ntm_skeleton") || id.equals("tileentity_ntm_pedestal")) {
+            if (be instanceof BlockPedestal.ItemHolder holder && Tags.contains(nbt, "item")) {
                 holder.setItem(stack(NbtFiles.compoundOrNull(nbt, "item"), itemPalette));
             }
             return true;
         }
 
         CompoundTag data;
-        if (KEY_COMPATIBLE.contains(id)) {
+        var migration = DATA_MIGRATIONS.get(id);
+        if (migration != null) {
+            data = migration.apply(nbt.copy());
+        } else if (KEY_COMPATIBLE.contains(id)) {
             data = nbt.copy();
         } else if (id.equals("tileentity_diesel_generator")) {
             data = nbt.copy();
@@ -119,7 +184,7 @@ public final class LegacyStructureTiles {
             for (int i = 0; i < 16; i++) {
                 if (Tags.contains(nbt, "m" + i)) data.put("mapping" + i, nbt.get("m" + i));
             }
-        } else if (id.equals("Chest")) {
+        } else if (id.equals("Chest") || id.equals("Hopper")) {
             data = new CompoundTag();
         } else {
             return false;
@@ -131,7 +196,7 @@ public final class LegacyStructureTiles {
         data.remove("y");
         data.remove("z");
         data.remove("id");
-        if (!data.isEmpty()) BlockEntities.loadWithComponents(be, data, level.registryAccess());
+        if (!data.isEmpty()) BlockEntities.loadWithComponents(be, data, registries);
 
         if (be instanceof Container container) {
             for (String key : new String[]{"items", "Items"}) {
@@ -198,12 +263,46 @@ public final class LegacyStructureTiles {
             for (int i = 0; i < list.size(); i++) pages.add(NbtFiles.stringAt(list, i));
             return ItemStacks.writableBook(pages);
         }
-        return new ItemStack(resolved, count);
+        var stack = new ItemStack(resolved, count);
+        var tag = NbtFiles.compoundOrNull(item, "tag");
+        if (tag != null) restoreStackData(stack, tag);
+        return stack;
+    }
+
+    /** The item payloads used by the bundled structures, written through their current component APIs. */
+    private static void restoreStackData(ItemStack stack, CompoundTag tag) {
+        var item = stack.getItem();
+        if (item instanceof IBatteryItem battery && Tags.contains(tag, "charge")) {
+            battery.setCharge(stack, Tags.getLongOr(tag, "charge", 0L));
+        }
+        if (item instanceof ArmorFSBFueled armor && Tags.contains(tag, "fuel")) {
+            armor.setFill(stack, Tags.getIntOr(tag, "fuel", 0));
+        }
+        if (item instanceof ItemRBMKRod) {
+            var defaults = ItemRBMKRod.getData(stack);
+            var fuel = new RBMKFuelData(Tags.getDoubleOr(tag, "yield", defaults.yield()),
+                    Tags.getDoubleOr(tag, "xenon", defaults.xenon()),
+                    Tags.getDoubleOr(tag, "core", defaults.coreHeat()),
+                    Tags.getDoubleOr(tag, "hull", defaults.hullHeat()));
+            if (!fuel.equals(defaults)) ModDataComponents.RBMK_FUEL.set(stack, fuel);
+        }
+        if (item instanceof ItemFluidIDMulti) {
+            for (var primary : new boolean[]{true, false}) {
+                var key = primary ? "fluid1" : "fluid2";
+                if (Tags.contains(tag, key)) {
+                    ItemFluidIDMulti.setType(stack, Fluids.byLegacyId(Tags.getIntOr(tag, key, 0)), primary);
+                }
+            }
+        }
     }
 
     /** 1.7 registry name + damage to a port item: {@code hbm:item.x} is {@code hbm:x}, a material item {@code hbm:x_<mat>}. */
     private static @Nullable Item resolve(String name, int damage) {
         if (name.isEmpty()) return null;
+        // Exact 1.7 name@damage pairs first: the Mats branch below misreads variant damages as material ids
+        // (plant_flower@3 is weed, not material 3 = wood).
+        Item exact = resolveExact(name, damage);
+        if (exact != null) return exact;
         String path = name;
         if (name.startsWith("hbm:item.")) path = "hbm:" + name.substring("hbm:item.".length());
         else if (name.startsWith("hbm:tile.")) path = "hbm:" + name.substring("hbm:tile.".length());
@@ -214,7 +313,34 @@ public final class LegacyStructureTiles {
                 if (item != null) return item;
             }
         }
-        return item(path);
+        Item item = item(path);
+        // Addon items kept their 1.7 hbm: names in these files (Space's ores, tools, flora).
+        if (item == null && path.startsWith("hbm:")) item = item("ntmspace:" + path.substring("hbm:".length()));
+        return item;
+    }
+
+    /** Exact 1.7 {@code name@damage} pairs whose damage is a variant, not a material id. */
+    private static @Nullable Item resolveExact(String name, int damage) {
+        return switch (name) {
+            case "minecraft:log" -> damage == 0 ? item("minecraft:oak_log") : null;
+            case "minecraft:sapling" -> damage == 0 ? item("minecraft:oak_sapling") : null;
+            case "hbm:tile.plant_flower", "hbm:item.plant_flower" -> switch (damage) {
+                case 0 -> item("hbm:plant_flower_foxglove");
+                case 1 -> item("hbm:plant_flower_tobacco");
+                case 2 -> item("hbm:plant_flower_nightshade");
+                case 3 -> item("hbm:plant_flower_weed");
+                case 4 -> item("hbm:plant_flower_cd0");
+                case 5 -> item("hbm:plant_flower_cd1");
+                default -> null;
+            };
+            case "hbm:item.chemical_dye" -> damage == 0 ? item("hbm:chemical_dye_black") : null;
+            case "hbm:item.arc_electrode" -> damage == 0 ? item("hbm:arc_electrode_graphite") : null;
+            case "hbm:item.book_guide" -> {
+                String id = LegacyMetaIds.lookup("book_guide", damage);
+                yield id == null ? null : item(id);
+            }
+            default -> null;
+        };
     }
 
     private static @Nullable Item item(String id) {
@@ -233,7 +359,16 @@ public final class LegacyStructureTiles {
             37, "minecraft:dandelion", 38, "minecraft:poppy", 39, "minecraft:brown_mushroom", 40, "minecraft:red_mushroom");
 
     /** 1.7 {@code TileEntityFlowerPot}: {@code Item} (numeric) + {@code Data}; the modern pot is a block per plant. */
-    private static boolean flowerPot(LevelAccessor level, BlockPos pos, CompoundTag nbt, Map<Integer, String> itemPalette) {
+    /** Tile-owned visual variants, shared by world placement and template conversion. */
+    public static BlockState upgradeState(BlockState placed, CompoundTag nbt, int coordBaseMode) {
+        return switch (Tags.getStringOr(nbt, "id", "")) {
+            case "FlowerPot" -> flowerPot(placed, nbt);
+            case "Skull" -> skull(placed, nbt, coordBaseMode);
+            default -> placed;
+        };
+    }
+
+    private static BlockState flowerPot(BlockState placed, CompoundTag nbt) {
         int item = Tags.getIntOr(nbt, "Item", 0);
         int data = Tags.getIntOr(nbt, "Data", 0);
         Block potted = switch (item) {
@@ -264,10 +399,7 @@ public final class LegacyStructureTiles {
             case 81 -> Blocks.POTTED_CACTUS;
             default -> null;
         };
-        if (potted != null && level.getBlockState(pos).is(Blocks.FLOWER_POT)) {
-            level.setBlock(pos, potted.defaultBlockState(), Block.UPDATE_CLIENTS);
-        }
-        return true;
+        return potted != null && placed.is(Blocks.FLOWER_POT) ? potted.defaultBlockState() : placed;
     }
 
     /**
@@ -275,8 +407,7 @@ public final class LegacyStructureTiles {
      * standing on the floor (block meta 1), {@code Rot} in sixteenths; the wall skulls kept their facing in the metadata,
      * which the palette already turned into the placed state.
      */
-    private static boolean skull(LevelAccessor level, BlockPos pos, CompoundTag nbt, int coordBaseMode) {
-        BlockState placed = level.getBlockState(pos);
+    private static BlockState skull(BlockState placed, CompoundTag nbt, int coordBaseMode) {
         int type = Tags.getIntOr(nbt, "SkullType", 0);
         boolean wall = placed.hasProperty(WallSkullBlock.FACING);
         Block block = switch (type) {
@@ -294,8 +425,7 @@ public final class LegacyStructureTiles {
             state = block.defaultBlockState().setValue(SkullBlock.ROTATION, Tags.getIntOr(nbt, "Rot", 0) & 15)
                     .rotate(rotationOf(coordBaseMode));
         }
-        if (placed.getBlock() != state.getBlock() || !placed.equals(state)) level.setBlock(pos, state, Block.UPDATE_CLIENTS);
-        return true;
+        return state;
     }
 
     private static Rotation rotationOf(int coordBaseMode) {

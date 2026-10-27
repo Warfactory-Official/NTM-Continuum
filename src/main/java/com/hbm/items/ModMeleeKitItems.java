@@ -147,7 +147,8 @@ public final class ModMeleeKitItems {
     private static final HbmTab C = HbmTab.CONSUMABLES;
 
     // --- melee ---
-    public static final RegistryObject<BigSword> big_sword = reg("big_sword", C,
+    /** 1.7 {@code BigSword}: a combat-tab weapon; the consumables tab never listed it. */
+    public static final RegistryObject<BigSword> big_sword = reg("big_sword", HbmTab.WEAPONS,
             p -> new BigSword(p, EMERALD), p -> p.stacksTo(1), sword(held("big_sword", "big_sword")));
     public static final RegistryObject<WeaponSpecial> schrabidium_hammer = special("schrabidium_hammer", tMatHammmer,
             WeaponSpecial.Kind.SCHRABIDIUM_HAMMER, C, Rarity.RARE, sword(Presets.handheld()));

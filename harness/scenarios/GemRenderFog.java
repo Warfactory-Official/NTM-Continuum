@@ -4,7 +4,7 @@ import dev.golem.harness.api.Scenario;
 
 /**
  * One machine in a thunderstorm at 20, 40 and 60 blocks, shot with GemRender drawing and after
- * {@code /flywheel backend off}. Rain pulls the environmental fog in, so a backend that fogs differently from
+ * {@code /flywheel backend flywheel:off}. Rain pulls the environmental fog in, so a backend that fogs differently from
  * vanilla shows as a machine standing out of the haze. Compare {@code NN-dist} with {@code NN-dist-off}.
  */
 public final class GemRenderFog implements Scenario {
@@ -32,7 +32,7 @@ public final class GemRenderFog implements Scenario {
             c.cmd("gamemode spectator");
             c.waitTicks(200);
             shots(c, "");
-            c.cmd("flywheel backend off");
+            c.cmd("flywheel backend flywheel:off");
             switched = true;
             c.waitTicks(40);
             shots(c, "-off");

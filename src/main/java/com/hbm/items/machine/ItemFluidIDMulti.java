@@ -3,6 +3,7 @@ package com.hbm.items.machine;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.IItemControlReceiver;
+import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModUtilityToolItems;
 import com.hbm.items.tool.UtilityToolScreens;
 import com.hbm.packet.PlayerInformPayload;
@@ -85,11 +86,11 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
 
     @Override
     public void receiveControl(Player player, ItemStack stack, CompoundTag data) {
-        if (Tags.contains(data, "primary")) setType(stack, Fluids.read(data, "primary"), true);
-        if (Tags.contains(data, "secondary")) setType(stack, Fluids.read(data, "secondary"), false);
+        if (Tags.contains(data, "primary")) setType(stack, Fluids.readExact(data, "primary"), true);
+        if (Tags.contains(data, "secondary")) setType(stack, Fluids.readExact(data, "secondary"), false);
         if (Tags.contains(data, "bookmarks")) {
             CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, new CompoundTag()).copy();
-            Fluids.writeList(tag, "bookmarks", Fluids.readList(data, "bookmarks"));
+            Fluids.writeList(tag, "bookmarks", Fluids.readListExact(data, "bookmarks"));
             ModUtilityToolItems.FLUID_MULTI.set(stack, tag);
         }
     }
@@ -112,6 +113,10 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
         CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, new CompoundTag()).copy();
         Fluids.write(tag, "fluid" + (primary ? 1 : 2), type);
         ModUtilityToolItems.FLUID_MULTI.set(stack, tag);
+        var pair = ModDataComponents.FLUID_IDENTIFIER.getOr(stack,
+                new FluidIdentifierData(Fluids.NONE, Fluids.NONE));
+        ModDataComponents.FLUID_IDENTIFIER.set(stack,
+                primary ? pair.withPrimary(type) : pair.withSecondary(type));
         // 1.7 updateMeta + getColorFromItemStack: the overlay follows the primary fluid.
         if (primary) ModelData.setColor(stack, type.getColor() < 0 ? 0xFFFFFF : type.getColor());
     }
@@ -119,12 +124,12 @@ public class ItemFluidIDMulti extends CompatItem implements IItemFluidId, IItemC
     /** The picker's bookmarks, oldest first, saved by fluid name. */
     public static FluidType[] getBookmarks(ItemStack stack) {
         CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, null);
-        return tag == null ? new FluidType[0] : Fluids.readList(tag, "bookmarks");
+        return tag == null ? new FluidType[0] : Fluids.readListExact(tag, "bookmarks");
     }
 
     public static FluidType getType(ItemStack stack, boolean primary) {
         CompoundTag tag = ModUtilityToolItems.FLUID_MULTI.getOr(stack, null);
         if (tag == null) return Fluids.NONE;
-        return Fluids.read(tag, "fluid" + (primary ? 1 : 2));
+        return Fluids.readExact(tag, "fluid" + (primary ? 1 : 2));
     }
 }

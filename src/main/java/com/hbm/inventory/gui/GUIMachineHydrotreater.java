@@ -63,7 +63,7 @@ public class GUIMachineHydrotreater extends CompatContainerScreen<ContainerMachi
         int x0 = this.leftPos + barX;
         int yBottom = this.topPos + barTop + h;
         int yTop = yBottom - fh;
-        Identifier fluidTex = tank.getTankType().getTexture();
+        Identifier fluidTex = tank.getTankType().clientMetadata().getTexture();
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + w, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
@@ -71,7 +71,7 @@ public class GUIMachineHydrotreater extends CompatContainerScreen<ContainerMachi
             }
             graphics.disableScissor();
         } else {
-            graphics.fill(x0, yTop, x0 + w, yBottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
+            graphics.fill(x0, yTop, x0 + w, yBottom, 0xFF000000 | (tank.getTankType().clientMetadata().getColor() & 0xFFFFFF));
         }
     }
 
@@ -95,7 +95,7 @@ public class GUIMachineHydrotreater extends CompatContainerScreen<ContainerMachi
             if (this.isHovering(TANK_X[i], 18, 16, 52, mouseX, mouseY)) {
                 FluidTankNTM tank = te.tanks[i];
                 GuiDraw.tooltip(graphics, this.font, List.of(
-                        tank.getTankType().getDisplayName(),
+                        tank.getTankType().clientMetadata().getDisplayName(),
                         Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
                 return;
             }

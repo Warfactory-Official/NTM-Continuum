@@ -97,7 +97,7 @@ public class BarrelRenderer<T extends BlockEntity> extends GemBER<T, BarrelRende
         if (be instanceof TileEntityBarrel barrel && be.getLevel() != null) {
             FluidType type = barrel.tank.getTankType();
             if (type != Fluids.NONE) {
-                state.hazard = type.getHazard();
+                state.hazard = type.clientMetadata().getHazard();
                 Level level = be.getLevel();
                 BlockPos pos = be.getBlockPos();
                 state.connector[0] = Library.canConnectFluid(level, pos.east(), ForgeDirection.EAST, type);

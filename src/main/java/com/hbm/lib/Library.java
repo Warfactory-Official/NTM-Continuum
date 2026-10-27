@@ -99,7 +99,8 @@ public final class Library {
 
         BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof IFluidConnectorMK2 con) {
-            return con.canConnect(type, dir.getOpposite());
+            return con.exposesFluidContact(type, dir.getOpposite(), true)
+                    || con.exposesFluidContact(type, dir.getOpposite(), false);
         }
 
         return false;

@@ -1,6 +1,7 @@
 package com.hbm.inventory.fluid;
 
 import com.hbm.Constants;
+import com.hbm.creativetabs.EntryOrder;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple.*;
 
 import com.mojang.datafixers.util.Either;
@@ -16,6 +17,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.function.Function;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -54,6 +56,7 @@ public class Fluids {
     private static final List<FluidType> registerOrder = new ArrayList<>();
     /** 1.7 {@code metaOrder}: HBM's own fluids in 1.7's display order; see {@link #getInNiceOrder()}. */
     private static final List<FluidType> metaOrder = new ArrayList<>();
+    private static final EntryOrder<FluidType> displayOrder = new EntryOrder<>();
     private static boolean initialized = false;
 
     public static FluidType NONE;
@@ -600,6 +603,7 @@ public class Fluids {
         nameMapping.put(fluid.getName(), fluid);
         registryMapping.put(fluid.getRegistryName(), fluid);
         registerOrder.add(fluid);
+        equivalentCache = null;
         return id;
     }
 
@@ -609,6 +613,7 @@ public class Fluids {
         nameMapping.put(fluid.getName(), fluid);
         registryMapping.put(fluid.getRegistryName(), fluid);
         registerOrder.add(fluid);
+        equivalentCache = null;
         fluid.setID(id);
     }
 
@@ -622,6 +627,7 @@ public class Fluids {
         if (name == null || name.isEmpty()) return NONE;
         String id = name.indexOf(':') < 0 ? Constants.MOD_ID + ":" + name.toLowerCase(Locale.ROOT) : name;
         FluidType fluid = registryMapping.get(id);
+        if (fluid != null && fluid.isForeign()) return fromVanilla(toVanilla(fluid));
         if (fluid == null) {
             // the open model: any registered vanilla fluid is an HBM fluid too
             var vanilla = BuiltInRegistries.FLUID.getOptional(Ids.parse(id));
@@ -649,16 +655,34 @@ public class Fluids {
 
     /** Inverse of {@link #networkId}. */
     public static FluidType byNetworkId(int id) {
+        return fromNetworkId(id, Fluids::fromVanilla);
+    }
+
+    /** Decodes a packet resource without merging an aliased fluid into its processing kind. */
+    public static FluidType byNetworkIdExact(int id) {
+        return fromNetworkId(id, Fluids::fromVanillaExact);
+    }
+
+    private static FluidType fromNetworkId(int id, Function<Fluid, FluidType> resolve) {
         if (id >= FOREIGN_NETWORK_BASE) {
-            Fluid vanilla =
-                    BuiltInRegistries.FLUID.byId(id - FOREIGN_NETWORK_BASE);
-            return vanilla == null ? NONE : fromVanilla(vanilla);
+            var vanilla = BuiltInRegistries.FLUID.byId(id - FOREIGN_NETWORK_BASE);
+            return vanilla == null ? NONE : resolve.apply(vanilla);
         }
-        FluidType fluid = idMapping.get(id);
+        var fluid = idMapping.get(id);
         return fluid == null ? NONE : fluid;
     }
 
-    /** The 1.7 {@code FluidType.getID()} number, for places 1.7 exposed it (RBMK console, computers, 1.7 data files). */
+    /** Property files address an exact registry entry, even when its fluid shares another type's kind. */
+    public static FluidType byRegistryNameExact(@Nullable String name) {
+        if (name == null || name.isEmpty()) return NONE;
+        var id = name.indexOf(':') < 0 ? Constants.MOD_ID + ":" + name.toLowerCase(Locale.ROOT) : name;
+        var type = registryMapping.get(id);
+        if (type != null) return type;
+        var vanilla = BuiltInRegistries.FLUID.getOptional(Ids.parse(id));
+        return vanilla.isPresent() ? fromVanillaExact(vanilla.get()) : NONE;
+    }
+
+    /** The 1.7 registration number. */
     public static int legacyId(FluidType fluid) { return fluid.numericId(); }
 
     /** The fluid 1.7 numbered {@code id}; NONE if 1.7 had no such fluid. */
@@ -671,9 +695,15 @@ public class Fluids {
      * The fluid as a saved value: its registry name. Decoding is tolerant - an unknown name, or an int from a
      * save with a numeric id, reads as NONE with one WARN instead of failing the whole item stack or block entity.
      */
-    public static final Codec<FluidType> CODEC = Codec.either(Codec.STRING, Codec.INT).xmap(
-            either -> either.map(Fluids::byRegistryName, Fluids::fromOldNumericSave),
-            fluid -> Either.left(fluid.getRegistryName()));
+    public static final Codec<FluidType> CODEC = codec(Fluids::byRegistryName);
+    /** The physical resource, preserving an alias rather than its canonical processing kind. */
+    public static final Codec<FluidType> EXACT_CODEC = codec(Fluids::byRegistryNameExact);
+
+    private static Codec<FluidType> codec(Function<String, FluidType> resolve) {
+        return Codec.either(Codec.STRING, Codec.INT).xmap(
+                either -> either.map(resolve, Fluids::fromOldNumericSave),
+                fluid -> Either.left(fluid.getRegistryName()));
+    }
 
     /** What an old int-keyed save reads as: NONE, with one WARN per session. Public for codecs that wrap {@link #CODEC}. */
     public static FluidType fromOldNumericSave(int id) {
@@ -693,18 +723,35 @@ public class Fluids {
 
     /** Reads a fluid written by {@link #write}; absent reads as NONE, an old numeric value as NONE with one WARN. */
     public static FluidType read(DataIn in, String key) {
-        String name = in.getStringOr(key, null);
-        if (name != null) return byRegistryName(name);
-        if (in.getIntOr(key, Integer.MIN_VALUE) != Integer.MIN_VALUE) return fromOldNumericSave(in.getIntOr(key, 0));
-        return NONE;
+        return readIn(in, key, Fluids::byRegistryName);
     }
 
-    /** Reads a fluid written by {@link #write}; absent reads as NONE, an old numeric value as NONE with one WARN. */
+    public static FluidType readExact(DataIn in, String key) {
+        return readIn(in, key, Fluids::byRegistryNameExact);
+    }
+
+    private static FluidType readIn(DataIn in, String key, Function<String, FluidType> resolve) {
+        var name = in.getStringOr(key, null);
+        return readSaved(name, name == null ? in.getIntOr(key, Integer.MIN_VALUE) : Integer.MIN_VALUE, resolve);
+    }
+
+    /** Reads a kind written by {@link #write}; old numeric values retain the existing rejection behavior. */
     public static FluidType read(CompoundTag tag, String key) {
-        String name = Tags.getStringOr(tag, key, null);
-        if (name != null) return byRegistryName(name);
-        if (Tags.hasInt(tag, key)) return fromOldNumericSave(Tags.getIntOr(tag, key, 0));
-        return NONE;
+        return readTag(tag, key, Fluids::byRegistryName);
+    }
+
+    public static FluidType readExact(CompoundTag tag, String key) {
+        return readTag(tag, key, Fluids::byRegistryNameExact);
+    }
+
+    private static FluidType readTag(CompoundTag tag, String key, Function<String, FluidType> resolve) {
+        return readSaved(Tags.getStringOr(tag, key, null),
+                Tags.hasInt(tag, key) ? Tags.getIntOr(tag, key, 0) : Integer.MIN_VALUE, resolve);
+    }
+
+    private static FluidType readSaved(@Nullable String name, int oldNumeric, Function<String, FluidType> resolve) {
+        if (name != null) return resolve.apply(name);
+        return oldNumeric != Integer.MIN_VALUE ? fromOldNumericSave(oldNumeric) : NONE;
     }
 
     /** Writes {@code fluids} as a list of registry names under {@code key}. */
@@ -716,9 +763,17 @@ public class Fluids {
 
     /** Reads a list written by {@link #writeList}; absent (or an old numeric array) reads as empty. */
     public static FluidType[] readList(CompoundTag tag, String key) {
-        ListTag list = NbtFiles.list(tag, key);
-        FluidType[] fluids = new FluidType[list.size()];
-        for (int i = 0; i < fluids.length; i++) fluids[i] = byRegistryName(NbtFiles.stringAt(list, i));
+        return readList(tag, key, Fluids::byRegistryName);
+    }
+
+    public static FluidType[] readListExact(CompoundTag tag, String key) {
+        return readList(tag, key, Fluids::byRegistryNameExact);
+    }
+
+    private static FluidType[] readList(CompoundTag tag, String key, Function<String, FluidType> resolve) {
+        var list = NbtFiles.list(tag, key);
+        var fluids = new FluidType[list.size()];
+        for (var i = 0; i < fluids.length; i++) fluids[i] = resolve.apply(NbtFiles.stringAt(list, i));
         return fluids;
     }
 
@@ -737,10 +792,14 @@ public class Fluids {
         return registerOrder.toArray(new FluidType[0]);
     }
 
+    /** Places an existing fluid in selector order; its registration and network identity stay fixed. */
+    public static synchronized void orderAfter(FluidType fluid, FluidType anchor) {
+        displayOrder.insertAfter(anchor, List.of(fluid));
+    }
+
     /**
-     * 1.7 {@code Fluids.getInNiceOrder()}: every fluid in 1.7's display order ({@code metaOrder}), then the fluids 1.7
-     * has no entry for (addon fluids from {@link #register(String, String, int)} and other mods' fluids), in
-     * registration order, as 1.7 appends its custom and foreign fluids.
+     * 1.7 {@code Fluids.getInNiceOrder()}: the base display sequence with the addon placements declared through
+     * {@link #orderAfter}. Unpositioned custom and foreign fluids follow in registration order.
      */
     public static synchronized FluidType[] getInNiceOrder() {
         List<FluidType> all = new ArrayList<>(registerOrder.size());
@@ -748,7 +807,7 @@ public class Fluids {
         Set<FluidType> listed = Collections.newSetFromMap(new IdentityHashMap<>());
         listed.addAll(metaOrder);
         for (FluidType fluid : registerOrder) if (!listed.contains(fluid)) all.add(fluid);
-        return all.toArray(new FluidType[0]);
+        return displayOrder.apply(all, Function.identity()).toArray(new FluidType[0]);
     }
 
     // Vanilla Fluid registry entries. Every FluidType is also a vanilla Fluid so other
@@ -814,7 +873,7 @@ public class Fluids {
         boolean gaseous = fluid.hasTrait(FT_Gaseous.class) || fluid.hasTrait(FT_Gaseous_ART.class);
         boolean viscous = fluid.hasTrait(FT_Viscous.class);
         return new TokenFluids.Spec(fluid.getKey(), fluid.getTranslationKey(), fluid.getFallbackName(),
-                fluid.getNamespace() + ":gui/fluids/" + fluid.getKey(), 0xFFFFFFFF, fluid.temperature + 273,
+                fluid.getNamespace() + ":gui/fluids/" + fluid.getKey(), 0xFFFFFFFF, fluid.getTemperature() + 273,
                 gaseous ? -1000 : 1000, viscous ? 6000 : 1000, gaseous);
     }
 
@@ -829,23 +888,125 @@ public class Fluids {
 
     /**
      * The FluidType a vanilla {@code Fluid} stands for: an HBM token fluid's own type, WATER/LAVA for vanilla water and
-     * lava (still or flowing), NONE for empty and for every other mod's fluid.
+     * lava (still or flowing), a declared shared kind for matching foreign tags, otherwise an independent foreign type.
      */
     public static FluidType fromVanilla(Fluid fluid) {
+        var resource = fromVanillaExact(fluid);
+        var declared = declaredKindOf(resource);
+        if (!resource.isForeign() || declared != resource) return declared;
+        var exact = toVanilla(resource);
+        if (!Constants.MOD_ID.equals(BuiltInRegistries.FLUID.getKey(exact).getNamespace())) {
+            if (sharingDirty) rebuildSharing();
+            var holder = exact.builtInRegistryHolder();
+            for (var shared : sharingTypes) {
+                for (var tag : shared.getSharedTags()) if (holder.is(tag)) return shared;
+            }
+        }
+        return resource;
+    }
+
+    /** The exact source resource; flowing variants fold into their registered source as loader storage does. */
+    public static FluidType fromVanillaExact(Fluid fluid) {
         if (fluid == null || fluid == net.minecraft.world.level.material.Fluids.EMPTY) return NONE;
         if (fluid instanceof FlowingFluid flowing) fluid = flowing.getSource();
-        if (fluid == net.minecraft.world.level.material.Fluids.WATER || fluid == net.minecraft.world.level.material.Fluids.FLOWING_WATER) return WATER;
-        if (fluid == net.minecraft.world.level.material.Fluids.LAVA || fluid == net.minecraft.world.level.material.Fluids.FLOWING_LAVA) return LAVA;
-        Map<Fluid, FluidType> map = byVanilla;
+        if (fluid == net.minecraft.world.level.material.Fluids.WATER) return WATER;
+        if (fluid == net.minecraft.world.level.material.Fluids.LAVA) return LAVA;
+        var map = byVanilla;
         if (map == null) {
             map = new IdentityHashMap<>();
-            for (Map.Entry<FluidType, Supplier<Fluid>> entry : VANILLA.entrySet()) {
-                map.put(entry.getValue().get(), entry.getKey());
-            }
+            for (var entry : VANILLA.entrySet()) map.put(entry.getValue().get(), entry.getKey());
             byVanilla = map;
         }
-        FluidType type = map.get(fluid);
+        var type = map.get(fluid);
         return type == null ? foreign(fluid) : type;
+    }
+
+    /** Processing identity established by registration alone, before live tags are available. */
+    static FluidType declaredKindOf(FluidType resource) {
+        return resource.isForeign() ? aliases().getOrDefault(toVanilla(resource), resource) : resource;
+    }
+
+    public static FluidType kindOf(FluidType resource) {
+        return resource.isForeign() ? fromVanilla(toVanilla(resource)) : resource;
+    }
+
+    private record Alias(Supplier<? extends Fluid> resource, Supplier<FluidType> kind) {}
+    private static final List<Alias> ALIASES = new ArrayList<>();
+    private static volatile Map<Fluid, FluidType> aliasKinds;
+    private static volatile Map<FluidType, FluidType[]> equivalentCache;
+
+    /** Declares a placed fluid's processing kind without evaluating registry handles before registration. */
+    public static synchronized void registerAlias(Supplier<? extends Fluid> resource, Supplier<FluidType> kind) {
+        ALIASES.add(new Alias(resource, kind));
+        aliasKinds = null;
+        equivalentCache = null;
+    }
+
+    private static Map<Fluid, FluidType> aliases() {
+        var result = aliasKinds;
+        return result != null ? result : resolveAliases();
+    }
+
+    private static synchronized Map<Fluid, FluidType> resolveAliases() {
+        if (aliasKinds != null) return aliasKinds;
+        var result = new IdentityHashMap<Fluid, FluidType>();
+        for (var alias : ALIASES) {
+            var resource = fromVanillaExact(alias.resource().get());
+            var kind = alias.kind().get();
+            if (!resource.isForeign() || kind.isForeign()) {
+                throw new IllegalArgumentException("a world fluid alias must name an independent resource and a native kind");
+            }
+            var exact = toVanilla(resource);
+            if (result.putIfAbsent(exact, kind) != null) {
+                throw new IllegalStateException("world fluid alias registered twice: " + resource.getRegistryName());
+            }
+        }
+        aliasKinds = Collections.unmodifiableMap(result);
+        return aliasKinds;
+    }
+
+    /** Read-only cached resource array, canonical kind first; rebuilt after declarations or bound tags change. */
+    public static FluidType[] equivalentResources(FluidType kind) {
+        var equivalents = equivalentCache;
+        if (equivalents == null) equivalents = rebuildEquivalents();
+        return equivalents.get(kindOf(kind));
+    }
+
+    private static synchronized Map<FluidType, FluidType[]> rebuildEquivalents() {
+        if (equivalentCache != null) return equivalentCache;
+        aliases();
+        if (sharingDirty) rebuildSharing();
+        for (var shared : sharingTypes) {
+            for (var tag : shared.getSharedTags()) {
+                for (var holder : BuiltInRegistries.FLUID.getTagOrEmpty(tag)) fromVanillaExact(holder.value());
+            }
+        }
+        var groups = new IdentityHashMap<FluidType, List<FluidType>>();
+        for (var resource : List.copyOf(registerOrder)) {
+            var kind = kindOf(resource);
+            var resources = groups.computeIfAbsent(kind, value -> new ArrayList<>(List.of(value)));
+            if (resource != kind) resources.add(resource);
+        }
+        var result = new IdentityHashMap<FluidType, FluidType[]>();
+        groups.forEach((kind, resources) -> result.put(kind, resources.toArray(new FluidType[0])));
+        equivalentCache = Collections.unmodifiableMap(result);
+        return equivalentCache;
+    }
+
+    private static volatile boolean sharingDirty = true;
+    private static volatile FluidType[] sharingTypes = new FluidType[0];
+
+    static synchronized void sharingChanged() { sharingDirty = true; equivalentCache = null; }
+
+    /** Only the declaring types are cached; holder tags are read live after every tag reload. */
+    private static synchronized void rebuildSharing() {
+        if (!sharingDirty) return;
+        List<FluidType> types = new ArrayList<>();
+        for (var type : getInNiceOrder()) {
+            if (!type.isForeign() && !type.getSharedTags().isEmpty()) types.add(type);
+        }
+        sharingTypes = types.toArray(new FluidType[0]);
+        sharingDirty = false;
     }
 
     /**

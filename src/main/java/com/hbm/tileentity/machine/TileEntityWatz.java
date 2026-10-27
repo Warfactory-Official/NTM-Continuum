@@ -69,8 +69,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * the ordering, which is load-bearing: reaction flux propagates downward between segments.
  *
  * <p>1.7's OpenComputers component is served to CC: Tweaked by
- * {@code com.hbm.compat.computercraft.machine.WatzPeripheral}. Known deviation, recorded in IMPLEMENTATION.md
- * §20: the meltdown's shrapnel spray is currently the mud columns alone.
+ * {@code com.hbm.compat.computercraft.machine.WatzPeripheral}. Known deviation: the meltdown's shrapnel spray is currently the mud columns alone.
  */
 public class TileEntityWatz extends TileEntityMachineBase
         implements IFluidStandardTransceiverMK2, WorldlyContainer, MenuProvider, IControlReceiver, IRORValueProvider {
@@ -108,6 +107,10 @@ public class TileEntityWatz extends TileEntityMachineBase
     public double getFluxLast() {
         return fluxLastBase + fluxLastReaction;
     }
+
+    /** The passive and reaction parts of the actual previous flux, also exposed separately to monitors. */
+    public double getFluxLastBase() { return fluxLastBase; }
+    public double getFluxLastReaction() { return fluxLastReaction; }
 
     public TileEntityWatz(BlockPos pos, BlockState state) {
         super(ModBlockEntities.WATZ.get(), pos, state, SLOTS);
@@ -155,8 +158,10 @@ public class TileEntityWatz extends TileEntityMachineBase
         te.resetSharedTanks();
         if (te.updateLock()) return; // a segment above us drives the whole column
 
+        // 1.7 BlockEntityWatz: the redstone block's own emission switches the column on (a solitary block
+        // receives nothing, so a neighbour-signal check never fires).
         boolean turnedOn = level.getBlockState(pos.above(3)).getBlock() == ModMachineBlocks.watz_pump.get()
-                && level.hasNeighborSignal(pos.above(5));
+                && level.getSignal(pos.above(5), Direction.DOWN) > 0;
 
         List<TileEntityWatz> segments = new ArrayList<>();
         segments.add(te);

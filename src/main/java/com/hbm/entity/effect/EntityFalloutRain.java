@@ -51,6 +51,8 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import net.minecraft.core.registries.BuiltInRegistries;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The fallout sweep spawned when a nuclear crater completes, ported from 1.12.2's
@@ -85,6 +87,8 @@ public class EntityFalloutRain extends CompatEntity {
     private static final int MAX_SCAN_FAILURE_RETRIES = 3;
 
     private int scale = 1;
+    /** Lays this block in place of {@code hbm:fallout}; set before the rain is added, saved with it. */
+    private @Nullable Block layer;
     /** 1.7 {@code tickDelay}, initialised from {@code BombConfig.fDelay} and not saved (1.7 did not save it either). */
     private final TickDelay tickDelay = new TickDelay(BombConfig.fDelay);
 
@@ -178,8 +182,19 @@ public class EntityFalloutRain extends CompatEntity {
         super(type, level);
     }
 
-    public void setScale(int scale) {
-        this.scale = Math.max(scale, 1);
+    public void setScale(int scale) {        this.scale = Math.max(scale, 1);
+    }
+
+    /**
+     * Lays {@code layer} in place of {@code hbm:fallout}; set before the rain is added, saved with it.
+     */
+    public EntityFalloutRain falloutLayer(Block layer) {
+        this.layer = layer;
+        return this;
+    }
+
+    private Block layer() {
+        return layer != null ? layer : ModFalloutBlocks.fallout.get();
     }
 
     public int getScale() {
@@ -212,7 +227,7 @@ public class EntityFalloutRain extends CompatEntity {
     public static Map<BlockPos, BlockState> stompColumnForTest(ServerLevel level, int x, int z,
                                                                         double distPercent, RandomSource rand) {
         ChunkScan scan = new ChunkScan(ChunkPos.pack(x >> 4, z >> 4));
-        stompColumn(scan, level.getChunk(x >> 4, z >> 4), x, z, distPercent, rand);
+        stompColumn(scan, level.getChunk(x >> 4, z >> 4), x, z, distPercent, rand, ModFalloutBlocks.fallout.get());
         Map<BlockPos, BlockState> writes = new LinkedHashMap<>();
         for (BlockWrite write : scan.stateWrites) writes.put(BlockPos.of(write.pos()), write.state());
         return writes;
@@ -735,7 +750,7 @@ public class EntityFalloutRain extends CompatEntity {
             }
 
             long spent = System.nanoTime() - kindStart;
-            if (newState.is(ModFalloutBlocks.fallout.get())) {
+            if (newState.is(layer())) {
                 writesFallout++;
                 msFallout += spent;
             } else if (newState.is(Blocks.FIRE)) {
@@ -943,7 +958,7 @@ public class EntityFalloutRain extends CompatEntity {
                 if (clampToRadius && distance > scale) continue;
                 double percent = distance * 100.0 / scale;
                 if (scale >= 25) scan.biomes.add(new BiomeWrite(x, z, percent, scale));
-                stompColumn(scan, chunk, x, z, percent, rand);
+                stompColumn(scan, chunk, x, z, percent, rand, layer());
             }
         }
     }
@@ -968,7 +983,8 @@ public class EntityFalloutRain extends CompatEntity {
      * {@link #MAX_SOLID_DEPTH} solid blocks, depositing the fallout layer / fire on the way.
      * Emits writes instead of applying them.
      */
-    private static void stompColumn(ChunkScan scan, LevelChunk chunk, int x, int z, double distPercent, RandomSource rand) {
+    private static void stompColumn(ChunkScan scan, LevelChunk chunk, int x, int z, double distPercent,
+                                      RandomSource rand, Block layer) {
         int solidDepth = 0;
         int bottomY = chunk.getMinY();
         int maxY = chunk.getMaxY();
@@ -993,7 +1009,7 @@ public class EntityFalloutRain extends CompatEntity {
             pos.set(x, y, z);
             BlockState state = chunk.getBlockState(pos);
             Block block = state.getBlock();
-            if (state.isAir() || block == ModFalloutBlocks.fallout.get()) continue;
+            if (state.isAir() || block == layer) continue;
 
             // 1.7 stomp:164-167: a volcano core turns into its radioactive twin (same behaviour) and the
             // column walk carries on below it without counting it
@@ -1077,7 +1093,7 @@ public class EntityFalloutRain extends CompatEntity {
             // onNeighborBlockChange silently remove it when the same pass burned the leaves / melted the snow
             // under it or dropped the sand; the end state is ash only on support that is still there.
             if (ash && !collapses && BlockFallout.canSupport(effective, chunk, pos)) {
-                scan.addStateWrite(BlockPos.asLong(x, upY, z), ModFalloutBlocks.fallout.get().defaultBlockState());
+                scan.addStateWrite(BlockPos.asLong(x, upY, z), layer.defaultBlockState());
             }
 
             // 1.7 {@code !eval && b.isNormalCube()}: an OPAQUE full cube that gives no redstone power. A full
@@ -1110,6 +1126,7 @@ public class EntityFalloutRain extends CompatEntity {
     protected void loadData(DataIn input) {
         chunkLoader.markRestoredFromNbt();
         setScale(input.getIntOr("scale", 1));
+        layer = input.read("fallout_layer", BuiltInRegistries.BLOCK.byNameCodec()).orElse(null);
         chunksToProcess = fromPairs(input.getIntArray("chunks").orElse(new int[0]));
         outerChunksToProcess = fromPairs(input.getIntArray("outerChunks").orElse(new int[0]));
         gathered = input.getBooleanOr("gathered", !chunksToProcess.isEmpty() || !outerChunksToProcess.isEmpty());
@@ -1118,6 +1135,7 @@ public class EntityFalloutRain extends CompatEntity {
     @Override
     protected void saveData(DataOut output) {
         output.putInt("scale", scale);
+        if (layer != null) output.store("fallout_layer", BuiltInRegistries.BLOCK.byNameCodec(), layer);
         output.putIntArray("chunks", toPairs(chunksToProcess));
         output.putIntArray("outerChunks", toPairs(outerChunksToProcess));
         output.putBoolean("gathered", gathered);

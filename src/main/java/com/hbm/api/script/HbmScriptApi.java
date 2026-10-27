@@ -235,7 +235,7 @@ public final class HbmScriptApi {
         info.put("displayName", fluid.getDisplayNameString());
         info.put("color", fluid.getColor());
         info.put("tint", fluid.getTint());
-        info.put("temperature", fluid.temperature);
+        info.put("temperature", fluid.getTemperature());
         info.put("hot", fluid.isHot());
         info.put("foreign", fluid.isForeign());
         info.put("traits", traits(fluid));
@@ -268,7 +268,7 @@ public final class HbmScriptApi {
     /** The fluid's temperature in degrees Celsius (room temperature 20), or 0 for an unknown id. */
     public int fluidTemperature(String id) {
         FluidType fluid = lookupFluid(id);
-        return fluid == null ? 0 : fluid.temperature;
+        return fluid == null ? 0 : fluid.getTemperature();
     }
 
     /** The fluid's colour as 0xRRGGBB, or 0 for an unknown id. */

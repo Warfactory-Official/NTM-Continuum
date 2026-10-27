@@ -2,6 +2,7 @@ package com.hbm.handler.jei;
 
 import com.hbm.inventory.recipes.SawmillRecipes;
 import com.hbm.inventory.recipes.SawmillRecipes.SawmillRecipe;
+import com.hbm.items.ModItems;
 import dev.golem.core.viewer.ViewerType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -23,15 +24,19 @@ public class SawmillRecipeHandler extends JEIUniversalHandler<SawmillRecipe> {
 
     @Override
     protected List<List<ItemStack>> inputs(SawmillRecipe recipe) {
-        return List.of(recipe.input().getDisplayStacks());
+        return List.of(recipe.input());
     }
 
     @Override
     protected List<List<ItemStack>> outputs(SawmillRecipe recipe) {
-        List<List<ItemStack>> outputs = new ArrayList<>();
+        var outputs = new ArrayList<List<ItemStack>>();
         outputs.add(List.of(recipe.output()));
-        if (!recipe.secondary().isEmpty()) outputs.add(List.of(recipe.secondary()));
+        if (recipe.sawdustChance() > 0F) outputs.add(List.of(new ItemStack(ModItems.powder_sawdust.get())));
         return outputs;
     }
 
+    @Override
+    protected float outputChance(SawmillRecipe recipe, int slot) {
+        return slot == 1 ? recipe.sawdustChance() : 1F;
+    }
 }

@@ -190,7 +190,7 @@ public class EntityMist extends CompatEntity {
 
     private void affect(ServerLevel server, Entity e, FluidType type, double intensity) {
         LivingEntity living = e instanceof LivingEntity ? (LivingEntity) e : null;
-        int temperature = type.temperature;
+        int temperature = type.getTemperature();
 
         if (temperature >= 100) {
             EntityDamageUtil.attackEntityFromIgnoreIFrame(e, ModDamageSources.source(server, ModDamageSources.BOIL),
@@ -265,7 +265,7 @@ public class EntityMist extends CompatEntity {
 
     /** Anything cool and non-flammable puts a burning entity out. */
     protected boolean isExtinguishing(FluidType type) {
-        return type.temperature < 50 && !FluidCombustion.isFlammable(type);
+        return type.getTemperature() < 50 && !FluidCombustion.isFlammable(type);
     }
 
     /** The cloud itself, drawn as drifting tower smoke tinted with the fluid's own colour. */

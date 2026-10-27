@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -32,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The 3x3 legacy heat-exchanger multiblock. */
-public class HeaterHeatex extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider {
+public class HeaterHeatex extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider, ICapabilityBlock {
 
     public HeaterHeatex(Properties properties) {
         super(properties);
@@ -140,4 +142,11 @@ public class HeaterHeatex extends BlockMultiblockMachine implements IFluidConnec
                 {1, 1, 0.5, -0.3, 0.4, -0.4, 1},
         };
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn().fluidOut()
+            .fluidFaces(BlockEntity.class, (be, side) -> side == null || side.getAxis() == be.getBlockState().getValue(FACING).getAxis());
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

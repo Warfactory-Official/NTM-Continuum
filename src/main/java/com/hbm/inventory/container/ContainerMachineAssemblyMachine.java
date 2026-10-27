@@ -50,9 +50,9 @@ public class ContainerMachineAssemblyMachine extends AbstractContainerMenu {
         this.addSlot(validated(2, 152, 108));                         // upgrade (1.12.2 addSlots 2,152,108,rows=2,cols=1 → vertical)
         this.addSlot(validated(3, 152, 126));                         // upgrade
         for (int row = 0; row < 4; row++) for (int col = 0; col < 3; col++) {
-            this.addSlot(validated(4 + row * 3 + col, 8 + col * 18, 18 + row * 18)); // 12 inputs (3 wide × 4 tall)
+            this.addSlot(validated(TileEntityMachineAssemblyMachine.SLOT_INPUT_START + row * 3 + col, 8 + col * 18, 18 + row * 18)); // 12 inputs (3 wide × 4 tall)
         }
-        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, 16, 98, 45)); // output, 1.7 SlotCraftingOutput
+        this.addSlot(new SlotCraftingOutput(playerInventory.player, this.machine, TileEntityMachineAssemblyMachine.SLOT_OUTPUT, 98, 45)); // output, 1.7 SlotCraftingOutput
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 174);
     }
@@ -96,7 +96,7 @@ public class ContainerMachineAssemblyMachine extends AbstractContainerMenu {
             } else if (stack.getItem() instanceof ItemMachineUpgrade) {
                 if (!this.moveItemStackTo(stack, 2, 4, false)) return ItemStack.EMPTY;
             } else {
-                if (!this.moveItemStackTo(stack, 4, 16, false)) return ItemStack.EMPTY;
+                if (!this.moveItemStackTo(stack, TileEntityMachineAssemblyMachine.SLOT_INPUT_START, TileEntityMachineAssemblyMachine.SLOT_OUTPUT, false)) return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

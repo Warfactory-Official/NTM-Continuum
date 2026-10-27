@@ -88,8 +88,8 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
         int left = pair.left().fill;
         int right = pair.right().fill;
 
-        if (tanks[0].getFill() >= 100 && hasSpace(left, right)) {
-            tanks[0].setFill(tanks[0].getFill() - 100);
+        if (tanks[0].getFill() >= FractionRecipes.FILL_PER_OP && hasSpace(left, right)) {
+            tanks[0].setFill(tanks[0].getFill() - FractionRecipes.FILL_PER_OP);
             tanks[1].setFill(tanks[1].getFill() + left);
             tanks[2].setFill(tanks[2].getFill() + right);
         }

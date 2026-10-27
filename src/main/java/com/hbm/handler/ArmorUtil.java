@@ -1,5 +1,9 @@
 package com.hbm.handler;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+import net.minecraft.world.effect.MobEffect;
 import com.hbm.api.data.ArmorDataMaps;
 import com.hbm.items.ModArmorModItems;
 import com.hbm.items.ModArmorSetBItems;
@@ -141,10 +145,34 @@ public class ArmorUtil {
     }
 
     /**
-     * More reasons an entity counts as wearing hazmat (ADDON-API-INVENTORY H-71), asked after 1.7's suits and mutation;
+     * More reasons an entity counts as wearing hazmat, asked after 1.7's suits and mutation;
      * any true answer wins. HBM registers none. NTM: Space: its {@code nitan} effect (hbm-space {@code ArmorUtil}).
      */
     public static final Hook<Predicate<LivingEntity>> HAZMAT = Hook.notifying();
+
+    /** A named effect grant is itself the runtime predicate registered with the hazmat hook. */
+    public record EffectHazmat(Supplier<? extends MobEffect> effect)
+            implements Predicate<LivingEntity> {
+        @Override
+        public boolean test(LivingEntity entity) {
+            return Effects.hasRegistered(entity, effect.get());
+        }
+    }
+
+    private static final Map<String, EffectHazmat> effectHazmat = new LinkedHashMap<>();
+
+    /** Declares an effect's hazmat grant without resolving its deferred registry handle early. */
+    public static void registerHazmatEffect(String id,
+            Supplier<? extends MobEffect> effect) {
+        var grant = new EffectHazmat(effect);
+        if (effectHazmat.putIfAbsent(id, grant) != null) throw new IllegalStateException("Duplicate hazmat effect grant " + id);
+        HAZMAT.register(grant);
+    }
+
+    /** Live named declarations; each value is the same predicate consumed by {@link #checkForHazmat}. */
+    public static Map<String, EffectHazmat> effectHazmat() {
+        return Collections.unmodifiableMap(effectHazmat);
+    }
 
     /** Only the true hazmat suits (yellow/red/grey/paa/liquidator), not the metal power armors. */
     public static boolean checkForHazmatOnly(LivingEntity entity) {

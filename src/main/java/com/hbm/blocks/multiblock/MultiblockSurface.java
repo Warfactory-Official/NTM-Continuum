@@ -214,13 +214,15 @@ public final class MultiblockSurface {
         List<BlockPos> out = new ArrayList<>();
         out.add(core.immutable());
         long corePacked = core.asLong();
+        var visited = new LongOpenHashSet();
+        visited.add(corePacked);
         ServerLevel server = level instanceof ServerLevel s ? s : null;
         block.visitPlacedCells(level, core, state.getValue(BlockMultiblockCore.FACING), (pos, mask) -> {
             if (server != null) {
                 long recorded = MultiblockCoreIndex.lookup(server, pos);
-                if (recorded != Long.MIN_VALUE && recorded != corePacked) return;
+                if (recorded != corePacked) return;
             }
-            out.add(pos.immutable());
+            if (block.isCellOf(level.getBlockState(pos)) && visited.add(pos.asLong())) out.add(pos.immutable());
         });
         return out;
     }

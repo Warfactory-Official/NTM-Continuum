@@ -1,5 +1,6 @@
 package com.hbm.packet;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.Constants;
 import com.hbm.entity.missile.EntityBobmazon;
 import com.hbm.handler.BobmazonOfferFactory;
@@ -42,6 +43,11 @@ public record ItemBobmazonPayload(int offer) implements GolemPayload {
 
     public static void handleServer(ItemBobmazonPayload m, ServerPlayer p) {
         ServerLevel world = (ServerLevel) p.level();
+        var refusal = Environment.deliveryRefusal(world);
+        if (refusal != null) {
+            p.sendSystemMessage(refusal);
+            return;
+        }
 
         List<Offer> offers = BobmazonOfferFactory.getOffers(p.getMainHandItem());
         Offer offer = offers != null && m.offer >= 0 && m.offer < offers.size() ? offers.get(m.offer) : null;

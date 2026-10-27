@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes;
 
+import dev.golem.core.world.ItemStacks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
@@ -7,6 +8,8 @@ import com.hbm.inventory.recipes.loader.GenericRecipeCodec.ItemOut;
 import com.hbm.items.ModItems;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
+import net.minecraft.util.RandomSource;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.Ids;
 import dev.golem.core.world.Compat;
@@ -30,7 +33,7 @@ import java.util.Optional;
 /**
  * Shredder recipes, an exact-item lookup {@code input Item -> output ItemStack}, with <b>scrap as the
  * universal fallback</b>: 1.7's {@code getShredderResult} returns {@code ModItems.scrap} for any
- * unlisted item, which is why the shredder accepts (and grinds) literally anything.
+ * unlisted plain item. Unmatched stacks carrying custom data remain intact.
  *
  * <p>The table is built in two passes, as in 1.7:
  * <ol>
@@ -56,16 +59,19 @@ public final class ShredderRecipes {
     private ShredderRecipes() {}
 
     /** One explicit row: an item or a tag (each member), and what it grinds into. */
-    public record Row(Either<TagKey<Item>, Item> input, ItemOut output) {}
+    public record Row(Either<TagKey<Item>, Item> input, ItemOut output, float chance) {
+        public Row(Either<TagKey<Item>, Item> input, ItemOut output) { this(input, output, 1F); }
+    }
 
     public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             GenericRecipeCodec.INGREDIENT.fieldOf("input").forGetter(Row::input),
-            GenericRecipeCodec.ITEM_OUT.fieldOf("output").forGetter(Row::output)
+            GenericRecipeCodec.ITEM_OUT.fieldOf("output").forGetter(Row::output),
+            Codec.floatRange(0F, 1F).optionalFieldOf("chance", 1F).forGetter(Row::chance)
     ).apply(i, Row::new));
 
     public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("shredder", () -> CODEC);
 
-    private static volatile Map<Item, ItemStack> recipes;
+    private static volatile Map<Item, ShredderRecipe> recipes;
 
     static {
         TABLE.changed.register(() -> recipes = null);
@@ -74,19 +80,40 @@ public final class ShredderRecipes {
     /** Declares the table at mod construction. */
     public static void declare() {}
 
-    /** The result of shredding {@code stack}, never empty; unlisted items yield scrap. */
+    /** The nominal output, for capacity checks and recipe displays. */
     public static ItemStack getShredderResult(ItemStack stack) {
-        Map<Item, ItemStack> table = table();
-        if (stack.isEmpty()) return new ItemStack(ModItems.scrap.get());
-        ItemStack bobble = DecoCrateMachineRecipes.bobbleScrap(stack);
-        if (bobble != null) return bobble;
-        ItemStack result = table.get(stack.getItem());
-        return result != null ? result.copy() : new ItemStack(ModItems.scrap.get());
+        var recipe = getRecipe(stack);
+        if (recipe != null) return recipe.output().copy();
+        return ItemStacks.sameItemAndData(stack, new ItemStack(stack.getItem(), stack.getCount()))
+                ? new ItemStack(ModItems.scrap.get()) : ItemStack.EMPTY;
     }
 
-    /** All entries (explicit rows and sweeps), for JEI/tooling. Keys are input items, values the (shared) outputs. */
+    public static ShredderRecipe getRecipe(ItemStack stack) {
+        if (stack.isEmpty()) return null;
+        var bobble = DecoCrateMachineRecipes.bobbleScrapAndOrder(stack);
+        if (bobble != null) {
+            ShredderRecipe recipe = new ShredderRecipe("bobble:" + BuiltInRegistries.ITEM.getKey(stack.getItem()),
+                    stack.getItem(), bobble.scrap(), 1F);
+            recipe.order = bobble.order();
+            return recipe;
+        }
+        return table().get(stack.getItem());
+    }
+
+    public static ItemStack shred(ItemStack stack) {
+        return shred(stack, RandomSource.create());
+    }
+
+    public static ItemStack shred(ItemStack stack, RandomSource random) {
+        var recipe = getRecipe(stack);
+        return recipe != null ? recipe.roll(random) : getShredderResult(stack);
+    }
+
+    /** Resolved nominal outputs, including the material tag sweeps. */
     public static Map<Item, ItemStack> getRecipes() {
-        return Collections.unmodifiableMap(table());
+        var outputs = new HashMap<Item, ItemStack>();
+        table().forEach((item, recipe) -> outputs.put(item, recipe.output()));
+        return Collections.unmodifiableMap(outputs);
     }
 
     /** Builds the index if a reload invalidated it (kept for the existing callers). */
@@ -94,14 +121,14 @@ public final class ShredderRecipes {
         table();
     }
 
-    private static synchronized Map<Item, ItemStack> table() {
-        Map<Item, ItemStack> current = recipes;
+    private static synchronized Map<Item, ShredderRecipe> table() {
+        Map<Item, ShredderRecipe> current = recipes;
         if (current != null) return current;
-        Map<Item, ItemStack> next = new HashMap<>();
+        Map<Item, ShredderRecipe> next = new HashMap<>();
         for (Row row : TABLE.rows()) {
             ItemStack out = row.output().stack();
-            row.input().ifLeft(tag -> { for (Item item : itemsOf(tag)) set(next, item, out); })
-                    .ifRight(item -> set(next, item, out));
+            row.input().ifLeft(tag -> { for (Item item : itemsOf(tag)) set(next, item, out, row.chance()); })
+                    .ifRight(item -> set(next, item, out, row.chance()));
         }
         registerVanillaSweeps(next);
         registerTagSweep(next);
@@ -110,15 +137,20 @@ public final class ShredderRecipes {
     }
 
     /** First-wins, matching the old {@code setRecipe}'s {@code containsKey} guard. */
-    private static void set(Map<Item, ItemStack> recipes, Item in, ItemStack out) {
-        if (in != null && !out.isEmpty()) recipes.putIfAbsent(in, out);
+    private static void set(Map<Item, ShredderRecipe> recipes, Item in, ItemStack out) {
+        set(recipes, in, out, 1F);
+    }
+
+    private static void set(Map<Item, ShredderRecipe> recipes, Item in, ItemStack out, float chance) {
+        if (in != null && !out.isEmpty()) recipes.putIfAbsent(in,
+                new ShredderRecipe(BuiltInRegistries.ITEM.getKey(in).toString(), in, out, chance));
     }
 
     /**
      * The old loops over the {@code logWood}/{@code plankWood}/{@code treeSapling} ore-dict lists and the
      * 16 wool / stained-clay metas, done here with the equivalent vanilla tags, so modded woods work too.
      */
-    private static void registerVanillaSweeps(Map<Item, ItemStack> recipes) {
+    private static void registerVanillaSweeps(Map<Item, ShredderRecipe> recipes) {
         for (Item item : itemsOf(ItemTags.LOGS)) set(recipes, item, new ItemStack(ModItems.powder_sawdust.get(), 4));
         for (Item item : itemsOf(ItemTags.PLANKS)) set(recipes, item, new ItemStack(ModItems.powder_sawdust.get(), 1));
         for (Item item : itemsOf(ItemTags.SAPLINGS)) set(recipes, item, new ItemStack(Items.STICK, 1));
@@ -147,7 +179,7 @@ public final class ShredderRecipes {
      * material list, so vanilla and cross-mod materials get recipes whenever a {@code c:dusts/<mat>}
      * exists.
      */
-    private static void registerTagSweep(Map<Item, ItemStack> recipes) {
+    private static void registerTagSweep(Map<Item, ShredderRecipe> recipes) {
         // bucket every c:<shape>/<material> item tag by material
         Map<String, Map<String, TagKey<Item>>> byMat = new HashMap<>();
         Compat.itemTagKeys().forEach(tag -> {

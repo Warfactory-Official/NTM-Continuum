@@ -134,6 +134,11 @@ public class BlockFluidDuct extends CompatBlock implements TickingBlock, SimpleW
         return level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct ? duct.getFluidType() : Fluids.NONE;
     }
 
+    /** The exact fluid carried by this duct's authoritative block entity. */
+    public static FluidType pipeFluidAt(BlockGetter level, BlockPos pos) {
+        return ductType(level, pos);
+    }
+
     /**
      * Types a freshly placed duct and connects its arms for that type: 1.7 {@code ItemFluidDuct.onItemUse} placed
      * {@code fluid_duct_neo} and then called {@code setType} on its tile entity.

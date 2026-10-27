@@ -13,7 +13,7 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
     default long getFluidAvailable(FluidType type, int pressure) {
         long amount = 0;
         for (FluidTankNTM tank : getSendingTanks()) {
-            if (tank.getTankType() == type && tank.getPressure() == pressure) amount += tank.getFill();
+            if (tank.provides(type) && tank.getPressure() == pressure) amount += tank.getFill();
         }
         return amount;
     }
@@ -22,12 +22,12 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
     default void useUpFluid(FluidType type, int pressure, long amount) {
         int tanks = 0;
         for (FluidTankNTM tank : getSendingTanks()) {
-            if (tank.getTankType() == type && tank.getPressure() == pressure) tanks++;
+            if (tank.provides(type) && tank.getPressure() == pressure) tanks++;
         }
         if (tanks > 1) {
             int firstRound = (int) Math.floor((double) amount / (double) tanks);
             for (FluidTankNTM tank : getSendingTanks()) {
-                if (tank.getTankType() == type && tank.getPressure() == pressure) {
+                if (tank.provides(type) && tank.getPressure() == pressure) {
                     int toRem = Math.min(firstRound, tank.getFill());
                     tank.setFill(tank.getFill() - toRem);
                     amount -= toRem;
@@ -35,7 +35,7 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
             }
         }
         if (amount > 0) for (FluidTankNTM tank : getSendingTanks()) {
-            if (tank.getTankType() == type && tank.getPressure() == pressure) {
+            if (tank.provides(type) && tank.getPressure() == pressure) {
                 int toRem = (int) Math.min(amount, tank.getFill());
                 tank.setFill(tank.getFill() - toRem);
                 amount -= toRem;
@@ -49,7 +49,7 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
         int highest = 0;
 
         for (FluidTankNTM tank : getSendingTanks()) {
-            if (tank.getTankType() == type) {
+            if (tank.provides(type)) {
                 if (tank.getPressure() < lowest) lowest = tank.getPressure();
                 if (tank.getPressure() > highest) highest = tank.getPressure();
             }

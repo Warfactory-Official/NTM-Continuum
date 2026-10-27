@@ -59,6 +59,6 @@ public final class MixerRenderer extends GemBER<TileEntityMachineMixer, MixerRen
             }
         }
         state.fillScale = capacity <= 0 ? 0F : (float) fill / capacity * 0.99F;
-        state.fluidColor = be.tanks[2].getTankType().getColor();
+        state.fluidColor = be.tanks[2].getTankType().clientMetadata().getColor();
     }
 }

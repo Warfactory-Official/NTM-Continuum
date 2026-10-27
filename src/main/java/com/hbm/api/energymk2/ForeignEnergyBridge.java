@@ -3,11 +3,17 @@ package com.hbm.api.energymk2;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import dev.golem.core.world.EnergySource;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import org.jspecify.annotations.Nullable;
 
 /**
  * One power net's side of the FE capability our conductors expose, in HE throughout - every number answered out of here is a BUDGET the last distribute published, never a stored charge.
  */
-public final class ForeignEnergyBridge {
+public final class ForeignEnergyBridge implements EnergySource {
 
     /**
      * How long a face stays latched after our capability accepted a push from it - two push-based networks aimed at each other would bill both distributors and inflate the flow meters; the latch breaks the loop, first-mover-wins.
@@ -59,10 +65,44 @@ public final class ForeignEnergyBridge {
      * Guards the whole net while its own round is running; see {@code PowerNetwork.distribute}.
      */
     private boolean distributing;
+    private int openSnapshots;
+    private @Nullable ForeignEnergyBridge mergingInto;
+    private @Nullable List<ForeignEnergyBridge> pendingAbsorptions;
 
     public ForeignEnergyBridge() {
         latchByNeighbour.defaultReturnValue(Long.MIN_VALUE);
     }
+
+    @Override public Object transactionKey() { return this; }
+    @Override public long amountFe(ServerLevel level, BlockPos pos) { return amountFe(); }
+    @Override public long capacityFe(ServerLevel level, BlockPos pos) { return capacityFe(); }
+    @Override public long insertableFe(ServerLevel level, BlockPos pos) { return insertableFe(); }
+    @Override public long extractableFe(ServerLevel level, BlockPos pos) { return extractableFe(); }
+    @Override public long insertFe(ServerLevel level, BlockPos pos, @Nullable BlockPos from, long fe) {
+        return insertFe(fe, (from == null ? pos : from).asLong(), level.getGameTime());
+    }
+    @Override public long extractFe(ServerLevel level, BlockPos pos, long fe) { return extractFe(fe); }
+
+    /** The plain diagnostic snapshot stays pure; only a loader journal acquires tentative ownership. */
+    @Override
+    public Object snapshot(ServerLevel level, BlockPos pos) {
+        var state = snapshot();
+        openSnapshots++;
+        return state;
+    }
+
+    @Override public void restore(ServerLevel level, BlockPos pos, Object state) { restore((State) state); }
+
+    @Override
+    public void releaseSnapshot(ServerLevel level, BlockPos pos, Object state) {
+        if (openSnapshots == 0) throw new IllegalStateException("Cable snapshot released without an owner");
+        openSnapshots--;
+        var survivor = this;
+        while (survivor.mergingInto != null) survivor = survivor.mergingInto;
+        survivor.flushAbsorptions();
+    }
+
+    private boolean tentative() { return openSnapshots != 0 || pendingAbsorptions != null; }
 
     public State snapshot() {
         return new State(injectedHe, insertBudgetHe, extractBudgetHe, owedHe, carry.heToFeRemainder(),
@@ -114,7 +154,7 @@ public final class ForeignEnergyBridge {
      * diode's recursion brake when its output is wired back into the net feeding it.
      */
     public long insertableHe() {
-        return distributing ? 0 : insertBudgetHe;
+        return distributing || tentative() ? 0 : insertBudgetHe;
     }
 
     /**
@@ -125,7 +165,7 @@ public final class ForeignEnergyBridge {
      * @return HE actually accepted.
      */
     public long insertHe(long he) {
-        if (he <= 0 || distributing) return 0;
+        if (he <= 0 || distributing || tentative()) return 0;
         long accepted = Math.min(he, insertBudgetHe);
         if (accepted <= 0) return 0;
         insertBudgetHe -= accepted;
@@ -163,9 +203,40 @@ public final class ForeignEnergyBridge {
     }
 
     /**
-     * Fold a dying net's bridge into this one at a merge; everything that must survive is position-blind, so addition IS conservation. The published budgets are not summed; the next round republishes.
+     * Fold a dying net's position-blind pools into the survivor after both owners' loader snapshots close. The
+     * world/graph merge itself is immediate; each tentative ledger stays independently restorable until then.
+     * Published budgets are not summed; the next round republishes.
      */
     public void absorb(ForeignEnergyBridge other) {
+        if (other == this || other.mergingInto != null)
+            throw new IllegalArgumentException("Cable bridge was already absorbed");
+        other.mergingInto = this;
+        if (!tentative() && !other.tentative()) {
+            absorbClosed(other);
+            return;
+        }
+        if (pendingAbsorptions == null) pendingAbsorptions = new ArrayList<>();
+        pendingAbsorptions.add(other);
+        flushAbsorptions();
+    }
+
+    private boolean readyToAbsorb() {
+        if (openSnapshots != 0) return false;
+        if (pendingAbsorptions != null) for (var pending : pendingAbsorptions)
+            if (!pending.readyToAbsorb()) return false;
+        return true;
+    }
+
+    private void flushAbsorptions() {
+        if (pendingAbsorptions == null || !readyToAbsorb()) return;
+        for (var pending : pendingAbsorptions) {
+            pending.flushAbsorptions();
+            absorbClosed(pending);
+        }
+        pendingAbsorptions = null;
+    }
+
+    private void absorbClosed(ForeignEnergyBridge other) {
         injectedHe += other.injectedHe;
         owedHe += other.owedHe;
         carry.absorb(other.carry);
@@ -180,7 +251,7 @@ public final class ForeignEnergyBridge {
     }
 
     public boolean beginDistribute() {
-        if (distributing) return false;
+        if (distributing || tentative()) return false;
         distributing = true;
         return true;
     }

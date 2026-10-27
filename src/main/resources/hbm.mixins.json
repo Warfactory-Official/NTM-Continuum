@@ -8,6 +8,8 @@
     "FireBlockAccessor",
     "MixinItemEntity",
     "MixinLivingEntity",
+    "MixinPlacementCollision",
+    "MixinPlacementSuffocation",
     "MixinPlayer",
     "MixinServerLevel"
   ],

@@ -171,7 +171,7 @@ public final class ModAutogenItems {
             MaterialShapes shape = e.getKey();
             String base = e.getValue();
             for (NTMMaterial mat : Mats.orderedList) {
-                if (!mat.autogen.contains(shape)) continue;
+                if (!Constants.MOD_ID.equals(mat.namespace) || !mat.autogen.contains(shape)) continue;
                 Reg.Handle<ItemAutogen> item = REG.item(base + "_" + mat.name,
                         p -> new ItemAutogen(p, shape, mat), p -> p.stacksTo(64));
                 // The model is the plain one-sprite case like any other; only the texture behind it is generated.

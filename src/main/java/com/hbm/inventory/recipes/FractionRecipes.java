@@ -17,6 +17,8 @@ import java.util.Map;
  */
 public final class FractionRecipes {
 
+    public static final int FILL_PER_OP = 100;
+
     private FractionRecipes() {}
 
     public record FractionPair(FluidStack left, FluidStack right) {}

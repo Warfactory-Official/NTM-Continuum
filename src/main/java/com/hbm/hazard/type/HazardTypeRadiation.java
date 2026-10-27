@@ -22,8 +22,8 @@ public class HazardTypeRadiation implements IHazardType {
     /**
      * Radiation a stack carries on top of its hazard entries (H-77): per stack, not per item, added after the modifiers
      * and the stack count when a RADIATION entry is applied, and to the level a RADIATION tooltip line shows. The
-     * listeners' answers are summed. Plain HBM registers none; NTM: Space adds hbm-space's neutron activation, which
-     * hbm-space's {@code HazardTypeRadiation} read from the stack's {@code ntmNeutron} tag at exactly these two points.
+     * listeners' answers are summed. Plain HBM registers none. Per-item component contributions belong in
+     * {@link com.hbm.hazard.transformer.HazardTransformerRadiationNBT#COMPONENT_RADIATION} instead.
      */
     public static final Hook<ToDoubleFunction<ItemStack>> STACK_RADIATION =
             Hook.notifying();

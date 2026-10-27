@@ -1,5 +1,7 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
@@ -37,7 +39,7 @@ import org.jspecify.annotations.Nullable;
  * {@link IEnergyConnectorBlock}/{@link IFluidConnectorBlockMK2}.
  */
 public class LaunchPad extends BlockMultiblockMachine
-        implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
+        implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder, ICapabilityBlock {
 
     public LaunchPad(Properties properties) {
         super(properties);
@@ -112,4 +114,12 @@ public class LaunchPad extends BlockMultiblockMachine
             }
         }
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().items().fe()
+            .faces(BlockEntity.class, (be, side) -> side.getAxis().isHorizontal())
+            .fluidFaces(BlockEntity.class, (be, side) -> side.getAxis().isHorizontal());
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

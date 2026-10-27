@@ -1,5 +1,8 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -31,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The legacy three-port drainage pipe. */
-public class MachineDrain extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
+public class MachineDrain extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay, ICapabilityBlock {
 
     public MachineDrain(Properties properties) {
         super(properties);
@@ -101,4 +104,11 @@ public class MachineDrain extends BlockMultiblockMachine implements IFluidConnec
     public int coreMask() {
         return MASK_SOUTH | MASK_WEST | MASK_EAST;
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn()
+            .fluidFaces(BlockEntity.class, (be, side) -> side.getAxis().isHorizontal());
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

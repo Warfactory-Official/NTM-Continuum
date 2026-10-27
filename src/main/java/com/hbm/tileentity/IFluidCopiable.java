@@ -27,7 +27,7 @@ public interface IFluidCopiable extends ICopiable {
         IFluidUserMK2 tile = (IFluidUserMK2) this;
         List<FluidType> types = new ArrayList<>();
         for (FluidTankNTM tank : tile.getAllTanks()) {
-            if (!ItemFluidIds.hasNoID(tank.getTankType())) types.add(tank.getTankType());
+            if (!ItemFluidIds.hasNoID(tank.getTankType())) types.add(tank.getDeclaredFluid());
         }
         return types.toArray(new FluidType[0]);
     }
@@ -53,8 +53,8 @@ public interface IFluidCopiable extends ICopiable {
     default void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
         FluidTankNTM tank = getTankToPaste();
         if (tank == null) return;
-        FluidType[] fluids = Fluids.readList(nbt, "fluids");
-        if (fluids.length > 0 && index < fluids.length) tank.setTankType(fluids[index]);
+        FluidType[] fluids = Fluids.readListExact(nbt, "fluids");
+        if (fluids.length > 0 && index < fluids.length) tank.setTankTypeByIdentifier(fluids[index]);
     }
 
     @Override

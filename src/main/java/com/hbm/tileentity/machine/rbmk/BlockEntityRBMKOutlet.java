@@ -38,10 +38,10 @@ public class BlockEntityRBMKOutlet extends TileEntityMachineBase implements IFlu
             if (moved > 0) { column.reasimSteam -= moved; steam.setFill(steam.getFill() + moved); column.markChanged(); markChanged(); }
         }
     }
-    @Override public long getFluidAvailable(FluidType type, int pressure) { return type == steam.getTankType() && pressure == steam.getPressure() ? steam.getFill() : 0; }
+    @Override public long getFluidAvailable(FluidType type, int pressure) { return steam.provides(type) && pressure == steam.getPressure() ? steam.getFill() : 0; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{steam}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{steam}; }
-    @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (type == steam.getTankType() && pressure == steam.getPressure()) { steam.setFill(steam.getFill() - (int)Math.min(amount, steam.getFill())); setChanged(); } }
+    @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (steam.provides(type) && pressure == steam.getPressure()) { steam.setFill(steam.getFill() - (int)Math.min(amount, steam.getFill())); setChanged(); } }
     @Override protected void saveData(DataOut out) { super.saveData(out); steam.writeToNBT(out, "tank"); }
     @Override protected void loadData(DataIn in) { super.loadData(in); steam.readFromNBT(in, "tank"); }
     @Override public void serialize(RegistryFriendlyByteBuf buffer) { super.serialize(buffer); steam.serialize(buffer); }

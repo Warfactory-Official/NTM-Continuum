@@ -91,7 +91,7 @@ public class RenderPipeAnchor<T extends BlockEntity & TileEntityPipelineBase> ex
             state.pipes.add(new double[]{connectionPoint.x - anchorPoint.x, connectionPoint.y - anchorPoint.y,
                     connectionPoint.z - anchorPoint.z});
             int color = anchor.getNetworkType() == NetworkType.FLUID && anchor instanceof TileEntityFluidPipeAnchor fluid
-                    ? lighten(fluid.getFluidType().getColor(), 0.25D) : 0xFFFFFF;
+                    ? lighten(fluid.getFluidType().clientMetadata().getColor(), 0.25D) : 0xFFFFFF;
             state.colors.add(0xFF000000 | color);
         }
     }

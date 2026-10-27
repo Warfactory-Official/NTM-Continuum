@@ -1,5 +1,8 @@
 package com.hbm.blocks.turret;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
@@ -18,7 +21,7 @@ import org.jspecify.annotations.Nullable;
  * The one turret that drinks: its flamethrower runs on diesel, so a duct may attach to its pad exactly
  * where a cable may. The other turrets carry no tank and answer no duct.
  */
-public class TurretFritz extends TurretBaseNT implements IFluidConnectorBlockMK2 {
+public class TurretFritz extends TurretBaseNT implements IFluidConnectorBlockMK2, ICapabilityBlock {
 
     public TurretFritz(Properties properties) {
         super(properties);
@@ -34,4 +37,11 @@ public class TurretFritz extends TurretBaseNT implements IFluidConnectorBlockMK2
         return new TileEntityTurretFritz(pos, state);
     }
 
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().itemsAtCells()
+            .fluidFaces(BlockEntity.class, (be, side) -> side != Direction.UP && side != Direction.DOWN);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

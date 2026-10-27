@@ -67,6 +67,25 @@ public interface IEnergyHandlerMK2 extends IEnergyConnectorMK2, ILoadedTile, IBu
         return overshoot;
     }
 
+    /** Whether getPower/setPower describe a finite owned buffer rather than a virtual transfer action. */
+    default boolean ownsEnergyBuffer() { return !passThrough(); }
+
+    /** A relay supplies its separate pending stock rather than the intake counter returned by getPower(). */
+    default boolean passThrough() { return false; }
+
+    /** The supply available to this round; stored-energy handlers retain their existing speed bound. */
+    default long getPowerAvailable() {
+        return passThrough() ? getProviderSpeed() : Math.min(getPower(), getProviderSpeed());
+    }
+
+    /** Stored energy used by the round's conservation tracker. */
+    default long getTrackedPower() { return getPower(); }
+
+    /** Free room in a two-stage relay: at most one limit arriving and two limits held. */
+    static long transitRoom(long limit, long stock, long arriving) {
+        return Math.max(0L, Math.min(limit - arriving, Math.multiplyExact(limit, 2L) - stock - arriving));
+    }
+
     default ConnectionPriority getPriority() {
         return ConnectionPriority.NORMAL;
     }

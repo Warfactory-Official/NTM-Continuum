@@ -1,5 +1,7 @@
 package com.hbm.items.tool;
 
+import com.hbm.capability.NtmContracts;
+import com.hbm.interfaces.IRepairable;
 import com.hbm.api.block.IToolable;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.inventory.fluid.FluidType;
@@ -46,25 +48,30 @@ public class ItemBlowtorch extends CompatItem implements IFillableItem {
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
-        BlockPos pos = context.getClickedPos();
-        Block block = level.getBlockState(pos).getBlock();
-        if (!(block instanceof IToolable toolable)) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        BlockPos pos = IToolable.targetPos(level, context.getClickedPos());
+        if (pos == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        var toolable = NtmContracts.TOOLABLE.at(level, pos);
+        if (toolable == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         Player player = context.getPlayer();
         if (player == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
-        // The torch always reports SUCCESS so vanilla doesn't fall through to placing/using something
-        // else on a block it clearly meant to weld (the original's "minecraft is stupid" comment).
-        if (level.isClientSide()) return InteractionResult.SUCCESS;
-
         ItemStack stack = context.getItemInHand();
-        if (getFill(stack) < COST) return InteractionResult.SUCCESS;
+        if (getFill(stack) < COST) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (level.isClientSide()) {
+            if (level.getBlockEntity(pos) instanceof IRepairable) {
+                return IRepairable.tryRepairMultiblock(level, pos, player)
+                        ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
+            }
+            return InteractionResult.SUCCESS;
+        }
 
         if (toolable.onScrew(level, player, pos, context.getClickedFace(), context.getClickLocation(),
                 context.getHand(), IToolable.ToolType.TORCH)) {
             setFill(stack, getFill(stack) - COST);
             level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.7F, 1.6F);
+            return InteractionResult.SUCCESS;
         }
-        return InteractionResult.SUCCESS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     /**

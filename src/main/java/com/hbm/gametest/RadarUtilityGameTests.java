@@ -15,6 +15,7 @@ import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -126,10 +127,7 @@ public final class RadarUtilityGameTests {
         TileEntityMachineTeleporter tele = GameTestHelpers.blockEntity(helper, pad, TileEntityMachineTeleporter.class);
         helper.assertTrue(tele != null, "no teleporter block entity");
         BlockPos exit = helper.absolutePos(new BlockPos(4, 1, 4));
-        tele.targetX = exit.getX();
-        tele.targetY = exit.getY();
-        tele.targetZ = exit.getZ();
-        tele.targetDim = Ids.keyId(helper.getLevel().dimension()).toString();
+        tele.setTarget(GlobalPos.of(helper.getLevel().dimension(), exit));
         tele.power = TileEntityMachineTeleporter.maxPower;
 
         BlockPos abs = helper.absolutePos(pad);

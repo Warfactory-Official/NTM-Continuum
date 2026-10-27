@@ -15,8 +15,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * The machine recipes of the crate and deco blocks, each handed to its registry from one line in that registry's own
@@ -48,11 +51,50 @@ public final class DecoCrateMachineRecipes {
 
     /** 1.7 ShredderRecipes:338-341: a bobblehead gives the plastic scrap of its {@code BobbleType.scrap}; else null. */
     public static ItemStack bobbleScrap(ItemStack stack) {
-        if (stack.isEmpty() || !(stack.getItem() instanceof ItemBlockDecoVariant item)
-                || item.getBlock() != ModDecoCrateBlocks.bobblehead.get()) return null;
-        BlockBobble.BobbleType type =
-                BlockBobble.BobbleType.of(item.variant(stack));
-        ItemStack scrap = stack("scrap_plastic_" + type.scrap.toLowerCase(Locale.US), 1);
-        return scrap.isEmpty() ? null : scrap;
+        BobbleScrap result = bobbleScrapAndOrder(stack);
+        return result == null ? null : result.scrap();
+    }
+
+    /** An addon bobblehead item's shredder scrap suffix and PIN order. */
+    public record BobbleExtra(String scrap, int order) {}
+
+    /** A resolved bobblehead shredder row: its scrap and its PIN order. */
+    public record BobbleScrap(ItemStack scrap, int order) {}
+
+    /** Base heads whose shredder order follows Space's PIN order rather than NTM's enum order. */
+    private static final Map<BlockBobble.BobbleType, Integer> BOBBLE_PIN_ORDERS = new LinkedHashMap<>();
+
+    /** Addon bobblehead items (item supplier: registration runs before the registries flush). */
+    private static final Map<Supplier<Item>, BobbleExtra> EXTRA_BOBBLES = new LinkedHashMap<>();
+
+    /** Gives a base head its Space PIN order for the shredder rule (NTM's own order stays the enum's). */
+    public static void orderBobble(BlockBobble.BobbleType type, int order) {
+        BOBBLE_PIN_ORDERS.put(type, order);
+    }
+
+    /** Gives an addon's bobblehead item its shredder scrap and PIN order. */
+    public static void addBobble(Supplier<Item> item, String scrap, int order) {
+        EXTRA_BOBBLES.put(item, new BobbleExtra(scrap, order));
+    }
+
+    /** 1.7 ShredderRecipes:338-341 with the row's PIN order: base heads, then addon-registered items. */
+    public static BobbleScrap bobbleScrapAndOrder(ItemStack stack) {
+        if (stack.isEmpty()) return null;
+        if (stack.getItem() instanceof ItemBlockDecoVariant item
+                && item.getBlock() == ModDecoCrateBlocks.bobblehead.get()) {
+            BlockBobble.BobbleType type =
+                    BlockBobble.BobbleType.of(item.variant(stack));
+            ItemStack scrap = stack("scrap_plastic_" + type.scrap.toLowerCase(Locale.US), 1);
+            if (scrap.isEmpty()) return null;
+            return new BobbleScrap(scrap, BOBBLE_PIN_ORDERS.getOrDefault(type, Integer.MAX_VALUE));
+        }
+        for (var entry : EXTRA_BOBBLES.entrySet()) {
+            if (stack.is(entry.getKey().get())) {
+                ItemStack scrap = stack("scrap_plastic_" + entry.getValue().scrap().toLowerCase(Locale.US), 1);
+                if (scrap.isEmpty()) return null;
+                return new BobbleScrap(scrap, entry.getValue().order());
+            }
+        }
+        return null;
     }
 }

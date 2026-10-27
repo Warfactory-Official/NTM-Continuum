@@ -572,7 +572,8 @@ public final class ModAbilityToolItems {
                     .addAbility(IWeaponAbility.CHAINSAW, 1)
                     .addAbility(IWeaponAbility.BEHEADER, 0).setShears(), rendered("chainsaw", "weapon_full3d").and(tag("axes")));
 
-    public static final RegistryObject<RedstoneSword> redstone_sword = reg("redstone_sword", T, RedstoneSword::new, held("redstone_sword", "redstone_sword").and(tag("swords")));
+    /** 1.7 {@code RedstoneSword}: a combat-tab weapon like its melee-kit neighbours. */
+    public static final RegistryObject<RedstoneSword> redstone_sword = reg("redstone_sword", HbmTab.WEAPONS, RedstoneSword::new, held("redstone_sword", "redstone_sword").and(tag("swords")));
 
     /** 1.7 {@code ModItems.crucible = new ItemCrucible(5000, 1F, matCrucible)} (1.12.2 used 500; the 1.7
      *  damage is kept, everything else follows 1.12). The tab holds it charged. */

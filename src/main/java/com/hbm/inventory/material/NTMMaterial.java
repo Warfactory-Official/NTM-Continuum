@@ -1,5 +1,6 @@
 package com.hbm.inventory.material;
 
+import java.util.Collections;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.MaterialStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
@@ -29,12 +30,14 @@ import java.util.Set;
  * <p>The {@link #solidColorLight} drives the autogen icon tint. The crucible half of the 1.12.2 class, namely
  * {@link SmeltingBehavior} plus the {@link #smeltsInto}/{@link #convIn}/{@link #convOut} conversion triple
  * (how a material behaves when melted, e.g. coal to carbon at 2:1) is ported for the foundry system;
- * traits remain deferred.
+ * metal and nonmetal traits remain declared on each material.
  */
 public final class NTMMaterial {
 
     /** Snake-case id, matching the ported item naming (e.g. {@code iron}, {@code combine_steel}). */
     public final String name;
+    /** Resource namespace of the material's generated assets. */
+    public String namespace = "hbm";
     /** The original numeric id, kept for reference / ordering. */
     public final int id;
 
@@ -54,11 +57,38 @@ public final class NTMMaterial {
     /** Shapes this material is auto-generated in (gates the autogen item's creative variants). */
     public final Set<MaterialShapes> autogen = EnumSet.noneOf(MaterialShapes.class);
 
+    /** Intrinsic classification declared by the material, independent of its smelting behavior. */
+    public final Set<MatTraits> traits = EnumSet.noneOf(MatTraits.class);
+
+    public enum MatTraits { METAL, NONMETAL }
+
+    public NTMMaterial setTraits(MatTraits... traits) {
+        Collections.addAll(this.traits, traits);
+        return this;
+    }
+
+    public NTMMaterial m() { return setTraits(MatTraits.METAL); }
+    public NTMMaterial n() { return setTraits(MatTraits.NONMETAL); }
+
     private String displayName;
 
     public NTMMaterial(int id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public NTMMaterial namespace(String namespace) {
+        this.namespace = namespace;
+        return this;
+    }
+
+    /** Places this registered material after its authored predecessor in material selectors and displays. */
+    public NTMMaterial after(NTMMaterial anchor) {
+        if (anchor == this || !Mats.orderedList.contains(anchor))
+            throw new IllegalArgumentException("Absent or self material anchor: " + anchor.name);
+        if (!Mats.orderedList.remove(this)) throw new IllegalStateException("Unregistered material: " + name);
+        Mats.orderedList.add(Mats.orderedList.indexOf(anchor) + 1, this);
+        return this;
     }
 
     public NTMMaterial smelting(SmeltingBehavior behavior) {
@@ -104,7 +134,7 @@ public final class NTMMaterial {
 
     /** The {@code c:<plural>/<name>} item tag for this material in the given shape. */
     public TagKey<Item> tag(MaterialShapes shape) {
-        return TagKey.create(Registries.ITEM, Ids.of("c", shape.tagPlural + "/" + name));
+        return shape.tagFor(name);
     }
 
     // Tag-backed shapes (real items + cross-mod c: tags)
@@ -119,7 +149,7 @@ public final class NTMMaterial {
     public AStack block()   { return new TagStack(tag(MaterialShapes.BLOCK)); }
     public AStack ore()     { return new TagStack(tag(MaterialShapes.ORE)); }
 
-    // HBM autogen shapes (one item per shape, matched by the material data component)
+    // Typed material/shape declarations match their common tag, including equivalent items from other mods.
 
     public AStack plateCast()   { return autogenStack(MaterialShapes.CASTPLATE); }
     public AStack plateWelded() { return autogenStack(MaterialShapes.WELDEDPLATE); }
@@ -132,9 +162,8 @@ public final class NTMMaterial {
 
     /**
      * An autogen shape of this material. The 1.7 {@code DictGroup}s ({@code ANY_RESISTANTALLOY},
-     * {@code ANY_BISMOIDBRONZE}: id -1, name {@code any_*}) own no autogen item, so a {@link MaterialStack} of one
-     * could never match (the 1.7 {@code plateWeldedAnyResistantAlloy} ore name took any member's plate); they
-     * resolve to their {@code c:<plural>/any_*} aggregate tag, which lists the members' shape tags.
+     * {@code ANY_BISMOIDBRONZE}: id -1, name {@code any_*}) retain their aggregate tag declaration, which lists
+     * the members' shape tags; individual materials retain typed material/shape recipe data.
      */
     private AStack autogenStack(MaterialShapes shape) {
         if (id == -1 && name.startsWith("any_")) return new TagStack(tag(shape));

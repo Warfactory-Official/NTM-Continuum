@@ -3,6 +3,9 @@ package com.hbm.tileentity;
 import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.config.ServerConfig;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.uninos.INetworkProvider;
@@ -35,6 +38,8 @@ public class TilePort {
     protected Object owner;
     /** The level the owner was last marked ported in for the current type. */
     private @Nullable Level markedIn;
+    private @Nullable FluidType[] fluidTypes;
+    private @Nullable TilePort[] fluidAliases;
 
     public TilePort setupOwner(Object owner) {
         this.owner = owner;
@@ -48,6 +53,24 @@ public class TilePort {
             this.type = type;
             this.needsRebuild = true;
             this.markedIn = null;
+        }
+        return this;
+    }
+
+    /** One native port per exact resource of a loose kind, or the strict identifier resource alone. */
+    public TilePort setupFluids(FluidTankNTM tank, @Nullable Level level) {
+        if (owner instanceof BlockEntity blockEntity) tank.bindOwner(blockEntity);
+        var types = tank.connectionTypes();
+        if (types == fluidTypes) return this;
+        if (fluidAliases != null) for (var alias : fluidAliases) alias.disableIfPresent(level);
+        fluidTypes = types;
+        setupType(FluidNetProvider.of(types[0]));
+        fluidAliases = types.length <= 1 ? null : new TilePort[types.length - 1];
+        if (fluidAliases != null) for (var index = 1; index < types.length; index++) {
+            fluidAliases[index - 1] = new TilePort().setupOwner(owner).setupPositions(positions)
+                    .setupConnections(connections).setupType(FluidNetProvider.of(types[index]));
+            fluidAliases[index - 1].isEnabled = isEnabled;
+            fluidAliases[index - 1].isEnabled = isEnabled;
         }
         return this;
     }
@@ -86,6 +109,7 @@ public class TilePort {
         } else {
             disableIfPresent(world);
         }
+        if (fluidAliases != null) for (var alias : fluidAliases) alias.update(world);
     }
 
     public void enableIfMissing(Level world) {
@@ -101,7 +125,9 @@ public class TilePort {
         if (this.node != null) {
             PortNodes.destroyNode(world, node);
             this.node = null;
+            if (type instanceof FluidNetProvider) for (var connection : connections) BlockFluidDuct.portChanged(world, connection.getPos());
         }
+        if (fluidAliases != null) for (var alias : fluidAliases) alias.disableIfPresent(world);
     }
 
     protected void createNode(Level world) {
@@ -111,6 +137,7 @@ public class TilePort {
     }
 
     public void checkSubscribe(Level world) {
+        if (fluidAliases != null) for (var alias : fluidAliases) alias.checkSubscribe(world);
         if (this.node == null) return;
         this.node.receivers.add(owner);
         if (ServerConfig.DEBUG_PORT_VIEW.get() && this.type != null && world instanceof ServerLevel server)
@@ -118,6 +145,7 @@ public class TilePort {
     }
 
     public void checkProvide(Level world) {
+        if (fluidAliases != null) for (var alias : fluidAliases) alias.checkProvide(world);
         if (this.node == null) return;
         this.node.providers.add(owner);
         if (ServerConfig.DEBUG_PORT_VIEW.get() && this.type != null && world instanceof ServerLevel server)
@@ -128,8 +156,14 @@ public class TilePort {
         this.needsRebuild = true;
     }
 
-    public void enable() { if (!isEnabled) { isEnabled = true; this.forceRebuild(); } }
-    public void disable() { if (isEnabled) { isEnabled = false; this.forceRebuild(); } }
+    public void enable() {
+        if (!isEnabled) { isEnabled = true; forceRebuild(); }
+        if (fluidAliases != null) for (var alias : fluidAliases) alias.enable();
+    }
+    public void disable() {
+        if (isEnabled) { isEnabled = false; forceRebuild(); }
+        if (fluidAliases != null) for (var alias : fluidAliases) alias.disable();
+    }
 
     /** Active when switched on and the type is neither null nor the NONE fluid. */
     protected boolean isEnabled() {

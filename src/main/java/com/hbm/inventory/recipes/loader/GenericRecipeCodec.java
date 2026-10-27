@@ -145,6 +145,7 @@ public final class GenericRecipeCodec {
 
     private static final String TYPE_FLUID_CONTAINER = "hbm:fluid_container";
     private static final String TYPE_COLD = "hbm:cold";
+    private static final String TYPE_BATTERY = "hbm:battery";
     private static final String TYPE_ANY_OF = "hbm:any_of";
     private static final String TYPE_FLUID_ITEM = "hbm:fluid_item";
 
@@ -158,6 +159,13 @@ public final class GenericRecipeCodec {
                 stack.stacksize = count;
                 return stack;
             })));
+
+    /** A battery accepting saved charge alone: {"type": "hbm:battery", "item", "count"}. */
+    private static final Codec<RecipeIngredients.Battery> BATTERY = typed(TYPE_BATTERY,
+            RecordCodecBuilder.<RecipeIngredients.Battery>mapCodec(i -> i.group(
+                    ItemStacks.itemCodec().fieldOf("item").forGetter(stack -> stack.item),
+                    Codec.INT.optionalFieldOf("count", 1).forGetter(stack -> stack.stacksize)
+            ).apply(i, RecipeIngredients.Battery::new)));
 
     private static final Codec<RecipeIngredients.Cold> COLD = typed(TYPE_COLD,
             RecordCodecBuilder.<RecipeIngredients.Cold>mapCodec(i -> i.group(
@@ -243,6 +251,7 @@ public final class GenericRecipeCodec {
                 return switch (type.get()) {
                     case TYPE_FLUID_CONTAINER -> FLUID_CONTAINER.decode(ops, input).map(p -> p.mapFirst(s -> (AStack) s));
                     case TYPE_COLD -> COLD.decode(ops, input).map(p -> p.mapFirst(s -> (AStack) s));
+                    case TYPE_BATTERY -> BATTERY.decode(ops, input).map(p -> p.mapFirst(s -> (AStack) s));
                     case TYPE_ANY_OF -> ANY_OF.decode(ops, input).map(p -> p.mapFirst(s -> (AStack) s));
                     case TYPE_FLUID_ITEM -> FLUID_ITEM.decode(ops, input).map(p -> p.mapFirst(s -> (AStack) s));
                     default -> DataResult.error(() -> "unknown ingredient type " + type.get());
@@ -262,6 +271,7 @@ public final class GenericRecipeCodec {
             }
             if (stack instanceof FluidContainerStack container) return FLUID_CONTAINER.encode(container, ops, prefix);
             if (stack instanceof RecipeIngredients.Cold cold) return COLD.encode(cold, ops, prefix);
+            if (stack instanceof RecipeIngredients.Battery battery) return BATTERY.encode(battery, ops, prefix);
             if (stack instanceof RecipeIngredients.AnyOf any) return ANY_OF.encode(any, ops, prefix);
             if (stack instanceof RecipeIngredients.FluidItem fluid) return FLUID_ITEM.encode(fluid, ops, prefix);
             return input(stack).flatMap(input -> INPUT.encode(input, ops, prefix));
@@ -435,12 +445,25 @@ public final class GenericRecipeCodec {
 
     /** The config-mode variants and row conditions (separate from the base fields: a record codec holds 16). */
     private record Modes(Optional<List<AStack>> itemsEx, Optional<List<FluidStack>> fluidsEx,
-                         Optional<List<String>> pools528, Optional<List<String>> requires) {
+                         Optional<List<String>> pools528, Optional<List<String>> requires,
+                         Optional<List<String>> golemRequires) {
 
         static Modes of(GenericRecipe recipe) {
             return new Modes(Optional.ofNullable(recipe.inputItemEx).map(Arrays::asList),
                     Optional.ofNullable(recipe.inputFluidEx).map(Arrays::asList),
-                    names(recipe.blueprintPools528), names(recipe.requires));
+                    names(recipe.blueprintPools528), names(recipe.requires), golemRequires(recipe.requires));
+        }
+
+        /**
+         * Manager-level gating mirrors every non-tag literal: Golem Core takes recipes whose
+         * {@code golem:requires} fail out of the recipe manager after each load, so gated-off rows are
+         * absent from {@code recipeAccess()} just as they are from the tables ({@code present()}).
+         * Tag literals stay table-level (Golem evaluates flags, not tags).
+         */
+        static Optional<List<String>> golemRequires(String[] requires) {
+            if (requires == null) return Optional.empty();
+            List<String> flags = Arrays.stream(requires).filter(s -> !s.startsWith("#")).toList();
+            return flags.isEmpty() ? Optional.empty() : Optional.of(flags);
         }
 
         void applyTo(GenericRecipe recipe) {
@@ -455,7 +478,8 @@ public final class GenericRecipeCodec {
             STACK.listOf().optionalFieldOf("input_items_expensive").forGetter(Modes::itemsEx),
             FLUID_STACK.listOf().optionalFieldOf("input_fluids_expensive").forGetter(Modes::fluidsEx),
             Codec.STRING.listOf().optionalFieldOf("blueprint_pools_528").forGetter(Modes::pools528),
-            Codec.STRING.listOf().optionalFieldOf("requires").forGetter(Modes::requires)
+            Codec.STRING.listOf().optionalFieldOf("requires").forGetter(Modes::requires),
+            Codec.STRING.listOf().optionalFieldOf("golem:requires").forGetter(Modes::golemRequires)
     ).apply(i, Modes::new));
 
     private static <T extends GenericRecipe> MapCodec<T> base(Function<String, T> factory) {
@@ -582,6 +606,7 @@ public final class GenericRecipeCodec {
         String body;
         if (stack instanceof TagStack tag) body = "#" + tag.tag.location();
         else if (stack instanceof RecipesCommon.MaterialStack material) body = "mat:" + material.material.name + "/" + material.shape;
+        else if (stack instanceof RecipeIngredients.Battery battery) body = "battery:" + BuiltInRegistries.ITEM.getKey(battery.item);
         else if (stack instanceof ComparableStack comparable) {
             Optional<ItemData> exact = exactData(comparable);
             body = BuiltInRegistries.ITEM.getKey(comparable.item) + exact.map(data -> "!exact" + data.describe()).orElse("");

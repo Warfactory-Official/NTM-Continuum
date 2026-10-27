@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import net.minecraft.server.level.ServerLevel;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.handler.neutron.NeutronNodeWorld;
@@ -30,7 +31,8 @@ public class ItemRBMKLid extends Item {
         if (RBMKBase.lidOf(coreState).present()) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if (!level.isClientSide()) {
-            level.setBlock(core, coreState.setValue(RBMKBase.LID, lid), 3);
+            if (level instanceof ServerLevel server) rbmk.writeLid(server, core, coreState, lid);
+            else level.setBlock(core, coreState.setValue(RBMKBase.LID, lid), 3);
             if (NeutronNodeWorld.getNode(level, core) instanceof RBMKNeutronNode node) node.addLid();
             if (context.getPlayer() == null || !context.getPlayer().getAbilities().instabuild) {
                 context.getItemInHand().shrink(1);

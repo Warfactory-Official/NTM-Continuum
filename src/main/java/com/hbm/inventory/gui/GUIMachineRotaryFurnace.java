@@ -64,8 +64,8 @@ public final class GUIMachineRotaryFurnace extends CompatContainerScreen<Contain
         int x0 = leftPos + x;
         int bottom = topPos + y + 52;
         int top = bottom - height;
-        Identifier texture = tank.getTankType().getTexture();
-        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
+        Identifier texture = tank.getTankType().clientMetadata().getTexture();
+        int tint = 0xFF000000 | (tank.getTankType().clientMetadata().getTint() & 0xFFFFFF);
         if (Minecraft.getInstance().getResourceManager().getResource(texture).isPresent()) {
             graphics.enableScissor(x0, top, x0 + 16, bottom);
             for (int tileY = bottom - 16; tileY > top - 16; tileY -= 16) {
@@ -83,8 +83,8 @@ public final class GUIMachineRotaryFurnace extends CompatContainerScreen<Contain
         if (fill <= 0) return;
         int x0 = leftPos + x;
         int y0 = topPos + y;
-        Identifier texture = tank.getTankType().getTexture();
-        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
+        Identifier texture = tank.getTankType().clientMetadata().getTexture();
+        int tint = 0xFF000000 | (tank.getTankType().clientMetadata().getTint() & 0xFFFFFF);
         if (Minecraft.getInstance().getResourceManager().getResource(texture).isPresent()) {
             graphics.enableScissor(x0, y0, x0 + fill, y0 + height);
             for (int tileX = x0; tileX < x0 + fill; tileX += 16) {

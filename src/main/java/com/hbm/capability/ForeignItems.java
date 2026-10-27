@@ -24,12 +24,18 @@ public final class ForeignItems {
 
     /** Common init, once, before the loaders' capability registration. */
     public static void register() {
+        registerContents(Constants.MOD_ID);
         Predicate<Block> hbm = block -> Constants.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(block).getNamespace());
-        ItemExposure.exposeContents(hbm, ForeignItems::contentsAt);
         ItemExposure.exposeAutomation(hbm, ForeignItems::hopperContainerAt);
     }
 
-    /** Vanilla's hopper lookup: the block's {@code WorldlyContainerHolder} container, else its block entity. */
+    /** Publishes one mod's containers to read-only viewers; sided item movement keeps its native rules. */
+    public static void registerContents(String namespace) {
+        ItemExposure.exposeContents(block -> namespace.equals(BuiltInRegistries.BLOCK.getKey(block).getNamespace()),
+                ForeignItems::contentsAt);
+    }
+
+    /** Vanilla's hopper lookup: the holder's container, else the block entity. */
     public static @Nullable Container hopperContainerAt(Level level, BlockPos pos, BlockState state, @Nullable BlockEntity be) {
         if (state.getBlock() instanceof WorldlyContainerHolder holder) return holder.getContainer(state, level, pos);
         return be instanceof Container container ? container : null;

@@ -65,3 +65,12 @@ storage (registry aliases, DE's split items and item components, the stack conve
 (`feature.de_legacy`, which the importer needs). Both are 1.21.1 NeoForge only; nothing else refers to them, so
 removing a root and its flag removes it (`deimportBoundary` checks). Mapping tables come from
 `port-tools/de_import/gen_de_tables.py` and its `overrides.tsv`.
+
+## Addon policies
+
+Addons provide environment policy through `Environment` hooks. `TERRAIN_FOG_RANGE` lets an addon own the
+terrain fog range while HBM's soot color remains active; without a listener, HBM retains its default range.
+Fog ranges use Golem Core's linear fog facade for compatibility with shader packs.
+
+Material ingredients accept every item in their common material tag. Their typed material/shape recipe
+declarations retain the canonical item used to generate recipe names.

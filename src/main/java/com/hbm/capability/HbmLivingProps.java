@@ -1,5 +1,6 @@
 package com.hbm.capability;
 
+import com.hbm.util.ContaminationUtil;
 import com.hbm.advancement.HbmCriteria;
 import com.hbm.config.ServerConfig;
 import com.hbm.packet.PlayerInformPayload;
@@ -80,10 +81,14 @@ public class HbmLivingProps {
 
     // Neutron Radiation
     public static double getNeutron(LivingEntity entity) {
+        var system = ContaminationUtil.neutronSystem();
+        if (system != null && !system.enabled()) return 0D;
         return getData(entity).getNeutrons();
     }
 
     public static void setNeutron(LivingEntity entity, double rad) {
+        var system = ContaminationUtil.neutronSystem();
+        if (system != null && !system.enabled()) return;
         getData(entity).setNeutrons(rad);
     }
 

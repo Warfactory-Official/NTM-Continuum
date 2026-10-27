@@ -25,11 +25,55 @@ public final class ItemFamily<E extends Enum<E>, I extends Item> {
     /** The constants in registration (creative) order. */
     private final List<E> order;
     private volatile @Nullable Map<Item, E> byItem;
+    private ItemFamily<?, ?> root = this;
+    private static final List<ItemFamily<?, ?>> ALL = new ArrayList<>();
+    private static volatile @Nullable Map<Item, ItemFamily<?, ?>> byMember;
 
     private ItemFamily(Class<E> type, EnumMap<E, RegistryObject<I>> members, List<E> order) {
         this.type = type;
         this.members = members;
         this.order = order;
+        synchronized (ALL) {
+            ALL.add(this);
+            byMember = null;
+        }
+    }
+
+    /** An addon's variants sharing the metadata identity of a host family. Registration-time only. */
+    public ItemFamily<E, I> joins(ItemFamily<?, ?> host) {
+        synchronized (ALL) {
+            if (host == this) throw new IllegalArgumentException("a family cannot join itself");
+            if (root != this) throw new IllegalStateException("a family joins at most one host");
+            if (host.root == this) throw new IllegalArgumentException("cyclic family join");
+            var joinedRoot = host.root;
+            // Flatten the whole group while registration is open, so matching needs no parent walk.
+            for (var family : ALL) {
+                if (family.root == this) family.root = joinedRoot;
+            }
+        }
+        return this;
+    }
+
+    /** The registered variant family of an item, or null for an ordinary item. */
+    public static @Nullable ItemFamily<?, ?> of(ItemLike item) {
+        var table = byMember;
+        if (table == null) {
+            synchronized (ALL) {
+                table = new IdentityHashMap<>();
+                for (var family : ALL) {
+                    for (var member : family.members.values()) table.put(member.get(), family);
+                }
+                byMember = table;
+            }
+        }
+        return table.get(item.asItem());
+    }
+
+    /** Members of one family, including an addon's explicit join to its host. */
+    public static boolean sameFamily(ItemLike first, ItemLike second) {
+        var a = of(first);
+        var b = of(second);
+        return a != null && b != null && a.root == b.root;
     }
 
     /**

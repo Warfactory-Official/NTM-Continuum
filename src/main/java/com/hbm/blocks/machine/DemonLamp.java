@@ -95,7 +95,7 @@ public class DemonLamp extends Block implements TickingBlock {
             if (getLevel() instanceof ServerLevel level) radiate(level, worldPosition);
         }
 
-        private void radiate(ServerLevel world, BlockPos at) {
+        public static void radiate(ServerLevel world, BlockPos at) {
             float rads = 100000F;
             double range = 25D;
             double x = at.getX(), y = at.getY(), z = at.getZ();
@@ -115,7 +115,7 @@ public class DemonLamp extends Block implements TickingBlock {
                 if (res < 1) res = 1;
                 float eRads = rads;
                 eRads /= res;
-                eRads /= (float) (len * len);
+                if (len != 0D) eRads /= (float) (len * len);
                 ContaminationUtil.contaminate(e, ContaminationUtil.HazardType.RADIATION, ContaminationUtil.ContaminationType.CREATIVE, eRads);
                 for (Irradiated listener : IRRADIATED) listener.irradiated(world, at, e, eRads);
                 if (len < 2) {

@@ -121,7 +121,7 @@ public class TileEntityFlowControlPump extends TileEntityLoadedBase implements I
 
     @Override
     public void useUpFluid(FluidType type, int pressure, long amount) {
-        if (amount > 0 && tank[0].getTankType() == type && tank[0].getPressure() == pressure) {
+        if (amount > 0 && tank[0].provides(type) && tank[0].getPressure() == pressure) {
             int toRem = (int) Math.min(amount, tank[0].getFill());
             tank[0].setFill(tank[0].getFill() - toRem);
             this.isWorking = true;

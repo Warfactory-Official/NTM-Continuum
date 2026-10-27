@@ -1,5 +1,10 @@
 package com.hbm.inventory.material;
 
+import dev.golem.core.Ids;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+
 /**
  * The "shapes" a material can take: the tag-system port of HBM's 1.12.2 ore-dictionary prefixes
  * ({@code MaterialShapes}). Each shape maps an HBM item-name prefix (e.g. {@code ingot}, {@code plate},
@@ -69,5 +74,10 @@ public enum MaterialShapes {
 
     public String displayName(String materialName) {
         return displayTemplate.replace("%s", materialName);
+    }
+
+    public TagKey<Item> tagFor(String materialName) {
+        return TagKey.create(Registries.ITEM,
+                Ids.of("c", tagPlural + "/" + materialName));
     }
 }

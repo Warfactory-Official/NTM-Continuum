@@ -160,7 +160,7 @@ public abstract class ModuleMachineBase {
      * shared buffer; items can sit in any slot, so a hopper can fill it and multiple stacks are usable).
      * @return one slot index per ingredient, or {@code null} if not all ingredients are present.
      */
-    private int[] matchInputs(GenericRecipe recipe) {
+    public @Nullable int[] matchInputs(GenericRecipe recipe) {
         if (recipe.inputItem == null) return new int[0];
         int[] assigned = new int[recipe.inputItem.length];
         boolean[] used = new boolean[inputSlots.length];
@@ -175,6 +175,35 @@ public abstract class ModuleMachineBase {
             used[found] = true;
         }
         return assigned;
+    }
+
+    /** A preview contains the actual table row and the input-slot assignment used by processing. */
+    public static final class Match {
+        public final GenericRecipe recipe;
+        public final int[] inputs;
+
+        private Match(GenericRecipe recipe, int[] inputs) {
+            this.recipe = recipe;
+            this.inputs = inputs;
+        }
+    }
+
+    /** The item half of preflight; null when no input-slot assignment satisfies the row. */
+    public Match match(GenericRecipe recipe) {
+        var inputs = matchInputs(recipe);
+        return inputs == null ? null : new Match(recipe, inputs);
+    }
+
+    /**
+     * The first current table row whose items, fluids and outputs fit, without mutating selection,
+     * progress or power. The same preflight methods drive normal processing and completion.
+     */
+    public Match findMatch() {
+        for (var candidate : getRecipeSet().recipes()) {
+            var match = match(candidate);
+            if (match != null && hasInputFluid(candidate) && canFitOutput(candidate)) return match;
+        }
+        return null;
     }
 
     protected boolean canFitOutput(GenericRecipe recipe) {
@@ -197,11 +226,7 @@ public abstract class ModuleMachineBase {
                 if (out == null || out.isEmpty()) continue;
                 int idx = outputSlots[i];
                 ItemStack slot = inventory.getStackInSlot(idx);
-                int limit = Math.min(inventory.getSlotLimit(idx), out.getMaxStackSize());
-                if (out.getCount() > limit) return false;
-                if (slot.isEmpty()) continue;
-                if (!ItemStacks.sameItemAndData(slot, out)
-                        || slot.getCount() + out.getCount() > limit) return false;
+                if (!GenericRecipe.outputFits(slot, out, inventory.getSlotLimit(idx))) return false;
             }
         }
         if (recipe.outputFluid != null) {
@@ -300,20 +325,7 @@ public abstract class ModuleMachineBase {
         if (recipe.outputItem == null) return new ItemStack[0];
         ItemStack[] outputs = new ItemStack[recipe.outputItem.length];
         for (int i = 0; i < outputs.length; i++) {
-            ItemStack out = recipe.outputItem[i].copy();
-            if (recipe.outputChoices != null && i == 0) {
-                float total = 0F;
-                for (GenericRecipe.OutputChoice choice : recipe.outputChoices) total += Math.max(0F, choice.weight());
-                float pick = random.nextFloat() * total;
-                for (GenericRecipe.OutputChoice choice : recipe.outputChoices) {
-                    pick -= Math.max(0F, choice.weight());
-                    if (pick <= 0F) {
-                        out = choice.stack().copy();
-                        break;
-                    }
-                }
-            }
-            outputs[i] = recipe.rollChance(i, out, random);
+            outputs[i] = recipe.rollOutput(i, random);
         }
         return outputs;
     }

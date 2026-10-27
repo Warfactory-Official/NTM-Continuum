@@ -109,14 +109,14 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
         FluidStack[] stacks = recipe.fractions();
         for (int i = 0; i < stacks.length; i++) tanks[i + 1].setTankType(stacks[i].type);
 
-        if (power < 10_000 || tanks[0].getFill() < 100) return;
+        if (power < 10_000 || tanks[0].getFill() < RefineryRecipes.getVacuumInputAmount()) return;
         for (int i = 0; i < stacks.length; i++) {
             if (tanks[i + 1].getFill() + stacks[i].fill > tanks[i + 1].getMaxFill()) return;
         }
 
         this.isOn = true;
         power -= 10_000;
-        tanks[0].setFill(tanks[0].getFill() - 100);
+        tanks[0].setFill(tanks[0].getFill() - RefineryRecipes.getVacuumInputAmount());
         for (int i = 0; i < stacks.length; i++) tanks[i + 1].setFill(tanks[i + 1].getFill() + stacks[i].fill);
     }
 

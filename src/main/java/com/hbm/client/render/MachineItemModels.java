@@ -366,7 +366,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
             List<Float> rotation = floats(transform, "rotation");
             List<Float> translation = floats(transform, "translation");
             out.put(entry.getKey(), new MachineItemModel.ContextTransform(
-                    vector(rotation), vector(translation), f(transform, "scale", 1F)));
+                    vector(rotation), vector(translation), f(transform, "scale", 1F), bool(transform, "raw_mesh", false)));
         }
         return Map.copyOf(out);
     }

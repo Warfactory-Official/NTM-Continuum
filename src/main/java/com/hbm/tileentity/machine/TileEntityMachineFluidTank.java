@@ -75,6 +75,8 @@ import com.hbm.tileentity.TilePortShapes;
 public class TileEntityMachineFluidTank extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IClimbable, IRORValueProvider, IRORInteractive, IRepairable,
         WorldlyContainer {
 
+    public static final int SLOT_COUNT = 6;
+
     /** 1.7 {@code hasExploded}: torn open by an explosion, antimatter or a highly corrosive fluid; leaks until repaired. */
     public boolean hasExploded = false;
     /** 1.7 {@code onFire}: a flammable tank that exploded burns while it leaks, until extinguished. */
@@ -93,7 +95,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     private AABB ladderAABB;
 
     public TileEntityMachineFluidTank(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.FLUID_TANK.get(), pos, state, 6);
+        super(ModBlockEntities.FLUID_TANK.get(), pos, state, SLOT_COUNT);
     }
 
     @Override
@@ -250,6 +252,11 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         this.setChanged();
     }
 
+    @Override
+    public void repair(Player player) {
+        repair();
+    }
+
     public void cycleMode() {
         mode = (short) ((mode + 1) % MODES);
         setChanged();
@@ -359,14 +366,14 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     public long getDemand(FluidType type, int pressure) {
         if (this.mode == 2 || this.mode == 3) return 0;
         if (tank.getPressure() != pressure) return 0;
-        return type == tank.getTankType() ? tank.getMaxFill() - tank.getFill() : 0;
+        return tank.accepts(type) ? tank.getMaxFill() - tank.getFill() : 0;
     }
 
     @Override
     public long getFluidAvailable(FluidType type, int pressure) {
         if (this.mode == 0 || this.mode == 3) return 0;
         if (tank.getPressure() != pressure) return 0;
-        return type == tank.getTankType() ? tank.getFill() : 0;
+        return tank.provides(type) ? tank.getFill() : 0;
     }
 
     @Override public long getReceiverSpeed(FluidType type, int pressure) { return this.hasExploded ? 0 : (mode == 0 || mode == 1) ? Math.max(500, (tank.getMaxFill() - tank.getFill()) / 100) : 0; }
@@ -387,7 +394,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     /** 1.7 {@code writeNBT}: a tank with fluid in it, or a torn one, travels with its item. */
     @Override
     protected CompoundTag collectCarriedData() {
-        if (tank.getFill() == 0 && !hasExploded) return null;
+        if (tank.getFill() == 0 && !hasExploded && !tank.isStrict()) return null;
         CompoundTag data = new CompoundTag();
         tank.writeCarried(data, "tank");
         data.putShort("mode", mode);

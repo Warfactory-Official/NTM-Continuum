@@ -40,7 +40,7 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
         if (trait != null) {
             FT_Heatable.HeatingStep step = trait.getFirstStep();
             steam.setTankType(step.typeProduced);
-            double tempRange = heat - steam.getTankType().temperature;
+            double tempRange = heat - steam.getTankType().getTemperature();
             double efficiency = trait.getEfficiency(FT_Heatable.HeatingType.HEATEXCHANGER);
             if (tempRange > 0D && efficiency > 0D) {
                 double tuPerDegree = 2_000D * efficiency;
@@ -80,11 +80,11 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
         data.coldType = RBMKColumn.fluidId(feed.getTankType()); data.hotType = RBMKColumn.fluidId(steam.getTankType());
         return data;
     }
-    @Override public long getFluidAvailable(FluidType type, int pressure) { return pressure == steam.getPressure() && type == steam.getTankType() ? steam.getFill() : 0L; }
-    @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (type == steam.getTankType() && pressure == steam.getPressure()) { steam.setFill(steam.getFill() - (int) Math.min(amount, steam.getFill())); markChanged(); } }
-    @Override public long getDemand(FluidType type, int pressure) { return type == feed.getTankType() && pressure == feed.getPressure() && feedHeatable() ? (long) feed.getMaxFill() - feed.getFill() : 0L; }
+    @Override public long getFluidAvailable(FluidType type, int pressure) { return pressure == steam.getPressure() && steam.provides(type) ? steam.getFill() : 0L; }
+    @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (steam.provides(type) && pressure == steam.getPressure()) { steam.setFill(steam.getFill() - (int) Math.min(amount, steam.getFill())); markChanged(); } }
+    @Override public long getDemand(FluidType type, int pressure) { return feed.accepts(type) && pressure == feed.getPressure() && feedHeatable() ? (long) feed.getMaxFill() - feed.getFill() : 0L; }
     @Override public long transferFluid(FluidType type, int pressure, long amount) {
-        if (type != feed.getTankType() || pressure != feed.getPressure() || !feedHeatable()) return amount;
+        if (!feed.accepts(type) || pressure != feed.getPressure() || !feedHeatable()) return amount;
         int accepted = feed.fill(type, (int) Math.min(amount, Integer.MAX_VALUE), true);
         if (accepted > 0) markChanged();
         return amount - accepted;

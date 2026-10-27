@@ -39,10 +39,10 @@ public class BlockEntityRBMKInlet extends TileEntityMachineBase implements IFlui
             if (moved > 0) { column.reasimWater += moved; water.setFill(water.getFill() - moved); column.markChanged(); markChanged(); }
         }
     }
-    @Override public long getDemand(FluidType type, int pressure) { return type == Fluids.WATER && pressure == water.getPressure() ? water.getMaxFill() - water.getFill() : 0; }
+    @Override public long getDemand(FluidType type, int pressure) { return Fluids.kindOf(type) == Fluids.WATER && water.accepts(type) && pressure == water.getPressure() ? water.getMaxFill() - water.getFill() : 0; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{water}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{water}; }
-    @Override public long transferFluid(FluidType type, int pressure, long amount) { if (type != Fluids.WATER || pressure != water.getPressure()) return amount; int accepted = water.fill(type, (int)Math.min(amount, Integer.MAX_VALUE), true); if (accepted > 0) setChanged(); return amount - accepted; }
+    @Override public long transferFluid(FluidType type, int pressure, long amount) { if (Fluids.kindOf(type) != Fluids.WATER || !water.accepts(type) || pressure != water.getPressure()) return amount; int accepted = water.fill(type, (int)Math.min(amount, Integer.MAX_VALUE), true); if (accepted > 0) setChanged(); return amount - accepted; }
     @Override protected void saveData(DataOut out) { super.saveData(out); water.writeToNBT(out, "tank"); }
     @Override protected void loadData(DataIn in) { super.loadData(in); water.readFromNBT(in, "tank"); }
     @Override public void serialize(RegistryFriendlyByteBuf buffer) { super.serialize(buffer); water.serialize(buffer); }

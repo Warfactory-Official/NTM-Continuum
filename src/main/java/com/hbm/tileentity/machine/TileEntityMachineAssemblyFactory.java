@@ -187,11 +187,13 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAssemblyFactory factory) {
         factory.setupPowerPorts(factory.getPowerPorts());
         factory.setupFluidPorts(factory.getFluidPorts());
-        if (factory.coolantInPort == null) factory.coolantInPort = new TilePort().setupOwner(factory.coolantDelegate).setupPort(factory.getCoolantPort()).setupType(FluidNetProvider.of(factory.water.getTankType()));
-        if (factory.coolantOutPort == null) factory.coolantOutPort = new TilePort().setupOwner(factory.coolantDelegate).setupPort(factory.getCoolantPort()).setupType(FluidNetProvider.of(factory.lps.getTankType()));
+        if (factory.coolantInPort == null) factory.coolantInPort = new TilePort().setupOwner(factory.coolantDelegate).setupPort(factory.getCoolantPort());
+        if (factory.coolantOutPort == null) factory.coolantOutPort = new TilePort().setupOwner(factory.coolantDelegate).setupPort(factory.getCoolantPort());
         factory.updatePortPIFIFO();
+        factory.coolantInPort.setupFluids(factory.water, level);
         factory.coolantInPort.update(level);
         factory.coolantInPort.checkSubscribe(level);
+        factory.coolantOutPort.setupFluids(factory.lps, level);
         factory.coolantOutPort.update(level);
         factory.coolantOutPort.checkProvide(level);
 

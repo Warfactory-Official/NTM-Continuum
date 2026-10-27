@@ -1,5 +1,8 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.tileentity.machine.TileEntityMachineGiantTank;
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.tileentity.ModBlockEntities;
@@ -14,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The legacy 9x9x5 Big Ass Tank multiblock. */
-public class MachineBigAssTank extends MachineGiantTank {
+public class MachineBigAssTank extends MachineGiantTank implements ICapabilityBlock {
 
     public MachineBigAssTank(Properties properties) {
         super(properties);
@@ -86,4 +89,11 @@ public class MachineBigAssTank extends MachineGiantTank {
                 {0, 0, -6, ForgeDirection.NORTH.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn().fluidOut().items()
+            .fluidContacts(TileEntityMachineGiantTank.class);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

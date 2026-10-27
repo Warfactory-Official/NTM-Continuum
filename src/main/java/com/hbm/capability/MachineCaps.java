@@ -1,5 +1,9 @@
 package com.hbm.capability;
 
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.api.fluidmk2.IFluidConnectorMK2;
+import com.hbm.lib.ForgeDirection;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -15,13 +19,13 @@ import java.util.function.BiPredicate;
  * every tick and time them out three seconds later; the graph asks the block what it is instead, so
  * a machine in an unloaded chunk is a fact about the world rather than a subscription that lapsed.
  *
- * <p>The fluid bits carry no face gate here, unlike upstream: Continuum's fluid network is
- * {@code FluidNetMK2} over UNINOS and has no {@code FluidFace} to gate on. The bits are declared so the
- * domain mask has the same shape as upstream's.
+ * <p>Fluid contacts carry their own live side rule, independent of power and inventory. Native contact
+ * queries apply it before the machine's configured fluid-type rule and folded geometry.
  */
 public final class MachineCaps {
 
-    private static final BiPredicate<BlockEntity, Direction> ALL = (be, side) -> true;
+    private static final FaceGate ALL = (be, side, role) -> true;
+    private static final FluidRule<BlockEntity> ALL_FLUID = (be, fluid, side) -> true;
 
     /** Exposes nothing. Stated rather than omitted, so "no caps" reads as a decision. */
     public static final MachineCaps NONE = new MachineCaps(null);
@@ -55,17 +59,19 @@ public final class MachineCaps {
 
     final boolean powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe;
     final boolean selfProvided;
-    private final BiPredicate<BlockEntity, Direction> faces;
+    private final FaceGate faces;
+    private final FluidRule<BlockEntity> fluidFaces;
     private final @Nullable RegistryObject<? extends BlockEntityType<?>> beType;
 
     private MachineCaps(@Nullable RegistryObject<? extends BlockEntityType<?>> beType) {
-        this(beType, false, false, false, false, false, false, false, false, ALL);
+        this(beType, false, false, false, false, false, false, false, false, ALL, ALL_FLUID);
     }
 
     private MachineCaps(@Nullable RegistryObject<? extends BlockEntityType<?>> beType, boolean powerIn,
                         boolean powerOut, boolean fluidIn, boolean fluidOut, boolean items,
                         boolean itemsAtCells, boolean fe, boolean selfProvided,
-                        BiPredicate<BlockEntity, Direction> faces) {
+                        FaceGate faces,
+                        FluidRule<BlockEntity> fluidFaces) {
         this.beType = beType;
         this.powerIn = powerIn;
         this.powerOut = powerOut;
@@ -76,6 +82,7 @@ public final class MachineCaps {
         this.fe = fe;
         this.selfProvided = selfProvided;
         this.faces = faces;
+        this.fluidFaces = fluidFaces;
     }
 
     public static MachineCaps of(RegistryObject<? extends BlockEntityType<?>> beType) {
@@ -88,34 +95,34 @@ public final class MachineCaps {
     }
 
     public MachineCaps powerIn() {
-        return new MachineCaps(beType, true, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe, selfProvided, faces);
+        return new MachineCaps(beType, true, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe, selfProvided, faces, fluidFaces);
     }
 
     public MachineCaps powerOut() {
-        return new MachineCaps(beType, powerIn, true, fluidIn, fluidOut, items, itemsAtCells, fe, selfProvided, faces);
+        return new MachineCaps(beType, powerIn, true, fluidIn, fluidOut, items, itemsAtCells, fe, selfProvided, faces, fluidFaces);
     }
 
     public MachineCaps fluidIn() {
-        return new MachineCaps(beType, powerIn, powerOut, true, fluidOut, items, itemsAtCells, fe, selfProvided, faces);
+        return new MachineCaps(beType, powerIn, powerOut, true, fluidOut, items, itemsAtCells, fe, selfProvided, faces, fluidFaces);
     }
 
     public MachineCaps fluidOut() {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, true, items, itemsAtCells, fe, selfProvided, faces);
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, true, items, itemsAtCells, fe, selfProvided, faces, fluidFaces);
     }
 
     /** Sided inventory at the core block entity only: a GUI inventory with no proxy cells. */
     public MachineCaps items() {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, true, itemsAtCells, fe, selfProvided, faces);
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, true, itemsAtCells, fe, selfProvided, faces, fluidFaces);
     }
 
     /** Sided inventory at every connector cell, which is 1.7's {@code TileEntityProxyCombo().inventory()}. */
     public MachineCaps itemsAtCells() {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, true, fe, selfProvided, faces);
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, true, fe, selfProvided, faces, fluidFaces);
     }
 
     /** Foreign-energy exposure. NeoForge and Forge only; Fabric ships no standard energy capability. */
     public MachineCaps fe() {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, true, selfProvided, faces);
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, true, selfProvided, faces, fluidFaces);
     }
 
     /**
@@ -125,11 +132,11 @@ public final class MachineCaps {
      * handlers.
      */
     public MachineCaps selfProvided() {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe, true, faces);
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe, true, faces, fluidFaces);
     }
 
     /**
-     * The faces this machine accepts, applied by the capability itself so that resolving and
+     * The non-fluid faces this machine accepts, applied by the capability itself so that resolving and
      * connecting are one question. Stated here rather than on the handler because a folded machine's
      * faces come from its mask, and a rule on the handler would be a second answer nobody reads.
      *
@@ -137,7 +144,81 @@ public final class MachineCaps {
      */
     public <BE extends BlockEntity> MachineCaps faces(Class<BE> type, BiPredicate<BE, Direction> gate) {
         return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe,
-                selfProvided, (be, side) -> gate.test(type.cast(be), side));
+                selfProvided, (be, side, role) -> gate.test(type.cast(be), side), fluidFaces);
+    }
+
+    /** Separates input and output faces without changing a machine's priority or speed contract. */
+    public <BE extends BlockEntity> MachineCaps roleFaces(Class<BE> type, RoleGate<BE> gate) {
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe,
+                selfProvided, (be, side, role) -> gate.test(type.cast(be), side, role), fluidFaces);
+    }
+
+    @FunctionalInterface
+    public interface RoleGate<BE extends BlockEntity> {
+        boolean test(BE owner, Direction side, CapRole role);
+    }
+
+    @FunctionalInterface
+    private interface FaceGate extends BiPredicate<BlockEntity, Direction> {
+        boolean test(BlockEntity owner, Direction side, CapRole role);
+        @Override
+        default boolean test(BlockEntity owner, Direction side) {
+            return test(owner, side, CapRole.POWER_IN) || test(owner, side, CapRole.POWER_OUT);
+        }
+    }
+
+    /** A side rule specific to fluid contacts, evaluated against the live owner on every query. */
+    public <BE extends BlockEntity> MachineCaps fluidFaces(Class<BE> type, BiPredicate<BE, Direction> gate) {
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe,
+                selfProvided, faces, (be, fluid, side) -> gate.test(type.cast(be), side));
+    }
+
+    public FluidRule<BlockEntity> fluidGate() {
+        return fluidFaces;
+    }
+
+    /** A live fluid-type and face rule, independent of energy and inventory faces. */
+    public <BE extends BlockEntity> MachineCaps fluidTypes(Class<BE> type, FluidRule<BE> gate) {
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe,
+                selfProvided, faces, (be, fluid, side) -> gate.test(type.cast(be), fluid, side));
+    }
+
+    /** Uses the concrete native handler's configured fluid contacts, never fill or transfer demand. */
+    public <BE extends BlockEntity & IFluidConnectorMK2> MachineCaps fluidContacts(Class<BE> type) {
+        return fluidTypes(type, (be, fluid, side) -> fluid == null
+                || be.canConnect(fluid, side == null ? ForgeDirection.UNKNOWN : ForgeDirection.getOrientation(side)));
+    }
+
+    @FunctionalInterface
+    public interface FluidRule<BE extends BlockEntity> {
+        boolean test(BE owner, @Nullable FluidType fluid, @Nullable Direction side);
+    }
+
+    /** Apply declared live rules; position geometry and the handler's fluid types remain separate checks. */
+    public static boolean accepts(BlockEntity owner, @Nullable Direction side, CapRole role) {
+        if (side == null) return true;
+        return accepts(owner, side, null, role);
+    }
+
+    public static boolean accepts(BlockEntity owner, @Nullable Direction side, @Nullable FluidType fluid, CapRole role) {
+        if (!(owner.getBlockState().getBlock() instanceof ICapabilityBlock declaring)) return true;
+        var caps = declaring.caps();
+        return role == CapRole.FLUID_IN || role == CapRole.FLUID_OUT
+                ? caps.fluidFaces.test(owner, fluid, side) : side == null || caps.faces.test(owner, side, role);
+    }
+
+    /** Actual resources may satisfy a declared chemical-kind rule; storage joins still check exact identity. */
+    public static boolean acceptsResource(BlockEntity owner, @Nullable Direction side, @Nullable FluidType fluid, CapRole role) {
+        if (accepts(owner, side, fluid, role)) return true;
+        if (fluid == null) return false;
+        var kind = Fluids.kindOf(fluid);
+        return kind != fluid && accepts(owner, side, kind, role);
+    }
+
+    /** Apply an explicit role declaration while retaining native interface routing for undeclared blocks. */
+    public static boolean supportsRole(BlockEntity owner, CapRole role) {
+        return !(owner.getBlockState().getBlock() instanceof ICapabilityBlock declaring)
+                || (declaring.caps().declaredBits() & role.bit) != 0;
     }
 
     public BiPredicate<BlockEntity, Direction> faceGate() {

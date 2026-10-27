@@ -28,7 +28,7 @@ public final class MultiblockHandlerXR {
                 }
         // 1.7 checked blocks only: a player standing in the footprint does not stop the placement (vanilla already
         // keeps the clicked cell clear of entities). The machine is built around them, as in 1.7; one with
-        // walkOutAfterPlacing (hbm-space's internalPlayers) lets them walk out through its cells.
+        // Exact-core placement grants let the placer walk out through the newly assembled cells.
         return true;
     }
 

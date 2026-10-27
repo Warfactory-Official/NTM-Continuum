@@ -152,9 +152,10 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                                  .forGetter(transform -> List.of(transform.rotation().x(), transform.rotation().y(), transform.rotation().z())),
                          Codec.FLOAT.listOf().optionalFieldOf("translation", List.of(0F, 0F, 0F))
                                  .forGetter(transform -> List.of(transform.translation().x(), transform.translation().y(), transform.translation().z())),
-                         Codec.FLOAT.optionalFieldOf("scale", 1F).forGetter(MachineItemModel.ContextTransform::scale)
-                 ).apply(i, (rotation, translation, scale) -> new MachineItemModel.ContextTransform(
-                         vector(rotation), vector(translation), scale)));
+                         Codec.FLOAT.optionalFieldOf("scale", 1F).forGetter(MachineItemModel.ContextTransform::scale),
+                         Codec.BOOL.optionalFieldOf("raw_mesh", false).forGetter(MachineItemModel.ContextTransform::rawMesh)
+                 ).apply(i, (rotation, translation, scale, rawMesh) -> new MachineItemModel.ContextTransform(
+                         vector(rotation), vector(translation), scale, rawMesh)));
           private static final MapCodec<Map<String, MachineItemModel.ContextTransform>> CONTEXT_TRANSFORMS =
                   Codec.unboundedMap(Codec.STRING, CONTEXT_TRANSFORM_CODEC).optionalFieldOf("contextTransforms", Map.of());
           private static final MapCodec<String> ANIMATION = Codec.STRING.optionalFieldOf("animation", "");

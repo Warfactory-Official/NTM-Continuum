@@ -18,8 +18,8 @@ public final class NuclearMiscGuiUtil {
 
         int bottom = y + height;
         int top = bottom - filled;
-        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
-        Identifier fluidTexture = tank.getTankType().getTexture();
+        int tint = 0xFF000000 | (tank.getTankType().clientMetadata().getTint() & 0xFFFFFF);
+        Identifier fluidTexture = tank.getTankType().clientMetadata().getTexture();
 
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTexture).isPresent()) {
             graphics.enableScissor(x, top, x + width, bottom);
@@ -30,7 +30,7 @@ public final class NuclearMiscGuiUtil {
             }
             graphics.disableScissor();
         } else {
-            GuiDraw.fill(graphics, x, top, x + width, bottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
+            GuiDraw.fill(graphics, x, top, x + width, bottom, 0xFF000000 | (tank.getTankType().clientMetadata().getColor() & 0xFFFFFF));
         }
     }
 }

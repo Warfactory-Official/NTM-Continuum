@@ -2,6 +2,7 @@ package com.hbm.items.armor;
 
 import com.hbm.api.environment.Environment;
 import com.hbm.handler.JetpackHandler;
+import com.hbm.capability.HbmLivingProps;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.sound.ModSounds;
 import java.util.List;
@@ -26,9 +27,16 @@ public class JetpackBreak extends JetpackFueledBase {
         super.addInformation(stack, tooltip);
     }
 
+    /** The same thrust/hover arms that actually support flight and reset the flight timeout. */
+    public boolean heldAloft(Player player, ItemStack stack) {
+        return getFuel(stack) > 0 && HbmLivingProps.getEnableBackpack(player)
+                && (isActive(player) || !player.isShiftKeyDown() && !player.onGround()
+                    && Environment.gravity(player) > 0D);
+    }
+
     @Override
     protected void tickFlight(Level level, Player player, ItemStack stack) {
-        if (getFuel(stack) <= 0) return;
+        if (!heldAloft(player, stack)) return;
         JetpackHandler.resetFlightTime(player);
         // hbm-space: thrust scaled up (never down) with gravity, the jet pushing along the view in free fall, and no
         // hovering without gravity (com.hbm.api.environment.Environment.gravity, 1 on plain HBM)
@@ -44,7 +52,7 @@ public class JetpackBreak extends JetpackFueledBase {
                     SoundSource.PLAYERS, 0.25F, 1.5F);
             if (!level.isClientSide()) JetpackHandler.sendExhaust(player, JetpackHandler.EXHAUST_REGULAR);
             useUpFuel(player, stack, 5);
-        } else if (JetpackHandler.isBackpackEnabled(player) && !player.isShiftKeyDown() && !player.onGround() && gravity > 0D) {
+        } else {
             player.fallDistance = 0;
             double thrust = Math.max(gravity, 1D);
             double y = player.getDeltaMovement().y;

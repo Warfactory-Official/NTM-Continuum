@@ -79,7 +79,7 @@ public class GUIMachineDiesel extends CompatContainerScreen<ContainerMachineDies
         int x0 = this.leftPos + barX;
         int yBottom = this.topPos + barTop + 52;
         int yTop = yBottom - h;
-        Identifier fluidTex = tank.getTankType().getTexture();
+        Identifier fluidTex = tank.getTankType().clientMetadata().getTexture();
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + 16, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
@@ -87,7 +87,7 @@ public class GUIMachineDiesel extends CompatContainerScreen<ContainerMachineDies
             }
             graphics.disableScissor();
         } else {
-            graphics.fill(x0, yTop, x0 + 16, yBottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
+            graphics.fill(x0, yTop, x0 + 16, yBottom, 0xFF000000 | (tank.getTankType().clientMetadata().getColor() & 0xFFFFFF));
         }
     }
 

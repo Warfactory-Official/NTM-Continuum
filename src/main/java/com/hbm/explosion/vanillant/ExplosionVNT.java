@@ -1,5 +1,6 @@
 package com.hbm.explosion.vanillant;
 
+import net.minecraft.server.level.ServerLevel;
 import com.hbm.explosion.vanillant.interfaces.IBlockAllocator;
 import com.hbm.api.event.HbmEvents;
 import com.hbm.explosion.SubLevelBlasts;
@@ -15,6 +16,7 @@ import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectAmat;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectStandard;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
+import dev.golem.core.world.Explosions;
 import dev.golem.core.world.SubLevels;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.HashMap;
@@ -35,17 +37,9 @@ import org.jspecify.annotations.Nullable;
  * ({@link IEntityProcessor} + {@link IPlayerProcessor}) and looks like something
  * ({@link IExplosionSFX}); any of the four can be left out.
  *
- * <p><b>One deviation.</b> Upstream carries a dummy vanilla {@code Explosion} object (<i>"compat"</i>) whose
- * only job is to be handed to vanilla's block and entity hooks ({@code getExplosionResistance},
- * {@code canDropFromExplosion}, {@code onBlockExploded}, {@code ForgeEventFactory.onExplosionDetonate}) and to
- * carry its own player-knockback map. It cannot be reproduced portably: {@code Explosion} is an
- * <i>interface</i> at 26.1 (implemented by {@code ServerExplosion}) and a concrete class below it, so any
- * instance would be a version-specific type in a shared source tree. The parts call the underlying vanilla
- * operations directly (resistance from the block, drops through {@code Block.dropResources}), which is what
- * those hooks do anyway. Everything observable (which blocks go, what they drop, how hard entities are hit)
- * follows the original formulas.
+ * The shared explosion context preserves this blast's identity across native entity and block callbacks.
  */
-public class ExplosionVNT {
+public class ExplosionVNT extends Explosions.Context {
 
     private @Nullable IBlockAllocator blockAllocator;
     private @Nullable IEntityProcessor entityProcessor;
@@ -72,6 +66,7 @@ public class ExplosionVNT {
     }
 
     public ExplosionVNT(Level world, double x, double y, double z, float size, @Nullable Entity exploder) {
+        super(world, exploder, x, y, z, size);
         this.world = world;
         this.posX = x;
         this.posY = y;
@@ -80,14 +75,15 @@ public class ExplosionVNT {
         this.exploder = exploder;
     }
 
-    public float blockResistance(Level level, BlockPos pos, BlockState state) {
-        return Math.max(state.getBlock().getExplosionResistance(), level.getFluidState(pos).getExplosionResistance());
+    @Override public ServerLevel level() { return (ServerLevel) world; }
+    @Override public BlockInteraction getBlockInteraction() {
+        return blockProcessor == null ? BlockInteraction.DESTROY_WITH_DECAY : blockProcessor.interaction();
     }
-
-    public boolean blockExplodes(Level level, BlockPos pos,
-            BlockState state, float power) {
-        return true;
-    }
+    @Override public @Nullable Entity getDirectSourceEntity() { return exploder; }
+    @Override public float radius() { return size; }
+    @Override public Vec3 center() { return new Vec3(posX, posY, posZ); }
+    @Override public boolean canTriggerBlocks() { return false; }
+    @Override public boolean shouldAffectBlocklikeEntities() { return true; }
 
     public void explode() {
 

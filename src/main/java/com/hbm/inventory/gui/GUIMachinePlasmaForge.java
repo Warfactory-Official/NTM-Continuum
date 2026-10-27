@@ -127,8 +127,8 @@ public class GUIMachinePlasmaForge extends CompatContainerScreen<ContainerMachin
 
         int bottom = y + 52;
         int top = bottom - height;
-        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
-        Identifier fluidTexture = tank.getTankType().getTexture();
+        int tint = 0xFF000000 | (tank.getTankType().clientMetadata().getTint() & 0xFFFFFF);
+        Identifier fluidTexture = tank.getTankType().clientMetadata().getTexture();
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTexture).isPresent()) {
             graphics.enableScissor(x, top, x + 16, bottom);
             for (int tileY = bottom - 16; tileY > top - 16; tileY -= 16) {

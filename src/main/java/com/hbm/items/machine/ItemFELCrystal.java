@@ -6,6 +6,8 @@ import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffects;
@@ -29,8 +31,9 @@ public class ItemFELCrystal extends CompatItem {
      * <p>1.7 compared wavelengths by ordinal: the SILEX gates a recipe on {@code recipe.laserStrength <= mode} and scales
      * its speed by {@code 2^(mode - recipe)}, the FEL draws {@code powerReq * 3^mode} and shows a beam above
      * {@code powerReq * 2^mode}. An addon wavelength has no ordinal between HBM's, so every wavelength carries that
-     * number explicitly as {@link #strength}: HBM's six keep their 1.7 ordinals (0..5) and their order, and an addon
-     * picks any value above 0, a fractional one to sit between two of HBM's. Machines save and sync a wavelength by
+     * number explicitly as {@link #strength}: HBM's six start at 1.7's ordinals (0..5), and an addon
+     * picks any value above 0, a fractional one to sit between two of HBM's. The live spectrum follows strength;
+     * {@link #legacy} retains HBM's original ordinal identities. Machines save and sync a wavelength by
      * {@link #name()} (1.7's constant name); recipes name HBM's in lower case.
      *
      * <p>{@code VISIBLE} carries colour 0 for both the world beam and the GUI: every call site special-cases
@@ -71,6 +74,10 @@ public class ItemFELCrystal extends CompatItem {
                 0xFF0000, 0xFF0000, ChatFormatting.DARK_RED,
                 entity -> ContaminationUtil.applyDigammaData(entity, 0.1F));
 
+        private static final List<EnumWavelengths> LEGACY = REGISTRY.values();
+        private static volatile List<EnumWavelengths> spectrum = List.of();
+        private static volatile List<EnumWavelengths> spectrumSource;
+
         private final String key;
         /** 1.7's ordinal, the number the SILEX and the FEL compute with; 0 only for {@link #NULL}. */
         private volatile double strength;
@@ -94,7 +101,7 @@ public class ItemFELCrystal extends CompatItem {
         }
 
         /**
-         * Registers a wavelength. {@code key} is its saved name (an addon uses its namespace, {@code "ntmspace:xray"});
+         * Registers a wavelength. {@code key} is its saved name (an addon may use its namespace, {@code "addon:microwave"});
          * {@code strength} must be above 0 ({@link #NULL} is the only 0); {@code name}/{@code wavelengthRange} are
          * translation keys; colour 0 means the rainbow. Call at mod construction, on both sides.
          */
@@ -114,12 +121,13 @@ public class ItemFELCrystal extends CompatItem {
          * {@code UV} and {@code GAMMA}, so its GAMMA is 5 and its DRX 6. {@link #NULL} stays 0 and every other strength
          * must be above 0. Call at mod construction, on both sides, before any machine ticks.
          */
-        public static void setStrength(EnumWavelengths wavelength, double strength) {
+        public static synchronized void setStrength(EnumWavelengths wavelength, double strength) {
             if (wavelength == NULL) throw new IllegalArgumentException("NULL's strength is fixed at 0");
             if (!(strength > 0D)) {
                 throw new IllegalArgumentException("FEL wavelength " + wavelength.key + " needs a strength above 0, got " + strength);
             }
             wavelength.strength = strength;
+            spectrumSource = null;
         }
 
         /** 1.7's ordinal for HBM's six unless an addon moved it ({@link #setStrength}); 0 only for {@link #NULL}. */
@@ -127,9 +135,24 @@ public class ItemFELCrystal extends CompatItem {
             return strength;
         }
 
-        /** Every wavelength in registration order (HBM's six first, 1.7 order). */
+        /** Every wavelength in the live spectrum, from weakest to strongest. */
         public static List<EnumWavelengths> values() {
-            return REGISTRY.values();
+            if (spectrumSource != REGISTRY.values()) rebuildSpectrum();
+            return spectrum;
+        }
+
+        private static synchronized void rebuildSpectrum() {
+            var source = REGISTRY.values();
+            if (spectrumSource == source) return;
+            var ordered = new ArrayList<>(source);
+            ordered.sort(Comparator.comparingDouble(EnumWavelengths::strength));
+            spectrum = List.copyOf(ordered);
+            spectrumSource = source;
+        }
+
+        /** HBM's original ordinal, independent of addon insertions or strength changes. */
+        public static EnumWavelengths legacy(int ordinal) {
+            return LEGACY.get(ordinal);
         }
 
         /** Tolerant lookup for save/sync data, so an unknown name degrades to NULL instead of throwing. */

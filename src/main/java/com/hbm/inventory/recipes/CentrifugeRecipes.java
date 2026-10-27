@@ -1,11 +1,14 @@
 package com.hbm.inventory.recipes;
 
+import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
+import java.util.Comparator;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.recipes.CrystallizerRecipes.ChanceOutput;
 import com.hbm.inventory.recipes.CrystallizerRecipes.ItemOutput;
 import com.hbm.inventory.recipes.CrystallizerRecipes.Output;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
+import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec.ItemOut;
 import com.hbm.inventory.recipes.loader.RecipeConditions;
 import com.hbm.inventory.recipes.loader.RecipeText;
@@ -77,16 +80,25 @@ public final class CentrifugeRecipes {
     /** Declares the table at mod construction. */
     public static void declare() {}
 
-    public static final class CentrifugeRecipe {
+    public static final class CentrifugeRecipe extends GenericRecipe {
         public final AStack input;
         public final ItemStack[] output;
         /** Each output's chance; below 1 only for ntm-next's raw ore rows. */
         public final float[] chance;
 
-        CentrifugeRecipe(AStack input, ItemStack[] output, float[] chance) {
+        CentrifugeRecipe(String id, AStack input, ItemStack[] output, float[] chance) {
+            super(id.substring(id.lastIndexOf('/') + 1));
+            bindRecipeId(id);
             this.input = input;
             this.output = output;
             this.chance = chance;
+            inputItems(input);
+            outputItems(output);
+            outputChances(chance);
+            inputFluids();
+            outputFluids();
+            setup(TileEntityMachineCentrifuge.processingSpeed,
+                    TileEntityMachineCentrifuge.baseConsumption);
         }
     }
 
@@ -95,13 +107,15 @@ public final class CentrifugeRecipes {
      * since the last index (1.7 read the config while registering). Rows whose {@code requires} fail are left out.
      */
     public static synchronized void register() {
-        List<Row> rows = TABLE.rows();
+        var entries = new ArrayList<>(TABLE.entries());
         String flags = RecipeConditions.fingerprint();
         if (!stale && flags.equals(builtFlags)) return;
         stale = false;
         builtFlags = flags;
         List<CentrifugeRecipe> next = new ArrayList<>();
-        for (Row row : RecipeText.ordered(rows, Row::order)) {
+        entries.sort(Comparator.comparingInt(entry -> entry.value().order()));
+        for (var entry : entries) {
+            var row = entry.value();
             if (!TableCodecs.holds(row.requires())) continue;
             ItemStack[] output = row.outputs().stream().map(Output::stack).toArray(ItemStack[]::new);
             boolean empty = false;
@@ -109,7 +123,7 @@ public final class CentrifugeRecipes {
             if (empty) continue; // a tag output whose tag has no item
             float[] chance = new float[output.length];
             for (int i = 0; i < chance.length; i++) chance[i] = row.outputs().get(i).chance();
-            next.add(new CentrifugeRecipe(row.input(), output, chance));
+            next.add(new CentrifugeRecipe(entry.id(), row.input(), output, chance));
         }
         current = List.copyOf(next);
     }
@@ -135,7 +149,7 @@ public final class CentrifugeRecipes {
         return result;
     }
 
-    private static CentrifugeRecipe find(ItemStack stack) {
+    public static CentrifugeRecipe find(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return null;
         register();
         for (CentrifugeRecipe recipe : current) {

@@ -1,5 +1,7 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
@@ -38,10 +40,10 @@ import com.hbm.tileentity.machine.TileEntityChungus;
  * core − 10·dir, and two side connectors at core ± side·2.
  */
 public class MachineChungus extends BlockMultiblockMachine
-        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider {
+        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider, ICapabilityBlock {
 
     /** 1.7 {@code getAllDimensions()[1..3]}. */
-    private static final int[] CROWN = {4, -4, 0, 3, 1, 1};
+    protected static final int[] CROWN = {4, -4, 0, 3, 1, 1};
     private static final int[] DUCT = {3, 0, 6, -1, 1, 1};
     private static final int[] TAIL = {2, 0, 10, -7, 1, 1};
 
@@ -56,6 +58,10 @@ public class MachineChungus extends BlockMultiblockMachine
 
     @Override
     public int[] getDimensions() {
+        return bodyDimensions();
+    }
+
+    protected int[] bodyDimensions() {
         return new int[]{3, 0, 0, 3, 2, 2};
     }
 
@@ -70,7 +76,7 @@ public class MachineChungus extends BlockMultiblockMachine
      */
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
-        if (!super.checkRequirement(level, core, facing, clicked)) return false;
+        if (!MultiblockHandlerXR.checkSpace(level, core, bodyDimensions(), clicked, facing)) return false;
         if (!MultiblockHandlerXR.checkSpace(level, core, DUCT, clicked, facing)) return false;
         if (!MultiblockHandlerXR.checkSpace(level, core, TAIL, clicked, facing)) return false;
         BlockPos front = core.relative(facing, 4).above(2);
@@ -84,7 +90,7 @@ public class MachineChungus extends BlockMultiblockMachine
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
-        super.visitCells(core, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, bodyDimensions(), facing, visitor);
         MultiblockHandlerXR.visitBox(core, CROWN, facing, visitor);
         MultiblockHandlerXR.visitBox(core, DUCT, facing, visitor);
         MultiblockHandlerXR.visitBox(core, TAIL, facing, visitor);
@@ -132,7 +138,7 @@ public class MachineChungus extends BlockMultiblockMachine
         if ((pos.getX() == iX || pos.getX() == iX2) && (pos.getZ() == iZ || pos.getZ() == iZ2)
                 && pos.getY() < core.getY() + 2) {
             if (!level.isClientSide()) {
-                if (!turbine.operational) {
+                if (!turbine.operational || canChangeTierWhileRunning()) {
                     level.playSound(null, pos, ModSounds.CHUNGUS_LEVER.get(), SoundSource.BLOCKS, 1.5F, 1.0F);
                     turbine.onLeverPull();
                 } else {
@@ -145,6 +151,8 @@ public class MachineChungus extends BlockMultiblockMachine
         // 1.7 returns false for any other click on the machine: no menu, the click falls through.
         return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
+
+    protected boolean canChangeTierWhileRunning() { return false; }
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
@@ -199,4 +207,11 @@ public class MachineChungus extends BlockMultiblockMachine
                 {-2, 0, 0, ForgeDirection.WEST.ordinal()},
         }, dir);
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerOut().fluidIn().fluidOut().fe()
+            .faces(BlockEntity.class, (be, side) -> side.getAxis().isHorizontal());
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

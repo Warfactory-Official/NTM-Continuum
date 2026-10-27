@@ -13,6 +13,25 @@ public final class MachineAudio {
 
     private MachineAudio() {}
 
+    public static @Nullable AudioWrapper tick(AudioLoop owner, @Nullable AudioWrapper audio, boolean wanted,
+                                              float volume, float pitch, boolean pitched) {
+        if (!wanted) {
+            if (audio != null) audio.stopSound();
+            return null;
+        }
+        if (audio == null || !audio.isPlaying()) {
+            if (audio != null) audio.stopSound();
+            audio = owner.createAudioLoop();
+            if (audio != null) audio.startSound();
+        }
+        if (audio != null) {
+            audio.updateVolume(owner.getVolume(volume));
+            if (pitched) audio.updatePitch(pitch);
+            audio.keepAlive();
+        }
+        return audio;
+    }
+
     public static @Nullable AudioWrapper tick(@Nullable AudioWrapper audio, boolean wanted, SoundEvent sound,
                                               SoundSource category, BlockPos pos, float volume, float range,
                                               float pitch, int keepAlive) {

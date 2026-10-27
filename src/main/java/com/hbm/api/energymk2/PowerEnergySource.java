@@ -18,10 +18,12 @@ final class PowerEnergySource implements EnergySource {
 
     static final PowerEnergySource INSTANCE = new PowerEnergySource();
 
-    /** What a snapshot of nothing looks like, so the transactional loader never sees a null state. */
-    private static final Object NOTHING = new Object();
-
     private PowerEnergySource() {}
+
+    @Override
+    public @Nullable EnergySource forOperation(ServerLevel level, BlockPos pos) {
+        return PowerNetwork.bridgeAt(level, pos);
+    }
 
     @Override
     public long amountFe(ServerLevel level, BlockPos pos) {
@@ -61,14 +63,11 @@ final class PowerEnergySource implements EnergySource {
 
     @Override
     public Object snapshot(ServerLevel level, BlockPos pos) {
-        ForeignEnergyBridge bridge = PowerNetwork.bridgeAt(level, pos);
-        return bridge == null ? NOTHING : bridge.snapshot();
+        throw new UnsupportedOperationException("Bind a cable transaction owner before snapshotting");
     }
 
     @Override
     public void restore(ServerLevel level, BlockPos pos, Object state) {
-        if (!(state instanceof ForeignEnergyBridge.State snapshot)) return;
-        ForeignEnergyBridge bridge = PowerNetwork.bridgeAt(level, pos);
-        if (bridge != null) bridge.restore(snapshot);
+        throw new UnsupportedOperationException("Restore the captured cable transaction owner");
     }
 }

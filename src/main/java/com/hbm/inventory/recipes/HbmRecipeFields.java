@@ -65,7 +65,7 @@ public final class HbmRecipeFields {
                 field("duration", Kind.INT),
                 out("output_item", RecipeShapes.STACK_OUT).optional(), fout("output_fluid", RecipeShapes.FLUID_STACK).optional(),
                 in("input_item", RecipeShapes.INGREDIENT).optional(), fin("input_fluid", RecipeShapes.FLUID_STACK).optional(),
-                fin("solid_fuel", RecipeShapes.FLUID_ID).optional(), field("solid_fuel_energy", Kind.LONG).optional()));
+                fin("solid_fuel", RecipeShapes.FLUID_ID).optional(), field("solid_fuel_energy", Kind.LONG).optional(), order()));
         RefineryRecipes.TABLE.table.fields(of(
                 fout("outputs", RecipeShapes.FLUID_STACK).list(), out("byproduct", RecipeShapes.STACK_OUT),
                 fin("input", RecipeShapes.FLUID_ID)));

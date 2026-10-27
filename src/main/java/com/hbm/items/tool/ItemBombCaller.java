@@ -96,7 +96,7 @@ public class ItemBombCaller extends CompatItem {
             BomberPayload called = BomberPayload.byName(payload);
             if (called == null) called = BomberPayload.CARPET; // 1.7 default branch
             EntityBomber bomber = called.create(level, pos.getX(), pos.getY(), pos.getZ());
-            level.addFreshEntity(bomber); // 1.7: WorldUtil.loadAndSpawnEntityInWorld
+            bomber.addToLevel(); // 1.7: WorldUtil.loadAndSpawnEntityInWorld
             player.sendSystemMessage(Component.literal(message));
             level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
                     SoundSource.PLAYERS, 1.0F, 1.0F);

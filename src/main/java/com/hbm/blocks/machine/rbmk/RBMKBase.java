@@ -32,6 +32,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -109,10 +111,36 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
     private boolean takeLid(Level level, BlockPos core, BlockState coreState) {
         Lid lid = lidOf(coreState);
         if (!lid.present()) return false;
-        level.setBlock(core, coreState.setValue(LID, Lid.NONE), 3);
+        if (level instanceof ServerLevel server) writeLid(server, core, coreState, Lid.NONE);
+        else level.setBlock(core, coreState.setValue(LID, Lid.NONE), 3);
         if (NeutronNodeWorld.getNode(level, core) instanceof RBMKNeutronNode node) node.removeLid();
         Block.popResource(level, core.above(above()), lidItem(lid));
         return true;
+    }
+
+    /**
+     * Set the column's lid, core and cells alike: the bake draws it from the top cell, which
+     * {@link #cellStateFor} leaves lidded-less. Template assembly calls this through {@link #assembled}.
+     */
+    public void writeLid(ServerLevel level, BlockPos core, BlockState coreState, Lid lid) {
+        level.setBlock(core, coreState.setValue(LID, lid), 3);
+        visitTeardownCells(level, core, coreState.getValue(FACING), (pos, mask) -> {
+            BlockState cell = level.getBlockState(pos);
+            if (cell.getBlock() == this && isCellState(cell)) level.setBlock(pos.immutable(), cell.setValue(LID, lid), 3);
+        });
+    }
+
+    // 1.7 RBMKBase.metaToLid: a template core's meta carries its lid, which the cells then answer.
+    @Override
+    public void assembled(LevelAccessor level, BlockPos core, BlockState coreState,
+                          @Nullable BoundingBox clip) {
+        Lid lid = lidOf(coreState);
+        if (!lid.present()) return;
+        visitPlacedCells(level, core, coreState.getValue(FACING), (pos, mask) -> {
+            if (clip != null && !clip.isInside(pos)) return;
+            BlockState cell = level.getBlockState(pos);
+            if (cell.getBlock() == this && isCellState(cell)) level.setBlock(pos, cell.setValue(LID, lid), 3);
+        });
     }
     /** 1.7 onScrew: the screwdriver lifts the lid off a column that carries one. */
     @Override public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit, InteractionHand hand, ToolType tool) {

@@ -1,5 +1,8 @@
 package com.hbm.blocks.turret;
 
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
+import net.minecraft.core.Direction;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
@@ -26,7 +29,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /** 1.12.2's {@code TurretSentry} is a plain block container: the one turret that occupies a single cell. */
-public class TurretSentry extends CompatBlock implements TickingBlock {
+public class TurretSentry extends CompatBlock implements TickingBlock, ICapabilityBlock {
 
     private static final VoxelShape SHAPE = Shapes.block();
 
@@ -64,4 +67,11 @@ public class TurretSentry extends CompatBlock implements TickingBlock {
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
+
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().items()
+            .faces(BlockEntity.class, (be, side) -> side == Direction.DOWN);
+
+    @Override
+    public MachineCaps caps() { return CAPS; }
 }

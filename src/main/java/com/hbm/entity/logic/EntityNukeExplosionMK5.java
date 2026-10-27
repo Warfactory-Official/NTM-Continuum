@@ -30,8 +30,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import net.minecraft.core.registries.BuiltInRegistries;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
@@ -64,6 +67,8 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
     private int radius;
     private boolean fallout = true;
     private int falloutAdd = 0;
+    /** The layer this blast's fallout rain lays in place of {@code hbm:fallout}; saved with the blast. */
+    private @Nullable Block falloutLayer;
 
     private IExplosionRay explosion;
     private boolean initialized = false;
@@ -101,6 +106,12 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
     /** Extends the fallout scale by the given number of blocks (dirty-bomb style additions). */
     public EntityNukeExplosionMK5 moreFallout(int falloutAdd) {
         this.falloutAdd = falloutAdd;
+        return this;
+    }
+
+    /** The layer this blast's fallout rain lays in place of {@code hbm:fallout}; saved with the blast. */
+    public EntityNukeExplosionMK5 falloutLayer(Block layer) {
+        this.falloutLayer = layer;
         return this;
     }
 
@@ -176,14 +187,19 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
                 return;
             }
             if (GeneralConfig.logDiagnostics()) Constants.LOG.info("[NUKE] blast entity finished at tick {}", tickCount);
-            if (fallout) {
-                EntityFalloutRain rain = new EntityFalloutRain(ModEntities.FALLOUT_RAIN.get(), level());
-                rain.setPos(getX(), getY(), getZ());
-                rain.setScale((int) (this.radius * 2.5 + falloutAdd) * BombConfig.falloutRange / 100);
-                if (level().addFreshEntity(rain)) rain.startChunkLoading();
-            }
+            spawnFallout();
             discard();
         }
+    }
+
+    private void spawnFallout() {
+        if (!fallout) return;
+        // 1.7 EntityNukeExplosionMK5:90: (int)(length * 2.5 + falloutAdd) * falloutRange / 100.
+        EntityFalloutRain rain = new EntityFalloutRain(ModEntities.FALLOUT_RAIN.get(), level());
+        rain.setPos(getX(), getY(), getZ());
+        rain.setScale((int) (this.radius * 2.5 + falloutAdd) * BombConfig.falloutRange / 100);
+        if (falloutLayer != null) rain.falloutLayer(falloutLayer);
+        if (level().addFreshEntity(rain)) rain.startChunkLoading();
     }
 
     /**
@@ -266,6 +282,7 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         fallout = input.getBooleanOr("fallout", true);
         falloutAdd = input.getIntOr("falloutAdd", 0);
         detonator = input.read("detonator", UUIDUtil.CODEC).orElse(null);
+        falloutLayer = input.read("fallout_layer", BuiltInRegistries.BLOCK.byNameCodec()).orElse(null);
         // The in-flight crater bitsets are not persisted: a blast interrupted by a save restarts.
     }
 
@@ -276,5 +293,6 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         output.putBoolean("fallout", fallout);
         output.putInt("falloutAdd", falloutAdd);
         if (detonator != null) output.store("detonator", UUIDUtil.CODEC, detonator);
+        if (falloutLayer != null) output.store("fallout_layer", BuiltInRegistries.BLOCK.byNameCodec(), falloutLayer);
     }
 }

@@ -180,8 +180,8 @@ public final class GuiUtil {
         int i = max <= 0 ? 0 : tank.getFill() * height / max;
         if (i <= 0) return;
         int top = yBottom - i;
-        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
-        Identifier tex = tank.getTankType().getTexture();
+        int tint = 0xFF000000 | (tank.getTankType().clientMetadata().getTint() & 0xFFFFFF);
+        Identifier tex = tank.getTankType().clientMetadata().getTexture();
         if (Minecraft.getInstance().getResourceManager().getResource(tex).isEmpty()) {
             graphics.fill(x, top, x + width, yBottom, tint);
             return;
@@ -204,8 +204,8 @@ public final class GuiUtil {
         int i = max <= 0 ? 0 : tank.getFill() * width / max;
         if (i <= 0) return;
         int top = yBottom - height;
-        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
-        Identifier tex = tank.getTankType().getTexture();
+        int tint = 0xFF000000 | (tank.getTankType().clientMetadata().getTint() & 0xFFFFFF);
+        Identifier tex = tank.getTankType().clientMetadata().getTexture();
         if (Minecraft.getInstance().getResourceManager().getResource(tex).isEmpty()) {
             graphics.fill(x, top, x + i, yBottom, tint);
             return;

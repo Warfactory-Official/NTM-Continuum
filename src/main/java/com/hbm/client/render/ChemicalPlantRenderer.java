@@ -90,7 +90,7 @@ public class ChemicalPlantRenderer extends GemBER<TileEntityMachineChemicalPlant
         if (fluids == null || fluids.length == 0) return 0xFFFFFF;
         int r = 0, g = 0, b = 0;
         for (FluidStack fs : fluids) {
-            int c = fs.type.getColor();
+            int c = fs.type.clientMetadata().getColor();
             r += (c >> 16) & 0xFF; g += (c >> 8) & 0xFF; b += c & 0xFF;
         }
         int n = fluids.length;

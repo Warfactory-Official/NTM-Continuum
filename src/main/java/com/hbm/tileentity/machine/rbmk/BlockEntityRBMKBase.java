@@ -8,6 +8,16 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.advancement.AwardRegions;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
+import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.fluidmk2.DuctData;
+import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.api.fluidmk2.FluidNetwork;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.uninos.PortNodes;
+import com.hbm.uninos.graph.LevelNodeGraph;
+import com.hbm.uninos.graph.NodeNetwork;
+import com.hbm.uninos.networkproviders.FluidNetProvider;
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.RBMKLoader;
@@ -15,8 +25,6 @@ import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
 import org.jspecify.annotations.Nullable;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.entity.projectile.EntityRBMKDebris;
 import com.hbm.entity.effect.EntitySpear;
 import com.hbm.entity.ModRBMKEntities;
@@ -226,40 +234,97 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
         }
         columns.clear();
     }
-    /** Ruptures the duct component touching the melted core and destroys every attached receiver. */
+    /** Ruptures the fluid components connected to the columns' actual output contacts. */
     private void overpressure(ServerLevel server) {
-        Set<Long> pipes = new HashSet<>();
-        Queue<BlockPos> queue = new ArrayDeque<>();
-        for (BlockEntityRBMKBase column : columns) for (Direction direction : Direction.values()) {
-            BlockPos pipe = column.worldPosition.relative(direction);
-            if (server.getBlockState(pipe).getBlock() instanceof BlockFluidDuct && pipes.add(pipe.asLong())) queue.add(pipe);
-        }
-        if (pipes.isEmpty()) return;
-        Set<BlockPos> receivers = new HashSet<>();
-        for (int safety = 10_000; !queue.isEmpty() && safety-- > 0;) {
-            BlockPos pipe = queue.remove();
-            for (Direction direction : Direction.values()) {
-                BlockPos neighbor = pipe.relative(direction);
-                if (server.getBlockState(neighbor).getBlock() instanceof BlockFluidDuct) {
-                    if (pipes.add(neighbor.asLong())) queue.add(neighbor);
-                } else if (server.getBlockEntity(neighbor) instanceof IFluidReceiverMK2) receivers.add(neighbor.immutable());
-                else {
-                    BlockPos core = MultiblockSurface.coreOfAny(server, neighbor);
-                    if (core != null && server.getBlockEntity(core) instanceof IFluidReceiverMK2) receivers.add(core);
+        var graph = FluidGraph.get(server);
+        var seeds = new IdentityHashMap<FluidType, Set<NodeNetwork<DuctData>>>();
+        for (var column : columns) {
+            if (column.ports == null || column.ports.outTanks == null) continue;
+            for (var contact : PortDef.connections(column.getLoaderPorts())) {
+                var pos = contact.getPos();
+                if (!pressureResident(server, pos)) continue;
+                var data = graph.dataAt(pos.asLong());
+                if (data == null || !graph.isOpenAt(pos.asLong(), contact.getDir().getOpposite().toDirection())) continue;
+                for (var tank : column.ports.outTanks) {
+                    var type = tank.getTankType();
+                    if (!data.carries(type)) continue;
+                    var net = graph.networkAt(pos.asLong());
+                    if (net != null) seeds.computeIfAbsent(type,
+                            fluid -> Collections.newSetFromMap(new IdentityHashMap<>())).add(net);
                 }
             }
         }
-        int destroyed = 0, max = Math.min(pipes.size() / 5, 100);
-        for (long pipe : pipes) { if (destroyed++ >= max) break; server.setBlock(BlockPos.of(pipe), Blocks.AIR.defaultBlockState(), 3); }
-        for (BlockPos receiver : receivers) {
-            BlockEntity blockEntity = server.getBlockEntity(receiver);
-            if (blockEntity instanceof IOverpressurable overpressurable) overpressurable.explode(server, receiver);
+
+        var cells = new LongLinkedOpenHashSet();
+        Set<BlockEntity> receivers = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (var entry : seeds.entrySet()) {
+            var type = entry.getKey();
+            for (var joined : PortNodes.nets(server, graph, graph.networks(), FluidNetProvider.of(type),
+                    data -> data.carries(type))) {
+                if (Collections.disjoint(joined.nets, entry.getValue())) continue;
+                for (var net : joined.nets) {
+                    for (var node : net.nodes) collectPressure(server, graph, node.posKey, type, cells, receivers);
+                    for (var run : net.segments) {
+                        for (int i = 0; i < run.cellCount(); i++) {
+                            collectPressure(server, graph, run.cellAt(i), type, cells, receivers);
+                        }
+                    }
+                }
+                for (var port : joined.ports) {
+                    for (var owner : port.receivers) {
+                        if (owner instanceof BlockEntity be && owner instanceof IFluidReceiverMK2 receiver
+                                && pressureSubscriber(receiver, type)) receivers.add(be);
+                    }
+                }
+            }
+        }
+        int destroyed = 0, max = Math.min(cells.size() / 5, 100);
+        for (long cell : cells) {
+            if (destroyed++ >= max) break;
+            server.setBlock(BlockPos.of(cell), Blocks.AIR.defaultBlockState(), 3);
+        }
+        for (var blockEntity : receivers) {
+            var pos = blockEntity.getBlockPos();
+            if (blockEntity instanceof IOverpressurable overpressurable) overpressurable.explode(server, pos);
             else {
-                server.setBlock(receiver, Blocks.AIR.defaultBlockState(), 3);
-                Explosions.explode(server, null, receiver.getX() + .5D, receiver.getY() + .5D, receiver.getZ() + .5D, 5F,
+                server.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                Explosions.explode(server, null, pos.getX() + .5D, pos.getY() + .5D, pos.getZ() + .5D, 5F,
                         Level.ExplosionInteraction.NONE);
             }
         }
+    }
+
+    private static void collectPressure(ServerLevel server, LevelNodeGraph<DuctData> graph, long cell,
+            FluidType type, LongLinkedOpenHashSet cells, Set<BlockEntity> receivers) {
+        var pos = BlockPos.of(cell);
+        if (!pressureResident(server, pos)) return;
+        cells.add(cell);
+        for (var direction : Direction.values()) {
+            if (!graph.isOpenAt(cell, direction)) continue;
+            var contact = pos.relative(direction);
+            if (!pressureResident(server, contact)) continue;
+            var be = FluidNetwork.userAtFace(server, contact, direction.getOpposite(), type);
+            if (be instanceof IFluidReceiverMK2 receiver && !PortNodes.isPorted(server, receiver, false)
+                    && pressureSubscriber(receiver, type)) receivers.add(be);
+        }
+    }
+
+    private static boolean pressureSubscriber(IFluidReceiverMK2 receiver, FluidType type) {
+        if (receiver instanceof IFluidStandardReceiverMK2 standard) {
+            for (var tank : standard.getReceivingTanks()) {
+                if (tank.getTankType() == type && receiver.getReceiverSpeed(type, tank.getPressure()) > 0) return true;
+            }
+            return false;
+        }
+        var range = receiver.getReceivingPressureRange(type);
+        for (int pressure = range[0]; pressure <= range[1]; pressure++) {
+            if (receiver.getReceiverSpeed(type, pressure) > 0) return true;
+        }
+        return false;
+    }
+
+    private static boolean pressureResident(ServerLevel server, BlockPos pos) {
+        return server.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
     }
     private void floodFill() {
         Queue<BlockPos> queue = new ArrayDeque<>(); Set<BlockPos> seen = new HashSet<>(); queue.add(worldPosition); seen.add(worldPosition);

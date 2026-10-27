@@ -41,10 +41,10 @@ public class ContainerMachineEPress extends AbstractContainerMenu {
         this.machine = press != null ? press : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 152, 54));  // battery (1.7 ContainerMachineEPress positions)
-        this.addSlot(validated(1, 19, 15));    // stamp
-        this.addSlot(validated(2, 19, 51));    // input
-        this.addSlot(new Slot(this.machine, 3, 79, 33) { // output (take only)
+        this.addSlot(validated(TileEntityMachineEPress.SLOT_BATTERY, 152, 54));  // battery (1.7 ContainerMachineEPress positions)
+        this.addSlot(validated(TileEntityMachineEPress.SLOT_STAMP, 19, 15));    // stamp
+        this.addSlot(validated(TileEntityMachineEPress.SLOT_INPUT, 19, 51));    // input
+        this.addSlot(new Slot(this.machine, TileEntityMachineEPress.SLOT_OUTPUT, 79, 33) { // output (take only)
             @Override public boolean mayPlace(ItemStack stack) { return false; }
         });
         this.addSlot(validated(4, 111, 32));   // upgrade

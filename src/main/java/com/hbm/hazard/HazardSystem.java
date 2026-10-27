@@ -1,5 +1,6 @@
 package com.hbm.hazard;
 
+import net.minecraft.world.item.TooltipFlag;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.items.armor.ArmorFSB;
 import com.hbm.util.ArmorRegistry;
@@ -102,7 +103,7 @@ public class HazardSystem {
      * so a stack's count and its components are read as they are now; a change to either is itself a
      * slot change, so the entries behind them are never stale.
      */
-    private static final InventoryScan<HazardEntry[]> CARRIED = InventoryScan
+    public static final InventoryScan<HazardEntry[]> CARRIED = InventoryScan
             .of(HazardSystem::carriedHazards, HazardSystem::applyCarried)
             .every(() -> RadiationConfig.hazardRate);
 
@@ -279,6 +280,12 @@ public class HazardSystem {
 
     /** The apply half of {@link #CARRIED}, on the server thread at {@code hazardRate}. */
     private static void applyCarried(Player player, ItemStack stack, HazardEntry[] hazards) {
+        for (var transformer : trafos) {
+            if (transformer.readsLiveStorage(stack)) {
+                applyHazards(stack, player);
+                return;
+            }
+        }
         for (HazardEntry hazard : hazards) hazard.applyHazard(stack, player);
     }
 
@@ -294,7 +301,7 @@ public class HazardSystem {
         if (entity.tickCount % RadiationConfig.hazardRate != 0) return;
 
         if (entity instanceof Player player) {
-            HbmLivingProps.setNeutron(player, 0);
+            if (ContaminationUtil.neutronSystem() == null) HbmLivingProps.setNeutron(player, 0);
             return;
         }
         for (EquipmentSlot slot : EQUIPMENT_SLOTS) {
@@ -329,6 +336,11 @@ public class HazardSystem {
             hazard.addInformation(player, list, stack);
         }
         ContaminationUtil.addNeutronRadInfo(stack, list);
+    }
+
+    public static void addHazardInfo(ItemStack stack, Player player, List<Component> list,
+                                     TooltipFlag flag) {
+        addHazardInfo(stack, player, list);
     }
 
     /**

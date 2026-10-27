@@ -1,5 +1,9 @@
 package com.hbm.blocks.machine.pile;
 
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.capability.ICapabilityBlock;
+import com.hbm.capability.MachineCaps;
+
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.StandardInfo;
 import com.hbm.api.block.IToolable;
@@ -53,7 +57,7 @@ import java.util.List;
  * the pile the device faces.
  */
 public class BlockPileDevice extends CompatBlock implements TickingBlock,
-        ILookOverlay, IToolable, ITooltipProvider {
+        ILookOverlay, IToolable, ITooltipProvider, ICapabilityBlock {
 
     public static final int ITEM_META_LOADER = 0;
     public static final int ITEM_META_VENT = 1;
@@ -228,4 +232,13 @@ public class BlockPileDevice extends CompatBlock implements TickingBlock,
         int variant = stack.getItem() instanceof ModPileBlocks.PileDeviceItem item ? item.variant() : 0;
         StandardInfo.add(tooltip, "block.hbm.pile_device_" + variant + ".desc");
     }
+
+    /** Only the blower state has a fluid owner; the loader and control states expose no fluid contact. */
+    private static final MachineCaps VENT_CAPS = MachineCaps.blockKeyed().fluidIn()
+            .fluidTypes(BlockEntity.class, (owner, resource, side) -> owner instanceof TileEntityPileVent vent
+                    && side == vent.getOrientation().toDirection()
+                    && (resource == null || resource == Fluids.AIR));
+
+    @Override
+    public MachineCaps caps() { return VENT_CAPS; }
 }

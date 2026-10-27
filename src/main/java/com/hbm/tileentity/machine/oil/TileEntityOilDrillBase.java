@@ -58,7 +58,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * ({@code level*10} mB/t gives {@code +5 HE/mB}).
  *
  * <p>Skipped from the old class (see IMPLEMENTATION.md §20): IPersistentNBT (power/tanks don't survive item form),
- * IFluidCopiable, the {@code ore_bedrock_oil} BFS target (deferred with the
+ * IConfigurableMachine, IFluidCopiable, the {@code ore_bedrock_oil} BFS target (deferred with the
  * fracking tower), and the oreUranium/oreAsbestos gas-pocket easter eggs ({@code onDrill} is an empty
  * seam: the gas blocks are unported).
  */
@@ -250,6 +250,18 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
      */
     protected void suckDeposit(BlockPos pos, DepositDataMaps.Deposit deposit, int primary, int secondaryMin,
                                int secondaryMax, double drainChance) {
+        var reserve = DepositDataMaps.reserve(level.getBlockState(pos), deposit);
+        if (reserve != null) {
+            tanks[0].setTankType(reserve.primaryFluid());
+            tanks[0].setFill((int) Math.min((long) tanks[0].getFill() + reservePrimary(reserve), tanks[0].getMaxFill()));
+            var secondary = reserve.secondaryFluid();
+            if (secondary != null) {
+                tanks[1].setTankType(secondary);
+                tanks[1].setFill((int) Math.min((long) tanks[1].getFill() + reserveSecondary(reserve), tanks[1].getMaxFill()));
+            }
+            reserve.drain(level, pos, level.getRandom(), reserveDrainMultiplier());
+            return;
+        }
         suckAmounts(pos, deposit, deposit.primaryAmount(primary), deposit.secondaryAmount(secondaryMin),
                 deposit.secondaryAmount(secondaryMax), drainChance);
     }
@@ -270,6 +282,10 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
             level.setBlock(pos, DepositDataMaps.emptyState(level.getBlockState(pos), empty), 3);
         }
     }
+
+    protected int reservePrimary(DepositDataMaps.Reserve reserve) { return reserve.primaryAmount(); }
+    protected int reserveSecondary(DepositDataMaps.Reserve reserve) { return reserve.secondaryAmount(level.getRandom()); }
+    protected double reserveDrainMultiplier() { return 1D; }
 
     /** 1.7 {@code writeNBT}: a drill with power or fluid in it travels with its item (1.7 shows no tooltip for it). */
     @Override

@@ -1,5 +1,6 @@
 package com.hbm.blocks.multiblock;
 
+import com.hbm.blocks.machine.MachineMiningLaser;
 import com.hbm.capability.CapRole;
 import com.hbm.capability.ICapabilityBlock;
 import com.hbm.capability.MachineCaps;
@@ -12,7 +13,6 @@ import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.SubLevels;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,6 +30,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
@@ -42,11 +43,9 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -103,7 +102,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * 1.7's {@code BlockDummyable} was no opaque cube, so its constructor gave core and dummies light opacity 0: sky
      * and block light pass through a machine undiminished and the sky stays visible under it ({@code canBlockSeeTheSky},
      * the solar panels' and mirrors' check). Modern derives a non-occluding full cell's dampening as 1 and stops the
-     * sky column there; this restores 1.7 (ADDON-API-INVENTORY X-24, GameTest {@code multiblock_light_transparent}).
+     * sky column there; this restores 1.7 (GameTest {@code multiblock_light_transparent}).
      */
     @Override
     protected boolean isLightTransparent(BlockState state) {
@@ -238,6 +237,15 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     /** State-only geometry used to bake masks and check placement clearance before a core exists. */
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         MultiblockHandlerXR.visitBox(core, getDimensions(), facing, visitor);
+    }
+
+    /**
+     * Takes from the template's core beyond what {@link #cellStateFor} gives every cell. Player placement never
+     * calls it. Server or worldgen thread, whichever places the template. A non-null clip owns only its cells;
+     * the core may be in a neighbouring chunk whose assembly is not yet published.
+     */
+    public void assembled(LevelAccessor level, BlockPos core, BlockState coreState,
+                          @Nullable BoundingBox clip) {
     }
 
     /**
@@ -495,11 +503,10 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if (ignoresCollision(context)) return Shapes.empty();
         return cachedCellShape(0, 0, 0, state.getValue(FACING), true);
     }
 
-    // --- hbm-space placement rules (ADDON-API-INVENTORY V-175), off in plain HBM ---
+    // --- hbm-space placement rules, off in plain HBM ---
 
     /**
      * hbm-space {@code BlockDummyable.onBlockPlacedBy}: a multiblock placed against a wall faces away from that wall and
@@ -508,17 +515,14 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      */
     public static boolean wallPlacement = false;
     /**
-     * hbm-space {@code BlockDummyable.internalPlayers}: a player standing inside a multiblock they just placed does not
-     * collide with it until no such player is inside any multiblock of that type. Off in plain HBM.
+     * A player embedded by a successful assembly may leave that exact core's cells until they have escaped.
+     * Collision and head suffocation consult the same per-player ownership grant. Off in plain HBM.
      */
     public static boolean walkOutAfterPlacing = false;
 
     /** The face the last placement on this thread clicked, with the position it placed at. */
     private record PlacedFace(BlockPos pos, Direction face) {}
     private static final ThreadLocal<@Nullable PlacedFace> PLACED_FACE = new ThreadLocal<>();
-
-    /** hbm-space's per-block-type {@code internalPlayers} (1.7 kept it on the Block, shared by every machine of the type). */
-    private final Set<Player> internalPlayers = ConcurrentHashMap.newKeySet();
 
     /** Where a placement puts the core, which way it faces, and the cell 1.7 left out of the space check. */
     public record Placement(BlockPos core, Direction facing, BlockPos clicked) {}
@@ -559,7 +563,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         int ox = pos.getX() + facingDir.getStepX() * o;
         int oy = pos.getY() + getHeightOffset();
         int oz = pos.getZ() + facingDir.getStepZ() * o;
-        if (face == Direction.DOWN) {
+        if (face == Direction.DOWN && !(this instanceof MachineMiningLaser)) {
             int[] dim = getDimensions();
             oy -= dim[0] + dim[1];
         } else if (face != Direction.UP) {
@@ -578,52 +582,6 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     /** The placement highlight's green/red answer for a {@link #placement}. */
     public final boolean canPlace(Level level, Placement placement) {
         return checkRequirement(level, placement.core(), placement.facing(), placement.clicked());
-    }
-
-    /**
-     * hbm-space {@code addCollisionBoxesToList}: true while {@code context}'s player is one of this type's internal
-     * players. As 1.7's per-tick check, the list is cleared only once none of them is inside any more.
-     */
-    protected final boolean ignoresCollision(CollisionContext context) {
-        if (internalPlayers.isEmpty()
-                || !(context instanceof EntityCollisionContext entityContext)
-                || !(entityContext.getEntity() instanceof Player player) || !internalPlayers.contains(player)) {
-            return false;
-        }
-        for (Player inside : internalPlayers) {
-            if (isPlayerInside(inside)) return true;
-        }
-        internalPlayers.clear();
-        return false;
-    }
-
-    /** Public spelling of {@link #ignoresCollision} for cell blocks of another class. */
-    public final boolean ignoresCollisionFor(CollisionContext context) {
-        return ignoresCollision(context);
-    }
-
-    /** hbm-space {@code isPlayerInside}: the block at the player's feet (+0.1) or the one above belongs to this type. */
-    private boolean isPlayerInside(Player player) {
-        if (player.isRemoved()) return false;
-        Level level = player.level();
-        BlockPos feet = BlockPos.containing(player.getX(), player.getY() + 0.1D, player.getZ());
-        return partOfThis(level, feet) || partOfThis(level, feet.above());
-    }
-
-    private boolean partOfThis(Level level, BlockPos pos) {
-        BlockState state = level.getBlockState(pos);
-        if (state.getBlock() == this) return true;
-        if (!MultiblockSurface.isFoldedCell(state)) return false;
-        BlockPos core = MultiblockSurface.coreOfCell(level, pos);
-        return core != null && MultiblockSurface.foldedCore(level.getBlockState(core)) == this;
-    }
-
-    /** Whether the structure at {@code core} occupies {@code pos} (the client's stand-in before the cells arrive). */
-    private boolean occupies(BlockPos core, Direction facing, BlockPos pos) {
-        if (core.equals(pos)) return true;
-        boolean[] hit = {false};
-        visitCells(core, facing, (cell, mask) -> { if (cell.equals(pos)) hit[0] = true; });
-        return hit[0];
     }
 
     @Override public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
@@ -645,14 +603,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
             if (!player.getAbilities().instabuild && !player.getInventory().add(refund)) player.drop(refund, false);
             return;
         }
-        if (level.isClientSide()) {
-            // the cells have not arrived yet: the client asks the footprint instead of the world
-            if (walkOutAfterPlacing) {
-                BlockPos feet = BlockPos.containing(player.getX(), player.getY() + 0.1D, player.getZ());
-                if (occupies(core, facing, feet) || occupies(core, facing, feet.above())) internalPlayers.add(player);
-            }
-            return;
-        }
+        if (level.isClientSide()) return;
         withoutTeardown(() -> {
             level.setBlock(core, defaultBlockState().setValue(FACING, facing), 3);
             fillSpace(level, core, facing);
@@ -663,8 +614,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
             ItemStacks.applyComponents(placedCore, stack);
             placedCore.setChanged();
         }
-        // hbm-space: "check if the placing player is inside the placed multiblock"
-        if (walkOutAfterPlacing && isPlayerInside(player)) internalPlayers.add(player);
+        MultiblockPlacementEscape.placed(level, core, this, player);
     }
 
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {

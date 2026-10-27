@@ -3,6 +3,8 @@ package com.hbm.inventory.fluid;
 import com.hbm.Constants;
 import com.hbm.api.fluid.TooltipTrait;
 import com.hbm.blocks.StandardInfo;
+import com.hbm.inventory.fluid.trait.FT_Combustible;
+import com.hbm.inventory.fluid.trait.FT_Flammable;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
@@ -22,6 +24,7 @@ import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +70,37 @@ public class FluidType {
     private final Identifier icon;
     // replaced whole (never mutated in place) so a reload on one thread never tears a read on another
     private volatile Map<Class<?>, Object> traits = Map.of();
+    private volatile List<TagKey<Fluid>> sharedTags = List.of();
+    private volatile boolean propertiesDefined;
+
+    /** Conventional tags whose foreign fluids this type accepts as its own kind. */
+    public List<TagKey<Fluid>> getSharedTags() { return metadataType().sharedTags; }
+
+    /** An unconfigured exact resource inherits its kind's metadata while retaining its own registry identity. */
+    public FluidType metadataType() {
+        return foreign && !propertiesDefined ? Fluids.kindOf(this) : this;
+    }
+
+    boolean hasOwnProperties() { return propertiesDefined; }
+
+    FluidProperties.Properties ownProperties() {
+        return new FluidProperties.Properties(color, guiTint != color ? guiTint : null, temperature, hazard,
+                List.copyOf(traits.values()), sharedTags);
+    }
+
+    private synchronized void defineProperties() {
+        if (propertiesDefined) return;
+        var inherited = metadataType();
+        if (inherited != this) {
+            color = inherited.color;
+            guiTint = inherited.guiTint;
+            temperature = inherited.temperature;
+            hazard = inherited.hazard;
+            traits = inherited.traits;
+            sharedTags = inherited.sharedTags;
+        }
+        propertiesDefined = true;
+    }
 
     /**
      * The greyscale droplet art every fluid's icon sprite is recoloured from, and therefore the stem of
@@ -78,7 +112,9 @@ public class FluidType {
 
     public static final int ROOM_TEMPERATURE = 20;
     /** How hot this fluid is, in °C. */
-    public int temperature = ROOM_TEMPERATURE;
+    private int temperature = ROOM_TEMPERATURE;
+
+    public int getTemperature() { return metadataType().temperature; }
 
     public FluidType(String name, int color) {
         this(Constants.MOD_ID, name, color);
@@ -120,11 +156,13 @@ public class FluidType {
     }
 
     public FluidType setTemp(int temperature) {
+        defineProperties();
         this.temperature = temperature;
         return this;
     }
 
     public FluidType setTint(int tint) {
+        defineProperties();
         this.guiTint = tint;
         return this;
     }
@@ -171,12 +209,13 @@ public class FluidType {
      * the fallback for a fluid that has no lang entry.
      */
     public Component getDisplayName() {
-        return Component.translatableWithFallback(this.unlocalized, this.fallbackName);
+        var metadata = metadataType();
+        return Component.translatableWithFallback(metadata.unlocalized, metadata.fallbackName);
     }
 
     /** The title-cased id {@link #getDisplayName()} falls back on (also the fallback other mods show). */
     public String getFallbackName() {
-        return this.fallbackName;
+        return metadataType().fallbackName;
     }
 
     /**
@@ -203,11 +242,20 @@ public class FluidType {
         return sb.toString().trim();
     }
 
-    public int getColor() { return this.color; }
+    /** Explicit client-side metadata; exact resource identity and canonical server fields are unchanged. */
+    public FluidMetadata clientMetadata() { return ClientFluidProperties.get(this); }
 
-    public int getTint() { return this.guiTint; }
+    public int getColor(boolean client) { return client ? clientMetadata().getColor() : getColor(); }
 
-    public Identifier getTexture() { return this.texture; }
+    Component ownDisplayName() { return Component.translatableWithFallback(unlocalized, fallbackName); }
+    Identifier ownIconSprite() { return icon; }
+    Identifier ownTexture() { return texture; }
+
+    public int getColor() { return metadataType().color; }
+
+    public int getTint() { return metadataType().guiTint; }
+
+    public Identifier getTexture() { return metadataType().texture; }
 
     /** The lowercase id every asset this fluid names is built from. */
     public String getKey() { return this.key; }
@@ -220,13 +268,14 @@ public class FluidType {
      * {@link com.hbm.client.FluidSprites#draw}, which is what a screen or a JEI category wants when it
      * has somewhere to put a droplet but no item slot to put it in.
      */
-    public Identifier getIconSprite() { return this.icon; }
+    public Identifier getIconSprite() { return metadataType().icon; }
 
-    public String getTranslationKey() { return this.unlocalized; }
+    public String getTranslationKey() { return metadataType().unlocalized; }
 
-    public boolean isHot() { return this.temperature >= 100; }
+    public boolean isHot() { return getTemperature() >= 100; }
 
     public synchronized FluidType addTraits(Object... traits) {
+        defineProperties();
         Map<Class<?>, Object> next = new HashMap<>(this.traits);
         for (Object trait : traits) next.put(trait.getClass(), trait);
         this.traits = Map.copyOf(next);
@@ -234,14 +283,20 @@ public class FluidType {
     }
 
     /** Every trait this fluid has, in no particular order. */
-    public Collection<Object> traits() { return this.traits.values(); }
+    public Collection<Object> traits() { return metadataType().traits.values(); }
 
     /**
      * {@link FluidProperties}: replaces colour, GUI tint, temperature, hazard diamond and every trait with a
      * {@code fluid_property} file's values (a datapack load replaces, it does not merge; patches are merged into the
      * file's values before this is called).
      */
-    synchronized void applyProperties(int color, int tint, int temperature, FluidHazard hazard, List<Object> traits) {
+    synchronized void applyProperties(int color, int tint, int temperature, FluidHazard hazard, List<Object> traits,
+                                      List<TagKey<Fluid>> shares) {
+        applyProperties(color, tint, temperature, hazard, traits, shares, true);
+    }
+
+    synchronized void applyProperties(int color, int tint, int temperature, FluidHazard hazard, List<Object> traits,
+                                      List<TagKey<Fluid>> shares, boolean defined) {
         this.color = color;
         this.guiTint = tint;
         this.temperature = temperature;
@@ -249,22 +304,28 @@ public class FluidType {
         Map<Class<?>, Object> next = new HashMap<>();
         for (Object trait : traits) next.put(trait.getClass(), trait);
         this.traits = Map.copyOf(next);
+        if (!sharedTags.equals(shares)) {
+            sharedTags = List.copyOf(shares);
+            Fluids.sharingChanged();
+        }
+        propertiesDefined = defined;
     }
 
     private volatile FluidHazard hazard = FluidHazard.NONE;
 
     /** 1.7's {@code poison}, {@code flammability}, {@code reactivity} and {@code symbol}: the hazard diamond's values. */
-    public FluidHazard getHazard() { return this.hazard; }
+    public FluidHazard getHazard() { return metadataType().hazard; }
 
     /** A code default for a fluid without a {@code fluid_property} file (1.7's constructor arguments {@code p, f, r, symbol}). */
     public FluidType setHazard(FluidHazard hazard) {
+        defineProperties();
         this.hazard = Objects.requireNonNull(hazard);
         return this;
     }
 
-    public boolean hasTrait(Class<?> trait) { return traits.containsKey(trait); }
+    public boolean hasTrait(Class<?> trait) { return metadataType().traits.containsKey(trait); }
 
-    public <T> T getTrait(Class<T> trait) { return trait.cast(traits.get(trait)); }
+    public <T> T getTrait(Class<T> trait) { return trait.cast(metadataType().traits.get(trait)); }
 
     /** Adds the fluid facts currently represented by the port's fluid model to a tooltip. */
     public void addInfo(List<Component> info) {
@@ -280,6 +341,12 @@ public class FluidType {
      * and Shift is up. The order is the registry's, never the order a fluid's traits were added in.
      */
     public void addInfo(List<Component> info, boolean shiftHeld) {
+        addInfo(info, shiftHeld, new FluidMetadata(FluidProperties.Properties.of(this), null, metadataType(), metadataType().hasOwnProperties()));
+    }
+
+    /** Shared tooltip formatting over explicit server or client metadata. */
+    static void addInfo(List<Component> info, boolean shiftHeld, FluidMetadata metadata) {
+        var temperature = metadata.getTemperature();
         List<Component> hidden = new ArrayList<>();
 
         if (temperature != ROOM_TEMPERATURE) {
@@ -287,17 +354,17 @@ public class FluidType {
             if (temperature > 0) info.add(Component.literal(temperature + "\u00b0C").withStyle(ChatFormatting.RED));
         }
 
-        FT_Corrosive corrosive = getTrait(FT_Corrosive.class);
+        FT_Corrosive corrosive = metadata.getTrait(FT_Corrosive.class);
         if (corrosive != null) corrosive.addInfo(info);
 
         // FT_Flammable / FT_Combustible (read through FluidCombustion); their lines are 1.7's.
-        if (FluidCombustion.isFlammable(this)) {
-            long energy = FluidCombustion.getFlammableEnergy(this);
+        if (metadata.hasTrait(FT_Flammable.class)) {
+            long energy = metadata.getTrait(FT_Flammable.class).getHeatEnergy();
             info.add(bracketed("hbmfluid.trait.flammable", ChatFormatting.YELLOW));
             if (energy > 0) info.add(provides(ChatFormatting.YELLOW, energy, "TU "));
         }
 
-        FluidCombustion.Combustible combustible = FluidCombustion.getCombustible(this);
+        FluidCombustion.Combustible combustible = metadata.hasTrait(FT_Combustible.class) ? metadata.getTrait(FT_Combustible.class).combustible() : null;
         if (combustible != null) {
             info.add(bracketed("hbmfluid.trait.combustible", ChatFormatting.GOLD));
             if (combustible.energyPerBucket() > 0) {
@@ -307,59 +374,59 @@ public class FluidType {
             }
         }
 
-        FT_Polluting polluting = getTrait(FT_Polluting.class);
+        FT_Polluting polluting = metadata.getTrait(FT_Polluting.class);
         if (polluting != null) {
             polluting.addInfo(info);
             hidden(info, hidden, shiftHeld, polluting::addInfoHidden);
         }
 
-        FT_Heatable heatable = getTrait(FT_Heatable.class);
+        FT_Heatable heatable = metadata.getTrait(FT_Heatable.class);
         if (heatable != null) hidden(info, hidden, shiftHeld, heatable::addInfoHidden);
 
-        FT_Coolable coolable = getTrait(FT_Coolable.class);
+        FT_Coolable coolable = metadata.getTrait(FT_Coolable.class);
         if (coolable != null) hidden(info, hidden, shiftHeld, coolable::addInfoHidden);
 
-        FT_PWRModerator moderator = getTrait(FT_PWRModerator.class);
+        FT_PWRModerator moderator = metadata.getTrait(FT_PWRModerator.class);
         if (moderator != null) {
             moderator.addInfo(info);
             hidden(info, hidden, shiftHeld, moderator::addInfoHidden);
         }
 
-        FT_Poison poison = getTrait(FT_Poison.class);
+        FT_Poison poison = metadata.getTrait(FT_Poison.class);
         if (poison != null) hidden(info, hidden, shiftHeld, poison::addInfoHidden);
 
-        FT_Toxin toxin = getTrait(FT_Toxin.class);
+        FT_Toxin toxin = metadata.getTrait(FT_Toxin.class);
         if (toxin != null) hidden(info, hidden, shiftHeld, toxin::addInfoHidden);
 
-        FT_VentRadiation vent = getTrait(FT_VentRadiation.class);
+        FT_VentRadiation vent = metadata.getTrait(FT_VentRadiation.class);
         if (vent != null) vent.addInfo(info);
 
-        FT_Pheromone pheromone = getTrait(FT_Pheromone.class);
+        FT_Pheromone pheromone = metadata.getTrait(FT_Pheromone.class);
         if (pheromone != null) pheromone.addInfo(info);
 
-        FluidTraitSimple.FT_Gaseous gaseous = getTrait(FluidTraitSimple.FT_Gaseous.class);
+        FluidTraitSimple.FT_Gaseous gaseous = metadata.getTrait(FluidTraitSimple.FT_Gaseous.class);
         if (gaseous != null) hidden(info, hidden, shiftHeld, gaseous::addInfoHidden);
-        FluidTraitSimple.FT_Gaseous_ART evap = getTrait(FluidTraitSimple.FT_Gaseous_ART.class);
+        FluidTraitSimple.FT_Gaseous_ART evap = metadata.getTrait(FluidTraitSimple.FT_Gaseous_ART.class);
         if (evap != null) hidden(info, hidden, shiftHeld, evap::addInfoHidden);
-        FluidTraitSimple.FT_Liquid liquid = getTrait(FluidTraitSimple.FT_Liquid.class);
+        FluidTraitSimple.FT_Liquid liquid = metadata.getTrait(FluidTraitSimple.FT_Liquid.class);
         if (liquid != null) hidden(info, hidden, shiftHeld, liquid::addInfoHidden);
-        FluidTraitSimple.FT_Viscous viscous = getTrait(FluidTraitSimple.FT_Viscous.class);
+        FluidTraitSimple.FT_Viscous viscous = metadata.getTrait(FluidTraitSimple.FT_Viscous.class);
         if (viscous != null) hidden(info, hidden, shiftHeld, viscous::addInfoHidden);
-        FluidTraitSimple.FT_Plasma plasma = getTrait(FluidTraitSimple.FT_Plasma.class);
+        FluidTraitSimple.FT_Plasma plasma = metadata.getTrait(FluidTraitSimple.FT_Plasma.class);
         if (plasma != null) hidden(info, hidden, shiftHeld, plasma::addInfoHidden);
-        FluidTraitSimple.FT_Amat amat = getTrait(FluidTraitSimple.FT_Amat.class);
+        FluidTraitSimple.FT_Amat amat = metadata.getTrait(FluidTraitSimple.FT_Amat.class);
         if (amat != null) amat.addInfo(info);
-        FluidTraitSimple.FT_LeadContainer leadContainer = getTrait(FluidTraitSimple.FT_LeadContainer.class);
+        FluidTraitSimple.FT_LeadContainer leadContainer = metadata.getTrait(FluidTraitSimple.FT_LeadContainer.class);
         if (leadContainer != null) leadContainer.addInfo(info);
-        FluidTraitSimple.FT_Delicious delicious = getTrait(FluidTraitSimple.FT_Delicious.class);
+        FluidTraitSimple.FT_Delicious delicious = metadata.getTrait(FluidTraitSimple.FT_Delicious.class);
         if (delicious != null) hidden(info, hidden, shiftHeld, delicious::addInfoHidden);
-        FluidTraitSimple.FT_Unsiphonable unsiphonable = getTrait(FluidTraitSimple.FT_Unsiphonable.class);
+        FluidTraitSimple.FT_Unsiphonable unsiphonable = metadata.getTrait(FluidTraitSimple.FT_Unsiphonable.class);
         if (unsiphonable != null) hidden(info, hidden, shiftHeld, unsiphonable::addInfoHidden);
 
         // Traits another mod added to the format (FluidProperties.registerTrait/registerFlag), after HBM's, in their
         // registration order: 1.7 had one traitList that hbm-space appended to, so its lines follow the same rule.
         for (Class<?> type : FluidProperties.addonTraitTypes()) {
-            if (getTrait(type) instanceof TooltipTrait trait) {
+            if (metadata.getTrait(type) instanceof TooltipTrait trait) {
                 trait.addInfo(info);
                 hidden(info, hidden, shiftHeld, trait::addInfoHidden);
             }

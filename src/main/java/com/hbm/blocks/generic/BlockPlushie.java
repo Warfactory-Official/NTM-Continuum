@@ -36,12 +36,17 @@ public class BlockPlushie extends BlockTrinket {
             plushie.squishTimer = 11;
         } else if (plushie.type() == PlushieType.HUNDUN) {
             level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                    ModSounds.HUNDUNS_MAGNIFICENT_HOWL.get(), SoundSource.BLOCKS, 100F, 1F);
+                    ModSounds.HUNDUNS_MAGNIFICENT_HOWL.get(), SoundSource.BLOCKS, squishVolume(plushie.type()), 1F);
         } else {
             level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                    ModSounds.SQUEAKY_TOY.get(), SoundSource.BLOCKS, 0.25F, 1F);
+                    ModSounds.SQUEAKY_TOY.get(), SoundSource.BLOCKS, squishVolume(plushie.type()), 1F);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /** The base mod's loud Hundun; forks may supply their authored squish volume. */
+    protected float squishVolume(PlushieType type) {
+        return type == PlushieType.HUNDUN ? 100F : 0.25F;
     }
 
     public enum PlushieType {

@@ -51,23 +51,23 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
 
     @Override
     public void chargeBattery(ItemStack stack, long i) {
-        setCharge(stack, charge(stack) + i);
+        setCharge(stack, IBatteryItem.adjustCharge(getCharge(stack), i, getMaxCharge(stack), false));
     }
 
     @Override
     public void dischargeBattery(ItemStack stack, long i) {
-        setCharge(stack, charge(stack) - i);
+        setCharge(stack, IBatteryItem.adjustCharge(getCharge(stack), i, getMaxCharge(stack), true));
     }
 
     @Override
     public void setCharge(ItemStack stack, long i) {
-        long clamped = Math.max(0L, Math.min(i, stats().capacity()));
+        var clamped = IBatteryItem.clampCharge(i, stats().capacity());
         ModDataComponents.batteryCharge(stack, clamped);
     }
 
     @Override
     public long getCharge(ItemStack stack) {
-        return charge(stack);
+        return IBatteryItem.clampCharge(charge(stack), getMaxCharge(stack));
     }
 
     @Override

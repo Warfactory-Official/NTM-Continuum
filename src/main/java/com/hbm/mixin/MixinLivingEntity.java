@@ -1,5 +1,6 @@
 package com.hbm.mixin;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.handler.ClimbableRegistry;
 import com.hbm.handler.EntityEffectHandler;
 import com.hbm.items.armor.ArmorFSB;
@@ -36,6 +37,11 @@ public class MixinLivingEntity {
         if (self.level() != null && ClimbableRegistry.isEntityOnAny(self.level(), self)) {
             cir.setReturnValue(true);
         }
+    }
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void hbm$tickStart(CallbackInfo ci) {
+        Environment.livingTickStart((LivingEntity) (Object) this);
     }
 
     @Inject(method = "tick", at = @At("TAIL"))

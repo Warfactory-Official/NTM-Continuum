@@ -37,6 +37,7 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
             12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23
     };
+    public static final int SLOT_COUNT = SLOTS.length;
     private static final float DECAY_RATE = 0.9965402628F;
 
     public final FluidTankNTM liquid = new FluidTankNTM(Fluids.WASTEFLUID, 16_000);
@@ -46,7 +47,7 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
     public int age;
 
     public TileEntityStorageDrum(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_STORAGE_DRUM.get(), pos, state, SLOTS.length);
+        super(ModBlockEntities.MACHINE_STORAGE_DRUM.get(), pos, state, SLOT_COUNT);
         StorageDrumRecipes.registerRecipes();
     }
 
@@ -91,7 +92,7 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
                         drum.inventory.setStackInSlot(slot, output.copy());
                     }
                 }
-            } else {
+            } else if (ContaminationUtil.neutronSystem() == null) {
                 ContaminationUtil.neutronActivateItem(stack, 0.0F, DECAY_RATE);
             }
             if (!SLOT_TICK.isEmpty()) {

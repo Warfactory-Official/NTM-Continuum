@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import com.hbm.blocks.StandardInfo;
 import dev.golem.core.data.ModelData;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
@@ -70,6 +71,6 @@ public class ItemFluidIcon extends CompatItem {
         if (amount > 0) tooltip.add(Component.literal(amount + "mB"));
         int pressure = ModDataComponents.fluidPressure(stack);
         if (pressure > 0) tooltip.add(Component.literal(pressure + "PU").withStyle(ChatFormatting.RED));
-        getFluid(stack).addInfo(tooltip);
+        getFluid(stack).clientMetadata().addInfo(tooltip, StandardInfo.shiftHeld());
     }
 }

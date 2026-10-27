@@ -166,7 +166,7 @@ public final class ElectrolyserMetalTable extends RecipeSource<Row> {
         for (Object[] product : products) {
             int amount = (Integer) product[1];
             if (moltenProducts.size() < 2 && product[0] instanceof BedrockOreOutput output) {
-                MaterialStack melt = toFluid(output, amount);
+                MaterialStack melt = BedrockOreType.molten(output, amount);
                 if (melt != null) {
                     moltenProducts.add(melt);
                     continue;
@@ -183,15 +183,6 @@ public final class ElectrolyserMetalTable extends RecipeSource<Row> {
                 moltenProducts.size() > 1 ? moltenProducts.get(1) : null,
                 20,
                 solidProducts.toArray(new ItemStack[0]));
-    }
-
-    /** 1.7 {@code ItemBedrockOreNew.toFluid}: the molten material of a smeltable output, else nothing. */
-    private static @Nullable MaterialStack toFluid(BedrockOreOutput o, double amount) {
-        NTMMaterial mat = o.material();
-        if (mat != null && mat.smeltable == NTMMaterial.SmeltingBehavior.SMELTABLE) {
-            return new MaterialStack(mat, (int) Math.ceil(q(MaterialShapes.FRAGMENT, o.amount()) * amount));
-        }
-        return null;
     }
 
     /** 1.7 {@code MaterialShapes.q(amount)}. */

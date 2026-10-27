@@ -62,6 +62,6 @@ public class TankGlassRenderer<T extends BlockEntity> extends GemBER<T, TankGlas
         state.yaw = 0F;
         FluidTankNTM tank = tankGetter.apply(be);
         state.fillFraction = tank.getMaxFill() <= 0 ? 0F : (float) tank.getFill() / (float) tank.getMaxFill();
-        state.fluidColor = tank.getTankType().getColor();
+        state.fluidColor = tank.getTankType().clientMetadata().getColor();
     }
 }
