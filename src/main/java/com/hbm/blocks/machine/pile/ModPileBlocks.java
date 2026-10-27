@@ -113,6 +113,8 @@ public final class ModPileBlocks {
                     })));
 
     static {
+        // 1.7 registers the pile block with an item but no tab
+        REG.blockItem(pile_block);
         ModTabs.addStacksTo(HbmTab.MACHINES,
                 () -> IntStream.range(0, 3).mapToObj(ModPileBlocks::pileDeviceItem).toList());
         ModTabs.addStacksTo(HbmTab.CONTROL, pile_rod::stacks);

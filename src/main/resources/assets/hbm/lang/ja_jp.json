@@ -4525,6 +4525,7 @@
   "item.hbm.meltdown_tool": "ディアトロフ作簡単お手軽炉心融解キット",
   "item.hbm.meteor_remote": "隕石投下装置",
   "item.hbm.polaroid": "ポラロイド",
+  "item.hbm.glitch": "グリッチ",
   "item.hbm.pollution_detector": "汚染検出器",
   "item.hbm.power_net_tool": "ケーブルネットワーク解析ツール",
   "item.hbm.pipette": "ピペット",
@@ -4561,5 +4562,14 @@
   "item.hbm.steamsuit_boots": "スチームスーツブーツ",
   "item.hbm.steamsuit_helmet": "呼吸器付きスチームスーツヘルメット",
   "item.hbm.steamsuit_legs": "スチームスーツレギンス",
-  "item.hbm.steamsuit_plate": "スチームスーツチェストプレート"
+  "item.hbm.steamsuit_plate": "スチームスーツチェストプレート",
+  "item.hbm.ingot_metal_ingot": "金属インゴット",
+  "item.hbm.ingot_metal_counter": "Counter",
+  "item.hbm.ingot_metal_key": "Metal Key",
+  "item.hbm.ingot_metal_beacon": "Radio Homing Beacon",
+  "item.hbm.ingot_metal_casing": "Metal Casing",
+  "item.hbm.ingot_metal_clockwork": "Clockwork",
+  "item.hbm.ingot_metal_bar": "Metal Bar",
+  "item.hbm.bismuth_tool": "磁力抽出器",
+  "item.hbm.memory": "item.null.name"
 }

@@ -19,8 +19,7 @@ import net.minecraft.world.level.block.state.properties.Property;
  * {@code Minecraft.getBlockColors()} once the client has started.
  *
  * <p>Only the sellafite family: a grayscale tint darkening with the {@code SHADE} state:
- * {@code brightness = 1 − shade/15}, the old {@code BlockSellafieldSlaked} {@code IBlockColor}
- * (divisor stays 15 although only shades 0..9 are used, so shade 9 is dark grey, not black).
+ * {@code brightness = 1 − shade/15}, the old {@code BlockSellafieldSlaked} {@code IBlockColor}.
  * Client-only.
  */
 public final class HbmBlockColors {

@@ -4034,6 +4034,7 @@
   "item.hbm.meltdown_tool": "Djatlow Sofortiger Kernschmelzeinduzierer",
   "item.hbm.meteor_remote": "Meteoritenkontroller",
   "item.hbm.polaroid": "Das Polaroid",
+  "item.hbm.glitch": "Glitch",
   "item.hbm.pollution_detector": "Verschmutzungsdetektor",
   "item.hbm.power_net_tool": "Stromnetz-Analysewerkzeug",
   "item.hbm.survey_scanner": "Tiefenscanner",
@@ -4062,5 +4063,15 @@
   "item.hbm.steamsuit_boots": "Steam Suit Stiefel",
   "item.hbm.steamsuit_helmet": "Steam Suit Atemmaske",
   "item.hbm.steamsuit_legs": "Steam Suit Beinschutz",
-  "item.hbm.steamsuit_plate": "Steam Suit Brustpanzer"
+  "item.hbm.steamsuit_plate": "Steam Suit Brustpanzer",
+  "item.hbm.ingot_metal_ingot": "Metallbarren",
+  "item.hbm.ingot_metal_counter": "Zählwerk",
+  "item.hbm.ingot_metal_key": "Metallschlüssel",
+  "item.hbm.ingot_metal_beacon": "Funkleitstrahl",
+  "item.hbm.ingot_metal_casing": "Metallgehäuse",
+  "item.hbm.ingot_metal_clockwork": "Uhrwerk",
+  "item.hbm.ingot_metal_bar": "Metallstange",
+  "item.hbm.ingot_metal_detector": "Detektor",
+  "item.hbm.bismuth_tool": "Magnetischer Extraktor",
+  "item.hbm.memory": "item.null.name"
 }

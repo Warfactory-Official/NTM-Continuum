@@ -51,8 +51,7 @@ public final class ModBombBlocks {
             // 1.7: drops nothing, but a plain cube without a tile entity, so silk touch keeps it
             .loot(Loot.silkTouchOnly()).tag(BlockTag.PICKAXE);
 
-    // --- the DRX/GAMMA burn products. No creative tab upstream (setCreativeTab(null)) and no block
-    // item: these exist only to be PLACED by a balefire detonation or an FEL beam. ---
+    // The DRX/GAMMA burn products, placed by a balefire detonation or an FEL beam. 1.7 gives them items but no tab.
 
     /** Balefire: light 15, hardness 0, spreads violently and irradiates anything standing in it. */
     public static final RegistryObject<BlockBalefire> balefire = REG.block("balefire",
@@ -66,9 +65,7 @@ public final class ModBombBlocks {
                             "4", "_floor", "5", "_floor", "6", "_floor", "7", "_floor", "8", "_floor", "9", "_floor",
                             "10", "_floor", "11", "_floor", "12", "_floor", "13", "_floor", "14", "_floor",
                             "15", "_floor"))
-                    // 1.7 registerBlock gave balefire a tab-less ItemBlock, drawn as the block's flat icon (fire
-                    // render type, no 3D item). HBM registers no item, so this is only that look on file: the old
-                    // .blockItem() pointed at hbm:block/balefire, which does not exist (only _floor does).
+                    // 1.7 registerBlock gives balefire a tab-less item drawn as the block's flat icon
                     .item(Models.generated("hbm:blocks/balefire")));
 
     /** Digamma flame: light 15, blast resistance 150, eternal, and it never spreads. */
@@ -144,6 +141,9 @@ public final class ModBombBlocks {
             .transform(tntFamily("c4"));
 
     static {
+        REG.blockItem(balefire, Compat::blockDescription);
+        REG.blockItem(fire_digamma, Compat::blockDescription).transform(Presets.sprite("hbm:blocks/fire_digamma"));
+        REG.blockItem(digamma_matter, Compat::blockDescription);
         // BlockTaint's old constructor put its item in the control tab, unlike the missile item itself.
         REG.blockItem(taint, ItemBlockTaint::new, Compat::blockDescription).tab(HbmTab.CONTROL);
         REG.blockItem(nuke_man, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.FAT_MAN),

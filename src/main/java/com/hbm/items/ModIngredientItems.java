@@ -6,7 +6,9 @@ import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ItemEnums.EnumAshType;
+import com.hbm.items.ItemEnums.EnumIngotMetal;
 import com.hbm.items.ItemEnums.EnumPartType;
+import com.hbm.items.machine.ItemBattery;
 import com.hbm.items.machine.ItemPlateFuel;
 import com.hbm.items.machine.ItemPlateFuel.FunctionEnum;
 import dev.golem.core.registry.DeferredRegister;
@@ -30,6 +32,15 @@ public final class ModIngredientItems {
     private static final Map<PlateFuelType, RegistryObject<ItemPlateFuel>> PLATE_FUELS =
             new EnumMap<>(PlateFuelType.class);
 
+    /** 1.7 {@code ItemAmatExtractor}: an empty item, stack size 1, no creative tab. */
+    public static final RegistryObject<Item> BISMUTH_TOOL = REG.simpleItem("bismuth_tool", p -> p.stacksTo(1))
+            .transform(Presets.sprite());
+    /** 1.7 {@code memory}: a battery holding {@code Long.MAX_VALUE / 100}, no creative tab. */
+    public static final RegistryObject<ItemBattery> MEMORY = REG.item("memory",
+                    (Item.Properties p) -> new ItemBattery(p, Long.MAX_VALUE / 100L, 100000000000000L, 100000000000000L),
+                    p -> p.stacksTo(1))
+            .transform(Presets.sprite("hbm:items/mo8_anim"));
+
     static {
         for (EnumPartType type : EnumPartType.VALUES) {
             String name = type.name().toLowerCase(Locale.ROOT);
@@ -45,6 +56,10 @@ public final class ModIngredientItems {
                     .transform(Presets.sprite("hbm:items/powder_ash." + name));
             ASHES.put(type, item);
             ModTabs.addTo(HbmTab.MATERIALS, item);
+        }
+        for (EnumIngotMetal type : EnumIngotMetal.VALUES) {
+            String name = type.name().toLowerCase(Locale.ROOT);
+            REG.item("ingot_metal_" + name).transform(Presets.sprite("hbm:items/ingot_metal." + name));
         }
         for (PlateFuelType type : PlateFuelType.values()) {
             RegistryObject<ItemPlateFuel> item = REG.item(type.id,

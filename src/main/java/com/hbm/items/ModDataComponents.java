@@ -1,6 +1,7 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
+import com.hbm.handler.ArmorModHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemRBMKPellet;
@@ -8,12 +9,17 @@ import com.hbm.items.machine.RBMKFuelData;
 import com.hbm.items.tool.ItemModMinecart;
 import com.hbm.items.weapon.grenade.GrenadeData;
 import com.hbm.util.SavedIds;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.data.ItemContents;
 import dev.golem.core.data.ModelData;
 import dev.golem.core.world.ItemStacks;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
@@ -153,7 +159,20 @@ public final class ModDataComponents {
 
     /** Nine ordered armor-module slots, replacing the legacy {@code ntm_armor_mods.mod_slot_*} tag. */
     public static final GolemComponent<ItemContents> ARMOR_MODS =
-            GolemComponent.of(Constants.MOD_ID, "armor_mods", ItemContents.CODEC);
+            GolemComponent.of(Constants.MOD_ID, "armor_mods", ModDataComponents::armorModsCodec);
+
+    /** Also reads DE's {@code [{slot, item}]} list, so a DE stack loading from another mod's storage keeps its modules. */
+    private static Codec<ItemContents> armorModsCodec() {
+        Codec<ItemContents> slotted = RecordCodecBuilder.<Map.Entry<Integer, ItemStack>>create(i -> i.group(
+                Codec.intRange(0, ArmorModHandler.MOD_SLOTS - 1).fieldOf("slot").forGetter(Map.Entry::getKey),
+                ItemStacks.optionalCodec().fieldOf("item").forGetter(Map.Entry::getValue)
+        ).apply(i, Map::entry)).listOf().xmap(entries -> {
+            List<ItemStack> slots = new ArrayList<>(Collections.nCopies(ArmorModHandler.MOD_SLOTS, ItemStack.EMPTY));
+            for (Map.Entry<Integer, ItemStack> e : entries) slots.set(e.getKey(), e.getValue());
+            return new ItemContents(slots);
+        }, contents -> List.of());
+        return Codec.either(ItemContents.CODEC, slotted).xmap(e -> e.map(c -> c, c -> c), Either::left);
+    }
 
     /**
      * A gun's state-machine scratch space: timer, state, animation timer, button flags. Rewritten

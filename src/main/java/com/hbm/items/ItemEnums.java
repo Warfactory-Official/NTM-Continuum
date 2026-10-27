@@ -62,6 +62,12 @@ public final class ItemEnums {
         public static final EnumAshType[] VALUES = values();
     }
 
+    /** 1.7's {@code ingot_metal} metadata, an uncraftable family with no creative tab. */
+    public enum EnumIngotMetal {
+        SCRAP, INGOT, COUNTER, KEY, BEACON, CASING, CLOCKWORK, BAR, DETECTOR;
+        public static final EnumIngotMetal[] VALUES = values();
+    }
+
     /** Generic machine parts from the old metadata item. */
     public enum EnumPartType {
         PISTON_PNEUMATIC("piston_pneumatic"),

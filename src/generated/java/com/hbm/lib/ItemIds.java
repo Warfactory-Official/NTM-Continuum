@@ -258,6 +258,7 @@ public final class ItemIds {
     public static final String attachment_mask_mono = "hbm:attachment_mask_mono";
     public static final String australium_iii = "hbm:australium_iii";
     public static final String back_tesla = "hbm:back_tesla";
+    public static final String balefire = "hbm:balefire";
     public static final String balefire_and_ham = "hbm:balefire_and_ham";
     public static final String balefire_and_steel = "hbm:balefire_and_steel";
     public static final String balefire_scrambled = "hbm:balefire_scrambled";
@@ -585,6 +586,7 @@ public final class ItemIds {
     public static final String bismuth_legs = "hbm:bismuth_legs";
     public static final String bismuth_pickaxe = "hbm:bismuth_pickaxe";
     public static final String bismuth_plate = "hbm:bismuth_plate";
+    public static final String bismuth_tool = "hbm:bismuth_tool";
     public static final String bj_boots = "hbm:bj_boots";
     public static final String bj_helmet = "hbm:bj_helmet";
     public static final String bj_legs = "hbm:bj_legs";
@@ -1009,6 +1011,7 @@ public final class ItemIds {
     public static final String chernobylsign = "hbm:chernobylsign";
     public static final String chimney_brick = "hbm:chimney_brick";
     public static final String chimney_industrial = "hbm:chimney_industrial";
+    public static final String chlorine_gas = "hbm:chlorine_gas";
     public static final String chlorine_pinwheel = "hbm:chlorine_pinwheel";
     public static final String chlorophyte_axe = "hbm:chlorophyte_axe";
     public static final String chlorophyte_pickaxe = "hbm:chlorophyte_pickaxe";
@@ -1455,6 +1458,7 @@ public final class ItemIds {
     public static final String dieselsuit_legs = "hbm:dieselsuit_legs";
     public static final String dieselsuit_plate = "hbm:dieselsuit_plate";
     public static final String digamma_diagnostic = "hbm:digamma_diagnostic";
+    public static final String digamma_matter = "hbm:digamma_matter";
     public static final String dirt_dead = "hbm:dirt_dead";
     public static final String dirt_oily = "hbm:dirt_oily";
     public static final String disperser_canister = "hbm:disperser_canister";
@@ -1592,6 +1596,7 @@ public final class ItemIds {
     public static final String fins_quad_titanium = "hbm:fins_quad_titanium";
     public static final String fins_small_steel = "hbm:fins_small_steel";
     public static final String fins_tri_steel = "hbm:fins_tri_steel";
+    public static final String fire_digamma = "hbm:fire_digamma";
     public static final String fire_door = "hbm:fire_door";
     public static final String fireworks = "hbm:fireworks";
     public static final String fissure_bomb = "hbm:fissure_bomb";
@@ -1707,7 +1712,11 @@ public final class ItemIds {
     public static final String gadget_explosive8 = "hbm:gadget_explosive8";
     public static final String gadget_kit = "hbm:gadget_kit";
     public static final String gadget_wireing = "hbm:gadget_wireing";
+    public static final String gas_asbestos = "hbm:gas_asbestos";
+    public static final String gas_coal = "hbm:gas_coal";
     public static final String gas_empty = "hbm:gas_empty";
+    public static final String gas_explosive = "hbm:gas_explosive";
+    public static final String gas_flammable = "hbm:gas_flammable";
     public static final String gas_full = "hbm:gas_full";
     public static final String gas_mask = "hbm:gas_mask";
     public static final String gas_mask_filter = "hbm:gas_mask_filter";
@@ -1718,6 +1727,11 @@ public final class ItemIds {
     public static final String gas_mask_m65 = "hbm:gas_mask_m65";
     public static final String gas_mask_mono = "hbm:gas_mask_mono";
     public static final String gas_mask_olde = "hbm:gas_mask_olde";
+    public static final String gas_meltdown = "hbm:gas_meltdown";
+    public static final String gas_monoxide = "hbm:gas_monoxide";
+    public static final String gas_radon = "hbm:gas_radon";
+    public static final String gas_radon_dense = "hbm:gas_radon_dense";
+    public static final String gas_radon_tomb = "hbm:gas_radon_tomb";
     public static final String gas_tester = "hbm:gas_tester";
     public static final String gear_large = "hbm:gear_large";
     public static final String gear_large_steel = "hbm:gear_large_steel";
@@ -1739,6 +1753,7 @@ public final class ItemIds {
     public static final String glass_quartz = "hbm:glass_quartz";
     public static final String glass_trinitite = "hbm:glass_trinitite";
     public static final String glass_uranium = "hbm:glass_uranium";
+    public static final String glitch = "hbm:glitch";
     public static final String glowing_stew = "hbm:glowing_stew";
     public static final String glyphid_base = "hbm:glyphid_base";
     public static final String glyphid_base_infested = "hbm:glyphid_base_infested";
@@ -2004,6 +2019,15 @@ public final class ItemIds {
     public static final String ingot_lead = "hbm:ingot_lead";
     public static final String ingot_les = "hbm:ingot_les";
     public static final String ingot_magnetized_tungsten = "hbm:ingot_magnetized_tungsten";
+    public static final String ingot_metal_bar = "hbm:ingot_metal_bar";
+    public static final String ingot_metal_beacon = "hbm:ingot_metal_beacon";
+    public static final String ingot_metal_casing = "hbm:ingot_metal_casing";
+    public static final String ingot_metal_clockwork = "hbm:ingot_metal_clockwork";
+    public static final String ingot_metal_counter = "hbm:ingot_metal_counter";
+    public static final String ingot_metal_detector = "hbm:ingot_metal_detector";
+    public static final String ingot_metal_ingot = "hbm:ingot_metal_ingot";
+    public static final String ingot_metal_key = "hbm:ingot_metal_key";
+    public static final String ingot_metal_scrap = "hbm:ingot_metal_scrap";
     public static final String ingot_meteorite = "hbm:ingot_meteorite";
     public static final String ingot_meteorite_forged = "hbm:ingot_meteorite_forged";
     public static final String ingot_mox_fuel = "hbm:ingot_mox_fuel";
@@ -2350,6 +2374,7 @@ public final class ItemIds {
     public static final String medal_liquidator = "hbm:medal_liquidator";
     public static final String meltdown_tool = "hbm:meltdown_tool";
     public static final String memespoon = "hbm:memespoon";
+    public static final String memory = "hbm:memory";
     public static final String mese_axe = "hbm:mese_axe";
     public static final String mese_gavel = "hbm:mese_gavel";
     public static final String mese_pickaxe = "hbm:mese_pickaxe";
@@ -3004,6 +3029,7 @@ public final class ItemIds {
     public static final String pellet_rtg_strontium = "hbm:pellet_rtg_strontium";
     public static final String pellet_rtg_weak = "hbm:pellet_rtg_weak";
     public static final String photo_panel = "hbm:photo_panel";
+    public static final String pile_block = "hbm:pile_block";
     public static final String pile_brick = "hbm:pile_brick";
     public static final String pile_control = "hbm:pile_control";
     public static final String pile_loader = "hbm:pile_loader";

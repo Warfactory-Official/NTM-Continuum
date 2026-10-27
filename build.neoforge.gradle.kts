@@ -362,6 +362,36 @@ if (propOrNull("feature.happy_ghast") == "true") {
     sourceSets["main"].java.srcDir(rootProject.file("src/happyghast-neoforge/java"))
 }
 
+// The importer for NTM: Decentralized Edition worlds (1.21.1 NeoForge only) is its own source root, src/deimport
+// (com.hbm.deimport), added only where `feature.de_import=true`. Nothing outside it names it, so turning the flag off
+// and deleting the root removes it; `deimportBoundary` fails the build if anything else refers to it.
+if (propOrNull("feature.de_import") == "true") {
+    sourceSets["main"].java.srcDir(rootProject.file("src/deimport/java"))
+    sourceSets["main"].resources.srcDir(rootProject.file("src/deimport/resources"))
+}
+// Its legacy layer (registry aliases for DE ids in other mods' storage) outlives the converter: src/delegacy
+// (com.hbm.delegacy), added only where `feature.de_legacy=true`.
+// The converter uses the legacy layer's stack conversion, so it cannot be built without it.
+if (propOrNull("feature.de_import") == "true" && propOrNull("feature.de_legacy") != "true")
+    throw GradleException("feature.de_import needs feature.de_legacy")
+if (propOrNull("feature.de_legacy") == "true") {
+    sourceSets["main"].java.srcDir(rootProject.file("src/delegacy/java"))
+    sourceSets["main"].resources.srcDir(rootProject.file("src/delegacy/resources"))
+}
+tasks.register("deimportBoundary") {
+    description = "Fails if anything outside its own root names the DE importer or its legacy layer."
+    val roots = listOf("src/main", "src/sable", "src/sable-neoforge", "src/happyghast", "src/happyghast-neoforge")
+        .map { rootProject.file(it) }.filter { it.exists() }
+    inputs.files(roots.map { fileTree(it) })
+    doLast {
+        val names = listOf("com.hbm.deimport", "hbm_deimport", "com.hbm.delegacy", "hbm_delegacy")
+        val hits = roots.flatMap { root -> root.walkTopDown().filter { it.isFile }
+            .filter { file -> file.readText().let { text -> names.any { text.contains(it) } } }.toList() }
+        if (hits.isNotEmpty()) throw GradleException("DE importer named outside src/deimport and src/delegacy: $hits")
+    }
+}
+tasks.named("check") { dependsOn("deimportBoundary") }
+
 val resourceProps = mapOf(
     "mod_id" to modId,
     "mod_name" to prop("mod.name"),

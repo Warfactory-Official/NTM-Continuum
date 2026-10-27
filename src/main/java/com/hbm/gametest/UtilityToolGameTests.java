@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
@@ -8,18 +9,22 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.LemegetonRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModUtilityToolItems;
+import com.hbm.items.special.ItemGlitch;
 import com.hbm.items.tool.ItemPipette;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import dev.golem.core.Ids;
 import dev.golem.core.data.ItemContents;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.world.Effects;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -40,6 +45,8 @@ public final class UtilityToolGameTests {
             TESTS.function("utility_tools_pipette", 20, () -> UtilityToolGameTests::pipette);
     public static final GameTests.Function LEMEGETON =
             TESTS.function("utility_tools_lemegeton", 20, () -> UtilityToolGameTests::lemegeton);
+    public static final GameTests.Function GLITCH =
+            TESTS.function("utility_tools_glitch", 20, () -> UtilityToolGameTests::glitch);
     public static final GameTests.Function CONTAINMENT =
             TESTS.function("utility_tools_containment", 20, () -> UtilityToolGameTests::containment);
     public static final GameTests.Function SETTINGS =
@@ -51,9 +58,9 @@ public final class UtilityToolGameTests {
         for (String id : ModUtilityToolItems.IDS) {
             helper.assertTrue(BuiltInRegistries.ITEM.containsKey(Ids.of(Constants.MOD_ID, id)), "hbm:" + id + " is registered");
         }
-        // 20 other ids, plus one item per variant of the guide books, holotapes and clay tablets:
+        // 21 other ids, plus one item per variant of the guide books, holotapes and clay tablets:
         // book_guide 4 + holotape_image 18 + clay_tablet 2
-        helper.assertTrue(ModUtilityToolItems.IDS.size() == 44, "44 item ids, got " + ModUtilityToolItems.IDS.size());
+        helper.assertTrue(ModUtilityToolItems.IDS.size() == 45, "45 item ids, got " + ModUtilityToolItems.IDS.size());
         helper.assertTrue(BuiltInRegistries.BLOCK.containsKey(Ids.of(Constants.MOD_ID, "book_guide_block")),
                 "the legacy manual block is registered");
         helper.succeed();
@@ -128,6 +135,28 @@ public final class UtilityToolGameTests {
         ductB.pasteSettings(settings, 0, helper.getLevel(), GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL),
                 helper.absolutePos(b));
         helper.assertTrue(ductB.getFluidType() == Fluids.WATER, "duct B took water, got " + ductB.getFluidType());
+        helper.succeed();
+    }
+
+    /** Each of 1.7's glitch outcomes that stays in the player's hands; the ones that drop boxcars or fire are left out. */
+    private static void glitch(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (int roll = 0; roll < 31; roll++) {
+            if (roll == 2 || roll == 3 || roll == 4 || roll == 11 || roll == 12 || roll == 14 || roll >= 27 && roll <= 29) continue;
+            Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+            ItemGlitch.effect(roll, level, player);
+            if (roll == 7) {
+                helper.assertTrue(player.getInventory().countItem(ModBlocks.block_meteor_treasure.get().asItem()) == 10,
+                        "roll 7 gives ten meteor treasure blocks");
+            }
+            if (roll == 24) helper.assertTrue(Effects.has(player, Effects.resistance()), "roll 24 gives resistance");
+            if (roll == 30) {
+                helper.assertTrue(player.getInventory().countItem(ModItems.plate_saturnite.get()) == 1, "roll 30 gives a saturnite plate");
+            }
+        }
+        Player hurt = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        ItemGlitch.effect(2, level, hurt);
+        helper.assertTrue(hurt.isDeadOrDying(), "roll 2 kills with radiation");
         helper.succeed();
     }
 }

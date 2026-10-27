@@ -323,9 +323,11 @@ public final class OreWorldgenGameTests {
         helper.assertTrue(stoneBand.value().feature().value() == deepBand.value().feature().value(),
                 "the two uranium bands place different veins");
 
-        for (int i = 0; i < 16; i++) {
+        // 1.7 centres a vein 0 to 2 blocks below its y and rounds x/z through floats, which at a GameTest plot's distance
+        // moves cells; veins from three heights keep both hosts covered wherever the plot lands.
+        for (int i = 0; i < 48; i++) {
             stoneBand.value().feature().value().place(level, level.getChunkSource().getGenerator(),
-                    RandomSource.create(70L + i), new BlockPos(origin.getX() + 4, split, origin.getZ() + 4));
+                    RandomSource.create(70L + i), new BlockPos(origin.getX() + 4, split + i % 3, origin.getZ() + 4));
         }
         Block ore = ModNuclearBlocks.ore_uranium.get();
         Block twin = ModOreBlocks.ore_uranium_deepslate.get();

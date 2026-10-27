@@ -9,6 +9,7 @@ import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.machine.ItemFluidIDMulti;
 import com.hbm.items.special.ItemBookLore;
 import com.hbm.items.special.ItemClayTablet;
+import com.hbm.items.special.ItemGlitch;
 import com.hbm.items.special.ItemHolotapeImage;
 import com.hbm.items.special.ItemPolaroid;
 import com.hbm.items.tool.ItemAnalysisTool;
@@ -44,7 +45,7 @@ import net.minecraft.world.item.Item;
 /**
  * The handheld utility and diagnostic tools and the books, from 1.7 {@code ModItems}: the analysis, power-net,
  * settings and meltdown tools, the Coltass, containment box, digamma diagnostic, multi fluid identifier,
- * meteorite remote, ore density / survey scanners, pollution detector, RoR pager, the Polaroid, the three
+ * meteorite remote, ore density / survey scanners, pollution detector, RoR pager, the Polaroid, the Glitch, the three
  * pipettes, the guide books, lore books, holotapes, clay tablets and the Lemegeton. Tabs follow 1.7
  * ({@code consumableTab}, {@code controlTab}, {@code templateTab}); items 1.7 hid stay hidden. Metadata items
  * (guide book, holotape, clay tablet) are one item per variant.
@@ -117,12 +118,12 @@ public final class ModUtilityToolItems {
         });
     }
 
-    /** 1.7 setTextureName("polaroid_" + polaroidID): case n is polaroid id n + 1. */
-    private static Preset polaroids() {
+    /** 1.7 setTextureName(texture + "_" + polaroidID): case n is polaroid id n + 1. */
+    private static Preset polaroids(String texture) {
         return handle -> handle.icon(d -> {
             Models.Group polaroids = Models.group();
             for (int i = 1; i <= 18; i++) {
-                polaroids = polaroids.and(i == 1 ? "" : "_" + i, Models.generated("hbm:items/polaroid_" + i));
+                polaroids = polaroids.and(i == 1 ? "" : "_" + i, Models.generated("hbm:items/" + texture + "_" + i));
             }
             return d.models(polaroids).selects(Constants.MOD_ID + ":polaroid");
         });
@@ -202,7 +203,10 @@ public final class ModUtilityToolItems {
     public static final RegistryObject<ItemClayTablet> clay_tablet_1 = reg("clay_tablet_1", null,
             p -> new ItemClayTablet(p, 1), single(), Presets.sprite("hbm:items/clay_tablet"));
     public static final RegistryObject<ItemPolaroid> polaroid = reg("polaroid", HbmTab.CONSUMABLES, ItemPolaroid::new,
-            single(), polaroids());
+            single(), polaroids("polaroid"));
+    /** 1.7 {@code setMaxDamage(1)}; one use breaks it. */
+    public static final RegistryObject<ItemGlitch> glitch = reg("glitch", HbmTab.CONSUMABLES, ItemGlitch::new,
+            p -> p.stacksTo(1).durability(1), polaroids("glitch"));
     public static final RegistryObject<ItemBookLemegeton> book_lemegeton = reg("book_lemegeton", null,
             ItemBookLemegeton::new, single(), Presets.sprite());
 

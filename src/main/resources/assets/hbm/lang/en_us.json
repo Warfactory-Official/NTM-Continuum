@@ -6907,6 +6907,7 @@
   "item.hbm.meltdown_tool": "Dyatlov Instant Meltdown Applicator",
   "item.hbm.meteor_remote": "Meteorite Remote",
   "item.hbm.polaroid": "The Polaroid",
+  "item.hbm.glitch": "Glitch",
   "item.hbm.pollution_detector": "Pollution Detector",
   "item.hbm.power_net_tool": "Cable Network Analysis Tool",
   "item.hbm.pipette": "Pipette",
@@ -7007,5 +7008,16 @@
   "rbmk.outgasser.progress": "Progress: %s / %s (%s)",
   "rbmk.outgasser.gas": "Gas: %s / %s mB",
   "damage.exact.drown": "Drowning",
-  "damage.exact.onfire": "Afterburn"
+  "damage.exact.onfire": "Afterburn",
+  "item.hbm.ingot_metal_ingot": "Metal Ingot",
+  "item.hbm.ingot_metal_counter": "Counter",
+  "item.hbm.ingot_metal_key": "Metal Key",
+  "item.hbm.ingot_metal_beacon": "Radio Homing Beacon",
+  "item.hbm.ingot_metal_casing": "Metal Casing",
+  "item.hbm.ingot_metal_clockwork": "Clockwork",
+  "item.hbm.ingot_metal_scrap": "item.ingot_metal.scrap.name",
+  "item.hbm.ingot_metal_bar": "Metal Bar",
+  "item.hbm.ingot_metal_detector": "Detector",
+  "item.hbm.bismuth_tool": "Magnetic Extractor",
+  "item.hbm.memory": "item.null.name"
 }

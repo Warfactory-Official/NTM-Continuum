@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "value": "hbm:chests/expensive"
+        }
+      ],
+      "rolls": {
+        "type": "hbm_de:config_scaled",
+        "value": 2.0
+      }
+    }
+  ],
+  "random_sequence": "hbm_de:chests/component/expensive_2_2"
+}

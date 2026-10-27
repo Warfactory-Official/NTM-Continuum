@@ -87,7 +87,7 @@ public final class ReleaseSweepGameTests {
     public static void init() {}
 
     /** Items whose use detonates or rewrites the world on the spot. */
-    private static final Pattern SKIP_ITEMS = Pattern.compile("ItemWandD|LaserDetonator|DropDetonator|MultiDetonator");
+    private static final Pattern SKIP_ITEMS = Pattern.compile("ItemWandD|LaserDetonator|DropDetonator|MultiDetonator|ItemGlitch");
     /** Entities that explode, launch or reshape terrain once ticked; they are only created and round-tripped. */
     private static final Pattern NO_TICK = Pattern.compile("Nuke|Balefire|TomBlast|DeathBlast|EMP|Missile|Rocket|Primed"
             + "|Torex|CloudFleija|CloudSolinium|CloudTom|BlackHole|Quasar|Vortex|Meteor|Fallout|Bomber|C130|Orbital"

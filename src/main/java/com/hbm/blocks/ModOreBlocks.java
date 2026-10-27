@@ -70,8 +70,8 @@ public final class ModOreBlocks {
     /** Every block registered here, in registration order. Block items are created from this. */
     private static final Map<String, RegistryObject<? extends Block>> ALL = new LinkedHashMap<>();
 
-    /** Ids that get no block item: a floating gas cell is worldgen-only and drops nothing upstream. */
-    private static final Set<String> NO_ITEM = Set.of("gas_flammable", "gas_explosive");
+    /** 1.7 puts the two gases' item blocks in the machine tab, drawn with the gas texture. */
+    private static final Set<String> GASES = Set.of("gas_flammable", "gas_explosive");
 
     // Clusters (hardness 5, blast 35)
 
@@ -320,7 +320,11 @@ public final class ModOreBlocks {
 
     static {
         ALL.forEach((id, block) -> {
-            if (NO_ITEM.contains(id)) return;
+            if (GASES.contains(id)) {
+                REG.blockItem(block, p -> Compat.blockDescription(p)).transform(Presets.sprite("hbm:blocks/" + id))
+                        .tab(HbmTab.MACHINES);
+                return;
+            }
             Reg.Handle<BlockItem> item = REG.blockItem(block, p -> Compat.blockDescription(p));
             ModTabs.addTo(HbmTab.RESOURCES, item);
         });

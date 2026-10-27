@@ -1,6 +1,7 @@
 package com.hbm.lib;
 
 import com.hbm.Constants;
+import com.hbm.items.ILoadOnlyItem;
 import dev.golem.core.Ids;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.platform.Lifecycle;
@@ -94,6 +95,9 @@ public final class IdConstants {
         Map<String, String> components = new TreeMap<>();
 
         for (Item item : BuiltInRegistries.ITEM) {
+            if (item instanceof ILoadOnlyItem) {
+                continue;
+            }
             String id = BuiltInRegistries.ITEM.getKey(item).toString();
             if (id.startsWith(Constants.MOD_ID + ":")) {
                 put(items, name(path(id)), id);
@@ -185,7 +189,8 @@ public final class IdConstants {
     public static Set<String> backedTags() {
         Set<String> backed = new TreeSet<>();
         for (Item item : BuiltInRegistries.ITEM) {
-            if (!BuiltInRegistries.ITEM.getKey(item).toString().startsWith(Constants.MOD_ID + ":")) {
+            if (item instanceof ILoadOnlyItem
+                    || !BuiltInRegistries.ITEM.getKey(item).toString().startsWith(Constants.MOD_ID + ":")) {
                 continue;
             }
             BuiltInRegistries.ITEM.wrapAsHolder(item).tags()

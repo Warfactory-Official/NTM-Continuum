@@ -3,8 +3,11 @@ package com.hbm.gametest;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.EntityHbmProps;
 import com.hbm.entity.EntityHbmProps.ContaminationEffect;
+import com.hbm.entity.ModNtmEntities;
+import com.hbm.entity.item.EntityFallingBlockNT;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.registry.Entities;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -12,6 +15,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The per-entity HBM state ({@link HbmLivingProps#DATA}) through the real entity save/load path of each loader:
@@ -42,6 +47,18 @@ public final class EntityDataGameTests {
         EntityHbmProps loaded = HbmLivingProps.getData(copy);
         helper.assertTrue(loaded != HbmLivingProps.getData(pig), "the loaded entity must own its own value");
         assertFilled(helper, loaded, "mob");
+        helper.succeed();
+    }
+
+    /** A falling block keeps vanilla's keys (the carried block, its fall time) through a save, not only HBM's. */
+    public static void fallingBlockRoundTrip(GameTestHelper helper) {
+        BlockState carried = Blocks.GOLD_BLOCK.defaultBlockState();
+        EntityFallingBlockNT falling = EntityFallingBlockNT.fall(helper.getLevel(), helper.absolutePos(new BlockPos(1, 30, 1)), carried);
+        CompoundTag saved = Entities.saveToTag(falling);
+        falling.discard();
+        EntityFallingBlockNT copy = Entities.createDetached(ModNtmEntities.FALLING_BLOCK_NT.get(), helper.getLevel());
+        Entities.loadFromTag(copy, saved);
+        helper.assertTrue(copy.getBlockState() == carried, "the falling block still carries " + carried + ": " + copy.getBlockState());
         helper.succeed();
     }
 

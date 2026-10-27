@@ -23,6 +23,7 @@ import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.FuelDataMapDeclarations;
+import com.hbm.items.ILoadOnlyItem;
 import com.hbm.items.ModStorageDrumItems;
 import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.items.machine.ItemBatterySC;
@@ -371,7 +372,7 @@ public final class ValueMapGameTests {
 
     private static List<Item> items() {
         List<Item> items = new ArrayList<>();
-        for (Item item : BuiltInRegistries.ITEM) items.add(item);
+        for (Item item : BuiltInRegistries.ITEM) if (!(item instanceof ILoadOnlyItem)) items.add(item);
         items.sort(Comparator.comparing(i -> BuiltInRegistries.ITEM.getKey(i).toString()));
         return items;
     }

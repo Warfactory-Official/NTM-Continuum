@@ -5269,6 +5269,7 @@
   "item.hbm.meltdown_tool": "Аппликатор мгновенного расплавления Дятлова",
   "item.hbm.meteor_remote": "Устройство для вызова метеоритов",
   "item.hbm.polaroid": "Полароид",
+  "item.hbm.glitch": "Глюк",
   "item.hbm.pollution_detector": "Детектор загрязнения",
   "item.hbm.power_net_tool": "Анализатор электросети",
   "item.hbm.pipette": "Пипетка",
@@ -5305,5 +5306,15 @@
   "item.hbm.steamsuit_boots": "Ботинки парового костюма",
   "item.hbm.steamsuit_helmet": "Респираторный шлем парового костюма",
   "item.hbm.steamsuit_legs": "Поножи парового костюма",
-  "item.hbm.steamsuit_plate": "Нагрудник парового костюма"
+  "item.hbm.steamsuit_plate": "Нагрудник парового костюма",
+  "item.hbm.ingot_metal_ingot": "Металлический слиток",
+  "item.hbm.ingot_metal_counter": "Счётчик",
+  "item.hbm.ingot_metal_key": "Металлический ключ",
+  "item.hbm.ingot_metal_beacon": "Радиомаяк",
+  "item.hbm.ingot_metal_casing": "Металлическая оболочка",
+  "item.hbm.ingot_metal_clockwork": "Заводной механизм",
+  "item.hbm.ingot_metal_bar": "Металлический кусок",
+  "item.hbm.ingot_metal_detector": "Детектор",
+  "item.hbm.bismuth_tool": "Магнитный экстрактор",
+  "item.hbm.memory": "item.null.name"
 }

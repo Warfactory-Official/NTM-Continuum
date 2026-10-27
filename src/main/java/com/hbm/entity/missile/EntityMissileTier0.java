@@ -148,8 +148,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
                         // 1.7: getBlockMetadata on sellafield_slaked == SHADE (0 otherwise)
                         int shade = state.hasProperty(BlockSellafieldSlaked.SHADE)
                                 ? state.getValue(BlockSellafieldSlaked.SHADE) : 0;
-                        // 1.7 clamps to meta 12; this port's slaked block carries ten shades, so the top is 9.
-                        int charMeta = Math.min((int) Mth.clamp(12 - (dist / range) * (dist / range) * 13, 0, 12), 9);
+                        int charMeta = (int) Mth.clamp(12 - (dist / range) * (dist / range) * 13, 0, 12);
 
                         // 1.7: isNormalCube -> isSolidRender
                         if (Compat.isSolidRender(state)) {

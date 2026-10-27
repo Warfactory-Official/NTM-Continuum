@@ -12,11 +12,13 @@ import com.hbm.creativetabs.HbmTab;
 import dev.golem.core.registry.Loot;
 import dev.golem.core.registry.Preset;
 import com.hbm.registration.Presets;
+import dev.golem.core.world.Compat;
 import com.hbm.registration.Reg;
 import dev.golem.core.dejson.Variants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -82,6 +84,15 @@ public final class ModNuclearBlocks {
         for (RegistryObject<? extends Block> block : List.of(ore_uranium, ore_uranium_scorched,
                 ore_gneiss_uranium, ore_gneiss_uranium_scorched, ore_nether_uranium, ore_nether_uranium_scorched)) {
             REG.blockItem(block).tab(HbmTab.RESOURCES);
+        }
+        // 1.7 registers every gas with a plain item block in the machine tab, drawn with the gas texture.
+        List<Map.Entry<String, RegistryObject<? extends Block>>> gases = List.of(Map.entry("gas_radon", gas_radon),
+                Map.entry("gas_radon_dense", gas_radon_dense), Map.entry("gas_meltdown", gas_meltdown),
+                Map.entry("gas_radon_tomb", gas_radon_tomb), Map.entry("gas_monoxide", gas_monoxide),
+                Map.entry("gas_asbestos", gas_asbestos));
+        for (Map.Entry<String, RegistryObject<? extends Block>> gas : gases) {
+            REG.blockItem(gas.getValue(), Compat::blockDescription).transform(Presets.sprite("hbm:blocks/" + gas.getKey()))
+                    .tab(HbmTab.MACHINES);
         }
     }
     public static void init() {}

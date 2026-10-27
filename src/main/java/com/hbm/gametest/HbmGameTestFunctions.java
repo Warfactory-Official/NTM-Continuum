@@ -22,6 +22,7 @@ import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.CombinationRecipes;
 import com.hbm.inventory.recipes.CoolingRecipes;
+import com.hbm.blocks.ModPowerGenBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.recipes.FusionRecipe;
 import com.hbm.inventory.recipes.FusionRecipes;
@@ -1269,6 +1270,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("entity_data_legacy_migration", 20, () -> EntityDataGameTests::legacyMigration);
     public static final GameTests.Function ENTITY_DATA_LEGACY_NO_OVERRIDE =
             TESTS.function("entity_data_legacy_no_override", 20, () -> EntityDataGameTests::legacyDoesNotOverride);
+    public static final GameTests.Function ENTITY_DATA_FALLING_BLOCK =
+            TESTS.function("entity_data_falling_block_round_trip", 20, () -> EntityDataGameTests::fallingBlockRoundTrip);
     public static final GameTests.Function GUN_CREATIVE_QUALITY_VISIBILITY =
             TESTS.function("gun_creative_quality_visibility", 20, () -> GunGameTests::gunCreativeQualityVisibility);
     public static final GameTests.Function GUN_OBTAINMENT_AMMO_PRESS_CATALOGUE =
@@ -2343,6 +2346,8 @@ public final class HbmGameTestFunctions {
      */
     /** 1.7 fills the same boxes its placement highlight outlines, so a machine with several boxes occupies exactly them. */
     private static void multiblockCellsMatchOutline(GameTestHelper helper) {
+        // 1.7 MachineChungus.fillSpace sets one more block above the front, outside its highlight.
+        Map<Block, Integer> extras = Map.of(ModPowerGenBlocks.MACHINE_CHUNGUS.get(), 1);
         List<String> wrong = new ArrayList<>();
         BlockPos core = helper.absolutePos(new BlockPos(1, 1, 1));
         for (Block block : BuiltInRegistries.BLOCK) {
@@ -2360,6 +2365,7 @@ public final class HbmGameTestFunctions {
                 Set<BlockPos> missing = new HashSet<>(outlined);
                 missing.removeAll(cells);
                 cells.removeAll(outlined);
+                if (missing.isEmpty() && cells.size() == extras.getOrDefault(block, 0)) continue;
                 wrong.add(BuiltInRegistries.BLOCK.getKey(block) + " " + facing + ": " + missing.size() + " outlined but not occupied, "
                         + cells.size() + " occupied but not outlined");
             }

@@ -44,7 +44,7 @@ public class BlockRadLava extends BlockVolcanicLava {
     private static BlockState shaded(Block block, int shade) {
         BlockState state = block.defaultBlockState();
         return state.hasProperty(BlockSellafieldSlaked.SHADE)
-                ? state.setValue(BlockSellafieldSlaked.SHADE, Math.min(shade, 9)) : state;
+                ? state.setValue(BlockSellafieldSlaked.SHADE, shade) : state;
     }
 
     @Override

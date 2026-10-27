@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.ModTerrainBlocks;
@@ -93,8 +94,10 @@ public final class VolcanoGameTests {
             helper.assertTrue(level.getBlockState(helper.absolutePos(CORE)).is(growing),
                     "1.7 grows only when volcanoTimer reaches " + TileEntityVolcanoCore.GROWING_UPDATE_RATE
                             + "; the core had already left " + CORE + " at tick " + STILL_THERE);
-            helper.assertTrue(isLava(helper, level, CORE.above()),
-                    "the cell the core will climb into must be shell lava, not another core, before the climb; it is "
+            // 1.7 VolcanicBlock hardens one time in five with fewer than five lava neighbours; this cell has four.
+            BlockState above = level.getBlockState(helper.absolutePos(CORE.above()));
+            helper.assertTrue(isLava(helper, level, CORE.above()) || above.is(ModBlocks.basalt.get()),
+                    "the cell the core will climb into must be shell lava (or the basalt it hardens to), not another core; it is "
                             + level.getBlockState(helper.absolutePos(CORE.above())));
         }));
 

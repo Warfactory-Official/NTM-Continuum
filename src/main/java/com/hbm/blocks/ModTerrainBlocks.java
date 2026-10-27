@@ -288,7 +288,7 @@ public final class ModTerrainBlocks {
             .loot(Loot.nothing())
             .tag(BlockTag.PICKAXE);
 
-    // Gases (worldgen and vent cells: no item, like ModOreBlocks)
+    // Gases (worldgen and vent cells)
 
     /** Invisible coal dust (smoke particles only). */
     public static final RegistryObject<BlockGasCoal> gas_coal = REG.block("gas_coal", BlockGasCoal::new, ModTerrainBlocks::gasProps)
@@ -296,6 +296,13 @@ public final class ModTerrainBlocks {
     /** Translucent chlorine. */
     public static final RegistryObject<BlockGasChlorine> chlorine_gas = REG.block("chlorine_gas", BlockGasChlorine::new, ModTerrainBlocks::gasProps)
             .transform(Presets.shape(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/chlorine_gas"))).noItem());
+
+    static {
+        // 1.7 registers both gases with a plain item block in the machine tab, drawn with the gas texture.
+        REG.blockItem(gas_coal, Compat::blockDescription).transform(Presets.sprite("hbm:blocks/gas_coal")).tab(HbmTab.MACHINES);
+        REG.blockItem(chlorine_gas, Compat::blockDescription).transform(Presets.sprite("hbm:blocks/chlorine_gas"))
+                .tab(HbmTab.MACHINES);
+    }
 
     // Hot sellafite (sellafield metas 0..5)
 
