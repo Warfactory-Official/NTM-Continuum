@@ -156,7 +156,7 @@ public abstract class FoundryCastingBase extends CompatBlock implements TickingB
         } else {
             text.add("§e" + mold.getTitle());
             if (cast.type != null && cast.amount > 0) {
-                text.add("&[" + cast.type.moltenColor + "&]" + cast.type.getDisplayName() + ": "
+                text.add("&[" + cast.type.moltenColor + "&]" + cast.type.getLocalizedName().getString() + ": "
                         + cast.amount + " / " + mold.getCost());
             }
         }

@@ -77,10 +77,10 @@ public class ItemScraps extends CompatItem {
     @Override
     public Component getName(ItemStack stack) {
         Mats.MaterialStack contents = getMats(stack);
-        if (contents == null) return Component.literal("Foundry Scraps");
+        if (contents == null) return Component.translatable("item.hbm.scraps");
         // Molten form: the bare material name, like the old getItemStackDisplayName's liquid branch.
-        if (isLiquid(stack)) return Component.literal(contents.material.getDisplayName());
-        return Component.literal(contents.material.getDisplayName() + " Scraps");
+        if (isLiquid(stack)) return contents.material.getLocalizedName();
+        return Component.translatable("item.hbm.scraps.material", contents.material.getLocalizedName());
     }
 
     @Override

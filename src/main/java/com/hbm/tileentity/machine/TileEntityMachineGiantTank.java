@@ -53,6 +53,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         tank.updatePortFIFO();
 
         tank.tankNew.setType(tank.inventory, 0, 1);
+        MachineFluidContainerIO.identify(tank.tankNew, tank.inventory, 2);
         MachineFluidContainerIO.load(tank.tankNew, tank.inventory, 2, 3);
         MachineFluidContainerIO.unload(tank.tankNew, tank.inventory, 4, 5);
 

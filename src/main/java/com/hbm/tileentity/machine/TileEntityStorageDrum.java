@@ -138,6 +138,12 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
         return !ContaminationUtil.isContaminated(stack) && StorageDrumRecipes.getOutput(stack) == null;
     }
 
+    /** 1.7 getInventoryStackLimit. */
+    @Override
+    public int getMaxStackSize() {
+        return 1;
+    }
+
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return StorageDrumRecipes.getOutput(stack) != null || ContaminationUtil.isContaminated(stack);

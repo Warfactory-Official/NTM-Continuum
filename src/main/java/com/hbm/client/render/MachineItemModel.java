@@ -1,9 +1,11 @@
 package com.hbm.client.render;
 
+import com.hbm.client.model.TextureStrip;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.DoorDecl;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Geometry;
@@ -59,6 +61,7 @@ public final class MachineItemModel {
 
     private final WavefrontObj model;
     private final Surface surface;
+    private final TextureStrip strip;
     private final float scale;
     /** Uses the literal legacy item transform instead of the block-space framing convention. */
     private final boolean rawLegacyTransform;
@@ -224,6 +227,7 @@ public final class MachineItemModel {
                              float guiSpinSpeed) {
         this.model = model;
         this.surface = surface;
+        this.strip = TextureStrip.of(Ids.parse(surface.texture()));
         this.scale = scale;
         this.rawLegacyTransform = rawLegacyTransform;
         this.blockFramed = blockFramed;
@@ -349,7 +353,7 @@ public final class MachineItemModel {
     private boolean animatedBody() {
         return "pump".equals(animation) || "autosaw".equals(animation) || "radar_large".equals(animation)
                 || "lantern".equals(animation) || "thresher".equals(animation) || CYCLING_DOORS.containsKey(animation)
-                || (spin && !spinParts.isEmpty());
+                || (spin && !spinParts.isEmpty()) || strip.frames() > 1;
     }
 
     private ItemGem declare() {
@@ -551,7 +555,7 @@ public final class MachineItemModel {
         Surface skin = partSurfaces.get(part);
         if (skin == null || userExclude.contains(part)) return null;
         // The partTextures route always seeds a "Body" skin from the main texture; an OBJ without a
-        // Body part (the crane splitter/partitioner) must not fail to bake over that implicit entry.
+        // Body part (the crane partitioner) must not fail to bake over that implicit entry.
         if (!model.partNames().contains(part)) return null;
         return builder.part(model.part(part), skin, null);
     }
@@ -569,6 +573,13 @@ public final class MachineItemModel {
         // The declared "parts"/"translate" hold without extra passes too (charger, red pylons, spotlights...):
         // so this pass takes them; List.of() and a zero vector would draw every OBJ group, unmoved.
         Gem.Part<ItemPose> primary = pass(builder, model, surface, primaryParts, exclude, primaryTranslation, List.of());
+        if (primary != null && strip.frames() > 1) {
+            Geometry[] frames = new Geometry[strip.frames()];
+            for (int i = 0; i < frames.length; i++) {
+                frames[i] = geometry(model.stripFrame(i, frames.length), primaryParts, exclude);
+            }
+            primary.mesh(state -> frames[strip.frameAt(System.currentTimeMillis() / 50L)]);
+        }
         DoorDecl door = CYCLING_DOORS.get(animation);
         if (primary != null && door != null) {
             Map<Identifier, Surface> skins = new HashMap<>();
@@ -600,19 +611,10 @@ public final class MachineItemModel {
     private Gem.@Nullable Part<ItemPose> pass(ItemGem.Builder builder, WavefrontObj source, Surface skin,
                                               List<String> parts, Set<String> excluded, Vector3f translation,
                                               List<PassStep> steps) {
-        Geometry geometry;
-        float[][] box;
-        if (parts.isEmpty()) {
-            geometry = source.allExcept(excluded);
-            box = source.boundsExcludingExact(excluded);
-        } else {
-            Set<String> chosen = remaining(parts, excluded);
-            // 1.7 renderPart drew nothing for a name the OBJ lacks; a pass may name none of its parts
-            chosen.retainAll(source.partNames());
-            if (chosen.isEmpty()) return null;
-            geometry = source.parts(chosen, false);
-            box = source.boundsIncluding(chosen);
-        }
+        Geometry geometry = geometry(source, parts, excluded);
+        if (geometry == null) return null;
+        float[][] box = parts.isEmpty() ? source.boundsExcludingExact(excluded)
+                : source.boundsIncluding(chosen(source, parts, excluded));
         Gem.Part<ItemPose> declared = builder.part(geometry, skin, box);
         if (translation.x != 0F || translation.y != 0F || translation.z != 0F) {
             declared.translate(translation.x, translation.y, translation.z);
@@ -628,6 +630,19 @@ public final class MachineItemModel {
             if (value.z != 0F) declared.rotate(Gem.Axes.Z, value.z);
         }
         return declared;
+    }
+
+    private static @Nullable Geometry geometry(WavefrontObj source, List<String> parts, Set<String> excluded) {
+        if (parts.isEmpty()) return source.allExcept(excluded);
+        Set<String> chosen = chosen(source, parts, excluded);
+        return chosen.isEmpty() ? null : source.parts(chosen, false);
+    }
+
+    /** 1.7 renderPart drew nothing for a name the OBJ lacks; a pass may name none of its parts. */
+    private static Set<String> chosen(WavefrontObj source, List<String> parts, Set<String> excluded) {
+        Set<String> chosen = remaining(parts, excluded);
+        chosen.retainAll(source.partNames());
+        return chosen;
     }
 
     private void black(ItemGem.Builder builder) {

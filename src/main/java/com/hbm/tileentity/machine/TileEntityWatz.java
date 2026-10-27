@@ -447,6 +447,12 @@ public class TileEntityWatz extends TileEntityMachineBase
 
     // --- inventory ---
 
+    /** 1.7 getInventoryStackLimit. */
+    @Override
+    public int getMaxStackSize() {
+        return 1;
+    }
+
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (!isFreshPellet(stack)) return false;

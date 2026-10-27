@@ -1,6 +1,7 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
+import com.hbm.client.model.TextureStrip;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.blocks.generic.DecoModelBlock;
 import com.hbm.blocks.ModDecoContent;
@@ -44,6 +45,9 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
     private Skin pole, antenna, tape, satellite, computer;
     private final Map<Block, Skin> variants = new HashMap<>();
     private Geometry toaster, crtMonitor, crtScreen;
+    /** {@code crt_blinking.png} is an animated strip; 1.7 drew its atlas sprite, so each frame is its own mesh. */
+    private TextureStrip blinking;
+    private Geometry[] blinkingMonitor, blinkingScreen;
 
     private static Skin skin(String obj, String texture) {
         return new Skin(WavefrontObj.load(Ids.of(Constants.MOD_ID, obj)), Surface.cutoutNoCull(Constants.MOD_ID + ":" + texture));
@@ -82,7 +86,16 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
         crtScreen = crtSkin.model().part("Screen");
         variants.put(ModDecoContent.deco_crt_clean.get(), crtSkin);
         variants.put(ModDecoContent.deco_crt_broken.get(), skin("models/blocks/crt.obj", "textures/blocks/crt_broken.png"));
-        variants.put(ModDecoContent.deco_crt_blinking.get(), skin("models/blocks/crt.obj", "textures/blocks/crt_blinking.png"));
+        Skin blinkingSkin = skin("models/blocks/crt.obj", "textures/blocks/crt_blinking.png");
+        variants.put(ModDecoContent.deco_crt_blinking.get(), blinkingSkin);
+        blinking = TextureStrip.of(Ids.parse(blinkingSkin.surface().texture()));
+        blinkingMonitor = new Geometry[blinking.frames()];
+        blinkingScreen = new Geometry[blinking.frames()];
+        for (int i = 0; i < blinking.frames(); i++) {
+            WavefrontObj frame = blinkingSkin.model().stripFrame(i, blinking.frames());
+            blinkingMonitor[i] = frame.part("Monitor");
+            blinkingScreen[i] = frame.part("Screen");
+        }
         variants.put(ModDecoContent.deco_crt_bsod.get(), skin("models/blocks/crt.obj", "textures/blocks/crt_bsod.png"));
     }
 
@@ -147,8 +160,10 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
                 .translate(0.5F, 0F, 0.5F)
                 .angle(Gem.Axes.Y, state -> state.yaw);
         crt.child(crtMonitor, variants.get(ModDecoContent.deco_crt_clean.get()).surface())
+                .mesh(state -> is(state, DecoModelBlock.Kind.CRT_BLINKING) ? blinkingMonitor[state.frame] : crtMonitor)
                 .skin(state -> variants.getOrDefault(state.block, variants.get(ModDecoContent.deco_toaster_iron.get())).surface());
         crt.child(crtScreen, variants.get(ModDecoContent.deco_crt_clean.get()).surface())
+                .mesh(state -> is(state, DecoModelBlock.Kind.CRT_BLINKING) ? blinkingScreen[state.frame] : crtScreen)
                 .skin(state -> variants.getOrDefault(state.block, variants.get(ModDecoContent.deco_toaster_iron.get())).surface())
                 .light(state -> is(state, DecoModelBlock.Kind.CRT_BLINKING) || is(state, DecoModelBlock.Kind.CRT_BSOD)
                         ? 0xF000F0 : state.lightCoords);
@@ -173,9 +188,11 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
         state.yaw = state.pitch = state.roll = 0F;
         state.offX = state.offY = state.offZ = 0F;
         state.part = "";
+        state.frame = 0;
         if (state.block instanceof Spotlight spot) {
             extractSpotlight(spot, bs, blockEntity.getLevel(), blockEntity.getBlockPos(), state);
         } else if (state.block instanceof DecoModelBlock model) {
+            if (model.kind == DecoModelBlock.Kind.CRT_BLINKING) state.frame = blinking.frameAt(blockEntity.getLevel().getGameTime());
             Direction look = bs.getValue(DecoModelBlock.FACING);
             // The quadrant table shared by RenderTapeBlock/RenderToaster/RenderCRT: looking south gives 90°, west gives 0°,
             // north gives 270°, east gives 180° (1.7 meta 2/5/3/4 for the poles, meta%4 = 0/1/2/3 for the toaster/CRT).

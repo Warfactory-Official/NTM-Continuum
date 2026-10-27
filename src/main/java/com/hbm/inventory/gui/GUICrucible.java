@@ -127,7 +127,7 @@ public class GUICrucible extends CompatContainerScreen<ContainerCrucible> {
         List<Component> list = new ArrayList<>();
         if (stack.isEmpty()) list.add(Component.literal("Empty").withStyle(ChatFormatting.RED));
         for (Mats.MaterialStack sta : stack) {
-            list.add(Component.literal(sta.material.getDisplayName() + ": " + Mats.formatAmount(sta.amount, false)).withStyle(ChatFormatting.YELLOW));
+            list.add(sta.material.getLocalizedName().copy().append(": " + Mats.formatAmount(sta.amount, false)).withStyle(ChatFormatting.YELLOW));
         }
         return list;
     }

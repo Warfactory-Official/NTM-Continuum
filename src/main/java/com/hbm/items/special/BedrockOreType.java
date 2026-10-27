@@ -73,7 +73,7 @@ public final class BedrockOreType {
      * ({@code "ntmspace:duna_light"}).
      */
     public final String name;
-    /** The art and translation suffix ({@code item.bedrock_ore.type.<suffix>.name}); several types may share one. */
+    /** The art and translation suffix ({@code item.hbm.bedrock_ore.type.<suffix>}); several types may share one. */
     public final String suffix;
     public final String displayName;
     public final BedrockOreOutput primary1;
@@ -156,12 +156,15 @@ public final class BedrockOreType {
         return name;
     }
 
-    /** Shared 1.7 suffixes use HBM's translation; an addon's own suffix uses its registration namespace. */
-    public Component typeName() {
+    /** Shared 1.7 suffixes use HBM's key; an addon's own suffix uses its registration namespace. */
+    public String translationKey() {
         boolean shared = Arrays.stream(VALUES).anyMatch(type -> type.suffix.equals(suffix));
         String namespace = shared || !name.contains(":") ? Constants.MOD_ID : name.substring(0, name.indexOf(':'));
-        return Component.translatableWithFallback(
-                "item." + namespace + ".bedrock_ore.type." + suffix, displayName);
+        return "item." + namespace + ".bedrock_ore.type." + suffix;
+    }
+
+    public Component typeName() {
+        return Component.translatableWithFallback(translationKey(), displayName);
     }
 
     @Override

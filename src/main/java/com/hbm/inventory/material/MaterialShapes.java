@@ -53,7 +53,7 @@ public enum MaterialShapes {
     public final String tagPlural;
     /** Material balance in 1/72-of-an-ingot units (for future recipe autogen). */
     public final int quantity;
-    /** Exact legacy item-name template; {@code %s} is replaced by the material display name. */
+    /** 1.7's item-name template, the source of {@link #displayName}; items use the lang key instead. */
     public final String displayTemplate;
     /** Short shape label retained for mold titles. */
     public final String displayName;
@@ -70,10 +70,6 @@ public enum MaterialShapes {
             case "Block of %s" -> "Block";
             default -> displayTemplate.replace("%s", "").replace("  ", " ").trim();
         };
-    }
-
-    public String displayName(String materialName) {
-        return displayTemplate.replace("%s", materialName);
     }
 
     public TagKey<Item> tagFor(String materialName) {

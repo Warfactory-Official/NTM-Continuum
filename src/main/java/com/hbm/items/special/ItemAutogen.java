@@ -2,6 +2,7 @@ package com.hbm.items.special;
 
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.NTMMaterial;
+import com.hbm.items.ModAutogenItems;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -17,8 +18,8 @@ import net.minecraft.world.item.ItemStack;
  * remapped onto the material's two solid colours while the atlas is stitched, declared by
  * {@link com.hbm.client.AutogenSprites}. None of these sprites is a file.
  *
- * <p>Display names use the exact legacy shape template (e.g. "Light Steel Barrel" and "Ivory Grip").
- * Recipes match these via {@link com.hbm.inventory.RecipesCommon.MaterialStack} (which resolves the exact
+ * <p>The name is 1.7's composition: the shape's template key ({@code item.hbm.part_barrel_light}, "Light %s
+ * Barrel") formatted with the material's {@code hbmmat.} name. Recipes match these via {@link com.hbm.inventory.RecipesCommon.MaterialStack} (which resolves the exact
  * item for a material+shape).
  */
 public class ItemAutogen extends MaterialShapeItem {
@@ -29,6 +30,6 @@ public class ItemAutogen extends MaterialShapeItem {
 
     @Override
     public Component getName(ItemStack stack) {
-        return Component.literal(shape.displayName(material.getDisplayName()));
+        return Component.translatable("item.hbm." + ModAutogenItems.base(shape), material.getLocalizedName());
     }
 }

@@ -58,8 +58,9 @@ public class FoundryCastingRenderer<T extends TileEntityFoundryCastingBase> exte
     private final @Nullable WavefrontObj body;
     /** material name -> the surface it wears (multi-texture OBJ, resolved from the .mtl). */
     private final Map<String, Surface> materials = new LinkedHashMap<>();
-    private final Surface melt = Surface.emissive(
-            Constants.MOD_ID + ":textures/models/machines/lava_gray.png");
+    /** Opaque and depth-writing, or the mold and cast item beneath draw over it. */
+    private final Surface melt = Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/machines/lava_gray.png");
+    private final Surface meltGlare = Surface.glow(Constants.MOD_ID + ":textures/models/machines/lava_gray.png");
 
     /** @param bodyObjPath OBJ body to draw (basin), or null for JSON-modelled blocks (mold caster). */
     public FoundryCastingRenderer(@Nullable String bodyObjPath) {
@@ -91,6 +92,12 @@ public class FoundryCastingRenderer<T extends TileEntityFoundryCastingBase> exte
                 .visibleIf(state -> state.hasMelt)
                 .slide(Gem.Axes.Y, state -> state.meltY)
                 .tint(state -> 0xFF000000 | (state.meltColor & 0xFFFFFF))
+                .light(state -> FoundryRenderHelper.FULLBRIGHT);
+        // 1.7 lays a 30% white additive pass over the tinted surface
+        declaration.part(MELT, meltGlare)
+                .visibleIf(state -> state.hasMelt)
+                .slide(Gem.Axes.Y, state -> state.meltY)
+                .tint(state -> 0x4DFFFFFF)
                 .light(state -> FoundryRenderHelper.FULLBRIGHT);
     }
 

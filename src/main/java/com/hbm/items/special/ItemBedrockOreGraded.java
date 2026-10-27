@@ -28,7 +28,7 @@ public class ItemBedrockOreGraded extends CompatItem {
         this.type = type;
     }
 
-    /** 1.7: {@code item.bedrock_ore.grade.<grade>.name} formatted with {@code item.bedrock_ore.type.<suffix>.name}. */
+    /** 1.7: the grade's template ({@code item.hbm.bedrock_ore.grade.<grade>}) formatted with the type's name. */
     @Override
     public Component getName(ItemStack stack) {
         return Component.translatableWithFallback("item.hbm.bedrock_ore.grade." + grade.name().toLowerCase(Locale.ROOT),
@@ -38,7 +38,7 @@ public class ItemBedrockOreGraded extends CompatItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         for (ProcessingTrait trait : grade.traits) {
-            tooltip.add(Component.translatable("item.bedrock_ore.trait." + trait.name().toLowerCase(Locale.ROOT)));
+            tooltip.add(Component.translatable("item.hbm.bedrock_ore.trait." + trait.name().toLowerCase(Locale.ROOT)));
         }
     }
 

@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.ItemStacks;
 
 /**
  * Adds a slot inventory to {@link TileEntityLoadedBase}. Backed by an {@link NTMItemHandler} (HBM's
@@ -131,8 +132,11 @@ public abstract class TileEntityInventoryBase extends TileEntityLoadedBase imple
         inventory.setStackInSlot(slot, stack);
     }
 
+    /** A vanilla hopper tops up a matching stack to the item's own limit, so a slot already at ours refuses it. */
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
+        ItemStack current = getItem(slot);
+        if (current.getCount() >= getMaxStackSize() && ItemStacks.sameItemAndData(current, stack)) return false;
         return isItemValidForSlot(slot, stack);
     }
 

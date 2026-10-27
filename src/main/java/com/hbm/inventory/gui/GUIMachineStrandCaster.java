@@ -60,7 +60,7 @@ public class GUIMachineStrandCaster extends CompatContainerScreen<ContainerMachi
         TileEntityMachineStrandCaster caster = menu.getCaster();
         if (caster == null) return;
         if (isHovering(16, 17, 36, 81, mouseX, mouseY)) {
-            String content = caster.type == null ? "Empty" : caster.type.getDisplayName() + ": "
+            String content = caster.type == null ? "Empty" : caster.type.getLocalizedName().getString() + ": "
                     + Mats.formatAmount(caster.amount, false);
             GuiDraw.tooltip(graphics, font, List.of(Component.literal(content)), Optional.empty(), mouseX, mouseY);
         } else if (isHovering(82, 14, 16, 24, mouseX, mouseY)) {

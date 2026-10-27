@@ -16,6 +16,9 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemFluidId;
+import com.hbm.items.machine.ItemFluidTank;
+import com.hbm.items.ModFluidItems;
+import com.hbm.items.special.ItemCell;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
@@ -81,10 +84,12 @@ public final class FluidNetworkGameTests {
             TESTS.function("fluid_net_multi_user_faces", 300, 8, () -> FluidNetworkGameTests::multiUser);
     public static final GameTests.Function DUCT_PAINT =
             TESTS.function("fluid_duct_paint", 40, 8, () -> FluidNetworkGameTests::ductPaint);
+    public static final GameTests.Function CONTAINER_IDENTIFIES =
+            TESTS.function("fluid_barrel_identifies_from_container", 60, 8, () -> FluidNetworkGameTests::containerIdentifies);
 
     private static final int Y = 5;
     private static final int JOIN_Z = 6, SPLIT_Z = 12, TYPE_Z = 18, EXHAUST_Z = 24, SPREAD_Z = 30, INTERIOR_Z = 36, MULTI_Z = 42,
-            PAINT_Z = 48;
+            PAINT_Z = 48, IDENTIFY_Z = 54;
 
     private FluidNetworkGameTests() {}
 
@@ -300,6 +305,30 @@ public final class FluidNetworkGameTests {
                         && graph.networkAt(first.asLong()) == graph.networkAt(first.east(4).asLong()),
                 "the typed run must form one water network");
         helper.succeed();
+    }
+
+    /** An empty barrel without a type takes the fluid of a full container put in its load slot and drains it. */
+    private static void containerIdentifies(GameTestHelper helper) {
+        Runnable release = GameTests.holdChunks(helper, -4, 12, IDENTIFY_Z - 6, IDENTIFY_Z + 6);
+        BlockPos at = helper.absolutePos(new BlockPos(2, Y, IDENTIFY_Z));
+        helper.getLevel().setBlock(at, ModFluidNetBlocks.barrel_steel.get().defaultBlockState(), 3);
+        TileEntityBarrel barrel = (TileEntityBarrel) helper.getLevel().getBlockEntity(at);
+        ItemFluidTank universal = ModFluidItems.fluid_tank.get();
+        ItemStack cell = ItemCell.getFullCell(Fluids.DEUTERIUM);
+        helper.assertTrue(barrel.tank.getTankType() == Fluids.NONE, "a new barrel has no type");
+        helper.assertTrue(barrel.isItemValidForSlot(2, cell), "an untyped barrel refused a full deuterium cell");
+        helper.assertTrue(barrel.isItemValidForSlot(2, new ItemStack(Items.WATER_BUCKET)), "an untyped barrel refused a water bucket");
+        helper.assertTrue(barrel.isItemValidForSlot(2, universal.make(Fluids.WATER, universal.capacity)), "an untyped barrel refused a full water tank");
+        helper.assertTrue(!barrel.isItemValidForSlot(2, new ItemStack(Items.BUCKET)), "an untyped barrel took an empty bucket");
+        barrel.inventory.setStackInSlot(2, cell);
+        helper.runAfterDelay(20, () -> {
+            helper.assertTrue(barrel.tank.getTankType() == Fluids.DEUTERIUM, "the barrel did not take the cell's fluid");
+            helper.assertTrue(barrel.tank.getFill() == ItemCell.CAPACITY, "the cell was not drained into the barrel");
+            helper.assertTrue(barrel.inventory.getStackInSlot(2).isEmpty() && ItemCell.isEmptyCell(barrel.inventory.getStackInSlot(3)),
+                    "the empty cell did not move to the output slot");
+            release.run();
+            helper.succeed();
+        });
     }
 
     /** An identifier that carries only its fluid id (as /give builds it) gets the fluid's tint colour. */

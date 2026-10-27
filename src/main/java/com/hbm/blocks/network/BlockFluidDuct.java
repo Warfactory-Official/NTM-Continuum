@@ -157,9 +157,14 @@ public class BlockFluidDuct extends CompatBlock implements TickingBlock, SimpleW
     public static void portChanged(Level level, BlockPos pos) {
         if (!(level instanceof ServerLevel server)) return;
         LevelNodeGraph.invalidateEndpointsAt(server, pos);
+        // a port also goes away when its chunk unloads; reading an unloading chunk blocks the server thread for good
+        if (!level.hasChunkAt(pos)) return;
         BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof BlockFluidDuct)) return;
-        BlockState updated = recomputeConnections(state, level, pos);
+        BlockState updated = state;
+        for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {
+            if (level.hasChunkAt(pos.relative(e.getKey()))) updated = updated.setValue(e.getValue(), canConnectTo(level, pos, e.getKey()));
+        }
         if (updated != state) level.setBlock(pos, updated, 3);
     }
 

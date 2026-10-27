@@ -39,6 +39,12 @@ public class TileEntityNukeMan extends TileEntityMachineBase implements MenuProv
         return "container.nukeMan";
     }
 
+    /** 1.7 getInventoryStackLimit. */
+    @Override
+    public int getMaxStackSize() {
+        return 1;
+    }
+
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {

@@ -144,6 +144,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         lastRedstone = comp;
 
         tank.setType(inventory, 0, 1);
+        MachineFluidContainerIO.identify(tank, inventory, 2);
         MachineFluidContainerIO.load(tank, inventory, 2, 3);
         MachineFluidContainerIO.unload(tank, inventory, 4, 5);
 
@@ -170,6 +171,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         if (stack.isEmpty()) return false;
         if (slot == 0 || slot == 1) return stack.getItem() instanceof IItemFluidId;
         FluidType type = tank.getTankType();
+        if (slot == 2 && type == Fluids.NONE && tank.getFill() == 0) return MachineFluidContainerIO.heldFluid(stack) != Fluids.NONE;
         if (slot == 2) {
             int content = FluidContainerRegistry.INSTANCE.contentOf(stack, type);
             // port: the universal bucket, which 1.7's registry never had

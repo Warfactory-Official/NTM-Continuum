@@ -134,7 +134,7 @@ public final class GUIMachineRotaryFurnace extends CompatContainerScreen<Contain
                         Optional.empty(), mouseX, mouseY);
             } else {
                 boolean shift = Minecraft.getInstance().player != null && Minecraft.getInstance().player.isShiftKeyDown();
-                GuiDraw.tooltip(graphics, font, List.of(Component.literal(furnace.output.material.getDisplayName() + ": "
+                GuiDraw.tooltip(graphics, font, List.of(furnace.output.material.getLocalizedName().copy().append(": "
                         + Mats.formatAmount(furnace.output.amount, shift)).withStyle(ChatFormatting.YELLOW)),
                         Optional.empty(), mouseX, mouseY);
             }

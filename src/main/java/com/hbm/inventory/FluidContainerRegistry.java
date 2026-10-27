@@ -270,6 +270,19 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         return ItemStack.EMPTY;
     }
 
+    /** The fluid a fixed full container (or the water bottle) holds, {@link Fluids#NONE} if it is not one. */
+    public FluidType fixedFluidOf(ItemStack stack) {
+        if (stack.isEmpty()) return Fluids.NONE;
+        for (Fixed fixed : fixed()) {
+            ItemStack full = item(fixed.full);
+            if (full.isEmpty() || !stack.is(full.getItem())) continue;
+            FluidType type = Fluids.fromName(fixed.fluid);
+            return type == null ? Fluids.NONE : type;
+        }
+        if (stack.is(Items.POTION) && "minecraft:water".equals(Ingredients.potionId(stack))) return Fluids.WATER;
+        return Fluids.NONE;
+    }
+
     /** 1.7 {@code getEmptyContainer}: what a full container leaves once emptied ({@link ItemStack#EMPTY}: used up). */
     public ItemStack emptyOf(ItemStack stack) {
         return emptied(stack);

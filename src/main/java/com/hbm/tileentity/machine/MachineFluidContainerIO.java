@@ -75,6 +75,34 @@ public final class MachineFluidContainerIO {
     }
 
     /**
+     * port: an empty tank without a type takes the fluid of the container in its load slot, as an identifier would.
+     * 1.7 needed the identifier first.
+     */
+    public static void identify(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot) {
+        if (tank.getTankType() != Fluids.NONE || tank.getFill() > 0) return;
+        FluidType held = heldFluid(inventory.getStackInSlot(inputSlot));
+        if (held != Fluids.NONE) tank.setTankTypeByIdentifier(held);
+    }
+
+    /** The fluid a full container the loaders can drain holds, {@link Fluids#NONE} for anything else. */
+    public static FluidType heldFluid(ItemStack stack) {
+        if (stack.isEmpty()) return Fluids.NONE;
+        if (stack.getItem() instanceof IInfiniteFluidItem infinite) {
+            return infinite.infiniteType() == null ? Fluids.NONE : infinite.infiniteType();
+        }
+        if (stack.getItem() instanceof BucketItem || stack.is(Items.MILK_BUCKET)) {
+            var bucket = FluidCompat.findItem(stack);
+            if (bucket != null && bucket.tanks() > 0 && bucket.amount(0) > 0) return Fluids.fromVanillaExact(bucket.fluid(0));
+        }
+        if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
+        if (stack.getItem() instanceof IFillableItem fillable) {
+            FluidType type = fillable.getFirstFluidType(stack);
+            return type == null || fillable.getFill(stack) <= 0 ? Fluids.NONE : type;
+        }
+        return FluidContainerRegistry.INSTANCE.fixedFluidOf(stack);
+    }
+
+    /**
      * 1.7 {@code FluidTank.loadTank(in, out)}: the loading handlers in 1.7's order. A registry container that fits whole
      * empties into the tank and its empty container goes to {@code out} ({@code FluidLoaderStandard}); a fillable item
      * is drained where it sits ({@code FluidLoaderFillableItem}); an infinite item feeds the tank and stays

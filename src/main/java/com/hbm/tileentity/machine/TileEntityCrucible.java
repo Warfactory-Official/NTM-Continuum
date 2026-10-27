@@ -331,6 +331,12 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         return -1;
     }
 
+    /** 1.7 getInventoryStackLimit: one item per slot, "prevents clogging". */
+    @Override
+    public int getMaxStackSize() {
+        return 1;
+    }
+
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return slot >= 1 && isItemSmeltable(stack);

@@ -128,7 +128,7 @@ public final class GUIMachineElectrolyser extends CompatContainerScreen<Containe
 
     private void materialTooltip(GuiGraphicsExtractor graphics, Mats.@org.jspecify.annotations.Nullable MaterialStack stack, int x, int y) {
         GuiDraw.tooltip(graphics, font, stack == null ? List.of(Component.literal("Empty").withStyle(ChatFormatting.RED))
-                : List.of(Component.literal(stack.material.getDisplayName() + ": "
+                : List.of(stack.material.getLocalizedName().copy().append(": "
                         // 1.7: Keyboard.isKeyDown(KEY_LSHIFT): the physical left shift key, not the sneak state.
                         + Mats.formatAmount(stack.amount, KeyMappings.isKeyDown(
                         GLFW.GLFW_KEY_LEFT_SHIFT))).withStyle(ChatFormatting.YELLOW)),

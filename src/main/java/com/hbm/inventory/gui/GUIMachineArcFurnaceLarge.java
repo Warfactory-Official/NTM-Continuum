@@ -90,8 +90,8 @@ public class GUIMachineArcFurnaceLarge extends CompatContainerScreen<ContainerMa
             boolean shift = KeyMappings.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT);
             List<Component> lines = new ArrayList<>();
             if (furnace.liquids.isEmpty()) lines.add(Component.literal(ChatFormatting.RED + "Empty"));
-            for (Mats.MaterialStack material : furnace.liquids) lines.add(Component.literal(ChatFormatting.YELLOW
-                    + material.material.getDisplayName() + ": " + Mats.formatAmount(material.amount, shift)));
+            for (Mats.MaterialStack material : furnace.liquids) lines.add(material.material.getLocalizedName().copy()
+                    .append(": " + Mats.formatAmount(material.amount, shift)).withStyle(ChatFormatting.YELLOW));
             GuiUtil.tooltip(graphics, font, lines, mouseX, mouseY);
         } else if (GuiUtil.hover(mouseX, mouseY, leftPos + 8, topPos + 36, 7, 70)) {
             GuiUtil.tooltip(graphics, font, GuiUtil.energyTooltip(furnace.power, TileEntityMachineArcFurnaceLarge.MAX_POWER), mouseX, mouseY);

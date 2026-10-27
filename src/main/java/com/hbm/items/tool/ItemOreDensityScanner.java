@@ -47,7 +47,7 @@ public class ItemOreDensityScanner extends CompatItem {
             double level = entry.getValue();
             GolemNetwork.sendToPlayer(player, PlayerInformPayload.CODEC, PlayerInformPayload.of(
                     777 + type.ordinal(), 4000, ChatFormatting.RESET,
-                    new Translated("item.bedrock_ore.type." + type.suffix + ".name"),
+                    new Translated(type.translationKey()),
                     ": " + ((int) (level * 100) / 100D) + " (",
                     new Colored(new Translated(translateDensity(level)), getColor(level)),
                     ")"));

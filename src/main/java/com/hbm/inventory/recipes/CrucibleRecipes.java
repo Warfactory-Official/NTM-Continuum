@@ -109,13 +109,13 @@ public class CrucibleRecipes extends GenericRecipes {
 
             list.add(Component.translatable("gui.recipe.input").append(":").withStyle(ChatFormatting.BOLD));
             for (Mats.MaterialStack stack : input) {
-                list.add(Component.literal("  " + stack.material.getDisplayName() + ": "
+                list.add(Component.literal("  ").append(stack.material.getLocalizedName()).append(": "
                         + Mats.formatAmount(stack.amount, false)).withStyle(ChatFormatting.GRAY));
             }
 
             list.add(Component.translatable("gui.recipe.output").append(":").withStyle(ChatFormatting.BOLD));
             for (Mats.MaterialStack stack : output) {
-                list.add(Component.literal("  " + stack.material.getDisplayName() + ": "
+                list.add(Component.literal("  ").append(stack.material.getLocalizedName()).append(": "
                         + Mats.formatAmount(stack.amount, false)).withStyle(ChatFormatting.GRAY));
             }
 

@@ -115,6 +115,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         FluidType type = tank.tank.getTankType();
         if (!tank.hasExploded) {
             tank.tank.setType(tank.inventory, 0, 1);
+            MachineFluidContainerIO.identify(tank.tank, tank.inventory, 2);
             MachineFluidContainerIO.load(tank.tank, tank.inventory, 2, 3);
             type = tank.tank.getTankType();
         }
@@ -270,6 +271,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     public static boolean isDrainable(FluidTankNTM tank, ItemStack stack) {
         if (MachineFluidContainerIO.acceptsInfiniteSource(tank, stack)) return true;
         FluidType type = tank.getTankType();
+        if (type == Fluids.NONE && tank.getFill() == 0) return MachineFluidContainerIO.heldFluid(stack) != Fluids.NONE;
         if (FluidContainerRegistry.INSTANCE.contentOf(stack, type) > 0) return true;
         if (stack.getItem() instanceof ItemFluidBucket) return type == Fluids.NONE || ItemFluidBucket.getFluid(stack) == type;
         return stack.getItem() instanceof IFillableItem fillable && fillable.getFill(stack) > 0

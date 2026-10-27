@@ -17,6 +17,12 @@ public class TileEntityNukeMike extends TileEntityNukeBomb {
         super(ModBlockEntities.NUKE_MIKE.get(), pos, state, 8);
     }
 
+    /** 1.7 getInventoryStackLimit. */
+    @Override
+    public int getMaxStackSize() {
+        return 1;
+    }
+
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {

@@ -55,6 +55,8 @@ public final class WavefrontObj implements Geometry.Groups {
     private final float[] min;
     private final float[] max;
     private Identifier source = Ids.of("minecraft", "unknown");
+    /** Distinguishes a {@link #stripFrame} copy's mesh names from the source's. */
+    private String variant = "";
 
     private WavefrontObj(List<float[]> pos, List<float[]> uv, List<float[]> norm, List<Group> groups) {
         this.positions = pos.toArray(new float[0][]);
@@ -214,6 +216,16 @@ public final class WavefrontObj implements Geometry.Groups {
         WavefrontObj model = new WavefrontObj(pos, uv, norm, groups);
         model.source = location;
         return model;
+    }
+
+    /** A copy whose UVs sample frame {@code frame} of a texture stacked as {@code frames} vertical frames. */
+    public WavefrontObj stripFrame(int frame, int frames) {
+        List<float[]> uv = new ArrayList<>(uvs.length);
+        for (float[] t : uvs) uv.add(new float[] {t[0], (frame + t[1]) / frames});
+        WavefrontObj copy = new WavefrontObj(List.of(positions), uv, List.of(normals), groups);
+        copy.source = source;
+        copy.variant = "@" + frame + "/" + frames;
+        return copy;
     }
 
     /** The distinct material names used by this model, in first-use order (empty string = untextured runs). */
@@ -417,7 +429,7 @@ public final class WavefrontObj implements Geometry.Groups {
             String selection = material != null ? "=" + material
                     : include != null ? "+" + String.join(",", new TreeSet<>(include))
                     : exclude.isEmpty() ? "*" : "-" + String.join(",", new TreeSet<>(exclude));
-            this.name = source + "#" + selection + (doubleSided ? "#2" : "");
+            this.name = source + variant + "#" + selection + (doubleSided ? "#2" : "");
         }
 
         private boolean selected(Group group) {

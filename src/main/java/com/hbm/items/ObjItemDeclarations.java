@@ -48,6 +48,28 @@ public final class ObjItemDeclarations {
                 .guiSpinSpeed(degreesPerMilli);
     }
 
+    /** 1.7 {@code RenderSplitter.drawSplitter} for both lanes, the right one a block toward -Z. */
+    private static MachineObjModel.Pass[] splitterLanes() {
+        String t = "hbm:textures/blocks/crane_splitter_";
+        MachineObjModel.Pass[] passes = new MachineObjModel.Pass[16];
+        int at = 0;
+        for (boolean left : new boolean[] {true, false}) {
+            double z = left ? 0.0 : -1.0;
+            String side = left ? "left" : "right";
+            String other = left ? "right" : "left";
+            passes[at++] = MachineObjModel.pass(t + "top_" + side + ".png").parts("Top").translate(0.0, 0.0, z);
+            passes[at++] = MachineObjModel.pass(t + "top_" + other + ".png").parts("Bottom").translate(0.0, 0.0, z);
+            passes[at++] = MachineObjModel.pass(t + side + ".png").parts(left ? "Left" : "Right").translate(0.0, 0.0, z);
+            passes[at++] = MachineObjModel.pass(t + "back_" + side + ".png").parts("Back").translate(0.0, 0.0, z);
+            passes[at++] = MachineObjModel.pass(t + "front_" + side + ".png").parts("Front").translate(0.0, 0.0, z);
+            passes[at++] = MachineObjModel.pass(t + "inner.png").parts("Inner").translate(0.0, 0.0, z);
+            passes[at++] = MachineObjModel.pass(t + "inner_side.png").parts("InnerLeft", "InnerRight", "InnerTop")
+                    .translate(0.0, 0.0, z);
+            passes[at++] = MachineObjModel.pass(t + "belt_still.png").parts("InnerBottom").translate(0.0, 0.0, z);
+        }
+        return passes;
+    }
+
     private static void part0() {
         // 1.7 ammo_himars metadata, one item per rocket (ntm-next ids ammo_himars_<name>):
         // ItemRenderLibrary's rocket + tube pair from the HIMARS mesh, the pair by modelType, the sheet by the type
@@ -339,11 +361,12 @@ public final class ObjItemDeclarations {
                         .guiTranslate(0.0, -2.0, 0.0)
                         .partTextures("Side", "hbm:textures/blocks/crane_partitioner_side.png", "Back", "hbm:textures/blocks/crane_partitioner_back.png", "Top_Top.001", "hbm:textures/blocks/crane_top.png", "Inner", "hbm:textures/blocks/crane_splitter_inner.png", "InnerSide", "hbm:textures/blocks/crane_splitter_inner_side.png", "Belt", "hbm:textures/blocks/crane_splitter_belt_still.png")).oversizedInGui().register();
         Dejson.item(NS, "crane_splitter")
+                // 1.7 RenderSplitter.renderInventoryBlock: scale(0.625), rotate(-90, Y), translate(0, -0.5, 0.5), the left
+                // lane, translate(0, 0, -1), the right lane; the primary pass names no part
                 .definition(MachineObjModel.of("hbm:models/blocks/splitter.obj", "hbm:textures/blocks/crane_splitter_inner.png")
-                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(5.0).rawLegacyTransform()
-                        .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, 0.0, 0.0)
-                        .guiTranslate(0.0, -2.0, 0.0).exclude("Right")
-                        .partTextures("Top", "hbm:textures/blocks/crane_splitter_top_left.png", "Bottom", "hbm:textures/blocks/crane_splitter_top_right.png", "Left", "hbm:textures/blocks/crane_splitter_left.png", "Right", "hbm:textures/blocks/crane_splitter_right.png", "Back", "hbm:textures/blocks/crane_splitter_back_left.png", "Front", "hbm:textures/blocks/crane_splitter_front_left.png", "Inner", "hbm:textures/blocks/crane_splitter_inner.png", "InnerLeft", "hbm:textures/blocks/crane_splitter_inner_side.png", "InnerRight", "hbm:textures/blocks/crane_splitter_inner_side.png", "InnerTop", "hbm:textures/blocks/crane_splitter_inner_side.png", "InnerBottom", "hbm:textures/blocks/crane_splitter_belt_still.png")).oversizedInGui().register();
+                        .scale(0.625).ty(0.0).yaw(-90.0).frame("block").rawLegacyTransform().parts("none")
+                        .itemTranslate(0.0, 0.0, 0.0).itemPreTranslate(0.0, -0.3125, 0.3125)
+                        .passes(splitterLanes())).oversizedInGui().register();
         Dejson.item(NS, "crashed_bomb_balefire")
                 .definition(MachineObjModel.of("hbm:models/bombs/dud_balefire.obj", "hbm:textures/models/bombs/dud_balefire.png")
                         .scale(1.0).ty(0.0).yaw(90.0).guiScale(2.125).rawLegacyTransform().noCull()

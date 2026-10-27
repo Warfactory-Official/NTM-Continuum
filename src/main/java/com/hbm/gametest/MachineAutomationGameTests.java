@@ -16,6 +16,7 @@ import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.BlockEntities;
+import dev.golem.core.world.ItemExposure;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,6 +39,8 @@ public final class MachineAutomationGameTests {
 
     public static final GameTests.Function CRUCIBLE_HOPPERS =
             TESTS.function("automation_crucible_hoppers", 200, 4, () -> MachineAutomationGameTests::crucibleHoppers);
+    public static final GameTests.Function CRUCIBLE_ONE_PER_SLOT =
+            TESTS.function("automation_crucible_one_per_slot", 300, 4, () -> MachineAutomationGameTests::crucibleOnePerSlot);
     public static final GameTests.Function LEGACY_BATTERY_INERT =
             TESTS.function("automation_legacy_battery_inert", 200, 4, () -> MachineAutomationGameTests::legacyBatteryInert);
     public static final GameTests.Function SOCKET_RELOAD =
@@ -72,6 +75,29 @@ public final class MachineAutomationGameTests {
             helper.assertTrue(side.getItem(0).isEmpty() && side.getItem(1).is(Items.DIRT), "the side hopper kept its ingot");
             helper.assertTrue(iron == 2 && crucible.getItem(0).isEmpty(), "the unheated crucible holds " + iron
                     + " of two ingots, mold slot " + crucible.getItem(0));
+            helper.succeed();
+        });
+    }
+
+    /** 1.7 getInventoryStackLimit is 1: a hopper fills slots 1 to 9 with one ingot each, and pipes add none after. */
+    public static void crucibleOnePerSlot(GameTestHelper helper) {
+        BlockPos core = GameTests.paddedCentre(4, 1);
+        BlockPos absolute = FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_crucible.get(), core);
+        TileEntityCrucible crucible = GameTestHelpers.blockEntity(helper, core, TileEntityCrucible.class);
+
+        helper.setBlock(core.above(2), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
+        HopperBlockEntity hopper = GameTestHelpers.blockEntity(helper, core.above(2), HopperBlockEntity.class);
+        hopper.setItem(0, new ItemStack(Items.IRON_INGOT, 16));
+
+        helper.runAfterDelay(160, () -> {
+            for (int slot = 1; slot < crucible.getContainerSize(); slot++) {
+                ItemStack stack = crucible.getItem(slot);
+                helper.assertTrue(stack.is(Items.IRON_INGOT) && stack.getCount() == 1, "slot " + slot + " holds " + stack);
+            }
+            helper.assertTrue(crucible.getItem(0).isEmpty(), "slot 0 holds " + crucible.getItem(0));
+            helper.assertTrue(hopper.getItem(0).getCount() == 7, "the hopper kept " + hopper.getItem(0));
+            int piped = ItemExposure.insert(helper.getLevel(), absolute, Direction.NORTH, new ItemStack(Items.IRON_INGOT, 4));
+            helper.assertTrue(piped <= 0, "a pipe added " + piped + " ingot(s) to the full crucible");
             helper.succeed();
         });
     }

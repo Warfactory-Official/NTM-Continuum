@@ -13,4 +13,6 @@ public class DecoModelRenderState extends CompatRenderState {
     public float offX, offY, offZ;
     /** Spotlight: OBJ group to draw (CageLamp / FloodLamp / FluoroSingle / FluoroCap / FluoroMid). */
     public String part = "";
+    /** Blinking CRT: the animation frame of its texture strip. */
+    public int frame;
 }

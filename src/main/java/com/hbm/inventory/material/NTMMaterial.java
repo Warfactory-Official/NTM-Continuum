@@ -6,6 +6,7 @@ import com.hbm.inventory.RecipesCommon.MaterialStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import dev.golem.core.Ids;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -119,6 +120,16 @@ public final class NTMMaterial {
     public NTMMaterial setAutogen(MaterialShapes... shapes) {
         for (MaterialShapes s : shapes) if (s != null) autogen.add(s);
         return this;
+    }
+
+    /** 1.7's {@code hbmmat.} key, under the port's material name. */
+    public String getTranslationKey() {
+        return "hbmmat." + name;
+    }
+
+    /** The translated name; a material without a lang entry (an addon's or a script's) shows its display name. */
+    public Component getLocalizedName() {
+        return Component.translatableWithFallback(getTranslationKey(), getDisplayName());
     }
 
     /** Title-cased display name, e.g. {@code combine_steel → "Combine Steel"}. */
