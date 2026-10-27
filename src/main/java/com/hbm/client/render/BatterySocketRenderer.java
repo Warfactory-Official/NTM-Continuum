@@ -9,6 +9,7 @@ import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.NoiseDisplacedRenderType;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -38,8 +39,12 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
     private final WavefrontObj model = WavefrontObj.load(Ids.of("hbm", "models/battery_socket.obj"));
     /** 1.7's {@code battery.obj} "Supports" part, split into its own file so the pack icons need not exclude it. */
     private final WavefrontObj supports = WavefrontObj.load(Ids.of("hbm", "models/battery_socket_supports.obj"));
-    private final WavefrontObj horse = WavefrontObj.load(Ids.of("hbm", "models/mobs/horse.obj"));
-    private static final Identifier SUNBURST = Ids.of("hbm", "textures/models/horse/sunburst.png");
+    private final WavefrontObj chuddie = WavefrontObj.load(Ids.of("hbm", "models/mobs/chuddie.obj"));
+    private static final Identifier CHUDDIE = Ids.of("hbm", "textures/models/chuddie.png");
+    private static final String ENERGY_BALL = "hbm:energy_ball";
+    private static final Identifier NOISE = Ids.of("hbm", "textures/misc/noise_2.png");
+    /** The ball's centre between chuddie's hands, in model units, and its radius in blocks (below 1, see the shader). */
+    private static final float BALL_X = 0.64F, BALL_Y = 1.13F, BALL_RADIUS = 0.24F;
     private final Map<Identifier, Surface> skins = new HashMap<>();
 
     /** Match the 1.12.2 RenderBatterySocket placement: centre, facing-rotate, then its model offset. */
@@ -118,8 +123,9 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
     }
 
     /**
-     * 1.7 {@code RenderBatterySocket}: a creative battery is a spinning horned pony ({@code HorsePronter} in its zero
-     * pose with the horn), any other item floats and spins at 1.5x, and both are ringed by random electric arcs.
+     * 1.7 {@code RenderBatterySocket}: a creative battery is a spinning figure, any other item floats and spins at 1.5x,
+     * and both are ringed by random electric arcs. port: the figure is the chuddie model holding an energy ball
+     * (the {@code energy_ball} shader, also drawn into the bloom layer), not 1.7's horned pony.
      */
     @Override
     protected void submitUndeclared(BatterySocketRenderState state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
@@ -133,11 +139,16 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
             pose.pushPose();
             pose.scale(0.75F, 0.75F, 0.75F);
             pose.mulPose(Axis.YN.rotationDegrees((float) ((state.gameTime % 360 + state.interp) * 25D)));
-            for (String part : new String[]{"Body", "Head", "Mane", "NoseFemale", "HornPointy", "LeftFrontLeg",
-                    "RightFrontLeg", "LeftBackLeg", "RightBackLeg", "Tail"}) {
-                sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutoutNoCull(SUNBURST),
-                        (p, buffer) -> horse.renderPart(part, p, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-            }
+            sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutoutNoCull(CHUDDIE),
+                    (p, buffer) -> chuddie.renderAll(p, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
+            float time = (state.gameTime % 24000L + state.interp) / 20F;
+            SubmitSink.CustomGeometry ball = (p, buffer) -> {
+                for (int corner = 0; corner < 4; corner++) {
+                    NoiseDisplacedRenderType.vertex(buffer, p, BALL_X, BALL_Y, 0F, corner + BALL_RADIUS, time, 0xFF4FA8FF);
+                }
+            };
+            sink.submitCustomGeometry(pose, NoiseDisplacedRenderType.of(ENERGY_BALL, NOISE, false), ball);
+            sink.submitCustomGeometry(pose, NoiseDisplacedRenderType.of(ENERGY_BALL, NOISE, true), ball);
             pose.popPose();
         } else {
             pose.pushPose();
