@@ -22,7 +22,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -180,68 +179,7 @@ public class GUIMachinePlasmaForge extends CompatContainerScreen<ContainerMachin
                                     int mouseX, int mouseY) {
         List<ItemStack> boosters = forge.getBoosterDisplayStacks();
         if (boosters.isEmpty()) return;
-
-        int selectedIndex = (int) (System.currentTimeMillis() % (1000L * boosters.size()) / 1000L);
-        ItemStack selected = boosters.get(selectedIndex);
-        List<List<ItemStack>> rows = new ArrayList<>();
-        if (boosters.size() < 10) {
-            rows.add(boosters);
-        } else if (boosters.size() < 24) {
-            int split = boosters.size() / 2;
-            rows.add(boosters.subList(0, split));
-            rows.add(boosters.subList(split, boosters.size()));
-        } else {
-            int split = (int) Math.ceil(boosters.size() / 3D);
-            int split2 = (int) Math.ceil(boosters.size() / 3D * 2D);
-            rows.add(boosters.subList(0, split));
-            rows.add(boosters.subList(split, split2));
-            rows.add(boosters.subList(split2, boosters.size()));
-        }
-
-        String tooltipTitle = "Booster Isotope:";
-        String selectedName = selected.getHoverName().getString();
-        int tooltipWidth = Math.max(font.width(tooltipTitle), font.width(selectedName));
-        for (List<ItemStack> row : rows) tooltipWidth = Math.max(tooltipWidth, row.size() * 18);
-        int tooltipHeight = 20 + rows.size() * 18;
-        int minX = mouseX + 12;
-        int minY = mouseY - 12;
-        if (minX + tooltipWidth > width) minX -= 28 + tooltipWidth;
-        if (minY + tooltipHeight + 6 > height) minY = height - tooltipHeight - 6;
-
-        GuiDraw.nextStratum(graphics);
-
-        // This is the old drawStackText frame: dark backing with the one-pixel blue edge.
-        int background = 0xF0100010;
-        graphics.fill(minX - 3, minY - 4, minX + tooltipWidth + 3, minY - 3, background);
-        graphics.fill(minX - 3, minY + tooltipHeight + 3, minX + tooltipWidth + 3, minY + tooltipHeight + 4, background);
-        graphics.fill(minX - 3, minY - 3, minX + tooltipWidth + 3, minY + tooltipHeight + 3, background);
-        graphics.fill(minX - 4, minY - 3, minX - 3, minY + tooltipHeight + 3, background);
-        graphics.fill(minX + tooltipWidth + 3, minY - 3, minX + tooltipWidth + 4, minY + tooltipHeight + 3, background);
-
-        int border = 0x505000FF;
-        int borderShadow = (border & 0xFEFEFE) >> 1 | border & 0xFF000000;
-        graphics.fill(minX - 3, minY - 2, minX - 2, minY + tooltipHeight + 2, border);
-        graphics.fill(minX + tooltipWidth + 2, minY - 2, minX + tooltipWidth + 3, minY + tooltipHeight + 2, border);
-        graphics.fill(minX - 3, minY - 3, minX + tooltipWidth + 3, minY - 2, border);
-        graphics.fill(minX - 3, minY + tooltipHeight + 2, minX + tooltipWidth + 3, minY + tooltipHeight + 3, borderShadow);
-
-        GuiDraw.text(graphics, font, tooltipTitle, minX, minY, 0xFFFFFFFF, true);
-        int lineY = minY + 12;
-        int itemIndex = 0;
-        for (List<ItemStack> row : rows) {
-            for (int column = 0; column < row.size(); column++) {
-                if (itemIndex == selectedIndex) {
-                    graphics.fill(minX + column * 18 - 1, lineY - 1,
-                            minX + column * 18 + 17, lineY + 17, 0xFFFF0000);
-                    graphics.fill(minX + column * 18, lineY,
-                            minX + column * 18 + 16, lineY + 16, 0xFF808080);
-                }
-                GuiDraw.item(graphics, row.get(column), minX + column * 18, lineY);
-                itemIndex++;
-            }
-            lineY += 18;
-        }
-        GuiDraw.text(graphics, font, selectedName, minX, lineY, 0xFFFFFFFF, true);
+        GuiUtil.cycledStackText(graphics, font, width, height, "Booster Isotope:", boosters, mouseX, mouseY);
     }
 
     @Override

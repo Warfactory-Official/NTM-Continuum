@@ -29,10 +29,6 @@ import net.minecraft.world.item.ItemStack;
  * Chekhov = base, Jeremy = cannon, Tauon = tau, ...), the mode button from {@code GUITurretArty} /
  * {@code GUITurretHIMARS}, and the fuel tank from {@code GUITurretFritz}. Hit tests use 1.7's
  * {@code left <= x < left + w, top < y <= top + h}.
- *
- * <p>1.7 draws the ammo list through {@code GuiInfoContainer.drawStackText}; that helper has no counterpart
- * here, so the panel is rebuilt inline with the same geometry (18-pixel stack lines, a 10-pixel text line, two
- * extra pixels after the first line, the one-second cycle through the accepted rounds).
  */
 public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBase> {
 
@@ -224,72 +220,10 @@ public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBa
             }
         }
 
-        List<ItemStack> ammo = new ArrayList<>(turret.getAmmoTypesForDisplay());
+        List<ItemStack> ammo = turret.getAmmoTypesForDisplay();
         if (ammo.isEmpty()) return false;
 
-        int highlight = ammo.size() > 1
-                ? (int) ((System.currentTimeMillis() % (1000L * ammo.size())) / 1000L)
-                : -1;
-        ItemStack selected = ammo.get(Math.max(highlight, 0));
-
-        List<List<ItemStack>> rows = new ArrayList<>();
-        if (ammo.size() < 10) {
-            rows.add(ammo);
-        } else if (ammo.size() < 24) {
-            rows.add(ammo.subList(0, ammo.size() / 2));
-            rows.add(ammo.subList(ammo.size() / 2, ammo.size()));
-        } else {
-            int first = (int) Math.ceil(ammo.size() / 3D);
-            int second = (int) Math.ceil(ammo.size() / 3D * 2D);
-            rows.add(ammo.subList(0, first));
-            rows.add(ammo.subList(first, second));
-            rows.add(ammo.subList(second, ammo.size()));
-        }
-
-        // 1.7 drawStackText: stack lines are 18 tall and the text line 10; the box height ignores the two extra
-        // pixels drawn after the first line (kept as in 1.7).
-        String label = selected.getHoverName().getString();
-        int panelWidth = this.font.width(label);
-        for (List<ItemStack> row : rows) panelWidth = Math.max(panelWidth, row.size() * 18);
-        int panelHeight = rows.size() * 18 + 10;
-        int minX = mouseX + 12;
-        int minY = mouseY - 12;
-        if (minX + panelWidth > this.width) minX -= 28 + panelWidth;
-        if (minY + panelHeight + 6 > this.height) minY = this.height - panelHeight - 6;
-
-        GuiDraw.nextStratum(graphics);
-
-        int background = 0xF0100010;
-        graphics.fill(minX - 3, minY - 4, minX + panelWidth + 3, minY - 3, background);
-        graphics.fill(minX - 3, minY + panelHeight + 3, minX + panelWidth + 3, minY + panelHeight + 4, background);
-        graphics.fill(minX - 3, minY - 3, minX + panelWidth + 3, minY + panelHeight + 3, background);
-        graphics.fill(minX - 4, minY - 3, minX - 3, minY + panelHeight + 3, background);
-        graphics.fill(minX + panelWidth + 3, minY - 3, minX + panelWidth + 4, minY + panelHeight + 3, background);
-
-        int border = 0x505000FF;
-        int borderShadow = (border & 0xFEFEFE) >> 1 | border & 0xFF000000;
-        GuiDraw.fillGradient(graphics, minX - 3, minY - 2, minX - 2, minY + panelHeight + 2, border, borderShadow);
-        GuiDraw.fillGradient(graphics, minX + panelWidth + 2, minY - 2, minX + panelWidth + 3, minY + panelHeight + 2, border, borderShadow);
-        graphics.fill(minX - 3, minY - 3, minX + panelWidth + 3, minY - 2, border);
-        graphics.fill(minX - 3, minY + panelHeight + 2, minX + panelWidth + 3, minY + panelHeight + 3, borderShadow);
-
-        int lineY = minY;
-        int itemIndex = 0;
-        for (int r = 0; r < rows.size(); r++) {
-            List<ItemStack> row = rows.get(r);
-            for (int column = 0; column < row.size(); column++) {
-                // 1.7 marks the cycled stack by setting its size to 0: red frame, light grey fill.
-                if (itemIndex == highlight) {
-                    graphics.fill(minX + column * 18 - 1, lineY - 1, minX + column * 18 + 17, lineY + 17, 0xFFFF0000);
-                    graphics.fill(minX + column * 18, lineY, minX + column * 18 + 16, lineY + 16, 0xFFB0B0B0);
-                }
-                GuiDraw.item(graphics, row.get(column), minX + column * 18, lineY);
-                itemIndex++;
-            }
-            if (r == 0) lineY += 2;
-            lineY += 18;
-        }
-        GuiDraw.text(graphics, this.font, label, minX, lineY, 0xFFFFFF, true);
+        GuiUtil.cycledStackText(graphics, this.font, this.width, this.height, null, ammo, mouseX, mouseY);
         return true;
     }
 

@@ -81,7 +81,7 @@ public final class HbmBlockInfo {
 
         BlockInfo.gauges(TileEntityFireboxBase.class, (te, out) -> heat(out, te.heatEnergy, te.getMaxHeat()));
         BlockInfo.gauges(TileEntityHeaterOilburner.class,
-                (te, out) -> heat(out, te.heatEnergy, TileEntityHeaterOilburner.maxHeatEnergy));
+                (te, out) -> heat(out, te.heatEnergy, te.maxHeatEnergy));
         BlockInfo.gauges(TileEntityHeaterElectric.class, (te, out) -> heat(out, te.heatEnergy, 0));
         BlockInfo.gauges(TileEntityHeaterHeatex.class, (te, out) -> heat(out, te.heatEnergy, 0));
         BlockInfo.gauges(TileEntityHeatBoiler.class, (te, out) -> heat(out, te.heat, TileEntityHeatBoiler.maxHeat));

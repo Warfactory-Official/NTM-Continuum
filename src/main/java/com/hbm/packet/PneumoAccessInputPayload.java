@@ -24,6 +24,8 @@ public record PneumoAccessInputPayload(int containerId, int op, int entryId) imp
             buffer -> new PneumoAccessInputPayload(buffer.readVarInt(), buffer.readByte(), buffer.readVarInt()));
 
     public static void handleServer(PneumoAccessInputPayload payload, ServerPlayer player) {
+        // vanilla refuses a spectator's container clicks the same way
+        if (player.isSpectator()) return;
         if (!(player.containerMenu instanceof ContainerPneumoStorageAccess menu)) return;
         if (menu.containerId != payload.containerId || !menu.stillValid(player)) return;
         ContainerPneumoStorageAccess.ClickOp[] ops = ContainerPneumoStorageAccess.ClickOp.values();

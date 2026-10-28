@@ -4,6 +4,8 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.item.IDesignatorItem;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.client.ClientEffects;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.missile.EntityRocketSoyuz;
@@ -66,7 +68,8 @@ import java.util.List;
  * 3 orbital module, 4..7 canisters, 8 battery, 9..26 cargo.
  */
 public class TileEntityLaunchpadSoyuz extends TileEntityMachineBase
-        implements MenuProvider, WorldlyContainer, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver {
+        implements MenuProvider, WorldlyContainer, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver,
+        IRORValueProvider, IRORInteractive {
 
     public long power;
     public static final long maxPower = 1_000_000;
@@ -105,6 +108,10 @@ public class TileEntityLaunchpadSoyuz extends TileEntityMachineBase
 
     public static final int COUNTDOWN_DURATION = 600;
     public int countdown;
+
+    /** The cargo drop point, from the designator or a radio launch; 1.7 never saves it. */
+    private @Nullable Integer targetX;
+    private @Nullable Integer targetZ;
 
     private final @Nullable AudioWrapper[] audios = new AudioWrapper[3];
 
@@ -478,15 +485,27 @@ public class TileEntityLaunchpadSoyuz extends TileEntityMachineBase
         return prevPositions[index] + (positions[index] - prevPositions[index]) * interp;
     }
 
+    private boolean confirmTarget() {
+        ItemStack designator = inventory.getStackInSlot(1);
+        if (designator.getItem() instanceof IDesignatorItem item) {
+            Vec3 target = item.getCoords(level, designator, worldPosition);
+            this.targetX = (int) target.x;
+            this.targetZ = (int) target.z;
+            return true;
+        }
+        return this.targetX != null && this.targetZ != null;
+    }
+
     public boolean canLaunch() {
         if (this.loadedType < 0) return false;
         if (!this.hasAllFuel()) return false;
         if (this.power < CONSUMPTION) return false;
 
         if (this.cargoMode) {
-            if (inventory.getStackInSlot(1).isEmpty()) return false;
-            for (int i = 9; i < 27; i++) {
-                if (!inventory.getStackInSlot(i).isEmpty()) return true;
+            if (confirmTarget()) {
+                for (int i = 9; i < 27; i++) {
+                    if (!inventory.getStackInSlot(i).isEmpty()) return true;
+                }
             }
             return false;
         }
@@ -507,26 +526,21 @@ public class TileEntityLaunchpadSoyuz extends TileEntityMachineBase
         tanks[0].setFill(tanks[0].getFill() - 100_000);
         tanks[1].setFill(tanks[1].getFill() - 100_000);
 
-        if (!this.cargoMode) {
-            soyuz.setSat(inventory.getStackInSlot(2));
-            if (this.orbital() == 2) inventory.setStackInSlot(3, ItemStack.EMPTY);
-            inventory.setStackInSlot(2, ItemStack.EMPTY);
-        } else {
+        if (this.cargoMode) {
             List<ItemStack> payload = new ArrayList<>();
             for (int i = 9; i < 27; i++) {
                 payload.add(inventory.getStackInSlot(i));
                 inventory.setStackInSlot(i, ItemStack.EMPTY);
             }
-
-            ItemStack designator = inventory.getStackInSlot(1);
-            if (designator.getItem() instanceof IDesignatorItem item) {
-                Vec3 target = item.getCoords(level, designator, worldPosition);
-                if (target != null) {
-                    soyuz.targetX = (int) target.x;
-                    soyuz.targetZ = (int) target.z;
-                }
-            }
             soyuz.setPayload(payload);
+
+            soyuz.targetX = this.targetX;
+            soyuz.targetZ = this.targetZ;
+            this.targetX = this.targetZ = null;
+        } else {
+            soyuz.setSat(inventory.getStackInSlot(2));
+            if (this.orbital() == 2) inventory.setStackInSlot(3, ItemStack.EMPTY);
+            inventory.setStackInSlot(2, ItemStack.EMPTY);
         }
 
         inventory.setStackInSlot(0, ItemStack.EMPTY);
@@ -594,6 +608,51 @@ public class TileEntityLaunchpadSoyuz extends TileEntityMachineBase
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return false;
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{
+                PREFIX_VALUE + "state",
+                PREFIX_VALUE + "countdown",
+                PREFIX_VALUE + "power",
+                PREFIX_VALUE + "fuel",
+                PREFIX_VALUE + "oxidizer",
+                PREFIX_VALUE + "canlaunch",
+                PREFIX_VALUE + "cargomode",
+                PREFIX_FUNCTION + "launch",
+                PREFIX_FUNCTION + "launch" + NAME_SEPARATOR + "x" + PARAM_SEPARATOR + "z",
+                PREFIX_FUNCTION + "setcargomode" + NAME_SEPARATOR + "on/off"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "state").equals(name)) return "" + soyuzStatus;
+        if ((PREFIX_VALUE + "countdown").equals(name)) return "" + countdown;
+        if ((PREFIX_VALUE + "power").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "fuel").equals(name)) return "" + tanks[0].getFill();
+        if ((PREFIX_VALUE + "oxidizer").equals(name)) return "" + tanks[1].getFill();
+        if ((PREFIX_VALUE + "canlaunch").equals(name)) return canLaunch() ? "1" : "0";
+        if ((PREFIX_VALUE + "cargomode").equals(name)) return cargoMode ? "1" : "0";
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "launch").equals(name)) {
+            switch (params.length) {
+                case 0 -> launch();
+                case 2 -> {
+                    this.targetX = IRORInteractive.parseInt(params[0], Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    this.targetZ = IRORInteractive.parseInt(params[1], Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    launch();
+                }
+            }
+        } else if ((PREFIX_FUNCTION + "setcargomode").equals(name) && params.length == 1) {
+            this.cargoMode = IRORInteractive.parseBool(params[0]);
+            setChanged();
+        }
+        return null;
     }
 
     @Override
@@ -720,11 +779,15 @@ public class TileEntityLaunchpadSoyuz extends TileEntityMachineBase
         }
 
         if (Tags.contains(data, "launch")) {
-            if (this.soyuzStatus == SoyuzStatus.READY && canLaunch()) {
-                this.soyuzStatus = SoyuzStatus.LAUNCHING;
-                this.countdown = COUNTDOWN_DURATION;
-                setChanged();
-            }
+            launch();
+        }
+    }
+
+    private void launch() {
+        if (this.soyuzStatus == SoyuzStatus.READY && canLaunch()) {
+            this.soyuzStatus = SoyuzStatus.LAUNCHING;
+            this.countdown = COUNTDOWN_DURATION;
+            setChanged();
         }
     }
 

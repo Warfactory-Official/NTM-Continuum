@@ -40,6 +40,13 @@ public record PneumoAccessSyncPayload(int containerId, byte[] data) implements G
 
     /** @param display the type, once, when the client has not been told this id yet; null updates the count alone */
     public record Delta(int id, @Nullable ItemStack display, long amount) {
+
+        /** 1.7 {@code DeltaType.RESET}: the client forgets every type it was told about. */
+        public static final Delta RESET = new Delta(-1, null, 0);
+
+        public boolean isReset() {
+            return id < 0;
+        }
     }
 
     public static PneumoAccessSyncPayload of(Level level, int containerId, List<Delta> deltas) {

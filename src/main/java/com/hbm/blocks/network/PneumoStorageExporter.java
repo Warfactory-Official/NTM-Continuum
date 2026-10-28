@@ -7,9 +7,8 @@ import org.jspecify.annotations.Nullable;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageExporter;
 
 /**
- * 1.7 {@code PneumoStorageExporter}: {@code BlockMachineBase(Material.iron, 0)}, an unrotated GUI block. 1.7 spilled
- * only the output slots (9..17) on break; the filters are ghosts and vanilla's container drop skips empties, so the
- * default removal side effect is that same spill.
+ * 1.7 {@code PneumoStorageExporter}: {@code BlockMachineBase(Material.iron, 0)}, an unrotated GUI block. Breaking it
+ * spills only the output slots (9..17); the nine filters are ghosts and the block entity's removal hook skips them.
  */
 public class PneumoStorageExporter extends PneumaticStorageBlockBase {
 

@@ -101,6 +101,13 @@ public class TileEntityPneumoStorageMono extends TileEntityPneumaticStorageBase 
         output.discard("customName");
     }
 
+    /** 1.7: a cell holding items keeps its type marker, whether a click, a filter packet or a paste writes it. */
+    @Override
+    public void setItem(int slot, ItemStack stack) {
+        if (level != null && !level.isClientSide() && amounts[slot] > 0) return;
+        super.setItem(slot, stack);
+    }
+
     @Override
     public long getAmountAt(int index) {
         return amounts[index];

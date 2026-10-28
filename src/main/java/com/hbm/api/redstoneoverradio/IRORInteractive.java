@@ -1,5 +1,7 @@
 package com.hbm.api.redstoneoverradio;
 
+import java.util.Locale;
+
 public interface IRORInteractive extends IRORInfo {
     String NAME_SEPARATOR = "!";
     String PARAM_SEPARATOR = ":";
@@ -15,7 +17,7 @@ public interface IRORInteractive extends IRORInfo {
         String[] parts = input.split(NAME_SEPARATOR);
         if (parts.length <= 0 || parts.length > 2) throw new RORFunctionException(EX_NAME);
         if (parts[0].isEmpty()) throw new RORFunctionException(EX_NULL);
-        return parts[0];
+        return parts[0].toLowerCase(Locale.US);
     }
 
     static String[] getParams(String input) {
@@ -54,5 +56,20 @@ public interface IRORInteractive extends IRORInfo {
         }
         if (result < min || result > max) throw new RORFunctionException(EX_FORMAT);
         return result;
+    }
+
+    static boolean parseBool(String value) {
+        switch (value.toLowerCase(Locale.ROOT)) {
+            case "1":
+            case "true":
+            case "on":
+                return true;
+            case "0":
+            case "false":
+            case "off":
+                return false;
+            default:
+                throw new RORFunctionException(EX_FORMAT);
+        }
     }
 }

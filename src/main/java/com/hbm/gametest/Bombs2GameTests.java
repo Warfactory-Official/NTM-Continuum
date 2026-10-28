@@ -207,6 +207,15 @@ public final class Bombs2GameTests {
             HbmPackets.handleControl(player, bomb.getBlockPos(), timer);
             helper.assertTrue(bomb.timer == 90 * 20 && "01".equals(bomb.getMinutes()) && "30".equals(bomb.getSeconds()),
                     "the timer control must set seconds * 20 and print 01:30");
+            CompoundTag zero = new CompoundTag();
+            zero.putInt("timer", 0);
+            HbmPackets.handleControl(player, bomb.getBlockPos(), zero);
+            helper.assertTrue(bomb.timer == 90 * 20, "a timer outside 1..999 seconds must be ignored");
+            bomb.timer = 0;
+            bomb.updateEntity();
+            helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(pos)).is(ModBombs2Blocks.nuke_fstbmb.get()),
+                    "a bomb that was never started must not go off when its timer reads zero");
+            bomb.timer = 90 * 20;
             CompoundTag start = new CompoundTag();
             start.putBoolean("start", true);
             HbmPackets.handleControl(player, bomb.getBlockPos(), start);

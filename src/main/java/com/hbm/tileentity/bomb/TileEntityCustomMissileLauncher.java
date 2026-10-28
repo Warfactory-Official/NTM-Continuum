@@ -1,9 +1,12 @@
 package com.hbm.tileentity.bomb;
 
+import com.hbm.api.block.IRadarCommandReceiver;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.event.HbmEvents;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.item.IDesignatorItem;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.entity.missile.EntityMissileCustom;
 import com.hbm.handler.MissileStruct;
 import com.hbm.inventory.fluid.Fluids;
@@ -40,8 +43,7 @@ import com.hbm.tileentity.TilePort.PortDef;
 /**
  * The shared body of 1.7's {@code TileEntityCompactLauncher} and {@code TileEntityLaunchTable}. Upstream wrote the
  * two as near-identical copies; the differences are kept as overrides: tank and solid-fuel capacity, which
- * fuselage top size fits ({@link #acceptedSize}), how far the redstone footprint reaches, and whether a missing
- * designator blocks {@link #canLaunch} (compact: yes, table: no).
+ * fuselage top size fits ({@link #acceptedSize}) and how far the redstone footprint reaches.
  *
  * <p>Slots, as upstream: 0 missile, 1 designator, 2/3 fuel/oxidizer in, 4 solid fuel ({@code rocket_fuel},
  * 250 each), 5 battery, 6/7 fuel/oxidizer out. A launch costs 75% of the 100 kHE buffer plus the fuselage's whole
@@ -53,7 +55,8 @@ import com.hbm.tileentity.TilePort.PortDef;
  * {@code com.hbm.compat.computercraft.bomb.LaunchTablePeripheral}.
  */
 public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineBase
-        implements IEnergyReceiverMK2, IFluidStandardReceiverMK2 {
+        implements IEnergyReceiverMK2, IFluidStandardReceiverMK2, IRadarCommandReceiver, IRORValueProvider,
+        IRORInteractive {
 
     public static final int SLOT_MISSILE = 0;
 
@@ -77,8 +80,6 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
 
     /** Half the side of the square whose blocks listen for redstone. */
     protected abstract int footprintRadius();
-
-    protected abstract boolean requiresDesignatorToLaunch();
 
     public long getPowerScaled(long i) {
         return (power * i) / maxPower;
@@ -147,15 +148,15 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
     public abstract PortDef[] getPorts();
 
     public boolean canLaunch() {
-        return power >= maxPower * 0.75 && isMissileValid() && (!requiresDesignatorToLaunch() || hasDesignator())
-                && hasFuel();
+        return power >= maxPower * 0.75 && isMissileValid() && hasFuel();
     }
 
-    /** 1.7 IRadarCommandReceiver. Upstream passed {@code posX} for both axes; kept, it is how the radar aims. */
+    @Override
     public boolean sendCommandEntity(Entity target) {
-        return sendCommandPosition((int) Math.floor(target.getX()), worldPosition.getY(), (int) Math.floor(target.getX()));
+        return sendCommandPosition((int) Math.floor(target.getX()), worldPosition.getY(), (int) Math.floor(target.getZ()));
     }
 
+    @Override
     public boolean sendCommandPosition(int x, int y, int z) {
         if (!canLaunch()) return false;
         this.launchTo(x, z);
@@ -294,6 +295,56 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
         ItemCustomMissilePart.FuelType type = multipart.fuselage().fuelType();
         if (type.fuel != null) tanks[0].setTankType(type.fuel.get());
         if (type.oxidizer != null) tanks[1].setTankType(type.oxidizer.get());
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{
+                PREFIX_VALUE + "power",
+                PREFIX_VALUE + "solid",
+                PREFIX_VALUE + "fuel",
+                PREFIX_VALUE + "oxidizer",
+                PREFIX_VALUE + "canlaunch",
+                PREFIX_FUNCTION + "launch",
+                PREFIX_FUNCTION + "launch" + NAME_SEPARATOR + "entity",
+                PREFIX_FUNCTION + "launch" + NAME_SEPARATOR + "x" + PARAM_SEPARATOR + "z"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "power").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "solid").equals(name)) return "" + solid;
+        if ((PREFIX_VALUE + "fuel").equals(name)) return "" + tanks[0].getFill();
+        if ((PREFIX_VALUE + "oxidizer").equals(name)) return "" + tanks[1].getFill();
+        if ((PREFIX_VALUE + "canlaunch").equals(name)) return canLaunch() ? "1" : "0";
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "launch").equals(name)) {
+            switch (params.length) {
+                case 0 -> {
+                    if (canLaunch()) launchFromDesignator();
+                }
+                case 1 -> {
+                    if (canLaunch()) {
+                        int id = IRORInteractive.parseInt(params[0], Integer.MIN_VALUE, Integer.MAX_VALUE);
+                        Entity entity = level.getEntity(id);
+                        if (entity != null && entity.isAlive()) {
+                            launchTo((int) Math.floor(entity.getX()), (int) Math.floor(entity.getZ()));
+                        }
+                    }
+                }
+                case 2 -> {
+                    if (canLaunch()) {
+                        launchTo(IRORInteractive.parseInt(params[0], Integer.MIN_VALUE, Integer.MAX_VALUE),
+                                IRORInteractive.parseInt(params[1], Integer.MIN_VALUE, Integer.MAX_VALUE));
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     // --- inventory: 1.7 isItemValidForSlot was false everywhere; slots 6/7 must accept our own inserts ---

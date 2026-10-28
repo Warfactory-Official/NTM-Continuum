@@ -262,10 +262,10 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         ForgeDirection dir = getFacing().getRotation(ForgeDirection.UP);
         ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
         return new DirPos[]{
-                new DirPos(worldPosition.getX() + rot.offsetX * 2, worldPosition.getY(), worldPosition.getZ() + rot.offsetZ * 2, rot),
-                new DirPos(worldPosition.getX() + rot.offsetX * 2 - dir.offsetX, worldPosition.getY(), worldPosition.getZ() + rot.offsetZ * 2 - dir.offsetZ, rot),
-                new DirPos(worldPosition.getX() - rot.offsetX * 2, worldPosition.getY(), worldPosition.getZ() - rot.offsetZ * 2, rot.getOpposite()),
-                new DirPos(worldPosition.getX() - rot.offsetX * 2 - dir.offsetX, worldPosition.getY(), worldPosition.getZ() - rot.offsetZ * 2 - dir.offsetZ, rot.getOpposite())
+                new DirPos(worldPosition.getX() + rot.offsetX, worldPosition.getY(), worldPosition.getZ() + rot.offsetZ, rot),
+                new DirPos(worldPosition.getX() + rot.offsetX - dir.offsetX, worldPosition.getY(), worldPosition.getZ() + rot.offsetZ - dir.offsetZ, rot),
+                new DirPos(worldPosition.getX() - rot.offsetX, worldPosition.getY(), worldPosition.getZ() - rot.offsetZ, rot.getOpposite()),
+                new DirPos(worldPosition.getX() - rot.offsetX - dir.offsetX, worldPosition.getY(), worldPosition.getZ() - rot.offsetZ - dir.offsetZ, rot.getOpposite())
         };
     }
 

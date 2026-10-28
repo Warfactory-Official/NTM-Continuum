@@ -36,7 +36,6 @@ public class TileEntityMachineOrbus extends TileEntityBarrel {
     @Override
     public PortDef[] getPorts() {
         if (cachedPorts == null) {
-            // 1.7: the top row sits at y + 3, so its connections land inside the orbus's own top layer
             ForgeDirection dir = MachineCore.facing(getBlockState()).getOpposite();
             ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
             int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
@@ -45,10 +44,10 @@ public class TileEntityMachineOrbus extends TileEntityBarrel {
                     PortDef.make(x + dir.offsetX, y, z + dir.offsetZ, Library.NEG_Y),
                     PortDef.make(x + rot.offsetX, y, z + rot.offsetZ, Library.NEG_Y),
                     PortDef.make(x + dir.offsetX + rot.offsetX, y, z + dir.offsetZ + rot.offsetZ, Library.NEG_Y),
-                    PortDef.make(x, y + 3, z, Library.POS_Y),
-                    PortDef.make(x + dir.offsetX, y + 3, z + dir.offsetZ, Library.POS_Y),
-                    PortDef.make(x + rot.offsetX, y + 3, z + rot.offsetZ, Library.POS_Y),
-                    PortDef.make(x + dir.offsetX + rot.offsetX, y + 3, z + dir.offsetZ + rot.offsetZ, Library.POS_Y),
+                    PortDef.make(x, y + 4, z, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX, y + 4, z + dir.offsetZ, Library.POS_Y),
+                    PortDef.make(x + rot.offsetX, y + 4, z + rot.offsetZ, Library.POS_Y),
+                    PortDef.make(x + dir.offsetX + rot.offsetX, y + 4, z + dir.offsetZ + rot.offsetZ, Library.POS_Y),
             };
         }
         return cachedPorts;

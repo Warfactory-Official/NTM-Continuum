@@ -108,15 +108,18 @@ public final class CombustionHeatGameTests {
 
         burner.tank.setTankType(Fluids.OIL);
         burner.tank.setFill(10);
-        burner.setting = 3;
+        burner.burnRate = 3;
         burner.isOn = true;
         TileEntityHeaterOilburner.serverTick(helper.getLevel(), helper.absolutePos(relative),
                 burner.getBlockState(), burner);
 
         helper.assertTrue(burner.tank.getFill() == 7 && burner.heatEnergy == 75,
                 "Oil burner did not consume setting mB/t at the legacy oil heat rate");
-        burner.toggleSettingDown();
-        helper.assertTrue(burner.setting == 2, "Oil burner setting did not decrement");
+        burner.handleButtonPacket(1000 + TileEntityHeaterOilburner.MAX_SLIDER_RATE, 0);
+        TileEntityHeaterOilburner.serverTick(helper.getLevel(), helper.absolutePos(relative),
+                burner.getBlockState(), burner);
+        helper.assertTrue(burner.burnRate == 10 && burner.maxHeatEnergy == 500_000,
+                "Oil burner without overdrive did not clamp its burn rate to 10 mB/t");
         helper.succeed();
     }
 

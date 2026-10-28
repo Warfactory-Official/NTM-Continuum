@@ -4,7 +4,7 @@ import com.hbm.client.jetpack.JetpackClientVisuals;
 import com.hbm.config.GeneralConfig;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.handler.JetpackHandler;
-import com.hbm.inventory.gui.GUICalculator;
+import com.hbm.inventory.gui.GUIScreenCalculator;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower;
 import com.hbm.packet.DuckPayload;
@@ -49,7 +49,7 @@ public final class HbmKeybindsClient {
     public static KeyMappings.Mapping jetpackHudKey;
     public static KeyMappings.Mapping toggleJetpackKey;
     public static KeyMappings.Mapping toggleHeadKey;
-    /** 1.7 {@code calculatorKey} (N): opens {@link com.hbm.inventory.gui.GUICalculator} from the world. */
+    /** 1.7 {@code calculatorKey} (N): opens {@link GUIScreenCalculator} from the world. */
     public static KeyMappings.Mapping calculatorKey;
 
     private static boolean lastJetpack;
@@ -97,7 +97,7 @@ public final class HbmKeybindsClient {
 
         // 1.7 KeyInputEvent: only fires with no screen open; the calculator replaces the (absent) screen.
         while (calculatorKey.consumeClick()) {
-            if (mc.screen == null) mc.setScreen(new GUICalculator());
+            if (mc.screen == null) mc.setScreen(new GUIScreenCalculator());
         }
 
         // 1.7 reads the raw O key, not a mapping: there is no Controls entry for it.

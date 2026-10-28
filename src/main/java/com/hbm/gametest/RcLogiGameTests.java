@@ -5,8 +5,13 @@ import com.hbm.blocks.ModDoorBlocks;
 import com.hbm.blocks.ModPneumaticBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.network.PneumoTube;
+import com.hbm.inventory.StackCache;
 import com.hbm.inventory.container.ContainerCrate;
+import com.hbm.inventory.container.ContainerPneumoStorageAccess;
+import com.hbm.inventory.container.ContainerPneumoStorageAccess.ClickOp;
+import com.hbm.tileentity.IControlReceiverFilter;
 import com.hbm.tileentity.machine.TileEntityCargoElevator;
+import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageAccess;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageExporter;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageImporter;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageMono;
@@ -535,6 +540,64 @@ public final class RcLogiGameTests {
             ItemStack got = out.inventory.getStackInSlot(9);
             helper.assertTrue(got.is(Items.COBBLESTONE) && got.getCount() == 16, "the exporter holds " + got + " (as much as possible = 16)");
             helper.assertTrue(bank.amounts[0] == 0, "the bank kept " + bank.amounts[0]);
+            helper.succeed();
+        });
+    }
+
+    /**
+     * The access terminal's clicks against a storage bank: a shift-click on a type the bank has just lost hands out
+     * nothing, a held stack goes into its own cell or stays in hand, and a cell holding items keeps its type.
+     */
+    public static void pneumaticAccessNoDupe(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos access = helper.absolutePos(new BlockPos(1, 1, 2));
+        BlockPos mono = access.east(3);
+        BlockState tube = ModPneumaticBlocks.PNEUMATIC_TUBE.get().defaultBlockState()
+                .setValue(PneumoTube.WEST, true).setValue(PneumoTube.EAST, true);
+        level.setBlock(access, ModPneumaticBlocks.PNEUMATIC_STORAGE_ACCESS.get().defaultBlockState(), 3);
+        level.setBlock(mono, ModPneumaticBlocks.PNEUMATIC_STORAGE_MONO.get().defaultBlockState(), 3);
+        for (int x : new int[]{1, 2}) level.setBlock(access.east(x), tube, 3);
+        TileEntityPneumoStorageAccess terminal = (TileEntityPneumoStorageAccess) level.getBlockEntity(access);
+        TileEntityPneumoStorageMono bank = (TileEntityPneumoStorageMono) level.getBlockEntity(mono);
+        bank.compair.setFill(4000);
+        bank.inventory.setStackInSlot(0, new ItemStack(Items.COBBLESTONE));
+        bank.amounts[0] = 100;
+        helper.runAfterDelay(40, () -> {
+            try (GameTestHelpers.MockServerPlayer fixture = GameTestHelpers.mockServerPlayer(helper)) {
+                ServerPlayer player = fixture.player();
+                player.setPos(Vec3.atCenterOf(access.above()));
+                ContainerPneumoStorageAccess menu = new ContainerPneumoStorageAccess(1, player.getInventory(), terminal);
+                menu.broadcastChanges();
+                StackCache.CacheSlot listed = terminal.cache == null ? null
+                        : terminal.cache.getSlotFromStack(new ItemStack(Items.COBBLESTONE));
+                helper.assertTrue(listed != null && listed.stacksize == 100, "the terminal does not see the bank's cobblestone");
+                // cobblestone is the only type the terminal sees, so it has the first id
+                int cobblestone = 0;
+
+                bank.amounts[0] = 0;
+                menu.handleClick(ClickOp.SHIFT_CLICK, cobblestone);
+                helper.assertTrue(count(player.getInventory(), new ItemStack(Items.COBBLESTONE)) == 0,
+                        "a shift-click on a stale listing handed out items the bank no longer had");
+                bank.amounts[0] = 100;
+
+                menu.setCarried(new ItemStack(Items.DIRT, 16));
+                menu.handleClick(ClickOp.LEFT_CLICK, ContainerPneumoStorageAccess.NO_ENTRY);
+                helper.assertTrue(menu.getCarried().is(Items.DIRT) && menu.getCarried().getCount() == 16
+                                && bank.amounts[1] == 0 && bank.amounts[2] == 0,
+                        "dirt has no cell and must stay in hand, but the hand holds " + menu.getCarried());
+
+                menu.setCarried(new ItemStack(Items.COBBLESTONE, 16));
+                menu.handleClick(ClickOp.LEFT_CLICK, ContainerPneumoStorageAccess.NO_ENTRY);
+                helper.assertTrue(menu.getCarried().isEmpty() && bank.amounts[0] == 116 && bank.amounts[1] == 0,
+                        "a held stack must go into its own cell, cells hold " + bank.amounts[0] + "/" + bank.amounts[1]);
+
+                CompoundTag retype = new CompoundTag();
+                retype.putInt("slot", 0);
+                IControlReceiverFilter.writeStack(retype, new ItemStack(Items.DIAMOND), level);
+                bank.receiveControl(retype);
+                helper.assertTrue(bank.getItem(0).is(Items.COBBLESTONE),
+                        "a cell holding items took a new type marker: " + bank.getItem(0));
+            }
             helper.succeed();
         });
     }

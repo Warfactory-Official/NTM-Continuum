@@ -21,7 +21,6 @@ public final class LookOverlayGameTests {
             "com.hbm.blocks.machine.FoundryCastingBase",
             "com.hbm.blocks.machine.HeaterFirebox",
             "com.hbm.blocks.machine.HeaterElectric",
-            "com.hbm.blocks.machine.HeaterOilburner",
             "com.hbm.blocks.machine.MachineCatalyticCracker",
             "com.hbm.blocks.machine.MachineCondenser",
             "com.hbm.blocks.machine.MachineDeuteriumExtractor",

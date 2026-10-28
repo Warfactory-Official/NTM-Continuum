@@ -35,6 +35,8 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -156,6 +158,8 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
 
     public static class TileEntityWandStructure extends TileEntityLoadedBase implements IControlReceiver {
 
+        public static final int MAX_SAVE_VOLUME = 8 * 1024 * 1024;
+
         public String name = "";
 
         public int sizeX = 1;
@@ -173,6 +177,18 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
             tile.networkPackNT();
         }
 
+        /** The file {@code name} stands for, or null when the name would leave the structures folder. */
+        private static @Nullable Path structuresFile(String name) {
+            File directory = NBTStructure.structureDirectory().toFile();
+            try {
+                File file = new File(directory, name + ".nbt").getCanonicalFile();
+                return file.getParentFile().equals(directory.getCanonicalFile()) ? file.toPath() : null;
+            } catch (IOException ex) {
+                // a name the file system cannot spell is as invalid as one that climbs out of the folder
+                return null;
+            }
+        }
+
         public void saveStructure(Player player) {
             Level world = level;
             if (world == null) return;
@@ -187,11 +203,23 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
                 return;
             }
 
+            if ((long) sizeX * sizeY > MAX_SAVE_VOLUME / sizeZ) {
+                player.sendSystemMessage(Component.literal("Could not save: selection exceeds " + MAX_SAVE_VOLUME + " blocks")
+                        .withStyle(ChatFormatting.RED));
+                return;
+            }
+
+            Path target = structuresFile(name);
+            if (target == null) {
+                player.sendSystemMessage(Component.literal("Could not save: invalid name").withStyle(ChatFormatting.RED));
+                return;
+            }
+
             BlockState air = Blocks.AIR.defaultBlockState();
             boolean hadAir = !blacklist.add(air);
 
             int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-            Path file = NBTStructure.quickSaveArea(name + ".nbt", world, x, y + 1, z, x + sizeX - 1, y + sizeY, z + sizeZ - 1, blacklist);
+            Path file = NBTStructure.quickSaveArea(target.getFileName().toString(), world, x, y + 1, z, x + sizeX - 1, y + sizeY, z + sizeZ - 1, blacklist);
 
             if (!hadAir) blacklist.remove(air);
 
@@ -214,7 +242,13 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
                 return;
             }
 
-            Path structureFile = NBTStructure.structureDirectory().resolve(name + ".nbt");
+            Path structureFile = structuresFile(name);
+
+            if (structureFile == null) {
+                player.sendSystemMessage(Component.literal("Could not load: invalid name").withStyle(ChatFormatting.RED));
+                return;
+            }
+
             try {
                 Files.createDirectories(structureFile.getParent());
             } catch (Exception ignored) {
@@ -316,7 +350,8 @@ public class BlockWandStructure extends CompatBlock implements TickingBlock, ILo
 
         @Override
         public boolean hasPermission(Player player) {
-            return true;
+            return player.distanceToSqr(worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
+                    worldPosition.getZ() + 0.5D) <= 64.0D;
         }
 
         @Override

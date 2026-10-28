@@ -1,5 +1,6 @@
 package com.hbm.qmaw;
 
+import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -20,6 +21,13 @@ public final class QuickManualAndWiki {
         this.title = Map.copyOf(title);
         this.contents = Map.copyOf(contents);
         this.triggers = List.copyOf(triggers);
+    }
+
+    public String getTitle(LanguageManager lang) {
+        String localizedTitle = title.get(lang.getSelected());
+        if (localizedTitle == null) localizedTitle = title.get(QMAWLoader.EN_US);
+        if (localizedTitle == null) localizedTitle = "Missing Localization!";
+        return localizedTitle;
     }
 
     public record Trigger(ItemStack stack, boolean wildcard, String itemPathPrefix) {

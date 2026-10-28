@@ -13,7 +13,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -54,11 +53,11 @@ public class TileEntityNukeBalefire extends TileEntityNukeBomb implements IContr
             if (timer % 20 == 0) {
                 level.playSound(null, worldPosition, ModSounds.FSTBMB_PING.get(), SoundSource.BLOCKS, 5.0F, 1.0F);
             }
-        }
 
-        if (timer <= 0) {
-            explode();
-            return;
+            if (timer <= 0) {
+                explode();
+                return;
+            }
         }
 
         // 1.7: networkPackNT(250)
@@ -74,14 +73,14 @@ public class TileEntityNukeBalefire extends TileEntityNukeBomb implements IContr
             }
             started = true;
         }
-        if (meta == 1) timer = value * 20;
+        if (meta == 1 && value >= 1 && value <= 999) timer = value * 20;
         setChanged();
     }
 
     @Override
     public void receiveControl(CompoundTag data) {
         if (Tags.getBooleanOr(data, "start", false)) handleButtonPacket(0, 0);
-        if (data.contains("timer")) handleButtonPacket(Mth.clamp(Tags.getIntOr(data, "timer", 1), 1, 999), 1);
+        if (data.contains("timer")) handleButtonPacket(Tags.getIntOr(data, "timer", 0), 1);
     }
 
     @Override

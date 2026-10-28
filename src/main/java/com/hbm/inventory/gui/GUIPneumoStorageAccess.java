@@ -53,18 +53,24 @@ public class GUIPneumoStorageAccess extends PneumaticScreenBase<ContainerPneumoS
     protected void init() {
         super.init();
 
+        // a re-init (resize, a recipe viewer closing) keeps the search and asks the server for the whole listing
+        boolean reinit = this.search != null;
+        String text = reinit ? this.search.getValue() : "";
+        if (reinit) send(ClickOp.RESYNC, ContainerPneumoStorageAccess.NO_ENTRY);
+
         // 1.7 draws the field two pixels below its own y
         this.search = new EditBox(this.font, leftPos + PANEL_X + 45, topPos + 129, 86, 12, Component.empty());
         this.search.setBordered(false);
         this.search.setTextColor(0xFFFFFFFF);
         this.search.setMaxLength(50);
+        this.search.setValue(text);
         this.search.setResponder(term -> menu.setFilter(searchFilter(term)));
         addRenderableWidget(this.search);
 
         if (startFocussed) setFocused(this.search);
 
         menu.setSorter(sorterFor(sorting));
-        menu.setFilter(searchFilter(""));
+        menu.setFilter(searchFilter(text));
     }
 
     private Predicate<ItemStack> searchFilter(String term) {
@@ -121,16 +127,18 @@ public class GUIPneumoStorageAccess extends PneumaticScreenBase<ContainerPneumoS
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         GuiDraw.text(graphics, font, title, PANEL_X + 176 / 2 - font.width(title) / 2, 5, 0xFF404040, false);
         GuiDraw.text(graphics, font, playerInventoryTitle, PANEL_X + 8, imageHeight - 96 + 2, 0xFF404040, false);
+    }
 
-        // the totals ride over the stacks, at half scale in the slot's bottom-right corner
+    /** The totals ride over the stacks at half scale in each slot's corner; 26.1 draws the label hook before the slots. */
+    private void extractTotals(GuiGraphicsExtractor graphics) {
         GuiDraw.pushMatrix(graphics);
-        GuiDraw.nextStratum(graphics);
+        GuiDraw.aboveSlots(graphics);
         GuiDraw.scale(graphics, 0.5F, 0.5F);
         for (Slot slot : menu.slots) {
             if (!(slot instanceof SlotPneumo pneumo) || !pneumo.hasItem()) continue;
             String label = Library.getShortNumber(pneumo.amount);
-            int ix = (pneumo.x + 16) * 2 - font.width(label);
-            int iy = (pneumo.y + 16) * 2 - font.lineHeight;
+            int ix = (leftPos + pneumo.x + 16) * 2 - font.width(label);
+            int iy = (topPos + pneumo.y + 16) * 2 - font.lineHeight;
             GuiDraw.text(graphics, font, label, ix, iy, 0xFFFFFFFF, true);
         }
         GuiDraw.popMatrix(graphics);
@@ -138,6 +146,7 @@ public class GUIPneumoStorageAccess extends PneumaticScreenBase<ContainerPneumoS
 
     @Override
     protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        extractTotals(graphics);
         drawCustomInfoStat(graphics, mouseX, mouseY, 7, 7, 18, 18, "Sorting: " + ChatFormatting.YELLOW + "Amount");
         drawCustomInfoStat(graphics, mouseX, mouseY, 7, 25, 18, 18, "Sorting: " + ChatFormatting.YELLOW + "Item ID");
         drawCustomInfoStat(graphics, mouseX, mouseY, 7, 43, 18, 18, "Sorting: " + ChatFormatting.YELLOW + "Name");
@@ -196,8 +205,9 @@ public class GUIPneumoStorageAccess extends PneumaticScreenBase<ContainerPneumoS
     private void gridClick(SlotPneumo pneumo, boolean rightClick, boolean shift) {
         int entry = pneumo.entryId;
 
-        if (shift && !rightClick) {
-            send(ClickOp.SHIFT_CLICK, entry);
+        // 1.7 sends only a shift-left click; a shift-right click on the grid does nothing
+        if (shift) {
+            if (!rightClick) send(ClickOp.SHIFT_CLICK, entry);
             return;
         }
 

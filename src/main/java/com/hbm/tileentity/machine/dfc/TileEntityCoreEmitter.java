@@ -287,13 +287,9 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase
         }
 
         if ((PREFIX_FUNCTION + "switch").equals(name) && params.length > 0) {
-            if ("on".equals(params[0])) {
-                this.isOn = true;
-                setChanged();
-            } else if ("off".equals(params[0])) {
-                this.isOn = false;
-                setChanged();
-            }
+            this.isOn = IRORInteractive.parseBool(params[0]);
+            setChanged();
+            return null;
         }
 
         return null;

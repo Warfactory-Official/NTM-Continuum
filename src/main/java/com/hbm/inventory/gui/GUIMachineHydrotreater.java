@@ -84,11 +84,11 @@ public class GUIMachineHydrotreater extends CompatContainerScreen<ContainerMachi
             GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineHydrotreater.maxPower), Optional.empty(), mouseX, mouseY);
             return;
         }
-        // 1.7: hovering the empty catalyst slot (10) with nothing carried names the catalytic converter.
+        // 1.7: hovering the empty catalyst slot (10) with nothing carried shows the catalytic converter and its name
         if (this.menu.getCarried().isEmpty() && !this.menu.getSlot(10).hasItem() && this.isHovering(89, 36, 16, 16, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, this.font, List.of(
-                    new ItemStack(ModItems.catalytic_converter.get()).getHoverName()),
-                    Optional.empty(), mouseX, mouseY);
+            ItemStack converter = new ItemStack(ModItems.catalytic_converter.get());
+            List<Object[]> lines = List.of(new Object[] {converter}, new Object[] {converter.getHoverName().getString()});
+            GuiUtil.stackText(graphics, this.font, this.width, this.height, lines, mouseX, mouseY);
             return;
         }
         for (int i = 0; i < 4; i++) {

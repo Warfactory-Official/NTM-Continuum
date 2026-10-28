@@ -232,8 +232,9 @@ public final class ItemPoolSource extends DataSource<PoolFile> {
                 weighted("hbm:nugget_uranium_fuel", 1, 1, 1),
                 weighted("hbm:rod_zirnox_empty", 1, 3, 3),
                 weighted("hbm:ingot_graphite", 1, 4, 3),
-                weighted("hbm:pile_rod_uranium", 2, 5, 3),
-                weighted("hbm:pile_rod_source", 1, 2, 2),
+                weighted("hbm:pile_rod_mk2_nu", 1, 1, 3),
+                weighted("hbm:pile_rod_mk2_ra226be", 1, 1, 2),
+                weighted("hbm:pile_rod_mk2_waste", 1, 1, 5),
                 weighted("hbm:reacher", 1, 1, 3),
                 weighted("hbm:screwdriver", 1, 1, 2));
         pool(POOL_SILO,

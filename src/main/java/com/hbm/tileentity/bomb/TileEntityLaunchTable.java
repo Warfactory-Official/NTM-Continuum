@@ -20,8 +20,7 @@ import com.hbm.tileentity.TilePort.PortDef;
 
 /**
  * 1.7 {@code TileEntityLaunchTable}: the 9x9 launch table. 100,000 l tanks, 100,000 solid, and a pad size the
- * GUI sets (size 10, 15 or 20 fuselage tops). Unlike the compact launcher it reports "can launch" without a
- * designator; the launch itself still needs a ready one.
+ * GUI sets (size 10, 15 or 20 fuselage tops).
  *
  * <p>{@code height} is 1.7's client-side scaffold height, which its renderer overwrote from the loaded missile and
  * kept once the missile left.
@@ -40,7 +39,6 @@ public class TileEntityLaunchTable extends TileEntityCustomMissileLauncher imple
     @Override public int getMaxSolid() { return maxSolid; }
     @Override public PartSize acceptedSize() { return padSize; }
     @Override protected int footprintRadius() { return 4; }
-    @Override protected boolean requiresDesignatorToLaunch() { return false; }
 
     public PortDef[] getPorts() {
         if (cachedPorts == null) {

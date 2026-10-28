@@ -56,9 +56,8 @@ public final class ConfigCraftingRecipes {
     private static void craftingManager528() {
         requires(shaped(NS, "rbmk_control_reasim_528", ItemIds.rbmk_control_reasim, rows(" B ", "GRG", " B "),
                 "G", TagIds.ingots_graphite, "B", ItemIds.motor, "R", ItemIds.rbmk_absorber), M528);
-        // 1.7 as written: the ReaSim auto rod takes the plain rbmk_control, which has no recipe in 528 mode
         requires(shaped(NS, "rbmk_control_reasim_auto_528", ItemIds.rbmk_control_reasim_auto, rows("C", "R", "D"),
-                "C", ItemIds.circuit_advanced, "R", ItemIds.rbmk_control, "D", ItemIds.crt_display), M528);
+                "C", ItemIds.circuit_advanced, "R", ItemIds.rbmk_control_reasim, "D", ItemIds.crt_display), M528);
     }
 
     // 1.7 CraftingManager:945-975, if(GeneralConfig.enableLBSM && GeneralConfig.enableLBSMSimpleCrafting)

@@ -16,13 +16,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Menu for the oil-fired heater: 1.12.2 {@code ContainerOilburner} layout. Fluid container in (26,17),
- * emptied container out (26,53), fluid identifier (44,71); 176×203 with the player inventory offset 37
- * (rows 121/139/157, hotbar 179). Buttons: 0 = burn toggle, 1/2 = mB/t setting up/down.
+ * Menu for the fluid burner: 1.7 {@code ContainerOilburner} layout. Fluid container in (26,17),
+ * emptied container out (26,53), fluid identifier (44,71), upgrade (80,73); 176×203 with the player
+ * inventory offset 37. Buttons: 0 = burn toggle, 1000 + rate = burn rate slider.
  */
 public class ContainerOilburner extends AbstractContainerMenu {
 
-    public static final int MACHINE_SLOTS = 3;
+    public static final int MACHINE_SLOTS = 4;
 
     private final Container machine;
     private final @Nullable TileEntityHeaterOilburner heater;
@@ -39,6 +39,7 @@ public class ContainerOilburner extends AbstractContainerMenu {
         this.addSlot(validated(0, 26, 17));
         this.addSlot(takeOnly(1, 26, 53));
         this.addSlot(validated(2, 44, 71));
+        this.addSlot(validated(3, 80, 73));
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 121);
         // rows 121/139/157, hotbar 179 (old offset 37)
@@ -68,7 +69,7 @@ public class ContainerOilburner extends AbstractContainerMenu {
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (heater == null) return false;
-        if (id < 0 || id > 2) return false;
+        if (id != 0 && (id <= 1000 || id > 1000 + TileEntityHeaterOilburner.MAX_SLIDER_RATE)) return false;
         heater.handleButtonPacket(id, 0);
         return true;
     }

@@ -57,7 +57,6 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
 import com.hbm.tileentity.TilePort.PortDef;
-import com.hbm.tileentity.TilePortShapes;
 
 /**
  * The fluid tank multiblock's core BlockEntity: a tank-backed fluid transceiver
@@ -336,7 +335,20 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     }
 
     protected PortDef[] cachedPorts;
-    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.refinery(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
+    public PortDef[] getPorts() {
+        if (cachedPorts == null) {
+            ForgeDirection dir = MachineCore.facing(getBlockState());
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+            cachedPorts = new PortDef[] {
+                    PortDef.make(x + dir.offsetX + rot.offsetX, y, z + dir.offsetZ + rot.offsetZ, dir),
+                    PortDef.make(x + dir.offsetX - rot.offsetX, y, z + dir.offsetZ - rot.offsetZ, dir),
+                    PortDef.make(x - dir.offsetX - rot.offsetX, y, z - dir.offsetZ - rot.offsetZ, dir.getOpposite()),
+                    PortDef.make(x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ, dir.getOpposite()),
+            };
+        }
+        return cachedPorts;
+    }
 
     public DirPos[] getConPos() { return PortDef.connections(getPorts()); }
 

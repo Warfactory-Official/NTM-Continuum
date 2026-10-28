@@ -151,6 +151,11 @@ public class MachineElectrolyser extends BlockMultiblockMachine
                 {1, 0, 0, ForgeDirection.EAST.ordinal()},
                 {1, 0, 2, ForgeDirection.EAST.ordinal()},
                 {1, 0, 4, ForgeDirection.EAST.ordinal()},
+                {-3, 0, -4, ForgeDirection.WEST.ordinal()},
+                {-3, 0, -2, ForgeDirection.WEST.ordinal()},
+                {-3, 0, 0, ForgeDirection.WEST.ordinal()},
+                {-3, 0, 2, ForgeDirection.WEST.ordinal()},
+                {-3, 0, 4, ForgeDirection.WEST.ordinal()},
         }, dir);
     }
 }

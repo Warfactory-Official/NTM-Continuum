@@ -558,10 +558,24 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
     @Override public long getPower() { return power; }
     @Override public long getMaxPower() { return maxPower; }
 
-    /** 1.7 {@code isUseableByPlayer}: the map is a menu-less screen, and 1.7 only checked the tile was still there. */
+    /** 1.7 {@code isUseableByPlayer}: within reach of the radar, or of the screen the linker in slot 8 points at. */
+    @Override
+    public boolean stillValid(Player player) {
+        if (level == null || player.level() != level) return false;
+        if (super.stillValid(player)) return true;
+        if (level.getBlockEntity(worldPosition) != this) return false;
+
+        ItemStack link = inventory.getStackInSlot(8);
+        if (link.isEmpty() || link.getItem() != ModRadarUtilityItems.radar_linker.get()) return false;
+
+        BlockPos pos = ItemCoordinateBase.getPosition(link);
+        return pos != null && player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64.0D
+                && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof TileEntityMachineRadarScreen;
+    }
+
     @Override
     public boolean hasPermission(Player player) {
-        return level != null && level.getBlockEntity(worldPosition) == this;
+        return stillValid(player);
     }
 
     @Override public void receiveControl(CompoundTag data) { }

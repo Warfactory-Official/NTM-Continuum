@@ -62,8 +62,7 @@ public class MachineOrbus extends BlockMultiblockMachine implements IFluidConnec
 
     /**
      * 1.7 {@code fillSpace} marks the core column, the one behind it ({@code dir.getOpposite()}) and the two beside
-     * those ({@code dir.getRotation(UP)}) extra at the bottom and at {@code y + 4}. Only the bottom four are ports:
-     * 1.7's top ports sit at {@code y + 3} and reach into the orbus itself.
+     * those ({@code dir.getRotation(UP)}) extra at the bottom and at {@code y + 4}, and all eight are ports.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
@@ -74,6 +73,10 @@ public class MachineOrbus extends BlockMultiblockMachine implements IFluidConnec
         visitor.cell(core.offset(back.offsetX, 0, back.offsetZ), MASK_DOWN, ROLE_FLUID);
         visitor.cell(core.offset(d2.offsetX, 0, d2.offsetZ), MASK_DOWN, ROLE_FLUID);
         visitor.cell(core.offset(back.offsetX + d2.offsetX, 0, back.offsetZ + d2.offsetZ), MASK_DOWN, ROLE_FLUID);
+        visitor.cell(core.offset(0, 4, 0), MASK_UP, ROLE_FLUID);
+        visitor.cell(core.offset(back.offsetX, 4, back.offsetZ), MASK_UP, ROLE_FLUID);
+        visitor.cell(core.offset(d2.offsetX, 4, d2.offsetZ), MASK_UP, ROLE_FLUID);
+        visitor.cell(core.offset(back.offsetX + d2.offsetX, 4, back.offsetZ + d2.offsetZ), MASK_UP, ROLE_FLUID);
     }
 
     @Override

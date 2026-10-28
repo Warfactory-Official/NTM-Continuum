@@ -6,7 +6,6 @@ import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
-import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -45,15 +44,8 @@ public final class GuiQMAW extends CompatScreen {
         super(Component.empty());
         this.qmawId = page.name;
         this.icon = page.icon;
-        this.pageTitle = localized(page.title);
+        this.pageTitle = page.getTitle(Minecraft.getInstance().getLanguageManager());
         parse(page, Minecraft.getInstance().font);
-    }
-
-    private String localized(Map<String, String> values) {
-        String language = Minecraft.getInstance().getLanguageManager().getSelected();
-        String value = values.get(language);
-        if (value == null) value = values.get(QMAWLoader.EN_US);
-        return value == null ? "Missing Localization!" : value;
     }
 
     /** Expands {{page}} tags before the old token-by-token line parser runs. */

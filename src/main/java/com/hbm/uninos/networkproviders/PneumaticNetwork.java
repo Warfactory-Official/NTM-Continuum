@@ -148,7 +148,6 @@ public final class PneumaticNetwork {
         }
     }
 
-    /** 1.7 does this inside {@code joinNetworks}; here the kernel invalidates the whole index on a membership edit instead. */
     public void addStorage(ISlotMonitorProvider storage) {
         if (storages.add(storage)) {
             for (StackCache accessor : List.copyOf(accessors)) storage.onNewCacheHasJoined(accessor, this);

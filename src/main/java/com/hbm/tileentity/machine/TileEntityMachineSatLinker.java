@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.container.ContainerMachineSatLinker;
 import com.hbm.items.ISatChip;
 import com.hbm.saveddata.SatelliteSavedData;
@@ -25,7 +27,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * {@link #SAT_ID_RANGE} that no satellite is using (re-rolled every tick, so it keeps changing until taken out).
  * Automation reaches slot 1 only: it puts chips in, and takes one out once it matches slot 0.
  */
-public class TileEntityMachineSatLinker extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
+public class TileEntityMachineSatLinker extends TileEntityMachineBase
+        implements MenuProvider, WorldlyContainer, IRORValueProvider, IRORInteractive {
 
     public static final int SAT_ID_RANGE = 10_000_000;
 
@@ -103,6 +106,28 @@ public class TileEntityMachineSatLinker extends TileEntityMachineBase implements
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return ISatChip.getFreqS(inventory.getStackInSlot(0)) == ISatChip.getFreqS(inventory.getStackInSlot(1));
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{
+                PREFIX_VALUE + "freq",
+                PREFIX_FUNCTION + "setfreq" + NAME_SEPARATOR + "freq"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "freq").equals(name)) return "" + ISatChip.getFreqS(inventory.getStackInSlot(0));
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setfreq").equals(name) && params.length == 1) {
+            ISatChip.setFreqS(inventory.getStackInSlot(0), IRORInteractive.parseInt(params[0], 1, SAT_ID_RANGE));
+            setChanged();
+        }
+        return null;
     }
 
     @Override

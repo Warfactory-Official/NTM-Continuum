@@ -20,6 +20,7 @@ import net.minecraft.sounds.SoundEvents;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 /** Small client-GUI helpers shared by HBM screens (e.g. the energy-bar hover tooltip). */
 public final class GuiUtil {
@@ -227,11 +228,11 @@ public final class GuiUtil {
     /**
      * 1.7 {@code GuiInfoContainer.drawStackText}: each line is an {@code Object[]} of {@code String}s and
      * {@code ItemStack}s; a line holding a stack is 18 tall (text offset +4), a text line 10; the first line adds 2.
-     * Empty stacks (1.7 {@code stackSize == 0}) get the red-framed grey backing. Positioned at (x+12, y-12) and
-     * flipped/clamped against the screen like 1.7.
+     * Empty stacks and {@code marked} (1.7 {@code stackSize == 0}) get the red-framed grey backing. Positioned at
+     * (x+12, y-12), flipped/clamped against the screen like 1.7, at tooltip height.
      */
     public static void stackText(GuiGraphicsExtractor graphics, Font font, int screenWidth, int screenHeight,
-                                 List<Object[]> lines, int x, int y) {
+                                 List<Object[]> lines, int x, int y, @Nullable ItemStack marked) {
         if (lines.isEmpty()) return;
         int height = 0;
         int longest = 0;
@@ -250,7 +251,8 @@ public final class GuiUtil {
         if (minX + longest > screenWidth) minX -= 28 + longest;
         if (minY + height + 6 > screenHeight) minY = screenHeight - height - 6;
 
-        GuiDraw.nextStratum(graphics);
+        GuiDraw.pushMatrix(graphics);
+        GuiDraw.tooltipStratum(graphics);
         int bg = 0xF0100010;
         GuiDraw.fill(graphics, minX - 3, minY - 4, minX + longest + 3, minY - 3, bg);
         GuiDraw.fill(graphics, minX - 3, minY + height + 3, minX + longest + 3, minY + height + 4, bg);
@@ -274,7 +276,7 @@ public final class GuiUtil {
                     GuiDraw.text(graphics, font, s, minX + indent, minY + (hasStack ? 4 : 0), -1, true);
                     indent += font.width(s) + 2;
                 } else if (o instanceof ItemStack stack) {
-                    if (stack.isEmpty()) {
+                    if (stack.isEmpty() || stack == marked) {
                         GuiDraw.fill(graphics, minX + indent - 1, minY - 1, minX + indent + 17, minY + 17, 0xFFFF0000);
                         GuiDraw.fill(graphics, minX + indent, minY, minX + indent + 16, minY + 16, 0xFFB0B0B0);
                     }
@@ -286,6 +288,45 @@ public final class GuiUtil {
             if (index == 0) minY += 2;
             minY += hasStack ? 18 : 10;
         }
+        GuiDraw.popMatrix(graphics);
+    }
+
+    public static void stackText(GuiGraphicsExtractor graphics, Font font, int screenWidth, int screenHeight,
+                                 List<Object[]> lines, int x, int y) {
+        stackText(graphics, font, screenWidth, screenHeight, lines, x, y, null);
+    }
+
+    /**
+     * 1.7's cycling list panel ({@code drawStackText} as the turrets, launch pad, plasma forge and rebar placer call it):
+     * an optional title line, the stacks in rows, this second's one marked when there are several, and its name.
+     */
+    public static void cycledStackText(GuiGraphicsExtractor graphics, Font font, int screenWidth, int screenHeight,
+                                       @Nullable String title, List<ItemStack> stacks, int x, int y) {
+        List<ItemStack> list = new ArrayList<>(stacks);
+        int highlight = list.size() > 1 ? (int) ((System.currentTimeMillis() % (1000L * list.size())) / 1000L) : -1;
+        ItemStack selected = list.get(Math.max(highlight, 0));
+        if (highlight >= 0) {
+            // marked by identity: a copy, as in 1.7, so a repeated stack is marked once
+            selected = selected.copy();
+            list.set(highlight, selected);
+        }
+        List<Object[]> lines = new ArrayList<>();
+        if (title != null) lines.add(new Object[] {title});
+        // one row under 10 stacks, two under 24, else three
+        if (list.size() < 10) {
+            lines.add(list.toArray());
+        } else if (list.size() < 24) {
+            lines.add(list.subList(0, list.size() / 2).toArray());
+            lines.add(list.subList(list.size() / 2, list.size()).toArray());
+        } else {
+            int first = (int) Math.ceil(list.size() / 3D);
+            int second = (int) Math.ceil(list.size() / 3D * 2D);
+            lines.add(list.subList(0, first).toArray());
+            lines.add(list.subList(first, second).toArray());
+            lines.add(list.subList(second, list.size()).toArray());
+        }
+        lines.add(new Object[] {selected.getHoverName().getString()});
+        stackText(graphics, font, screenWidth, screenHeight, lines, x, y, highlight >= 0 ? selected : null);
     }
 
     /**

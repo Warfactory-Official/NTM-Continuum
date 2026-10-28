@@ -5,7 +5,18 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInfo;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
+import com.hbm.blocks.ModCustomMissileBlocks;
+import com.hbm.blocks.ModSatelliteBlocks;
+import com.hbm.blocks.machine.dfc.ModDFCBlocks;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
+import com.hbm.items.ModSatelliteItems;
+import com.hbm.tileentity.bomb.TileEntityCompactLauncher;
+import com.hbm.tileentity.bomb.TileEntityLaunchPad;
+import com.hbm.tileentity.machine.TileEntityLaunchpadLambda;
+import com.hbm.tileentity.machine.TileEntityLaunchpadSoyuz;
+import com.hbm.tileentity.machine.TileEntityLaunchpadSoyuz.SoyuzStatus;
+import com.hbm.tileentity.machine.TileEntityMachineSatLinker;
+import com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter;
 import com.hbm.tileentity.machine.TileEntityHeatBoiler;
 import com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
@@ -50,6 +61,7 @@ import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
@@ -69,6 +81,10 @@ public final class RadioProviderGameTests {
             "radio_provider_interactive", 40, () -> RadioProviderGameTests::interactive);
     public static final GameTests.Function PARSER = TESTS.function(
             "radio_provider_parser", 20, () -> RadioProviderGameTests::parser);
+    public static final GameTests.Function PARSE_BOOL = TESTS.function(
+            "radio_provider_parse_bool", 20, () -> RadioProviderGameTests::parseBool);
+    public static final GameTests.Function LAUNCHERS = TESTS.function(
+            "radio_provider_launchers", 40, () -> RadioProviderGameTests::launchers);
 
     public static void init() {}
 
@@ -241,7 +257,7 @@ public final class RadioProviderGameTests {
         TileEntityHeaterOilburner oilburner = new TileEntityHeaterOilburner(pos(3), state(ModMachineBlocks.heater_oilburner.get()));
         oilburner.runRORFunction("FUN:setburnrate", new String[]{"10"});
         oilburner.runRORFunction("FUN:setstate", new String[]{"1"});
-        helper.assertTrue(oilburner.setting == 10 && oilburner.isOn, "Oilburner ROR command changed");
+        helper.assertTrue(oilburner.burnRate == 10 && oilburner.isOn, "Oilburner ROR command changed");
 
         BlockEntityRBMKControlManual control = new BlockEntityRBMKControlManual(pos(4),
                 state(ModRBMKBlocks.rbmk_control.get()));
@@ -335,6 +351,83 @@ public final class RadioProviderGameTests {
         expectException(helper, () -> IRORInteractive.getCommand(null), IRORInteractive.EX_NULL);
         expectException(helper, () -> IRORInteractive.getCommand("a!b!c"), IRORInteractive.EX_NAME);
         expectException(helper, () -> IRORInteractive.parseInt("bad", 0, 1), IRORInteractive.EX_FORMAT);
+        helper.succeed();
+    }
+
+    private static void parseBool(GameTestHelper helper) {
+        for (String on : new String[]{"1", "true", "ON"}) {
+            helper.assertTrue(IRORInteractive.parseBool(on), "ROR switch must read " + on + " as on");
+        }
+        for (String off : new String[]{"0", "False", "off"}) {
+            helper.assertTrue(!IRORInteractive.parseBool(off), "ROR switch must read " + off + " as off");
+        }
+        expectException(helper, () -> IRORInteractive.parseBool("2"), IRORInteractive.EX_FORMAT);
+
+        TileEntityCoreEmitter emitter = new TileEntityCoreEmitter(pos(0), state(ModDFCBlocks.dfc_emitter.get()));
+        emitter.runRORFunction("FUN:switch", new String[]{"true"});
+        helper.assertTrue(emitter.isOn, "Emitter switch!true must turn it on");
+        emitter.runRORFunction("FUN:switch", new String[]{"0"});
+        helper.assertTrue(!emitter.isOn, "Emitter switch!0 must turn it off");
+        helper.succeed();
+    }
+
+    private static void launchers(GameTestHelper helper) {
+        TileEntityLaunchPad pad = new TileEntityLaunchPad(pos(0), state(ModMachineBlocks.launch_pad.get()));
+        assertInteractive(helper, pad, "VAL:state", "VAL:power", "VAL:fuel", "VAL:oxidizer", "VAL:canlaunch",
+                "FUN:launch", "FUN:launch!entity", "FUN:launch!x:z");
+        pad.power = 75_000L;
+        pad.tanks[1].setFill(1_234);
+        helper.assertTrue("75000".equals(pad.provideRORValue("VAL:power"))
+                        && "1234".equals(pad.provideRORValue("VAL:oxidizer"))
+                        && "0".equals(pad.provideRORValue("VAL:state"))
+                        && "0".equals(pad.provideRORValue("VAL:canlaunch")),
+                "Launch pad ROR values changed");
+
+        TileEntityCompactLauncher compact =
+                new TileEntityCompactLauncher(pos(1), state(ModCustomMissileBlocks.compact_launcher.get()));
+        assertInteractive(helper, compact, "VAL:power", "VAL:solid", "VAL:fuel", "VAL:oxidizer", "VAL:canlaunch",
+                "FUN:launch", "FUN:launch!entity", "FUN:launch!x:z");
+        compact.solid = 500;
+        helper.assertTrue("500".equals(compact.provideRORValue("VAL:solid"))
+                && "0".equals(compact.provideRORValue("VAL:canlaunch")), "Compact launcher ROR values changed");
+
+        TileEntityLaunchpadLambda lambda =
+                new TileEntityLaunchpadLambda(pos(2), state(ModMachineBlocks.launchpad_lambda.get()));
+        lambda.runRORFunction("FUN:setauto", new String[]{"on"});
+        helper.assertTrue(lambda.autolaunch && "1".equals(lambda.provideRORValue("VAL:isauto")),
+                "Lambda setauto!on must enable auto launch");
+        lambda.runRORFunction("FUN:setauto", new String[]{"off"});
+        helper.assertTrue(!lambda.autolaunch, "Lambda setauto!off must disable auto launch");
+        expectException(helper, () -> lambda.runRORFunction("FUN:setauto", new String[]{"maybe"}),
+                IRORInteractive.EX_FORMAT);
+
+        // cargo mode keeps a radio target, so it launches with no designator
+        TileEntityLaunchpadSoyuz soyuz =
+                new TileEntityLaunchpadSoyuz(pos(3), state(ModMachineBlocks.launchpad_soyuz.get()));
+        soyuz.runRORFunction("FUN:setcargomode", new String[]{"1"});
+        soyuz.loadedType = 0;
+        soyuz.tanks[0].setFill(100_000);
+        soyuz.tanks[1].setFill(100_000);
+        soyuz.power = TileEntityLaunchpadSoyuz.CONSUMPTION;
+        soyuz.inventory.setStackInSlot(9, new ItemStack(Items.STONE));
+        helper.assertTrue("1".equals(soyuz.provideRORValue("VAL:cargomode"))
+                && "0".equals(soyuz.provideRORValue("VAL:canlaunch")), "Cargo Soyuz with no target must not launch");
+        soyuz.runRORFunction("FUN:launch", new String[]{"100", "-200"});
+        helper.assertTrue("1".equals(soyuz.provideRORValue("VAL:canlaunch"))
+                        && "ABSENT".equals(soyuz.provideRORValue("VAL:state")),
+                "Soyuz launch!x:z must keep its target and wait for READY");
+        soyuz.soyuzStatus = SoyuzStatus.READY;
+        soyuz.runRORFunction("FUN:launch", new String[0]);
+        helper.assertTrue(soyuz.soyuzStatus == SoyuzStatus.LAUNCHING
+                && soyuz.countdown == TileEntityLaunchpadSoyuz.COUNTDOWN_DURATION, "Soyuz launch must start the countdown");
+
+        TileEntityMachineSatLinker linker =
+                new TileEntityMachineSatLinker(pos(4), state(ModSatelliteBlocks.machine_satlinker.get()));
+        linker.inventory.setStackInSlot(0, new ItemStack(ModSatelliteItems.sat_chip.get()));
+        linker.runRORFunction("FUN:setfreq", new String[]{"4242"});
+        helper.assertTrue("4242".equals(linker.provideRORValue("VAL:freq")), "Satellite linker setfreq changed");
+        expectException(helper, () -> linker.runRORFunction("FUN:setfreq", new String[]{"0"}),
+                IRORInteractive.EX_FORMAT);
         helper.succeed();
     }
 

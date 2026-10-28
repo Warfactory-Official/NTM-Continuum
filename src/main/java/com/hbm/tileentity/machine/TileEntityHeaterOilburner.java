@@ -7,15 +7,23 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
+import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
+import com.hbm.lib.Library;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.tileentity.TileEntityMachinePolluting;
 import com.hbm.util.TickPhase;
+import java.util.HashMap;
+import java.util.List;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -32,25 +40,28 @@ import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.TilePortShapes;
 
 /**
- * Oil-Fired Heater, a 1:1 port of the 1.12.2 {@code TileEntityHeaterOilburner}: burns any
- * {@code FT_Flammable} fluid (default HEATINGOIL, 16k tank) at 1-100 mB/t ({@code setting}) into a
- * 100k TU {@link IHeatSource} reservoir; heat is polled by the consumer above (boiler/crucible).
- * 3 slots: 0 to 1 fluid container drain pair, 2 fluid identifier (types the tank). Passively cools
- * ({@code max(heat/1000, 1)}) when not burning and below cap. isOn toggles via the GUI burn button;
- * the mB/t setting wraps 1 to 100 in both directions (the 1.12.2 screwdriver IToolable is GUI clicks here, a
- * documented deviation). Every fifth burning tick the fuel's {@code FT_Polluting} burn table goes into the 100 mB smoke
- * tanks, which leave through the four fuel ports.
+ * Fluid burner: burns any flammable fluid (default heating oil, 16k tank) at {@code burnRate} mB/t into a
+ * heat reservoir polled by the consumer above. Slots: 0/1 fluid container drain pair, 2 fluid identifier,
+ * 3 overdrive upgrade (each level adds 10 mB/t of burn rate and 500k TU of capacity). Every fifth burning
+ * tick the fuel's burn pollution goes into the smoke tanks, which leave through the four fuel ports.
  */
-public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implements MenuProvider, IHeatSource, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive {
+public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implements MenuProvider, IHeatSource, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive, IUpgradeInfoProvider {
 
-    public static final int maxHeatEnergy = 100_000;
+    /** The highest maxBurnRate, at three overdrive levels. */
+    public static final int MAX_SLIDER_RATE = 40;
+
     public boolean isOn = false;
     public FluidTankNTM tank;
-    public int setting = 1;
+    public int burnRate = 1;
+    public int maxBurnRate = 10;
+
+    public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
+
     public int heatEnergy;
+    public int maxHeatEnergy = 500_000;
 
     public TileEntityHeaterOilburner(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.HEATER_OILBURNER.get(), pos, state, 3, 100);
+        super(ModBlockEntities.HEATER_OILBURNER.get(), pos, state, 4, 100);
         tank = new FluidTankNTM(Fluids.HEATINGOIL, 16_000);
     }
 
@@ -66,11 +77,20 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         if (MachineFluidContainerIO.load(te.tank, te.inventory, 0, 1)) te.setChanged();
         if (te.tank.setType(te.inventory, 2, 2)) te.setChanged();
 
+        te.upgradeManager.checkSlots(te.inventory, 3, 3);
+        int od = te.upgradeManager.getLevel(UpgradeType.OVERDRIVE);
+
+        te.maxBurnRate = 10 * (od + 1);
+        te.maxHeatEnergy = 500_000 * (od + 1);
+
+        te.burnRate = Math.min(te.burnRate, te.maxBurnRate);
+        te.heatEnergy = Math.min(te.heatEnergy, te.maxHeatEnergy);
+
         boolean shouldCool = true;
 
-        if (te.isOn && te.heatEnergy < maxHeatEnergy) {
+        if (te.isOn && te.heatEnergy < te.maxHeatEnergy) {
             long energyPerBucket = FluidCombustion.getFlammableEnergy(te.tank.getTankType());
-            int toBurn = Math.min(te.setting, te.tank.getFill());
+            int toBurn = Math.min(te.burnRate, te.tank.getFill());
             // hbm-space cools with an empty tank; plain HBM holds its heat. Only positive fuel use consumes air.
             if (energyPerBucket > 0 && (toBurn > 0 ? Environment.breatheAir(level, pos, toBurn)
                     : !Environment.coolEmptyOilburner())) {
@@ -87,7 +107,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
             }
         }
 
-        if (te.heatEnergy >= maxHeatEnergy) shouldCool = false;
+        if (te.heatEnergy >= te.maxHeatEnergy) shouldCool = false;
 
         if (shouldCool) {
             te.heatEnergy = Math.max(te.heatEnergy - Math.max(te.heatEnergy / 1000, 1), 0);
@@ -99,32 +119,40 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
     protected PortDef[] cachedPorts;
     public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.flare(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
-    /** GUI buttons: 0 = burn toggle, 1 = setting up, 2 = setting down (old IControlReceiver+IToolable). */
+    /** GUI buttons: 0 = burn toggle, 1000 + rate = slider burn rate, clamped to maxBurnRate on the next tick. */
     @Override
     public void handleButtonPacket(int value, int meta) {
-        switch (value) {
-            case 0 -> this.isOn = !this.isOn;
-            case 1 -> toggleSettingUp();
-            case 2 -> toggleSettingDown();
-        }
+        if (value == 0) this.isOn = !this.isOn;
+        else if (value > 1000 && value <= 1000 + MAX_SLIDER_RATE) this.burnRate = value - 1000;
         setChanged();
-    }
-
-    public void toggleSettingUp() {
-        setting++;
-        if (setting > 100) setting = 1;
-    }
-
-    public void toggleSettingDown() {
-        setting--;
-        if (setting < 1) setting = 100;
     }
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         // Slot 1 is the emptied-container out; the menu's take-only slot keeps players out.
         if (slot == 2) return stack.getItem() instanceof IItemFluidId;
+        if (slot == 3) return Library.isMachineUpgrade(stack);
         return true;
+    }
+
+    @Override
+    public boolean canProvideInfo(UpgradeType type, int level, boolean extendedInfo) {
+        return type == UpgradeType.OVERDRIVE;
+    }
+
+    @Override
+    public void provideInfo(UpgradeType type, int level, List<Component> info, boolean extendedInfo) {
+        info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.heater_oilburner.get()));
+        if (type == UpgradeType.OVERDRIVE) {
+            info.add(Component.literal("YES").withStyle(IUpgradeInfoProvider.getBlink() ? ChatFormatting.RED : ChatFormatting.DARK_GRAY));
+        }
+    }
+
+    @Override
+    public HashMap<UpgradeType, Integer> getValidUpgrades() {
+        HashMap<UpgradeType, Integer> upgrades = new HashMap<>(1);
+        upgrades.put(UpgradeType.OVERDRIVE, 3);
+        return upgrades;
     }
 
     // --- IHeatSource ---
@@ -158,7 +186,9 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         tank.serialize(buf);
         buf.writeBoolean(isOn);
         buf.writeInt(heatEnergy);
-        buf.writeByte((byte) this.setting);
+        buf.writeInt(maxHeatEnergy);
+        buf.writeByte(burnRate);
+        buf.writeByte(maxBurnRate);
     }
 
     @Override
@@ -167,7 +197,9 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         tank.deserialize(buf);
         isOn = buf.readBoolean();
         heatEnergy = buf.readInt();
-        setting = buf.readByte();
+        maxHeatEnergy = buf.readInt();
+        burnRate = buf.readByte();
+        maxBurnRate = buf.readByte();
     }
 
     @Override
@@ -176,7 +208,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         tank.writeToNBT(output, "tank");
         output.putBoolean("isOn", isOn);
         output.putInt("heatEnergy", heatEnergy);
-        output.putInt("setting", setting);
+        output.putInt("setting", burnRate);
     }
 
     @Override
@@ -185,7 +217,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
         tank.readFromNBT(input, "tank");
         isOn = input.getBooleanOr("isOn", false);
         heatEnergy = input.getIntOr("heatEnergy", 0);
-        setting = Math.max(1, input.getIntOr("setting", 1));
+        burnRate = Math.max(1, input.getIntOr("setting", 1));
     }
 
     @Override
@@ -199,7 +231,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
     public String provideRORValue(String name) {
         if ((PREFIX_VALUE + "heat").equals(name)) return "" + heatEnergy;
         if ((PREFIX_VALUE + "fuel").equals(name)) return "" + tank.getFill();
-        if ((PREFIX_VALUE + "burnrate").equals(name)) return "" + setting;
+        if ((PREFIX_VALUE + "burnrate").equals(name)) return "" + burnRate;
         if ((PREFIX_VALUE + "state").equals(name)) return isOn ? "1" : "0";
         return null;
     }
@@ -207,12 +239,12 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
     @Override
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "setstate").equals(name) && params.length > 0) {
-            isOn = params[0].equals("1");
+            isOn = IRORInteractive.parseBool(params[0]);
             setChanged();
             return null;
         }
         if ((PREFIX_FUNCTION + "setburnrate").equals(name) && params.length > 0) {
-            setting = IRORInteractive.parseInt(params[0], 1, 10);
+            burnRate = IRORInteractive.parseInt(params[0], 1, maxBurnRate);
             setChanged();
         }
         return null;

@@ -34,8 +34,8 @@ public final class TurbofanGameTests {
         MachineTurbofan block = ModMachineBlocks.machine_turbofan.get();
         DirPos[] ports = fan.getConPos();
         helper.assertTrue(ports.length == 4, "Turbofan must expose four ports");
-        assertPort(helper, ports[0], 3, 1, 1, ForgeDirection.NORTH);
-        assertPort(helper, ports[2], 3, 1, 5, ForgeDirection.SOUTH);
+        assertPort(helper, ports[0], 3, 1, 2, ForgeDirection.NORTH);
+        assertPort(helper, ports[2], 3, 1, 4, ForgeDirection.SOUTH);
         BlockPos portCell = helper.absolutePos(new BlockPos(3, 1, 2));
         helper.assertTrue(block.canConnect(helper.getLevel(), portCell, ForgeDirection.NORTH),
                 "Turbofan must expose a cable/fluid port");
@@ -68,8 +68,8 @@ public final class TurbofanGameTests {
                     type.getName() + " must burn 1 mB at zero output (1.7), got on=" + fan.wasOn + " consumption="
                             + fan.consumption + " output=" + fan.output + " power=" + fan.power + " fill=" + fan.tank.getFill());
         }
-        // beside port 0 at (3,1,1): 1.7 isBlockIndirectlyGettingPowered on the port cell
-        helper.setBlock(new BlockPos(3, 1, 0), Blocks.REDSTONE_BLOCK);
+        // beside the turbofan's own edge cell (3,1,2), which 1.7 checks for a redstone signal
+        helper.setBlock(new BlockPos(3, 1, 1), Blocks.REDSTONE_BLOCK);
         fan.tank.setFill(20);
         TileEntityMachineTurbofan.serverTick(helper.getLevel(), core, fan.getBlockState(), fan);
         helper.assertTrue(!fan.wasOn && fan.tank.getFill() == 20, "a powered port stops the burn");

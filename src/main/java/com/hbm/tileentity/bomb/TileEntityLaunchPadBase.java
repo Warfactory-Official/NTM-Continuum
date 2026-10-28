@@ -9,6 +9,8 @@ import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.item.IDesignatorItem;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.entity.missile.EntityMissileAntiBallistic;
 import com.hbm.entity.missile.EntityMissileBaseNT;
 import com.hbm.entity.missile.EntityMissileShuttle;
@@ -73,7 +75,8 @@ import com.hbm.tileentity.TilePort.PortDef;
  * connection-anchor conveniences.
  */
 public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
-        implements IEnergyReceiverMK2, IFluidStandardReceiverMK2, IRadarCommandReceiver, WorldlyContainer {
+        implements IEnergyReceiverMK2, IFluidStandardReceiverMK2, IRadarCommandReceiver, WorldlyContainer,
+        IRORValueProvider, IRORInteractive {
 
     /**
      * Which entity each missile item becomes. Upstream keys this by {@code ComparableStack}; a plain
@@ -445,6 +448,49 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     /** The ABM aims itself, so it is the one missile that launches with an empty designator slot. */
     public boolean needsDesignator(Item item) {
         return item != ModMissileItems.missile_anti_ballistic.get();
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{
+                PREFIX_VALUE + "state",
+                PREFIX_VALUE + "power",
+                PREFIX_VALUE + "fuel",
+                PREFIX_VALUE + "oxidizer",
+                PREFIX_VALUE + "canlaunch",
+                PREFIX_FUNCTION + "launch",
+                PREFIX_FUNCTION + "launch" + NAME_SEPARATOR + "entity",
+                PREFIX_FUNCTION + "launch" + NAME_SEPARATOR + "x" + PARAM_SEPARATOR + "z"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "state").equals(name)) return "" + state;
+        if ((PREFIX_VALUE + "power").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "fuel").equals(name)) return "" + tanks[0].getFill();
+        if ((PREFIX_VALUE + "oxidizer").equals(name)) return "" + tanks[1].getFill();
+        if ((PREFIX_VALUE + "canlaunch").equals(name)) return canLaunch() ? "1" : "0";
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "launch").equals(name)) {
+            // a radio launch credits no one, not whoever last used a detonator on the pad
+            detonator = null;
+            switch (params.length) {
+                case 0 -> launchFromDesignator();
+                case 1 -> {
+                    int id = IRORInteractive.parseInt(params[0], Integer.MIN_VALUE, Integer.MAX_VALUE);
+                    Entity entity = level.getEntity(id);
+                    if (entity != null && entity.isAlive()) launchToEntity(entity);
+                }
+                case 2 -> launchToCoordinate(
+                        IRORInteractive.parseInt(params[0], Integer.MIN_VALUE, Integer.MAX_VALUE),
+                        IRORInteractive.parseInt(params[1], Integer.MIN_VALUE, Integer.MAX_VALUE));
+            }
+        }
+        return null;
     }
 
     /**

@@ -8,6 +8,7 @@ import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.GuiEntities;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -225,47 +226,10 @@ public class GUILaunchPad extends CompatContainerScreen<ContainerLaunchPad> {
         }
     }
 
-    /**
-     * 1.7 {@code drawStackText} with two lines: the three designators (the selected one with {@code stackSize = 0},
-     * which {@code drawStackText} backs with a red-framed grey square) and the selected one's name. Same frame,
-     * offsets and screen clamping as {@link GuiUtil#stackText}, which cannot mark a non-empty stack.
-     */
+    /** 1.7: the three designators with this second's one marked, and its name. */
     private void drawDesignatorPanel(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        int selected = (int) ((System.currentTimeMillis() % (1000L * DESIGNATORS.size())) / 1000L);
-        ItemStack[] stacks = new ItemStack[DESIGNATORS.size()];
-        for (int i = 0; i < stacks.length; i++) stacks[i] = new ItemStack(DESIGNATORS.get(i).get());
-        String name = stacks[selected].getHoverName().getString();
-
-        int longest = Math.max(stacks.length * 18, this.font.width(name));
-        int height = 18 + 10;
-        int minX = mouseX + 12;
-        int minY = mouseY - 12;
-        if (minX + longest > this.width) minX -= 28 + longest;
-        if (minY + height + 6 > this.height) minY = this.height - height - 6;
-
-        GuiDraw.nextStratum(graphics);
-        int bg = 0xF0100010;
-        GuiDraw.fill(graphics, minX - 3, minY - 4, minX + longest + 3, minY - 3, bg);
-        GuiDraw.fill(graphics, minX - 3, minY + height + 3, minX + longest + 3, minY + height + 4, bg);
-        GuiDraw.fill(graphics, minX - 3, minY - 3, minX + longest + 3, minY + height + 3, bg);
-        GuiDraw.fill(graphics, minX - 4, minY - 3, minX - 3, minY + height + 3, bg);
-        GuiDraw.fill(graphics, minX + longest + 3, minY - 3, minX + longest + 4, minY + height + 3, bg);
-        int c0 = 0x505000FF;
-        int c1 = (c0 & 0xFEFEFE) >> 1 | c0 & 0xFF000000;
-        GuiDraw.fillGradient(graphics, minX - 3, minY - 2, minX - 2, minY + height + 2, c0, c1);
-        GuiDraw.fillGradient(graphics, minX + longest + 2, minY - 2, minX + longest + 3, minY + height + 2, c0, c1);
-        GuiDraw.fill(graphics, minX - 3, minY - 3, minX + longest + 3, minY - 2, c0);
-        GuiDraw.fill(graphics, minX - 3, minY + height + 2, minX + longest + 3, minY + height + 3, c1);
-
-        for (int i = 0; i < stacks.length; i++) {
-            int x = minX + i * 18;
-            if (i == selected) {
-                GuiDraw.fill(graphics, x - 1, minY - 1, x + 17, minY + 17, 0xFFFF0000);
-                GuiDraw.fill(graphics, x, minY, x + 16, minY + 16, 0xFFB0B0B0);
-            }
-            GuiDraw.item(graphics, stacks[i], x, minY);
-        }
-        // first line is 18 tall and adds 2
-        GuiDraw.text(graphics, this.font, name, minX, minY + 20, -1, true);
+        List<ItemStack> stacks = new ArrayList<>();
+        for (Supplier<? extends Item> designator : DESIGNATORS) stacks.add(new ItemStack(designator.get()));
+        GuiUtil.cycledStackText(graphics, this.font, this.width, this.height, null, stacks, mouseX, mouseY);
     }
 }

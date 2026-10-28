@@ -90,7 +90,7 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
 
     protected final ModulePortManFluidAdaptive moduleFluidPorts = new ModulePortManFluidAdaptive(this).setInputTanks(getReceivingTanks()).setOutputTanks(getSendingTanks());
-    protected final ModulePortManPower modulePowerPorts = new ModulePortManPower(this);
+    protected final ModulePortManPower modulePowerPorts = new ModulePortManPower(this).onlyInput();
 
     public TileEntityMachineElectrolyser(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_ELECTROLYSER.get(), pos, state, 21);

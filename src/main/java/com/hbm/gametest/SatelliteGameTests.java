@@ -298,6 +298,8 @@ public final class SatelliteGameTests {
         mapper.setTarget(here.getX() + 100_000, here.getZ());
         mapper.onCommand(level, SatelliteMapper.CMD_SPOT_PLAYER);
         helper.assertTrue("NONE".equals(mapper.tx), "nobody stands 100 km out, got " + mapper.tx);
+        mapper.onCommand(level, SatelliteMapper.CMD_FIND_PLAYER, "nobody");
+        helper.assertTrue("NOT FOUND".equals(mapper.tx), "findplayer with no such player, got " + mapper.tx);
 
         EntitySatellitePod pig = new EntitySatellitePod(level);
         pig.setPos(here.getX() + 0.5, here.getY() + 5, here.getZ() + 0.5);

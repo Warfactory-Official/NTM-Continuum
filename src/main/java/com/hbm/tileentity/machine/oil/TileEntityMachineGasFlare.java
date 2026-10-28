@@ -313,10 +313,10 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     @Override
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "setflowstate").equals(name) && params.length == 1) {
-            isOn = params[0].equals("1");
+            isOn = IRORInteractive.parseBool(params[0]);
             markChanged();
         } else if ((PREFIX_FUNCTION + "setignitionstate").equals(name) && params.length == 1) {
-            doesBurn = params[0].equals("1");
+            doesBurn = IRORInteractive.parseBool(params[0]);
             markChanged();
         }
         return null;

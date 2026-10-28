@@ -14,8 +14,7 @@ import com.hbm.tileentity.TilePort.PortDef;
 import com.hbm.tileentity.TilePortShapes;
 
 /**
- * 1.7 {@code TileEntityCompactLauncher}: the 3x3 pad for size 1.0 custom missiles. 25,000 l tanks, 25,000 solid,
- * and it refuses to fire without a ready designator.
+ * 1.7 {@code TileEntityCompactLauncher}: the 3x3 pad for size 1.0 custom missiles. 25,000 l tanks, 25,000 solid.
  */
 public class TileEntityCompactLauncher extends TileEntityCustomMissileLauncher implements MenuProvider {
 
@@ -29,7 +28,6 @@ public class TileEntityCompactLauncher extends TileEntityCustomMissileLauncher i
     @Override public int getMaxSolid() { return maxSolid; }
     @Override public PartSize acceptedSize() { return PartSize.SIZE_10; }
     @Override protected int footprintRadius() { return 1; }
-    @Override protected boolean requiresDesignatorToLaunch() { return true; }
 
     public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.refinery(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 

@@ -25,8 +25,8 @@ public final class RockMillGameTests {
 
     public static void table(GameTestHelper helper) {
         RockMillRecipes.INSTANCE.registerRecipes();
-        helper.assertTrue(RockMillRecipes.INSTANCE.recipeOrderedList.size() == 11,
-                "1.7 registers eleven rock mill rows, found " + RockMillRecipes.INSTANCE.recipeOrderedList.size());
+        helper.assertTrue(RockMillRecipes.INSTANCE.recipeOrderedList.size() == 13,
+                "1.7 registers thirteen rock mill rows with the sculk pair, found " + RockMillRecipes.INSTANCE.recipeOrderedList.size());
         GenericRecipe cobble = RockMillRecipes.INSTANCE.getRecipe("rock.cobble");
         helper.assertTrue(cobble != null && cobble.duration == 100 && cobble.power == 25
                         && cobble.inputFluid[0].type == Fluids.WATER && cobble.inputFluid[0].fill == 250
@@ -41,8 +41,15 @@ public final class RockMillGameTests {
         helper.assertTrue(clay.inputItem[0].stacksize == 2 && clay.inputFluid[0].fill == 2_500
                         && clay.outputItem[0].is(Items.CLAY_BALL) && clay.outputItem[0].getCount() == 4 && clay.autoSwitchGroup == null,
                 "rock.clay: 2 sand and 2,500 mB colloid make 4 clay, outside the crushing group");
-        helper.assertTrue(RockMillRecipes.INSTANCE.autoSwitchGroups.get("autoswitch.crushing").size() == 9,
-                "the nine crushing rows share one auto-switch group");
+        helper.assertTrue(RockMillRecipes.INSTANCE.autoSwitchGroups.get("autoswitch.crushing").size() == 11,
+                "the eleven crushing rows share one auto-switch group");
+        GenericRecipe sculk = RockMillRecipes.INSTANCE.getRecipe("rock.sculkgrass");
+        GenericRecipe lightSculk = RockMillRecipes.INSTANCE.getRecipe("rock.lightsculkgrass");
+        helper.assertTrue(sculk != null && sculk.inputItem[0].matchesRecipe(new ItemStack(Items.SCULK), true)
+                        && sculk.outputFluid[0].type == Fluids.SLOP && sculk.outputChoices.length == 3,
+                "rock.sculkgrass crushes vanilla sculk into slop and three outputs");
+        helper.assertTrue(lightSculk != null && lightSculk.inputItem[0].matchesRecipe(new ItemStack(Items.SCULK_VEIN), true),
+                "rock.lightsculkgrass crushes sculk vein");
         helper.assertTrue(cobble.getLocalizedName().startsWith("Crushing of"), "crushing rows read Crushing of <input>");
         helper.succeed();
     }

@@ -146,7 +146,6 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
         if (this.structureOK) {
             this.setupAllPorts(ports);
             this.moduleSmokePorts.update(ports);
-            // port: 1.7 swaps PIFIFO and POFIFO here, so its custom machines move no power
             if (config.generatorMode) {
                 this.updatePortPOFIFO();
             } else {

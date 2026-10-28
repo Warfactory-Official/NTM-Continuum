@@ -141,6 +141,27 @@ public final class RockMillTable extends GenericTableSource<GenericRecipe> {
                         new OutputChoice(new ItemStack(ModBlocks.ore_titanium.get()), 25)
                 ).setIconToFirstIngredient().setGroup(groupCrush, this));
 
+        // port: 1.7 takes the Sift backport's sculk grass and light sculk grass; vanilla sculk and sculk vein stand in
+        this.register(new GenericRecipe("rock.sculkgrass").setup(duraLong, consumption).setNameWrapper("rock.crushing")
+                .inputItems(new ComparableStack(Items.SCULK))
+                .inputFluids(new FluidStack(Fluids.WATER, 250))
+                .outputFluids(new FluidStack(Fluids.SLOP, 250))
+                .outputChoices(
+                        new OutputChoice(new ItemStack(Items.DIRT), 50),
+                        new OutputChoice(new ItemStack(ModItems.powder_lead.get()), 25),
+                        new OutputChoice(new ItemStack(ModItems.powder_asbestos.get()), 25)
+                ).setIconToFirstIngredient().setGroup(groupCrush, this));
+
+        this.register(new GenericRecipe("rock.lightsculkgrass").setup(duraLong, consumption).setNameWrapper("rock.crushing")
+                .inputItems(new ComparableStack(Items.SCULK_VEIN))
+                .inputFluids(new FluidStack(Fluids.WATER, 250))
+                .outputFluids(new FluidStack(Fluids.SLOP, 250))
+                .outputChoices(
+                        new OutputChoice(new ItemStack(Items.DIRT), 50),
+                        new OutputChoice(new ItemStack(ModItems.scrap_nuclear.get()), 25),
+                        new OutputChoice(new ItemStack(ModItems.scrap_oil.get()), 25)
+                ).setIconToFirstIngredient().setGroup(groupCrush, this));
+
         this.register(new GenericRecipe("rock.clay").setup(duraLong, consumption)
                 .inputItems(new TagStack(KEY_SAND, 2))
                 .inputFluids(new FluidStack(Fluids.COLLOID, 2_500))

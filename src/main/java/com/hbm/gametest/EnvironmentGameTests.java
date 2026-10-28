@@ -303,7 +303,7 @@ public final class EnvironmentGameTests {
         BlockPos oilPos = helper.absolutePos(oilRel);
         oil.tank.setTankType(Fluids.OIL);
         oil.tank.setFill(10);
-        oil.setting = 3;
+        oil.burnRate = 3;
         oil.isOn = true;
         AIRLESS.add(oilPos);
         try {

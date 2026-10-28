@@ -15,6 +15,8 @@ import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.machine.ItemFluidId;
 import dev.golem.core.Ids;
 import dev.golem.core.world.ItemStacks;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
@@ -37,6 +39,7 @@ public final class QMAWLoader {
 
     /** Kept as the old public names so client integrations can inspect the live index. */
     public static volatile Map<String, QuickManualAndWiki> qmaw = Map.of();
+    public static volatile List<QuickManualAndWiki> sortedPages = List.of();
     public static volatile List<String> unresolvedTriggers = List.of();
     public static volatile int sourceFiles;
     public static volatile int indexedTriggers;
@@ -92,6 +95,9 @@ public final class QMAWLoader {
         }
 
         qmaw = Map.copyOf(pages);
+        List<QuickManualAndWiki> sorted = new ArrayList<>(pages.values());
+        sorted.sort(COMPARATOR);
+        sortedPages = List.copyOf(sorted);
         exactTriggers = List.copyOf(exact);
         wildcardTriggers = Map.copyOf(wildcard);
         wildcardPrefixes = Map.copyOf(prefixes);
@@ -132,6 +138,12 @@ public final class QMAWLoader {
     }
 
     private record IndexedTrigger(QuickManualAndWiki page, QuickManualAndWiki.Trigger trigger) {}
+
+    /** Orders pages by their title in the current language. */
+    public static final Comparator<QuickManualAndWiki> COMPARATOR = (o1, o2) -> {
+        LanguageManager lang = Minecraft.getInstance().getLanguageManager();
+        return o1.getTitle(lang).compareTo(o2.getTitle(lang));
+    };
 
     private static QuickManualAndWiki parse(String file, JsonObject json, List<String> unresolved) {
         String name = string(json, "name", "");

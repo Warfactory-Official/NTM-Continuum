@@ -1,6 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.packet.PneumoAccessSyncPayload.Delta;
+import dev.golem.core.data.Inventories;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.ItemStacks;
@@ -152,11 +153,24 @@ public class ContainerPneumoStorageAccess extends PneumaticMenuBase<TileEntityPn
         rebuildIndex();
     }
 
+    /** 1.7 {@code putStackInSlot}: the server's empty grid never overwrites the client's listing. */
+    @Override
+    public void setItem(int slotId, int stateId, ItemStack stack) {
+        super.setItem(slotId, stateId, slotId < GRID_SIZE ? getSlot(slotId).getItem() : stack);
+    }
+
     /** Server: what the cache holds against what this client has been told. 1.7 {@code checkAndSyncCache}. */
     private void syncCache() {
         if (tile == null || !(player instanceof ServerPlayer serverPlayer)) return;
         StackCache cache = tile.cache;
         if (cache == null || cache.hasExpired) return;
+
+        for (Entry entry : entries.values()) {
+            if (entry.amount != 0 && !cache.cacheSlots.containsKey(entry.display)) {
+                entry.amount = 0;
+                outbox.add(new Delta(entry.id, null, 0));
+            }
+        }
 
         for (StackCache.CacheSlot slot : cache.cacheSlots.values()) {
             // 1.7 skips the null identity: the cache of slots holding nothing
@@ -187,7 +201,9 @@ public class ContainerPneumoStorageAccess extends PneumaticMenuBase<TileEntityPn
     /** Client: 1.7 {@code acceptData}'s client arm. */
     public void applyDeltas(List<Delta> deltas) {
         for (Delta delta : deltas) {
-            if (delta.display() != null) {
+            if (delta.isReset()) {
+                entries.clear();
+            } else if (delta.display() != null) {
                 entries.put(delta.id(), new Entry(delta.id(), delta.display(), delta.amount()));
             } else {
                 Entry entry = entries.get(delta.id());
@@ -200,6 +216,14 @@ public class ContainerPneumoStorageAccess extends PneumaticMenuBase<TileEntityPn
 
     /** Server: 1.7 {@code acceptData}'s server arm, reached from the terminal's own click packet. */
     public void handleClick(ClickOp op, int entryId) {
+        if (op == ClickOp.RESYNC) {
+            entries.clear();
+            byStack.clear();
+            outbox.add(Delta.RESET);
+            broadcastChanges();
+            return;
+        }
+
         if (tile == null) return;
         StackCache cache = tile.cache;
         if (cache == null || cache.hasExpired) return;
@@ -212,12 +236,8 @@ public class ContainerPneumoStorageAccess extends PneumaticMenuBase<TileEntityPn
         if (op == ClickOp.SHIFT_CLICK) {
             if (entry == null) return;
             ItemStack stack = entry.display.copy();
-            int originalStacksize = (int) Math.min(stack.getMaxStackSize(), entry.amount);
-            ItemStack toGive = stack.copyWithCount(originalStacksize);
-            player.getInventory().add(toGive);
-            int remainder = toGive.isEmpty() ? 0 : toGive.getCount();
-            int itemsUsed = originalStacksize - remainder;
-            cache.consumeItemsAndReturnQuantity(stack, itemsUsed);
+            int taken = (int) cache.consumeItemsAndReturnQuantity(stack, inventorySpace(stack));
+            if (taken > 0) player.getInventory().placeItemBackInInventory(stack.copyWithCount(taken));
             broadcastChanges();
             return;
         }
@@ -226,11 +246,12 @@ public class ContainerPneumoStorageAccess extends PneumaticMenuBase<TileEntityPn
         // if we drop an item onto a different stack, or no stack at all, deposit
         if (!carried.isEmpty() && !sameType) {
             int toDeposit = op == ClickOp.LEFT_CLICK ? carried.getCount() : 1;
-            carried.shrink(toDeposit);
-            int leftover = (int) cache.addItemsAndReturnQuantity(carried, toDeposit);
-            carried.grow(leftover);
-            setCarried(ItemStack.EMPTY);
-            if (!carried.isEmpty()) player.getInventory().placeItemBackInInventory(carried);
+            // the type goes in as a copy: a stack shrunk to nothing reads as air
+            int leftover = (int) cache.addItemsAndReturnQuantity(carried.copyWithCount(1), toDeposit);
+            carried.shrink(toDeposit - leftover);
+            setCarried(carried.isEmpty() ? ItemStack.EMPTY : carried);
+            // 1.7 updateHeldItem: the client predicted its cursor, so the answer goes even when unchanged
+            sendAllDataToRemote();
             broadcastChanges();
             return;
         }
@@ -239,13 +260,26 @@ public class ContainerPneumoStorageAccess extends PneumaticMenuBase<TileEntityPn
         if (entry != null) {
             ItemStack stack = entry.display.copy();
             int alreadyHeld = carried.isEmpty() ? 0 : carried.getCount();
-            int capacity = stack.getMaxStackSize() - alreadyHeld;
+            int capacity = Math.max(stack.getMaxStackSize() - alreadyHeld, 0);
             if (op == ClickOp.RIGHT_CLICK && capacity > 1) capacity = 1;
             int toGrab = (int) Math.min(capacity, entry.amount);
-            int grabbed = (int) cache.consumeItemsAndReturnQuantity(stack, toGrab);
-            setCarried(stack.copyWithCount(alreadyHeld + grabbed));
+            int held = alreadyHeld + (int) cache.consumeItemsAndReturnQuantity(stack, toGrab);
+            setCarried(held > 0 ? stack.copyWithCount(held) : ItemStack.EMPTY);
+            sendAllDataToRemote();
             broadcastChanges();
         }
+    }
+
+    /** 1.7 {@code getInventorySpace}: how much of {@code stack} the main inventory takes, at most one stack. */
+    private int inventorySpace(ItemStack stack) {
+        int space = 0;
+        for (ItemStack existing : Inventories.main(player.getInventory())) {
+            if (existing.isEmpty()) return stack.getMaxStackSize();
+            if (ItemStacks.sameItemAndData(existing, stack)) {
+                space += Math.max(existing.getMaxStackSize() - existing.getCount(), 0);
+            }
+        }
+        return Math.min(space, stack.getMaxStackSize());
     }
 
     public int entryAt(int slotIndex) {
@@ -314,7 +348,9 @@ public class ContainerPneumoStorageAccess extends PneumaticMenuBase<TileEntityPn
     public enum ClickOp {
         LEFT_CLICK,
         RIGHT_CLICK,
-        SHIFT_CLICK
+        SHIFT_CLICK,
+        /** 1.7 {@code SLOT_CLICK_ID_RESYNC}: forget what the client was told and send it all again. */
+        RESYNC
     }
 
     /** One type the terminal can reach, and how much of it. 1.7 {@code CacheSlotDummy}. */

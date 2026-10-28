@@ -67,6 +67,7 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
 
     /** Power ports and, where the tile has tanks of that role, fluid in and fluid out ports. */
     public void setupAllPorts(PortDef[] ports) {
+        if (ports == null || ports.length == 0) return;
         this.setupPowerPorts(ports);
         this.setupFluidPorts(ports);
     }

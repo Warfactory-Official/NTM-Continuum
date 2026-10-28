@@ -3,6 +3,8 @@ package com.hbm.tileentity.machine;
 import com.hbm.items.ModMissileItems;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.missile.EntityRocketLambda;
 import com.hbm.interfaces.IControlReceiver;
@@ -49,7 +51,8 @@ import org.jspecify.annotations.Nullable;
  * gasoline and of hydrogen peroxide per flight. In auto mode it starts the countdown as soon as it can launch.
  */
 public class TileEntityLaunchpadLambda extends TileEntityMachineBase
-        implements MenuProvider, WorldlyContainer, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver {
+        implements MenuProvider, WorldlyContainer, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IControlReceiver,
+        IRORValueProvider, IRORInteractive {
 
     public long power;
     public static final long maxPower = 1_000_000;
@@ -372,6 +375,41 @@ public class TileEntityLaunchpadLambda extends TileEntityMachineBase
     public boolean clampsOff() { return this.positions[INDEX_PISTONS] == 0.75F; }
     public boolean clampsUp() { return this.positions[INDEX_CLAMPS] == 90F; }
     public boolean clampsDown() { return this.positions[INDEX_CLAMPS] == 0F; }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{
+                PREFIX_VALUE + "countdown",
+                PREFIX_VALUE + "power",
+                PREFIX_VALUE + "fuel",
+                PREFIX_VALUE + "oxidizer",
+                PREFIX_VALUE + "isauto",
+                PREFIX_VALUE + "canlaunch",
+                PREFIX_FUNCTION + "launch",
+                PREFIX_FUNCTION + "setauto" + NAME_SEPARATOR + "on/off"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "countdown").equals(name)) return "" + countdown;
+        if ((PREFIX_VALUE + "power").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "fuel").equals(name)) return "" + tanks[0].getFill();
+        if ((PREFIX_VALUE + "oxidizer").equals(name)) return "" + tanks[1].getFill();
+        if ((PREFIX_VALUE + "isauto").equals(name)) return autolaunch ? "1" : "0";
+        if ((PREFIX_VALUE + "canlaunch").equals(name)) return canLaunch() ? "1" : "0";
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setauto").equals(name) && params.length == 1) {
+            this.autolaunch = IRORInteractive.parseBool(params[0]);
+            setChanged();
+        } else if ((PREFIX_FUNCTION + "launch").equals(name)) {
+            if (canLaunch()) this.countdown = COUNTDOWN_DURATION;
+        }
+        return null;
+    }
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

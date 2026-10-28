@@ -93,7 +93,8 @@ public class TilePort {
     }
 
     public void update(Level world) {
-        if (this.positions == null || this.connections == null || this.owner == null) return;
+        if (this.positions == null || this.positions.length == 0 || this.connections == null || this.connections.length == 0
+                || this.owner == null) return;
         if (this.type != null && this.markedIn != world) {
             PortNodes.markPorted(world, owner, type);
             this.markedIn = world;

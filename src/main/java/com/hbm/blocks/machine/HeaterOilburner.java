@@ -5,31 +5,22 @@ import com.hbm.blocks.ITooltipProvider;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.interfaces.ILookOverlay;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Fluid Burner ({@code heater_oilburner}), a 1:1 port of the 1.12.2 {@code HeaterOilburner}: a 2-tall
- * 3×3 the folded core (dims {@code {1,0,1,1,1,1}}, offset 1) with the 4 side cells and the
- * top-center marked as extras (fluid ports + the heat cell the consumer above polls through). Look
- * overlay shows setting, tank and stored heat. IToolable (screwdriver setting) is replaced by GUI
- * buttons. This is a documented deviation.
+ * Fluid Burner ({@code heater_oilburner}): a 2-tall 3×3 folded core (dims {@code {1,0,1,1,1,1}}, offset 1)
+ * with the 4 side cells and the top-center marked as extras (fluid ports + the heat cell the consumer
+ * above polls through). The burn rate is set in the GUI.
  */
-public class HeaterOilburner extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay, ITooltipProvider {
+public class HeaterOilburner extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ITooltipProvider {
 
     public HeaterOilburner(Properties properties) {
         super(properties);
@@ -48,17 +39,6 @@ public class HeaterOilburner extends BlockMultiblockMachine implements IFluidCon
     @Override
     public int getOffset() {
         return 1;
-    }
-
-    @Override
-    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityHeaterOilburner heater)) return null;
-
-        List<String> text = new ArrayList<>();
-        text.add("§a-> §r" + heater.setting + " mB/t");
-        text.add(heater.tank.getTankType().getDisplayNameString() + ": " + String.format("%,d", heater.tank.getFill()) + "/" + String.format("%,d", heater.tank.getMaxFill()) + " mB");
-        text.add(String.format("%,d", heater.heatEnergy) + " TU");
-        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
     /** Four fluid inlets around the waist; the cell above the core is body, not port. */

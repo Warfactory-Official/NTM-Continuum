@@ -3961,6 +3961,7 @@
   "block.hbm.struct_launcher_core_large": "Startrampe-Kernkomponente",
   "container.compactLauncher": "Kompakt-Startrampe",
   "container.launchPadRusted": "Startrampe",
+  "container.launchpadSoyuz": "Soyuz Startrampe",
   "container.launchTable": "Große Startrampe",
   "container.missileAssembly": "Raketenmontagestation",
   "item.hbm.schrabidium_sword": "Schrabidiumschwert",

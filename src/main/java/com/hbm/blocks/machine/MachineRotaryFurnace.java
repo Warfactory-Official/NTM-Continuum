@@ -147,6 +147,7 @@ public final class MachineRotaryFurnace extends BlockMultiblockMachine
                 {-1, 4, 0, ForgeDirection.UP.ordinal()},
                 {-2, 0, -1, ForgeDirection.WEST.ordinal()},
                 {-2, 0, 1, ForgeDirection.WEST.ordinal()},
+                {-1, 0, 1, ForgeDirection.SOUTH.ordinal()},
         }, dir);
     }
 }

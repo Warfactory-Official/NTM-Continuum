@@ -1468,6 +1468,8 @@ public final class HbmGameTestFunctions {
 
     public static final GameTests.Function RC_LOGI_PNEUMATIC =
             TESTS.function("rc_logi_pneumatic_import_export", 400, 16, () -> RcLogiGameTests::pneumaticImportExport);
+    public static final GameTests.Function RC_LOGI_PNEUMATIC_ACCESS =
+            TESTS.function("rc_logi_pneumatic_access_no_dupe", 200, 16, () -> RcLogiGameTests::pneumaticAccessNoDupe);
     public static final GameTests.Function RC_LOGI_ELEVATOR =
             TESTS.function("rc_logi_cargo_elevator_carries", 200, 16, () -> RcLogiGameTests::cargoElevatorCarries);
     public static final GameTests.Function RC_LOGI_ELEVATOR_GROWTH =
@@ -3159,9 +3161,10 @@ public final class HbmGameTestFunctions {
         reactorDuct.setFluidType(Fluids.SUPERHOTSTEAM);
         tankDuct.setFluidType(Fluids.SUPERHOTSTEAM);
 
+        // facing east the tank's long sides face west and east, so its north-west port reaches the tank duct
         var tankCore = core.offset(6, 1, 1);
         helper.setBlock(tankCore, ModMachineBlocks.machine_fluidtank.get().defaultBlockState()
-                .setValue(BlockMultiblockCore.FACING, Direction.SOUTH));
+                .setValue(BlockMultiblockCore.FACING, Direction.EAST));
         var tank = GameTestHelpers.blockEntity(helper, tankCore, TileEntityMachineFluidTank.class);
         helper.assertTrue(tank != null, "Fluid tank controller setup failed");
         tank.mode = 1; // Buffer mode owns the network node at its physical port cells.
