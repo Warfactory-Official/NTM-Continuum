@@ -350,11 +350,11 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         FluidTankNTM tank = type == PollutionType.SOOT ? smoke : type == PollutionType.HEAVYMETAL ? smokeLeaded : smokePoison;
 
         int fluidAmount = (int) Math.ceil(amount * 100);
-        tank.setFill(tank.getFill() + fluidAmount);
+        int fill = tank.getFill() + fluidAmount;
+        tank.setFill(fill);
 
-        if (tank.getFill() > tank.getMaxFill()) {
-            int overflow = tank.getFill() - tank.getMaxFill();
-            tank.setFill(tank.getMaxFill());
+        if (fill > tank.getMaxFill()) {
+            int overflow = fill - tank.getMaxFill();
             PollutionHandler.incrementPollution(level, worldPosition, type, overflow / 100F);
             this.isVenting = true;
         }

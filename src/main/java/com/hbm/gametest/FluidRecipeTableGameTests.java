@@ -15,6 +15,7 @@ import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -55,7 +56,12 @@ public final class FluidRecipeTableGameTests {
      */
     static boolean ours(FluidType type) {
         String id = type.getRegistryName();
-        return id.startsWith(Constants.MOD_ID + ":") || id.startsWith("minecraft:");
+        return !type.isForeign() && (id.startsWith(Constants.MOD_ID + ":") || id.startsWith("minecraft:"));
+    }
+
+    /** The registered FluidTypes; {@link Fluids#getAll()} also holds a foreign type per vanilla fluid HBM has met. */
+    static FluidType[] registered() {
+        return Arrays.stream(Fluids.getAll()).filter(type -> !type.isForeign()).toArray(FluidType[]::new);
     }
 
     static boolean ours(Item item) {

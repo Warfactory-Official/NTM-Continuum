@@ -2,6 +2,7 @@ package com.hbm.delegacy.legacy;
 
 import com.hbm.items.ILoadOnlyItem;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -21,6 +22,13 @@ public class LegacyItem extends Item implements ILoadOnlyItem {
     @Override
     public String getDescriptionId() {
         return BuiltInRegistries.ITEM.get(target).getDescriptionId();
+    }
+
+    /** The target's shown name: some targets build theirs in getName and have no lang key of their own. */
+    @Override
+    public Component getName(ItemStack stack) {
+        Item item = BuiltInRegistries.ITEM.get(target);
+        return item.getName(new ItemStack(item));
     }
 
     @Override

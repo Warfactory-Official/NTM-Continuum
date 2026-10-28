@@ -370,16 +370,10 @@ public final class BlockEntities {
         if (name != null) tag.putString("recipe", name);
     }
 
+    /** DE's {@code target} is already the {@code GlobalPos} form Continuum saves; a malformed one is dropped. */
     private static void teleporter(CompoundTag tag, Ctx ctx) {
         if (!(tag.get("target") instanceof CompoundTag target)) return;
-        int[] pos = target.getIntArray("pos");
-        if (pos.length == 3) {
-            tag.putInt("x1", pos[0]);
-            tag.putInt("y1", pos[1]);
-            tag.putInt("z1", pos[2]);
-            tag.putString("dim", target.getString("dimension"));
-        }
-        tag.remove("target");
+        if (target.getIntArray("pos").length != 3 || target.getString("dimension").isEmpty()) tag.remove("target");
     }
 
     /** DE numbers every channel's fields ({@code f0_x}, {@code f0item2}); Continuum keeps one list per channel kind. */

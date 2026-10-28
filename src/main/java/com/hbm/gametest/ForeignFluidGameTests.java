@@ -92,11 +92,12 @@ public final class ForeignFluidGameTests {
 
     private static final int Y = 2;
 
-    /** Every FluidType is a vanilla Fluid with the right id, 1:1, and none of them is placeable or bucketable. */
+    /** Every registered FluidType is a vanilla Fluid with the right id, 1:1, and none of them is placeable or bucketable. */
     private static void registry(GameTestHelper helper) {
         int tokens = 0;
         Set<Fluid> seen = new HashSet<>();
-        for (FluidType type : Fluids.getAll()) {
+        FluidType[] registered = FluidRecipeTableGameTests.registered();
+        for (FluidType type : registered) {
             Fluid fluid = type.getFluid();
             String id = BuiltInRegistries.FLUID.getKey(fluid).toString();
             String expected = type == Fluids.NONE ? "minecraft:empty"
@@ -115,11 +116,11 @@ public final class ForeignFluidGameTests {
                 helper.assertTrue(Fluids.byRegistryName(id) == type, id + " does not read back as a save");
             }
         }
-        helper.assertTrue(tokens == Fluids.getAll().length - 3, "token fluids: " + tokens);
+        helper.assertTrue(tokens == registered.length - 3, "token fluids: " + tokens);
         helper.assertTrue(Fluids.fromVanilla(net.minecraft.world.level.material.Fluids.FLOWING_WATER) == Fluids.WATER,
                 "flowing water is water");
         Constants.LOG.info("[foreign fluids] {} HBM fluids as vanilla Fluids ({} token fluids + water, lava, empty)",
-                Fluids.getAll().length, tokens);
+                registered.length, tokens);
         helper.succeed();
     }
 

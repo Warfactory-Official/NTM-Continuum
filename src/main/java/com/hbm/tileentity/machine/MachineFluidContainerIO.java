@@ -185,6 +185,10 @@ public final class MachineFluidContainerIO {
             if (bucket != Items.AIR) {
                 full = new ItemStack(bucket);
                 amount = ItemFluidBucket.VOLUME;
+            } else if (type != Fluids.NONE) {
+                // port: the universal bucket for fluids 1.7 had no bucket for
+                full = ItemFluidBucket.make(type);
+                amount = ItemFluidBucket.VOLUME;
             }
         }
         if (full.isEmpty() || amount <= 0 || tank.getFill() < amount) return false;

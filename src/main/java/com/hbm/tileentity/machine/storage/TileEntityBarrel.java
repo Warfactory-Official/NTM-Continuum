@@ -347,6 +347,8 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
     protected void applyCarriedData(CompoundTag data) {
         tank.setTankType(Fluids.read(data, "type"));
         if (Tags.contains(data, "pin")) tank.setTankTypeByIdentifier(Fluids.readExact(data, "pin"));
+        // below 1.20.5 Core applies this on every load too, so it must set the fill, not add to it
+        tank.setFill(0);
         var resource = Tags.contains(data, "held") ? Fluids.readExact(data, "held") : tank.getFluid();
         tank.fill(resource, Math.min(Tags.getIntOr(data, "fill", 0), tank.getMaxFill()), true);
         mode = (short) Tags.getIntOr(data, "mode", 0);

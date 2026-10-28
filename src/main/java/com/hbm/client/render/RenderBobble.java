@@ -85,6 +85,7 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
     private final WavefrontObj fatman = WavefrontObj.load(tex("models/weapons/fatman.obj"));
     private final WavefrontObj doubleBarrel = WavefrontObj.load(tex("models/weapons/sacred_dragon.obj"));
     private final WavefrontObj leafia = WavefrontObj.load(tex("models/trinkets/leafia.obj"));
+    private final WavefrontObj clawd = WavefrontObj.load(tex("models/trinkets/clawd.obj"));
     private final WavefrontObj laserPistol = WavefrontObj.load(tex("models/weapons/laser_pistol.obj"));
     private final WavefrontObj egon = WavefrontObj.load(tex("models/weapons/egon_hose.obj"));
     private final WavefrontObj egonPack = WavefrontObj.load(tex("models/weapons/egon.obj"));
@@ -170,6 +171,7 @@ public final class RenderBobble extends GemBER<TileEntityBobble, RenderBobble.St
             case FUMO -> renderFumo(pose, sink, skin, state, light);
             case DRILLGON -> part(pose, sink, bobble, CompatRenderTypes.entityCutoutCull(skin), "Drillgon", light);
             case LEAFIA -> part(pose, sink, leafia, CompatRenderTypes.entityCutoutCull(skin), "thislooksbad", light);
+            case CLAWD -> part(pose, sink, clawd, CompatRenderTypes.entityCutoutCull(skin), "Clawd", light);
             case SKIN -> renderSkinGuy(pose, sink, state, light);
             case GUY -> renderGuy(pose, sink, skin, state, light);
         }

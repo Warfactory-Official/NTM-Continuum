@@ -566,7 +566,9 @@ public final class GenericRecipeCodec {
             .add(field("input_fluids_expensive", Kind.FLUID_IN).list().optional().shape(RecipeShapes.FLUID_STACK)
                     .alias("inputFluidsExpensive"))
             .add(field("blueprint_pools_528", Kind.STRING).list().optional().alias("blueprintPools528"))
-            .add(field("requires", Kind.STRING).list().optional());
+            .add(field("requires", Kind.STRING).list().optional())
+            // written from "requires" for Golem Core's removal at load; ignored on read
+            .add(field("golem:requires", Kind.STRING).list().optional());
 
     /** The row codec of a {@link GenericRecipe} table. */
     public static MapCodec<GenericRecipe> codec() {

@@ -22,6 +22,7 @@ import com.hbm.blocks.ModRadarUtilityBlocks;
 import com.hbm.blocks.ModSatelliteBlocks;
 import com.hbm.blocks.ModSteelBlocks;
 import com.hbm.blocks.bomb.ModBombBlocks;
+import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.BlockCap;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
@@ -1213,6 +1214,13 @@ public final class AssemblyMachineTable extends GenericTableSource<GenericRecipe
                         new ComparableStack(ModItems.plate_polymer.get(), 8),
                         new ComparableStack(ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_LITHIUM).get(), 2),
                         new ComparableStack(ModMachineBlocks.machine_waste_drum.get().asItem(), 1), CU.wire().count(8)));
+
+        // port: the port-only Clawd bobblehead, from Klaus and the slop its supercomputer run leaves behind.
+        this.register(new GenericRecipe("ass.bobbleclawd").setup(200, 100).outputItems(ModDecoCrateBlocks.bobblehead_family.stack(BlockBobble.BobbleType.CLAWD))
+                .inputItems(new ComparableStack(ModIntermediateItems.drive(EnumDriveType.KLAUS), 1), ANY_PLASTIC.ingot().count(4),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 1),
+                        new TagStack(KEY_ORANGE).count(2), new TagStack(KEY_BLACK).count(1))
+                .inputFluids(new FluidStack(Fluids.SLOP, 1_000)));
     }
 
     /** A row registered inside a 1.7 config branch carries the branch. */

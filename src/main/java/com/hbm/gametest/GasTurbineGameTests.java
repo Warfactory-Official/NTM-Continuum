@@ -2,6 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineTurbineGas;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.fluid.ClientFluidProperties;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.ContainerMachineTurbineGas;
@@ -189,6 +190,12 @@ public final class GasTurbineGameTests {
 
     public static void guiTooltips(GameTestHelper helper) {
         Fluids.init();
+        // the tank tooltip reads client fluid metadata, which only the client setup installs
+        try {
+            ClientFluidProperties.init();
+        } catch (IllegalStateException installed) {
+            // a client running the test has installed it already
+        }
         assertTankFillGeometry(helper);
         FluidTankNTM tank = new FluidTankNTM(Fluids.GAS, 1_000).withPressure(7);
         tank.setFill(500);
@@ -215,35 +222,29 @@ public final class GasTurbineGameTests {
     }
 
     private static void assertTankFillGeometry(GameTestHelper helper) {
-        int originalTint = Fluids.GAS.getTint();
-        Fluids.GAS.setTint(0xA1B2C3D4);
-        try {
-            FluidTankNTM fuel = new FluidTankNTM(Fluids.GAS, 1_000);
-            fuel.setFill(500);
-            assertTankFill(helper, fuel, 8, ContainerMachineTurbineGas.FUEL_TANK_TOP, 16, 48,
-                    8, 41, 16, 65, "fuel");
+        FluidTankNTM fuel = new FluidTankNTM(Fluids.GAS, 1_000);
+        fuel.setFill(500);
+        assertTankFill(helper, fuel, 8, ContainerMachineTurbineGas.FUEL_TANK_TOP, 16, 48,
+                8, 41, 16, 65, "fuel");
 
-            FluidTankNTM lubricant = new FluidTankNTM(Fluids.LUBRICANT, 1_000);
-            lubricant.setFill(1_000);
-            assertTankFill(helper, lubricant, 8, ContainerMachineTurbineGas.LUBRICANT_TANK_TOP, 16, 32,
-                    8, 71, 16, 103, "lubricant");
+        FluidTankNTM lubricant = new FluidTankNTM(Fluids.LUBRICANT, 1_000);
+        lubricant.setFill(1_000);
+        assertTankFill(helper, lubricant, 8, ContainerMachineTurbineGas.LUBRICANT_TANK_TOP, 16, 32,
+                8, 71, 16, 103, "lubricant");
 
-            FluidTankNTM water = new FluidTankNTM(Fluids.WATER, 1_000);
-            water.setFill(1_000);
-            assertTankFill(helper, water, 147, ContainerMachineTurbineGas.WATER_TANK_TOP, 16, 36,
-                    147, 62, 16, 98, "water");
+        FluidTankNTM water = new FluidTankNTM(Fluids.WATER, 1_000);
+        water.setFill(1_000);
+        assertTankFill(helper, water, 147, ContainerMachineTurbineGas.WATER_TANK_TOP, 16, 36,
+                147, 62, 16, 98, "water");
 
-            FluidTankNTM steam = new FluidTankNTM(Fluids.STEAM, 1_000);
-            steam.setFill(1_000);
-            assertTankFill(helper, steam, 147, ContainerMachineTurbineGas.STEAM_TANK_TOP, 16, 36,
-                    147, 22, 16, 58, "steam");
+        FluidTankNTM steam = new FluidTankNTM(Fluids.STEAM, 1_000);
+        steam.setFill(1_000);
+        assertTankFill(helper, steam, 147, ContainerMachineTurbineGas.STEAM_TANK_TOP, 16, 36,
+                147, 22, 16, 58, "steam");
 
-            helper.assertTrue(TankDisplay.tint(fuel) == 0xFFB2C3D4
-                            && (TankDisplay.tint(fuel) >>> 24) == 0xFF,
-                    "Gas turbine tank fill tint must use opaque FluidType.getTint()");
-        } finally {
-            Fluids.GAS.setTint(originalTint);
-        }
+        int tint = Fluids.GAS.clientMetadata().getTint();
+        helper.assertTrue(TankDisplay.tint(fuel) == (0xFF000000 | tint & 0xFFFFFF),
+                "Gas turbine tank fill tint must be the fluid's client tint, opaque");
     }
 
     private static void assertTankFill(GameTestHelper helper, FluidTankNTM tank, int x, int top,

@@ -357,7 +357,8 @@ public final class RcNuke2GameTests {
         BlockPos c = GameTests.paddedCentre(8, 1);
         FoldedTestSupport.assemble(helper, ModMachineBlocks.watz.get(), c);
         helper.setBlock(c.above(3), ModMachineBlocks.watz_pump.get().defaultBlockState());
-        helper.setBlock(c.above(5).east(), Blocks.REDSTONE_BLOCK.defaultBlockState());
+        // 1.7 getIndirectPowerLevelTo(x, y + 5, z, 0): the redstone block sits on y + 5 itself
+        helper.setBlock(c.above(5), Blocks.REDSTONE_BLOCK.defaultBlockState());
         TileEntityWatz watz = GameTestHelpers.blockEntity(helper, c, TileEntityWatz.class);
         ItemWatzPellet item = ModWatzItems.fresh(EnumWatzType.SCHRABIDIUM);
         watz.inventory.setStackInSlot(0, item.make());

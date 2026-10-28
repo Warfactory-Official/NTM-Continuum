@@ -118,7 +118,8 @@ public final class HbmRecipeFields {
                 field("laser_strength", Kind.STRING), field("fluid_produced", Kind.INT), field("fluid_consumed", Kind.INT),
                 order()));
         ShredderRecipes.TABLE.fields(of(
-                out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.INGREDIENT_ID)));
+                out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.INGREDIENT_ID),
+                field("chance", Kind.DOUBLE).optional()));
 
         // Item tables
         AmmoPressRecipes.TABLE.fields(of(

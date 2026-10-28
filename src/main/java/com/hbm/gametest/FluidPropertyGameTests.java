@@ -118,7 +118,9 @@ public final class FluidPropertyGameTests {
     /** Every HBM fluid's hazard diamond is 1.7's (from the {@code hazard} field of its property file). */
     public static void hazards(GameTestHelper helper) {
         Map<String, FluidType> byName = new LinkedHashMap<>();
-        for (FluidType fluid : Fluids.getAll()) if (fluid.getNamespace().equals(Constants.MOD_ID)) byName.put(fluid.getName(), fluid);
+        for (FluidType fluid : FluidRecipeTableGameTests.registered()) {
+            if (fluid.getNamespace().equals(Constants.MOD_ID)) byName.put(fluid.getName(), fluid);
+        }
         List<String> wrong = new ArrayList<>();
         for (String text : HAZARDS_17) {
             String[] row = text.split(":");

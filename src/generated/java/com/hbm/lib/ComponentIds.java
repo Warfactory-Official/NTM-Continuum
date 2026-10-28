@@ -29,8 +29,8 @@ public final class ComponentIds {
     public static final String battery_power = "hbm:battery_power";
     public static final String battery_redd_muffled = "hbm:battery_redd_muffled";
     public static final String battery_redd_power = "hbm:battery_redd_power";
-    public static final String bedrock_ore_composition = "hbm:bedrock_ore_composition";
     public static final String bedrock_ore_density = "hbm:bedrock_ore_density";
+    public static final String bedrock_ore_sample = "hbm:bedrock_ore_sample";
     public static final String blueprint_pool = "hbm:blueprint_pool";
     public static final String book_lore = "hbm:book_lore";
     public static final String broken_item = "hbm:broken_item";
@@ -50,6 +50,7 @@ public final class ComponentIds {
     public static final String drone_linker_position = "hbm:drone_linker_position";
     public static final String fluid = "hbm:fluid";
     public static final String fluid_amount = "hbm:fluid_amount";
+    public static final String fluid_identifier = "hbm:fluid_identifier";
     public static final String fluid_multi = "hbm:fluid_multi";
     public static final String fluid_pressure = "hbm:fluid_pressure";
     public static final String forge_count = "hbm:forge_count";

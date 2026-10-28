@@ -1,15 +1,27 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.blocks.generic.BobbleFigure;
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.render.util.RenderAccessoryUtility;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.handler.SpecialPlayers;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.recipes.AssemblyMachineRecipes;
+import com.hbm.inventory.recipes.loader.GenericRecipe;
+import com.hbm.items.ItemEnums.EnumCircuitType;
+import com.hbm.items.ModIntermediateItems;
+import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemDrive;
+import com.hbm.items.machine.ItemDrive.EnumDriveType;
 import com.hbm.potion.ModEffects;
+import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
 import com.hbm.util.ShadyUtil;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.world.Attributes;
 import dev.golem.core.world.Effects;
+import dev.golem.core.world.ItemStacks;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -170,7 +182,40 @@ public final class SpecialPlayerGameTests {
         helper.assertTrue(GameTestHelpers.resourceExists(SpecialPlayerGameTests.class, "assets/hbm/models/trinkets/leafia.obj")
                 && GameTestHelpers.resourceExists(SpecialPlayerGameTests.class, "assets/hbm/textures/models/trinkets/leafia.png"),
                 "Leafia's model or texture is missing");
+        helper.assertTrue(BobbleFigure.body(BlockBobble.BobbleType.CLAWD.ordinal()) == BobbleFigure.Body.CLAWD
+                && GameTestHelpers.resourceExists(SpecialPlayerGameTests.class, "assets/hbm/models/trinkets/clawd.obj")
+                && GameTestHelpers.resourceExists(SpecialPlayerGameTests.class, "assets/hbm/textures/models/trinkets/clawd.png"),
+                "Clawd's model or texture is missing");
         helper.succeed();
+    }
+
+    /** The datapack's Clawd row in a ticking assembly machine: Klaus, its parts and 1,000 mB of slop make one figure. */
+    public static void clawdAssembly(GameTestHelper helper) {
+        GenericRecipe recipe = AssemblyMachineRecipes.INSTANCE.getRecipe("ass.bobbleclawd");
+        helper.assertTrue(recipe != null && !recipe.isPooled(), "the Clawd assembler row did not load unpooled");
+        BlockPos pos = new BlockPos(3, 1, 3);
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_assembly_machine.get(), pos);
+        TileEntityMachineAssemblyMachine assembler = GameTestHelpers.blockEntity(helper, pos, TileEntityMachineAssemblyMachine.class);
+        assembler.assemblerModule.recipe = recipe.name;
+        ItemStack[] inputs = {ItemDrive.stack(EnumDriveType.KLAUS, 1), new ItemStack(ModItems.ingot_polymer.get(), 4),
+                ModIntermediateItems.circuit(EnumCircuitType.ADVANCED, 1), new ItemStack(Items.ORANGE_DYE, 2),
+                new ItemStack(Items.BLACK_DYE)};
+        for (int i = 0; i < inputs.length; i++) {
+            assembler.inventory.setStackInSlot(TileEntityMachineAssemblyMachine.SLOT_INPUT_START + i, inputs[i]);
+        }
+        assembler.inputTank.setTankType(Fluids.SLOP);
+        assembler.inputTank.setFill(1_000);
+        assembler.power = 100_000;
+        ItemStack clawd = ModDecoCrateBlocks.bobblehead_family.stack(BlockBobble.BobbleType.CLAWD);
+        helper.succeedWhen(() -> {
+            ItemStack out = assembler.inventory.getStackInSlot(TileEntityMachineAssemblyMachine.SLOT_OUTPUT);
+            helper.assertTrue(ItemStacks.sameItemAndData(out, clawd), "no Clawd in the output yet: " + out);
+            helper.assertTrue(assembler.inputTank.getFill() == 0, "the slop was not used: " + assembler.inputTank.getFill());
+            for (int i = 0; i < inputs.length; i++) {
+                helper.assertTrue(assembler.inventory.getStackInSlot(TileEntityMachineAssemblyMachine.SLOT_INPUT_START + i).isEmpty(),
+                        "input " + i + " was not used");
+            }
+        });
     }
 
     private static Player player(GameTestHelper helper, String uuid) {

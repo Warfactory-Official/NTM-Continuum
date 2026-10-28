@@ -86,11 +86,12 @@ public final class ItemRecipeTableGameTests {
      * became files (HBM_DUMP_TABLES; the annihilator in 528 mode, every other table in the default config).
      * ammo_press, anvil_construction, arc_welder and lemegeton use 1.7 ore names as tags and KEY_SAND as c:sands.
      * anvil_construction and anvil_smithing name the vanilla copper ingot (HBM has no copper ingot of its own).
+     * The material rows of anvil_construction and press follow 1.7's Mats.orderedList (declaration order).
      */
     static final Map<String, String> EXPECTED = Map.ofEntries(
             Map.entry("ammo_press", "90 f3b1dc99e5c2d40f1a32b812ecbea4bc44e7075459ad59ddc2b77734e84c3f0f"),
             Map.entry("annihilator", "16 a2044a6681862dd49d8faba5337d651bb5a51172410b85b2082c32f3daab89cf"),
-            Map.entry("anvil_construction", "257 56e38aa612500799ba7b27272483ff363358ff7b9525e4f8b45290a972f857f0"),
+            Map.entry("anvil_construction", "257 af43b890b355cd087f8db0da946891c2c89c7d3bd4098d91a63cefd733efbfdf"),
             Map.entry("anvil_smithing", "58 5655dfc0e8f89caeec8e0bfc8cd0ce463ef4ea6f218c31f082db49fa3d9076f4"),
             Map.entry("arc_welder", "42 2f80a4b8cd70720cb08d1b0f07623a727ad6f944c17380a68fdf24df65ccda48"),
             Map.entry("breeder", "31 daa249b6c8178775c166e81ac9ef0726914016ea50786592d7e65ce0586ea789"),
@@ -101,7 +102,7 @@ public final class ItemRecipeTableGameTests {
             Map.entry("magic", "7 a1cb39a71866df9f0e9a269b768396dee4ff2fce1e595fb138e8fbfb403b7ea9"),
             Map.entry("particle_accelerator", "11 d98136d6bd98588759ffc21226705c1bf86b677a8180f8d1227aef53fa3dc7dc"),
             Map.entry("pedestal", "19 dce1c166674ae43b8121d3653f2fedfdf27f33ade9bf77648c8feecbe0efa545"),
-            Map.entry("press", "48 86ae4f28056ba5bc26e6d7b8ce03c3c838f374253a8a78908393c5c81ee2df95"),
+            Map.entry("press", "48 4a487f4c553e2065372c439d6e4bae231584bdb55ddce16eb3b816fede56d2f8"),
             Map.entry("soldering", "30 3b20f88748496a0470a5407775dd85bb5244aeae8a1406aaf98a4ac23e11b15c"));
 
     /** A few of the recorded lines, spelled out so a reader sees what the hashes cover. */

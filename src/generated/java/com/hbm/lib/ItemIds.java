@@ -236,6 +236,7 @@ public final class ItemIds {
     public static final String arc_electrode_burnt_lanthanium = "hbm:arc_electrode_burnt_lanthanium";
     public static final String arc_electrode_burnt_saturnite = "hbm:arc_electrode_burnt_saturnite";
     public static final String arc_electrode_desh = "hbm:arc_electrode_desh";
+    public static final String arc_electrode_graphite = "hbm:arc_electrode_graphite";
     public static final String arc_electrode_lanthanium = "hbm:arc_electrode_lanthanium";
     public static final String arc_electrode_saturnite = "hbm:arc_electrode_saturnite";
     public static final String armor_battery = "hbm:armor_battery";
@@ -722,6 +723,7 @@ public final class ItemIds {
     public static final String bobblehead_bob = "hbm:bobblehead_bob";
     public static final String bobblehead_charisma = "hbm:bobblehead_charisma";
     public static final String bobblehead_cirno = "hbm:bobblehead_cirno";
+    public static final String bobblehead_clawd = "hbm:bobblehead_clawd";
     public static final String bobblehead_doc = "hbm:bobblehead_doc";
     public static final String bobblehead_drillgon = "hbm:bobblehead_drillgon";
     public static final String bobblehead_endurance = "hbm:bobblehead_endurance";

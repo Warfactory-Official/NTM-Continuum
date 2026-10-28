@@ -92,7 +92,10 @@ public class BlockBobble extends BlockTrinket {
         NORWOOD("MrNorwood", "MrNorwood", "NTM:CE, involved in both NTM: NEXT and NTM: Continuum,$and the Warfactory project as a whole.", "\"NTM sucks, Notch is fat, and Warfactory won.\"", true, "CPU_CLOCK",
                 ShadyUtil.MrNorwood),
         SILENTYETI("SilentYeti", "SilentYeti", "Warfactory Media Manager, did some porting on NTM:CE,$rebalanced Glider Jetpack, #1 playtester", "\"My Shrine will stand in Memory of my Glory\"", true, "CPU_REGISTER",
-                ShadyUtil.SilentYeti);
+                ShadyUtil.SilentYeti),
+        // port-only: Anthropic's mascot
+        CLAWD("Clawd", "Clawd", "#1 Slop producer. Automated Testing.",
+                "Unfortunately your request goes against our $terms of service.$$Model made by Claude.", false, "CARD_PROCESSOR");
 
         public static final BobbleType[] VALUES = values();
 

@@ -46,11 +46,12 @@ public abstract class TileEntityMachinePolluting extends TileEntityMachineBase i
         FluidTankNTM tank = type == PollutionType.SOOT ? smoke : type == PollutionType.HEAVYMETAL ? smoke_leaded : smoke_poison;
 
         int fluidAmount = (int) Math.ceil(amount * 100);
-        tank.setFill(tank.getFill() + fluidAmount);
+        // 1.7 overfills the tank and vents the excess; FluidTankNTM.setFill clamps, so the excess is counted first
+        int fill = tank.getFill() + fluidAmount;
+        tank.setFill(fill);
 
-        if (tank.getFill() > tank.getMaxFill()) {
-            int overflow = tank.getFill() - tank.getMaxFill();
-            tank.setFill(tank.getMaxFill());
+        if (fill > tank.getMaxFill()) {
+            int overflow = fill - tank.getMaxFill();
             PollutionHandler.incrementPollution(level, worldPosition, type, overflow / 100F);
 
             // 1.7 NTMSounds.VANILLA_HISS, "random.fizz"

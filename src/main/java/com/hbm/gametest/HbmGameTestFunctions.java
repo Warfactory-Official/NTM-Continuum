@@ -150,6 +150,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("special_players_peep_sprint", 20, () -> SpecialPlayerGameTests::peepSprint);
     public static final GameTests.Function SPECIAL_PLAYERS_BOBBLEHEADS =
             TESTS.function("special_players_bobbleheads", 20, () -> SpecialPlayerGameTests::bobbleheads);
+    public static final GameTests.Function SPECIAL_PLAYERS_CLAWD_ASSEMBLY =
+            TESTS.function("special_players_clawd_assembly", 400, 8, () -> SpecialPlayerGameTests::clawdAssembly);
     public static final GameTests.Function JETPACK_STATE_SCOPE =
             TESTS.function("jetpack_state_scope", 20, () -> JetpackGameTests::stateScopeCleansOnLevelRemoval);
     public static final GameTests.Function JETPACK_SMOKE_CLEANUP =

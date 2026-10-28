@@ -30,7 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * net asks for. It logs only what it gives off. Redstone on any of its three lower blocks cuts it off.
  */
 public class TileEntityNetworkSeparator extends TileEntityLoadedBase implements IEnergyProviderMK2, IEnergyReceiverMK2,
-        IControlReceiver, IRORValueProvider, IRORInteractive, DiodeControl {
+        IControlReceiver, IRORValueProvider, IRORInteractive {
 
     public static final long MAX_LIMIT = 10_000_000_000L;
 
@@ -145,7 +145,6 @@ public class TileEntityNetworkSeparator extends TileEntityLoadedBase implements 
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public ConnectionPriority getPriority() { return this.priority; }
-    @Override public long getConfiguredLimit() { return configuredLimit; }
 
     public boolean bufferMismatch() {
         return this.configuredLimit < this.getMaxPower();

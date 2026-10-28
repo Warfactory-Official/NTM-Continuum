@@ -768,7 +768,8 @@ public final class DeImportGameTests {
             helper.assertTrue("high".equals(reddOut.getString("priority")) && reddOut.get("redHigh") instanceof ShortTag,
                     "the REDD's priority and redstone modes: " + reddOut);
             helper.assertTrue("lucky38".equals(bes.get(globe).getString("type")), "snowglobe kind by name: " + bes.get(globe));
-            helper.assertTrue(bes.get(tele).getInt("y1") == 64 && "minecraft:the_nether".equals(bes.get(tele).getString("dim")),
+            helper.assertTrue(bes.get(tele).getCompound("target").getIntArray("pos")[1] == 64
+                            && "minecraft:the_nether".equals(bes.get(tele).getCompound("target").getString("dimension")),
                     "teleporter target: " + bes.get(tele));
             helper.assertTrue(bes.get(gascent).getInt("inputTank") == 800 && "MEUF6".equals(bes.get(gascent).getString("inputTank_type")),
                     "gas centrifuge tank: " + bes.get(gascent));

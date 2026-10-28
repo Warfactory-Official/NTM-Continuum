@@ -19,7 +19,8 @@ import java.util.function.Supplier;
  *
  * <p>A rebuild keeps the rows whose {@code requires} hold (1.7's config branches at registration), puts each row's
  * config-mode variants in effect ({@link GenericRecipe#applyModes}), then lets the table add rule rows and derive its
- * own indexes ({@link #arrange}, {@link #rebuilt}).
+ * own indexes ({@link #arrange}, {@link #rebuilt}). A flag that fails at the datapack load also takes the row out of
+ * the recipe manager ({@code golem:requires}), so turning it on later brings the row back only at the next load.
  *
  * @param <T> the row type ({@link GenericRecipe}, or a subclass with fields of its own)
  */

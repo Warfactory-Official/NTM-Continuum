@@ -53,6 +53,8 @@ public class FabricInit implements ModEntry {
         });
         dev.golem.core.platform.Lifecycle.onServerTick(server -> server.getAllLevels().forEach(level ->
                 level.getAllEntities().forEach(entity -> {
+                    // 26.1's entity lookup can yield null for an entity removed earlier in this tick
+                    if (entity == null) return;
                     com.hbm.handler.ExplosivesEntityHooks.tick(entity);
                     if (entity instanceof net.minecraft.world.entity.item.ItemEntity item) {
                         com.hbm.items.special.ItemSingularity.tickDropped(item);

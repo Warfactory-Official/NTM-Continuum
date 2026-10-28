@@ -33,14 +33,17 @@ public final class PrecisionAssemblerGameTests {
 
     private PrecisionAssemblerGameTests() {}
 
+    private static final GenericRecipeTableGameTests.Mode MODE_528 = new GenericRecipeTableGameTests.Mode(false, true);
+
     public static void recipes(GameTestHelper helper) {
+        if (!GeneralConfig.enable528) {
+            helper.assertTrue(PrecAssRecipes.INSTANCE.getRecipe("precass.chip") == null,
+                    "1.7 registers the 528 chip row only in 528 mode");
+        }
         // The assembly list is built lazily and reads enable528 (1.7 no528 blocks, setPools528): build it with the
         // real config before the 528 window below, or a first build here would bake 528 mode into it for every test.
         AssemblyMachineRecipes.INSTANCE.registerRecipes();
-        boolean previous = GeneralConfig.enable528;
-        GeneralConfig.enable528 = true;
-        try {
-            PrecAssRecipes.INSTANCE.registerRecipes();
+        GenericRecipeTableGameTests.under(helper, MODE_528, () -> {
             GenericRecipe chip = PrecAssRecipes.INSTANCE.getRecipe("precass.chip");
             helper.assertTrue(chip != null && chip.duration == 100 && chip.power == 200L,
                     "528 chip recipe must preserve duration and power");
@@ -51,16 +54,12 @@ public final class PrecisionAssemblerGameTests {
                     "Precision assembler recycle recipe must return each input with its old chance");
             helper.assertTrue(AssemblyMachineRecipes.INSTANCE.getRecipe("ass.precass") != null,
                     "Assembly machine must expose the precision assembler construction recipe");
-        } finally {
-            GeneralConfig.enable528 = previous;
-        }
+        });
         helper.succeed();
     }
 
     public static void layoutAndValidation(GameTestHelper helper) {
-        boolean previous = GeneralConfig.enable528;
-        GeneralConfig.enable528 = true;
-        try {
+        GenericRecipeTableGameTests.under(helper, MODE_528, () -> {
             TileEntityMachinePrecAss te = place(helper, new BlockPos(1, 1, 1));
             Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
             ContainerMachinePrecAss menu = new ContainerMachinePrecAss(0, player.getInventory(), te);
@@ -88,16 +87,12 @@ public final class PrecisionAssemblerGameTests {
             te.assemblerModule.setupTanks(te.assemblerModule.getRecipe());
             helper.assertTrue(te.inputTank.getMaxFill() >= 4_000,
                     "Precision input tank must retain the legacy 4,000 mB minimum capacity");
-        } finally {
-            GeneralConfig.enable528 = previous;
-        }
+        });
         helper.succeed();
     }
 
     public static void processing(GameTestHelper helper) {
-        boolean previous = GeneralConfig.enable528;
-        GeneralConfig.enable528 = true;
-        try {
+        GenericRecipeTableGameTests.under(helper, MODE_528, () -> {
             TileEntityMachinePrecAss te = place(helper, new BlockPos(1, 1, 1));
             GenericRecipe recipe = PrecAssRecipes.INSTANCE.getRecipe("precass.chip");
             te.assemblerModule.recipe = recipe.getInternalName();
@@ -112,9 +107,7 @@ public final class PrecisionAssemblerGameTests {
             helper.assertFalse(te.getItem(13).isEmpty(), "Precision assembler must produce either the product or faulty output");
             helper.assertTrue(te.getItem(4).isEmpty() && te.getItem(5).isEmpty() && te.getItem(6).isEmpty(),
                     "Precision assembler must consume all inputs after a completed cycle");
-        } finally {
-            GeneralConfig.enable528 = previous;
-        }
+        });
         helper.succeed();
     }
 

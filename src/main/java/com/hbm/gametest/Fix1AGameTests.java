@@ -112,7 +112,8 @@ public final class Fix1AGameTests {
 
     public static void fluids(GameTestHelper helper) {
         Fluids.init();
-        helper.assertTrue(Fluids.getAll().length == 157, "1.7 has 157 fluids, have " + Fluids.getAll().length);
+        int registered = FluidRecipeTableGameTests.registered().length;
+        helper.assertTrue(registered == 157, "1.7 has 157 fluids, have " + registered);
         helper.assertTrue(Fluids.legacyId(Fluids.RADIOSOLVENT) == 88 && Fluids.legacyId(Fluids.CHLORINE) == 89
                         && Fluids.legacyId(Fluids.SMOKE) == 120 && Fluids.legacyId(Fluids.DHC) == 153 && Fluids.legacyId(Fluids.FLUE) == 155,
                 "1.7 ids: RADIOSOLVENT 88, CHLORINE 89, SMOKE 120, DHC 153, FLUE 155; have "

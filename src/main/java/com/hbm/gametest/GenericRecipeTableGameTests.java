@@ -1,5 +1,7 @@
 package com.hbm.gametest;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.hbm.Constants;
 import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.fluid.FluidType;
@@ -19,7 +21,9 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.ModFuelItems;
+import dev.golem.core.data.DataFiles;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.world.RecipeTables;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -30,8 +34,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -86,13 +92,21 @@ public final class GenericRecipeTableGameTests {
         return tables;
     }
 
-    /** Runs {@code body} under {@code mode}, rebuilding every table, and restores the config. */
-    static void under(Mode mode, Runnable body) {
+    /**
+     * Runs {@code body} on the tables a world loaded in {@code mode} has, and restores the config: the rows this load
+     * dropped from the recipe manager ({@code golem:requires}) that {@code mode} admits are added from their files.
+     */
+    static void under(GameTestHelper helper, Mode mode, Runnable body) {
         boolean expensive = GeneralConfig.enableExpensiveMode, five28 = GeneralConfig.enable528;
         try {
             GeneralConfig.enableExpensiveMode = mode.expensive();
             GeneralConfig.enable528 = mode.m528();
-            for (DataGenericRecipes<?> table : tables().values()) table.registerRecipes();
+            MinecraftServer server = helper.getLevel().getServer();
+            Map<String, JsonElement> files = DataFiles.read(DataFiles.recipeFolder(), server.getResourceManager());
+            for (DataGenericRecipes<?> table : tables().values()) {
+                table.registerRecipes();
+                addDroppedRows(table, files, server.registryAccess());
+            }
             body.run();
         } finally {
             GeneralConfig.enableExpensiveMode = expensive;
@@ -101,14 +115,31 @@ public final class GenericRecipeTableGameTests {
         }
     }
 
+    /** Adds the shipped rows of {@code table} whose {@code requires} hold now but that the load left out. */
+    private static <T extends GenericRecipe> void addDroppedRows(DataGenericRecipes<T> table, Map<String, JsonElement> files,
+                                                                 HolderLookup.Provider registries) {
+        for (Map.Entry<String, JsonElement> file : files.entrySet()) {
+            if (!file.getValue().isJsonObject()) continue;
+            JsonObject json = file.getValue().getAsJsonObject();
+            if (!json.has(RecipeTables.REQUIRES) || !table.table.id().equals(json.get("type").getAsString())) continue;
+            T recipe = table.table.fromJson(json, registries);
+            if (!DataGenericRecipes.present(recipe) || table.getRecipe(recipe.getInternalName()) != null) continue;
+            recipe.bindRecipeId(file.getKey());
+            recipe.bindStacks();
+            recipe.applyModes(GeneralConfig.enableExpensiveMode, GeneralConfig.enable528);
+            table.registerGenerated(recipe);
+        }
+    }
+
     /** Rows per table and config mode of the Java tables (fluid packs included). */
     static final Map<String, Integer> EXPECTED_COUNTS = new HashMap<>();
 
     static {
-        EXPECTED_COUNTS.put("assembly_machine.noex_no528", 631);
-        EXPECTED_COUNTS.put("assembly_machine.ex_no528", 631);
-        EXPECTED_COUNTS.put("assembly_machine.noex_528", 621);
-        EXPECTED_COUNTS.put("assembly_machine.ex_528", 621);
+        // one port-only row (ass.bobbleclawd) more than 1.7 in every mode
+        EXPECTED_COUNTS.put("assembly_machine.noex_no528", 632);
+        EXPECTED_COUNTS.put("assembly_machine.ex_no528", 632);
+        EXPECTED_COUNTS.put("assembly_machine.noex_528", 622);
+        EXPECTED_COUNTS.put("assembly_machine.ex_528", 622);
         EXPECTED_COUNTS.put("blast_furnace.noex_no528", 18);
         EXPECTED_COUNTS.put("blast_furnace.ex_no528", 18);
         EXPECTED_COUNTS.put("blast_furnace.noex_528", 18);
@@ -154,7 +185,7 @@ public final class GenericRecipeTableGameTests {
     public static void counts(GameTestHelper helper) {
         List<String> wrong = new ArrayList<>();
         for (Mode mode : MODE_LIST) {
-            under(mode, () -> {
+            under(helper, mode, () -> {
                 for (Map.Entry<String, DataGenericRecipes<?>> e : tables().entrySet()) {
                     int expected = EXPECTED_COUNTS.get(e.getKey() + "." + mode.key());
                     int have = e.getValue().recipeOrderedList.size();
@@ -449,7 +480,7 @@ public final class GenericRecipeTableGameTests {
     public static void samples(GameTestHelper helper) {
         List<String> wrong = new ArrayList<>();
         for (Mode mode : MODE_LIST) {
-            under(mode, () -> {
+            under(helper, mode, () -> {
                 for (String[] sample : SAMPLE_ROWS) {
                     if (!sample[1].equals(mode.key())) continue;
                     GenericRecipe recipe = tables().get(sample[0]).getRecipe(sample[2]);
@@ -486,7 +517,7 @@ public final class GenericRecipeTableGameTests {
 
     public static void modes(GameTestHelper helper) {
         // ass.gascent: 1.7 inputItemsEx (heavy frame, circuit) and setPools528("528.gascent")
-        under(MODE_LIST.get(3), () -> {
+        under(helper, MODE_LIST.get(3), () -> {
             GenericRecipe gascent = AssemblyMachineRecipes.INSTANCE.getRecipe("ass.gascent");
             helper.assertTrue(gascent.inputItemEx != null && gascent.inputItem == gascent.inputItemEx,
                     "expensive mode puts ass.gascent's expensive inputs in effect");
@@ -528,7 +559,7 @@ public final class GenericRecipeTableGameTests {
     public static void dump(GameTestHelper helper) {
         Path root = Path.of("recipe-export").toAbsolutePath().resolve("describe-data");
         for (Mode mode : MODE_LIST) {
-            under(mode, () -> {
+            under(helper, mode, () -> {
                 for (Map.Entry<String, DataGenericRecipes<?>> e : tables().entrySet()) {
                     List<String> lines = new ArrayList<>();
                     for (GenericRecipe recipe : e.getValue().recipeOrderedList) lines.add(GenericRecipeCodec.describe(recipe));

@@ -73,7 +73,8 @@ public class AssemblyMachineRecipes extends DataGenericRecipes<GenericRecipe> {
         FluidType[] order = Fluids.getInNiceOrder();
         for (int i = 1; i < order.length; ++i) { // 1.7: from 1, skipping NONE
             FluidType type = order[i];
-            if (type == Fluids.NONE || !pack.allows(type)) continue;
+            // foreign types exist only once HBM met their fluid, so a pack row for one would depend on load timing
+            if (type == Fluids.NONE || type.isForeign() || !pack.allows(type)) continue;
             String suffix = "hbmfluid." + type.getName().toLowerCase(Locale.ROOT);
             rows.add(new GenericRecipe("ass.package" + suffix).setup(40, 100)
                     .inputItems(new ComparableStack(empty))

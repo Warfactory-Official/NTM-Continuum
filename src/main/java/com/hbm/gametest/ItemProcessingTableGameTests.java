@@ -165,6 +165,7 @@ public final class ItemProcessingTableGameTests {
             "13:29813af06f9064fa562f3bea790abe8be409a2092bb1a9c68a6edd19dbf7cb9c";
     private static final String EXPECTED_SILEX =
             "301:634886440f7395c720d7d6eeff14121453885f1b6ad55841af19f1ac13c0b46f";
+    /** Includes 1.7's registerPost ingot sweep row for copper ({@code #c:ingots/copper} to copper powder). */
     private static final String EXPECTED_SHREDDER =
-            "333:be4443000a813f22bc26d1d09d97ec6d3466d256ebc5af2845624d08c9972163";
+            "334:5f4f0473eda08edefd46dd4106b1b96a63f51ba5cec80fac7f692d6cc8a74af1";
 }

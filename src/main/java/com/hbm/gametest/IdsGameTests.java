@@ -400,7 +400,7 @@ public final class IdsGameTests {
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
 
         // the side table is exactly 1.7's order
-        FluidType[] all = Fluids.getAll();
+        FluidType[] all = FluidRecipeTableGameTests.registered();
         helper.assertTrue(all.length == LEGACY_ORDER.length, "1.7 had " + LEGACY_ORDER.length + " fluids, the port has " + all.length);
         for (int i = 0; i < LEGACY_ORDER.length; i++) {
             FluidType fluid = Fluids.byLegacyId(i);

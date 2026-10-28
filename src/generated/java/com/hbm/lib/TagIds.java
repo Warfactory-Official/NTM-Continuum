@@ -492,6 +492,7 @@ public final class TagIds {
     public static final String grips_wood = "#c:grips/wood";
     public static final String gunpowders = "#c:gunpowders";
     public static final String hbm_crowbar = "#hbm:crowbar";
+    public static final String hbm_hazard_demon_core_closed = "#hbm:hazard/demon_core_closed";
     public static final String hbm_melee_kit_swords = "#hbm:melee_kit_swords";
     public static final String hbm_music_discs = "#hbm:music_discs";
     public static final String hbm_raw_fishes = "#hbm:raw_fishes";

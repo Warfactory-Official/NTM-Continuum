@@ -71,8 +71,10 @@ public final class LootTableGameTests {
             for (ItemPool.Entry entry : ItemPool.getPool(pool)) {
                 if (entry.isEmpty()) continue;
                 double[] e = expected.computeIfAbsent(entry.template().getItem(), k -> new double[] {0, Integer.MAX_VALUE, 0});
-                e[0] += (double) entry.weight() / total;
-                e[1] = Math.min(e[1], entry.min());
+                // a count of 0 places nothing (1.7 too: a size-0 stack is no item)
+                double placed = entry.min() > 0 ? 1 : (double) entry.max() / (entry.max() + 1);
+                e[0] += (double) entry.weight() / total * placed;
+                e[1] = Math.min(e[1], Math.max(1, entry.min()));
                 e[2] = Math.max(e[2], entry.max());
             }
             Map<Item, int[]> seen = new HashMap<>();
@@ -176,14 +178,19 @@ public final class LootTableGameTests {
         helper.succeed();
     }
 
-    /** Half the time {@code scale * 2 + looting} meat, grilled when the glyphid burns. */
+    /**
+     * Half the time {@code scale * 2 + looting} meat, grilled when the glyphid burns. 1.7 {@code isBurning()} is false
+     * for a fire-immune mob, so Brenda and the nuclear glyphid drop raw meat even when set alight.
+     */
     private static void glyphid(GameTestHelper helper, List<String> failures, String id, int scale, int looting,
                                 DamageSource kill, ServerPlayer player) {
         int meat = scale * 2 + looting;
         roll(helper, id, kill, player, false).expect(failures, id + " looting " + looting, "hbm:glyphid_meat", meat / 2.0, 0, meat);
         Rolls burning = roll(helper, id, kill, player, true);
-        burning.expect(failures, id + " burning", "hbm:glyphid_meat_grilled", meat / 2.0, 0, meat);
-        burning.expect(failures, id + " burning", "hbm:glyphid_meat", 0, 0, 0);
+        boolean burns = !Entities.createDetached(Entities.byId(Constants.MOD_ID + ":" + id), helper.getLevel()).fireImmune();
+        String cooked = burns ? "hbm:glyphid_meat_grilled" : "hbm:glyphid_meat";
+        burning.expect(failures, id + " burning", cooked, meat / 2.0, 0, meat);
+        burning.expect(failures, id + " burning", burns ? "hbm:glyphid_meat" : "hbm:glyphid_meat_grilled", 0, 0, 0);
     }
 
     private static Rolls roll(GameTestHelper helper, String id, DamageSource source, @Nullable ServerPlayer player, boolean burning) {

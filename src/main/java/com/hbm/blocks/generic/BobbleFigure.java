@@ -10,17 +10,20 @@ public final class BobbleFigure {
 
     private BobbleFigure() {}
 
-    public enum Body { GUY, PELLET, FUMO, DRILLGON, LEAFIA, SKIN }
+    public enum Body { GUY, PELLET, FUMO, DRILLGON, LEAFIA, CLAWD, SKIN }
 
     // NONE STRENGTH PERCEPTION ENDURANCE CHARISMA INTELLIGENCE AGILITY LUCK BOB FRIZZLE PU238 VT DOC BLUEHAT PHEO
     // ADAM29 UFFR VAER NOS DRILLGON CIRNO MICROWAVE PEEP MELLOW ABEL MOVBLOCK LEAFIA HACKER6329 EOS GOLEM NORWOOD SILENTYETI
+    // CLAWD
     public static final String[] NAMES = {"NONE", "STRENGTH", "PERCEPTION", "ENDURANCE", "CHARISMA", "INTELLIGENCE",
             "AGILITY", "LUCK", "BOB", "FRIZZLE", "PU238", "VT", "DOC", "BLUEHAT", "PHEO", "ADAM29", "UFFR", "VAER", "NOS",
-            "DRILLGON", "CIRNO", "MICROWAVE", "PEEP", "MELLOW", "ABEL", "MOVBLOCK", "LEAFIA", "HACKER6329", "EOS", "GOLEM", "NORWOOD", "SILENTYETI"};
+            "DRILLGON", "CIRNO", "MICROWAVE", "PEEP", "MELLOW", "ABEL", "MOVBLOCK", "LEAFIA", "HACKER6329", "EOS", "GOLEM", "NORWOOD", "SILENTYETI",
+            "CLAWD"};
 
     /** {@code BobbleType.skinLayers}: false draws the 1.7 "17" single-layer parts. */
     private static final boolean[] LAYERS = {false, false, false, false, false, false, false, false, false, true, false,
-            true, true, true, true, true, false, true, true, false, true, true, true, true, true, true, false, true, true, true, true, true};
+            true, true, true, true, true, false, true, true, false, true, true, true, true, true, true, false, true, true, true, true, true,
+            false};
 
     public static int index(String name) {
         for (int i = 0; i < NAMES.length; i++) if (NAMES[i].equals(name)) return i;
@@ -53,6 +56,7 @@ public final class BobbleFigure {
             case "MELLOW" -> "trinkets/mellowrpg8";
             case "ABEL" -> "trinkets/abel";
             case "LEAFIA" -> "trinkets/leafia";
+            case "CLAWD" -> "trinkets/clawd";
             default -> "thegadget3_";
         };
     }
@@ -63,6 +67,7 @@ public final class BobbleFigure {
             case "UFFR" -> Body.FUMO;
             case "DRILLGON" -> Body.DRILLGON;
             case "LEAFIA" -> Body.LEAFIA;
+            case "CLAWD" -> Body.CLAWD;
             case "MOVBLOCK", "HACKER6329", "EOS", "GOLEM", "NORWOOD", "SILENTYETI" -> Body.SKIN; // 1.12.2 skinUuid != null
             default -> Body.GUY;
         };
