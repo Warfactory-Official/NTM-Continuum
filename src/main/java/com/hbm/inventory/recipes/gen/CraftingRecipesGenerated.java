@@ -78,8 +78,6 @@ public final class CraftingRecipesGenerated {
                 "A", TagIds.plates_aluminium, "S", TagIds.plates_steel);
         shaped(NS, "fluid_valve", ItemIds.fluid_valve, rows("S", "W"),
                 "S", VanillaIds.lever, "W", ItemIds.fluid_duct_paintable);
-        shaped(NS, "ams_core_wormhole_g1", ItemIds.ams_core_wormhole, rows("DPD", "PSP", "DPD"),
-                "D", ItemIds.plate_dineutronium, "P", ItemIds.powder_spark_mix, "S", ItemIds.singularity);
         shaped(NS, "ams_core_thingy", ItemIds.ams_core_thingy, rows("NSN", "NGN", "G G"),
                 "G", TagIds.ingots_gold, "N", TagIds.nuggets_gold, "S", ItemIds.battery_quantum);
         shapeless(NS, "geiger_counter", ItemIds.geiger_counter, ItemIds.geiger);
@@ -97,8 +95,6 @@ public final class CraftingRecipesGenerated {
                 "G", TagIds.plates_weaponsteel, "L", TagIds.ingots_any_rubber, "M", TagIds.mechanisms_weaponsteel);
         shaped(NS, "cargo_elevator", ItemIds.cargo_elevator, 3, rows("GGG", "SPS"),
                 "G", ItemIds.steel_grate, "P", ItemIds.part_generic_piston_hydraulic, "S", TagIds.ingots_steel);
-        shaped(NS, "ams_lens_g1", ItemIds.ams_lens, rows("PDP", "GDG", "PDP"),
-                "D", VanillaIds.diamond_block, "G", ItemIds.reinforced_glass, "P", ItemIds.plate_dineutronium);
         shaped(NS, "struct_watz_core", ItemIds.struct_watz_core, rows("CBC", "BHB", "CBC"),
                 "B", TagIds.plates_cast_any_resistant_alloy, "C", ItemIds.circuit_advanced, "H", ItemIds.watz_cooler);
         componentShaped(NS, "upgrade_crystallizer", stack(ItemIds.upgrade_crystallizer), rows("PHP", "CUC", "DTD"), key("C", item(ItemIds.barrel_steel)), key("D", item(ItemIds.motor)), key("H", item(ItemIds.circuit_advanced)), key("P", item(ItemIds.fluid_barrel).with(ComponentIds.fluid_amount, 16000).with(ComponentIds.fluid, "hbm:peroxide").remainder(ItemIds.fluid_barrel)), key("T", item(ItemIds.machine_transformer)), key("U", item(ItemIds.upgrade_centrifuge)));

@@ -378,13 +378,11 @@ public final class ModCraftingRecipes {
         smelt(NS, "ingot_copper_3", ItemIds.powder_copper, VanillaIds.copper_ingot, 1.0);
         smelt(NS, "ingot_copper_4", ItemIds.crystal_copper, VanillaIds.copper_ingot, 2.0, 2);
         smelt(NS, "ingot_desh", ItemIds.powder_desh, ItemIds.ingot_desh, 1.0);
-        smelt(NS, "ingot_desh_1", ItemIds.arc_electrode_burnt_desh, ItemIds.ingot_desh, 3.0);
         smelt(NS, "ingot_dineutronium", ItemIds.powder_dineutronium, ItemIds.ingot_dineutronium, 5.0);
         smelt(NS, "ingot_dura_steel", ItemIds.powder_dura_steel, ItemIds.ingot_dura_steel, 1.0);
         smelt(NS, "ingot_euphemium", ItemIds.powder_euphemium, ItemIds.ingot_euphemium, 10.0);
         smelt(NS, "ingot_firebrick_1", ItemIds.ball_fireclay, ItemIds.ingot_firebrick, 0.1);
         smelt(NS, "ingot_lanthanium", ItemIds.powder_lanthanium, ItemIds.ingot_lanthanium, 1.0);
-        smelt(NS, "ingot_lanthanium_1", ItemIds.arc_electrode_burnt_lanthanium, ItemIds.ingot_lanthanium, 3.0);
         smelt(NS, "ingot_lead", ItemIds.ore_lead, ItemIds.ingot_lead, 3.0);
         smelt(NS, "ingot_lead_1", ItemIds.powder_lead, ItemIds.ingot_lead, 1.0);
         smelt(NS, "ingot_lead_2", ItemIds.crystal_lead, ItemIds.ingot_lead, 2.0, 2);
@@ -400,7 +398,6 @@ public final class ModCraftingRecipes {
         smelt(NS, "ingot_polymer", ItemIds.powder_polymer, ItemIds.ingot_polymer, 1.0);
         smelt(NS, "ingot_ra226", ItemIds.powder_ra226, ItemIds.ingot_ra226, 1.0);
         smelt(NS, "ingot_red_copper_1", ItemIds.powder_red_copper, ItemIds.ingot_red_copper, 1.0);
-        smelt(NS, "ingot_saturnite", ItemIds.arc_electrode_burnt_saturnite, ItemIds.ingot_saturnite, 3.0);
         smelt(NS, "ingot_schrabidate", ItemIds.powder_schrabidate, ItemIds.ingot_schrabidate, 5.0);
         smelt(NS, "ingot_schrabidium_1", ItemIds.ore_schrabidium, ItemIds.ingot_schrabidium, 128.0);
         smelt(NS, "ingot_schrabidium_2", ItemIds.ore_nether_schrabidium, ItemIds.ingot_schrabidium, 256.0);

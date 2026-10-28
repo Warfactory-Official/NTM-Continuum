@@ -77,6 +77,7 @@ public final class HbmGameTestSuites {
             list.add(AddonContentGameTests.TESTS);
             list.add(GenericRecipeTableGameTests.TESTS);
             list.add(ItemProcessingTableGameTests.TESTS);
+            list.add(LootTableGameTests.TESTS);
             list.add(ValueMapGameTests.TESTS);
             list.add(RadiationDataGameTests.TESTS);
             list.add(AddonSeamGameTests.TESTS);

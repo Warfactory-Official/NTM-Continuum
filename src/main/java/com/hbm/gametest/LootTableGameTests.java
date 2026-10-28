@@ -30,6 +30,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -48,6 +50,8 @@ public final class LootTableGameTests {
             TESTS.function("loot_chest_tables_match_pools", 200, () -> LootTableGameTests::chestTablesMatchPools);
     public static final GameTests.Function STRUCTURE_FILL =
             TESTS.function("loot_structure_fill", 20, () -> LootTableGameTests::structureFill);
+    public static final GameTests.Function DRAW_TABLES =
+            TESTS.function("loot_draw_tables_for_lootr", 200, () -> LootTableGameTests::drawTablesForLootr);
     public static final GameTests.Function MOB_TABLES =
             TESTS.function("loot_mob_tables_match_formulas", 200, () -> LootTableGameTests::mobTablesMatchFormulas);
 
@@ -107,6 +111,42 @@ public final class LootTableGameTests {
         PoolLoot.fill(helper.getLevel(), helper.absolutePos(BlockPos.ZERO), chest, "POOL_MACHINE_PARTS", RandomSource.create(7L), 10);
         helper.assertFalse(chest.isEmpty(), "a structure fill from POOL_MACHINE_PARTS left the chest empty");
         helper.succeed();
+    }
+
+    /** Lootr's chest tables: one per pool and draw count, N draws give N times the items, a chest fills on opening. */
+    public static void drawTablesForLootr(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Vec3 origin = Vec3.atCenterOf(helper.absolutePos(BlockPos.ZERO));
+        List<String> missing = new ArrayList<>();
+        for (String pool : new TreeSet<>(ItemPool.POOLS.keySet())) {
+            if (!ChestLoot.exists(level, PoolLoot.table(pool))) continue;
+            for (int draws = 2; draws <= PoolLoot.MAX_TABLE_DRAWS; draws++) {
+                if (!ChestLoot.exists(level, PoolLoot.table(pool, draws))) missing.add(PoolLoot.table(pool, draws));
+            }
+        }
+        helper.assertTrue(missing.isEmpty(), "draw tables missing: " + missing);
+
+        RandomSource seeds = RandomSource.create(0x10075L);
+        double one = 0, eight = 0;
+        for (int i = 0; i < ROLLS; i++) one += items(ChestLoot.rollUnsplit(level, PoolLoot.table("POOL_MACHINE_PARTS"), origin, seeds.nextLong()));
+        for (int i = 0; i < ROLLS / 8; i++) eight += items(ChestLoot.rollUnsplit(level, PoolLoot.table("POOL_MACHINE_PARTS", 8), origin, seeds.nextLong()));
+        one /= ROLLS;
+        eight /= ROLLS / 8.0;
+        helper.assertTrue(Math.abs(eight - 8 * one) < 0.1 * 8 * one, "8 draws gave " + eight + " items, one draw " + one);
+
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, Blocks.CHEST);
+        RandomizableContainerBlockEntity chest = (RandomizableContainerBlockEntity) level.getBlockEntity(helper.absolutePos(pos));
+        PoolLoot.assignTable(level, chest, PoolLoot.table("POOL_MACHINE_PARTS", 10), 7L);
+        chest.unpackLootTable(null);
+        helper.assertFalse(chest.isEmpty(), "opening a chest holding a draw table left it empty");
+        helper.succeed();
+    }
+
+    private static int items(List<ItemStack> stacks) {
+        int n = 0;
+        for (ItemStack stack : stacks) n += stack.getCount();
+        return n;
     }
 
     public static void mobTablesMatchFormulas(GameTestHelper helper) {

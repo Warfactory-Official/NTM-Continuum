@@ -105,10 +105,6 @@ public final class ModShapedRecipes {
                 "C", TagIds.ingots_desh, "T", TagIds.ingots_titanium);
         shaped(NS, "arc_electrode_desh_1", ItemIds.arc_electrode_desh, rows("C", "T", "C"),
                 "C", TagIds.ingots_desh, "T", TagIds.ingots_tungsten);
-        shaped(NS, "arc_electrode_desh_titanium", ItemIds.arc_electrode_desh, rows("C", "T", "C"),
-                "C", TagIds.ingots_desh, "T", TagIds.ingots_titanium);
-        shaped(NS, "arc_electrode_desh_tungsten", ItemIds.arc_electrode_desh, rows("C", "T", "C"),
-                "C", TagIds.ingots_desh, "T", TagIds.ingots_tungsten);
         shaped(NS, "arc_electrode_graphite", ItemIds.arc_electrode, rows("C", "T", "C"),
                 "C", TagIds.ingots_graphite, "T", TagIds.bolts_steel);
         shaped(NS, "arc_electrode_graphite_coke", ItemIds.arc_electrode, rows("C", "T", "C"),
@@ -175,8 +171,7 @@ public final class ModShapedRecipes {
                 "#", ItemIds.nugget_australium_greater);
         shaped(NS, "billet_australium_lesser", ItemIds.billet_australium_lesser, rows("###", "###"),
                 "#", ItemIds.nugget_australium_lesser);
-        shaped(NS, "billet_beryllium", ItemIds.billet_beryllium, rows("###", "###"), "#", ItemIds.nugget_beryllium);
-        shaped(NS, "billet_beryllium_1", ItemIds.billet_beryllium, rows("###", "###"), "#", TagIds.nuggets_beryllium);
+        shaped(NS, "billet_beryllium", ItemIds.billet_beryllium, rows("###", "###"), "#", TagIds.nuggets_beryllium);
         shaped(NS, "billet_bismuth", ItemIds.billet_bismuth, rows("###", "###"), "#", ItemIds.nugget_bismuth);
         shaped(NS, "billet_co60", ItemIds.billet_co60, rows("###", "###"), "#", ItemIds.nugget_co60);
         shaped(NS, "billet_cobalt", ItemIds.billet_cobalt, rows("###", "###"), "#", ItemIds.nugget_cobalt);
@@ -204,15 +199,11 @@ public final class ModShapedRecipes {
         shaped(NS, "billet_pu_mix", ItemIds.billet_pu_mix, rows("###", "###"), "#", ItemIds.nugget_pu_mix);
         shaped(NS, "billet_ra226", ItemIds.billet_ra226, rows("###", "###"), "#", ItemIds.nugget_ra226);
         shaped(NS, "billet_schrabidium", ItemIds.billet_schrabidium, rows("###", "###"),
-                "#", ItemIds.nugget_schrabidium);
-        shaped(NS, "billet_schrabidium_1", ItemIds.billet_schrabidium, rows("###", "###"),
                 "#", TagIds.nuggets_schrabidium);
         shaped(NS, "billet_schrabidium_fuel", ItemIds.billet_schrabidium_fuel, rows("###", "###"),
                 "#", ItemIds.nugget_schrabidium_fuel);
-        shaped(NS, "billet_silicon", ItemIds.billet_silicon, rows("###", "###"), "#", ItemIds.nugget_silicon);
-        shaped(NS, "billet_silicon_1", ItemIds.billet_silicon, rows("###", "###"), "#", TagIds.nuggets_silicon);
-        shaped(NS, "billet_solinium", ItemIds.billet_solinium, rows("###", "###"), "#", ItemIds.nugget_solinium);
-        shaped(NS, "billet_solinium_1", ItemIds.billet_solinium, rows("###", "###"), "#", TagIds.nuggets_solinium);
+        shaped(NS, "billet_silicon", ItemIds.billet_silicon, rows("###", "###"), "#", TagIds.nuggets_silicon);
+        shaped(NS, "billet_solinium", ItemIds.billet_solinium, rows("###", "###"), "#", TagIds.nuggets_solinium);
         shaped(NS, "billet_sr90", ItemIds.billet_sr90, rows("###", "###"), "#", ItemIds.nugget_sr90);
         shaped(NS, "billet_technetium", ItemIds.billet_technetium, rows("###", "###"), "#", ItemIds.nugget_technetium);
         shaped(NS, "billet_th232", ItemIds.billet_th232, rows("###", "###"), "#", ItemIds.nugget_th232);
@@ -224,8 +215,7 @@ public final class ModShapedRecipes {
         shaped(NS, "billet_uranium", ItemIds.billet_uranium, rows("###", "###"), "#", ItemIds.nugget_uranium);
         shaped(NS, "billet_uranium_fuel", ItemIds.billet_uranium_fuel, rows("###", "###"),
                 "#", ItemIds.nugget_uranium_fuel);
-        shaped(NS, "billet_zirconium", ItemIds.billet_zirconium, rows("###", "###"), "#", ItemIds.nugget_zirconium);
-        shaped(NS, "billet_zirconium_1", ItemIds.billet_zirconium, rows("###", "###"), "#", TagIds.nuggets_zirconium);
+        shaped(NS, "billet_zirconium", ItemIds.billet_zirconium, rows("###", "###"), "#", TagIds.nuggets_zirconium);
         shaped(NS, "bj_boots", ItemIds.bj_boots, rows("N N", "BSB"),
                 "N", ItemIds.plate_armor_lunar, "S", ItemIds.starmetal_boots, "B", ItemIds.block_starmetal);
         shaped(NS, "bj_helmet", ItemIds.bj_helmet, rows("SBS", " C ", " I "),
@@ -1181,7 +1171,6 @@ public final class ModShapedRecipes {
                 "S", TagIds.plates_cast_steel);
         shaped(NS, "pin", ItemIds.pin, rows("W ", " W", " W"), "W", TagIds.wires_copper);
         shaped(NS, "pink_slab", ItemIds.pink_slab, 6, rows("###"), "#", ItemIds.pink_planks);
-        shaped(NS, "pink_slab_1", ItemIds.pink_slab, 6, rows("WWW"), "W", ItemIds.pink_planks);
         // 1.7 registers two identical pink-plank stair patterns: BlockGenericStairs.recipeGen (x4, CraftingManager:94)
         // first and CraftingManager:633 (x6) later; the first match wins, so 1.7 yields 4 and the x6 is unreachable.
         shaped(NS, "pink_stairs", ItemIds.pink_stairs, 4, rows("#  ", "## ", "###"), "#", ItemIds.pink_planks);
@@ -1310,9 +1299,6 @@ public final class ModShapedRecipes {
                 "G", TagIds.ingots_boron, "R", ItemIds.rbmk_blank);
         shaped(NS, "rbmk_blank", ItemIds.rbmk_blank, rows("RRR", "R R", "RRR"), "R", ItemIds.deco_rbmk);
         shaped(NS, "rbmk_blank_1", ItemIds.rbmk_blank, rows("RRR", "R R", "RRR"), "R", ItemIds.deco_rbmk_smooth);
-        shaped(NS, "rbmk_blank_from_deco", ItemIds.rbmk_blank, rows("RRR", "R R", "RRR"), "R", ItemIds.deco_rbmk);
-        shaped(NS, "rbmk_blank_from_deco_smooth", ItemIds.rbmk_blank, rows("RRR", "R R", "RRR"),
-                "R", ItemIds.deco_rbmk_smooth);
         requires(shaped(NS, "rbmk_boiler", ItemIds.rbmk_boiler, rows("CPC", "CRC", "CPC"),
                 "C", TagIds.pipes_copper, "P", TagIds.shells_copper, "R", ItemIds.rbmk_blank), "!enable_528");
         requires(shaped(NS, "rbmk_console", ItemIds.rbmk_console, rows("BBB", "DGD", "DCD"),
@@ -1340,8 +1326,6 @@ public final class ModShapedRecipes {
                 "P", TagIds.plates_steel, "L", ItemIds.glass_lead, "B", ItemIds.glass_boron);
         shaped(NS, "rbmk_lid_glass_1", ItemIds.rbmk_lid_glass, 4, rows("BBB", "LLL", "P P"),
                 "P", TagIds.plates_steel, "L", ItemIds.glass_lead, "B", ItemIds.glass_boron);
-        shaped(NS, "rbmk_lid_glass_boron_over_lead", ItemIds.rbmk_lid_glass, 4, rows("BBB", "LLL", "P P"),
-                "L", ItemIds.glass_lead, "B", ItemIds.glass_boron, "P", TagIds.plates_steel);
         shaped(NS, "rbmk_moderator", ItemIds.rbmk_moderator, rows(" G ", "GRG", " G "),
                 "G", TagIds.storage_blocks_graphite, "R", ItemIds.rbmk_blank);
         shaped(NS, "rbmk_outgasser", ItemIds.rbmk_outgasser, rows("GHG", "GRG", "GTG"),

@@ -3,9 +3,11 @@ package com.hbm.recipes.data;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.hbm.Constants;
 import com.hbm.itempool.ItemPool.PoolFile;
 import com.hbm.itempool.ItemPool.Row;
 import com.hbm.itempool.PoolFill;
+import com.hbm.itempool.PoolLoot;
 import dev.golem.core.Ids;
 import dev.golem.core.world.DataSource;
 import java.util.Map;
@@ -41,7 +43,27 @@ public final class ChestLootSource extends DataSource<JsonObject> {
         for (Map.Entry<String, PoolFile> pool : new ItemPoolSource().rows().entrySet()) {
             String id = pool.getKey().startsWith(PREFIX) ? pool.getKey().substring(PREFIX.length()) : pool.getKey();
             register(id, table(pool.getValue()));
+            for (int draws = 2; draws <= PoolLoot.MAX_TABLE_DRAWS; draws++) register(id + "/x" + draws, draws(id, draws));
         }
+    }
+
+    /** {@code draws} rolls of the pool's own table, for a container that is filled when first opened. */
+    private static JsonObject draws(String id, int draws) {
+        JsonObject entry = new JsonObject();
+        entry.addProperty("type", "minecraft:loot_table");
+        entry.addProperty("value", Constants.MOD_ID + ":chests/" + id);
+        JsonArray entries = new JsonArray();
+        entries.add(entry);
+        JsonObject lootPool = new JsonObject();
+        lootPool.addProperty("rolls", draws);
+        lootPool.addProperty("bonus_rolls", 0);
+        lootPool.add("entries", entries);
+        JsonArray pools = new JsonArray();
+        pools.add(lootPool);
+        JsonObject table = new JsonObject();
+        table.addProperty("type", "minecraft:chest");
+        table.add("pools", pools);
+        return table;
     }
 
     private static JsonObject table(PoolFile pool) {

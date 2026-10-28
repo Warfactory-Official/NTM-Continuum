@@ -9,14 +9,12 @@ import com.hbm.world.gen.LegacyDungeonBlocks.Blocks;
 import com.hbm.world.gen.LegacyDungeonBlocks.ModBlocks;
 import com.hbm.world.gen.component.LegacyBlock;
 import com.hbm.world.gen.nbt.LegacyStructurePalette;
-import dev.golem.core.registry.BlockEntities;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EntityType;
@@ -437,13 +435,7 @@ public final class LegacyDungeonWorld {
             if (be instanceof Container container) {
                 for (Fill fill : tile.fills) PoolLoot.fill(level, pos, container, fill.pool(), RandomSource.create(fill.seed()), fill.count());
             }
-            if (tile.lootTable != null) {
-                // the vanilla keys every supported version reads a lootable container's table from
-                CompoundTag tag = new CompoundTag();
-                tag.putString("LootTable", tile.lootTable);
-                tag.putLong("LootTableSeed", tile.lootSeed);
-                BlockEntities.loadWithComponents(be, tag, level.registryAccess());
-            }
+            if (tile.lootTable != null) PoolLoot.assignTable(level, be, tile.lootTable, tile.lootSeed);
             if (tile.spawner != null && be instanceof SpawnerBlockEntity spawner) {
                 EntityType.byString(tile.spawner).ifPresent(type -> spawner.setEntityId(type, level.getRandom()));
             }

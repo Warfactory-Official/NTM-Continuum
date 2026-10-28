@@ -505,10 +505,6 @@ public final class ModShapelessRecipes {
         shapeless(NS, "gunpowder", VanillaIds.gunpowder, 3, TagIds.dusts_sulfur, TagIds.dusts_niter, TagIds.gems_coal);
         shapeless(NS, "gunpowder_1", VanillaIds.gunpowder, 3,
                 TagIds.dusts_sulfur, TagIds.dusts_niter, VanillaIds.charcoal);
-        shapeless(NS, "gunpowder_2", VanillaIds.gunpowder, 3,
-                TagIds.dusts_sulfur, TagIds.dusts_niter, TagIds.gems_coal);
-        shapeless(NS, "gunpowder_3", VanillaIds.gunpowder, 3,
-                TagIds.dusts_sulfur, TagIds.dusts_niter, VanillaIds.charcoal);
         shapeless(NS, "ingot_am_mix_2", ItemIds.ingot_am_mix,
                 TagIds.nuggets_am241, TagIds.nuggets_am241, TagIds.nuggets_am241, TagIds.nuggets_am242,
                 TagIds.nuggets_am242, TagIds.nuggets_am242, TagIds.nuggets_am242, TagIds.nuggets_am242,
