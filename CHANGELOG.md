@@ -3,6 +3,61 @@
 Each release has a `## <version>` section; the release workflow uploads only the section matching
 `mod.version` in gradle.properties.
 
+## 1.0.3
+
+Requires Golem Core 1.0.3. Use GemRender 0.1.20; older versions are refused.
+
+### Added
+- NTM: Decentralized Edition worlds convert on first load (1.21.1 NeoForge): blocks, machines, items, players,
+  advancements, duct networks, satellites and Sable airships, with a backup first. Anything that cannot be converted is
+  kept in `data/hbm_de_leftovers.dat`.
+- 1.7 X5860: the fluid burner's overdrive slot and burn-rate slider, the calculator as a QMAW browser, Redstone-over-Radio
+  on every launcher, the Lambda and Soyuz pads and the satellite linker, and the spy satellite's `findplayer`.
+- Rock mill rows for sculk and sculk veins.
+- Paint and rebar take the colour of the clicked concrete.
+- The Clawd bobblehead, made in the assembly machine.
+- A creative battery in the battery socket shows the chuddie figure holding an energy ball.
+- Lootr support: structure chests and barrels keep a loot table, so Lootr converts them.
+- Search bars match through Just Enough Characters (pinyin) when it is installed.
+- Plushie compression and battery socket centrepieces for addons.
+- Updated Japanese translation (thanks Twister716).
+
+### Fixed
+- A server whose `hbm.cfg` recipe switches differed from the client's hid recipe rows in the viewer and machine selectors.
+- Wind charges destroyed multiblock machines on 1.21.1.
+- The 1.21.1 client hung on world exit while terrain was still generating.
+- The templates tab listed the uncraftable multi fluid identifier instead of 1.7's craftable one.
+- Volcanic lava makes 1.7's basalt ores again and turns any diamond ore, deepslate included, into gem ore.
+- Guns in the offhand were drawn inside out.
+- The Torex shock ring follows the terrain again; rotated multiblocks kept unrotated hitboxes, and the ore slopper could
+  not be placed facing along X.
+- The Target Pistol's durability and ammo HUD was missing.
+- Other mods' pipes could not reach 1.20.1 Forge multiblocks through their ports.
+- The supply crate drops itself with its contents; the B92 is 1.7's model in 1.7's hand position.
+- The catalytic cracker's hitbox, and the swapped ducrete and ducrete tile names.
+- The blinking CRT draws one frame of its strip, the splitter item shows both lanes, and the crucible and seven other
+  machines hold one item per slot as in 1.7. Material and shape names are translatable.
+- Untyped tanks and barrels take the fluid of a container in their load slot; foundry mold melt draws with depth.
+- A machine port change could load unloading chunks and hang the server.
+- 18 duplicate crafting and smelting recipes; structure loot counts on 1.20.1 were capped at the stack size.
+- 1.7 X5860's fixes: pneumatic storage dupes and desyncs, wand, radar and balefire hardening, fluid tank connections on
+  its long sides only, the Orbus top, the ore slopper, turbofan redstone and the electrolyser's input-only ports.
+- Text and stack panels drawn over a menu's slot items sat under them before 26.1.
+- The particle source fired a whole stacked input as one particle; it takes one capsule per shot.
+- The fluid burner's tooltip still said it is set with a screwdriver.
+- A crate opened from the hand could take the wrong layout or lock the wrong hotbar slot if the selection changed while
+  it opened.
+- Barrels placed from an item, or reloaded below 1.20.5, could keep an earlier exact fluid or identifier pin.
+- Dropped-item effects (rags, singularities, cells, antimatter, the demon core) ran from a scan of every loaded entity on
+  Fabric and 1.20.1 Forge; they run after each item's own tick.
+- The refueler was a 12-pixel slab instead of 1.7's 4-pixel wall.
+- Other players' jetpacks showed a stale state after coming into view, and their thrust key was not synced.
+- A cargo elevator placed from a picked-up stack builds all its courses, and needs room for them.
+- Large explosions had no shockwave; it is drawn 2 blocks up and fades as in 1.7.
+- The hand drill removes a burner or electric press's dummy blocks, bomber and C-130 loops play under the Players
+  volume, gneiss gas holds 50 mB of petroleum in 528 mode, the sawmill takes only single items from automation and
+  jetpack exhaust moves as in 1.7.
+
 ## 1.0.2
 
 Requires Golem Core 1.0.2. Use GemRender 0.1.18.
@@ -21,18 +76,6 @@ Requires Golem Core 1.0.2. Use GemRender 0.1.18.
 - Raw aluminium makes fireclay; `any_rubber` accepts latex.
 
 ### Fixed
-- A crate opened from the hand could take the wrong layout or lock the wrong hotbar slot if the selection changed while
-  it opened.
-- Barrels placed from an item, or reloaded below 1.20.5, could keep an earlier exact fluid or identifier pin.
-- Dropped-item effects (rags, singularities, cells, antimatter, the demon core) ran from a scan of every loaded entity on
-  Fabric and 1.20.1 Forge; they run after each item's own tick.
-- The refueler was a 12-pixel slab instead of 1.7's 4-pixel wall.
-- Other players' jetpacks showed a stale state after coming into view, and their thrust key was not synced.
-- A cargo elevator placed from a picked-up stack builds all its courses, and needs room for them.
-- Large explosions had no shockwave; it is drawn 2 blocks up and fades as in 1.7.
-- The hand drill removes a burner or electric press's dummy blocks, bomber and C-130 loops play under the Players
-  volume, gneiss gas holds 50 mB of petroleum in 528 mode, the sawmill takes only single items from automation and
-  jetpack exhaust moves as in 1.7.
 - Nuked uranium ore turned into radon instead of sellafite ore; mined uranium ore and ancient scrap dropped nothing
   before 26.1.
 - Held crates: crates picked up while one was open joined its stack and copied its contents (dupe); crates no longer
