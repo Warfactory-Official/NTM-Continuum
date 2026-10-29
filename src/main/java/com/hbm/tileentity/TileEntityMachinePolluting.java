@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Map;
-
 import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
 
 /**
@@ -62,9 +61,7 @@ public abstract class TileEntityMachinePolluting extends TileEntityMachineBase i
         }
     }
 
-    /**
-     * {@code amount} of the fluid burned or spilled, scaled by each entry of its pollution table.
-     */
+    /** {@code amount} of the fluid burned or spilled, scaled by each entry of its pollution table. */
     public void pollute(FluidType type, FluidReleaseType release, float amount) {
         FT_Polluting trait = type.getTrait(FT_Polluting.class);
         if (trait == null) return;

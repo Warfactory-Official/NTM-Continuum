@@ -13,10 +13,8 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.util.BobMathUtil;
 import dev.golem.core.Ids;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -24,7 +22,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.text.DecimalFormat;
-
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -33,9 +30,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class Library {
 
-    /**
-     * {@code hbm:<path>}; the ntm-next spelling kept by the copied entity classes.
-     */
+    /** {@code hbm:<path>}; the ntm-next spelling kept by the copied entity classes. */
     public static Identifier id(String path) {
         return Ids.of(Constants.MOD_ID, path);
     }
@@ -49,9 +44,7 @@ public final class Library {
         return parseId(ref, "", "");
     }
 
-    /**
-     * {@link #parseId(String)} with {@code prefix} and {@code suffix} around the path (asset paths, e.g. textures).
-     */
+    /** {@link #parseId(String)} with {@code prefix} and {@code suffix} around the path (asset paths, e.g. textures). */
     public static Identifier parseId(String ref, String prefix, String suffix) {
         int colon = ref.indexOf(':');
         String namespace = colon < 0 ? Constants.MOD_ID : ref.substring(0, colon);
@@ -60,8 +53,7 @@ public final class Library {
     }
 
 
-    private Library() {
-    }
+    private Library() {}
 
     /**
      * Abbreviated number for GUIs. 1.7 has no {@code Library.getShortNumber}; every 1.7 GUI calls
@@ -74,18 +66,14 @@ public final class Library {
 
     private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("0.##");
 
-    /**
-     * A red to green progress colour (RGB int, no blue), ported from 1.12.2 {@code Library.getColorProgress}.
-     */
+    /** A red to green progress colour (RGB int, no blue), ported from 1.12.2 {@code Library.getColorProgress}. */
     public static int getColorProgress(double fraction) {
         int r = (int) (255 * Math.min(1, fraction * -2 + 2));
         int g = (int) (255 * Math.min(1, fraction * 2));
         return 65536 * r + 256 * g;
     }
 
-    /**
-     * A 2-decimal percentage string for a 0..1 fraction (e.g. {@code 0.5 -> "50"}).
-     */
+    /** A 2-decimal percentage string for a 0..1 fraction (e.g. {@code 0.5 -> "50"}). */
     public static String getPercentage(double fraction) {
         return PERCENT_FORMAT.format(fraction * 100D);
     }
@@ -146,31 +134,23 @@ public final class Library {
     // From the 1.12.2 Library, IBatteryItem only (the Forge-Energy / FE branch is not ported). These drive
     // the "battery in slot 0" power input every HBM machine uses.
 
-    /**
-     * Whether {@code stack} is an HBM battery item (can store HE).
-     */
+    /** Whether {@code stack} is an HBM battery item (can store HE). */
     public static boolean isBattery(ItemStack stack) {
         return !stack.isEmpty() && stack.getItem() instanceof IBatteryItem;
     }
 
-    /**
-     * Whether {@code stack} is a machine upgrade module (1.12.2 {@code Library.isMachineUpgrade}).
-     */
+    /** Whether {@code stack} is a machine upgrade module (1.12.2 {@code Library.isMachineUpgrade}). */
     public static boolean isMachineUpgrade(ItemStack stack) {
         return !stack.isEmpty() && stack.getItem() instanceof ItemMachineUpgrade;
     }
 
-    /**
-     * Whether {@code stack} is a battery with charge left and a non-zero discharge rate.
-     */
+    /** Whether {@code stack} is a battery with charge left and a non-zero discharge rate. */
     public static boolean isDischargeableBattery(ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof IBatteryItem battery)) return false;
         return battery.getCharge(stack) > 0 && battery.getDischargeRate(stack) > 0;
     }
 
-    /**
-     * Whether {@code stack} is a battery item that is fully drained.
-     */
+    /** Whether {@code stack} is a battery item that is fully drained. */
     public static boolean isEmptyBattery(ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof IBatteryItem battery)) return false;
         return battery.getCharge(stack) <= 0;
@@ -234,9 +214,7 @@ public final class Library {
         return power - moved;
     }
 
-    /**
-     * FNV-1a 64-bit hash over a byte array; used to dedupe identical per-tick sync packets.
-     */
+    /** FNV-1a 64-bit hash over a byte array; used to dedupe identical per-tick sync packets. */
     public static long fnv1a64(byte[] data) {
         long hash = 0xcbf29ce484222325L;
         for (byte b : data) {
@@ -245,10 +223,7 @@ public final class Library {
         }
         return hash;
     }
-
-    /**
-     * ntm-next: the integer block columns along {@code vec0} from (x,y,z), with the step index as the 4th slot.
-     */
+    /** ntm-next: the integer block columns along {@code vec0} from (x,y,z), with the step index as the 4th slot. */
     public static List<int[]> getBlockPosInPath(int x, int y, int z, int length, Vec3 vec0) {
         List<int[]> list = new ArrayList<>();
         for (int i = 0; i <= length; i++) {

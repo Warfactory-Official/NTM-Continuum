@@ -2,12 +2,10 @@ package com.hbm.blocks.multiblock;
 
 import com.hbm.capability.CapRole;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,17 +17,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Resolves folded cells to their owning core without the old metadata chain.
- */
+/** Resolves folded cells to their owning core without the old metadata chain. */
 public final class MultiblockSurface {
 
     private static long @Nullable [] clientCandidates;
     private static int clientCandidateRegistrySize;
     private static @Nullable BlockPos clientCoreHint;
 
-    private MultiblockSurface() {
-    }
+    private MultiblockSurface() {}
 
     public static @Nullable BlockMultiblockCore foldedCore(BlockState state) {
         return state.getBlock() instanceof BlockMultiblockCore core && !core.isCellState(state) ? core : null;
@@ -102,14 +97,11 @@ public final class MultiblockSurface {
         return null;
     }
 
-    /**
-     * How far around a queried position a section-compile region can always read (one section minus the cell).
-     */
+    /** How far around a queried position a section-compile region can always read (one section minus the cell). */
     public static final int REGION_REACH = 15;
 
     private static int reach(long delta) {
-        return Math.max(Math.abs(BlockPos.getX(delta)),
-                Math.max(Math.abs(BlockPos.getY(delta)), Math.abs(BlockPos.getZ(delta))));
+        return Math.max(Math.abs(BlockPos.getX(delta)), Math.max(Math.abs(BlockPos.getY(delta)), Math.abs(BlockPos.getZ(delta))));
     }
 
     private static boolean withinReach(BlockPos a, BlockPos b) {
@@ -151,9 +143,9 @@ public final class MultiblockSurface {
         long[] sorted = deltas.toLongArray();
         // nearest first: a section-compile region answers those without a range check (see clientCoreOf)
         return Arrays.stream(sorted).boxed()
-                     .sorted(Comparator.comparingInt(MultiblockSurface::reach)
-                                       .thenComparingLong(Long::longValue))
-                     .mapToLong(Long::longValue).toArray();
+                .sorted(Comparator.comparingInt(MultiblockSurface::reach)
+                        .thenComparingLong(Long::longValue))
+                .mapToLong(Long::longValue).toArray();
     }
 
     public static @Nullable BlockPos coreOfAny(BlockGetter level, BlockPos pos) {
@@ -188,9 +180,7 @@ public final class MultiblockSurface {
                 BlockMultiblockCore.PASSIVE_NONE, role);
     }
 
-    /**
-     * {@link BlockMultiblockCore#carriesPassiveAt} reached through any cell of the machine.
-     */
+    /** {@link BlockMultiblockCore#carriesPassiveAt} reached through any cell of the machine. */
     public static boolean carriesPassive(BlockGetter level, BlockPos pos, int domains) {
         BlockMultiblockCore.FoldedOwner owner = ownerOf(level, pos);
         if (owner == null) {
@@ -204,9 +194,7 @@ public final class MultiblockSurface {
                 pos.getY() - core.getY(), pos.getZ() - core.getZ(), domains);
     }
 
-    /**
-     * The passive accept surface alone. This is the item route's question; see {@code isPassiveOnlyOpenAt}.
-     */
+    /** The passive accept surface alone. This is the item route's question; see {@code isPassiveOnlyOpenAt}. */
     public static boolean isPassiveOpen(Level level, BlockPos pos, Direction side, int passiveDomains) {
         BlockMultiblockCore.FoldedOwner owner = ownerOf(level, pos);
         if (owner == null) {

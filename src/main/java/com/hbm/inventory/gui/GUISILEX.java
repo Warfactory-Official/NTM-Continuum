@@ -10,9 +10,7 @@ import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.tileentity.machine.TileEntitySILEX;
 import dev.golem.core.gui.MouseInput;
-
 import java.awt.Color;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -95,9 +93,7 @@ public class GUISILEX extends CompatContainerScreen<ContainerSILEX> {
 
     public static float waveCoefficient = 0.0125F;
 
-    /**
-     * The wavelength controls the frequency of the emitted GUI waveform.
-     */
+    /** The wavelength controls the frequency of the emitted GUI waveform. */
     public static float waveFrequency(EnumWavelengths mode) {
         return waveCoefficient * (float) Math.pow(2, mode.strength());
     }
@@ -133,9 +129,7 @@ public class GUISILEX extends CompatContainerScreen<ContainerSILEX> {
         }
     }
 
-    /**
-     * Hue cycling on the world clock, as the old {@code Color.HSBtoRGB(time / divisor, 0.5F, b)}.
-     */
+    /** Hue cycling on the world clock, as the old {@code Color.HSBtoRGB(time / divisor, 0.5F, b)}. */
     private static int rainbow(long time, float divisor, float brightness) {
         return Color.HSBtoRGB(time / divisor, 0.5F, brightness) & 0xFFFFFF;
     }
@@ -152,8 +146,7 @@ public class GUISILEX extends CompatContainerScreen<ContainerSILEX> {
         Component title = this.title;
         int titleX = this.imageWidth / 2 - this.font.width(title) / 2 - 54;
         GuiDraw.text(graphics, this.font, title, titleX, 8, 0xFF404040, false);
-        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY,
-                0xFF404040, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
 
         TileEntitySILEX te = this.menu.getSilex();
         if (te != null && te.mode != EnumWavelengths.NULL) {
@@ -169,8 +162,8 @@ public class GUISILEX extends CompatContainerScreen<ContainerSILEX> {
 
         if (this.isHovering(TANK_X, TANK_Y, TANK_W, TANK_H, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font, List.of(
-                            te.tank.getTankType().clientMetadata().getDisplayName(),
-                            Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")),
+                    te.tank.getTankType().clientMetadata().getDisplayName(),
+                    Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")),
                     Optional.empty(), mouseX, mouseY);
         } else if (te.current != null && this.isHovering(POOL_X + 1, POOL_TOP, POOL_W, POOL_H, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font, List.of(

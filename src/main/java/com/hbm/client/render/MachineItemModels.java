@@ -1,7 +1,5 @@
 package com.hbm.client.render;
 
-import dev.golem.core.world.ItemModels;
-
 //? if <26.1 {
 
 /*import com.google.gson.JsonElement;
@@ -11,6 +9,7 @@ import com.hbm.Constants;
 import com.hbm.items.ModDataComponents;
 import com.hbm.client.model.WavefrontObj;
 import dev.golem.core.render.gem.Surface;
+import dev.golem.core.world.ItemModels;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;

@@ -10,9 +10,7 @@ import com.hbm.itempool.PoolFill;
 import com.hbm.itempool.PoolLoot;
 import dev.golem.core.Ids;
 import dev.golem.core.world.DataSource;
-
 import java.util.Map;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -86,18 +84,14 @@ public final class ChestLootSource extends DataSource<JsonObject> {
         return table;
     }
 
-    /**
-     * False where {@code ItemPool} skips the row: an item this port has not registered, or a fluid it cannot hold.
-     */
+    /** False where {@code ItemPool} skips the row: an item this port has not registered, or a fluid it cannot hold. */
     private static boolean kept(Row row) {
         Identifier id = Ids.parse(row.item());
         if (!BuiltInRegistries.ITEM.containsKey(id)) return false;
         return row.fluid() == null || PoolFill.fills(BuiltInRegistries.ITEM.getValue(id), row.fluid());
     }
 
-    /**
-     * In {@code ItemPool.Row}'s order: the fluid fill (it may change the item), then the components, then the count.
-     */
+    /** In {@code ItemPool.Row}'s order: the fluid fill (it may change the item), then the components, then the count. */
     private static JsonObject entry(Row row) {
         JsonObject entry = new JsonObject();
         if (row.item() == null) {

@@ -22,15 +22,11 @@ import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import net.minecraft.world.level.GameType;
 
-/**
- * GameTests for the gas turbine's layout, ports, startup, menu, and assembly recipe.
- */
+/** GameTests for the gas turbine's layout, ports, startup, menu, and assembly recipe. */
 public final class GasTurbineGameTests {
-    private GasTurbineGameTests() {
-    }
+    private GasTurbineGameTests() {}
 
     public static void layout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
@@ -56,9 +52,7 @@ public final class GasTurbineGameTests {
         helper.assertTrue(block.canConnect(helper.getLevel(), powerCell, ForgeDirection.EAST),
                 "Gas turbine must expose its power port");
         BlockPos fuelCell = helper.absolutePos(new BlockPos(4, 1, 4));
-        helper.assertTrue(
-                block.canConnect(Fluids.GAS, helper.getLevel(), fuelCell.getX(), fuelCell.getY(), fuelCell.getZ(),
-                        ForgeDirection.SOUTH),
+        helper.assertTrue(block.canConnect(Fluids.GAS, helper.getLevel(), fuelCell.getX(), fuelCell.getY(), fuelCell.getZ(), ForgeDirection.SOUTH),
                 "Gas turbine must expose its gas port");
         helper.assertFalse(block.canConnect(helper.getLevel(), helper.absolutePos(core), ForgeDirection.EAST),
                 "Gas turbine core must not expose a false cable port");
@@ -102,16 +96,14 @@ public final class GasTurbineGameTests {
 
         sync(helper, turbine, client);
         helper.assertTrue(client.state == 0 && guiAllowsIgnition(client), "Idle turbine GUI must allow start");
-        helper.assertTrue(menu.clickMenuButton(player, 0) && turbine.state == -1,
-                "Start button must enter startup (-1)");
+        helper.assertTrue(menu.clickMenuButton(player, 0) && turbine.state == -1, "Start button must enter startup (-1)");
 
         for (int i = 1; i <= 579; i++) {
             tick(helper, core, turbine);
             sync(helper, turbine, client);
             if (i == 300) helper.assertFalse(guiAllowsIgnition(client), "GUI must block the button mid-startup");
         }
-        helper.assertTrue(turbine.state == -1 && turbine.counter == 579,
-                "Tick 579 must still be startup at counter 579");
+        helper.assertTrue(turbine.state == -1 && turbine.counter == 579, "Tick 579 must still be startup at counter 579");
         tick(helper, core, turbine);
         sync(helper, turbine, client);
         helper.assertTrue(turbine.state == 1 && turbine.counter == 225 && turbine.rpm == turbine.rpmIdle
@@ -144,20 +136,16 @@ public final class GasTurbineGameTests {
         helper.succeed();
     }
 
-    /**
-     * 1.7 {@code GUIMachineTurbineGas.mouseClicked}: the ignition button only sends at counter 0 or 579.
-     */
+    /** 1.7 {@code GUIMachineTurbineGas.mouseClicked}: the ignition button only sends at counter 0 or 579. */
     private static boolean guiAllowsIgnition(TileEntityMachineTurbineGas client) {
         return client.counter == 0 || client.counter == 579;
     }
 
     private static void tick(GameTestHelper helper, BlockPos core, TileEntityMachineTurbineGas turbine) {
-        TileEntityMachineTurbineGas.serverTick(helper.getLevel(), helper.absolutePos(core), turbine.getBlockState(),
-                turbine);
+        TileEntityMachineTurbineGas.serverTick(helper.getLevel(), helper.absolutePos(core), turbine.getBlockState(), turbine);
     }
 
-    private static void sync(GameTestHelper helper, TileEntityMachineTurbineGas server,
-                             TileEntityMachineTurbineGas client) {
+    private static void sync(GameTestHelper helper, TileEntityMachineTurbineGas server, TileEntityMachineTurbineGas client) {
         var buf = GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
         server.serialize(buf);
         client.deserialize(buf);

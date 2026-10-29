@@ -36,8 +36,8 @@ public final class FluidContainerSource extends DataMapSource<Container> {
         container("hbm:lox_barrel", "hbm:tank_steel", "hbm:oxygen", 10000);
 
         container("hbm:ore_oil", null, "hbm:oil", 250);
-        // 1.7: GeneralConfig.enable528 ? 50 : 250 (the default)
-        container("hbm:ore_gneiss_gas", null, "hbm:petroleum", 250);
+        // 1.7: GeneralConfig.enable528 ? 50 : 250
+        put("hbm:ore_gneiss_gas", new Container("hbm:petroleum", 250, Optional.empty(), Optional.of(50)));
 
         container("hbm:bottle_mercury", "minecraft:glass_bottle", "hbm:mercury", 1000);
         // 1.7 ingot_mercury is the port's nugget_mercury

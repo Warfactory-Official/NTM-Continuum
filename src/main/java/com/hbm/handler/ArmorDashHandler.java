@@ -3,15 +3,11 @@ package com.hbm.handler;
 import com.hbm.interfaces.IArmorModDash;
 import com.hbm.items.armor.ArmorFSB;
 import com.hbm.sound.ModSounds;
-import dev.golem.core.world.Sounds;
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
-
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -32,32 +28,23 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class ArmorDashHandler {
 
-    private ArmorDashHandler() {
-    }
+    private ArmorDashHandler() {}
 
-    /**
-     * 1.7 {@code HbmPlayerProps.dashCooldownLength}.
-     */
+    /** 1.7 {@code HbmPlayerProps.dashCooldownLength}. */
     public static final int DASH_COOLDOWN_LENGTH = 5;
-    /**
-     * Stamina per dash.
-     */
+    /** Stamina per dash. */
     public static final int PER_DASH = 30;
 
     private static Supplier<SoundEvent> dashSound = ModSounds.WEAPON_ROCKET_FLAME::get;
     private static Supplier<SoundEvent> rechargeSound = ModSounds.TECH_BOOP::get;
 
-    /**
-     * An addon can supply its authored dash and stamina-refill events.
-     */
+    /** An addon can supply its authored dash and stamina-refill events. */
     public static void sounds(Supplier<SoundEvent> dash, Supplier<SoundEvent> recharge) {
         dashSound = dash;
         rechargeSound = recharge;
     }
 
-    /**
-     * One side's copy of upstream's dash props.
-     */
+    /** One side's copy of upstream's dash props. */
     public static final class State {
         public boolean keyPressed;
         public int dashCooldown;
@@ -72,9 +59,7 @@ public final class ArmorDashHandler {
         return (player.level().isClientSide() ? CLIENT : SERVER).computeIfAbsent(player.getUUID(), id -> new State());
     }
 
-    /**
-     * The key state as reported by the keybind (server) or read locally (client).
-     */
+    /** The key state as reported by the keybind (server) or read locally (client). */
     public static void setKeyPressed(Player player, boolean pressed) {
         state(player).keyPressed = pressed;
     }
@@ -91,13 +76,12 @@ public final class ArmorDashHandler {
             if (chestplate != null) armorDashCount = chestplate.dashCount;
         }
 
-        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST,
+        for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST,
                 EquipmentSlot.HEAD}) {
             ItemStack armor = player.getItemBySlot(slot);
             if (armor.isEmpty() || !ArmorModHandler.hasMods(armor)) continue;
             for (ItemStack mod : ArmorModHandler.pryMods(armor)) {
-                if (!mod.isEmpty() && mod.getItem() instanceof IArmorModDash dash)
-                    armorModDashCount += dash.getDashes();
+                if (!mod.isEmpty() && mod.getItem() instanceof IArmorModDash dash) armorModDashCount += dash.getDashes();
             }
         }
 
@@ -126,7 +110,7 @@ public final class ArmorDashHandler {
                         lookingIn.z * forward + strafeVec.z * strafe);
                 player.setDeltaMovement(motion.x, 0, motion.z);
                 player.fallDistance = 0F;
-                play(player, dashSound.get(), 1.0F);
+                player.playSound(dashSound.get(), 1.0F, 1.0F);
 
                 props.dashCooldown = DASH_COOLDOWN_LENGTH;
                 stamina -= PER_DASH;
@@ -139,7 +123,7 @@ public final class ArmorDashHandler {
         if (stamina < props.totalDashCount * PER_DASH) {
             stamina++;
             if (stamina % PER_DASH == PER_DASH - 1) {
-                play(player, rechargeSound.get(), 1.0F + ((1F / 12F) * (stamina / PER_DASH)));
+                player.playSound(rechargeSound.get(), 1.0F, 1.0F + ((1F / 12F) * (stamina / PER_DASH)));
                 stamina++;
             }
         }
@@ -147,18 +131,9 @@ public final class ArmorDashHandler {
         props.stamina = stamina;
     }
 
-    /**
-     * Forgets every player's state, as leaving a world forgot the old props.
-     */
+    /** Forgets every player's state, as leaving a world forgot the old props. */
     public static void clear() {
         CLIENT.clear();
         SERVER.clear();
-    }
-
-    private static void play(Player player, SoundEvent sound, float pitch) {
-        if (!player.level().isClientSide()) {
-            Sounds.playFrom(player, player.getX(), player.getY(), player.getZ(), sound,
-                    SoundSource.PLAYERS, 1.0F, pitch);
-        }
     }
 }

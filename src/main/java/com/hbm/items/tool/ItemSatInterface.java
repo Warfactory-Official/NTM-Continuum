@@ -29,11 +29,8 @@ public class ItemSatInterface extends ItemSatChip implements IItemControlReceive
 
     public static final String KEY_NBT_CONNECTED = "connected";
 
-    /**
-     * Installed by the client registrations; 1.7 {@code provideGUI} returning {@code GUIScreenSatCoord}.
-     */
-    public static Consumer<Player> OPEN_SCREEN = player -> {
-    };
+    /** Installed by the client registrations; 1.7 {@code provideGUI} returning {@code GUIScreenSatCoord}. */
+    public static Consumer<Player> OPEN_SCREEN = player -> { };
 
     public ItemSatInterface(Properties properties) {
         super(properties);
@@ -54,7 +51,8 @@ public class ItemSatInterface extends ItemSatChip implements IItemControlReceive
     protected void compatInventoryTick(ItemStack stack, ServerLevel level, Entity entity, EquipmentSlot slot,
                                        boolean held) {
         if (!(entity instanceof ServerPlayer player)) return;
-        if (player.getMainHandItem() != stack && player.getOffhandItem() != stack) return;
+        // 1.7: only the stack in the main hand
+        if (player.getMainHandItem() != stack) return;
 
         Satellite sat = SatelliteSavedData.get(level, player.blockPosition()).getSatFromFreq(this.getFreq(stack));
         boolean connected = sat != null;

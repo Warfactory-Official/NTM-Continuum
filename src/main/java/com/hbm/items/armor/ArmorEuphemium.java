@@ -30,9 +30,7 @@ public class ArmorEuphemium extends ArmorFSB {
         super(material, slot, properties);
     }
 
-    /**
-     * 1.7 {@code ArmorUtil.checkArmor} over the four exact euphemium items.
-     */
+    /** 1.7 {@code ArmorUtil.checkArmor} over the four exact euphemium items. */
     public static boolean hasFullSet(Player player) {
         return player.getItemBySlot(EquipmentSlot.HEAD).is(ModArmorSetItems.euphemium_helmet.get())
                 && player.getItemBySlot(EquipmentSlot.CHEST).is(ModArmorSetItems.euphemium_plate.get())

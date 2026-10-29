@@ -32,9 +32,7 @@ public class MachineObjRenderer<T extends BlockEntity> extends GemBER<T, Machine
 
     private static final Map<Identifier, ModelDef> MODEL_OVERRIDES = new HashMap<>();
 
-    /**
-     * Register during client initialization, before the lazy renderer factories load their models.
-     */
+    /** Register during client initialization, before the lazy renderer factories load their models. */
     public static void overrideModel(Identifier inherited, ModelDef replacement) {
         MODEL_OVERRIDES.put(inherited, replacement);
     }
@@ -45,29 +43,16 @@ public class MachineObjRenderer<T extends BlockEntity> extends GemBER<T, Machine
      * and whether the old renderer drew the model with face culling disabled.
      */
     public record ModelDef(Identifier obj, Identifier texture, float yOffset, Set<String> exclude, boolean noCull) {
-        public ModelDef(Identifier obj, Identifier texture) {
-            this(obj, texture, 0F, Set.of(), false);
-        }
-
-        public ModelDef(Identifier obj, Identifier texture, float yOffset) {
-            this(obj, texture, yOffset, Set.of(), false);
-        }
-
-        public ModelDef(Identifier obj, Identifier texture, Set<String> exclude) {
-            this(obj, texture, 0F, exclude, false);
-        }
-
-        public ModelDef(Identifier obj, Identifier texture, boolean noCull) {
-            this(obj, texture, 0F, Set.of(), noCull);
-        }
-
+        public ModelDef(Identifier obj, Identifier texture) { this(obj, texture, 0F, Set.of(), false); }
+        public ModelDef(Identifier obj, Identifier texture, float yOffset) { this(obj, texture, yOffset, Set.of(), false); }
+        public ModelDef(Identifier obj, Identifier texture, Set<String> exclude) { this(obj, texture, 0F, exclude, false); }
+        public ModelDef(Identifier obj, Identifier texture, boolean noCull) { this(obj, texture, 0F, Set.of(), noCull); }
         public ModelDef(Identifier obj, Identifier texture, float yOffset, Set<String> exclude) {
             this(obj, texture, yOffset, exclude, false);
         }
     }
 
-    private record Body(WavefrontObj model, Identifier texture, float yOffset, Set<String> exclude, boolean noCull) {
-    }
+    private record Body(WavefrontObj model, Identifier texture, float yOffset, Set<String> exclude, boolean noCull) {}
 
     private final List<Body> bodies;
     private final float baseYaw;
@@ -76,9 +61,7 @@ public class MachineObjRenderer<T extends BlockEntity> extends GemBER<T, Machine
     private final float offsetZ;
     private final Set<String> frameParts;
     private final int frameHeight;
-    /**
-     * When true the facing rotation is skipped (old all-zero yaw maps, e.g. the oilburner).
-     */
+    /** When true the facing rotation is skipped (old all-zero yaw maps, e.g. the oilburner). */
     private boolean ignoreFacing = false;
     private boolean doubleSided = false;
 
@@ -94,11 +77,10 @@ public class MachineObjRenderer<T extends BlockEntity> extends GemBER<T, Machine
      * @param offsetX,offsetZ a translation applied <b>after</b> the facing rotation (block units, in the
      *                        rotated model frame), the 1.12.2 footprint offset for asymmetric machines
      *                        (whose model isn't centred on the core cell). {@code 0,0} for centred machines.
-     * @param frameParts      OBJ parts drawn only when a block sits {@code frameHeight} above the core (the
-     *                        1.12.2 "frame" condition); skipped otherwise. Empty = no conditional parts.
+     * @param frameParts OBJ parts drawn only when a block sits {@code frameHeight} above the core (the
+     *                   1.12.2 "frame" condition); skipped otherwise. Empty = no conditional parts.
      */
-    public MachineObjRenderer(float baseYaw, float scale, float offsetX, float offsetZ, Set<String> frameParts,
-                              int frameHeight, ModelDef... defs) {
+    public MachineObjRenderer(float baseYaw, float scale, float offsetX, float offsetZ, Set<String> frameParts, int frameHeight, ModelDef... defs) {
         this.baseYaw = baseYaw;
         this.scale = scale;
         this.offsetX = offsetX;
@@ -113,17 +95,13 @@ public class MachineObjRenderer<T extends BlockEntity> extends GemBER<T, Machine
         this.bodies = built;
     }
 
-    /**
-     * Old machines whose StaticTesrBakedModels yaw map is all zeros render facing-independent.
-     */
+    /** Old machines whose StaticTesrBakedModels yaw map is all zeros render facing-independent. */
     public MachineObjRenderer<T> ignoreFacing() {
         this.ignoreFacing = true;
         return this;
     }
 
-    /**
-     * Emits reversed faces for thin legacy OBJ geometry that was registered with doubleSided().
-     */
+    /** Emits reversed faces for thin legacy OBJ geometry that was registered with doubleSided(). */
     public MachineObjRenderer<T> doubleSided() {
         this.doubleSided = true;
         return this;
@@ -148,9 +126,7 @@ public class MachineObjRenderer<T extends BlockEntity> extends GemBER<T, Machine
         }
     }
 
-    /**
-     * Centre on the cell, turn to face, step off the centre, then scale.
-     */
+    /** Centre on the cell, turn to face, step off the centre, then scale. */
     private Gem.Part<MachineRenderState> place(Gem.Part<MachineRenderState> part, Body body) {
         part.translate(0.5F, body.yOffset(), 0.5F);
         if (ignoreFacing) {

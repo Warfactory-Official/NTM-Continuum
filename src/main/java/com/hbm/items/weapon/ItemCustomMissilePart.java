@@ -13,9 +13,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
-
 import java.util.List;
-
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.jspecify.annotations.Nullable;
@@ -102,13 +100,9 @@ public class ItemCustomMissilePart extends CompatItem {
 
     public enum PartSize {
 
-        /**
-         * chips fit anything
-         */
+        /** chips fit anything */
         ANY,
-        /**
-         * missile tips and thrusters cap the stack
-         */
+        /** missile tips and thrusters cap the stack */
         NONE,
         SIZE_10,
         SIZE_15,
@@ -116,16 +110,11 @@ public class ItemCustomMissilePart extends CompatItem {
 
         public Component getDisplay() {
             switch (this) {
-                case ANY:
-                    return Component.translatable("item.missile.part.size.any");
-                case SIZE_10:
-                    return Component.literal("1.0m");
-                case SIZE_15:
-                    return Component.literal("1.5m");
-                case SIZE_20:
-                    return Component.literal("2.0m");
-                default:
-                    return Component.translatable("item.missile.part.size.none");
+                case ANY: return Component.translatable("item.missile.part.size.any");
+                case SIZE_10: return Component.literal("1.0m");
+                case SIZE_15: return Component.literal("1.5m");
+                case SIZE_20: return Component.literal("2.0m");
+                default: return Component.translatable("item.missile.part.size.none");
             }
         }
     }
@@ -161,17 +150,11 @@ public class ItemCustomMissilePart extends CompatItem {
         private final String name;
         private final java.util.function.Supplier<Component> display;
 
-        /**
-         * Overrides that type's impact effect. Only runs serverside
-         */
+        /** Overrides that type's impact effect. Only runs serverside */
         public Consumer<EntityMissileCustom> impactCustom = null;
-        /**
-         * Runs at the beginning of the missile's update cycle, both client and serverside.
-         */
+        /** Runs at the beginning of the missile's update cycle, both client and serverside. */
         public Consumer<EntityMissileCustom> updateCustom = null;
-        /**
-         * Override for the warhead's name in the missile description
-         */
+        /** Override for the warhead's name in the missile description */
         public String labelCustom = null;
 
         private WarheadType(String name, java.util.function.Supplier<Component> display) {
@@ -188,8 +171,7 @@ public class ItemCustomMissilePart extends CompatItem {
          * it does when the missile hits (server) and each tick (both sides, may be null).
          */
         public static WarheadType register(String name, java.util.function.Supplier<Component> display,
-                                           Consumer<EntityMissileCustom> impact,
-                                           @Nullable Consumer<EntityMissileCustom> update) {
+                                           Consumer<EntityMissileCustom> impact, @Nullable Consumer<EntityMissileCustom> update) {
             WarheadType type = new WarheadType(name, display);
             type.impactCustom = impact;
             type.updateCustom = update;
@@ -242,9 +224,7 @@ public class ItemCustomMissilePart extends CompatItem {
         private final String name;
         private final String key;
         private final ChatFormatting color;
-        /**
-         * The plume a missile burning this leaves; null for none.
-         */
+        /** The plume a missile burning this leaves; null for none. */
         public final ClientEffects.@Nullable Contrail contrail;
         /**
          * What the custom launcher's two tanks hold for it (1.7 {@code TileEntityLaunchTable.updateTypes}): the fuel
@@ -276,9 +256,7 @@ public class ItemCustomMissilePart extends CompatItem {
             return REGISTRY.register(new FuelType(name, key, color, contrail, fuel, oxidizer));
         }
 
-        /**
-         * Burns from the launcher's solid-fuel store (1.7 {@code SOLID}).
-         */
+        /** Burns from the launcher's solid-fuel store (1.7 {@code SOLID}). */
         public boolean solid() {
             return fuel == null;
         }
@@ -383,9 +361,7 @@ public class ItemCustomMissilePart extends CompatItem {
         return vertexNormalMeshes;
     }
 
-    /**
-     * Without an addon policy, retain the native renderer's supplied OBJ normals.
-     */
+    /** Without an addon policy, retain the native renderer's supplied OBJ normals. */
     public static boolean useVertexNormals(Identifier mesh) {
         return !normalPolicyInstalled || vertexNormalMeshes.contains(mesh);
     }
@@ -450,9 +426,7 @@ public class ItemCustomMissilePart extends CompatItem {
         return this.type == PartType.CHIP || this.type == PartType.FINS ? (Float) this.attributes[0] : 0F;
     }
 
-    /**
-     * The part carried by this stack, or null if the stack is empty or holds something else.
-     */
+    /** The part carried by this stack, or null if the stack is empty or holds something else. */
     public static ItemCustomMissilePart part(ItemStack stack) {
         return stack != null && stack.getItem() instanceof ItemCustomMissilePart part ? part : null;
     }
@@ -506,11 +480,11 @@ public class ItemCustomMissilePart extends CompatItem {
         // 1.7 indented the byline and the witty line with three spaces
         if (this.author != null) {
             tooltip.add(Component.literal("   ").append(Component.translatable("item.missile.part.by"))
-                                 .append(" " + this.author).withStyle(ChatFormatting.WHITE));
+                                  .append(" " + this.author).withStyle(ChatFormatting.WHITE));
         }
         if (this.witty != null) {
             tooltip.add(Component.literal("   \"" + this.witty + "\"")
-                                 .withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
+                                  .withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
         }
     }
 

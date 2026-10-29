@@ -18,11 +18,9 @@ import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Geometry;
 import dev.golem.core.render.gem.Quads;
 import dev.golem.core.render.gem.Surface;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -37,9 +35,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Vector3f;
 
-/**
- * The source muke/tinytot detonation visuals, submitted through Core's late world-effects pass.
- */
+/** The source muke/tinytot detonation visuals, submitted through Core's late world-effects pass. */
 public final class MukeParticles {
     private static final Identifier SHOCKWAVE = Ids.of(Constants.MOD_ID, "textures/particle/shockwave.png");
     private static final Identifier FLARE = Ids.of(Constants.MOD_ID, "textures/particle/flare.png");
@@ -52,18 +48,17 @@ public final class MukeParticles {
     private static final List<Detonation> ACTIVE = new ArrayList<>();
     private static final Surface SHOCKWAVE_SKIN = Surface.glow(SHOCKWAVE.toString());
     private static final Geometry SHOCKWAVE_SHEET = Quads.named("hbm_muke_shockwave")
-                                                         .normal(0F, 1F, 0F)
-                                                         .vertex(-1F, -0.25F, -1F, 1F, 1F)
-                                                         .vertex(-1F, -0.25F, 1F, 1F, 0F)
-                                                         .vertex(1F, -0.25F, 1F, 0F, 0F)
-                                                         .vertex(1F, -0.25F, -1F, 0F, 1F)
-                                                         .build();
+            .normal(0F, 1F, 0F)
+            .vertex(-1F, -0.25F, -1F, 1F, 1F)
+            .vertex(-1F, -0.25F, 1F, 1F, 0F)
+            .vertex(1F, -0.25F, 1F, 0F, 0F)
+            .vertex(1F, -0.25F, -1F, 0F, 1F)
+            .build();
     private static Gem.Model<Detonation> shockwave;
     private static boolean initialized;
     private static ClientLevel lastLevel;
 
-    private MukeParticles() {
-    }
+    private MukeParticles() {}
 
     public static void register() {
         if (initialized) return;
@@ -132,15 +127,14 @@ public final class MukeParticles {
         ACTIVE.clear();
     }
 
-    /**
-     * A large conventional blast shares the nuke's expanding sheet without its flash or mushroom cloud.
-     */
+    /** A large conventional blast shares the nuke's expanding sheet without its flash or mushroom cloud. */
     public static void spawnWave(ClientLevel level, double x, double y, double z, float scale) {
         ACTIVE.add(new Detonation(x, y, z, scale));
     }
 
     private static final class Detonation {
         private float waveLimit = 45F;
+        private int waveLifetime = WAVE_LIFETIME;
         private final double x;
         private final double y;
         private final double z;
@@ -158,9 +152,7 @@ public final class MukeParticles {
             if (tiny) spawnTinyClouds(level);
         }
 
-        /**
-         * A single cloud with no wave or flash (1.7 {@code ufo}): starts past both lifetimes, never spawns more.
-         */
+        /** A single cloud with no wave or flash (1.7 {@code ufo}): starts past both lifetimes, never spawns more. */
         private Detonation(ClientLevel level, double x, double y, double z, double xd, double yd, double zd) {
             this.x = x;
             this.y = y;
@@ -172,7 +164,7 @@ public final class MukeParticles {
         }
 
         private void tick(ClientLevel level) {
-            if (age < WAVE_LIFETIME) age++;
+            if (age < waveLifetime) age++;
             for (int i = clouds.size() - 1; i >= 0; i--) {
                 Cloud cloud = clouds.get(i);
                 cloud.tick(level);
@@ -183,16 +175,18 @@ public final class MukeParticles {
         }
 
         private boolean expired() {
-            return age >= WAVE_LIFETIME && clouds.isEmpty();
+            return age >= waveLifetime && clouds.isEmpty();
         }
 
+        /** 1.7 {@code ExplosionCreator}: the shockwave alone, 2 above the blast, fading over 25 * scale / 45 ticks. */
         private Detonation(double x, double y, double z, float scale) {
             this.x = x;
-            this.y = y;
+            this.y = y + 2D;
             this.z = z;
             this.tiny = true;
             this.balefire = false;
             this.waveLimit = scale;
+            this.waveLifetime = (int) (25F * scale / 45);
         }
 
         private float waveScale() {
@@ -200,7 +194,7 @@ public final class MukeParticles {
         }
 
         private float waveAlpha() {
-            return 1F - (age + Frames.partialTick()) / WAVE_LIFETIME;
+            return 1F - (age + Frames.partialTick()) / waveLifetime;
         }
 
         private void spawnMukeClouds(ClientLevel level) {
@@ -271,7 +265,7 @@ public final class MukeParticles {
             PoseStack pose = new PoseStack();
             pose.translate(x - camera.pos.x, y - camera.pos.y, z - camera.pos.z);
 
-            if (age < WAVE_LIFETIME) {
+            if (age < waveLifetime) {
                 Gem.replay(shockwave(), this, pose, WorldEffects.sink(0), FULLBRIGHT);
             }
             Vector3f right = camera.orientation.transform(new Vector3f(1F, 0F, 0F));
@@ -289,19 +283,19 @@ public final class MukeParticles {
         }
 
         private Billboards.RowWriter quads(PoseStack.Pose pose,
-                                           VertexConsumer buffer, Vector3f right, Vector3f up) {
+                VertexConsumer buffer, Vector3f right, Vector3f up) {
             return new Billboards.RowWriter() {
                 @Override
                 public void row(double rowX, double rowY, double rowZ, float halfSize,
-                                float red, float green, float blue, float alpha, int packedLight) {
+                        float red, float green, float blue, float alpha, int packedLight) {
                     quad(buffer, pose, (float) (rowX - x), (float) (rowY - y), (float) (rowZ - z),
                             right, up, halfSize, 0F, 1F, 0F, 1F, red, green, blue, alpha);
                 }
 
                 @Override
                 public void sprite(double rowX, double rowY, double rowZ, float halfSize,
-                                   float red, float green, float blue, float alpha, int packedLight,
-                                   int column, int row, int columns, int rows) {
+                        float red, float green, float blue, float alpha, int packedLight,
+                        int column, int row, int columns, int rows) {
                     float u0 = (float) column / columns;
                     float v0 = (float) row / rows;
                     quad(buffer, pose, (float) (rowX - x), (float) (rowY - y), (float) (rowZ - z),
@@ -328,7 +322,7 @@ public final class MukeParticles {
         private boolean expired;
 
         private Cloud(ClientLevel level, double x, double y, double z, double xd, double yd, double zd,
-                      boolean balefire) {
+                boolean balefire) {
             this.x = this.xo = x;
             this.y = this.yo = y;
             this.z = this.zo = z;
@@ -365,7 +359,7 @@ public final class MukeParticles {
                         x + 0.1D, y + 0.1D, z + 0.1D);
                 ArrayList<VoxelShape> collisions = new ArrayList<>();
                 level.getBlockCollisions(null, bounds.expandTowards(initial.x, initial.y, initial.z))
-                     .forEach(collisions::add);
+                        .forEach(collisions::add);
                 collided = Entity.collideBoundingBox(null, initial, bounds, level, collisions);
             }
             x += collided.x;
@@ -405,17 +399,17 @@ public final class MukeParticles {
         if (shockwave != null) return shockwave;
         Gem.Model<Detonation> model = Gem.model();
         model.part(SHOCKWAVE_SHEET, SHOCKWAVE_SKIN)
-             .stretch(Gem.Axes.X, Detonation::waveScale)
-             .stretch(Gem.Axes.Z, Detonation::waveScale)
-             .tint(detonation -> Colors.colorFromFloat(detonation.waveAlpha(), 1F, 1F, 1F))
-             .light(detonation -> FULLBRIGHT);
+                .stretch(Gem.Axes.X, Detonation::waveScale)
+                .stretch(Gem.Axes.Z, Detonation::waveScale)
+                .tint(detonation -> Colors.colorFromFloat(detonation.waveAlpha(), 1F, 1F, 1F))
+                .light(detonation -> FULLBRIGHT);
         shockwave = model.seal();
         return shockwave;
     }
 
     private static void quad(VertexConsumer buffer, PoseStack.Pose pose,
-                             float cx, float cy, float cz, Vector3f right, Vector3f up, float size,
-                             float u0, float u1, float v0, float v1, float red, float green, float blue, float alpha) {
+            float cx, float cy, float cz, Vector3f right, Vector3f up, float size,
+            float u0, float u1, float v0, float v1, float red, float green, float blue, float alpha) {
         float rx = right.x * size, ry = right.y * size, rz = right.z * size;
         float ux = up.x * size, uy = up.y * size, uz = up.z * size;
         Vertexes.vertex(buffer, pose, cx - rx - ux, cy - ry - uy, cz - rz - uz, red, green, blue, alpha,

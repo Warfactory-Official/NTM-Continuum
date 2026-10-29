@@ -38,7 +38,7 @@ public class EntityC130 extends EntityPlaneBase {
         if (level().isClientSide()) {
             if (this.health > 0) {
                 if (audio == null || !audio.isPlaying()) {
-                    audio = AudioSystem.getLoopedSound(ModSounds.ENTITY_BOMBER_LOOP.get(), SoundSource.NEUTRAL,
+                    audio = AudioSystem.getLoopedSound(ModSounds.ENTITY_BOMBER_LOOP.get(), SoundSource.PLAYERS,
                             (float) getX(), (float) getY(), (float) getZ(), 2F, 250F, 1F, 20);
                     if (audio != null) audio.startSound();
                 }

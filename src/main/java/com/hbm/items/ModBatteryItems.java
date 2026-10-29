@@ -10,7 +10,6 @@ import dev.golem.core.registry.RegistryObject;
 
 import java.util.EnumMap;
 import java.util.Map;
-
 import com.hbm.registration.Reg;
 
 /**
@@ -20,17 +19,13 @@ import com.hbm.registration.Reg;
  */
 public final class ModBatteryItems {
 
-    private ModBatteryItems() {
-    }
+    private ModBatteryItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    /**
-     * Lookup from variant to its registered item, used by the socket renderer and item-icon JSON wiring.
-     */
-    public static final Map<EnumBatteryPack, RegistryObject<ItemBatteryPack>> PACKS = new EnumMap<>(
-            EnumBatteryPack.class);
+    /** Lookup from variant to its registered item, used by the socket renderer and item-icon JSON wiring. */
+    public static final Map<EnumBatteryPack, RegistryObject<ItemBatteryPack>> PACKS = new EnumMap<>(EnumBatteryPack.class);
 
     static {
         for (EnumBatteryPack pack : EnumBatteryPack.VALUES) {
@@ -42,6 +37,5 @@ public final class ModBatteryItems {
         }
     }
 
-    public static void init() {
-    }
+    public static void init() {}
 }

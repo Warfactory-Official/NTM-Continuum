@@ -23,10 +23,8 @@ import dev.golem.core.render.HeatDistortionRenderType;
 import dev.golem.core.render.Particles;
 import dev.golem.core.render.gem.Surface;
 import dev.golem.core.world.Compat;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -58,9 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Client-side jetpack model selection, exhaust spawning, and the two HUD compositions.
- */
+/** Client-side jetpack model selection, exhaust spawning, and the two HUD compositions. */
 public final class JetpackClientVisuals {
 
     public static final String GLIDER = "glider";
@@ -74,9 +70,7 @@ public final class JetpackClientVisuals {
     private static final Identifier NOISE = Ids.of("hbm", "textures/misc/noise_2.png");
 
     private static JetpackColladaModel gliderModel;
-    /**
-     * Harness only, see {@link #init}.
-     */
+    /** Harness only, see {@link #init}. */
     private static long pinnedGliderMs = -1L;
     private static boolean pinnedGliderReverse;
     private static boolean harnessNoExhaust;
@@ -85,8 +79,7 @@ public final class JetpackClientVisuals {
     private static final Map<UUID, GliderAnimation> GLIDER_ANIMATIONS = new HashMap<>();
     private static ClientLevel activeLevel;
 
-    private JetpackClientVisuals() {
-    }
+    private JetpackClientVisuals() {}
 
     public static void init() {
         PlasmaGlowRenderType.init();
@@ -128,9 +121,7 @@ public final class JetpackClientVisuals {
         // type installs its scene texture lazily on the first submitted heat particle.
     }
 
-    /**
-     * Drops client-only state when a world or resource set is replaced.
-     */
+    /** Drops client-only state when a world or resource set is replaced. */
     public static void clear() {
         EFFECTS.clear();
         GLIDER_ANIMATIONS.clear();
@@ -141,9 +132,7 @@ public final class JetpackClientVisuals {
         JetpackSound.clearAll();
     }
 
-    /**
-     * Invalidates model instances after a client resource reload.
-     */
+    /** Invalidates model instances after a client resource reload. */
     public static void reload() {
         clear();
     }
@@ -247,7 +236,7 @@ public final class JetpackClientVisuals {
         int count = 3;
         for (int i = 0; i < count; i++) {
             float fraction = i / (float) count;
-            for (int side : new int[]{-1, 1}) {
+            for (int side : new int[] {-1, 1}) {
                 Vec3 motion = new Vec3(player.getRandom().nextGaussian() * 0.05F + side * 0.1F,
                         speed, player.getRandom().nextGaussian() * 0.05F);
                 effects.plasma.add(new ParticleRocketPlasma(new Vec3(side * 1.8F, fraction * speed, 4F),
@@ -256,10 +245,9 @@ public final class JetpackClientVisuals {
         }
         if (player.level().getGameTime() % (2 - player.level().getRandom().nextInt(2)) == 0) {
             float alpha = Mth.clamp(0.05F + thrust * 0.1F, 0F, 1F);
-            for (int side : new int[]{-1, 1})
-                effects.brightness.add(new ParticleFakeBrightness(
-                        new Vec3(side * 1.8F, -1F, 4F), 20F + thrust * 10F,
-                        6 + player.getRandom().nextInt(2), brightness, alpha));
+            for (int side : new int[] {-1, 1}) effects.brightness.add(new ParticleFakeBrightness(
+                    new Vec3(side * 1.8F, -1F, 4F), 20F + thrust * 10F,
+                    6 + player.getRandom().nextInt(2), brightness, alpha));
         }
         if (player.level().getRandom().nextBoolean()) {
             effects.heat.add(new ParticleHeatDistortion(1.8F, -1F, 4F, 5F + thrust,
@@ -274,7 +262,7 @@ public final class JetpackClientVisuals {
     }
 
     private static boolean trailEligible(Player player, JetpackClientBridge.State state,
-                                         JetpackClientBridge.Fuel fuel) {
+            JetpackClientBridge.Fuel fuel) {
         double horizontalSpeed = player.getDeltaMovement().x * player.getDeltaMovement().x
                 + player.getDeltaMovement().z * player.getDeltaMovement().z;
         return active(state) && !state.hover() && !player.onGround() && !player.isFallFlying()
@@ -282,9 +270,7 @@ public final class JetpackClientVisuals {
                 && fuel != null && fuel.amount() > 0;
     }
 
-    /**
-     * Handles the common gameplay packet for the ordinary/BJ/DNS families.
-     */
+    /** Handles the common gameplay packet for the ordinary/BJ/DNS families. */
     public static void spawnExhaustCue(Level level, int playerId, int mode) {
         if (!(level instanceof ClientLevel clientLevel)) return;
         if (Particles.quality() == Particles.Quality.MINIMAL) return;
@@ -303,14 +289,11 @@ public final class JetpackClientVisuals {
         if (mode == JetpackHandler.EXHAUST_REGULAR
                 || mode == JetpackHandler.EXHAUST_VECTOR) {
             Vec3 look = player.getViewVector(1F);
-            Vec3 motion = player.getDeltaMovement();
-            Vec3 flameVelocity = mode == JetpackHandler.EXHAUST_REGULAR
-                    ? new Vec3(Mth.clamp(motion.x, -5D, 5D), Mth.clamp(motion.y, -5D, 5D), Mth.clamp(motion.z, -5D, 5D))
-                    : player.getDeltaMovement().subtract(look.scale(0.2D));
-            Vec3 smokeVelocity = mode == JetpackHandler.EXHAUST_REGULAR
-                    ? new Vec3(Mth.clamp(motion.x, -10D, 10D), Mth.clamp(motion.y, -10D, 10D),
-                    Mth.clamp(motion.z, -10D, 10D))
-                    : player.getDeltaMovement().subtract(look.scale(0.3D));
+            // 1.7 adds twice the thrust push (0.2 down, or 0.1 against the look) to the player's motion
+            Vec3 push = mode == JetpackHandler.EXHAUST_REGULAR ? new Vec3(0D, -0.4D, 0D) : look.scale(-0.2D);
+            Vec3 motion = player.getDeltaMovement().add(push);
+            Vec3 flameVelocity = clamped(motion, 5D);
+            Vec3 smokeVelocity = clamped(motion, 10D);
             for (int sign : new int[]{1, -1}) {
                 Vec3 position = base.add(side.scale(sign * 0.125D));
                 Particles.spawn(ParticleTypes.FLAME, position.x, position.y,
@@ -336,9 +319,11 @@ public final class JetpackClientVisuals {
         }
     }
 
-    /**
-     * 1.7 casts 10 blocks along the thrust and kicks up dust only off a block's top face.
-     */
+    private static Vec3 clamped(Vec3 v, double limit) {
+        return new Vec3(Mth.clamp(v.x, -limit, limit), Mth.clamp(v.y, -limit, limit), Mth.clamp(v.z, -limit, limit));
+    }
+
+    /** 1.7 casts 10 blocks along the thrust and kicks up dust only off a block's top face. */
     private static void spawnKickup(ClientLevel level, Vec3 origin, Vec3 thrust) {
         Vec3 target = origin.add(thrust.scale(10D));
         BlockHitResult hit = Compat.clip(level, origin, target,
@@ -354,7 +339,7 @@ public final class JetpackClientVisuals {
         for (int i = 0; i < count; i++) {
             velocity = velocity.yRot(level.getRandom().nextFloat() * (float) (Math.PI * 2D));
             level.addParticle(new BlockParticleOption(
-                            ParticleTypes.BLOCK, state), location.x,
+                    ParticleTypes.BLOCK, state), location.x,
                     location.y + 0.1D, location.z, velocity.x, 0.1D, velocity.z);
         }
     }
@@ -374,7 +359,7 @@ public final class JetpackClientVisuals {
     }
 
     public static void submitGlider(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
-                                    boolean inventory, boolean opening, long animTime) {
+            boolean inventory, boolean opening, long animTime) {
         if (gliderModel == null) gliderModel = JetpackColladaModel.load(true);
         if (!inventory) {
             pose.pushPose();
@@ -392,9 +377,7 @@ public final class JetpackClientVisuals {
         }
     }
 
-    /**
-     * The glider with its wings fully spread and no wearer: SilentYeti's bobblehead.
-     */
+    /** The glider with its wings fully spread and no wearer: SilentYeti's bobblehead. */
     public static void submitGliderOpen(PoseStack pose, SubmitSink sink, int light) {
         if (gliderModel == null) gliderModel = JetpackColladaModel.load(true);
         gliderModel.submit(pose, sink, light, gliderModelLength(), false);
@@ -425,7 +408,7 @@ public final class JetpackClientVisuals {
     }
 
     public static void submitStandard(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
-                                      String kind) {
+            String kind) {
         JetpackWornModels.standard().submit(pose, sink, light, parts.body(), JetpackWornModels.pack(kind));
     }
 
@@ -438,7 +421,7 @@ public final class JetpackClientVisuals {
      * limp pair that has lost its murk.
      */
     public static void submitWings(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
-                                   ItemStack source) {
+            ItemStack source) {
         Player player = parts.player();
         if (player == null) return;
         boolean limp = source != null && source.getItem() instanceof WingsMurk wings
@@ -470,7 +453,7 @@ public final class JetpackClientVisuals {
      * (the_NCR), which flap like murk wings in a skin of their own.
      */
     public static void submitWings(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
-                                   Surface skin) {
+            Surface skin) {
         Player player = parts.player();
         if (player == null) return;
         float sweep = (float) Math.sin(player.tickCount * 0.2D) * 20F;
@@ -493,7 +476,7 @@ public final class JetpackClientVisuals {
     }
 
     public static void submitLocalEffects(PoseStack pose, CameraInfo camera,
-                                          boolean sneaking, Player player) {
+            boolean sneaking, Player player) {
         if (!WorldEffects.isCollecting() || player == null || !GLIDER.equals(kind(player))) return;
         Effects effects = EFFECTS.get(player.getUUID());
         if (effects == null) return;
@@ -517,7 +500,7 @@ public final class JetpackClientVisuals {
                                 (float) corners[2].y, (float) corners[2].z, 0F, 0F, amount, timeOffset);
                         HeatDistortionRenderType.vertex(buffer, drawPose, (float) corners[3].x,
                                 (float) corners[3].y, (float) corners[3].z, 0F, 1F, amount, timeOffset);
-                    });
+                     });
         }
         for (ParticleRocketPlasma plasma : effects.plasma)
             submitGlow(pose, 1, camera, plasma.position(partial), plasma.size(partial), plasma.color(partial));
@@ -527,7 +510,7 @@ public final class JetpackClientVisuals {
         JetpackClientBridge.State state = JetpackClientBridge.state(player);
         if (trailEligible(player, state, fuel)
                 && player.level().getGameTime() != effects.lastTrailCaptureTick
-        ) {
+                ) {
             if (effects.trails[0] == null) effects.trails[0] = new JetpackTrail();
             if (effects.trails[1] == null) effects.trails[1] = new JetpackTrail();
             effects.trails[0].tryAddNewPos(worldPoint(pose, camera, 5.25F, 0.2F, 2.75F));
@@ -542,11 +525,8 @@ public final class JetpackClientVisuals {
         pose.popPose();
     }
 
-    /**
-     * Captures a local glider nozzle after the player pose/root and converts it to world space.
-     */
-    private static void submitGlow(PoseStack pose, int order, CameraInfo camera, Vec3 center, float size,
-                                   float[] color) {
+    /** Captures a local glider nozzle after the player pose/root and converts it to world space. */
+    private static void submitGlow(PoseStack pose, int order, CameraInfo camera, Vec3 center, float size, float[] color) {
         if (size <= 0F || color[3] <= 0F) return;
         Vec3[] corners = billboardCorners(pose, camera, center, size);
         WorldEffects.submit(pose, PlasmaGlowRenderType.of(MASK), order, (drawPose, buffer) -> {
@@ -573,14 +553,11 @@ public final class JetpackClientVisuals {
         // the global view matrix; treating this as view space turns plumes edge-on at other yaws.
         Vector3f right = camera.worldToRender(new Vector3f(size, 0F, 0F).rotate(camera.orientation));
         Vector3f up = camera.worldToRender(new Vector3f(0F, size, 0F).rotate(camera.orientation));
-        return new Vec3[]{
-                localPoint(viewToLocal, center.x - right.x - up.x, center.y - right.y - up.y,
-                        center.z - right.z - up.z),
-                localPoint(viewToLocal, center.x - right.x + up.x, center.y - right.y + up.y,
-                        center.z - right.z + up.z),
-                localPoint(viewToLocal, center.x + right.x + up.x, center.y + right.y + up.y,
-                        center.z + right.z + up.z),
-                localPoint(viewToLocal, center.x + right.x - up.x, center.y + right.y - up.y, center.z + right.z - up.z)
+        return new Vec3[] {
+                localPoint(viewToLocal, center.x-right.x-up.x, center.y-right.y-up.y, center.z-right.z-up.z),
+                localPoint(viewToLocal, center.x-right.x+up.x, center.y-right.y+up.y, center.z-right.z+up.z),
+                localPoint(viewToLocal, center.x+right.x+up.x, center.y+right.y+up.y, center.z+right.z+up.z),
+                localPoint(viewToLocal, center.x+right.x-up.x, center.y+right.y-up.y, center.z+right.z-up.z)
         };
     }
 
@@ -601,9 +578,7 @@ public final class JetpackClientVisuals {
         }
     }
 
-    /**
-     * Applies the old in-flight body tilt before vanilla submits the humanoid model.
-     */
+    /** Applies the old in-flight body tilt before vanilla submits the humanoid model. */
     public static void applyPlayerPose(Player player, PoseStack pose, float partialTick) {
         if (!flying(player)) return;
         JetpackClientBridge.State state = JetpackClientBridge.state(player);
@@ -653,18 +628,13 @@ public final class JetpackClientVisuals {
         return flying(player);
     }
 
-    /**
-     * Addons may opt into render-only directional pack poses without changing travel or collision.
-     */
+    /** Addons may opt into render-only directional pack poses without changing travel or collision. */
     public static boolean directionalArmorPose = false;
 
     public static boolean directionalRenderPose(Player player) {
         return directionalArmorPose && JetpackHandler.directionalFlight(player);
     }
-
-    /**
-     * Freeze the flight silhouette, not grounded walking/crouching or hover-mode head tracking.
-     */
+    /** Freeze the flight silhouette, not grounded walking/crouching or hover-mode head tracking. */
     public static void applyPlayerModelPose(HumanoidPose parts) {
         if (!flying(parts.player())) return;
         parts.body().resetPose();
@@ -680,9 +650,7 @@ public final class JetpackClientVisuals {
         parts.head().yRot = hover ? headYaw : 0F;
     }
 
-    /**
-     * The old third-person camera offset, used only for regular glider flight.
-     */
+    /** The old third-person camera offset, used only for regular glider flight. */
     public static boolean lowerThirdPersonCamera(Player player) {
         JetpackClientBridge.State state = JetpackClientBridge.state(player);
         return GLIDER.equals(kind(player)) && active(state) && !state.hover() && !player.onGround()
@@ -691,32 +659,32 @@ public final class JetpackClientVisuals {
 
     private static JetpackGradient gradient(String fuel) {
         if (fuel != null && fuel.toUpperCase().contains("REFORM")) {
-            return new JetpackGradient(new float[]{1F, .95F, .85F, 1F, 0F},
-                    new float[]{.55F, .75F, 1F, 1F, .15F},
-                    new float[]{.25F, .55F, .9F, 1F, .4F},
-                    new float[]{.15F, .3F, .7F, 1F, .8F},
-                    new float[]{.1F, .05F, .2F, 0F, 1F});
+            return new JetpackGradient(new float[] {1F, .95F, .85F, 1F, 0F},
+                    new float[] {.55F, .75F, 1F, 1F, .15F},
+                    new float[] {.25F, .55F, .9F, 1F, .4F},
+                    new float[] {.15F, .3F, .7F, 1F, .8F},
+                    new float[] {.1F, .05F, .2F, 0F, 1F});
         }
         if (fuel != null && fuel.toUpperCase().contains("BALEFIRE")) {
-            return new JetpackGradient(new float[]{1F, .95F, .279F, 1F, 0F}, new float[]{1F, .9F, .1F, 1F, .122F},
-                    new float[]{.013F, 1F, .068F, 1F, .389F}, new float[]{.2F, 1F, .3F, 1F, .891F},
-                    new float[]{0F, 1F, .4F, 0F, 1F});
+            return new JetpackGradient(new float[] {1F, .95F, .279F, 1F, 0F}, new float[] {1F, .9F, .1F, 1F, .122F},
+                    new float[] {.013F, 1F, .068F, 1F, .389F}, new float[] {.2F, 1F, .3F, 1F, .891F},
+                    new float[] {0F, 1F, .4F, 0F, 1F});
         }
         if (fuel != null && fuel.toUpperCase().contains("NITAN")) {
-            return new JetpackGradient(new float[]{.845F, .779F, 1F, 1F, 0F}, new float[]{1F, .3F, 1F, 1F, .122F},
-                    new float[]{.7F, .4F, 1F, 1F, .389F}, new float[]{.35F, .2F, 1F, 1F, .891F},
-                    new float[]{.1F, .1F, 1F, 0F, 1F});
+            return new JetpackGradient(new float[] {.845F, .779F, 1F, 1F, 0F}, new float[] {1F, .3F, 1F, 1F, .122F},
+                    new float[] {.7F, .4F, 1F, 1F, .389F}, new float[] {.35F, .2F, 1F, 1F, .891F},
+                    new float[] {.1F, .1F, 1F, 0F, 1F});
         }
-        return new JetpackGradient(new float[]{1F, .918F, .882F, 1F, 0F}, new float[]{.887F, 1F, 0F, 1F, .177F},
-                new float[]{1F, .19F, 0F, 1F, .336F}, new float[]{1F, .14F, 0F, 1F, .85F},
-                new float[]{1F, .14F, 0F, 0F, 1F});
+        return new JetpackGradient(new float[] {1F, .918F, .882F, 1F, 0F}, new float[] {.887F, 1F, 0F, 1F, .177F},
+                new float[] {1F, .19F, 0F, 1F, .336F}, new float[] {1F, .14F, 0F, 1F, .85F},
+                new float[] {1F, .14F, 0F, 0F, 1F});
     }
 
     private static float[] brightnessColor(String fuel) {
-        if (fuel != null && fuel.toUpperCase().contains("BALEFIRE")) return new float[]{.4F, 1F, .7F};
-        if (fuel != null && fuel.toUpperCase().contains("NITAN")) return new float[]{1F, .5F, 1F};
-        if (fuel != null && fuel.toUpperCase().contains("REFORM")) return new float[]{.55F, .75F, .95F};
-        return new float[]{1F, .6F, .5F};
+        if (fuel != null && fuel.toUpperCase().contains("BALEFIRE")) return new float[] {.4F, 1F, .7F};
+        if (fuel != null && fuel.toUpperCase().contains("NITAN")) return new float[] {1F, .5F, 1F};
+        if (fuel != null && fuel.toUpperCase().contains("REFORM")) return new float[] {.55F, .75F, .95F};
+        return new float[] {1F, .6F, .5F};
     }
 
     public static int fuelColor(String fuel) {
@@ -760,12 +728,7 @@ public final class JetpackClientVisuals {
             this.initialElapsed = initialElapsed;
         }
 
-        private boolean opening() {
-            return opening;
-        }
-
-        private long elapsed() {
-            return initialElapsed;
-        }
+        private boolean opening() { return opening; }
+        private long elapsed() { return initialElapsed; }
     }
 }

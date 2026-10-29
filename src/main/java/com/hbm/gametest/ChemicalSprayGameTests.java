@@ -33,8 +33,7 @@ import java.util.List;
  */
 public final class ChemicalSprayGameTests {
 
-    private ChemicalSprayGameTests() {
-    }
+    private ChemicalSprayGameTests() {}
 
     private static EntityChemical spray(GameTestHelper helper, FluidType type, LivingEntity at) {
         EntityChemical chemical = new EntityChemical(ModEntities.CHEMICAL.get(), helper.getLevel());
@@ -50,9 +49,7 @@ public final class ChemicalSprayGameTests {
         return pig;
     }
 
-    /**
-     * Applies one spray hit and returns the health it took.
-     */
+    /** Applies one spray hit and returns the health it took. */
     private static float hit(EntityChemical chemical, LivingEntity target, double intensity) {
         target.setHealth(target.getMaxHealth());
         target.clearFire();
@@ -81,8 +78,7 @@ public final class ChemicalSprayGameTests {
         LivingEntity pig = pig(helper, new BlockPos(1, 3, 1));
         helper.runAfterDelay(1, () -> {
             near(helper, hit(spray(helper, Fluids.HOTSTEAM, pig), pig, 0.5D), 0.45F, "HOTSTEAM boil");
-            helper.assertTrue(pig.getRemainingFireTicks() <= 0,
-                    "300 °C must not set fire, has " + pig.getRemainingFireTicks());
+            helper.assertTrue(pig.getRemainingFireTicks() <= 0, "300 °C must not set fire, has " + pig.getRemainingFireTicks());
 
             near(helper, hit(spray(helper, Fluids.ULTRAHOTSTEAM, pig), pig, 0.5D), 0.75F, "ULTRAHOTSTEAM boil");
             helper.assertTrue(pig.getRemainingFireTicks() == 200,
@@ -236,8 +232,7 @@ public final class ChemicalSprayGameTests {
                                     && now.y <= ty + 1.0E-6D && Math.abs((now.y - ty) - Math.rint(now.y - ty)) < 1.0E-6D,
                             (caller == 0 ? "spray" : "mist") + " seed " + seed + ": target (" + tx + ", " + ty + ", " + tz
                                     + ") but the pig is at " + now);
-                    helper.assertTrue(
-                            level.getBlockState(BlockPos.containing(now.x, now.y, now.z).below()).blocksMotion(),
+                    helper.assertTrue(level.getBlockState(BlockPos.containing(now.x, now.y, now.z).below()).blocksMotion(),
                             "a teleported pig must stand over a block that blocks movement, at " + now);
                     if (caller == 0) sprayMoved = true;
                     else mistMoved = true;

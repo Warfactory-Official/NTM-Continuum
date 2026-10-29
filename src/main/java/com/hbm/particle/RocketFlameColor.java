@@ -1,8 +1,6 @@
 package com.hbm.particle;
 
-/**
- * Per-quad heat fade, jitter and packed light used by the rocket flame particle.
- */
+/** Per-quad heat fade, jitter and packed light used by the rocket flame particle. */
 public record RocketFlameColor(float r, float g, float b, boolean fadeR, boolean fadeG, boolean fadeB, int light) {
 
     public static final RocketFlameColor FLAME = new RocketFlameColor(1F, 0.6F, 0F, true, true, true, 240);

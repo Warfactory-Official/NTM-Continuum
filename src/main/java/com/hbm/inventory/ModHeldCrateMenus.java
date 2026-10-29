@@ -20,11 +20,9 @@ import net.minecraft.world.inventory.MenuType;
  */
 public final class ModHeldCrateMenus {
 
-    private ModHeldCrateMenus() {
-    }
+    private ModHeldCrateMenus() {}
 
-    public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU,
-            Constants.MOD_ID);
+    public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
     private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<MenuCrate>> CRATE_HELD = REG.menu("crate_held",
@@ -43,6 +41,5 @@ public final class ModHeldCrateMenus {
                     new ContainerSafe(id, inventory, new SimpleContainer(15),
                             CrateHeldOpening.openingSlot(openingData))));
 
-    public static void init() {
-    }
+    public static void init() {}
 }

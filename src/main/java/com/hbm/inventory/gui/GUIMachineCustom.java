@@ -39,14 +39,12 @@ public final class GUIMachineCustom extends CompatContainerScreen<ContainerMachi
         if (custom == null || custom.config == null) return;
 
         if (isHovering(150, 18, 16, 52, x, y)) {
-            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(custom.power, custom.config.maxPower),
-                    Optional.empty(), x, y);
+            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(custom.power, custom.config.maxPower), Optional.empty(), x, y);
             return;
         }
         if (custom.config.maxHeat > 0 && isHovering(61, 53, 18, 18, x, y)) {
-            GuiDraw.tooltip(graphics, font,
-                    List.of(Component.literal("Heat:" + String.format(Locale.US, "%,d", custom.heat)
-                            + " / " + String.format(Locale.US, "%,d", custom.config.maxHeat))), Optional.empty(), x, y);
+            GuiDraw.tooltip(graphics, font, List.of(Component.literal("Heat:" + String.format(Locale.US, "%,d", custom.heat)
+                    + " / " + String.format(Locale.US, "%,d", custom.config.maxHeat))), Optional.empty(), x, y);
             return;
         }
         if (menu.getCarried().isEmpty()) {
@@ -55,8 +53,8 @@ public final class GUIMachineCustom extends CompatContainerScreen<ContainerMachi
                 if (slot instanceof ContainerMachineCustom.SlotPattern && isHovering(slot.x, slot.y, 16, 16, x, y)
                         && tileIndex - 10 < custom.matcher.modes.length && custom.matcher.modes[tileIndex - 10] != null) {
                     GuiDraw.tooltip(graphics, font, List.of(
-                                    Component.literal("Right click to change").withStyle(ChatFormatting.RED),
-                                    Component.literal(ModulePatternMatcher.getLabel(custom.matcher.modes[tileIndex - 10]))),
+                            Component.literal("Right click to change").withStyle(ChatFormatting.RED),
+                            Component.literal(ModulePatternMatcher.getLabel(custom.matcher.modes[tileIndex - 10]))),
                             Optional.empty(), x, y - 30);
                     return;
                 }
@@ -106,8 +104,7 @@ public final class GUIMachineCustom extends CompatContainerScreen<ContainerMachi
         }
         if (custom.maxHeat > 0) {
             blit(graphics, leftPos + 61, topPos + 53, 236, 0, 18, 18);
-            GuiUtil.drawSmoothGauge(graphics, leftPos + 70, topPos + 62,
-                    (double) custom.heat / (double) custom.config.maxHeat, 5, 2, 1, 0x7F0000);
+            GuiUtil.drawSmoothGauge(graphics, leftPos + 70, topPos + 62, (double) custom.heat / (double) custom.config.maxHeat, 5, 2, 1, 0x7F0000);
         }
         int p = custom.progress * 90 / Math.max(custom.maxProgress, 1);
         blit(graphics, leftPos + 78, topPos + 119, 192, 0, Math.min(p, 44), 16);
@@ -150,9 +147,7 @@ public final class GUIMachineCustom extends CompatContainerScreen<ContainerMachi
         }
     }
 
-    /**
-     * 1.7 {@code FluidTank.renderTank(x, bottom, z, width, height)}: the fluid texture tiled up from the bottom.
-     */
+    /** 1.7 {@code FluidTank.renderTank(x, bottom, z, width, height)}: the fluid texture tiled up from the bottom. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y, int width, int height) {
         TankDisplay.Fill visible = TankDisplay.visibleFill(tank, x, y, width, height, true);
         if (visible == null) return;

@@ -13,10 +13,8 @@ import dev.golem.core.render.SubLevelPoses;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.WorldEffects;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,9 +24,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.shapes.BooleanOp;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -49,8 +44,7 @@ public final class MultiblockPlacementHighlight {
     private static final float LINE_WIDTH = 2F;
     private static boolean initialized;
 
-    private MultiblockPlacementHighlight() {
-    }
+    private MultiblockPlacementHighlight() {}
 
     public static void init() {
         if (initialized) return;
@@ -70,30 +64,8 @@ public final class MultiblockPlacementHighlight {
                 && item.getBlock() instanceof BlockMultiblockCore block ? block : null;
     }
 
-    /**
-     * The occupied cells and placement verdict submitted by the held-item highlight.
-     */
-    public record Preview(BlockPos core, Direction facing, boolean placeable, List<BlockPos> cells) {
-        /**
-         * The same occupied cells, expressed in the core's local frame.
-         */
-        public VoxelShape shape() {
-            var shape = Shapes.empty();
-            for (var pos : cells) {
-                int x = pos.getX() - core.getX();
-                int y = pos.getY() - core.getY();
-                int z = pos.getZ() - core.getZ();
-                shape = Shapes.joinUnoptimized(shape, Shapes.box(x, y, z, x + 1, y + 1, z + 1), BooleanOp.OR);
-            }
-            return shape.optimize();
-        }
-    }
-
-    public static @Nullable Preview extract(Level level, BlockHitResult hit, @Nullable Player player) {
-        if (player == null || hit.getType() != HitResult.Type.BLOCK) return null;
-        var block = heldMultiblock(player);
-        return block == null ? null : extract(level, hit, player, block);
-    }
+    /** The occupied cells and placement verdict submitted by the held-item highlight. */
+    private record Preview(BlockPos core, Direction facing, boolean placeable, List<BlockPos> cells) {}
 
     private static Preview extract(Level level, BlockHitResult mop, Player player, BlockMultiblockCore block) {
         // 1.7 always quartered 360 degrees here, even for a block that places on a finer yaw step
@@ -304,16 +276,14 @@ public final class MultiblockPlacementHighlight {
         });
     }
 
-    /**
-     * The outline of a 0.6-wide square centred on {@code (x, y, z)}, flat across {@code axis}.
-     */
+    /** The outline of a 0.6-wide square centred on {@code (x, y, z)}, flat across {@code axis}. */
     private static void square(PoseStack.Pose pose, VertexConsumer buffer, float x, float y, float z,
                                Direction.Axis axis, int color) {
         float s = 0.3F;
         float[][] corners = switch (axis) {
-            case Y -> new float[][]{{x - s, y, z - s}, {x + s, y, z - s}, {x + s, y, z + s}, {x - s, y, z + s}};
-            case X -> new float[][]{{x, y - s, z - s}, {x, y + s, z - s}, {x, y + s, z + s}, {x, y - s, z + s}};
-            case Z -> new float[][]{{x - s, y - s, z}, {x + s, y - s, z}, {x + s, y + s, z}, {x - s, y + s, z}};
+            case Y -> new float[][] {{x - s, y, z - s}, {x + s, y, z - s}, {x + s, y, z + s}, {x - s, y, z + s}};
+            case X -> new float[][] {{x, y - s, z - s}, {x, y + s, z - s}, {x, y + s, z + s}, {x, y - s, z + s}};
+            case Z -> new float[][] {{x - s, y - s, z}, {x + s, y - s, z}, {x + s, y + s, z}, {x - s, y + s, z}};
         };
         for (int i = 0; i < 4; i++) {
             float[] a = corners[i];
@@ -322,9 +292,7 @@ public final class MultiblockPlacementHighlight {
         }
     }
 
-    /**
-     * One GL_LINES segment. A zero-length one (a flat extra box) drew nothing in 1.7 and has no direction here.
-     */
+    /** One GL_LINES segment. A zero-length one (a flat extra box) drew nothing in 1.7 and has no direction here. */
     private static void line(PoseStack.Pose pose, VertexConsumer buffer,
                              float x1, float y1, float z1, float x2, float y2, float z2, int color) {
         float dx = x2 - x1;

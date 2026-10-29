@@ -48,35 +48,25 @@ import java.util.Random;
  */
 public final class CrateHeldOpening {
 
-    /**
-     * 1.7 {@code InventoryCrate} "stacklock": a random value that keeps anything from merging into the crate.
-     */
+    /** 1.7 {@code InventoryCrate} "stacklock": a random value that keeps anything from merging into the crate. */
     public static final String STACKLOCK = "stacklock";
 
-    private CrateHeldOpening() {
-    }
+    private CrateHeldOpening() {}
 
     public static void stamp(ItemStack crate, Level level) {
         ItemStacks.setCarriedLong(crate, STACKLOCK, level.getRandom().nextLong());
     }
 
-    /**
-     * Which crate a stack is, for the held menus; null when it is none of the five.
-     */
-    public enum Kind {IRON, STEEL, DESH, TUNGSTEN, SAFE}
-
+    /** Which crate a stack is, for the held menus; null when it is none of the five. */
+    public enum Kind { IRON, STEEL, DESH, TUNGSTEN, SAFE }
     private static final int HOTBAR_SLOTS = 9;
 
-    /**
-     * The server-selected layout, independent of the client's currently held stack.
-     */
+    /** The server-selected layout, independent of the client's currently held stack. */
     public static Kind openingKind(int openingData) {
         return Kind.values()[openingData / HOTBAR_SLOTS];
     }
 
-    /**
-     * The exact hotbar slot that owned the crate when the server opened it.
-     */
+    /** The exact hotbar slot that owned the crate when the server opened it. */
     public static int openingSlot(int openingData) {
         return openingData % HOTBAR_SLOTS;
     }
@@ -112,9 +102,7 @@ public final class CrateHeldOpening {
         };
     }
 
-    /**
-     * 1.7 {@code onItemUse}: with the key on, placing needs sneaking; the click goes on to {@link #use}.
-     */
+    /** 1.7 {@code onItemUse}: with the key on, placing needs sneaking; the click goes on to {@link #use}. */
     public static @Nullable InteractionResult beforePlace(UseOnContext context) {
         Player player = context.getPlayer();
         if (ServerConfig.CRATE_OPEN_HELD.get() && player != null && !player.isShiftKeyDown()) {
@@ -123,15 +111,12 @@ public final class CrateHeldOpening {
         return null;
     }
 
-    /**
-     * 1.7 {@code onItemRightClick}.
-     */
+    /** 1.7 {@code onItemRightClick}. */
     public static InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (!ServerConfig.CRATE_OPEN_HELD.get()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         ItemStack stack = player.getItemInHand(hand);
         Kind kind = kindOf(stack);
-        if (kind == null || hand != InteractionHand.MAIN_HAND)
-            return InteractionResult.TRY_WITH_EMPTY_HAND; // 1.7 used getHeldItem
+        if (kind == null || hand != InteractionHand.MAIN_HAND) return InteractionResult.TRY_WITH_EMPTY_HAND; // 1.7 used getHeldItem
         if (!level.isClientSide() && stack.getCount() == 1 && player instanceof ServerPlayer serverPlayer) {
             int lock = ItemStacks.carriedInt(stack, "lock");
             if (lock != 0) {
@@ -159,23 +144,19 @@ public final class CrateHeldOpening {
             return switch (kind) {
                 case TUNGSTEN -> new ContainerCrateTungsten(id, inventory, held, heldSlot);
                 case SAFE -> new ContainerSafe(id, inventory, held, heldSlot);
-                default -> new MenuCrate(ModHeldCrateMenus.CRATE_HELD.get(), id, inventory, crateType(kind), held,
-                        heldSlot);
+                default -> new MenuCrate(ModHeldCrateMenus.CRATE_HELD.get(), id, inventory, crateType(kind), held, heldSlot);
             };
         }, title), kind.ordinal() * HOTBAR_SLOTS + heldSlot);
     }
 
-    /**
-     * 1.7 {@code TileEntityCrateBase.spawnSpiders(player, world, stack)}: three cave spiders, then the flag is gone.
-     */
+    /** 1.7 {@code TileEntityCrateBase.spawnSpiders(player, world, stack)}: three cave spiders, then the flag is gone. */
     public static void spawnSpiders(Player player, Level level, ItemStack crate) {
         if (!ItemStacks.carriedBoolean(crate, "spiders") || !(level instanceof ServerLevel server)) return;
         Random random = new Random();
         for (int i = 0; i < 3; i++) {
             var spider = Entities.createTriggered(EntityType.CAVE_SPIDER, server);
             if (spider == null) continue;
-            spider.snapTo(player.getX() + random.nextGaussian() * 2, player.getY() + 1,
-                    player.getZ() + random.nextGaussian() * 2,
+            spider.snapTo(player.getX() + random.nextGaussian() * 2, player.getY() + 1, player.getZ() + random.nextGaussian() * 2,
                     random.nextFloat(), 0);
             spider.setTarget(player);
             level.addFreshEntity(spider);
@@ -198,9 +179,7 @@ public final class CrateHeldOpening {
         return false;
     }
 
-    /**
-     * The held crate's slots over its stack: 1.7 {@code InventoryCrate}. The client builds a plain stand-in.
-     */
+    /** The held crate's slots over its stack: 1.7 {@code InventoryCrate}. The client builds a plain stand-in. */
     public static final class HeldCrate extends SimpleContainer {
 
         private final Player player;
@@ -219,9 +198,7 @@ public final class CrateHeldOpening {
             playSound(ModSounds.CRATE_OPEN.get()); // 1.7 openInventory: only the server builds one of these
         }
 
-        /**
-         * 1.7 {@code markDirty}: every change goes straight back onto the stack.
-         */
+        /** 1.7 {@code markDirty}: every change goes straight back onto the stack. */
         @Override
         public void setChanged() {
             super.setChanged();
@@ -232,17 +209,13 @@ public final class CrateHeldOpening {
             stamp(target, player.level());
         }
 
-        /**
-         * 1.7 {@code isUseableByPlayer}: while the crate is still the held item, and still one crate.
-         */
+        /** 1.7 {@code isUseableByPlayer}: while the crate is still the held item, and still one crate. */
         @Override
         public boolean stillValid(Player player) {
             return player == this.player && player.getMainHandItem() == target && target.getCount() == 1;
         }
 
-        /**
-         * Called by the held menus when they close (1.7 {@code closeInventory}).
-         */
+        /** Called by the held menus when they close (1.7 {@code closeInventory}). */
         public void closed() {
             playSound(ModSounds.CRATE_CLOSE.get());
             if (player.level().isClientSide()) return;
@@ -251,13 +224,10 @@ public final class CrateHeldOpening {
             if (!ItemStacks.isPlain(target)) stamp(target, player.level());
         }
 
-        /**
-         * 1.7 {@code ItemInventory.openInventory}/{@code closeInventory}: at the player, pitch 0.8.
-         */
+        /** 1.7 {@code ItemInventory.openInventory}/{@code closeInventory}: at the player, pitch 0.8. */
         private void playSound(SoundEvent sound) {
             if (player.level().isClientSide()) return;
-            player.level()
-                  .playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS, 1.0F, 0.8F);
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS, 1.0F, 0.8F);
         }
     }
 }

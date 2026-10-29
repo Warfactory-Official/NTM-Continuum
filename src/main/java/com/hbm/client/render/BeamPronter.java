@@ -24,12 +24,8 @@ import java.util.Random;
  */
 public final class BeamPronter {
 
-    private BeamPronter() {
-    }
-
-    /**
-     * Authored machine-beam opacity; ordinary beams and line geometry keep their own opacity.
-     */
+    private BeamPronter() {}
+    /** Authored machine-beam opacity; ordinary beams and line geometry keep their own opacity. */
     public static float alpha = 1F;
 
     public static void prontMachineBeam(PoseStack ps, SubmitSink collector, Vec3 skeleton,
@@ -55,9 +51,7 @@ public final class BeamPronter {
                 0, 1, 0F, outerColor, innerColor, layers, thickness);
     }
 
-    /**
-     * Source {@code renderBulletStandard}: a narrow material pass with endpoint colours.
-     */
+    /** Source {@code renderBulletStandard}: a narrow material pass with endpoint colours. */
     public static void prontBeamGradient(PoseStack ps, SubmitSink collector, Vec3 skeleton,
                                          int startColor, int endColor, float thickness) {
         ps.pushPose();
@@ -73,9 +67,7 @@ public final class BeamPronter {
         ps.popPose();
     }
 
-    /**
-     * The source six-face projectile pass used by NI4NI and the .358-00 beams.
-     */
+    /** The source six-face projectile pass used by NI4NI and the .358-00 beams. */
     public static void prontBulletGradient(PoseStack ps, SubmitSink collector, Vec3 skeleton,
                                            int startColor, int endColor, float muzzleWidth, float endpointWidth) {
         ps.pushPose();
@@ -105,9 +97,7 @@ public final class BeamPronter {
                         0.03125F, 0.0078125F, lightColor, darkColor));
     }
 
-    /**
-     * Full legacy beam contract used by the Exposure Chamber's animated line effects.
-     */
+    /** Full legacy beam contract used by the Exposure Chamber's animated line effects. */
     public static void prontBeam(PoseStack ps, SubmitSink collector, Vec3 skeleton,
                                  EnumWaveType wave, EnumBeamType beam, int start, int segments,
                                  float size, int outerColor, int innerColor, int layers, float thickness) {
@@ -280,9 +270,7 @@ public final class BeamPronter {
         tris(pose, buffer, color, ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz, opacity);
     }
 
-    /**
-     * Emits the quad (a,b,c,d) as two triangles, matching the source's single no-cull quad.
-     */
+    /** Emits the quad (a,b,c,d) as two triangles, matching the source's single no-cull quad. */
     private static void tris(PoseStack.Pose pose, VertexConsumer buf, int color,
                              float ax, float ay, float az, float bx, float by, float bz,
                              float cx, float cy, float cz, float dx, float dy, float dz, float opacity) {
@@ -308,9 +296,7 @@ public final class BeamPronter {
         Vertexes.color(buf, pose, x, y, z, coverage << 24 | argb & 0xFFFFFF);
     }
 
-    /**
-     * Per-channel linear colour interpolation (the old {@code BobMathUtil.interpolateColor}).
-     */
+    /** Per-channel linear colour interpolation (the old {@code BobMathUtil.interpolateColor}). */
     private static int interpolateColor(int from, int to, float inter) {
         int a = (int) ((from >> 24 & 0xFF) + ((to >> 24 & 0xFF) - (from >> 24 & 0xFF)) * inter);
         int r = (int) ((from >> 16 & 0xFF) + ((to >> 16 & 0xFF) - (from >> 16 & 0xFF)) * inter);
@@ -319,7 +305,6 @@ public final class BeamPronter {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    public enum EnumWaveType {STRAIGHT, RANDOM, SPIRAL}
-
-    public enum EnumBeamType {SOLID, LINE}
+    public enum EnumWaveType { STRAIGHT, RANDOM, SPIRAL }
+    public enum EnumBeamType { SOLID, LINE }
 }

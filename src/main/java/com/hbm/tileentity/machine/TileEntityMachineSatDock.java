@@ -28,7 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class TileEntityMachineSatDock extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
 
-    private static final int[] access = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+    private static final int[] access = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
 
     public TileEntityMachineSatDock(BlockPos pos, BlockState state) {
         super(ModSatelliteBlockEntities.SAT_DOCK.get(), pos, state, 16);
@@ -57,9 +57,7 @@ public class TileEntityMachineSatDock extends TileEntityMachineBase implements M
         }
     }
 
-    /**
-     * 1.7 {@code fauxpointtwelve.BlockPos.getIdentity}, which staggers the pads' request ticks.
-     */
+    /** 1.7 {@code fauxpointtwelve.BlockPos.getIdentity}, which staggers the pads' request ticks. */
     private static int identity(int x, int y, int z) {
         return (y + z * 27644437) * 27644437 + x;
     }
@@ -94,9 +92,7 @@ public class TileEntityMachineSatDock extends TileEntityMachineBase implements M
         return stack;
     }
 
-    /**
-     * 1.7: only the chip slot accepts automation.
-     */
+    /** 1.7: only the chip slot accepts automation. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return slot == 15;

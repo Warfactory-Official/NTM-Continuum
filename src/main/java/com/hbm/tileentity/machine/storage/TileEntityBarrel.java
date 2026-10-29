@@ -84,18 +84,14 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         this.tank = new FluidTankNTM(Fluids.NONE, capacityOf(state.getBlock()));
     }
 
-    /**
-     * For 1.7's subclasses that pass their own capacity to {@code TileEntityBarrel(int)} (the orbus).
-     */
+    /** For 1.7's subclasses that pass their own capacity to {@code TileEntityBarrel(int)} (the orbus). */
     protected TileEntityBarrel(BlockEntityType<?> type, BlockPos pos,
                                BlockState state, int capacity) {
         super(type, pos, state, 6);
         this.tank = new FluidTankNTM(Fluids.NONE, capacity);
     }
 
-    /**
-     * The barrel's capacity is a property of its block (12/6/16/24/16 thousand mB).
-     */
+    /** The barrel's capacity is a property of its block (12/6/16/24/16 thousand mB). */
     public static int capacityOf(Block block) {
         return block instanceof BlockFluidBarrel barrel ? barrel.capacity : 0;
     }
@@ -126,12 +122,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
     }
 
     protected PortDef[] cachedPorts;
-
-    public PortDef[] getPorts() {
-        if (cachedPorts == null)
-            cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
-        return cachedPorts;
-    }
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityBarrel barrel) {
         barrel.tickServer();
@@ -180,13 +171,11 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         if (stack.isEmpty()) return false;
         if (slot == 0 || slot == 1) return stack.getItem() instanceof IItemFluidId;
         FluidType type = tank.getTankType();
-        if (slot == 2 && type == Fluids.NONE && tank.getFill() == 0)
-            return MachineFluidContainerIO.heldFluid(stack) != Fluids.NONE;
+        if (slot == 2 && type == Fluids.NONE && tank.getFill() == 0) return MachineFluidContainerIO.heldFluid(stack) != Fluids.NONE;
         if (slot == 2) {
             int content = FluidContainerRegistry.INSTANCE.contentOf(stack, type);
             // port: the universal bucket, which 1.7's registry never had
-            if (content <= 0 && stack.getItem() instanceof ItemFluidBucket && ItemFluidBucket.getFluid(stack) == type)
-                content = ItemFluidBucket.VOLUME;
+            if (content <= 0 && stack.getItem() instanceof ItemFluidBucket && ItemFluidBucket.getFluid(stack) == type) content = ItemFluidBucket.VOLUME;
             return content > 0 && content <= tank.getMaxFill();
         }
         if (slot == 4) {
@@ -203,42 +192,23 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         return new int[]{2, 3, 4, 5};
     }
 
-    @Override
-    public int[] getSlotsForFace(Direction side) {
-        return new int[]{2, 3, 4, 5};
-    }
+    @Override public int[] getSlotsForFace(Direction side) { return new int[]{2, 3, 4, 5}; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == 3 || slot == 5; }
 
-    @Override
-    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return isItemValidForSlot(slot, stack);
-    }
-
-    @Override
-    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return slot == 3 || slot == 5;
-    }
-
-    /**
-     * 1.7 {@code isAntimatter}: the {@code FT_Amat} carriers (AMAT, ASCHRAB, STELLAR_FLUX).
-     */
+    /** 1.7 {@code isAntimatter}: the {@code FT_Amat} carriers (AMAT, ASCHRAB, STELLAR_FLUX). */
     public static boolean isAntimatter(FluidType type) {
         return type.isAntimatter();
     }
 
-    /**
-     * Replaces the blast of antimatter filled into a matter barrel.
-     */
+    /** Replaces the blast of antimatter filled into a matter barrel. */
     @FunctionalInterface
     public interface AntimatterBlast {
-        /**
-         * Called after the barrel was removed; return true when the listener made the blast.
-         */
+        /** Called after the barrel was removed; return true when the listener made the blast. */
         boolean explode(Level level, BlockPos pos, FluidType type);
     }
 
-    /**
-     * The first listener answering true replaces 1.7's vanilla strength-5 explosion; HBM registers none.
-     */
+    /** The first listener answering true replaces 1.7's vanilla strength-5 explosion; HBM registers none. */
     public static final Hook<AntimatterBlast> ANTIMATTER_BLAST = Hook.notifying();
 
     public void checkFluidInteraction() {
@@ -252,8 +222,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
             for (AntimatterBlast listener : ANTIMATTER_BLAST) {
                 if (listener.explode(level, pos, type)) return;
             }
-            Explosions.explode(level, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true,
-                    Level.ExplosionInteraction.TNT);
+            Explosions.explode(level, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, Level.ExplosionInteraction.TNT);
             return;
         }
         // for when you fill hot or corrosive liquids into a plastic tank
@@ -282,8 +251,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         if (type == Fluids.WATER && level instanceof ServerLevel server) {
             TomSaveData tom = TomSaveData.getExisting(server);
             if (tom != null && tom.fire > 1e-5 && level.getBrightness(LightLayer.SKY, pos) > 7) {
-                Explosions.explode(level, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true,
-                        Level.ExplosionInteraction.TNT);
+                Explosions.explode(level, null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5, true, Level.ExplosionInteraction.TNT);
             }
         }
     }
@@ -298,20 +266,9 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         return !pressureRetired && tank.joins(fluid);
     }
 
-    @Override
-    public FluidTankNTM[] getSendingTanks() {
-        return pressureRetired ? NO_TANKS : new FluidTankNTM[]{tank};
-    }
-
-    @Override
-    public FluidTankNTM[] getReceivingTanks() {
-        return pressureRetired ? NO_TANKS : new FluidTankNTM[]{tank};
-    }
-
-    @Override
-    public FluidTankNTM[] getAllTanks() {
-        return new FluidTankNTM[]{tank};
-    }
+    @Override public FluidTankNTM[] getSendingTanks() { return pressureRetired ? NO_TANKS : new FluidTankNTM[]{tank}; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return pressureRetired ? NO_TANKS : new FluidTankNTM[]{tank}; }
+    @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 
     @Override
     public long getProviderSpeed(FluidType type, int pressure) {
@@ -328,18 +285,13 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         return mode == MODE_BUFFER ? ConnectionPriority.LOW : ConnectionPriority.NORMAL;
     }
 
-    /**
-     * An optional fluid-specific rupture; the barrel retires before the selected blast is emitted.
-     */
+    /** An optional fluid-specific rupture; the barrel retires before the selected blast is emitted. */
     public interface PressureBlast {
         boolean accepts(FluidType fluid, int power);
-
         void explode(ServerLevel level, BlockPos pos, FluidType fluid, int power);
     }
 
-    /**
-     * The first matching reaction replaces the ordinary strength-five receiver rupture.
-     */
+    /** The first matching reaction replaces the ordinary strength-five receiver rupture. */
     public static final Hook<PressureBlast> PRESSURE_BLAST = Hook.notifying();
 
     @Override
@@ -473,8 +425,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
     public String provideRORValue(String name) {
         if ((PREFIX_VALUE + "type").equals(name)) return tank.getTankType().getName();
         if ((PREFIX_VALUE + "fill").equals(name)) return "" + tank.getFill();
-        if ((PREFIX_VALUE + "fillpercent").equals(name))
-            return "" + (tank.getFill() * 100 / Math.max(1, tank.getMaxFill()));
+        if ((PREFIX_VALUE + "fillpercent").equals(name)) return "" + (tank.getFill() * 100 / Math.max(1, tank.getMaxFill()));
         return null;
     }
 

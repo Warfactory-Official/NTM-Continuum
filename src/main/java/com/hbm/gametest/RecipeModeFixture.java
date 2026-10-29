@@ -15,9 +15,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-/**
- * Installs synchronous recipe fixtures as a datapack load under the requested configuration would.
- */
+/** Installs synchronous recipe fixtures as a datapack load under the requested configuration would. */
 final class RecipeModeFixture {
     private static ResourceManager source;
     private static Map<String, JsonElement> files;

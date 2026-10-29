@@ -16,9 +16,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 1.7 {@code RenderTesla}: {@code tesla.obj} turned 180, both-sided, and a random solid arc to every target.
- */
+/** 1.7 {@code RenderTesla}: {@code tesla.obj} turned 180, both-sided, and a random solid arc to every target. */
 public class RenderTesla extends GemBER<TileEntityTesla, RenderTesla.State> {
 
     public static class State extends CompatRenderState {

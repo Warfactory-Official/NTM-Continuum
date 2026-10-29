@@ -24,10 +24,8 @@ import dev.golem.core.Ids;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.data.Tags;
 import dev.golem.core.world.Movement;
-
 import java.util.EnumMap;
 import java.util.HashMap;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -48,9 +46,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
-/**
- * Common flight state and motion rules for HBM's jetpacks, glider and wings.
- */
+/** Common flight state and motion rules for HBM's jetpacks, glider and wings. */
 public final class JetpackHandler {
 
     public static final String JETPACK_NBT = "hbmJetpackAdvanced";
@@ -67,12 +63,9 @@ public final class JetpackHandler {
     private static volatile BiConsumer<Level, JetpackSyncPayload> clientSyncCallback;
     private static volatile BiConsumer<Level, JetpackExhaustPayload> clientExhaustCallback;
 
-    private JetpackHandler() {
-    }
+    private JetpackHandler() {}
 
-    /**
-     * Returns the state for a player, loading the advanced state carried by a worn glider if present.
-     */
+    /** Returns the state for a player, loading the advanced state carried by a worn glider if present. */
     public static JetpackInfo getState(Player player) {
         if (player == null) return null;
         StateKey key = stateKey(player);
@@ -81,9 +74,7 @@ public final class JetpackHandler {
         return state;
     }
 
-    /**
-     * Alias retained for the old handler's public client contract.
-     */
+    /** Alias retained for the old handler's public client contract. */
     public static JetpackInfo get(Player player) {
         return getState(player);
     }
@@ -98,9 +89,7 @@ public final class JetpackHandler {
         }
     }
 
-    /**
-     * UUID form for client render code that already has a stable player identity.
-     */
+    /** UUID form for client render code that already has a stable player identity. */
     public static JetpackInfo getState(UUID player) {
         if (player == null) return null;
         JetpackInfo server = null;
@@ -112,9 +101,7 @@ public final class JetpackHandler {
         return server;
     }
 
-    /**
-     * Exact side/world UUID form for callers that have a level but not its Player object.
-     */
+    /** Exact side/world UUID form for callers that have a level but not its Player object. */
     public static JetpackInfo getState(Level level, UUID player) {
         if (level == null || player == null) return null;
         return STATES.get(new StateKey(level.isClientSide(), player, level));
@@ -124,9 +111,7 @@ public final class JetpackHandler {
         if (player != null) STATES.remove(stateKey(player));
     }
 
-    /**
-     * Clears both client/server state for one world during level teardown or client disconnect.
-     */
+    /** Clears both client/server state for one world during level teardown or client disconnect. */
     public static void clear(Level level) {
         if (level == null) return;
         for (SmokeSession session : SMOKE_SESSIONS.values()) {
@@ -135,16 +120,12 @@ public final class JetpackHandler {
         STATES.keySet().removeIf(key -> key.level() == level);
     }
 
-    /**
-     * Clears client-side state when the local connection has no active level.
-     */
+    /** Clears client-side state when the local connection has no active level. */
     public static void clearClientState() {
         STATES.keySet().removeIf(StateKey::client);
     }
 
-    /**
-     * Removes server states for players who disconnected or changed dimensions.
-     */
+    /** Removes server states for players who disconnected or changed dimensions. */
     public static void cleanup(Level level) {
         if (!(level instanceof ServerLevel server)) return;
         for (SmokeSession session : SMOKE_SESSIONS.values()) {
@@ -159,19 +140,16 @@ public final class JetpackHandler {
                 && server.players().stream().noneMatch(player -> player.getUUID().equals(entry.getKey().uuid())));
     }
 
-    /**
-     * Starts the bounded development smoke fixture while retaining the player's exact chest state.
-     */
+    /** Starts the bounded development smoke fixture while retaining the player's exact chest state. */
     public static void startSmoke(ServerPlayer player) {
         if (player == null || !(player.level() instanceof ServerLevel level)) return;
         stopSmoke(player);
         Map<EquipmentSlot, ItemStack> originalEquipment = new EnumMap<>(EquipmentSlot.class);
-        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET})
+        for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET})
             originalEquipment.put(slot, player.getItemBySlot(slot).copy());
         SmokeSession session = new SmokeSession(player, level,
                 originalEquipment, new HashMap<>(), player.isNoGravity(), player.onGround(),
-                player.getDeltaMovement(), player.isShiftKeyDown(),
-                "water".equals(System.getenv("HBM_JETPACK_CHECK_GEAR"))
+                player.getDeltaMovement(), player.isShiftKeyDown(), "water".equals(System.getenv("HBM_JETPACK_CHECK_GEAR"))
                         || "occlusion".equals(System.getenv("HBM_JETPACK_CHECK_GEAR"))
                         || "crouch".equals(System.getenv("HBM_JETPACK_CHECK_GEAR"))
                         || "flight_crouch".equals(System.getenv("HBM_JETPACK_CHECK_GEAR")) ? player.position() : null,
@@ -237,7 +215,7 @@ public final class JetpackHandler {
             BlockPos position = player.blockPosition().offset(0, -1, 3);
             if (level.getBlockState(position).isAir()) {
                 var bomb = ModBombBlocks.nuke_man.get().defaultBlockState()
-                                                 .setValue(NukeMan.FACING, 2);
+                        .setValue(NukeMan.FACING, 2);
                 level.setBlock(position, bomb, 3);
                 session.temporaryBlocks().put(position, bomb);
                 Constants.LOG.info("Bomb visual fixture at {} (player {}), block entity {}",
@@ -258,23 +236,20 @@ public final class JetpackHandler {
                 }
             }
             // A contained, source-only basin: no flowing water escapes the owned fixture positions.
-            for (int y = -1; y <= 0; y++)
-                for (int x = -7; x <= 7; x++)
-                    for (int z = -7; z <= 7; z++) {
-                        BlockPos position = center.offset(x, y, z);
-                        var state = y == -1 || Math.abs(x) == 7 || Math.abs(z) == 7
-                                ? Blocks.STONE.defaultBlockState()
-                                : Blocks.WATER.defaultBlockState();
-                        if (!level.setBlock(position, state, 3)) {
-                            stopSmoke(player);
-                            throw new IllegalStateException("Failed to place water visual fixture at " + position);
-                        }
-                        session.temporaryBlocks().put(position, state);
-                    }
+            for (int y = -1; y <= 0; y++) for (int x = -7; x <= 7; x++) for (int z = -7; z <= 7; z++) {
+                BlockPos position = center.offset(x, y, z);
+                var state = y == -1 || Math.abs(x) == 7 || Math.abs(z) == 7
+                        ? Blocks.STONE.defaultBlockState()
+                        : Blocks.WATER.defaultBlockState();
+                if (!level.setBlock(position, state, 3)) {
+                    stopSmoke(player);
+                    throw new IllegalStateException("Failed to place water visual fixture at " + position);
+                }
+                session.temporaryBlocks().put(position, state);
+            }
             player.connection.teleport(center.getX() + 0.5D, center.getY() + 2D, center.getZ() + 0.5D,
                     0F, "occlusion".equals(gear) ? 0F : 60F);
-            Constants.LOG.info("Water visual fixture: {} contained source blocks at {} beneath player", 13 * 13,
-                    center);
+            Constants.LOG.info("Water visual fixture: {} contained source blocks at {} beneath player", 13 * 13, center);
         }
     }
 
@@ -294,9 +269,7 @@ public final class JetpackHandler {
         return null;
     }
 
-    /**
-     * Stops the development smoke fixture and restores only the state owned by its start command.
-     */
+    /** Stops the development smoke fixture and restores only the state owned by its start command. */
     public static boolean stopSmoke(ServerPlayer player) {
         if (player == null) return false;
         SmokeSession session = SMOKE_SESSIONS.remove(player.getUUID());
@@ -305,14 +278,14 @@ public final class JetpackHandler {
         session.temporaryBlocks().forEach((position, state) -> {
             if (state.is(Blocks.WATER)
                     && session.level().getBlockState(position).equals(state)) session.level().setBlock(position,
-                    Blocks.AIR.defaultBlockState(), 3);
+                            Blocks.AIR.defaultBlockState(), 3);
         });
         session.temporaryBlocks().forEach((position, state) -> {
             if (session.level().getBlockState(position).equals(state)) session.level().removeBlock(position, false);
         });
         if (!session.temporaryBlocks().isEmpty()) {
             long remaining = session.temporaryBlocks().keySet().stream()
-                                    .filter(position -> !session.level().getBlockState(position).isAir()).count();
+                    .filter(position -> !session.level().getBlockState(position).isAir()).count();
             Constants.LOG.info("Visual fixture cleanup: {} positions, {} non-air remaining",
                     session.temporaryBlocks().size(), remaining);
         }
@@ -331,9 +304,7 @@ public final class JetpackHandler {
         return true;
     }
 
-    /**
-     * Client-side source identity: equivalent network snapshots of one item are not equipment swaps.
-     */
+    /** Client-side source identity: equivalent network snapshots of one item are not equipment swaps. */
     public static boolean isEquivalentClientSource(ItemStack previous,
                                                    ItemStack current) {
         if (previous == null || current == null || previous.isEmpty() || current.isEmpty()) {
@@ -357,17 +328,9 @@ public final class JetpackHandler {
             this.level = level;
         }
 
-        private boolean client() {
-            return client;
-        }
-
-        private UUID uuid() {
-            return uuid;
-        }
-
-        private Level level() {
-            return level;
-        }
+        private boolean client() { return client; }
+        private UUID uuid() { return uuid; }
+        private Level level() { return level; }
 
         @Override
         public boolean equals(Object object) {
@@ -385,11 +348,9 @@ public final class JetpackHandler {
 
     private record SmokeSession(ServerPlayer player, ServerLevel level, Map<EquipmentSlot, ItemStack> originalEquipment,
                                 Map<BlockPos, BlockState> temporaryBlocks,
-                                boolean originalNoGravity, boolean originalOnGround, Vec3 originalMotion,
-                                boolean originalSneaking,
-                                Vec3 originalPosition,
-                                long expiresAt) {
-    }
+                                 boolean originalNoGravity, boolean originalOnGround, Vec3 originalMotion, boolean originalSneaking,
+                                 Vec3 originalPosition,
+                                long expiresAt) {}
 
     private static JetpackInfo stateFromStack(Player player) {
         JetpackInfo state = new JetpackInfo();
@@ -422,23 +383,17 @@ public final class JetpackHandler {
         }
     }
 
-    /**
-     * Whether any direct or armor-module jetpack is worn in the chest slot.
-     */
+    /** Whether any direct or armor-module jetpack is worn in the chest slot. */
     public static boolean hasJetpack(Player player) {
         return currentJetpack(player) != null;
     }
 
-    /**
-     * The actual direct or installed chest jetpack, or null when none is worn.
-     */
+    /** The actual direct or installed chest jetpack, or null when none is worn. */
     public static ItemStack currentJetpack(Player player) {
         return findJetpack(player).stack();
     }
 
-    /**
-     * Directional thrust's appearance gates; this never changes the player's physical flight flags.
-     */
+    /** Directional thrust's appearance gates; this never changes the player's physical flight flags. */
     public static boolean directionalFlight(Player player) {
         if (!player.isAlive() || player.onGround() || player.isPassenger() || player.isSleeping()
                 || player.isInWater() || player.isInLava() || player.isSwimming() || player.isAutoSpinAttack()
@@ -462,25 +417,19 @@ public final class JetpackHandler {
         return hasJetpack(player) || hasPoweredFlight(player);
     }
 
-    /**
-     * General C-toggle state used by ordinary jetpacks, wings and powered armor.
-     */
+    /** General C-toggle state used by ordinary jetpacks, wings and powered armor. */
     public static boolean isBackpackEnabled(Player player) {
         JetpackInfo state = getState(player);
         return state != null && state.backpackEnabled;
     }
 
-    /**
-     * General V-toggle state used by the HUD; the glider's U mode is separate.
-     */
+    /** General V-toggle state used by the HUD; the glider's U mode is separate. */
     public static boolean isHudEnabled(Player player) {
         JetpackInfo state = getState(player);
         return state != null && state.hudEnabled;
     }
 
-    /**
-     * The old J activation state for ordinary gear and powered suits. Gliders use their delayed opening state.
-     */
+    /** The old J activation state for ordinary gear and powered suits. Gliders use their delayed opening state. */
     public static boolean isJetpackActive(Player player) {
         JetpackInfo state = getState(player);
         if (state == null) return false;
@@ -572,9 +521,7 @@ public final class JetpackHandler {
         return 0F;
     }
 
-    /**
-     * Drain is one for every supported fuel; thrust provides the scaling.
-     */
+    /** Drain is one for every supported fuel; thrust provides the scaling. */
     public static int getDrain(FluidType type) {
         return type == Fluids.KEROSENE
                 || type == Fluids.KEROSENE_REFORM
@@ -582,16 +529,12 @@ public final class JetpackHandler {
                 || type == Fluids.BALEFIRE ? 1 : 0;
     }
 
-    /**
-     * Resets the server's vanilla floating check through Core's loader/access seam.
-     */
+    /** Resets the server's vanilla floating check through Core's loader/access seam. */
     public static void resetFlightTime(Player player) {
         if (player instanceof ServerPlayer serverPlayer) Movement.resetFloatingTickCount(serverPlayer);
     }
 
-    /**
-     * Handles both the server's authoritative key edge and the client's local prediction.
-     */
+    /** Handles both the server's authoritative key edge and the client's local prediction. */
     public static void handleKeybind(Player player, HbmKeybinds.EnumKeybind keybind, boolean state) {
         if (player == null || keybind == null) return;
         JetpackInfo info = getState(player);
@@ -627,9 +570,7 @@ public final class JetpackHandler {
                 info.headToggleKeyDown = state;
                 info.dirty = true;
             }
-            default -> {
-                return;
-            }
+            default -> { return; }
         }
         info.dirty = true;
         if (player instanceof ServerPlayer serverPlayer) sendState(serverPlayer, info);
@@ -667,9 +608,7 @@ public final class JetpackHandler {
         }
     }
 
-    /**
-     * Supplies the client-side movement input without importing a client movement-input class into common code.
-     */
+    /** Supplies the client-side movement input without importing a client movement-input class into common code. */
     public static void setInput(Player player, float forward, float strafe, boolean jump,
                                 boolean sneak, boolean sprint) {
         JetpackInputPayload input = new JetpackInputPayload(forward, strafe, jump, sneak, sprint);
@@ -682,9 +621,7 @@ public final class JetpackHandler {
         info.sprint = input.sprint();
     }
 
-    /**
-     * Client seam: applies local prediction and sends the bounded input to the authenticated server player.
-     */
+    /** Client seam: applies local prediction and sends the bounded input to the authenticated server player. */
     public static void sendInput(Player player, float forward, float strafe, boolean jump,
                                  boolean sneak, boolean sprint) {
         if (player == null) return;
@@ -693,9 +630,7 @@ public final class JetpackHandler {
         if (player.level().isClientSide()) GolemNetwork.sendToServer(JetpackInputPayload.CODEC, input);
     }
 
-    /**
-     * Server receiver; the transport context, never a payload field, supplies the authenticated player.
-     */
+    /** Server receiver; the transport context, never a payload field, supplies the authenticated player. */
     public static void handleInput(ServerPlayer player, JetpackInputPayload input) {
         if (player == null || input == null) return;
         setInput(player, input.forward(), input.strafe(), input.jump(), input.sneak(), input.sprint());
@@ -718,9 +653,7 @@ public final class JetpackHandler {
         return info == null ? 0F : info.strafe;
     }
 
-    /**
-     * Applies the advanced glider formula with the last input supplied by the client seam.
-     */
+    /** Applies the advanced glider formula with the last input supplied by the client seam. */
     public static void tickGlider(Player player) {
         JetpackInfo info = getState(player);
         if (info == null) return;
@@ -728,9 +661,7 @@ public final class JetpackHandler {
         tickGlider(player, info.forward, info.strafe, info.jump, info.sneak, info.sprint);
     }
 
-    /**
-     * Applies the advanced glider formula from a loader/client input event.
-     */
+    /** Applies the advanced glider formula from a loader/client input event. */
     public static void tickGlider(Player player, float forward, float strafe, boolean jump,
                                   boolean sneak, boolean sprint) {
         JetpackInfo info = getState(player);
@@ -793,9 +724,7 @@ public final class JetpackHandler {
         info.dirty = true;
     }
 
-    /**
-     * Server tick: drain glider fuel, persist its state and replicate state to tracking clients.
-     */
+    /** Server tick: drain glider fuel, persist its state and replicate state to tracking clients. */
     public static void serverTick(ServerPlayer player) {
         // Bob, the_NCR and Pheo fly on their own wings (SpecialPlayers) and keep the C/jump state without gear
         if (player == null || player.isRemoved() || !hasFlightGear(player) && !SpecialPlayers.hasInnateFlight(player)) {
@@ -853,16 +782,11 @@ public final class JetpackHandler {
         info.dirty = false;
     }
 
-    /**
-     * Pairing supplies the current input before a newly tracking client extracts the player's pose.
-     */
+    /** Pairing supplies the current input before a newly tracking client extracts the player's pose. */
     public static void sendStateTo(ServerPlayer player, ServerPlayer observer) {
         GolemNetwork.sendToPlayer(observer, JetpackSyncPayload.CODEC, getState(player).toPayload(player.getId()));
     }
-
-    /**
-     * Sends the remote plume cue; the client installs its renderer through the callback below.
-     */
+    /** Sends the remote plume cue; the client installs its renderer through the callback below. */
     public static void sendExhaust(Player player, int mode) {
         if (!(player instanceof ServerPlayer) || !(player.level() instanceof ServerLevel level)) return;
         GolemNetwork.sendToTracking(level, BlockPos.containing(player.getX(), player.getY(), player.getZ()),
@@ -877,9 +801,7 @@ public final class JetpackHandler {
         clientExhaustCallback = callback;
     }
 
-    /**
-     * Common receiver: updates state first, then gives the client-owned visual layer its callback.
-     */
+    /** Common receiver: updates state first, then gives the client-owned visual layer its callback. */
     public static void dispatchClientSync(Level level, JetpackSyncPayload payload) {
         if (level != null) {
             Entity entity = level.getEntity(payload.playerId());
@@ -916,14 +838,11 @@ public final class JetpackHandler {
 
     private static ItemStackAccess findGlider(Player player) {
         ItemStackAccess jetpack = findJetpack(player);
-        return jetpack.stack() != null && jetpack.stack()
-                                                 .getItem() instanceof JetpackGlider ? jetpack : new ItemStackAccess(
-                null, null);
+        return jetpack.stack() != null && jetpack.stack().getItem() instanceof JetpackGlider ? jetpack : new ItemStackAccess(null, null);
     }
 
     private record ItemStackAccess(ItemStack stack,
-                                   ItemStack outer) {
-    }
+                                   ItemStack outer) {}
 
     public static final class JetpackInfo {
         public boolean opening;
@@ -954,14 +873,10 @@ public final class JetpackHandler {
         private long inputLastTick = Long.MIN_VALUE;
         private boolean inputReceived;
 
-        public JetpackInfo() {
-        }
+        public JetpackInfo() {}
 
-        /**
-         * Compatibility constructor; client-only particles live behind the callback seam now.
-         */
-        public JetpackInfo(boolean client) {
-        }
+        /** Compatibility constructor; client-only particles live behind the callback seam now. */
+        public JetpackInfo(boolean client) {}
 
         private void resetFlightState() {
             opening = false;

@@ -5,18 +5,14 @@ import com.hbm.handler.JetpackHandler;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.sound.ModSounds;
-
 import java.util.List;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-/**
- * Regular jetpack with the old automatic airborne hover assist.
- */
+/** Regular jetpack with the old automatic airborne hover assist. */
 public class JetpackBreak extends JetpackFueledBase {
 
     public JetpackBreak(FluidType fuel, int maxFuel, Properties properties) {
@@ -31,9 +27,7 @@ public class JetpackBreak extends JetpackFueledBase {
         super.addInformation(stack, tooltip);
     }
 
-    /**
-     * The same thrust/hover arms that actually support flight and reset the flight timeout.
-     */
+    /** The same thrust/hover arms that actually support flight and reset the flight timeout. */
     public boolean heldAloft(Player player, ItemStack stack) {
         boolean active = isActive(player);
         return getFuel(stack) > 0 && (active && !player.isShiftKeyDown()

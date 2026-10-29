@@ -9,10 +9,8 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.world.ItemStacks;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -36,10 +34,8 @@ public final class StorageDrumRecipes {
         }
     }
 
-    public record Row(GenericRecipeCodec.ItemOut input, GenericRecipeCodec.ItemOut output, String decay, int divisor,
-                      int liquid,
-                      int gas) {
-    }
+    public record Row(GenericRecipeCodec.ItemOut input, GenericRecipeCodec.ItemOut output, String decay, int divisor, int liquid,
+                      int gas) {}
 
     public static final MapCodec<Row> CODEC = FluidRecipeCodecs.checked(RecordCodecBuilder.<Row>mapCodec(i -> i.group(
             GenericRecipeCodec.ITEM_OUT.fieldOf("input").forGetter(Row::input),
@@ -50,8 +46,7 @@ public final class StorageDrumRecipes {
             Codec.INT.optionalFieldOf("gas", 0).forGetter(Row::gas)
     ).apply(i, Row::new)), row -> !row.decay().equals("long") && !row.decay().equals("short")
             ? DataResult.error(() -> "storage drum \"decay\" is \"long\" or \"short\", not " + row.decay())
-            : row.divisor() < 1 ? DataResult.error(
-            () -> "storage drum \"divisor\" must be at least 1") : DataResult.success(row));
+            : row.divisor() < 1 ? DataResult.error(() -> "storage drum \"divisor\" must be at least 1") : DataResult.success(row));
 
     public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("storage_drum", () -> CODEC);
 
@@ -64,26 +59,18 @@ public final class StorageDrumRecipes {
         TABLE.changed.register(StorageDrumRecipes::reindex);
     }
 
-    private StorageDrumRecipes() {
-    }
+    private StorageDrumRecipes() {}
 
-    /**
-     * Declares the table at mod construction.
-     */
-    public static void declare() {
-    }
+    /** Declares the table at mod construction. */
+    public static void declare() {}
 
-    /**
-     * 1.7 {@code VersatileConfig.getLongDecayChance}: 3 h, 15 h in 528 mode, 15 min with LBSM_shortDecay.
-     */
+    /** 1.7 {@code VersatileConfig.getLongDecayChance}: 3 h, 15 h in 528 mode, 15 min with LBSM_shortDecay. */
     public static int longDecayChance() {
         return GeneralConfig.enable528 ? 15 * HOUR
                 : (GeneralConfig.enableLBSM && GeneralConfig.enableLBSMShorterDecay) ? 15 * MINUTE : 3 * HOUR;
     }
 
-    /**
-     * 1.7 {@code VersatileConfig.getShortDecayChance}: 15 min, 3 h in 528 mode, 3 min with LBSM_shortDecay.
-     */
+    /** 1.7 {@code VersatileConfig.getShortDecayChance}: 15 min, 3 h in 528 mode, 3 min with LBSM_shortDecay. */
     public static int shortDecayChance() {
         return GeneralConfig.enable528 ? 3 * HOUR
                 : (GeneralConfig.enableLBSM && GeneralConfig.enableLBSMShorterDecay) ? 3 * MINUTE : 15 * MINUTE;
@@ -103,9 +90,7 @@ public final class StorageDrumRecipes {
         index = new Index(List.copyOf(next), longChance, shortChance);
     }
 
-    /**
-     * Loads the rows if nothing has yet (they load by themselves; kept for callers of the former Java table).
-     */
+    /** Loads the rows if nothing has yet (they load by themselves; kept for callers of the former Java table). */
     public static void registerRecipes() {
         getAll();
     }

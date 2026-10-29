@@ -6,9 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.data.DataMaps;
 import dev.golem.core.data.DataMaps.DataMap;
-
 import java.util.Optional;
-
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.material.Fluid;
@@ -19,8 +17,7 @@ import net.minecraft.world.level.material.Fluid;
  */
 public final class FluidDataMaps {
 
-    private FluidDataMaps() {
-    }
+    private FluidDataMaps() {}
 
     private static <V> DataMap<Fluid, V> fluid(String name, Codec<V> codec) {
         return DataMaps.map(FluidDataMaps.class, Constants.MOD_ID, name, "fluid", () -> BuiltInRegistries.FLUID, codec);
@@ -40,9 +37,7 @@ public final class FluidDataMaps {
         ).apply(i, Containers::new));
     }
 
-    /**
-     * Fluids the autosaw and the thresher burn ({@code true}; 1.7 {@code TileEntityMachineAutosaw.acceptedFuels}).
-     */
+    /** Fluids the autosaw and the thresher burn ({@code true}; 1.7 {@code TileEntityMachineAutosaw.acceptedFuels}). */
     public static final DataMap<Fluid, Boolean> AUTOSAW_FUEL = fluid("autosaw_fuel", Codec.BOOL);
 
     /**
@@ -77,9 +72,6 @@ public final class FluidDataMaps {
         ).apply(i, Container::new));
     }
 
-    /**
-     * Loads the class at mod construction (from {@link HbmDataMaps#declare()}).
-     */
-    public static void declare() {
-    }
+    /** Loads the class at mod construction (from {@link HbmDataMaps#declare()}). */
+    public static void declare() {}
 }

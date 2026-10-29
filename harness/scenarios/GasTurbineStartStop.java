@@ -49,8 +49,7 @@ public final class GasTurbineStartStop implements Scenario {
 
         pressIgnition(c);
         c.waitServerTicks(600);
-        Expect.that(state(c, core) == 1,
-                "start after a full shutdown did not bring the turbine online, nbt: " + nbt(c, core));
+        Expect.that(state(c, core) == 1, "start after a full shutdown did not bring the turbine online, nbt: " + nbt(c, core));
         c.screenshot("06-online-again");
         pressIgnition(c);
         c.waitServerTicks(5);

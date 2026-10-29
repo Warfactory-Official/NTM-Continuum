@@ -58,10 +58,7 @@ public class TileEntityMachineTapeDrive extends TileEntityMachineBase implements
         };
     }
 
-    @Override
-    public String getDefaultName() {
-        return "container.machineTapeDrive";
-    }
+    @Override public String getDefaultName() { return "container.machineTapeDrive"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTapeDrive te) {
         if (level.getGameTime() % 10 == 0) te.readSatellite((ServerLevel) level, pos, state);
@@ -72,9 +69,7 @@ public class TileEntityMachineTapeDrive extends TileEntityMachineBase implements
         BlockPos behind = pos.relative(state.getValue(MachineTapeDrive.FACING).getOpposite());
         BlockEntity connected = MultiblockSurface.coreEntity(level, behind);
         // 1.7 reaches the ground station through its proxies, which are only its bottom layer
-        if (!(connected instanceof TileEntityMachineSatLink link) || link.getBlockPos()
-                                                                         .getY() != behind.getY() || !link.connected)
-            return;
+        if (!(connected instanceof TileEntityMachineSatLink link) || link.getBlockPos().getY() != behind.getY() || !link.connected) return;
 
         SatelliteSavedData data = SatelliteSavedData.get(level, link.getBlockPos());
         Satellite satellite = data.getSatFromFreq(link.freq);
@@ -94,25 +89,11 @@ public class TileEntityMachineTapeDrive extends TileEntityMachineBase implements
         }
     }
 
-    @Override
-    public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return stack.getItem() instanceof ItemDrive;
-    }
+    @Override public boolean isItemValidForSlot(int slot, ItemStack stack) { return stack.getItem() instanceof ItemDrive; }
+    @Override public int getMaxStackSize() { return 1; }
 
-    @Override
-    public int getMaxStackSize() {
-        return 1;
-    }
-
-    @Override
-    public int[] getSlotsForFace(Direction side) {
-        return SLOTS;
-    }
-
-    @Override
-    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return isItemValidForSlot(slot, stack);
-    }
+    @Override public int[] getSlotsForFace(Direction side) { return SLOTS; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
@@ -145,13 +126,6 @@ public class TileEntityMachineTapeDrive extends TileEntityMachineBase implements
         for (int i = 0; i < 12; i++) tapes[i] = buf.readByte();
     }
 
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable(getName());
-    }
-
-    @Override
-    public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-        return new ContainerTapeDrive(id, inv, this);
-    }
+    @Override public Component getDisplayName() { return Component.translatable(getName()); }
+    @Override public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) { return new ContainerTapeDrive(id, inv, this); }
 }

@@ -48,16 +48,12 @@ import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKRod;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.BlockEntities;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.IntConsumer;
-
 import net.minecraft.core.BlockPos;
-
 import java.util.List;
-
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.AABB;
@@ -86,13 +82,10 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKDisplay;
 
-/**
- * Second reactor audit: running machines for many real ticks against numbers worked out from the 1.7 classes.
- */
+/** Second reactor audit: running machines for many real ticks against numbers worked out from the 1.7 classes. */
 public final class RcNuke2GameTests {
 
-    private RcNuke2GameTests() {
-    }
+    private RcNuke2GameTests() {}
 
     private static void ticks(GameTestHelper helper, int count, IntConsumer afterTick, Runnable done) {
         step(helper, 0, count, afterTick, done);
@@ -109,9 +102,7 @@ public final class RcNuke2GameTests {
         });
     }
 
-    /**
-     * 1.7 BobMathUtil.squirt.
-     */
+    /** 1.7 BobMathUtil.squirt. */
     private static double squirt(double x) {
         return Math.sqrt(x + 1D / ((x + 2D) * (x + 2D))) - 1D / (x + 2D);
     }
@@ -123,17 +114,14 @@ public final class RcNuke2GameTests {
         BlockEntity fresh = ((EntityBlock) state.getBlock()).newBlockEntity(be.getBlockPos(), state);
         fresh.setLevel(level);
         BlockEntities.loadWithComponents(fresh, saved, level.registryAccess());
-        helper.assertTrue(saved.equals(BlockEntities.save(fresh, level.registryAccess())),
-                what + " does not round trip");
+        helper.assertTrue(saved.equals(BlockEntities.save(fresh, level.registryAccess())), what + " does not round trip");
     }
 
 
     public static final int FUSION_PADDING = 24;
     public static final int WASTE_PADDING = 24;
 
-    /**
-     * The ten cycles against 1.7 FusionRecipes: ignition, output, flux (breeder capacity / divisor), power and duration.
-     */
+    /** The ten cycles against 1.7 FusionRecipes: ignition, output, flux (breeder capacity / divisor), power and duration. */
     public static void fusionRecipeTable(GameTestHelper helper) {
         FusionRecipes.INSTANCE.registerRecipes();
         double cap = TileEntityFusionBreeder.CAPACITY;
@@ -169,11 +157,9 @@ public final class RcNuke2GameTests {
         FoldedTestSupport.assemble(helper, ModMachineBlocks.fusion_collector.get(), c.west(10), Direction.WEST);
         FoldedTestSupport.assemble(helper, ModMachineBlocks.fusion_breeder.get(), c.south(10), Direction.SOUTH);
         TileEntityFusionTorus torus = GameTestHelpers.blockEntity(helper, c, TileEntityFusionTorus.class);
-        TileEntityFusionKlystron klystron = GameTestHelpers.blockEntity(helper, c.east(12),
-                TileEntityFusionKlystron.class);
+        TileEntityFusionKlystron klystron = GameTestHelpers.blockEntity(helper, c.east(12), TileEntityFusionKlystron.class);
         TileEntityFusionBoiler boiler = GameTestHelpers.blockEntity(helper, c.north(12), TileEntityFusionBoiler.class);
-        TileEntityFusionBreeder breeder = GameTestHelpers.blockEntity(helper, c.south(10),
-                TileEntityFusionBreeder.class);
+        TileEntityFusionBreeder breeder = GameTestHelpers.blockEntity(helper, c.south(10), TileEntityFusionBreeder.class);
 
         torus.fusionModule.recipe = "fus.dd";
         torus.fusionModule.setupTanks(torus.fusionModule.getRecipe());
@@ -193,20 +179,16 @@ public final class RcNuke2GameTests {
         ticks(helper, 225, k -> {
             if (torus.didProcess) {
                 active[0]++;
-                helper.assertTrue(lastPower[0] - torus.power == 25_000L,
-                        "power per tick " + (lastPower[0] - torus.power));
-                helper.assertTrue(lastDeut[0] - torus.tanks[0].getFill() == 20,
-                        "deuterium per tick " + (lastDeut[0] - torus.tanks[0].getFill()));
+                helper.assertTrue(lastPower[0] - torus.power == 25_000L, "power per tick " + (lastPower[0] - torus.power));
+                helper.assertTrue(lastDeut[0] - torus.tanks[0].getFill() == 20, "deuterium per tick " + (lastDeut[0] - torus.tanks[0].getFill()));
                 helper.assertTrue(torus.plasmaEnergy == 1_000_000L, "plasma " + torus.plasmaEnergy);
-                helper.assertTrue(torus.klystronEnergySync() == 750_000L,
-                        "klystron energy " + torus.klystronEnergySync());
+                helper.assertTrue(torus.klystronEnergySync() == 750_000L, "klystron energy " + torus.klystronEnergySync());
                 helper.assertTrue(torus.fuelConsumption == 1D, "fuel factor " + torus.fuelConsumption);
                 int steam = Math.min(32_000, 5_000 * active[0]);
                 helper.assertTrue(boiler.tanks[1].getFill() == steam && boiler.tanks[0].getFill() == 32_000 - steam,
                         "boiler steam " + boiler.tanks[1].getFill() + " water " + boiler.tanks[0].getFill() + " after " + active[0] + " active ticks");
                 if (active[0] < 200) {
-                    helper.assertTrue(breeder.progress == 50D * active[0],
-                            "breeder progress " + breeder.progress + " after " + active[0]);
+                    helper.assertTrue(breeder.progress == 50D * active[0], "breeder progress " + breeder.progress + " after " + active[0]);
                 }
             }
             lastPower[0] = torus.power = torus.getMaxPower();
@@ -223,8 +205,7 @@ public final class RcNuke2GameTests {
             // 2 whole cycles (progress 0.01 a tick) plus one banked collector bonus (0.005 a tick), 1,000 mB helium each
             helper.assertTrue(torus.tanks[3].getFill() == 3_000, "helium-4 " + torus.tanks[3].getFill());
             helper.assertTrue(breeder.inventory.getStackInSlot(2).is(ModAbilityToolItems.meteorite_sword_fused.get())
-                            && breeder.inventory.getStackInSlot(1).isEmpty(),
-                    "the irradiated sword must be fused after 10,000 neutrons");
+                    && breeder.inventory.getStackInSlot(1).isEmpty(), "the irradiated sword must be fused after 10,000 neutrons");
             roundTrip(helper, torus, "torus");
             roundTrip(helper, breeder, "breeder");
             roundTrip(helper, boiler, "boiler");
@@ -241,8 +222,7 @@ public final class RcNuke2GameTests {
                 }
                 if (k > 3) {
                     helper.assertFalse(torus.didProcess, "700,000 KyU cannot ignite D-D");
-                    helper.assertTrue(torus.power == base[0] && torus.tanks[0].getFill() == base[1],
-                            "an unlit torus draws nothing");
+                    helper.assertTrue(torus.power == base[0] && torus.tanks[0].getFill() == base[1], "an unlit torus draws nothing");
                     helper.assertTrue(torus.plasmaEnergy == 0L, "no plasma without ignition");
                     helper.assertTrue(klystron.output == 700_000L, "klystron output " + klystron.output);
                 }
@@ -260,9 +240,7 @@ public final class RcNuke2GameTests {
         for (int i = 3; i < 6; i++) te.inventory.setStackInSlot(i, new ItemStack(ModItems.powder_strontium.get(), 2));
     }
 
-    /**
-     * Level-ticked cyclotron: 1,000,000 HE, 500 mB coolant and 1 progress a tick, 690 for a cycle, 50 + 25 + 15 antimatter.
-     */
+    /** Level-ticked cyclotron: 1,000,000 HE, 500 mB coolant and 1 progress a tick, 690 for a cycle, 50 + 25 + 15 antimatter. */
     public static void cyclotronRun(GameTestHelper helper) {
         BlockPos c = GameTests.paddedCentre(CYCLOTRON_PADDING, 3);
         FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_cyclotron.get(), c);
@@ -278,8 +256,7 @@ public final class RcNuke2GameTests {
                 helper.assertTrue(last[0] - te.power == 1_000_000L, "power per tick " + (last[0] - te.power));
                 helper.assertTrue(te.tanks[0].getFill() == 32_000 - 500 && te.tanks[1].getFill() == 500,
                         "coolant " + te.tanks[0].getFill() + " spent " + te.tanks[1].getFill());
-                if (active[0] < 690)
-                    helper.assertTrue(te.progress == active[0], "progress " + te.progress + " after " + active[0]);
+                if (active[0] < 690) helper.assertTrue(te.progress == active[0], "progress " + te.progress + " after " + active[0]);
             }
             te.power = TileEntityMachineCyclotron.MAX_POWER;
             last[0] = te.power;
@@ -287,21 +264,14 @@ public final class RcNuke2GameTests {
             te.tanks[1].setFill(0);
         }, () -> {
             helper.assertTrue(active[0] >= 691, "ran " + active[0] + " ticks");
-            helper.assertTrue(
-                    te.inventory.getStackInSlot(6).is(ModItems.powder_zirconium.get()) && te.inventory.getStackInSlot(6)
-                                                                                                      .getCount() == 1,
+            helper.assertTrue(te.inventory.getStackInSlot(6).is(ModItems.powder_zirconium.get()) && te.inventory.getStackInSlot(6).getCount() == 1,
                     "slot 6 " + te.inventory.getStackInSlot(6));
-            helper.assertTrue(
-                    te.inventory.getStackInSlot(7).is(ModItems.powder_niobium.get()) && te.inventory.getStackInSlot(7)
-                                                                                                    .getCount() == 1,
+            helper.assertTrue(te.inventory.getStackInSlot(7).is(ModItems.powder_niobium.get()) && te.inventory.getStackInSlot(7).getCount() == 1,
                     "slot 7 " + te.inventory.getStackInSlot(7));
-            helper.assertTrue(
-                    te.inventory.getStackInSlot(8).is(ModItems.powder_neodymium.get()) && te.inventory.getStackInSlot(8)
-                                                                                                      .getCount() == 1,
+            helper.assertTrue(te.inventory.getStackInSlot(8).is(ModItems.powder_neodymium.get()) && te.inventory.getStackInSlot(8).getCount() == 1,
                     "slot 8 " + te.inventory.getStackInSlot(8));
             for (int i = 0; i < 6; i++) {
-                helper.assertTrue(te.inventory.getStackInSlot(i).getCount() == 1,
-                        "slot " + i + " must have given up exactly one item");
+                helper.assertTrue(te.inventory.getStackInSlot(i).getCount() == 1, "slot " + i + " must have given up exactly one item");
             }
             helper.assertTrue(te.tanks[2].getFill() == 90, "antimatter " + te.tanks[2].getFill());
             roundTrip(helper, te, "cyclotron");
@@ -309,9 +279,7 @@ public final class RcNuke2GameTests {
         });
     }
 
-    /**
-     * Speed 3 and power 1: 4 progress and 900,000 HE a tick, a cycle in 173 ticks; the effect upgrade divides the coolant.
-     */
+    /** Speed 3 and power 1: 4 progress and 900,000 HE a tick, a cycle in 173 ticks; the effect upgrade divides the coolant. */
     public static void cyclotronUpgrades(GameTestHelper helper) {
         BlockPos c = GameTests.paddedCentre(CYCLOTRON_PADDING, 3);
         FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_cyclotron.get(), c);
@@ -345,8 +313,7 @@ public final class RcNuke2GameTests {
             te.inventory.setStackInSlot(10, new ItemStack(ModUpgradeItems.upgrade_speed_3.get()));
             te.inventory.setStackInSlot(11, new ItemStack(ModUpgradeItems.upgrade_effect_2.get()));
             te.upgradeManager.checkSlots(te.inventory, 10, 11);
-            helper.assertTrue(
-                    te.getSpeed() == 4 && te.getCoolantConsumption() == 664 && te.getConsumption() == 1_000_000,
+            helper.assertTrue(te.getSpeed() == 4 && te.getCoolantConsumption() == 664 && te.getConsumption() == 1_000_000,
                     "speed " + te.getSpeed() + " coolant " + te.getCoolantConsumption() + " power " + te.getConsumption());
             te.inventory.setStackInSlot(10, new ItemStack(ModUpgradeItems.upgrade_power_1.get()));
             te.inventory.setStackInSlot(11, new ItemStack(ModUpgradeItems.upgrade_power_1.get()));
@@ -357,9 +324,7 @@ public final class RcNuke2GameTests {
         });
     }
 
-    /**
-     * A hopper feeds the machine through a side cell and a hopper below takes the finished product.
-     */
+    /** A hopper feeds the machine through a side cell and a hopper below takes the finished product. */
     public static void cyclotronHoppers(GameTestHelper helper) {
         BlockPos c = GameTests.paddedCentre(CYCLOTRON_PADDING, 3);
         FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_cyclotron.get(), c);
@@ -372,17 +337,12 @@ public final class RcNuke2GameTests {
         helper.setBlock(take.below(), Blocks.CHEST.defaultBlockState());
         helper.setBlock(take, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
         te.inventory.setStackInSlot(8, new ItemStack(ModItems.powder_neodymium.get(), 5));
-        ticks(helper, 60, k -> {
-        }, () -> {
-            helper.assertTrue(
-                    te.inventory.getStackInSlot(1).is(ModItems.part_beryllium.get()) && te.inventory.getStackInSlot(1)
-                                                                                                    .getCount() == 3,
-                    "the east middle cell takes particles into slot 1 (1.7 row {1, 4, 6, 7, 8}), got " + te.inventory.getStackInSlot(
-                            1));
+        ticks(helper, 60, k -> {}, () -> {
+            helper.assertTrue(te.inventory.getStackInSlot(1).is(ModItems.part_beryllium.get()) && te.inventory.getStackInSlot(1).getCount() == 3,
+                    "the east middle cell takes particles into slot 1 (1.7 row {1, 4, 6, 7, 8}), got " + te.inventory.getStackInSlot(1));
             helper.assertTrue(feeder.isEmpty(), "the feeding hopper must be empty");
             Container chest = GameTestHelpers.blockEntity(helper, take.below(), ChestBlockEntity.class);
-            helper.assertTrue(
-                    te.inventory.getStackInSlot(8).isEmpty() && chest.countItem(ModItems.powder_neodymium.get()) == 5,
+            helper.assertTrue(te.inventory.getStackInSlot(8).isEmpty() && chest.countItem(ModItems.powder_neodymium.get()) == 5,
                     "the hopper below must empty output slot 8 into the chest, left " + te.inventory.getStackInSlot(8));
             helper.succeed();
         });
@@ -421,16 +381,12 @@ public final class RcNuke2GameTests {
             heat[0] = (int) (heat[0] + 20D * burn);
             heat[0] = (int) (heat[0] * 0.99D);
             double consumed = 500_000_000D - yield[0];
-            helper.assertTrue(Math.abs((500_000_000D - now) - consumed) <= 1e-9 * consumed + 1e-6,
-                    "burnt " + (500_000_000D - now) + " vs 1.7 " + consumed + " after " + ticks[0]);
+            helper.assertTrue(Math.abs((500_000_000D - now) - consumed) <= 1e-9 * consumed + 1e-6, "burnt " + (500_000_000D - now) + " vs 1.7 " + consumed + " after " + ticks[0]);
             helper.assertTrue(watz.heat == heat[0], "heat " + watz.heat + " vs 1.7 " + heat[0] + " after " + ticks[0]);
-            helper.assertTrue(watz.tanks[2].getFill() == mud[0],
-                    "mud " + watz.tanks[2].getFill() + " vs 1.7 " + mud[0]);
+            helper.assertTrue(watz.tanks[2].getFill() == mud[0], "mud " + watz.tanks[2].getFill() + " vs 1.7 " + mud[0]);
             if (ticks[0] == 1) {
                 // first reaction, hand worked: burn 3,000, heat 60,000 then x0.99, mud 15
-                helper.assertTrue(
-                        heat[0] == 59_457 && mud[0] == 15 && Math.abs(500_000_000D - now - 3_002.9426D) < 1e-3,
-                        "tick 1 hand values: burn 3,002.94, heat 60,058 x 0.99, mud 15");
+                helper.assertTrue(heat[0] == 59_457 && mud[0] == 15 && Math.abs(500_000_000D - now - 3_002.9426D) < 1e-3, "tick 1 hand values: burn 3,002.94, heat 60,058 x 0.99, mud 15");
             }
         }, () -> {
             helper.assertTrue(ticks[0] >= 55, "the Watz ran " + ticks[0] + " ticks");
@@ -439,9 +395,7 @@ public final class RcNuke2GameTests {
         });
     }
 
-    /**
-     * No pump: nothing burns. Coolant pulls a fifth of the heat a tick at 300 TU a mB.
-     */
+    /** No pump: nothing burns. Coolant pulls a fifth of the heat a tick at 300 TU a mB. */
     public static void watzCoolingAndIdle(GameTestHelper helper) {
         BlockPos c = GameTests.paddedCentre(8, 1);
         FoldedTestSupport.assemble(helper, ModMachineBlocks.watz.get(), c);
@@ -461,14 +415,11 @@ public final class RcNuke2GameTests {
             cold[0] -= cycles;
             hot[0] += cycles;
             heat[0] = (int) (heat[0] * 0.99D);
-            helper.assertTrue(
-                    watz.heat == heat[0] && watz.tanks[0].getFill() == cold[0] && watz.tanks[1].getFill() == hot[0],
+            helper.assertTrue(watz.heat == heat[0] && watz.tanks[0].getFill() == cold[0] && watz.tanks[1].getFill() == hot[0],
                     "tick " + ran[0] + ": heat " + watz.heat + "/" + heat[0] + " coolant " + watz.tanks[0].getFill() + "/" + cold[0]
                             + " hot " + watz.tanks[1].getFill() + "/" + hot[0]);
-            if (ran[0] == 1)
-                helper.assertTrue(heat[0] == 47_520 && cold[0] == 960 && hot[0] == 40, "tick 1 hand values");
-            helper.assertTrue(ItemWatzPellet.getYield(watz.inventory.getStackInSlot(0)) == 500_000_000D,
-                    "an unpumped Watz does not burn");
+            if (ran[0] == 1) helper.assertTrue(heat[0] == 47_520 && cold[0] == 960 && hot[0] == 40, "tick 1 hand values");
+            helper.assertTrue(ItemWatzPellet.getYield(watz.inventory.getStackInSlot(0)) == 500_000_000D, "an unpumped Watz does not burn");
         }, () -> {
             helper.assertTrue(ran[0] >= 30, "ran " + ran[0]);
             helper.succeed();
@@ -476,9 +427,7 @@ public final class RcNuke2GameTests {
     }
 
 
-    /**
-     * Three MEU rods in the fixture reactor: flux, core and hull heat and progress every tick, from 1.7's formulas.
-     */
+    /** Three MEU rods in the fixture reactor: flux, core and hull heat and progress every tick, from 1.7's formulas. */
     public static void pwrFuelRun(GameTestHelper helper) {
         TileEntityPWRController pwr = PwrGameTests.build(helper);
         helper.assertTrue(pwr.assembled, "PWR did not assemble");
@@ -510,8 +459,7 @@ public final class RcNuke2GameTests {
             core *= 0.999D;
             hull *= 0.999D;
             flux = newFlux;
-            helper.assertTrue(
-                    pwr.coreHeat == core && pwr.hullHeat == hull && pwr.flux == flux && pwr.amountLoaded == amount
+            helper.assertTrue(pwr.coreHeat == core && pwr.hullHeat == hull && pwr.flux == flux && pwr.amountLoaded == amount
                             && Math.abs(pwr.progress - progress) < 1e-9,
                     "tick " + t + ": core " + pwr.coreHeat + "/" + core + " hull " + pwr.hullHeat + "/" + hull + " flux " + pwr.flux + "/" + flux
                             + " progress " + pwr.progress + "/" + progress);
@@ -528,8 +476,7 @@ public final class RcNuke2GameTests {
 
 
     private static void plates(TileEntityReactorResearch reactor, PlateFuelType type, int... slots) {
-        for (int slot : slots)
-            reactor.inventory.setStackInSlot(slot, new ItemStack(ModIngredientItems.plateFuel(type)));
+        for (int slot : slots) reactor.inventory.setStackInSlot(slot, new ItemStack(ModIngredientItems.plateFuel(type)));
     }
 
     /**
@@ -550,8 +497,7 @@ public final class RcNuke2GameTests {
             int ran = ItemPlateFuel.getLifeTime(reactor.inventory.getStackInSlot(5)) / 50;
             if (ran == n[0]) return;
             n[0] = ran;
-            helper.assertTrue(reactor.heat == 155 * ran - 56,
-                    "heat " + reactor.heat + " after " + ran + " ticks, 1.7 " + (155 * ran - 56));
+            helper.assertTrue(reactor.heat == 155 * ran - 56, "heat " + reactor.heat + " after " + ran + " ticks, 1.7 " + (155 * ran - 56));
             helper.assertTrue(reactor.totalFlux == (ran == 1 ? 50 : 78), "flux " + reactor.totalFlux);
             helper.assertTrue(ItemPlateFuel.getLifeTime(reactor.inventory.getStackInSlot(0)) == 50 * (ran - 1),
                     "u235 plate burnup " + ItemPlateFuel.getLifeTime(reactor.inventory.getStackInSlot(0)));
@@ -575,8 +521,7 @@ public final class RcNuke2GameTests {
                 byte water = 14;
                 h = (int) (h - h * (float) 0.07 * water / 12);
                 heat[0] = h;
-                helper.assertTrue(reactor.heat == h && reactor.water == 14,
-                        "wet heat " + reactor.heat + "/" + h + " water " + reactor.water);
+                helper.assertTrue(reactor.heat == h && reactor.water == 14, "wet heat " + reactor.heat + "/" + h + " water " + reactor.water);
             }, () -> {
                 helper.assertTrue(wet[0] >= 30, "wet ran " + wet[0]);
                 roundTrip(helper, reactor, "research reactor");
@@ -585,22 +530,19 @@ public final class RcNuke2GameTests {
         });
     }
 
-    /**
-     * Eight Pu-238/Be plates (400 flux) beside a breeder: 0.0025 x (400 / 200) progress a tick turns lithium into tritium.
-     */
+    /** Eight Pu-238/Be plates (400 flux) beside a breeder: 0.0025 x (400 / 200) progress a tick turns lithium into tritium. */
     public static void reactorBreederRun(GameTestHelper helper) {
         BlockPos c = GameTests.paddedCentre(8, 3);
         FoldedTestSupport.assemble(helper, ModNuclearMiscBlocks.REACTOR_RESEARCH.get(), c);
         FoldedTestSupport.assemble(helper, ModNuclearMiscBlocks.MACHINE_REACTOR_BREEDING.get(), c.east());
         TileEntityReactorResearch reactor = GameTestHelpers.blockEntity(helper, c, TileEntityReactorResearch.class);
-        TileEntityMachineReactorBreeding breeder = GameTestHelpers.blockEntity(helper, c.east(),
-                TileEntityMachineReactorBreeding.class);
+        TileEntityMachineReactorBreeding breeder = GameTestHelpers.blockEntity(helper, c.east(), TileEntityMachineReactorBreeding.class);
         plates(reactor, PlateFuelType.PU238BE, 0, 1, 2, 3, 4, 5, 6, 7);
         reactor.rodLevel = 1D;
         reactor.targetLevel = 1D;
         helper.setBlock(c.above(3), Blocks.WATER.defaultBlockState());
         helper.setBlock(c.below(), Blocks.WATER.defaultBlockState());
-        for (Direction dir : new Direction[]{Direction.NORTH, Direction.SOUTH, Direction.WEST}) {
+        for (Direction dir : new Direction[] {Direction.NORTH, Direction.SOUTH, Direction.WEST}) {
             for (int i = 0; i < 3; i++) helper.setBlock(c.relative(dir).above(i), Blocks.WATER.defaultBlockState());
         }
         ItemStack lithium = new ItemStack(ModNuclearMiscItems.rod(RodSize.SINGLE, BreedingRodType.LITHIUM));
@@ -615,17 +557,14 @@ public final class RcNuke2GameTests {
                 mirror[0] += 0.0025F * 2;
                 steps[0]++;
                 helper.assertTrue(breeder.flux == 400, "breeder flux " + breeder.flux);
-                helper.assertTrue(breeder.progress == mirror[0],
-                        "progress " + breeder.progress + " vs 1.7 " + mirror[0]);
+                helper.assertTrue(breeder.progress == mirror[0], "progress " + breeder.progress + " vs 1.7 " + mirror[0]);
                 last[0] = breeder.progress;
             } else if (breeder.progress < last[0] || breeder.inventory.getStackInSlot(0).isEmpty()) {
                 mirror[0] += 0.0025F * 2;
                 steps[0]++;
                 helper.assertTrue(mirror[0] >= 1F, "finished early at " + mirror[0]);
-                helper.assertTrue(steps[0] >= 199 && steps[0] <= 201,
-                        "a 200 flux rod at 400 flux takes 200 ticks, took " + steps[0]);
-                helper.assertTrue(breeder.inventory.getStackInSlot(1).is(ModNuclearMiscItems.rod(RodSize.SINGLE,
-                                BreedingRodType.TRITIUM)),
+                helper.assertTrue(steps[0] >= 199 && steps[0] <= 201, "a 200 flux rod at 400 flux takes 200 ticks, took " + steps[0]);
+                helper.assertTrue(breeder.inventory.getStackInSlot(1).is(ModNuclearMiscItems.rod(RodSize.SINGLE, BreedingRodType.TRITIUM)),
                         "tritium rod expected, got " + breeder.inventory.getStackInSlot(1));
                 done[0] = true;
             }
@@ -655,8 +594,7 @@ public final class RcNuke2GameTests {
             helper.setBlock(at, ModMachineBlocks.machine_waste_drum.get().defaultBlockState());
             drums[i] = GameTestHelpers.blockEntity(helper, at, TileEntityWasteDrum.class);
             for (int slot = 0; slot < 12; slot++) {
-                drums[i].inventory.setStackInSlot(slot,
-                        ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_U235.get(), 1));
+                drums[i].inventory.setStackInSlot(slot, ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_U235.get(), 1));
             }
         }
         BlockPos dryAt = base.offset(16, 0, 2);
@@ -673,54 +611,42 @@ public final class RcNuke2GameTests {
         ItemRBMKRod.setCoreHeat(rod, 1000D);
         ItemRBMKRod.setHullHeat(rod, 1000D);
         rodDrum.inventory.setStackInSlot(0, rod);
-        helper.assertFalse(rodDrum.canTakeItemThroughFace(0, rod, Direction.DOWN),
-                "a 1000 degree rod must not leave the drum");
+        helper.assertFalse(rodDrum.canTakeItemThroughFace(0, rod, Direction.DOWN), "a 1000 degree rod must not leave the drum");
         helper.assertTrue(rodDrum.canPlaceItemThroughFace(1, rod, Direction.UP), "rods go into an empty slot");
-        helper.assertFalse(dry.canTakeItemThroughFace(0, dry.inventory.getStackInSlot(0), Direction.DOWN),
-                "hot waste does not leave");
+        helper.assertFalse(dry.canTakeItemThroughFace(0, dry.inventory.getStackInSlot(0), Direction.DOWN), "hot waste does not leave");
 
         double[] hull = {1000D};
-        ticks(helper, 700, k -> {
-        }, () -> {
+        ticks(helper, 700, k -> {}, () -> {
             ItemStack inside = rodDrum.inventory.getStackInSlot(0);
             double hullNow = ItemRBMKRod.getHullHeat(inside);
             double coreNow = ItemRBMKRod.getCoreHeat(inside);
-            helper.assertTrue(hullNow < hull[0] && coreNow < 1000D,
-                    "the rod cools: core " + coreNow + " hull " + hullNow);
-            helper.assertTrue(
-                    rodDrum.canTakeItemThroughFace(0, inside, Direction.DOWN) == (coreNow < 50 && hullNow < 50),
-                    "rod extraction needs core and hull below 50");
+            helper.assertTrue(hullNow < hull[0] && coreNow < 1000D, "the rod cools: core " + coreNow + " hull " + hullNow);
+            helper.assertTrue(rodDrum.canTakeItemThroughFace(0, inside, Direction.DOWN) == (coreNow < 50 && hullNow < 50), "rod extraction needs core and hull below 50");
             int cooled = 0;
             for (TileEntityWasteDrum drum : drums) {
                 for (int slot = 0; slot < 12; slot++) {
                     ItemStack stack = drum.inventory.getStackInSlot(slot);
                     if (!FuelPoolRecipes.isHot(stack)) {
                         cooled++;
-                        helper.assertTrue(stack.is(ModNuclearMiscItems.WASTE_PLATE_U235.get()),
-                                "cooled form is the cold plate, got " + stack);
+                        helper.assertTrue(stack.is(ModNuclearMiscItems.WASTE_PLATE_U235.get()), "cooled form is the cold plate, got " + stack);
                     }
                 }
             }
             // 40 drums x 12 slots, 1 in 12,000 a tick over 700 ticks: expect 28
             helper.assertTrue(cooled >= 8 && cooled <= 70, "cooled " + cooled + " of 480, expected about 28");
             for (int slot = 0; slot < 12; slot++) {
-                helper.assertTrue(FuelPoolRecipes.isHot(dry.inventory.getStackInSlot(slot)),
-                        "a drum with no water never cools");
+                helper.assertTrue(FuelPoolRecipes.isHot(dry.inventory.getStackInSlot(slot)), "a drum with no water never cools");
             }
             helper.succeed();
         });
     }
 
-    /**
-     * The FuelPool cooling table and the invulnerable, never-despawning dropped waste.
-     */
+    /** The FuelPool cooling table and the invulnerable, never-despawning dropped waste. */
     public static void wasteItems(GameTestHelper helper) {
         ItemStack hot = ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_PU238BE.get(), 3);
         helper.assertTrue(FuelPoolRecipes.isHot(hot), "hot plate waste is a pool key");
         ItemStack cold = FuelPoolRecipes.cool(hot);
-        helper.assertTrue(
-                cold.is(ModNuclearMiscItems.WASTE_PLATE_PU238BE.get()) && cold.getCount() == 3 && !FuelPoolRecipes.isHot(
-                        cold),
+        helper.assertTrue(cold.is(ModNuclearMiscItems.WASTE_PLATE_PU238BE.get()) && cold.getCount() == 3 && !FuelPoolRecipes.isHot(cold),
                 "cooling keeps the count and turns the plate cold");
         helper.assertTrue(FuelPoolRecipes.cool(cold).isEmpty(), "a cold plate is not a key");
         for (EnumPWRFuel fuel : EnumPWRFuel.values()) {
@@ -772,16 +698,13 @@ public final class RcNuke2GameTests {
     }
 
 
-    /**
-     * 1.7: start on a 20 tick boundary, 0.005 a tick down (200 ticks), swap, 40 tick delay, 200 ticks back up.
-     */
+    /** 1.7: start on a 20 tick boundary, 0.005 a tick down (200 ticks), swap, 40 tick delay, 200 ticks back up. */
     public static void rbmkAutoloaderRun(GameTestHelper helper) {
         BlockPos c = GameTests.paddedCentre(10, 1);
         FoldedTestSupport.assemble(helper, ModRBMKBlocks.rbmk_fuel_rod.get(), c);
         FoldedTestSupport.assemble(helper, ModRBMKBlocks.rbmk_autoloader.get(), c.above(4));
         BlockEntityRBMKRod rod = GameTestHelpers.blockEntity(helper, c, BlockEntityRBMKRod.class);
-        BlockEntityRBMKAutoloader loader = GameTestHelpers.blockEntity(helper, c.above(4),
-                BlockEntityRBMKAutoloader.class);
+        BlockEntityRBMKAutoloader loader = GameTestHelpers.blockEntity(helper, c.above(4), BlockEntityRBMKAutoloader.class);
         ItemStack old = new ItemStack(ModRBMKItems.rbmk_fuel_ueu.get());
         ItemRBMKRod.setYield(old, 0.3D * ((ItemRBMKRod) old.getItem()).stats().yield());
         rod.inventory.setStackInSlot(0, old);
@@ -794,16 +717,13 @@ public final class RcNuke2GameTests {
             if (startedAt[0] >= 0 && swappedAt[0] < 0 && !loader.inventory.getStackInSlot(9).isEmpty()) {
                 swappedAt[0] = k;
                 helper.assertTrue(loader.piston >= 0.99D, "the swap happens with the piston down, at " + loader.piston);
-                helper.assertTrue(ItemRBMKRod.getEnrichment(rod.inventory.getStackInSlot(0)) == 1D,
-                        "the new rod is the fresh one");
-                helper.assertTrue(ItemRBMKRod.getEnrichment(loader.inventory.getStackInSlot(9)) < 0.31D,
-                        "the old rod comes out");
+                helper.assertTrue(ItemRBMKRod.getEnrichment(rod.inventory.getStackInSlot(0)) == 1D, "the new rod is the fresh one");
+                helper.assertTrue(ItemRBMKRod.getEnrichment(loader.inventory.getStackInSlot(9)) < 0.31D, "the old rod comes out");
                 helper.assertTrue(loader.inventory.getStackInSlot(0).isEmpty(), "the fresh rod left slot 0");
             }
             if (swappedAt[0] >= 0 && homeAt[0] < 0 && loader.piston <= 0D) homeAt[0] = k;
         }, () -> {
-            helper.assertTrue(startedAt[0] >= 0 && startedAt[0] <= 22,
-                    "starts at the next 20 tick mark, started at " + startedAt[0]);
+            helper.assertTrue(startedAt[0] >= 0 && startedAt[0] <= 22, "starts at the next 20 tick mark, started at " + startedAt[0]);
             int down = swappedAt[0] - startedAt[0];
             helper.assertTrue(down >= 198 && down <= 203, "200 ticks down, took " + down);
             int up = homeAt[0] - swappedAt[0];
@@ -814,9 +734,7 @@ public final class RcNuke2GameTests {
         });
     }
 
-    /**
-     * Cycle 50: a rod above 50 percent, or a hull above 1000, leaves the loader idle; the GUI clamps the cycle to 5..95 in steps of 5.
-     */
+    /** Cycle 50: a rod above 50 percent, or a hull above 1000, leaves the loader idle; the GUI clamps the cycle to 5..95 in steps of 5. */
     public static void rbmkAutoloaderGates(GameTestHelper helper) {
         BlockPos c = GameTests.paddedCentre(10, 1);
         BlockPos[] columns = {c, c.east(4), c.east(8)};
@@ -840,24 +758,18 @@ public final class RcNuke2GameTests {
             loaders[i].inventory.setStackInSlot(0, new ItemStack(ModRBMKItems.rbmk_fuel_ueu.get()));
         }
         // third column is empty: it must start
-        helper.assertTrue(loaders[0].isItemValidForSlot(0, new ItemStack(ModRBMKItems.rbmk_fuel_ueu.get())),
-                "fresh rod accepted in slot 0");
+        helper.assertTrue(loaders[0].isItemValidForSlot(0, new ItemStack(ModRBMKItems.rbmk_fuel_ueu.get())), "fresh rod accepted in slot 0");
         ItemStack spent = new ItemStack(ModRBMKItems.rbmk_fuel_ueu.get());
         ItemRBMKRod.setYield(spent, 0.4D * yield);
         helper.assertFalse(loaders[0].isItemValidForSlot(0, spent), "a rod under the cycle percentage is refused");
-        helper.assertFalse(loaders[0].isItemValidForSlot(9, new ItemStack(ModRBMKItems.rbmk_fuel_ueu.get())),
-                "output slots take nothing");
-        helper.assertTrue(
-                loaders[0].canTakeItemThroughFace(9, spent, Direction.DOWN) && !loaders[0].canTakeItemThroughFace(0,
-                        spent, Direction.DOWN),
+        helper.assertFalse(loaders[0].isItemValidForSlot(9, new ItemStack(ModRBMKItems.rbmk_fuel_ueu.get())), "output slots take nothing");
+        helper.assertTrue(loaders[0].canTakeItemThroughFace(9, spent, Direction.DOWN) && !loaders[0].canTakeItemThroughFace(0, spent, Direction.DOWN),
                 "only the output half can be emptied");
         loaders[0].piston = 0.5D;
-        helper.assertTrue(loaders[0].getSlotsForFace(Direction.UP).length == 0,
-                "no automation while the piston is out");
+        helper.assertTrue(loaders[0].getSlotsForFace(Direction.UP).length == 0, "no automation while the piston is out");
         loaders[0].piston = 0D;
         helper.assertTrue(loaders[0].getSlotsForFace(Direction.UP).length == 18, "all 18 slots while it is home");
-        ticks(helper, 60, k -> {
-        }, () -> {
+        ticks(helper, 60, k -> {}, () -> {
             helper.assertTrue(loaders[0].piston == 0D, "an 80 percent rod is left alone");
             helper.assertTrue(loaders[1].piston == 0D, "a rod over 1000 degrees is left alone");
             helper.assertTrue(loaders[2].piston > 0D, "an empty column is loaded");
@@ -886,10 +798,8 @@ public final class RcNuke2GameTests {
         FoldedTestSupport.assemble(helper, ModRBMKBlocks.rbmk_console.get(), c.north(10), Direction.SOUTH);
         BlockEntityRBMKRod fuelA = GameTestHelpers.blockEntity(helper, c.east(-3), BlockEntityRBMKRod.class);
         BlockEntityRBMKRod fuelB = GameTestHelpers.blockEntity(helper, c.east(2), BlockEntityRBMKRod.class);
-        BlockEntityRBMKControlManual manualA = GameTestHelpers.blockEntity(helper, c.east(-2),
-                BlockEntityRBMKControlManual.class);
-        BlockEntityRBMKControlManual manualB = GameTestHelpers.blockEntity(helper, c.east(3),
-                BlockEntityRBMKControlManual.class);
+        BlockEntityRBMKControlManual manualA = GameTestHelpers.blockEntity(helper, c.east(-2), BlockEntityRBMKControlManual.class);
+        BlockEntityRBMKControlManual manualB = GameTestHelpers.blockEntity(helper, c.east(3), BlockEntityRBMKControlManual.class);
         BlockEntityRBMKControlAuto auto = GameTestHelpers.blockEntity(helper, c, BlockEntityRBMKControlAuto.class);
         BlockEntityRBMKBoiler boiler = GameTestHelpers.blockEntity(helper, c.east(-1), BlockEntityRBMKBoiler.class);
         BlockEntityRBMKConsole console = GameTestHelpers.blockEntity(helper, c.north(10), BlockEntityRBMKConsole.class);
@@ -906,79 +816,61 @@ public final class RcNuke2GameTests {
         console.setTarget(abs.getX(), abs.getY(), abs.getZ());
         int a = consoleIndex(-3, 0), mA = consoleIndex(-2, 0), bo = consoleIndex(-1, 0), au = consoleIndex(0, 0),
                 ab = consoleIndex(1, 0), b = consoleIndex(2, 0), mB = consoleIndex(3, 0);
-        ticks(helper, 30, k -> {
-        }, () -> {
-            helper.assertTrue(
-                    console.columns[a] instanceof RBMKColumn.FuelColumn && console.columns[a].type == RBMKColumnType.FUEL,
-                    "fuel column type");
-            helper.assertTrue(
-                    console.columns[mA].type == RBMKColumnType.CONTROL && console.columns[au].type == RBMKColumnType.CONTROL_AUTO,
+        ticks(helper, 30, k -> {}, () -> {
+            helper.assertTrue(console.columns[a] instanceof RBMKColumn.FuelColumn && console.columns[a].type == RBMKColumnType.FUEL, "fuel column type");
+            helper.assertTrue(console.columns[mA].type == RBMKColumnType.CONTROL && console.columns[au].type == RBMKColumnType.CONTROL_AUTO,
                     "control types " + console.columns[mA].type + " " + console.columns[au].type);
-            helper.assertTrue(
-                    console.columns[bo].type == RBMKColumnType.BOILER && console.columns[ab].type == RBMKColumnType.ABSORBER,
+            helper.assertTrue(console.columns[bo].type == RBMKColumnType.BOILER && console.columns[ab].type == RBMKColumnType.ABSORBER,
                     "boiler and absorber types");
-            helper.assertTrue(
-                    console.columns[consoleIndex(-3, 1)] == null && console.columns[consoleIndex(4, 0)] == null,
-                    "empty cells scan as null");
-            for (int i : new int[]{a, mA, bo, au, ab, b, mB}) {
-                helper.assertTrue(console.columns[i].maxHeat == 1_500D,
-                        "1.7 maxHeat() is 1500, got " + console.columns[i].maxHeat);
+            helper.assertTrue(console.columns[consoleIndex(-3, 1)] == null && console.columns[consoleIndex(4, 0)] == null, "empty cells scan as null");
+            for (int i : new int[] {a, mA, bo, au, ab, b, mB}) {
+                helper.assertTrue(console.columns[i].maxHeat == 1_500D, "1.7 maxHeat() is 1500, got " + console.columns[i].maxHeat);
             }
             RBMKColumn.FuelColumn fuel = (RBMKColumn.FuelColumn) console.columns[a];
             helper.assertTrue(Math.abs(fuel.enrichment - 0.8D) < 1e-4, "enrichment " + fuel.enrichment);
             helper.assertTrue(fuel.c_maxHeat == 2_865D, "UEU melting point 2,865, got " + fuel.c_maxHeat);
-            helper.assertTrue(Math.abs(((RBMKColumn.FuelColumn) console.columns[b]).enrichment - 1D) < 1e-6,
-                    "fresh rod enrichment");
+            helper.assertTrue(Math.abs(((RBMKColumn.FuelColumn) console.columns[b]).enrichment - 1D) < 1e-6, "fresh rod enrichment");
             helper.assertTrue(((RBMKColumn.ControlColumn) console.columns[mA]).level == 0.4D
                     && ((RBMKColumn.ControlColumn) console.columns[mB]).level == 0.9D, "control levels");
             RBMKColumn.BoilerColumn boil = (RBMKColumn.BoilerColumn) console.columns[bo];
-            helper.assertTrue(
-                    boil.water == 3_000 && boil.maxWater == 10_000 && boil.steam == 500 && boil.maxSteam == 1_000_000,
+            helper.assertTrue(boil.water == 3_000 && boil.maxWater == 10_000 && boil.steam == 500 && boil.maxSteam == 1_000_000,
                     "boiler tanks " + boil.water + "/" + boil.maxWater + " " + boil.steam + "/" + boil.maxSteam);
 
             console.screens[0].type = BlockEntityRBMKConsole.ScreenType.COL_TEMP;
-            console.screens[0].columns = new Integer[]{a, bo};
+            console.screens[0].columns = new Integer[] {a, bo};
             console.screens[1].type = BlockEntityRBMKConsole.ScreenType.FUEL_DEPLETION;
-            console.screens[1].columns = new Integer[]{a, b, bo};
+            console.screens[1].columns = new Integer[] {a, b, bo};
             console.screens[2].type = BlockEntityRBMKConsole.ScreenType.ROD_EXTRACTION;
-            console.screens[2].columns = new Integer[]{mA, mB};
+            console.screens[2].columns = new Integer[] {mA, mB};
             console.screens[3].type = BlockEntityRBMKConsole.ScreenType.FUEL_POISON;
-            console.screens[3].columns = new Integer[]{mA};
-            ticks(helper, 12, k -> {
-            }, () -> {
+            console.screens[3].columns = new Integer[] {mA};
+            ticks(helper, 12, k -> {}, () -> {
                 double heat = (console.columns[a].heat + console.columns[bo].heat) / 2D;
-                helper.assertTrue(
-                        ("rbmk.screen.temp=" + ((int) (heat * 10D)) / 10D + "°C").equals(console.screens[0].display),
+                helper.assertTrue(("rbmk.screen.temp=" + ((int) (heat * 10D)) / 10D + "°C").equals(console.screens[0].display),
                         "temperature screen " + console.screens[0].display + " for " + heat);
-                helper.assertTrue("rbmk.screen.depletion=10.0%".equals(console.screens[1].display),
-                        "depletion screen " + console.screens[1].display);
-                helper.assertTrue("rbmk.screen.rod=65.0%".equals(console.screens[2].display),
-                        "rod screen " + console.screens[2].display);
-                helper.assertTrue("rbmk.screen.xenon=0.0%".equals(console.screens[3].display),
-                        "no fuel on the screen reads 0.0, got " + console.screens[3].display);
+                helper.assertTrue("rbmk.screen.depletion=10.0%".equals(console.screens[1].display), "depletion screen " + console.screens[1].display);
+                helper.assertTrue("rbmk.screen.rod=65.0%".equals(console.screens[2].display), "rod screen " + console.screens[2].display);
+                helper.assertTrue("rbmk.screen.xenon=0.0%".equals(console.screens[3].display), "no fuel on the screen reads 0.0, got " + console.screens[3].display);
 
                 CompoundTag level = new CompoundTag();
                 level.putString("action", "level");
                 level.putDouble("level", 0.2D);
-                level.putIntArray("cols", new int[]{mA, au});
+                level.putIntArray("cols", new int[] {mA, au});
                 double autoTarget = auto.targetLevel;
                 console.receiveControl(level);
-                helper.assertTrue(manualA.targetLevel == 0.2D,
-                        "the slider moves a manual rod, target " + manualA.targetLevel);
-                helper.assertTrue(auto.targetLevel == autoTarget,
-                        "1.7 leaves auto rods alone, target went " + autoTarget + " to " + auto.targetLevel);
+                helper.assertTrue(manualA.targetLevel == 0.2D, "the slider moves a manual rod, target " + manualA.targetLevel);
+                helper.assertTrue(auto.targetLevel == autoTarget, "1.7 leaves auto rods alone, target went " + autoTarget + " to " + auto.targetLevel);
                 CompoundTag color = new CompoundTag();
                 color.putString("action", "color");
                 color.putInt("color", 2);
-                color.putIntArray("cols", new int[]{mB});
+                color.putIntArray("cols", new int[] {mB});
                 console.receiveControl(color);
                 helper.assertTrue(manualB.color == RBMKColor.VALUES[2], "color assigned");
                 CompoundTag toggle = new CompoundTag();
                 toggle.putString("action", "toggle");
                 toggle.putInt("slot", 4);
                 console.receiveControl(toggle);
-                helper.assertTrue(console.screens[4].type == BlockEntityRBMKConsole.ScreenType.COL_TEMP,
-                        "toggle advances NONE to COL_TEMP");
+                helper.assertTrue(console.screens[4].type == BlockEntityRBMKConsole.ScreenType.COL_TEMP, "toggle advances NONE to COL_TEMP");
                 console.screens[5].type = BlockEntityRBMKConsole.ScreenType.COL_TEMP;
                 console.screens[5].columns = new Integer[0];
                 roundTrip(helper, console, "rbmk console");
@@ -988,52 +880,38 @@ public final class RcNuke2GameTests {
     }
 
 
-    /**
-     * A hopper above feeds the research reactor's single 1.7 input slot and no other; the breeder takes one rod.
-     */
+    /** A hopper above feeds the research reactor's single 1.7 input slot and no other; the breeder takes one rod. */
     public static void reactorHoppers(GameTestHelper helper) {
         BlockPos c = GameTests.paddedCentre(10, 3);
         FoldedTestSupport.assemble(helper, ModNuclearMiscBlocks.REACTOR_RESEARCH.get(), c);
         FoldedTestSupport.assemble(helper, ModNuclearMiscBlocks.MACHINE_REACTOR_BREEDING.get(), c.east(4));
         TileEntityReactorResearch reactor = GameTestHelpers.blockEntity(helper, c, TileEntityReactorResearch.class);
-        TileEntityMachineReactorBreeding breeder = GameTestHelpers.blockEntity(helper, c.east(4),
-                TileEntityMachineReactorBreeding.class);
+        TileEntityMachineReactorBreeding breeder = GameTestHelpers.blockEntity(helper, c.east(4), TileEntityMachineReactorBreeding.class);
         helper.setBlock(c.above(3), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
         HopperBlockEntity rr = GameTestHelpers.blockEntity(helper, c.above(3), HopperBlockEntity.class);
         rr.setItem(0, new ItemStack(ModIngredientItems.plateFuel(PlateFuelType.U235)));
         rr.setItem(1, new ItemStack(ModIngredientItems.plateFuel(PlateFuelType.MOX)));
-        helper.setBlock(c.east(4).above(3),
-                Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
+        helper.setBlock(c.east(4).above(3), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
         HopperBlockEntity feed = GameTestHelpers.blockEntity(helper, c.east(4).above(3), HopperBlockEntity.class);
         feed.setItem(0, new ItemStack(ModNuclearMiscItems.rod(RodSize.SINGLE, BreedingRodType.LITHIUM)));
-        helper.setBlock(c.east(4).below(),
-                Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
+        helper.setBlock(c.east(4).below(), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
         helper.setBlock(c.east(4).below(2), Blocks.CHEST.defaultBlockState());
-        breeder.inventory.setStackInSlot(1,
-                new ItemStack(ModNuclearMiscItems.rod(RodSize.SINGLE, BreedingRodType.TRITIUM)));
-        ticks(helper, 80, k -> {
-        }, () -> {
-            helper.assertTrue(reactor.inventory.getStackInSlot(0).getItem() instanceof ItemPlateFuel,
-                    "the first plate reaches slot 0, got "
-                            + reactor.inventory.getStackInSlot(0));
-            for (int i = 1; i < 12; i++)
-                helper.assertTrue(reactor.inventory.getStackInSlot(i).isEmpty(),
-                        "1.7 lets automation fill slot 0 only, slot " + i);
+        breeder.inventory.setStackInSlot(1, new ItemStack(ModNuclearMiscItems.rod(RodSize.SINGLE, BreedingRodType.TRITIUM)));
+        ticks(helper, 80, k -> {}, () -> {
+            helper.assertTrue(reactor.inventory.getStackInSlot(0).getItem() instanceof ItemPlateFuel, "the first plate reaches slot 0, got "
+                    + reactor.inventory.getStackInSlot(0));
+            for (int i = 1; i < 12; i++) helper.assertTrue(reactor.inventory.getStackInSlot(i).isEmpty(), "1.7 lets automation fill slot 0 only, slot " + i);
             helper.assertTrue(!rr.isEmpty(), "the second plate has nowhere to go and stays in the hopper");
-            helper.assertTrue(breeder.inventory.getStackInSlot(0)
-                                               .is(ModNuclearMiscItems.rod(RodSize.SINGLE, BreedingRodType.LITHIUM)),
+            helper.assertTrue(breeder.inventory.getStackInSlot(0).is(ModNuclearMiscItems.rod(RodSize.SINGLE, BreedingRodType.LITHIUM)),
                     "the breeder takes the rod into slot 0");
             Container chest = GameTestHelpers.blockEntity(helper, c.east(4).below(2), ChestBlockEntity.class);
-            helper.assertTrue(breeder.inventory.getStackInSlot(1).isEmpty() && chest.countItem(
-                            ModNuclearMiscItems.rod(RodSize.SINGLE, BreedingRodType.TRITIUM)) == 1,
+            helper.assertTrue(breeder.inventory.getStackInSlot(1).isEmpty() && chest.countItem(ModNuclearMiscItems.rod(RodSize.SINGLE, BreedingRodType.TRITIUM)) == 1,
                     "the finished rod leaves through a hopper below");
             helper.succeed();
         });
     }
 
-    /**
-     * A hopper feeds fuel into the PWR controller and the rod is either loaded or waiting in slot 0.
-     */
+    /** A hopper feeds fuel into the PWR controller and the rod is either loaded or waiting in slot 0. */
     public static void pwrHopper(GameTestHelper helper) {
         TileEntityPWRController pwr = PwrGameTests.build(helper);
         helper.assertTrue(pwr.assembled, "PWR did not assemble");
@@ -1041,13 +919,10 @@ public final class RcNuke2GameTests {
         helper.setBlock(hopperAt, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.SOUTH));
         HopperBlockEntity hopper = GameTestHelpers.blockEntity(helper, hopperAt, HopperBlockEntity.class);
         hopper.setItem(0, new ItemStack(ModPwrItems.fuel(EnumPWRFuel.MEU)));
-        ticks(helper, 40, k -> {
-        }, () -> {
+        ticks(helper, 40, k -> {}, () -> {
             helper.assertTrue(hopper.isEmpty(), "the hopper must hand its fuel rod to the controller");
-            helper.assertTrue(pwr.amountLoaded == 1 || pwr.inventory.getStackInSlot(0).getItem() == ModPwrItems.fuel(
-                            EnumPWRFuel.MEU),
-                    "the rod is loaded (" + pwr.amountLoaded + ") or in slot 0 (" + pwr.inventory.getStackInSlot(
-                            0) + ")");
+            helper.assertTrue(pwr.amountLoaded == 1 || pwr.inventory.getStackInSlot(0).getItem() == ModPwrItems.fuel(EnumPWRFuel.MEU),
+                    "the rod is loaded (" + pwr.amountLoaded + ") or in slot 0 (" + pwr.inventory.getStackInSlot(0) + ")");
             helper.succeed();
         });
     }
@@ -1059,9 +934,7 @@ public final class RcNuke2GameTests {
         tool.getItem().useOn(new UseOnContext(helper.getLevel(), player, InteractionHand.MAIN_HAND, tool, hit));
     }
 
-    /**
-     * The linking device: a column stores its core, then a console cell, the crane desk or a display panel takes it.
-     */
+    /** The linking device: a column stores its core, then a console cell, the crane desk or a display panel takes it. */
     public static void rbmkToolLinks(GameTestHelper helper) {
         BlockPos c = GameTests.paddedCentre(16, 1);
         FoldedTestSupport.assemble(helper, ModRBMKBlocks.rbmk_fuel_rod.get(), c);
@@ -1074,20 +947,16 @@ public final class RcNuke2GameTests {
         BlockPos core = helper.absolutePos(c);
 
         useTool(helper, player, tool, c.above(2));
-        helper.assertTrue(ModDataComponents.RBMK_TOOL_TARGET.get(tool).orElse(-1L) == core.asLong(),
-                "a click on any cell of the column stores its core");
+        helper.assertTrue(ModDataComponents.RBMK_TOOL_TARGET.get(tool).orElse(-1L) == core.asLong(), "a click on any cell of the column stores its core");
 
         BlockEntityRBMKConsole console = GameTestHelpers.blockEntity(helper, c.north(10), BlockEntityRBMKConsole.class);
         useTool(helper, player, tool, c.north(10));
-        helper.assertTrue(
-                console.targetX() == core.getX() && console.targetY() == core.getY() && console.targetZ() == core.getZ(),
+        helper.assertTrue(console.targetX() == core.getX() && console.targetY() == core.getY() && console.targetZ() == core.getZ(),
                 "the console core takes the target, got " + console.targetX() + "," + console.targetY() + "," + console.targetZ());
         console.setTarget(0, 0, 0);
-        helper.assertTrue(helper.getBlockState(c.north(10).above()).is(ModRBMKBlocks.rbmk_console.get()),
-                "the cell above the core belongs to the console");
+        helper.assertTrue(helper.getBlockState(c.north(10).above()).is(ModRBMKBlocks.rbmk_console.get()), "the cell above the core belongs to the console");
         useTool(helper, player, tool, c.north(10).above());
-        helper.assertTrue(console.targetX() == core.getX() && console.targetZ() == core.getZ(),
-                "a click on a console cell finds the core too");
+        helper.assertTrue(console.targetX() == core.getX() && console.targetZ() == core.getZ(), "a click on a console cell finds the core too");
 
         StringBuilder missed = new StringBuilder();
         int cells = 0;
@@ -1099,32 +968,24 @@ public final class RcNuke2GameTests {
                     cells++;
                     console.setTarget(0, 0, 0);
                     useTool(helper, player, tool, at);
-                    if (console.targetX() != core.getX())
-                        missed.append(" ").append(dx).append(",").append(dy).append(",").append(dz);
+                    if (console.targetX() != core.getX()) missed.append(" ").append(dx).append(",").append(dy).append(",").append(dz);
                 }
             }
         }
-        helper.assertTrue(cells > 4 && missed.length() == 0,
-                "every console cell must take the link; missed (of " + cells + "):" + missed);
+        helper.assertTrue(cells > 4 && missed.length() == 0, "every console cell must take the link; missed (of " + cells + "):" + missed);
 
         BlockEntityCraneConsole crane = GameTestHelpers.blockEntity(helper, c.east(8), BlockEntityCraneConsole.class);
         useTool(helper, player, tool, c.east(8));
-        helper.assertTrue(
-                crane.setUpCrane && crane.centerX == core.getX() && crane.centerZ == core.getZ() && crane.centerY == core.getY() + 4,
+        helper.assertTrue(crane.setUpCrane && crane.centerX == core.getX() && crane.centerZ == core.getZ() && crane.centerY == core.getY() + 4,
                 "the crane desk centres on the column, " + crane.centerX + "," + crane.centerY + "," + crane.centerZ);
 
         useTool(helper, player, tool, c.west(6));
-        CompoundTag display = BlockEntities.save(
-                GameTestHelpers.blockEntity(helper, c.west(6), BlockEntityRBMKDisplay.class),
-                helper.getLevel().registryAccess());
-        helper.assertTrue(display.toString().contains("tX:" + core.getX()),
-                "the display panel takes the target: " + display);
+        CompoundTag display = BlockEntities.save(GameTestHelpers.blockEntity(helper, c.west(6), BlockEntityRBMKDisplay.class), helper.getLevel().registryAccess());
+        helper.assertTrue(display.toString().contains("tX:" + core.getX()), "the display panel takes the target: " + display);
         helper.succeed();
     }
 
-    /**
-     * 1.7 intake: with at least 100 HE it refills its 1,000 mB air tank to the brim and spends 100 HE, every tick.
-     */
+    /** 1.7 intake: with at least 100 HE it refills its 1,000 mB air tank to the brim and spends 100 HE, every tick. */
     public static void intakeRun(GameTestHelper helper) {
         BlockPos c = GameTests.paddedCentre(12, 1);
         FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_intake.get(), c, Direction.EAST);
@@ -1136,22 +997,18 @@ public final class RcNuke2GameTests {
             if (intake.power != last[0]) {
                 active[0]++;
                 helper.assertTrue(last[0] - intake.power == 100L, "100 HE a tick, spent " + (last[0] - intake.power));
-                helper.assertTrue(intake.compair.getFill() == 1_000,
-                        "the tank is full after a powered tick: " + intake.compair.getFill());
+                helper.assertTrue(intake.compair.getFill() == 1_000, "the tank is full after a powered tick: " + intake.compair.getFill());
             }
             last[0] = intake.power;
             intake.compair.setFill(0);
         }, () -> {
-            helper.assertTrue(active[0] == 5 && intake.power == 50L,
-                    "550 HE pay for 5 ticks and leave 50, ran " + active[0] + ", left " + intake.power);
+            helper.assertTrue(active[0] == 5 && intake.power == 50L, "550 HE pay for 5 ticks and leave 50, ran " + active[0] + ", left " + intake.power);
             roundTrip(helper, intake, "intake");
             helper.succeed();
         });
     }
 
-    /**
-     * Placing the Watz item builds the reactor and drops none of the kit its core returns when broken.
-     */
+    /** Placing the Watz item builds the reactor and drops none of the kit its core returns when broken. */
     public static void watzPlacesWithoutDrops(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
@@ -1163,12 +1020,10 @@ public final class RcNuke2GameTests {
                 new BlockHitResult(Vec3.atCenterOf(ground), Direction.UP, ground, false));
 
         AABB area = new AABB(ground).inflate(8);
-        boolean built = BlockPos.betweenClosedStream(area)
-                                .anyMatch(p -> level.getBlockEntity(p) instanceof TileEntityWatz);
+        boolean built = BlockPos.betweenClosedStream(area).anyMatch(p -> level.getBlockEntity(p) instanceof TileEntityWatz);
         helper.assertTrue(built, "the Watz item placed no reactor");
         List<ItemEntity> drops = level.getEntitiesOfClass(ItemEntity.class, area);
-        helper.assertTrue(drops.isEmpty(),
-                "placing the Watz dropped " + drops.stream().map(ItemEntity::getItem).toList());
+        helper.assertTrue(drops.isEmpty(), "placing the Watz dropped " + drops.stream().map(ItemEntity::getItem).toList());
         helper.succeed();
     }
 }

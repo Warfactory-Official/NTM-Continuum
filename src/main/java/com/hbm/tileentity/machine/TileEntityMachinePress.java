@@ -56,17 +56,13 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     public int burnTime = 0;
 
     public int progress;
-    /**
-     * Client-only: last tick's stroke, so the head glides between packets the way 1.7 interpolates it.
-     */
+    /** Client-only: last tick's stroke, so the head glides between packets the way 1.7 interpolates it. */
     public int lastProgress;
     public static final int maxProgress = 200;
     private boolean isRetracting = false;
     private int delay;
 
-    /**
-     * Client-only: the ingredient (slot 2) being pressed, for the floating-item render above the head.
-     */
+    /** Client-only: the ingredient (slot 2) being pressed, for the floating-item render above the head. */
     @Nullable
     public ItemStack syncStack;
 
@@ -88,7 +84,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         boolean preheated = false;
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             if (level.getBlockState(pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ))
-                     .is(ModProductionBlocks.PRESS_PREHEATER.get())) {
+                    .is(ModProductionBlocks.PRESS_PREHEATER.get())) {
                 preheated = true;
                 break;
             }
@@ -162,9 +158,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         damageStamp(stamp);
     }
 
-    /**
-     * Damages a breakable stamp by one; clears the slot when it wears out (matching the original).
-     */
+    /** Damages a breakable stamp by one; clears the slot when it wears out (matching the original). */
     private void damageStamp(ItemStack stamp) {
         if (!stamp.isDamageableItem()) return;
         stamp.setDamageValue(stamp.getDamageValue() + 1);

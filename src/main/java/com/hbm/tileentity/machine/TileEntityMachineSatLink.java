@@ -32,9 +32,7 @@ import org.jspecify.annotations.Nullable;
 public class TileEntityMachineSatLink extends TileEntityLoadedBase
         implements IRORValueProvider, IRORInteractive {
 
-    /**
-     * How far the mast rises above the core cell, which is what the dish has to see past.
-     */
+    /** How far the mast rises above the core cell, which is what the dish has to see past. */
     public static final int MAST_HEIGHT = 7;
 
     public static final float SPEED = 0.25F;
@@ -175,8 +173,7 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
 
     private void reportRadio() {
         BlockPos pos = getBlockPos();
-        SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(), SatelliteRayScan.RayEvent.INFO_RADIO,
-                300);
+        SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(), SatelliteRayScan.RayEvent.INFO_RADIO, 300);
         setChanged();
     }
 

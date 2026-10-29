@@ -7,10 +7,8 @@ import com.hbm.items.weapon.ItemCustomMissilePart.PartType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -57,13 +55,10 @@ public final class MissilePronter {
         WavefrontObj mesh = meshes.computeIfAbsent(meshId,
                 id -> WavefrontObj.load(id, ItemCustomMissilePart.useVertexNormals(id)));
         RenderType skin = skins.computeIfAbsent(skinId, CompatRenderTypes::entityCutoutCull);
-        sink.submitCustomGeometry(pose, skin,
-                (p, buffer) -> mesh.renderAll(p, buffer, light, OverlayTexture.NO_OVERLAY));
+        sink.submitCustomGeometry(pose, skin, (p, buffer) -> mesh.renderAll(p, buffer, light, OverlayTexture.NO_OVERLAY));
     }
 
-    /**
-     * True when a struct has at least one drawable part.
-     */
+    /** True when a struct has at least one drawable part. */
     public static boolean drawable(@Nullable MissileStruct missile) {
         if (missile == null) return false;
         for (ItemCustomMissilePart part : new ItemCustomMissilePart[]{missile.thruster(), missile.fuselage(),

@@ -11,9 +11,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Authored socket centrepieces replace the generic item body and share its corner arcs.
- */
+/** Authored socket centrepieces replace the generic item body and share its corner arcs. */
 public final class SocketCentrepieces {
     private static final Map<Item, Centrepiece> PIECES = new IdentityHashMap<>();
 

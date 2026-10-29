@@ -5,7 +5,6 @@ import com.hbm.config.GeneralConfig;
 import com.mojang.serialization.MapCodec;
 import dev.golem.core.world.RecipeFields;
 import dev.golem.core.world.RecipeTables;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -28,9 +27,7 @@ import java.util.function.Supplier;
 public abstract class DataGenericRecipes<T extends GenericRecipe> extends GenericRecipes {
 
     public final RecipeTables.Table<T> table;
-    /**
-     * {@link RecipeConditions#fingerprint} of the last build; null before the first.
-     */
+    /** {@link RecipeConditions#fingerprint} of the last build; null before the first. */
     private volatile String builtFlags;
     private volatile long builtInputRevision;
 
@@ -43,9 +40,7 @@ public abstract class DataGenericRecipes<T extends GenericRecipe> extends Generi
         this(namespace, name, codec, RecipeFields.of());
     }
 
-    /**
-     * As {@link #DataGenericRecipes(String, String, Supplier)}, with {@code extras} (the subclass's keys) after the generic fields.
-     */
+    /** As {@link #DataGenericRecipes(String, String, Supplier)}, with {@code extras} (the subclass's keys) after the generic fields. */
     protected DataGenericRecipes(String namespace, String name, Supplier<MapCodec<T>> codec, RecipeFields extras) {
         this.table = RecipeTables.table(namespace, name, codec);
         table.fields(GenericRecipeCodec.FIELDS.addAll(extras));
@@ -85,9 +80,7 @@ public abstract class DataGenericRecipes<T extends GenericRecipe> extends Generi
         rebuilt();
     }
 
-    /**
-     * Whether a row's {@link GenericRecipe#requires} hold now ({@link RecipeConditions}).
-     */
+    /** Whether a row's {@link GenericRecipe#requires} hold now ({@link RecipeConditions}). */
     public static boolean present(GenericRecipe recipe) {
         return RecipeConditions.holds(recipe.requires, recipe.getInternalName());
     }
@@ -97,25 +90,17 @@ public abstract class DataGenericRecipes<T extends GenericRecipe> extends Generi
      * derived from other data at registration, such as one per fluid; a data row of the same name, earlier in the
      * list, wins) or replaces rows with the form it shows. The default changes nothing.
      */
-    protected void arrange(List<GenericRecipe> rows) {
-    }
+    protected void arrange(List<GenericRecipe> rows) {}
 
-    /**
-     * Revision of additional inputs a table uses to synthesize rule rows.
-     */
+    /** Revision of additional inputs a table uses to synthesize rule rows. */
     protected long derivedInputRevision() {
         return 0L;
     }
 
-    /**
-     * Called after every rebuild, for indexes a table derives from its rows.
-     */
-    protected void rebuilt() {
-    }
+    /** Called after every rebuild, for indexes a table derives from its rows. */
+    protected void rebuilt() {}
 
-    /**
-     * The current rows of this table's type, in display order.
-     */
+    /** The current rows of this table's type, in display order. */
     @SuppressWarnings("unchecked")
     public List<T> typedRows() {
         registerRecipes();

@@ -46,7 +46,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
-
 import com.hbm.api.block.IPneumaticConnector;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
 
@@ -95,9 +94,7 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
         return arm;
     }
 
-    /**
-     * 1.7 addCollisionBoxesToList: the core cube plus one box per connected face.
-     */
+    /** 1.7 addCollisionBoxesToList: the core cube plus one box per connected face. */
     private static VoxelShape[] buildCollisionShapes() {
         VoxelShape[] shapes = new VoxelShape[64];
         shapes[0] = CORE;
@@ -122,21 +119,16 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
         return (mask & (1 << dir.ordinal())) != 0;
     }
 
-    /**
-     * 1.7 canConnectTo: a neighbouring tube, or a block that accepts a pneumatic connection on the facing side.
-     */
+    /** 1.7 canConnectTo: a neighbouring tube, or a block that accepts a pneumatic connection on the facing side. */
     public static boolean canConnectTo(BlockGetter level, BlockPos pos, Direction dir) {
         BlockPos npos = pos.relative(dir);
         BlockState neighbour = level.getBlockState(npos);
         Block block = neighbour.getBlock();
         if (block instanceof PneumoTube || block instanceof PneumoTubePaintableBlock) return true;
-        return block instanceof IPneumaticConnector connector && connector.canConnectPneumatic(neighbour,
-                dir.getOpposite());
+        return block instanceof IPneumaticConnector connector && connector.canConnectPneumatic(neighbour, dir.getOpposite());
     }
 
-    /**
-     * The mask of every face this tube touches: arms from the state, nozzles from the block entity.
-     */
+    /** The mask of every face this tube touches: arms from the state, nozzles from the block entity. */
     public static int fullMask(BlockState state, BlockGetter level, BlockPos pos) {
         int mask = faceMask(state);
         if (level.getBlockEntity(pos) instanceof TileEntityPneumoTube tube) {
@@ -147,24 +139,19 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
         return mask;
     }
 
-    /**
-     * 1.7 {@code ForgeDirection.getOrientation((rot.ordinal() + 1) % 7)}: DOWN..EAST then UNKNOWN (null).
-     */
+    /** 1.7 {@code ForgeDirection.getOrientation((rot.ordinal() + 1) % 7)}: DOWN..EAST then UNKNOWN (null). */
     public static @Nullable Direction nextDir(@Nullable Direction dir) {
         int ordinal = dir == null ? 6 : dir.ordinal();
         int next = (ordinal + 1) % 7;
         return next == 6 ? null : Direction.from3DDataValue(next);
     }
 
-    /**
-     * The four side booleans travel with the rotation; up and down stay put.
-     */
+    /** The four side booleans travel with the rotation; up and down stay put. */
     @Override
     public BlockState rotate(BlockState state, Rotation rotation) {
         BlockState rotated = state;
         for (Direction dir : Direction.Plane.HORIZONTAL) {
-            rotated = rotated.setValue(PROPERTY_BY_DIRECTION.get(rotation.rotate(dir)),
-                    state.getValue(PROPERTY_BY_DIRECTION.get(dir)));
+            rotated = rotated.setValue(PROPERTY_BY_DIRECTION.get(rotation.rotate(dir)), state.getValue(PROPERTY_BY_DIRECTION.get(dir)));
         }
         return rotated;
     }
@@ -173,8 +160,7 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
     public BlockState mirror(BlockState state, Mirror mirror) {
         BlockState mirrored = state;
         for (Direction dir : Direction.Plane.HORIZONTAL) {
-            mirrored = mirrored.setValue(PROPERTY_BY_DIRECTION.get(mirror.mirror(dir)),
-                    state.getValue(PROPERTY_BY_DIRECTION.get(dir)));
+            mirrored = mirrored.setValue(PROPERTY_BY_DIRECTION.get(mirror.mirror(dir)), state.getValue(PROPERTY_BY_DIRECTION.get(dir)));
         }
         return mirrored;
     }
@@ -211,9 +197,7 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
         return COLLISION[fullMask(state, level, pos) & 0x3F];
     }
 
-    /**
-     * 1.7 setBlockBoundsBasedOnState: ONE box spanning every connected face, nozzles included.
-     */
+    /** 1.7 setBlockBoundsBasedOnState: ONE box spanning every connected face, nozzles included. */
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         int mask = fullMask(state, level, pos);
@@ -235,15 +219,12 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
         return openTubeMenu(level, pos, player);
     }
 
-    /**
-     * Both tube forms use the same identifier action and compressor gate.
-     */
+    /** Both tube forms use the same identifier action and compressor gate. */
     public static boolean useGasIdentifier(Level level, BlockPos pos, Player player, ItemStack stack) {
         if (TileEntityPneumoTube.anyGas && !player.isShiftKeyDown()
                 && stack.getItem() instanceof IItemFluidId ident
                 && level.getBlockEntity(pos) instanceof TileEntityPneumoTube tube && tube.isCompressor()) {
-            if (!level.isClientSide()) setGas(level, pos, player, tube,
-                    ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack));
+            if (!level.isClientSide()) setGas(level, pos, player, tube, ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack));
             return true;
         }
         return false;
@@ -262,11 +243,11 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
             tube.setChanged();
             tube.refreshAirMask();
             player.sendSystemMessage(Component.literal("Changed type to ")
-                                              .withStyle(ChatFormatting.YELLOW).append(type.getDisplayName())
-                                              .append(Component.literal("!")));
+                    .withStyle(ChatFormatting.YELLOW).append(type.getDisplayName())
+                    .append(Component.literal("!")));
         } else {
             player.sendSystemMessage(Component.literal("Invalid gas!")
-                                              .withStyle(ChatFormatting.RED));
+                    .withStyle(ChatFormatting.RED));
         }
     }
 
@@ -276,13 +257,10 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
         return openTubeMenu(level, pos, player);
     }
 
-    /**
-     * 1.7: the full GUI for compressors, the endpoint-only GUI for endpoints, nothing for a plain tube.
-     */
+    /** 1.7: the full GUI for compressors, the endpoint-only GUI for endpoints, nothing for a plain tube. */
     public static InteractionResult openTubeMenu(Level level, BlockPos pos, Player player) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
-        if (!(level.getBlockEntity(pos) instanceof TileEntityPneumoTube tube))
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(level.getBlockEntity(pos) instanceof TileEntityPneumoTube tube)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!tube.isCompressor() && !tube.isEndpoint()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             Menus.openWithPos(serverPlayer, tube, pos);
@@ -343,23 +321,17 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
         return new TileEntityPneumoTube(pos, state);
     }
 
-    /**
-     * 1.7 TileEntityPneumoTube.canConnect: compressed air on every face that is neither insertion nor ejection.
-     */
+    /** 1.7 TileEntityPneumoTube.canConnect: compressed air on every face that is neither insertion nor ejection. */
     @Override
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         return world.getBlockEntity(new BlockPos(x, y, z)) instanceof TileEntityPneumoTube tube
                 && tube.canConnect(type, dir);
     }
 
-    /**
-     * Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts.
-     */
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
     static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn()
-                                               .fluidContacts(TileEntityPneumoTube.class);
+            .fluidContacts(TileEntityPneumoTube.class);
 
     @Override
-    public MachineCaps caps() {
-        return CAPS;
-    }
+    public MachineCaps caps() { return CAPS; }
 }

@@ -44,8 +44,7 @@ import net.minecraft.world.item.Items;
  */
 public final class GenericRecipeTableGameTests {
 
-    private GenericRecipeTableGameTests() {
-    }
+    private GenericRecipeTableGameTests() {}
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
@@ -60,23 +59,17 @@ public final class GenericRecipeTableGameTests {
     public static final GameTests.Function DERIVED =
             TESTS.function("recipe_generic_derived", 40, () -> GenericRecipeTableGameTests::derived);
 
-    /**
-     * Tool, not a test: every table's rows per config mode, as text (declared only when the filter names it).
-     */
+    /** Tool, not a test: every table's rows per config mode, as text (declared only when the filter names it). */
     public static final GameTests.Function DUMP = dumpRequested()
             ? TESTS.function("recipe_generic_dump", 400, () -> GenericRecipeTableGameTests::dump) : null;
 
-    public static void init() {
-    }
+    public static void init() {}
 
     record Mode(boolean expensive, boolean m528) {
-        String key() {
-            return (expensive ? "ex" : "noex") + "_" + (m528 ? "528" : "no528");
-        }
+        String key() { return (expensive ? "ex" : "noex") + "_" + (m528 ? "528" : "no528"); }
     }
 
-    static final List<Mode> MODE_LIST = List.of(new Mode(false, false), new Mode(true, false), new Mode(false, true),
-            new Mode(true, true));
+    static final List<Mode> MODE_LIST = List.of(new Mode(false, false), new Mode(true, false), new Mode(false, true), new Mode(true, true));
 
     static Map<String, DataGenericRecipes<?>> tables() {
         Map<String, DataGenericRecipes<?>> tables = new LinkedHashMap<>();
@@ -94,16 +87,13 @@ public final class GenericRecipeTableGameTests {
         return tables;
     }
 
-    /**
-     * Runs {@code body} under {@code mode}, rebuilding every table, and restores the config.
-     */
+    /** Runs {@code body} under {@code mode}, rebuilding every table, and restores the config. */
     static void under(GameTestHelper helper, Mode mode, Runnable body) {
         RecipeModeFixture.under(helper, mode.expensive(), mode.m528(), body);
     }
 
-    /**
-     * Rows per table and config mode of the Java tables (fluid packs included).
-     */
+
+    /** Rows per table and config mode of the Java tables (fluid packs included). */
     static final Map<String, Integer> EXPECTED_COUNTS = new HashMap<>();
 
     static {
@@ -161,8 +151,7 @@ public final class GenericRecipeTableGameTests {
                 for (Map.Entry<String, DataGenericRecipes<?>> e : tables().entrySet()) {
                     int expected = EXPECTED_COUNTS.get(e.getKey() + "." + mode.key());
                     int have = e.getValue().recipeOrderedList.size();
-                    if (have != expected)
-                        wrong.add(e.getKey() + " " + mode.key() + ": " + have + " rows, expected " + expected);
+                    if (have != expected) wrong.add(e.getKey() + " " + mode.key() + ": " + have + " rows, expected " + expected);
                 }
             });
         }
@@ -170,9 +159,7 @@ public final class GenericRecipeTableGameTests {
         helper.succeed();
     }
 
-    /**
-     * {table, mode, name, describe} of rows of the Java tables (row conditions not shown).
-     */
+    /** {table, mode, name, describe} of rows of the Java tables (row conditions not shown). */
     static final String[][] SAMPLE_ROWS = {
             {"assembly_machine", "noex_no528", "ass.gascent",
                     "ass.gascent d=400 p=100 in=hbm:centrifuge_elementx4,#c:ingots/any_plasticx8,#c:ingots/deshx2,#c:plates/steelx8,hbm:circuit_advancedx1, fin= out=hbm:machine_gascentx1%1.0, fout= icon=- named=false wrap=null pools=- group=null ex=hbm:centrifuge_elementx4,mat:steel/WELDEDPLATEx4,hbm:item_expensive_heavy_framex1,hbm:item_expensive_circuitx1, pools528=528.gascent"},
@@ -459,8 +446,7 @@ public final class GenericRecipeTableGameTests {
                 for (String[] sample : SAMPLE_ROWS) {
                     if (!sample[1].equals(mode.key())) continue;
                     GenericRecipe recipe = tables().get(sample[0]).getRecipe(sample[2]);
-                    String have = recipe == null ? "<missing>" : GenericRecipeCodec.describe(recipe)
-                                                                                   .replaceAll(" requires=\\S+", "");
+                    String have = recipe == null ? "<missing>" : GenericRecipeCodec.describe(recipe).replaceAll(" requires=\\S+", "");
                     if (!have.equals(sample[3])) wrong.add(sample[1] + " " + have + "  EXPECTED  " + sample[3]);
                 }
             });
@@ -478,8 +464,7 @@ public final class GenericRecipeTableGameTests {
         helper.succeed();
     }
 
-    private static <T extends GenericRecipe> void roundTrip(GameTestHelper helper, DataGenericRecipes<T> table,
-                                                            List<String> broken) {
+    private static <T extends GenericRecipe> void roundTrip(GameTestHelper helper, DataGenericRecipes<T> table, List<String> broken) {
         table.registerRecipes();
         for (var entry : table.table.entries()) {
             T recipe = entry.value();
@@ -517,8 +502,7 @@ public final class GenericRecipeTableGameTests {
 
     public static void derived(GameTestHelper helper) {
         FusionRecipes.INSTANCE.registerRecipes();
-        helper.assertTrue(FusionRecipes.INSTANCE.maxInput == 10_000_000L,
-                "fusion maxInput " + FusionRecipes.INSTANCE.maxInput);
+        helper.assertTrue(FusionRecipes.INSTANCE.maxInput == 10_000_000L, "fusion maxInput " + FusionRecipes.INSTANCE.maxInput);
         // DERIVED_BEGIN
         // DERIVED_END
         helper.assertTrue(DiFurnaceRecipes.getItemPower(new ItemStack(Items.COAL)) == 200
@@ -540,8 +524,7 @@ public final class GenericRecipeTableGameTests {
             under(helper, mode, () -> {
                 for (Map.Entry<String, DataGenericRecipes<?>> e : tables().entrySet()) {
                     List<String> lines = new ArrayList<>();
-                    for (GenericRecipe recipe : e.getValue().recipeOrderedList)
-                        lines.add(GenericRecipeCodec.describe(recipe));
+                    for (GenericRecipe recipe : e.getValue().recipeOrderedList) lines.add(GenericRecipeCodec.describe(recipe));
                     write(root.resolve(e.getKey() + "." + mode.key() + ".txt"), String.join("\n", lines) + "\n");
                     write(root.resolve(e.getKey() + "." + mode.key() + ".extra.txt"), extra(e.getValue()));
                 }
@@ -550,37 +533,30 @@ public final class GenericRecipeTableGameTests {
         helper.succeed();
     }
 
-    /**
-     * Indexes a table derives from its rows, as text.
-     */
+    /** Indexes a table derives from its rows, as text. */
     static String extra(DataGenericRecipes<?> table) {
         StringBuilder out = new StringBuilder();
         if (table == MixerRecipes.INSTANCE) {
             for (Map.Entry<FluidType, MixerRecipes.MixerRecipe[]> e : MixerRecipes.recipes.entrySet()) {
                 for (MixerRecipes.MixerRecipe r : e.getValue()) {
-                    out.append(e.getKey().getKey()).append(": out=").append(r.output).append(" t=")
-                       .append(r.processTime)
-                       .append(" f1=").append(r.input1 == null ? "-" : r.input1.type.getKey() + "x" + r.input1.fill)
-                       .append(" f2=").append(r.input2 == null ? "-" : r.input2.type.getKey() + "x" + r.input2.fill)
-                       .append(" s=").append(r.solidInput == null ? "-" : GenericRecipeCodec.describe(r.solidInput))
-                       .append('\n');
+                    out.append(e.getKey().getKey()).append(": out=").append(r.output).append(" t=").append(r.processTime)
+                            .append(" f1=").append(r.input1 == null ? "-" : r.input1.type.getKey() + "x" + r.input1.fill)
+                            .append(" f2=").append(r.input2 == null ? "-" : r.input2.type.getKey() + "x" + r.input2.fill)
+                            .append(" s=").append(r.solidInput == null ? "-" : GenericRecipeCodec.describe(r.solidInput)).append('\n');
                 }
             }
         }
         if (table == ExposureChamberRecipes.INSTANCE) {
             for (ExposureChamberRecipes.ExposureChamberRecipe r : ExposureChamberRecipes.recipes) {
-                out.append(GenericRecipeCodec.describe(r.particle)).append(' ')
-                   .append(GenericRecipeCodec.describe(r.ingredient))
-                   .append(' ').append(BuiltInRegistries.ITEM.getKey(r.output.getItem()))
-                   .append('x').append(r.output.getCount()).append('\n');
+                out.append(GenericRecipeCodec.describe(r.particle)).append(' ').append(GenericRecipeCodec.describe(r.ingredient))
+                        .append(' ').append(BuiltInRegistries.ITEM.getKey(r.output.getItem()))
+                        .append('x').append(r.output.getCount()).append('\n');
             }
         }
-        if (table == FusionRecipes.INSTANCE)
-            out.append("maxInput=").append(FusionRecipes.INSTANCE.maxInput).append('\n');
+        if (table == FusionRecipes.INSTANCE) out.append("maxInput=").append(FusionRecipes.INSTANCE.maxInput).append('\n');
         if (table == DiFurnaceRecipes.INSTANCE) {
             for (DiFurnaceRecipes.FuelEntry fuel : DiFurnaceRecipes.getFuelEntries()) {
-                out.append(GenericRecipeCodec.describe(fuel.ingredient())).append(' ').append(fuel.power())
-                   .append('\n');
+                out.append(GenericRecipeCodec.describe(fuel.ingredient())).append(' ').append(fuel.power()).append('\n');
             }
         }
         return out.toString();

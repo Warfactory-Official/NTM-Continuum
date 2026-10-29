@@ -6,9 +6,7 @@ import dev.golem.core.net.GolemCodec;
 import dev.golem.core.net.GolemPayload;
 import net.minecraft.resources.Identifier;
 
-/**
- * S2C authoritative advanced-jetpack state, replacing 1.12's {@code JetpackSyncPacket}.
- */
+/** S2C authoritative advanced-jetpack state, replacing 1.12's {@code JetpackSyncPacket}. */
 public record JetpackSyncPayload(int playerId, boolean opening, boolean hover, float thrust,
                                  int jetpackFlyTime, boolean useCompactHUD, int failureTicks,
                                  boolean backpackEnabled, boolean hudEnabled,

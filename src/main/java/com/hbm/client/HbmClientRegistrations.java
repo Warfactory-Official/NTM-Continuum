@@ -193,11 +193,9 @@ import dev.golem.core.render.HumanoidLayers;
 import dev.golem.core.render.Instancing;
 import dev.golem.core.render.SceneWarp;
 import dev.golem.core.render.ScreenEffects;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -216,8 +214,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
  */
 public final class HbmClientRegistrations {
 
-    private HbmClientRegistrations() {
-    }
+    private HbmClientRegistrations() {}
 
     public interface ScreenSink {
         <M extends AbstractContainerMenu, U extends AbstractContainerScreen<M>> void register(
@@ -285,34 +282,34 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.MACHINE_GAS_FLARE.get(), GUIMachineGasFlare::new);
         sink.register(ModMenus.MACHINE_LIQUEFACTOR.get(), GUILiquefactor::new);
         sink.register(ModMenus.MACHINE_SOLIDIFIER.get(), GUISolidifier::new);
-        sink.register(ModMenus.NUKE_MAN.get(), GUINukeMan::new);
-        sink.register(ModMenus.NUKE_N2.get(), GUINukeN2::new);
-        sink.register(ModMenus.NUKE_BOY.get(), GUINukeBoy::new);
-        sink.register(ModMenus.NUKE_GADGET.get(), GUINukeGadget::new);
-        sink.register(ModMenus.NUKE_TSAR.get(), GUINukeTsar::new);
+         sink.register(ModMenus.NUKE_MAN.get(), GUINukeMan::new);
+         sink.register(ModMenus.NUKE_N2.get(), GUINukeN2::new);
+         sink.register(ModMenus.NUKE_BOY.get(), GUINukeBoy::new);
+         sink.register(ModMenus.NUKE_GADGET.get(), GUINukeGadget::new);
+         sink.register(ModMenus.NUKE_TSAR.get(), GUINukeTsar::new);
         sink.register(ModMenus.REACTOR_ZIRNOX.get(), GUIReactorZirnox::new);
         sink.register(ModMenus.WATZ.get(), GUIWatz::new);
         sink.register(ModMenus.FUSION_TORUS.get(), GUIFusionTorus::new);
         sink.register(ModMenus.FUSION_BREEDER.get(), GUIFusionBreeder::new);
         sink.register(ModMenus.FUSION_KLYSTRON.get(), GUIFusionKlystron::new);
         sink.register(ModMenus.FUSION_PLASMA_FORGE.get(), GUIMachinePlasmaForge::new);
-        sink.register(ModMenus.FLUID_TANK.get(), GUIMachineFluidTank::new);
-        sink.register(ModMenus.F6_TANK.get(), GUIF6Tank::new);
-        sink.register(ModMenus.GIANT_TANK.get(), GUIMachineGiantTank::new);
-        sink.register(ModMenus.BATTERY_SOCKET.get(), GUIBatterySocket::new);
-        sink.register(ModMenus.BATTERY_REDD.get(), GUIBatteryREDD::new);
-        sink.register(ModMenus.CRATE.get(), GUICrate::new);
-        // the ntm-next entity port's vehicle menus
-        sink.register(ModMenus.CART_CRATE.get(), GUICartCrate::new);
-        sink.register(ModMenus.CART_DESTROYER.get(), GUICartDestroyer::new);
-        sink.register(ModMenus.TRAIN_CARGO_TRAM.get(), GUITrainCargoTram::new);
-        sink.register(ModMenus.TRAIN_CARGO_TRAM_TRAILER.get(), GUITrainCargoTramTrailer::new);
-        sink.register(ModMenus.ARMOR_TABLE.get(), GUIArmorTable::new);
-        sink.register(ModMenus.WEAPON_TABLE.get(), GUIWeaponTable::new);
-        sink.register(ModMenus.MACHINE_PRESS.get(), GUIMachinePress::new);
-        sink.register(ModMenus.MACHINE_AMMO_PRESS.get(), GUIMachineAmmoPress::new);
-        GunSupportClientRegistrations.registerScreens(sink);
-        sink.register(ModMenus.MACHINE_EPRESS.get(), GUIMachineEPress::new);
+         sink.register(ModMenus.FLUID_TANK.get(), GUIMachineFluidTank::new);
+         sink.register(ModMenus.F6_TANK.get(), GUIF6Tank::new);
+         sink.register(ModMenus.GIANT_TANK.get(), GUIMachineGiantTank::new);
+         sink.register(ModMenus.BATTERY_SOCKET.get(), GUIBatterySocket::new);
+         sink.register(ModMenus.BATTERY_REDD.get(), GUIBatteryREDD::new);
+         sink.register(ModMenus.CRATE.get(), GUICrate::new);
+         // the ntm-next entity port's vehicle menus
+         sink.register(ModMenus.CART_CRATE.get(), GUICartCrate::new);
+         sink.register(ModMenus.CART_DESTROYER.get(), GUICartDestroyer::new);
+         sink.register(ModMenus.TRAIN_CARGO_TRAM.get(), GUITrainCargoTram::new);
+         sink.register(ModMenus.TRAIN_CARGO_TRAM_TRAILER.get(), GUITrainCargoTramTrailer::new);
+          sink.register(ModMenus.ARMOR_TABLE.get(), GUIArmorTable::new);
+          sink.register(ModMenus.WEAPON_TABLE.get(), GUIWeaponTable::new);
+         sink.register(ModMenus.MACHINE_PRESS.get(), GUIMachinePress::new);
+          sink.register(ModMenus.MACHINE_AMMO_PRESS.get(), GUIMachineAmmoPress::new);
+          GunSupportClientRegistrations.registerScreens(sink);
+         sink.register(ModMenus.MACHINE_EPRESS.get(), GUIMachineEPress::new);
         sink.register(ModMenus.MACHINE_ELECTRIC_FURNACE.get(), GUIMachineElectricFurnace::new);
         sink.register(ModMenus.FURNACE_BRICK.get(), GUIFurnaceBrick::new);
         sink.register(ModMenus.FURNACE_IRON.get(), GUIFurnaceIron::new);
@@ -320,9 +317,9 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.MACHINE_SHREDDER.get(), GUIMachineShredder::new);
         sink.register(ModMenus.ANVIL.get(), GUIAnvil::new);
         sink.register(ModMenus.MACHINE_CRUCIBLE.get(), GUICrucible::new);
-        sink.register(ModMenus.HEATER_FIREBOX.get(), GUIFirebox::new);
-        sink.register(ModMenus.HEATER_HEATEX.get(), GUIHeaterHeatex::new);
-        sink.register(ModMenus.MACHINE_WOOD_BURNER.get(), GUIMachineWoodBurner::new);
+         sink.register(ModMenus.HEATER_FIREBOX.get(), GUIFirebox::new);
+         sink.register(ModMenus.HEATER_HEATEX.get(), GUIHeaterHeatex::new);
+         sink.register(ModMenus.MACHINE_WOOD_BURNER.get(), GUIMachineWoodBurner::new);
         sink.register(ModMenus.MACHINE_VACUUM_DISTILL.get(), GUIMachineVacuumDistill::new);
         sink.register(ModMenus.MACHINE_CATALYTIC_REFORMER.get(), GUIMachineCatalyticReformer::new);
         sink.register(ModMenus.MACHINE_HYDROTREATER.get(), GUIMachineHydrotreater::new);
@@ -427,7 +424,7 @@ public final class HbmClientRegistrations {
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink blockEntities,
-                                         HbmEntityRenderers.Sink downstream) {
+            HbmEntityRenderers.Sink downstream) {
         HbmBlockEntityRenderers.registerAll(blockEntities);
         RailClientRegistrations.registerRenderers(blockEntities);
         Set<EntityType<?>> bound = new HashSet<>();
@@ -532,10 +529,10 @@ public final class HbmClientRegistrations {
         GluonGunClient.register();
         JadeShotgunClient.register();
         JetpackClientVisuals.init();
-        JetpackSmokeClient.register();
-        EntityRenderSmokeClient.register();
-        GunSmokeClient.register();
-        TorexBenchmarkClient.register();
+         JetpackSmokeClient.register();
+         EntityRenderSmokeClient.register();
+         GunSmokeClient.register();
+         TorexBenchmarkClient.register();
         ClientResourceReloads.register(Constants.MOD_ID, "jetpack_visuals",
                 () -> {
                     ArmorRenderers.reload();
@@ -571,9 +568,7 @@ public final class HbmClientRegistrations {
         RenderBobble.preloadSkins(); // 1.12.2 ClientHttpHandler.preinit: skinned bobbleheads
     }
 
-    /**
-     * Connects the client-owned visuals to the common JetpackHandler without making it import client APIs.
-     */
+    /** Connects the client-owned visuals to the common JetpackHandler without making it import client APIs. */
     private static void installJetpackBridge() {
         JetpackHandler.setClientExhaustCallback((level, payload) ->
                 JetpackClientVisuals.spawnExhaustCue(level, payload.playerId(), payload.mode()));
@@ -581,53 +576,16 @@ public final class HbmClientRegistrations {
             JetpackHandler.JetpackInfo info = JetpackHandler.getState(player);
             if (info == null) return null;
             return new JetpackClientBridge.State() {
-                @Override
-                public boolean opening() {
-                    return info.opening;
-                }
-
-                @Override
-                public boolean hover() {
-                    return info.hover;
-                }
-
-                @Override
-                public float thrust() {
-                    return info.thrust;
-                }
-
-                @Override
-                public float prevThrust() {
-                    return info.prevThrust;
-                }
-
-                @Override
-                public int jetpackFlyTime() {
-                    return info.jetpackFlyTime;
-                }
-
-                @Override
-                public int prevJetpackFlyTime() {
-                    return info.prevJetpackFlyTime;
-                }
-
-                @Override
-                public int failureTicks() {
-                    return info.failureTicks;
-                }
-
-                @Override
-                public boolean useCompactHUD() {
-                    return info.useCompactHUD;
-                }
-
-                @Override
-                public long animTime() {
-                    return info.animTime;
-                }
-
-                @Override
-                public boolean active() {
+                @Override public boolean opening() { return info.opening; }
+                @Override public boolean hover() { return info.hover; }
+                @Override public float thrust() { return info.thrust; }
+                @Override public float prevThrust() { return info.prevThrust; }
+                @Override public int jetpackFlyTime() { return info.jetpackFlyTime; }
+                @Override public int prevJetpackFlyTime() { return info.prevJetpackFlyTime; }
+                @Override public int failureTicks() { return info.failureTicks; }
+                @Override public boolean useCompactHUD() { return info.useCompactHUD; }
+                @Override public long animTime() { return info.animTime; }
+                @Override public boolean active() {
                     return JetpackHandler.isJetpackActive(player);
                 }
             };
@@ -640,9 +598,7 @@ public final class HbmClientRegistrations {
         });
     }
 
-    /**
-     * Registers HBM's key mappings and starts the per-tick input poll that drives guns.
-     */
+    /** Registers HBM's key mappings and starts the per-tick input poll that drives guns. */
     public static void installKeybinds() {
         HbmKeybindsClient.register();
         ArmorSetClient.registerKeys(); // final armor sets A: bismuth dash key
@@ -680,9 +636,7 @@ public final class HbmClientRegistrations {
         RenderInputClientRegistrations.install(); // overhead markers, HUD, world text, particles
     }
 
-    /**
-     * Declares which animation each gun plays for each cue. Items resolve lazily, at render time.
-     */
+    /** Declares which animation each gun plays for each cue. Items resolve lazily, at render time. */
     public static void installGunAnimations() {
         GunEffectState.install();
         TracerRegistry.init();
@@ -693,8 +647,7 @@ public final class HbmClientRegistrations {
         GunEffectState.setGunCasingHandler(payload -> CasingParticles.spawn(
                 new CasingCreator.Event(payload.x(), payload.y(), payload.z(), payload.mX(),
                         payload.mY(), payload.mZ(), payload.yaw(), payload.pitch(), payload.mPitch(), payload.mYaw(),
-                        payload.casing(), payload.smoking(), payload.smokeLife(), payload.smokeLift(),
-                        payload.nodeLife(),
+                        payload.casing(), payload.smoking(), payload.smokeLife(), payload.smokeLift(), payload.nodeLife(),
                         true, payload.legacy())));
         GunAnimations.init();
         DrillHighlightClient.init();

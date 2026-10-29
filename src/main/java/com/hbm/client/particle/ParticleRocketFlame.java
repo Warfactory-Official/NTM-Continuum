@@ -6,7 +6,6 @@ import dev.golem.core.render.Particles;
 import com.hbm.particle.RocketFlameColor;
 
 import java.util.Random;
-
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
 
@@ -54,9 +53,7 @@ public class ParticleRocketFlame extends CompatParticle {
         return this;
     }
 
-    /**
-     * hbm-space's low-pressure contrail: extra initial spread and a shorter lifetime.
-     */
+    /** hbm-space's low-pressure contrail: extra initial spread and a shorter lifetime. */
     public ParticleRocketFlame setAtmosphericPressure(double pressure) {
         if (pressure < 0.08D) {
             double spread = (0.08D - pressure) * 20D;

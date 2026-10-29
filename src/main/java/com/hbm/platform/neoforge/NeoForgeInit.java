@@ -80,8 +80,7 @@ public class NeoForgeInit {
 
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {
             com.hbm.config.AutocalConfig.load(event.getServer());
-            Constants.LOG.info("[HBM] Loaded {} total recipes",
-                    event.getServer().getRecipeManager().getRecipes().size());
+            Constants.LOG.info("[HBM] Loaded {} total recipes", event.getServer().getRecipeManager().getRecipes().size());
         });
     }
 

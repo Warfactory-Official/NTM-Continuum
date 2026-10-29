@@ -41,8 +41,7 @@ public final class RenderFallback implements Scenario {
     private static final int ROW_A = Z;
     private static final int ROW_B = Z + 16;
 
-    private record Machine(String id, int x, int z) {
-    }
+    private record Machine(String id, int x, int z) {}
 
     private static final List<Machine> MACHINES = List.of(
             new Machine("machine_chungus", X - 24, ROW_A),
@@ -140,9 +139,7 @@ public final class RenderFallback implements Scenario {
         }
     }
 
-    /**
-     * Waits (up to 30 s) until the chunk renderer has no section build queued or running.
-     */
+    /** Waits (up to 30 s) until the chunk renderer has no section build queued or running. */
     private static void waitSectionsBuilt(Client c) {
         c.waitTicks(5);
         long deadline = System.nanoTime() + 30_000_000_000L;

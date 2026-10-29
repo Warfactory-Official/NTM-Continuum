@@ -19,10 +19,8 @@ import com.hbm.tileentity.machine.TileEntityMachineDrain;
 import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
 import com.hbm.util.TickPhase;
 import dev.golem.core.gametest.GameTestHelpers;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -43,8 +41,7 @@ import net.minecraft.world.level.block.Blocks;
  */
 public final class PollutionGameTests {
 
-    private PollutionGameTests() {
-    }
+    private PollutionGameTests() {}
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
@@ -65,8 +62,7 @@ public final class PollutionGameTests {
     public static final GameTests.Function TRAIT_TOOLTIP =
             TESTS.function("pollution_trait_tooltip", 20, () -> PollutionGameTests::traitTooltip);
 
-    public static void init() {
-    }
+    public static void init() {}
 
     /**
      * Pollution lives per region (chunk), not per plot, so a test that zeroes it also zeroes a neighbouring plot's
@@ -86,9 +82,7 @@ public final class PollutionGameTests {
         }
     }
 
-    /**
-     * 1.7 keys on {@code x >> 6}: four chunks a side, not one.
-     */
+    /** 1.7 keys on {@code x >> 6}: four chunks a side, not one. */
     public static void regions(GameTestHelper helper) {
         helper.assertTrue(PollutionSavedData.region(0, 0).equals(PollutionSavedData.region(63, 63)),
                 "a 64-block region must cover its whole square");
@@ -134,9 +128,7 @@ public final class PollutionGameTests {
         helper.succeed();
     }
 
-    /**
-     * One pass decays the source and hands a share to each of the four orthogonal neighbours.
-     */
+    /** One pass decays the source and hands a share to each of the four orthogonal neighbours. */
     public static void diffusion(GameTestHelper helper) {
         PollutionSavedData saved = new PollutionSavedData();
         ChunkPos origin = new ChunkPos(0, 0);
@@ -178,9 +170,7 @@ public final class PollutionGameTests {
         helper.succeed();
     }
 
-    /**
-     * Poison past the threshold turns ground cover to coarse dirt and strips the plants.
-     */
+    /** Poison past the threshold turns ground cover to coarse dirt and strips the plants. */
     public static void blight(GameTestHelper helper) {
         helper.assertTrue(RadiationConfig.enablePollution, "pollution must be enabled for the blight to run");
 
@@ -242,8 +232,7 @@ public final class PollutionGameTests {
 
                     float soot = PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT);
                     double expected = 0.01D * MobConfig.pollutionMult;
-                    helper.assertTrue(flare.tank.getFill() == 990,
-                            "the flare must burn 10 mB, left " + flare.tank.getFill());
+                    helper.assertTrue(flare.tank.getFill() == 990, "the flare must burn 10 mB, left " + flare.tank.getFill());
                     helper.assertTrue(Math.abs(soot - expected) < 1.0E-6D,
                             "burning 10 mB of gas must add 0.01 soot (x" + MobConfig.pollutionMult + "), got " + soot);
                     helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.POISON) == 0F,
@@ -346,9 +335,7 @@ public final class PollutionGameTests {
         helper.succeed();
     }
 
-    /**
-     * The trait tables 1.7 declares, and the tooltip lines they produce.
-     */
+    /** The trait tables 1.7 declares, and the tooltip lines they produce. */
     public static void traitTooltip(GameTestHelper helper) {
         Fluids.init();
         FT_Polluting oil =

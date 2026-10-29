@@ -15,12 +15,10 @@ import com.hbm.inventory.fluid.trait.FT_Polluting;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import dev.golem.core.data.DataFiles;
 import dev.golem.core.gametest.GameTests;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import net.minecraft.gametest.framework.GameTestHelper;
 
 /**
@@ -30,22 +28,16 @@ import net.minecraft.gametest.framework.GameTestHelper;
  */
 public final class FluidPropertyGameTests {
 
-    private FluidPropertyGameTests() {
-    }
+    private FluidPropertyGameTests() {}
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
-    public static final GameTests.Function FILES = TESTS.function("fluid_property_files", 20,
-            () -> FluidPropertyGameTests::files);
-    public static final GameTests.Function HAZARDS = TESTS.function("fluid_property_hazards", 20,
-            () -> FluidPropertyGameTests::hazards);
-    public static final GameTests.Function PATCHES = TESTS.function("fluid_property_patches", 20,
-            () -> FluidPropertyGameTests::patches);
-    public static final GameTests.Function PHASES = TESTS.function("fluid_property_phases", 20,
-            () -> FluidPropertyGameTests::phases);
+    public static final GameTests.Function FILES = TESTS.function("fluid_property_files", 20, () -> FluidPropertyGameTests::files);
+    public static final GameTests.Function HAZARDS = TESTS.function("fluid_property_hazards", 20, () -> FluidPropertyGameTests::hazards);
+    public static final GameTests.Function PATCHES = TESTS.function("fluid_property_patches", 20, () -> FluidPropertyGameTests::patches);
+    public static final GameTests.Function PHASES = TESTS.function("fluid_property_phases", 20, () -> FluidPropertyGameTests::phases);
 
-    public static void init() {
-    }
+    public static void init() {}
 
     public static void files(GameTestHelper helper) {
         List<String> broken = new ArrayList<>();
@@ -117,17 +109,13 @@ public final class FluidPropertyGameTests {
             "TITANIUM_TETRACHLORIDE:3:0:2:NOWATER"
     };
 
-    /**
-     * A {@code NAME:p:f:r:SYMBOL} row as a hazard (1.7 spells the cryogenic symbol {@code CROYGENIC}).
-     */
+    /** A {@code NAME:p:f:r:SYMBOL} row as a hazard (1.7 spells the cryogenic symbol {@code CROYGENIC}). */
     public static FluidHazard hazard17(String[] row) {
         return new FluidHazard(Integer.parseInt(row[1]), Integer.parseInt(row[2]), Integer.parseInt(row[3]),
                 FluidHazard.Symbol.valueOf(row[4].equals("CROYGENIC") ? "CRYOGENIC" : row[4]));
     }
 
-    /**
-     * Every HBM fluid's hazard diamond is 1.7's (from the {@code hazard} field of its property file).
-     */
+    /** Every HBM fluid's hazard diamond is 1.7's (from the {@code hazard} field of its property file). */
     public static void hazards(GameTestHelper helper) {
         Map<String, FluidType> byName = new LinkedHashMap<>();
         for (FluidType fluid : FluidRecipeTableGameTests.declaredFluids()) byName.put(fluid.getName(), fluid);
@@ -140,8 +128,7 @@ public final class FluidPropertyGameTests {
                 continue;
             }
             FluidHazard expected = hazard17(row);
-            if (!fluid.getHazard().equals(expected))
-                wrong.add(row[0] + " " + fluid.getHazard() + ", expected " + expected);
+            if (!fluid.getHazard().equals(expected)) wrong.add(row[0] + " " + fluid.getHazard() + ", expected " + expected);
         }
         helper.assertTrue(HAZARDS_17.length == 157, "the 1.7 table has " + HAZARDS_17.length + " rows");
         helper.assertTrue(wrong.isEmpty(), "hazard diamonds differ from 1.7: " + wrong);
@@ -176,8 +163,7 @@ public final class FluidPropertyGameTests {
                 {"temperature": 1}"""));
         try {
             FluidProperties.applyPatches(others);
-            helper.assertTrue(acid.hasTrait(FT_Polluting.class) && !acid.hasTrait(FT_PWRModerator.class),
-                    "nitric acid is not 1.7's");
+            helper.assertTrue(acid.hasTrait(FT_Polluting.class) && !acid.hasTrait(FT_PWRModerator.class), "nitric acid is not 1.7's");
             FluidProperties.applyPatches(withTest);
             check(helper, acid, hazard, "");
             // a reload of the property files (which replaces nitric acid's properties) keeps the patches on top
@@ -187,30 +173,23 @@ public final class FluidPropertyGameTests {
         } finally {
             FluidProperties.applyPatches(loaded);
         }
-        helper.assertTrue(FluidProperties.write(acid).equals(before),
-                "a reload without the patch did not restore nitric acid: "
-                        + FluidProperties.write(acid) + " vs " + before);
+        helper.assertTrue(FluidProperties.write(acid).equals(before), "a reload without the patch did not restore nitric acid: "
+                + FluidProperties.write(acid) + " vs " + before);
         helper.succeed();
     }
 
     private static void check(GameTestHelper helper, FluidType acid, FluidHazard hazard, String when) {
         FT_PWRModerator moderator = acid.getTrait(FT_PWRModerator.class);
         helper.assertTrue(!acid.hasTrait(FT_Polluting.class), "the patch did not remove the pollution" + when);
-        helper.assertTrue(moderator != null && moderator.getMultiplier() == 1.5,
-                "the patch did not add the moderator" + when);
-        helper.assertTrue(
-                acid.hasTrait(FluidTraitSimple.FT_Gaseous.class) && !acid.hasTrait(FluidTraitSimple.FT_Liquid.class),
+        helper.assertTrue(moderator != null && moderator.getMultiplier() == 1.5, "the patch did not add the moderator" + when);
+        helper.assertTrue(acid.hasTrait(FluidTraitSimple.FT_Gaseous.class) && !acid.hasTrait(FluidTraitSimple.FT_Liquid.class),
                 "the patch did not change the phase" + when);
-        helper.assertTrue(!acid.hasTrait(FluidTraitSimple.FT_Viscous.class),
-                "the second patch was not applied after the first" + when);
+        helper.assertTrue(!acid.hasTrait(FluidTraitSimple.FT_Viscous.class), "the second patch was not applied after the first" + when);
         helper.assertTrue(acid.getTemperature() == 50, "the patch did not override the temperature" + when);
-        helper.assertTrue(acid.isCorrosive() && acid.getHazard().equals(hazard),
-                "the patch touched what it did not name" + when);
+        helper.assertTrue(acid.isCorrosive() && acid.getHazard().equals(hazard), "the patch touched what it did not name" + when);
     }
 
-    /**
-     * {@code "type"} may list several phases (1.7 let a fluid carry several), and the file writer keeps them.
-     */
+    /** {@code "type"} may list several phases (1.7 let a fluid carry several), and the file writer keeps them. */
     public static void phases(GameTestHelper helper) {
         FluidType fluid = Fluids.XYLENE;
         JsonObject before = FluidProperties.write(fluid);
@@ -221,15 +200,13 @@ public final class FluidPropertyGameTests {
             phases.add("gaseous");
             both.add("type", phases);
             FluidProperties.apply(fluid, both);
-            helper.assertTrue(fluid.hasTrait(FluidTraitSimple.FT_Liquid.class) && fluid.hasTrait(
-                            FluidTraitSimple.FT_Gaseous.class),
+            helper.assertTrue(fluid.hasTrait(FluidTraitSimple.FT_Liquid.class) && fluid.hasTrait(FluidTraitSimple.FT_Gaseous.class),
                     "a two-phase file did not give both phases");
             JsonObject written = FluidProperties.write(fluid);
             helper.assertTrue(written.get("type").isJsonArray() && written.getAsJsonArray("type").size() == 2,
                     "the writer did not keep both phases: " + written.get("type"));
             FluidProperties.apply(fluid, written);
-            helper.assertTrue(FluidProperties.write(fluid).equals(written),
-                    "a two-phase file does not survive a round trip");
+            helper.assertTrue(FluidProperties.write(fluid).equals(written), "a two-phase file does not survive a round trip");
         } finally {
             FluidProperties.apply(fluid, before);
         }

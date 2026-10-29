@@ -32,8 +32,7 @@ public class BlockPlushie extends BlockTrinket {
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof TileEntityPlushie plushie))
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(level.getBlockEntity(pos) instanceof TileEntityPlushie plushie)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) {
             plushie.squishTimer = 11;
         } else if (plushie.type() == PlushieType.HUNDUN) {
@@ -46,9 +45,7 @@ public class BlockPlushie extends BlockTrinket {
         return InteractionResult.SUCCESS;
     }
 
-    /**
-     * The base mod's loud Hundun; forks may supply their authored squish volume.
-     */
+    /** The base mod's loud Hundun; forks may supply their authored squish volume. */
     protected float squishVolume(PlushieType type) {
         return type == PlushieType.HUNDUN ? 100F : 0.25F;
     }

@@ -40,9 +40,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-/**
- * 1.7 refueler: a thin wall leaves standing room inside the fuel-transfer area.
- */
+/** 1.7 refueler: a thin wall leaves standing room inside the fuel-transfer area. */
 public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidConnectorBlockMK2, ICapabilityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -78,8 +76,7 @@ public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidCo
     }
 
     @Override
-    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
-                                          InteractionHand hand, ItemStack stack, BlockHitResult hit) {
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!stack.isEmpty() && stack.getItem() instanceof IItemFluidId identifier) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityRefueler te) {
                 FluidType type = identifier.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
@@ -121,23 +118,16 @@ public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidCo
 
     private static DirPos[] portOf(TileEntityRefueler te) {
         // pipe connects on the side opposite the facing (matches the TE's subscribe port)
-        Direction facing = te.getBlockState().hasProperty(FACING) ? te.getBlockState()
-                                                                      .getValue(FACING) : Direction.NORTH;
+        Direction facing = te.getBlockState().hasProperty(FACING) ? te.getBlockState().getValue(FACING) : Direction.NORTH;
         ForgeDirection dir = ForgeDirection.getOrientation(facing.get3DDataValue()).getOpposite();
         BlockPos p = te.getBlockPos();
-        return new DirPos[]{new DirPos(p.getX() + dir.offsetX, p.getY(), p.getZ() + dir.offsetZ, dir)};
+        return new DirPos[]{ new DirPos(p.getX() + dir.offsetX, p.getY(), p.getZ() + dir.offsetZ, dir) };
     }
 
-    /**
-     * Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts.
-     */
+    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
     private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn()
-                                                       .fluidFaces(BlockEntity.class,
-                                                               (be, side) -> side == be.getBlockState().getValue(FACING)
-                                                                                       .getOpposite());
+            .fluidFaces(BlockEntity.class, (be, side) -> side == be.getBlockState().getValue(FACING).getOpposite());
 
     @Override
-    public MachineCaps caps() {
-        return CAPS;
-    }
+    public MachineCaps caps() { return CAPS; }
 }

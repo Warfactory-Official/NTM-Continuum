@@ -14,8 +14,7 @@ package com.hbm.lib;
  */
 public final class VanillaIds {
 
-    private VanillaIds() {
-    }
+    private VanillaIds() {}
 
     public static final String acacia_boat = "minecraft:acacia_boat";
     public static final String acacia_button = "minecraft:acacia_button";

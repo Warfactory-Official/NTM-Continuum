@@ -11,9 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-/**
- * Shared transient animation state of the base and addon plushies.
- */
+/** Shared transient animation state of the base and addon plushies. */
 public abstract class TileEntityPressablePlushie extends TileEntityTrinket {
 
     public int squishTimer;

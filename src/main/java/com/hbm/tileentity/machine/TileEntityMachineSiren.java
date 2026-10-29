@@ -30,7 +30,6 @@ public class TileEntityMachineSiren extends TileEntityMachineBase implements Men
     private static final int[] SLOT = {0};
 
     public boolean lock = false;
-    public boolean active;
 
     public TileEntityMachineSiren(BlockPos pos, BlockState state) {
         super(ModPowerGenBlockEntities.SIREN.get(), pos, state, 1);
@@ -46,22 +45,23 @@ public class TileEntityMachineSiren extends TileEntityMachineBase implements Men
 
         TrackType type = siren.getCurrentType();
         int id = type.ordinal();
-        siren.active = type != TrackType.NULL && level.hasNeighborSignal(pos);
 
         if (type == TrackType.NULL) {
             SirenPayload.send(server, pos, id, false);
             return;
         }
 
+        boolean active = level.hasNeighborSignal(pos);
+
         if (type.getType() == SoundType.LOOP) {
-            SirenPayload.send(server, pos, id, siren.active);
+            SirenPayload.send(server, pos, id, active);
         } else {
-            if (!siren.lock && siren.active) {
+            if (!siren.lock && active) {
                 siren.lock = true;
                 SirenPayload.send(server, pos, id, false);
                 SirenPayload.send(server, pos, id, true);
             }
-            if (siren.lock && !siren.active) {
+            if (siren.lock && !active) {
                 siren.lock = false;
             }
         }
@@ -71,28 +71,15 @@ public class TileEntityMachineSiren extends TileEntityMachineBase implements Men
         return ItemCassette.getType(inventory.getStackInSlot(0));
     }
 
-    /**
-     * 1.7 {@code isItemValidForSlot} returns false: nothing is inserted from the outside.
-     */
+    /** 1.7 {@code isItemValidForSlot} returns false: nothing is inserted from the outside. */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return false;
     }
 
-    @Override
-    public int[] getSlotsForFace(Direction side) {
-        return SLOT;
-    }
-
-    @Override
-    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return false;
-    }
-
-    @Override
-    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return false;
-    }
+    @Override public int[] getSlotsForFace(Direction side) { return SLOT; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 
     @Override
     public Component getDisplayName() {

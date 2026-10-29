@@ -59,6 +59,8 @@ public final class NTMStructureDeclarations {
 
     /** 1.7 {@code StructureConfig}: region salt, {@code 996996996 - dimension} for the overworld. */
     public static final int SALT = 996996996;
+    /** 1.7 left the meteor dungeon at the default weight of 1; NTM: Space sets 0, as hbm-space generates none. */
+    public static int meteorDungeonWeight = 1;
 
     private static boolean declared;
 
@@ -277,7 +279,7 @@ public final class NTMStructureDeclarations {
             case "abandoned_arcticstation" -> StructureConfig.abandonedArcticStationSpawnWeight;
             case "military_base" -> StructureConfig.militaryBaseSpawnWeight;
             case SUBMARINE -> StructureConfig.submarineSpawnWeight;
-            case "meteor_dungeon" -> 1;
+            case "meteor_dungeon" -> meteorDungeonWeight;
             case NULL_PLAINS -> StructureConfig.plainsNullWeight;
             case NULL_OCEAN -> StructureConfig.oceanNullWeight;
             default -> 0;

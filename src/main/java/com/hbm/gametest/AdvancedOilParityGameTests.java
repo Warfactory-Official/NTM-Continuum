@@ -26,8 +26,7 @@ import net.minecraft.world.level.block.Blocks;
 
 public final class AdvancedOilParityGameTests {
 
-    private AdvancedOilParityGameTests() {
-    }
+    private AdvancedOilParityGameTests() {}
 
     public static void pyroProgressGate(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
@@ -38,14 +37,12 @@ public final class AdvancedOilParityGameTests {
 
         oven.power = TileEntityMachinePyroOven.getConsumption(0, 0);
         oven.inventory.setStackInSlot(1, new ItemStack(ModFuelItems.biomass.get(), 4));
-        TileEntityMachinePyroOven.serverTick(helper.getLevel(), helper.absolutePos(relative), oven.getBlockState(),
-                oven);
+        TileEntityMachinePyroOven.serverTick(helper.getLevel(), helper.absolutePos(relative), oven.getBlockState(), oven);
         helper.assertTrue(oven.isProgressing && oven.progress > 0F,
                 "Pyro oven did not enter its legacy processing gate");
 
         oven.inventory.setStackInSlot(1, ItemStack.EMPTY);
-        TileEntityMachinePyroOven.serverTick(helper.getLevel(), helper.absolutePos(relative), oven.getBlockState(),
-                oven);
+        TileEntityMachinePyroOven.serverTick(helper.getLevel(), helper.absolutePos(relative), oven.getBlockState(), oven);
         helper.assertTrue(!oven.isProgressing && oven.progress == 0F,
                 "Pyro oven did not clear processing state when its recipe disappeared");
         helper.succeed();
@@ -54,7 +51,7 @@ public final class AdvancedOilParityGameTests {
     public static void combustionOperationGate(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
         helper.setBlock(relative, ModMachineBlocks.machine_combustion_engine.get().defaultBlockState()
-        );
+                );
         TileEntityMachineCombustionEngine engine = GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineCombustionEngine.class);
         helper.assertTrue(engine != null, "Combustion engine core BlockEntity was not created");

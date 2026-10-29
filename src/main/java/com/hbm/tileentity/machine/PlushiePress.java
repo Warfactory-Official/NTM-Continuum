@@ -12,9 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.Level;
 
-/**
- * The authored press/plushie stroke and hand-drill operations, shared by both presses.
- */
+/** The authored press/plushie stroke and hand-drill operations, shared by both presses. */
 public final class PlushiePress {
 
     private PlushiePress() {

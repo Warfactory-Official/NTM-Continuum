@@ -29,8 +29,7 @@ public final class GemRenderMaterials implements Scenario {
     private static final int PER_ROW = 8;
     private static final int ROW_GAP = 28;
 
-    private record Machine(String id, String state, double distance) {
-    }
+    private record Machine(String id, String state, double distance) {}
 
     private static final List<Machine> MACHINES = List.of(
             new Machine("machine_chemical_plant", "[facing=north]", 7),
@@ -125,9 +124,7 @@ public final class GemRenderMaterials implements Scenario {
         }
     }
 
-    /**
-     * One shot per machine from the south-west, high enough to see tops and translucent fills.
-     */
+    /** One shot per machine from the south-west, high enough to see tops and translucent fills. */
     private static void shots(Client c, String suffix) {
         c.send("clear_chat");
         for (int i = 0; i < MACHINES.size(); i++) {
@@ -148,9 +145,7 @@ public final class GemRenderMaterials implements Scenario {
         return Z + (i / PER_ROW) * ROW_GAP;
     }
 
-    /**
-     * Waits for real chunk lighting and core placement before freezing a material comparison.
-     */
+    /** Waits for real chunk lighting and core placement before freezing a material comparison. */
     private static void waitForScene(Client c) {
         long deadline = System.nanoTime() + 30_000_000_000L;
         List<String> missing;
@@ -171,9 +166,7 @@ public final class GemRenderMaterials implements Scenario {
         throw new AssertionError("Scene not ready: missing cores=" + missing);
     }
 
-    /**
-     * Waits for the render-distance rebuild before placing cores into the section lists.
-     */
+    /** Waits for the render-distance rebuild before placing cores into the section lists. */
     private static void waitSectionsBuilt(Client c) {
         c.waitTicks(5);
         long deadline = System.nanoTime() + 30_000_000_000L;
@@ -186,9 +179,7 @@ public final class GemRenderMaterials implements Scenario {
         throw new AssertionError("Chunk renderer still rebuilding sections: " + status);
     }
 
-    /**
-     * Which path drew each core over at least ten submits, from a camera that sees both rows.
-     */
+    /** Which path drew each core over at least ten submits, from a camera that sees both rows. */
     private static JsonObject measure(Client c) {
         int span = PER_ROW * SPACING;
         c.teleport(X + span / 2.0, L + 50, Z + ROW_GAP + 60.5);

@@ -36,8 +36,7 @@ public final class ForeignEnergyFixture {
     public static final RegistryObject<BlockEntityType<CellEntity>> CELL_ENTITY = BLOCK_ENTITIES.register(
             "test_fe_cell", () -> BlockEntities.type(CellEntity::new, CELL.get(), OPTIONAL_CELL.get()));
 
-    private ForeignEnergyFixture() {
-    }
+    private ForeignEnergyFixture() {}
 
     public static void init() {
         EnergyExposure.expose(new CellSource(), () -> new Block[]{CELL.get(), OPTIONAL_CELL.get()});

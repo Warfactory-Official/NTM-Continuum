@@ -1,8 +1,6 @@
 import dev.golem.harness.api.*;
 
-/**
- * Fresh client acceptance after the server matrix: world, menu, title and rejoin.
- */
+/** Fresh client acceptance after the server matrix: world, menu, title and rejoin. */
 public final class ClientSmoke implements Scenario {
     public void run(Client c) throws Exception {
         c.waitInWorld(120_000L);

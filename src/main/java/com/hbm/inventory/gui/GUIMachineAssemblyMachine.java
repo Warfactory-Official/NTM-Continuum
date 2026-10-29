@@ -35,9 +35,7 @@ public class GUIMachineAssemblyMachine extends CompatContainerScreen<ContainerMa
         super(menu, playerInventory, title, 176, 256);
     }
 
-    /**
-     * 1.7 foreground: the name centred on x 70 at y 6, then the inventory caption.
-     */
+    /** 1.7 foreground: the name centred on x 70 at y 6, then the inventory caption. */
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         GuiDraw.text(graphics, font, title, 70 - font.width(title) / 2, 6, 0xFF404040, false);
@@ -46,8 +44,7 @@ public class GUIMachineAssemblyMachine extends CompatContainerScreen<ContainerMa
 
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256,
-                256);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineAssemblyMachine te = this.menu.getAssembler();
         if (te == null) return;
@@ -56,17 +53,14 @@ public class GUIMachineAssemblyMachine extends CompatContainerScreen<ContainerMa
         long max = te.maxPower;
         int p = max <= 0L ? 0 : (int) (te.power * 61L / max);
         if (p > 0) {
-            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 152, this.topPos + 79 - p, 176.0F, (float) (61 - p), 16, p,
-                    256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 152, this.topPos + 79 - p, 176.0F, (float) (61 - p), 16, p, 256, 256);
         }
 
         // Progress bar: up to 70×16 at (62,126), sampled from (u=176, v=61).
         double progress = te.assemblerModule.progress;
         if (progress > 0) {
             int j = (int) Math.ceil(70 * progress);
-            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 62, this.topPos + 126, 176.0F,
-                    te.assemblerModule.restrictedMode ? 77.0F : 61.0F, j, 16, 256,
-                    256); // 1.7: restricted-mode bar below
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 62, this.topPos + 126, 176.0F, te.assemblerModule.restrictedMode ? 77.0F : 61.0F, j, 16, 256, 256); // 1.7: restricted-mode bar below
         }
 
         // Status LEDs (3×6 each): LEFT = a recipe is configured, RIGHT = enough power for it; each turns
@@ -106,8 +100,7 @@ public class GUIMachineAssemblyMachine extends CompatContainerScreen<ContainerMa
                 if (this.menu.slots.get(4 + i).hasItem()) continue;
                 int sx = 8 + (i % 3) * 18, sy = 18 + (i / 3) * 18;
                 // Cycling preview: a tag ingredient blinks between all matching items (vanilla + HBM, etc.).
-                GuiDraw.item(graphics, recipe.inputItem[i].getCyclingDisplayStack(), this.leftPos + sx,
-                        this.topPos + sy);
+                GuiDraw.item(graphics, recipe.inputItem[i].getCyclingDisplayStack(), this.leftPos + sx, this.topPos + sy);
                 GuiDraw.blit(graphics, TEXTURE, this.leftPos + sx, this.topPos + sy,
                         (float) sx, (float) sy, 16, 16, 256, 256, 0x80FFFFFF);
             }
@@ -117,9 +110,7 @@ public class GUIMachineAssemblyMachine extends CompatContainerScreen<ContainerMa
         drawHorizontalTank(graphics, te.outputTank, 80, 99);
     }
 
-    /**
-     * 1.7 {@code renderTank(x, y + 16, z, 52, 16, 1)}: a horizontal tank filling left to right, tinted.
-     */
+    /** 1.7 {@code renderTank(x, y + 16, z, 52, 16, 1)}: a horizontal tank filling left to right, tinted. */
     private void drawHorizontalTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y) {
         int max = tank.getMaxFill();
         int w = max <= 0 ? 0 : tank.getFill() * 52 / max;
@@ -134,9 +125,7 @@ public class GUIMachineAssemblyMachine extends CompatContainerScreen<ContainerMa
         graphics.disableScissor();
     }
 
-    /**
-     * The selector button hot-zone (GUI-relative), matching the 1.12.2 layout.
-     */
+    /** The selector button hot-zone (GUI-relative), matching the 1.12.2 layout. */
     private static final int BTN_X = 7, BTN_Y = 125, BTN_W = 18, BTN_H = 18;
 
     @Override
@@ -150,9 +139,7 @@ public class GUIMachineAssemblyMachine extends CompatContainerScreen<ContainerMa
         return false;
     }
 
-    /**
-     * Draws a 3×6 status LED at GUI-relative x / topPos+121 from texture column {@code u} (192 = orange, 195 = green).
-     */
+    /** Draws a 3×6 status LED at GUI-relative x / topPos+121 from texture column {@code u} (192 = orange, 195 = green). */
     private void led(GuiGraphicsExtractor graphics, int x, int u) {
         GuiDraw.blit(graphics, TEXTURE, this.leftPos + x, this.topPos + 121, (float) u, 0.0F, 3, 6, 256, 256);
     }

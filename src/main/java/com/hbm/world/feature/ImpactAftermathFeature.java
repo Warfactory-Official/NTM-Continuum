@@ -66,6 +66,9 @@ public class ImpactAftermathFeature extends Feature<ImpactAftermathFeature.Confi
         ).apply(i, Config::new));
     }
 
+    /** Replaces the configured {@code recovery_chance} when above 0; NTM: Space sets hbm-space's 4. */
+    public static int recoveryChanceOverride = 0;
+
     public ImpactAftermathFeature(Codec<Config> codec) {
         super(codec);
     }
@@ -189,7 +192,8 @@ public class ImpactAftermathFeature extends Feature<ImpactAftermathFeature.Confi
         if (data == null || !data.impact) return false;
 
         Config c = context.config();
-        Verdict verdict = Verdict.of(data.dust, data.fire, context.random(), c.recoveryChance(), c.wipeDust());
+        Verdict verdict = Verdict.of(data.dust, data.fire, context.random(),
+                recoveryChanceOverride > 0 ? recoveryChanceOverride : c.recoveryChance(), c.wipeDust());
         BlockState impactDirt = c.impactDirt();
         BlockPos origin = context.origin();
         ChunkAccess chunk = level.getChunk(origin.getX() >> 4, origin.getZ() >> 4);

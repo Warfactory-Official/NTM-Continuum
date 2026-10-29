@@ -23,11 +23,9 @@ import com.hbm.items.tool.ItemGuideBook;
 import com.hbm.items.weapon.ItemAmmoArty;
 import com.hbm.items.weapon.ItemAmmoHIMARS;
 import com.hbm.items.weapon.sedna.factory.GunFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
@@ -43,14 +41,11 @@ import net.minecraft.world.item.Item;
  */
 public final class LegacyMetaIds {
 
-    private LegacyMetaIds() {
-    }
+    private LegacyMetaIds() {}
 
     private static volatile @Nullable Map<String, String[]> table;
 
-    /**
-     * The port id ({@code hbm:...}) of 1.7 {@code hbm:<path>} at {@code metadata}, or null if it is no split family.
-     */
+    /** The port id ({@code hbm:...}) of 1.7 {@code hbm:<path>} at {@code metadata}, or null if it is no split family. */
     public static @Nullable String lookup(String path, int metadata) {
         String[] ids = table().get(path);
         if (ids == null) return null;
@@ -58,9 +53,7 @@ public final class LegacyMetaIds {
         return "hbm:" + ids[metadata];
     }
 
-    /**
-     * Every port id ({@code hbm:...}) of the split family 1.7 called {@code hbm:<path>}, or an empty list.
-     */
+    /** Every port id ({@code hbm:...}) of the split family 1.7 called {@code hbm:<path>}, or an empty list. */
     public static List<String> members(String path) {
         String[] ids = table().get(path);
         if (ids == null) return List.of();
@@ -69,9 +62,7 @@ public final class LegacyMetaIds {
         return out;
     }
 
-    /**
-     * Whether {@code path} names a 1.7 metadata family that is split into items here.
-     */
+    /** Whether {@code path} names a 1.7 metadata family that is split into items here. */
     public static boolean isSplit(String path) {
         return table().containsKey(path);
     }
@@ -108,7 +99,7 @@ public final class LegacyMetaIds {
         t.put("ammo_arty", names(ItemAmmoArty.ArtilleryShellType.values(), c -> c.name));
         t.put("ammo_himars", names(ItemAmmoHIMARS.HIMARSRocketType.values(), c -> "ammo_himars_" + c.name));
         t.put("satellite", lower("satellite", ItemSatellite.EnumSatType.values()));
-        t.put("missile_soyuz", new String[]{"missile_soyuz_0", "missile_soyuz_1", "missile_soyuz_2"});
+        t.put("missile_soyuz", new String[] {"missile_soyuz_0", "missile_soyuz_1", "missile_soyuz_2"});
         t.put("pile_rod", lower("pile_rod_mk2", ItemPileRodMK2.EnumPileRod.values()));
         t.put("pa_coil", lower("pa_coil", ItemPACoil.EnumCoilType.values()));
         t.put("holotape_image", lower("holotape_image", ItemHolotapeImage.EnumHoloImage.values()));
@@ -117,32 +108,32 @@ public final class LegacyMetaIds {
         t.put("weapon_mod_generic", lower("weapon_mod_generic", GunFactory.EnumModGeneric.values()));
         t.put("weapon_mod_special", lower("weapon_mod_special", GunFactory.EnumModSpecial.values()));
         t.put("weapon_mod_caliber", lower("weapon_mod_caliber", GunFactory.EnumModCaliber.values()));
-        t.put("clay_tablet", new String[]{"clay_tablet", "clay_tablet_1"});
-        t.put("blueprint_folder", new String[]{"blueprint_folder", "blueprint_folder_discover"});
-        t.put("gear_large", new String[]{"gear_large", "gear_large_steel"});
-        t.put("ammo_container", new String[]{"ammo_container", "ammo_container_alt"});
-        t.put("ingot_u238m2", new String[]{"ingot_u238m2", "hs_elements", "hs_arsenic", "hs_vault"});
+        t.put("clay_tablet", new String[] {"clay_tablet", "clay_tablet_1"});
+        t.put("blueprint_folder", new String[] {"blueprint_folder", "blueprint_folder_discover"});
+        t.put("gear_large", new String[] {"gear_large", "gear_large_steel"});
+        t.put("ammo_container", new String[] {"ammo_container", "ammo_container_alt"});
+        t.put("ingot_u238m2", new String[] {"ingot_u238m2", "hs_elements", "hs_arsenic", "hs_vault"});
         t.put("concrete_colored", prefixed("concrete_", "white", "orange", "magenta", "light_blue", "yellow", "lime",
                 "pink", "gray", "silver", "cyan", "purple", "blue", "brown", "green", "red", "black"));
         t.put("concrete_colored_ext", prefixed("concrete_ext_", "machine", "machine_stripe", "indigo", "purple", "pink",
                 "hazard", "sand", "bronze"));
         t.put("lightstone", prefixed("lightstone_", "unrefined", "tile", "bricks", "bricks_chiseled", "chiseled"));
-        t.put("steel_scaffold", new String[]{"steel_scaffold", "steel_scaffold_red", "steel_scaffold_white",
+        t.put("steel_scaffold", new String[] {"steel_scaffold", "steel_scaffold_red", "steel_scaffold_white",
                 "steel_scaffold_yellow"});
-        t.put("pile_device", new String[]{"pile_loader", "pile_vent", "pile_control"});
-        t.put("wand_structure", new String[]{"wand_structure", "wand_structure_load"});
+        t.put("pile_device", new String[] {"pile_loader", "pile_vent", "pile_control"});
+        t.put("wand_structure", new String[] {"wand_structure", "wand_structure_load"});
         t.put("bobblehead", DecoCrateDeclarations.trinketIds("bobblehead", BlockBobble.BobbleType.VALUES));
         t.put("plushie", DecoCrateDeclarations.trinketIds("plushie", BlockPlushie.PlushieType.VALUES));
         t.put("snowglobe", DecoCrateDeclarations.trinketIds("snowglobe", BlockSnowglobe.SnowglobeType.VALUES));
-        t.put("vending_machine", new String[]{"vending_machine", "vending_machine_snacks"});
-        t.put("filing_cabinet", new String[]{"filing_cabinet_green", "filing_cabinet_steel"});
-        t.put("glyphid_base", new String[]{"glyphid_base", "glyphid_base_infested", "glyphid_base_rad"});
-        t.put("glyphid_spawner", new String[]{"glyphid_spawner", "glyphid_spawner_infested", "glyphid_spawner_rad"});
-        for (String base : new String[]{"nuclear_waste_long", "nuclear_waste_long_tiny", "nuclear_waste_long_depleted",
+        t.put("vending_machine", new String[] {"vending_machine", "vending_machine_snacks"});
+        t.put("filing_cabinet", new String[] {"filing_cabinet_green", "filing_cabinet_steel"});
+        t.put("glyphid_base", new String[] {"glyphid_base", "glyphid_base_infested", "glyphid_base_rad"});
+        t.put("glyphid_spawner", new String[] {"glyphid_spawner", "glyphid_spawner_infested", "glyphid_spawner_rad"});
+        for (String base : new String[] {"nuclear_waste_long", "nuclear_waste_long_tiny", "nuclear_waste_long_depleted",
                 "nuclear_waste_long_depleted_tiny"}) {
             t.put(base, lower(base, ItemWasteStorage.LongWasteClass.values()));
         }
-        for (String base : new String[]{"nuclear_waste_short", "nuclear_waste_short_tiny", "nuclear_waste_short_depleted",
+        for (String base : new String[] {"nuclear_waste_short", "nuclear_waste_short_tiny", "nuclear_waste_short_depleted",
                 "nuclear_waste_short_depleted_tiny"}) {
             t.put(base, lower(base, ItemWasteStorage.ShortWasteClass.values()));
         }

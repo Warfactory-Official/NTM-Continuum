@@ -40,10 +40,7 @@ public class ItemCustomMissile extends CompatItem {
                 for (var listener : listeners) if (listener.describe(parts, chip, output)) return true;
                 return false;
             });
-
-    /**
-     * The five parts; {@code stability} is null for a finless missile.
-     */
+    /** The five parts; {@code stability} is null for a finless missile. */
     public record Parts(Item chip, Item warhead, Item fuselage, @Nullable Item stability, Item thruster) {
 
         private static final Codec<Item> ITEM = BuiltInRegistries.ITEM.byNameCodec();
@@ -62,16 +59,13 @@ public class ItemCustomMissile extends CompatItem {
         super(properties);
     }
 
-    public static ItemStack buildMissile(Item chip, Item warhead, Item fuselage, @Nullable Item stability,
-                                         Item thruster) {
+    public static ItemStack buildMissile(Item chip, Item warhead, Item fuselage, @Nullable Item stability, Item thruster) {
         ItemStack missile = new ItemStack(ModCustomMissileItems.missile_custom.get());
         ModCustomMissileItems.MISSILE_PARTS.set(missile, new Parts(chip, warhead, fuselage, stability, thruster));
         return missile;
     }
 
-    /**
-     * 1.7 {@code buildMissile(ItemStack...)}: the stacks only contribute their item.
-     */
+    /** 1.7 {@code buildMissile(ItemStack...)}: the stacks only contribute their item. */
     public static ItemStack buildMissile(ItemStack chip, ItemStack warhead, ItemStack fuselage, ItemStack stability,
                                          ItemStack thruster) {
         return buildMissile(chip.getItem(), warhead.getItem(), fuselage.getItem(),
@@ -93,9 +87,7 @@ public class ItemCustomMissile extends CompatItem {
         return parts != null && parts.stability() instanceof ItemCustomMissilePart part ? part : null;
     }
 
-    /**
-     * 1.7 {@code getStruct}: null for anything that is not a custom missile.
-     */
+    /** 1.7 {@code getStruct}: null for anything that is not a custom missile. */
     public static @Nullable MissileStruct getStruct(ItemStack stack) {
         Parts parts = parts(stack);
         if (parts == null) {
@@ -129,9 +121,7 @@ public class ItemCustomMissile extends CompatItem {
         }
     }
 
-    /**
-     * The base missile description, also used when no addon replaces its presentation.
-     */
+    /** The base missile description, also used when no addon replaces its presentation. */
     public static void describe(MissileStruct parts, ItemCustomMissilePart chip,
                                 Consumer<Component> output) {
         var warhead = parts.warhead();
@@ -153,10 +143,7 @@ public class ItemCustomMissile extends CompatItem {
         if (stability != null) health += stability.health;
         output.accept(ItemCustomMissilePart.stat("item.missile.desc.health", Component.literal(health + "HP")));
     }
-
-    /**
-     * Whether a part of this type sits in the slot it claims to. Used by the part-type sanity checks.
-     */
+    /** Whether a part of this type sits in the slot it claims to. Used by the part-type sanity checks. */
     static boolean is(@Nullable Item item, PartType type) {
         return item instanceof ItemCustomMissilePart part && part.type == type;
     }

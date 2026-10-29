@@ -14,9 +14,7 @@ import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
-
 import java.awt.Color;
-
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -39,25 +37,20 @@ public class FELRenderer extends GemBER<TileEntityFEL, FELRenderState> {
     private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/fel.png");
 
-    /**
-     * The beam can be 24 blocks long, so the machine must stay visible from well outside its own cell.
-     */
+    /** The beam can be 24 blocks long, so the machine must stay visible from well outside its own cell. */
     @Override
     protected void setup(Gem.Model<FELRenderState> declaration) {
         declaration.offScreen().viewDistance(256)
-                   .part(model.all(), surface)
-                   .translate(0.5F, 0F, 0.5F)
-                   .angle(Gem.Axes.Y, state -> state.yaw);
+                .part(model.all(), surface)
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
     }
 
-    @Override
-    public FELRenderState createRenderState() {
-        return new FELRenderState();
-    }
+    @Override public FELRenderState createRenderState() { return new FELRenderState(); }
 
     @Override
     public void extract(TileEntityFEL be, FELRenderState state, float partialTicks,
-                        Vec3 cameraPosition) {
+                                   Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
         int meta = MachineCore.facingOrdinal(bs, 2);
         state.yaw = switch (ForgeDirection.getOrientation(meta)) {
@@ -82,9 +75,7 @@ public class FELRenderer extends GemBER<TileEntityFEL, FELRenderState> {
         return be.getLevel() != null ? be.getLevel().getGameTime() : 0L;
     }
 
-    /**
-     * The beam is built to reach whatever it hit, so its length is its geometry.
-     */
+    /** The beam is built to reach whatever it hit, so its length is its geometry. */
     @Override
     protected void submitUndeclared(FELRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
         ps.pushPose();

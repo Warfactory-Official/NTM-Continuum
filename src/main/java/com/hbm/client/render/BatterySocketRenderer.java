@@ -15,9 +15,7 @@ import dev.golem.core.render.NoiseDisplacedRenderType;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
-
 import java.util.Random;
-
 import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
@@ -42,9 +40,7 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
 
     private final WavefrontObj model = WavefrontObj.load(Ids.of("hbm", "models/battery_socket.obj"));
     private final List<String> bodyParts = List.copyOf(model.partNames());
-    /**
-     * 1.7's {@code battery.obj} "Supports" part, split into its own file so the pack icons need not exclude it.
-     */
+    /** 1.7's {@code battery.obj} "Supports" part, split into its own file so the pack icons need not exclude it. */
     private final WavefrontObj supports = WavefrontObj.load(Ids.of("hbm", "models/battery_socket_supports.obj"));
     private final WavefrontObj chuddie = WavefrontObj.load(Ids.of("hbm", "models/mobs/chuddie.obj"));
     private static final Identifier CHUDDIE = Ids.of("hbm", "textures/models/chuddie.png");
@@ -54,16 +50,14 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
     private static final float BALL_X = 0.64F, BALL_Y = 1.13F, BALL_RADIUS = 0.24F;
     private final Map<Identifier, Surface> skins = new HashMap<>();
 
-    /**
-     * Match the 1.12.2 RenderBatterySocket placement: centre, facing-rotate, then its model offset.
-     */
+    /** Match the 1.12.2 RenderBatterySocket placement: centre, facing-rotate, then its model offset. */
     @Override
     protected void setup(Gem.Model<BatterySocketRenderState> declaration) {
         Gem.Part<BatterySocketRenderState> socket = declaration.offScreen().viewDistance(256)
-                                                               .joint()
-                                                               .translate(0.5F, 0F, 0.5F)
-                                                               .angle(Gem.Axes.Y, state -> state.yaw)
-                                                               .translate(-0.5F, 0F, 0.5F);
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw)
+                .translate(-0.5F, 0F, 0.5F);
 
         socket.child(model.part("Socket"), EMPTY);
         // 1.7: the supports are drawn while something sits two blocks above the socket (checked once a second)
@@ -76,7 +70,7 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
         int selected = bodyParts.indexOf(part);
         socket.child(model.part(part), EMPTY)
               .visibleIf(state -> selected == state.bodyPart)
-              .skin(this::skinOf);
+                .skin(this::skinOf);
     }
 
     private Surface skinOf(BatterySocketRenderState state) {
@@ -143,8 +137,7 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
      * (the {@code energy_ball} shader, also drawn into the bloom layer), not 1.7's horned pony.
      */
     @Override
-    protected void submitUndeclared(BatterySocketRenderState state, PoseStack pose, SubmitSink sink,
-                                    CameraInfo camera) {
+    protected void submitUndeclared(BatterySocketRenderState state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
         if (!state.creative && !state.generic && state.centrepiece == null) return;
         pose.pushPose();
         pose.translate(0.5D, 0D, 0.5D);
@@ -190,20 +183,16 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
         Random rand = new Random(state.gameTime / 5);
         rand.nextBoolean();
         int animation = (int) (GameTime.now() % 1000L) / 50;
-        for (int i = -1; i <= 1; i += 2)
-            for (int j = -1; j <= 1; j += 2)
-                if (rand.nextInt(4) == 0) {
-                    pose.pushPose();
-                    pose.translate(0D, 0.75D, 0D);
-                    Vec3 end = new Vec3(0.4375D * i, 1.1875D, 0.4375D * j);
-                    BeamPronter.prontBeam(pose, sink, end, BeamPronter.EnumWaveType.RANDOM,
-                            BeamPronter.EnumBeamType.SOLID,
-                            animation, 15, 0.0625F, 0x404040, 0x002040, 3, 0.025F);
-                    BeamPronter.prontBeam(pose, sink, end, BeamPronter.EnumWaveType.RANDOM,
-                            BeamPronter.EnumBeamType.SOLID,
-                            animation, 1, 0F, 0x404040, 0x002040, 3, 0.025F);
-                    pose.popPose();
-                }
+        for (int i = -1; i <= 1; i += 2) for (int j = -1; j <= 1; j += 2) if (rand.nextInt(4) == 0) {
+            pose.pushPose();
+            pose.translate(0D, 0.75D, 0D);
+            Vec3 end = new Vec3(0.4375D * i, 1.1875D, 0.4375D * j);
+            BeamPronter.prontBeam(pose, sink, end, BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID,
+                    animation, 15, 0.0625F, 0x404040, 0x002040, 3, 0.025F);
+            BeamPronter.prontBeam(pose, sink, end, BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID,
+                    animation, 1, 0F, 0x404040, 0x002040, 3, 0.025F);
+            pose.popPose();
+        }
         pose.popPose();
     }
 }

@@ -64,19 +64,12 @@ public final class RenderEmitter extends GemBER<TileEntityEmitter, RenderEmitter
         pose.translate(0.5D, 0D, 0.5D);
         pose.mulPose(Axis.YP.rotationDegrees(90F));
         switch (state.facing) {
-            case DOWN -> {
-                pose.translate(0D, 0.5D, -0.5D);
-                pose.mulPose(Axis.XP.rotationDegrees(90F));
-            }
-            case UP -> {
-                pose.translate(0D, 0.5D, 0.5D);
-                pose.mulPose(Axis.XP.rotationDegrees(-90F));
-            }
+            case DOWN -> { pose.translate(0D, 0.5D, -0.5D); pose.mulPose(Axis.XP.rotationDegrees(90F)); }
+            case UP -> { pose.translate(0D, 0.5D, 0.5D); pose.mulPose(Axis.XP.rotationDegrees(-90F)); }
             case NORTH -> pose.mulPose(Axis.YP.rotationDegrees(90F));
             case WEST -> pose.mulPose(Axis.YP.rotationDegrees(180F));
             case SOUTH -> pose.mulPose(Axis.YP.rotationDegrees(270F));
-            default -> {
-            }
+            default -> { }
         }
         pose.translate(0D, 0.5D, 0.5D);
 

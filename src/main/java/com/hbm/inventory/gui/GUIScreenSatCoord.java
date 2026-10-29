@@ -57,10 +57,7 @@ public class GUIScreenSatCoord extends CompatScreen {
     public int imageHeight() {
         return ySize;
     }
-
-    /**
-     * 1.7 kept the stack it was opened with; the held stack is re-read here since component updates replace it.
-     */
+    /** 1.7 kept the stack it was opened with; the held stack is re-read here since component updates replace it. */
     private ItemStack device() {
         return player.getMainHandItem();
     }
@@ -114,8 +111,7 @@ public class GUIScreenSatCoord extends CompatScreen {
         if (i >= this.guiLeft + 133 && i < this.guiLeft + 133 + 18 && j >= this.guiTop + 52 && j < this.guiTop + 52 + 18) {
 
             if (isNumber(xField.getValue()) && isNumber(zField.getValue())) {
-                Minecraft.getInstance().getSoundManager()
-                         .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 CompoundTag data = new CompoundTag();
                 data.putInt("x", (int) Double.parseDouble(xField.getValue()));
                 data.putInt("z", (int) Double.parseDouble(zField.getValue()));
@@ -129,9 +125,7 @@ public class GUIScreenSatCoord extends CompatScreen {
         return false;
     }
 
-    /**
-     * Coordinates must be finite; Java's floating-point parser also accepts NaN and infinities.
-     */
+    /** Coordinates must be finite; Java's floating-point parser also accepts NaN and infinities. */
     private static boolean isNumber(String text) {
         try {
             return Double.isFinite(Double.parseDouble(text));

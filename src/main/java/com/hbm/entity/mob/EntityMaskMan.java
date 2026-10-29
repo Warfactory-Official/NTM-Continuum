@@ -40,9 +40,7 @@ import java.util.function.Supplier;
 
 public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
 
-    /**
-     * The authored special drop between the coin and skull.
-     */
+    /** The authored special drop between the coin and skull. */
     public static Supplier<ItemStack> SPECIAL_DROP = () -> new ItemStack(ModArmorModItems.bottled_cloud.get());
 
     // 1.7's edge detector read EntityLivingBase.prevHealth, which starts at zero. Seeding this from the max health
@@ -149,6 +147,7 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
         super.die(source);
         HbmCriteria.bossKilled(this, BossKilledTrigger.Kind.MASKMAN, 100D);
     }
+
 
 
     @Override

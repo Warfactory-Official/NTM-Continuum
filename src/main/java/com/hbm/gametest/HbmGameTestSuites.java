@@ -2,7 +2,6 @@ package com.hbm.gametest;
 
 import com.hbm.gametest.computer.ComputerSuites;
 import dev.golem.core.gametest.GameTests;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -16,12 +15,9 @@ public final class HbmGameTestSuites {
 
     private static List<GameTests.Suite> suites;
 
-    private HbmGameTestSuites() {
-    }
+    private HbmGameTestSuites() {}
 
-    /**
-     * Declares the suites on the first call and returns them; later calls return the same list.
-     */
+    /** Declares the suites on the first call and returns them; later calls return the same list. */
     public static synchronized List<GameTests.Suite> all() {
         if (suites == null) {
             declare();
@@ -124,8 +120,9 @@ public final class HbmGameTestSuites {
             list.add(PollutionGameTests.TESTS);
             list.add(ToxinGameTests.TESTS);
             list.add(MachineAutomationGameTests.TESTS);
+            list.add(WorldRuleGameTests.TESTS);
             ServiceLoader.load(HbmGameTestExtension.class, HbmGameTestExtension.class.getClassLoader())
-                         .forEach(extension -> list.addAll(extension.suites()));
+                    .forEach(extension -> list.addAll(extension.suites()));
             suites = List.copyOf(list);
         }
         return suites;
@@ -230,5 +227,6 @@ public final class HbmGameTestSuites {
         PollutionGameTests.init();
         ToxinGameTests.init();
         MachineAutomationGameTests.init();
+        WorldRuleGameTests.init();
     }
 }

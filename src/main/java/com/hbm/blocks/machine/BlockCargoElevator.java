@@ -10,7 +10,6 @@ import dev.golem.core.data.Tags;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -43,13 +42,8 @@ import org.jspecify.annotations.Nullable;
  */
 public class BlockCargoElevator extends BlockMultiblockMachine {
 
-    /**
-     * The elevator splices its cells as it moves.
-     */
-    @Override
-    public boolean proxiesCells() {
-        return false;
-    }
+    /** The elevator splices its cells as it moves. */
+    @Override public boolean proxiesCells() { return false; }
 
     private static final int[] DIMENSIONS = {0, 0, 1, 1, 1, 1};
 
@@ -82,6 +76,11 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
     public void visitPlacementCells(BlockPos core, Direction facing, ItemStack stack, CellVisitor visitor) {
         var data = ItemStacks.blockEntityData(stack, ModBlockEntities.CARGO_ELEVATOR.get());
         visitCourses(core, data == null ? 0 : Tags.getIntOr(data, "height", 0), visitor);
+    }
+
+    @Override
+    protected boolean checksPlacementCells() {
+        return true;
     }
 
     @Override

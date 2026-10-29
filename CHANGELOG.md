@@ -8,10 +8,8 @@ Each release has a `## <version>` section; the release workflow uploads only the
 Requires Golem Core 1.0.2. Use GemRender 0.1.18.
 
 ### Added
-
 - Configurability with 1.7 defaults: every 1.7 machine config in `hbmMachines.json` (synced to clients); radiation walls
-  and immunity tags, biome and dimension ambient radiation, mob transformations, cladding and gas mask blacklists as
-  data;
+  and immunity tags, biome and dimension ambient radiation, mob transformations, cladding and gas mask blacklists as data;
   consumable treatments as the `hbm:consumable_treatment` item data map; every worldgen feature configurable.
 - Looting mob drops and structure chest loot are loot tables (`hbm:chests/<pool>`), filled the way 1.7 fills them.
 - Refined Storage importers, AE2 buses and item pipes can take items from HBM machines on NeoForge and Forge.
@@ -23,19 +21,18 @@ Requires Golem Core 1.0.2. Use GemRender 0.1.18.
 - Raw aluminium makes fireclay; `any_rubber` accepts latex.
 
 ### Fixed
-
-- Held crates transmit their kind and locked hotbar slot before their contents, preventing layout mismatches when
-  selection changes during opening.
-- Barrel carried data replaces stored fluid instead of adding it again during loading.
-- Imported teleporter targets retain their named dimension and coordinates; item wrappers retain dynamic display names.
-- Dropped item effects run after individual entity ticks, without scanning and mutating the live entity collection.
-- Refuelers retain 1.7's directional panel collision, leaving standing room inside their fueling area.
-- Polluting machines vent smoke beyond tank capacity instead of losing it during fill clamping.
-- Tank display helpers select server or client fluid metadata explicitly; recipe schemas expose shredder chance.
-- Placement escape grants survive pending client chunks and remain scoped to the owning multiblock.
-  The mixin preserves vanilla's shared shape cache. Marking all multiblocks as dynamic would bypass it.
-- Jetpack observers receive the current tracked state; flight presentation uses Core's render hooks.
-- Addon item-model aliases and coffee containers apply through public registration seams.
+- A crate opened from the hand could take the wrong layout or lock the wrong hotbar slot if the selection changed while
+  it opened.
+- Barrels placed from an item, or reloaded below 1.20.5, could keep an earlier exact fluid or identifier pin.
+- Dropped-item effects (rags, singularities, cells, antimatter, the demon core) ran from a scan of every loaded entity on
+  Fabric and 1.20.1 Forge; they run after each item's own tick.
+- The refueler was a 12-pixel slab instead of 1.7's 4-pixel wall.
+- Other players' jetpacks showed a stale state after coming into view, and their thrust key was not synced.
+- A cargo elevator placed from a picked-up stack builds all its courses, and needs room for them.
+- Large explosions had no shockwave; it is drawn 2 blocks up and fades as in 1.7.
+- The hand drill removes a burner or electric press's dummy blocks, bomber and C-130 loops play under the Players
+  volume, gneiss gas holds 50 mB of petroleum in 528 mode, the sawmill takes only single items from automation and
+  jetpack exhaust moves as in 1.7.
 - Nuked uranium ore turned into radon instead of sellafite ore; mined uranium ore and ancient scrap dropped nothing
   before 26.1.
 - Held crates: crates picked up while one was open joined its stack and copied its contents (dupe); crates no longer
@@ -51,13 +48,11 @@ Requires Golem Core 1.0.2. Use GemRender 0.1.18.
 - The burner press takes coal coke again; asbestos ores and lab tiles outgas as in 1.7.
 - Holo Inventory counted items twice at multiblock parts; cargo elevator picking as in 1.7.
 - Wand, logic block, HIMARS rocket and jigsaw directions are saved by name.
-- Plastic explosive, plane crash and torpedo explosions had no effects; the combine ball is exempt from nukes and 19
-  wood
+- Plastic explosive, plane crash and torpedo explosions had no effects; the combine ball is exempt from nukes and 19 wood
   blocks burn as in 1.7.
 - `machine_battery` is in no creative tab, as in 1.7.
 
 ### Changed
-
 - Release jars are named without the version prefix.
 
 ## 1.0.1
@@ -65,7 +60,6 @@ Requires Golem Core 1.0.2. Use GemRender 0.1.18.
 Requires Golem Core 1.0.1. Use GemRender 0.1.18. Older versions are refused.
 
 ### Added
-
 - AE2 support: pattern providers push into the seven 1.12.2 autocrafting machines, ME storage for the mass storage unit
   and the large arc furnace, radioactive storage cells as in 1.7, 528 explosive energistics and certus cluster recipes.
 - Mining helmet lamp and occult shotgun flashlight cast real light through GemRender, with 1.7's block-light fallback
@@ -83,27 +77,23 @@ Requires Golem Core 1.0.1. Use GemRender 0.1.18. Older versions are refused.
 - "Cycle Tool Abilities" is a rebindable key.
 
 ### Fixed
-
 - Blast resistance now uses 1.7's effective scale, and radiation-sealing blocks update the radiation walls when placed,
   removed or opened.
-- Cables, ducts, box ducts, box cables and pneumatic tubes are drawn in the chunk mesh, so painted blocks are no longer
-  too
+- Cables, ducts, box ducts, box cables and pneumatic tubes are drawn in the chunk mesh, so painted blocks are no longer too
   dark; coated ducts can be painted as in 1.7.
 - Shift-click routes items into the right slots (batteries, fuels, inputs) in 25 machines.
-- Watz: placement dupe and GUI tanks and gauge (GitHub issues 37, 38); crates emptied by a player break on 1.20.1 (issue
-  39).
+- Watz: placement dupe and GUI tanks and gauge (GitHub issues 37, 38); crates emptied by a player break on 1.20.1
+  (issue 39).
 - Container titles, item icons with part textures, recipe numbers in JEI and ghost grids (GitHub issues 24-27).
 - Fluid identifier sneak-click into barrels and tanks (issue 29); gluon gun ammo use with the daylight cycle off, flamer
   loop and fuel (issue 30); gluon gun tooltip damage (issue 40).
 - Cargo elevator ownership, movement, riders, drops and saving.
 - Waste drum voided stacked items when they cooled; machine inventories now respect their slot limits.
 - Digamma particles turn into a quasar when dropped, as in 1.7; only the right waste items are protected while dropped.
-- Pb-209, Au-198 and other 1.12.2-only powders had no radiation; any-material group tags use 1.7's order (technetium
-  steel
+- Pb-209, Au-198 and other 1.12.2-only powders had no radiation; any-material group tags use 1.7's order (technetium steel
   before cadmium steel).
 - RBMK terminal legend, RoR terminal rotation, ReaSim boilers made no steam, AE2 cells on 1.20.1 Forge.
-- Gas blocks no longer show an outline or block the crosshair; JEI hides 1.7's hidden items; molten metals and fluid
-  icons
+- Gas blocks no longer show an outline or block the crosshair; JEI hides 1.7's hidden items; molten metals and fluid icons
   look up all their recipes.
 - Depth ores keep their floor through bedrock; Sable dupes, drills on sub-levels and ducts into foreign tanks.
 - Disperser canister and glyphid gland icons; break particles for seven machines that showed the missing texture.
@@ -113,5 +103,4 @@ Requires Golem Core 1.0.1. Use GemRender 0.1.18. Older versions are refused.
 
 Initial release
 
-- Install a normal elytra in a chestplate at the armor modification table to glide and use firework boosts while wearing
-  armor. The stored elytra keeps its durability and wears during flight.
+- Install a normal elytra in a chestplate at the armor modification table to glide and use firework boosts while wearing armor. The stored elytra keeps its durability and wears during flight.

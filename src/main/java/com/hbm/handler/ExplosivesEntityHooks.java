@@ -16,12 +16,9 @@ import net.minecraft.world.entity.monster.Creeper;
 import com.hbm.items.armor.ItemModDefuser;
 import com.hbm.items.tool.ItemDropDetonator;
 
-/**
- * Dropped-item behaviors and defused creepers, after their server entity tick.
- */
+/** Dropped-item behaviors and defused creepers, after their server entity tick. */
 public final class ExplosivesEntityHooks {
-    private ExplosivesEntityHooks() {
-    }
+    private ExplosivesEntityHooks() {}
 
     public static void tick(Entity entity) {
         if (entity.level().isClientSide()) return;

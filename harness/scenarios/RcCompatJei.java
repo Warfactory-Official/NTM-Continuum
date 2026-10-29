@@ -12,7 +12,7 @@ import java.util.Set;
 
 /**
  * Release audit: every HBM JEI category opens, has a translated title, holds recipes and catalysts, and the log stays
- * clean. The intentionally empty default annihilator and the polaroid-hidden Book of Boxcars are reported as
+ * clean. The empty default annihilator and the polaroid-hidden Book of Boxcars are reported as
  * visibility waivers only when JEI's actual visible category order excludes them. The {@code jei} query without a
  * category answers every registered category with its title, recipe and catalyst counts.
  * Screenshots every RC_JEI_SHOT-th page (default every category).

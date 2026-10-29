@@ -38,8 +38,7 @@ import java.util.List;
  */
 public final class Fix1AGameTests {
 
-    private Fix1AGameTests() {
-    }
+    private Fix1AGameTests() {}
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function BILLETS =
@@ -51,8 +50,7 @@ public final class Fix1AGameTests {
     public static final GameTests.Function DROPS =
             TESTS.function("fix1a_self_drops", 20, () -> Fix1AGameTests::drops);
 
-    public static void init() {
-    }
+    public static void init() {}
 
     private static Item item(String id) {
         return BuiltInRegistries.ITEM.getValue(Ids.parse(id));
@@ -102,8 +100,7 @@ public final class Fix1AGameTests {
         helper.assertTrue(vitriol[1].is(hg) && vitriol[1].getCount() == 1, "vitriol mercury x1, got " + vitriol[1]);
         ItemStack[] gold = ElectrolyserMetalRecipes.getRecipe(new ItemStack(ModItems.crystal_gold.get())).byproduct;
         helper.assertTrue(gold[1].is(hg) && gold[1].getCount() == 2, "crystal_gold mercury x2, got " + gold[1]);
-        ItemStack[] star = ElectrolyserMetalRecipes.getRecipe(
-                new ItemStack(ModItems.crystal_starmetal.get())).byproduct;
+        ItemStack[] star = ElectrolyserMetalRecipes.getRecipe(new ItemStack(ModItems.crystal_starmetal.get())).byproduct;
         helper.assertTrue(star[1].is(hg) && star[1].getCount() == 8, "crystal_starmetal mercury x8, got " + star[1]);
         ItemStack[] cent = CentrifugeRecipes.getOutput(new ItemStack(ModItems.crystal_starmetal.get()));
         helper.assertTrue(cent != null && cent[3].is(hg) && cent[3].getCount() == 5,
@@ -118,11 +115,9 @@ public final class Fix1AGameTests {
         var declared = FluidRecipeTableGameTests.declaredFluids();
         helper.assertTrue(declared.size() == 157, "1.7 has 157 declared network fluids, have " + declared.size());
         helper.assertTrue(Fluids.legacyId(Fluids.RADIOSOLVENT) == 88 && Fluids.legacyId(Fluids.CHLORINE) == 89
-                        && Fluids.legacyId(Fluids.SMOKE) == 120 && Fluids.legacyId(Fluids.DHC) == 153 && Fluids.legacyId(
-                        Fluids.FLUE) == 155,
+                        && Fluids.legacyId(Fluids.SMOKE) == 120 && Fluids.legacyId(Fluids.DHC) == 153 && Fluids.legacyId(Fluids.FLUE) == 155,
                 "1.7 ids: RADIOSOLVENT 88, CHLORINE 89, SMOKE 120, DHC 153, FLUE 155; have "
-                        + Fluids.legacyId(Fluids.CHLORINE) + "/" + Fluids.legacyId(
-                        Fluids.SMOKE) + "/" + Fluids.legacyId(Fluids.FLUE));
+                        + Fluids.legacyId(Fluids.CHLORINE) + "/" + Fluids.legacyId(Fluids.SMOKE) + "/" + Fluids.legacyId(Fluids.FLUE));
         helper.assertTrue(Fluids.fromName("HYDRAZINE") == Fluids.NONE, "HYDRAZINE is not a 1.7 fluid");
         helper.assertTrue(Fluids.AIRBLAST.getTemperature() == 1_200, "AIRBLAST 1.7 setTemp(1_200)");
         helper.assertTrue(FluidCombustion.getFlammableEnergy(Fluids.FLUE) == 25_000L, "FLUE FT_Flammable(25_000)");

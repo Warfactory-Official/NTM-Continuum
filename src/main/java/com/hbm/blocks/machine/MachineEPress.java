@@ -23,18 +23,14 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Electric Press: a 1×1×3 dummyable column (core at the bottom, two dummies stacked above).
- */
+/** Electric Press: a 1×1×3 dummyable column (core at the bottom, two dummies stacked above). */
 public class MachineEPress extends BlockMultiblockMachine implements IEnergyConnectorBlock, WorldlyContainerHolder, IToolable {
 
     public MachineEPress(Properties properties) {
         super(properties);
     }
 
-    /**
-     * Any face of the column routes hoppers/pipes to the core's sided inventory.
-     */
+    /** Any face of the column routes hoppers/pipes to the core's sided inventory. */
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
@@ -62,10 +58,7 @@ public class MachineEPress extends BlockMultiblockMachine implements IEnergyConn
                            InteractionHand hand, ToolType tool) {
         return PlushiePress.drill(level, pos, level.getBlockState(pos).getValue(CELL), tool);
     }
-
-    /**
-     * 1.7's six-direction loop minus UP, buried under the machine's own cell.
-     */
+    /** 1.7's six-direction loop minus UP, buried under the machine's own cell. */
     @Override
     public int coreMask() {
         return MASK_HORIZONTAL | MASK_DOWN;
@@ -73,7 +66,7 @@ public class MachineEPress extends BlockMultiblockMachine implements IEnergyConn
 
     @Override
     public int[][] getAllPorts(ForgeDirection dir) {
-        return rotatePorts(new int[][]{
+        return rotatePorts(new int[][] {
                 {0, 0, 0, ForgeDirection.EAST.ordinal()},
                 {0, 0, 0, ForgeDirection.WEST.ordinal()},
                 {0, 0, 0, ForgeDirection.SOUTH.ordinal()},

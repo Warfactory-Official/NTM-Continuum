@@ -53,9 +53,7 @@ public class ItemGrenadeFishing extends ItemGenericGrenade {
         }
     }
 
-    /**
-     * Forge 1.7 {@code FishingHooks.fish}: fish 60, salmon 25, clownfish 2, pufferfish 13.
-     */
+    /** Forge 1.7 {@code FishingHooks.fish}: fish 60, salmon 25, clownfish 2, pufferfish 13. */
     public static ItemStack getRandomLoot(RandomSource rand) {
         int roll = rand.nextInt(100);
         if (roll < 60) return new ItemStack(Items.COD);
@@ -64,9 +62,7 @@ public class ItemGrenadeFishing extends ItemGenericGrenade {
         return new ItemStack(Items.PUFFERFISH);
     }
 
-    /**
-     * A fishing category override uses the same world and position as the actual detonation.
-     */
+    /** A fishing category override uses the same world and position as the actual detonation. */
     public static ItemStack getRandomLoot(ServerLevel level, BlockPos origin) {
         var selected = FishingLoot.select(level, origin, FishingLoot.Category.FISH, level.getRandom());
         return selected == null ? getRandomLoot(level.getRandom()) : selected;

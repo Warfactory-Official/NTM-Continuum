@@ -6,13 +6,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
-/**
- * DNS glide and exhaust rules, from the Space ArmorDNT armour tick.
- */
+/** DNS glide and exhaust rules, from the Space ArmorDNT armour tick. */
 public final class SuitFlight {
 
-    private SuitFlight() {
-    }
+    private SuitFlight() {}
 
     public static Vec3 dnsGlide(Player player, Vec3 motion, boolean backpack, float forward, float strafe,
                                 float gravity) {

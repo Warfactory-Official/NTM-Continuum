@@ -68,9 +68,7 @@ import java.util.List;
  */
 public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOverlay, IToolable, IBomb {
 
-    /**
-     * Space applies the structure loot factor to inventory draws after choosing their integer count.
-     */
+    /** Space applies the structure loot factor to inventory draws after choosing their integer count. */
     public static boolean scaleInventoryDraws;
 
     public static int rollInventoryCount(RandomSource random, int minItems, int maxItems) {
@@ -97,22 +95,14 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
         return new TileEntityWandLoot(pos, state);
     }
 
-    /**
-     * 1.7: quadrant 0..3 (south, west, north, east look) wrote metadata 3, 2, 0, 1.
-     */
+    /** 1.7: quadrant 0..3 (south, west, north, east look) wrote metadata 3, 2, 0, 1. */
     static int quadrantMeta(LivingEntity placer) {
         int i = Mth.floor(placer.getYRot() * 4.0F / 360.0F + 0.5D) & 3;
-        return switch (i) {
-            case 0 -> 3;
-            case 1 -> 2;
-            case 2 -> 0;
-            default -> 1;
-        };
+        return switch (i) { case 0 -> 3; case 1 -> 2; case 2 -> 0; default -> 1; };
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer,
-                            ItemStack stack) {
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         if (placer == null) return;
         level.setBlock(pos, state.setValue(ROTATION, quadrantMeta(placer)), 2);
         if (level.getBlockEntity(pos) instanceof TileEntityWandLoot loot) loot.placedRotation = placer.getYRot();
@@ -142,8 +132,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack held, BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof TileEntityWandLoot loot))
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(level.getBlockEntity(pos) instanceof TileEntityWandLoot loot)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if (!player.isShiftKeyDown()) {
             Block block = getLootableBlock(level, held);
@@ -172,9 +161,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
         return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
-    /**
-     * 1.7: the loot pile, or any block whose tile entity is an inventory.
-     */
+    /** 1.7: the loot pile, or any block whose tile entity is an inventory. */
     private static @Nullable Block getLootableBlock(Level level, ItemStack stack) {
         if (!(stack.getItem() instanceof BlockItem item)) return null;
         Block block = item.getBlock();
@@ -194,8 +181,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
     }
 
     @Override
-    public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit, InteractionHand hand,
-                           ToolType tool) {
+    public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit, InteractionHand hand, ToolType tool) {
         if (!(level.getBlockEntity(pos) instanceof TileEntityWandLoot loot)) return false;
 
         switch (tool) {
@@ -277,8 +263,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
             BlockPos pos = worldPosition;
             if (world == null) return;
             if (!(world.getBlockState(pos).getBlock() instanceof BlockWandLoot)) {
-                Constants.LOG.warn(
-                        "Somehow the block at: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + " isn't a loot block but we're doing a TE update as if it is, cancelling!");
+                Constants.LOG.warn("Somehow the block at: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + " isn't a loot block but we're doing a TE update as if it is, cancelling!");
                 return;
             }
 
@@ -290,8 +275,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
                         Direction.fromYRot(placedRotation), new ItemStack(placed.getBlock()), Direction.UP));
                 if (turned != null) placed = turned;
             } catch (RuntimeException ex) {
-                Constants.LOG.warn(
-                        "Failed to correctly rotate loot block at: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
+                Constants.LOG.warn("Failed to correctly rotate loot block at: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
             }
 
             world.setBlock(pos, placed, 2);
@@ -300,8 +284,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
 
             if (te == null || te instanceof TileEntityWandLoot) {
                 // Some generator has broken the TE->block relationship, which, honestly, rude.
-                Constants.LOG.warn(
-                        "TE set incorrectly at: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ". If you're using some sort of world generation mod, report it to the author!");
+                Constants.LOG.warn("TE set incorrectly at: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ". If you're using some sort of world generation mod, report it to the author!");
                 return;
             }
 
@@ -368,9 +351,7 @@ public class BlockWandLoot extends CompatBlock implements TickingBlock, ILookOve
             triggerReplace = in.getBooleanOr("trigger", false);
         }
 
-        /**
-         * The 1.7 keys, with {@code block} a 1.7 registry name and {@code meta} its metadata.
-         */
+        /** The 1.7 keys, with {@code block} a 1.7 registry name and {@code meta} its metadata. */
         @Override
         public void readLegacyStructureNBT(CompoundTag nbt) {
             replaceMeta = Tags.getIntOr(nbt, "meta", 0);

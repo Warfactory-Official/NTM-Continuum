@@ -27,8 +27,7 @@ import org.jspecify.annotations.Nullable;
  */
 public final class XSatelliteRegistry {
 
-    private XSatelliteRegistry() {
-    }
+    private XSatelliteRegistry() {}
 
     /**
      * The satellite class an item launches, or null where it launches nothing: the {@code hbm:satellite} item data
@@ -41,16 +40,12 @@ public final class XSatelliteRegistry {
         return name == null ? null : SatelliteType.byName(name);
     }
 
-    /**
-     * 1.7 {@code registerSatellite(..., new ComparableStack(ModItems.satellite, 1, EnumSatType.X))}.
-     */
+    /** 1.7 {@code registerSatellite(..., new ComparableStack(ModItems.satellite, 1, EnumSatType.X))}. */
     public static @Nullable SatelliteType forChip(EnumSatType chip) {
         return typeFor(ItemSatellite.make(chip));
     }
 
-    /**
-     * The item that launches a satellite class (1.7 NEI's reverse lookup); empty for none.
-     */
+    /** The item that launches a satellite class (1.7 NEI's reverse lookup); empty for none. */
     public static ItemStack stackFor(SatelliteType type) {
         for (var entry : SatelliteDataMaps.SATELLITE.byId().entrySet()) {
             if (!entry.getValue().equals(type.name())) continue;
@@ -60,9 +55,7 @@ public final class XSatelliteRegistry {
         return ItemStack.EMPTY;
     }
 
-    /**
-     * A listener told that a new satellite reached orbit from {@code stack}, before it is stored.
-     */
+    /** A listener told that a new satellite reached orbit from {@code stack}, before it is stored. */
     @FunctionalInterface
     public interface Orbited {
         void orbited(ServerLevel level, ItemStack stack, int freq, Satellite sat);
@@ -75,9 +68,7 @@ public final class XSatelliteRegistry {
      */
     public static final Hook<Orbited> ORBITED = Hook.notifying();
 
-    /**
-     * 1.7 {@code createFromItem}.
-     */
+    /** 1.7 {@code createFromItem}. */
     public static @Nullable Satellite createFromItem(ItemStack stack) {
         SatelliteType type = typeFor(stack);
         return type == null ? null : type.create();

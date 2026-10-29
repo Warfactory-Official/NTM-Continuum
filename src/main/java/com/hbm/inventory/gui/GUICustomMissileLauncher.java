@@ -67,10 +67,8 @@ public abstract class GUICustomMissileLauncher<M extends ContainerCustomMissileL
         int j = launcher.getSolidScaled(52);
         if (j > 0) GuiDraw.blit(graphics, texture, leftPos + 152, topPos + 88 - j, 176F, 96F - j, 16, j, 256, 256);
 
-        if (launcher.isMissileValid())
-            GuiDraw.blit(graphics, texture, leftPos + 25, topPos + 35, 176F, 26F, 18, 18, 256, 256);
-        if (launcher.hasDesignator())
-            GuiDraw.blit(graphics, texture, leftPos + 25, topPos + 71, 176F, 26F, 18, 18, 256, 256);
+        if (launcher.isMissileValid()) GuiDraw.blit(graphics, texture, leftPos + 25, topPos + 35, 176F, 26F, 18, 18, 256, 256);
+        if (launcher.hasDesignator()) GuiDraw.blit(graphics, texture, leftPos + 25, topPos + 71, 176F, 26F, 18, 18, 256, 256);
 
         lamp(graphics, 121, launcher.liquidState());
         lamp(graphics, 139, launcher.oxidizerState());
@@ -87,11 +85,8 @@ public abstract class GUICustomMissileLauncher<M extends ContainerCustomMissileL
         if (launcher.isMissileValid()) drawMissile(graphics, launcher.getItem(0));
     }
 
-    /**
-     * The table's pad-size highlight.
-     */
-    protected void extractExtras(GuiGraphicsExtractor graphics, TileEntityCustomMissileLauncher launcher) {
-    }
+    /** The table's pad-size highlight. */
+    protected void extractExtras(GuiGraphicsExtractor graphics, TileEntityCustomMissileLauncher launcher) {}
 
     private void lamp(GuiGraphicsExtractor graphics, int x, int state) {
         if (state == 1) GuiDraw.blit(graphics, texture, leftPos + x, topPos + 23, 176F, 0F, 6, 8, 256, 256);
@@ -124,9 +119,7 @@ public abstract class GUICustomMissileLauncher<M extends ContainerCustomMissileL
                 new Quaternionf().rotateY((float) Math.toRadians(-90)).rotateZ((float) Math.PI));
     }
 
-    /**
-     * One throwaway entity per screen, re-parted when the struct changes. Never added to a level.
-     */
+    /** One throwaway entity per screen, re-parted when the struct changes. Never added to a level. */
     protected EntityMissileCustom previewEntity(MissileStruct struct) {
         if (preview == null) {
             preview = new EntityMissileCustom(ModNtmEntities.MISSILE_CUSTOM.get(), this.minecraft.level);
@@ -161,8 +154,7 @@ public abstract class GUICustomMissileLauncher<M extends ContainerCustomMissileL
             GuiDraw.tooltip(graphics, font, List.of(Component.literal("Solid Fuel: " + launcher.solid + "l")),
                     Optional.empty(), mouseX, mouseY);
         } else if (isHovering(134, 113, 34, 6, mouseX, mouseY)) {
-            GuiDraw.tooltip(graphics, font,
-                    GuiUtil.energyTooltip(launcher.power, TileEntityCustomMissileLauncher.maxPower),
+            GuiDraw.tooltip(graphics, font, GuiUtil.energyTooltip(launcher.power, TileEntityCustomMissileLauncher.maxPower),
                     Optional.empty(), mouseX, mouseY);
         } else if (isHovering(-16, 36, 16, 16, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, font, sizeHint(), Optional.empty(), mouseX, mouseY);
@@ -174,6 +166,5 @@ public abstract class GUICustomMissileLauncher<M extends ContainerCustomMissileL
         }
     }
 
-    protected void extraTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    }
+    protected void extraTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {}
 }

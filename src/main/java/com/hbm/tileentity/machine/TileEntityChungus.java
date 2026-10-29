@@ -26,14 +26,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Random;
-
 import com.hbm.tileentity.ModPowerGenBlockEntities;
 import com.hbm.tileentity.TilePort.PortDef;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
-
 import java.io.IOException;
-
 import com.hbm.tileentity.IConfigurableMachine;
 
 /**
@@ -50,20 +47,15 @@ public class TileEntityChungus extends TileEntityLoadedBase
     public static double efficiency = 0.85D;
 
     public static final IConfigurableMachine CONFIG = new IConfigurableMachine() {
-        @Override
-        public String getConfigName() {
-            return "steamturbineLeviathan";
-        }
+        @Override public String getConfigName() { return "steamturbineLeviathan"; }
 
-        @Override
-        public void readIfPresent(JsonObject obj) {
+        @Override public void readIfPresent(JsonObject obj) {
             inputTankSize = IConfigurableMachine.grab(obj, "I:inputTankSize", inputTankSize);
             outputTankSize = IConfigurableMachine.grab(obj, "I:outputTankSize", outputTankSize);
             efficiency = IConfigurableMachine.grab(obj, "D:efficiency", efficiency);
         }
 
-        @Override
-        public void writeConfig(JsonWriter writer) throws IOException {
+        @Override public void writeConfig(JsonWriter writer) throws IOException {
             writer.name("INFO").value("leviathan steam turbine consumes all availible steam per tick");
             writer.name("I:inputTankSize").value(inputTankSize);
             writer.name("I:outputTankSize").value(outputTankSize);
@@ -73,16 +65,12 @@ public class TileEntityChungus extends TileEntityLoadedBase
 
     public final FluidTankNTM[] tanks;
     public long powerBuffer;
-    /**
-     * 1.7 TileEntityTurbineBase serialises tanks[0] BEFORE the cooling step, so the client sees the pre-consumption steam.
-     */
+    /** 1.7 TileEntityTurbineBase serialises tanks[0] BEFORE the cooling step, so the client sees the pre-consumption steam. */
     private int syncedInputFill;
     private @Nullable FluidType syncedInputResource;
     private @Nullable FluidType syncedInputPin;
     public boolean operational = false;
-    /**
-     * 1.7: counts down from 25 after the last operational tick; the client keeps spinning while it is positive.
-     */
+    /** 1.7: counts down from 25 after the last operational tick; the client keeps spinning while it is positive. */
     private int turnTimer;
     public float rotor;
     public float lastRotor;
@@ -140,9 +128,7 @@ public class TileEntityChungus extends TileEntityLoadedBase
         turbine.onClientTick();
     }
 
-    /**
-     * 1.7 {@code TileEntityTurbineBase.generatePower}: the Leviathan has no flywheel; the buffer is the tick's output.
-     */
+    /** 1.7 {@code TileEntityTurbineBase.generatePower}: the Leviathan has no flywheel; the buffer is the tick's output. */
     public void generatePower(long power, int steamConsumed) {
         this.powerBuffer += power;
     }
@@ -152,13 +138,9 @@ public class TileEntityChungus extends TileEntityLoadedBase
         if (operational) turnTimer = 25;
     }
 
-    protected final void stopTurning() {
-        turnTimer = 0;
-    }
+    protected final void stopTurning() { turnTimer = 0; }
 
-    public boolean isTurning() {
-        return turnTimer > 0;
-    }
+    public boolean isTurning() { return turnTimer > 0; }
 
     public void onClientTick() {
         this.lastRotor = this.rotor;
@@ -192,12 +174,11 @@ public class TileEntityChungus extends TileEntityLoadedBase
         updateSound();
     }
 
-    /**
-     * The audio update is independent of advancing the rotor's animation.
-     */
+    /** The audio update is independent of advancing the rotor's animation. */
     public void updateSound() {
         if (isTurning() && audio == null) {
             var p = getBlockPos();
+            // 1.7 NTMSounds.TURBINE_LEVI_LOOP is the same chungusTurbine file the industrial turbine plays.
             audio = AudioSystem.getLoopedSound(ModSounds.INDUSTRIAL_TURBINE.get(), SoundSource.BLOCKS,
                     p.getX(), p.getY(), p.getZ(), 1.0F, 20F, 1.0F, 20);
             if (audio != null) audio.startSound();
@@ -215,16 +196,7 @@ public class TileEntityChungus extends TileEntityLoadedBase
         }
     }
 
-    /**
-     * Applies the turning fragment read by the client packet decoder.
-     */
-    public void acceptTurningSync(int ticks) {
-        turnTimer = ticks;
-    }
-
-    /**
-     * 1.7 {@code invalidate}/{@code onChunkUnload}: the loop dies with the tile.
-     */
+    /** 1.7 {@code invalidate}/{@code onChunkUnload}: the loop dies with the tile. */
     @Override
     public void setRemoved() {
         super.setRemoved();
@@ -234,65 +206,45 @@ public class TileEntityChungus extends TileEntityLoadedBase
         }
     }
 
-    /**
-     * 1.7 {@code TileEntityTurbineBase.onLeverPull} with {@code doesResizeCompressor() == false}.
-     */
+    /** 1.7 {@code TileEntityTurbineBase.onLeverPull} with {@code doesResizeCompressor() == false}. */
     public void onLeverPull() {
         FluidType type = tanks[0].getTankType();
         if (type == Fluids.STEAM) {
-            tanks[0].setTankType(Fluids.HOTSTEAM);
-            tanks[1].setTankType(Fluids.STEAM);
+            tanks[0].setTankType(Fluids.HOTSTEAM); tanks[1].setTankType(Fluids.STEAM);
         } else if (type == Fluids.HOTSTEAM) {
-            tanks[0].setTankType(Fluids.SUPERHOTSTEAM);
-            tanks[1].setTankType(Fluids.HOTSTEAM);
+            tanks[0].setTankType(Fluids.SUPERHOTSTEAM); tanks[1].setTankType(Fluids.HOTSTEAM);
         } else if (type == Fluids.SUPERHOTSTEAM) {
-            tanks[0].setTankType(Fluids.ULTRAHOTSTEAM);
-            tanks[1].setTankType(Fluids.SUPERHOTSTEAM);
+            tanks[0].setTankType(Fluids.ULTRAHOTSTEAM); tanks[1].setTankType(Fluids.SUPERHOTSTEAM);
         } else if (type == Fluids.ULTRAHOTSTEAM) {
-            tanks[0].setTankType(Fluids.STEAM);
-            tanks[1].setTankType(Fluids.SPENTSTEAM);
+            tanks[0].setTankType(Fluids.STEAM); tanks[1].setTankType(Fluids.SPENTSTEAM);
         } else {
-            tanks[0].setTankType(Fluids.STEAM);
-            tanks[1].setTankType(Fluids.SPENTSTEAM);
+            tanks[0].setTankType(Fluids.STEAM); tanks[1].setTankType(Fluids.SPENTSTEAM);
         }
         setChanged();
     }
 
-    public double consumptionPercent() {
-        return 1D;
-    }
-
-    public double getEfficiency() {
-        return efficiency;
-    }
-
-    public boolean doesResizeCompressor() {
-        return false;
-    }
+    public double consumptionPercent() { return 1D; }
+    public double getEfficiency() { return efficiency; }
+    public boolean doesResizeCompressor() { return false; }
 
     public ForgeDirection getFacing() {
         return MachineCore.facing(getBlockState());
     }
 
-    public int getTurnTimer() {
-        return turnTimer;
-    }
+    public int getTurnTimer() { return turnTimer; }
 
-    /**
-     * 1.7: horizontal faces only.
-     */
+    /** 1.7: horizontal faces only. */
     public boolean canConnect(ForgeDirection dir) {
         return dir != ForgeDirection.UP && dir != ForgeDirection.DOWN && dir != ForgeDirection.UNKNOWN;
     }
 
     protected PortDef[] cachedFluidPorts;
-
     public PortDef[] getFluidPorts() {
         if (cachedFluidPorts == null) {
             ForgeDirection dir = getFacing();
             ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
             int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-            cachedFluidPorts = new PortDef[]{
+            cachedFluidPorts = new PortDef[] {
                     PortDef.make(x + dir.offsetX * 4, y + 2, z + dir.offsetZ * 4, dir),
                     PortDef.make(x + rot.offsetX * 2, y, z + rot.offsetZ * 2, rot),
                     PortDef.make(x - rot.offsetX * 2, y, z - rot.offsetZ * 2, rot.getOpposite()),
@@ -301,56 +253,27 @@ public class TileEntityChungus extends TileEntityLoadedBase
         return cachedFluidPorts;
     }
 
-    public DirPos[] getConPos() {
-        return PortDef.connections(getFluidPorts());
-    }
+    public DirPos[] getConPos() { return PortDef.connections(getFluidPorts()); }
 
     protected PortDef[] cachedPowerPorts;
-
     public PortDef[] getPowerPorts() {
         if (cachedPowerPorts == null) {
             ForgeDirection dir = getFacing();
-            cachedPowerPorts = new PortDef[]{
-                    PortDef.make(worldPosition.getX() - dir.offsetX * 10, worldPosition.getY(),
-                            worldPosition.getZ() - dir.offsetZ * 10, dir.getOpposite()),
+            cachedPowerPorts = new PortDef[] {
+                    PortDef.make(worldPosition.getX() - dir.offsetX * 10, worldPosition.getY(), worldPosition.getZ() - dir.offsetZ * 10, dir.getOpposite()),
             };
         }
         return cachedPowerPorts;
     }
 
-    public DirPos[] getPowerPos() {
-        return PortDef.connections(getPowerPorts());
-    }
+    public DirPos[] getPowerPos() { return PortDef.connections(getPowerPorts()); }
 
-    @Override
-    public long getPower() {
-        return powerBuffer;
-    }
-
-    @Override
-    public void setPower(long power) {
-        powerBuffer = power;
-    }
-
-    @Override
-    public long getMaxPower() {
-        return powerBuffer;
-    }
-
-    @Override
-    public FluidTankNTM[] getSendingTanks() {
-        return new FluidTankNTM[]{tanks[1]};
-    }
-
-    @Override
-    public FluidTankNTM[] getReceivingTanks() {
-        return new FluidTankNTM[]{tanks[0]};
-    }
-
-    @Override
-    public FluidTankNTM[] getAllTanks() {
-        return tanks;
-    }
+    @Override public long getPower() { return powerBuffer; }
+    @Override public void setPower(long power) { powerBuffer = power; }
+    @Override public long getMaxPower() { return powerBuffer; }
+    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1]}; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }
+    @Override public FluidTankNTM[] getAllTanks() { return tanks; }
 
     @Override
     public String[] getFunctionInfo() {
@@ -379,7 +302,7 @@ public class TileEntityChungus extends TileEntityLoadedBase
         tanks[0].deserialize(buf);
         tanks[1].deserialize(buf);
         powerBuffer = buf.readLong();
-        acceptTurningSync(buf.readInt());
+        turnTimer = buf.readInt();
     }
 
     @Override

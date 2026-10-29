@@ -7,7 +7,6 @@ import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.world.ItemStacks;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
@@ -42,8 +40,7 @@ public final class IconAuditHarnessQueries {
 
     private static final Map<String, List<ItemStack>> stacksByNamespace = new HashMap<>();
 
-    private IconAuditHarnessQueries() {
-    }
+    private IconAuditHarnessQueries() {}
 
     public static void register() {
         HarnessQueryRegistry.register("hbm_icon_audit", IconAuditHarnessQueries::query);
@@ -51,9 +48,7 @@ public final class IconAuditHarnessQueries {
         LangAuditHarnessQueries.register();
     }
 
-    /**
-     * Every hbm block (id, whether it has a block entity) and entity type (id, class name), sorted by id.
-     */
+    /** Every hbm block (id, whether it has a block entity) and entity type (id, class name), sorted by id. */
     private static JsonObject sweepIds(Minecraft mc, JsonObject params) {
         JsonObject json = new JsonObject();
         List<Block> blocks = new ArrayList<>();
@@ -86,9 +81,7 @@ public final class IconAuditHarnessQueries {
         return json;
     }
 
-    /**
-     * Every stack of the icon audit, built once.
-     */
+    /** Every stack of the icon audit, built once. */
     static List<ItemStack> allStacks() {
         return stacksByNamespace.computeIfAbsent(Constants.MOD_ID, IconAuditHarnessQueries::collect);
     }
@@ -156,9 +149,7 @@ public final class IconAuditHarnessQueries {
         return json;
     }
 
-    /**
-     * {@code id} for an item's first stack, {@code id@k} for its k-th further stack, counted over the full list.
-     */
+    /** {@code id} for an item's first stack, {@code id@k} for its k-th further stack, counted over the full list. */
     private static List<String> labels(List<ItemStack> all) {
         List<String> out = new ArrayList<>(all.size());
         Map<Item, Integer> ordinal = new HashMap<>();
@@ -170,9 +161,7 @@ public final class IconAuditHarnessQueries {
         return out;
     }
 
-    /**
-     * Tab order first, then any registered item in the namespace no tab shows. One stack per distinct item+data.
-     */
+    /** Tab order first, then any registered item in the namespace no tab shows. One stack per distinct item+data. */
     private static List<ItemStack> collect(String namespace) {
         List<ItemStack> out = new ArrayList<>();
         Map<Integer, List<ItemStack>> seen = new HashMap<>();

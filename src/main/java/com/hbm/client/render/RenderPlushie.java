@@ -98,9 +98,7 @@ public final class RenderPlushie extends GemBER<TileEntityPlushie, RenderPlushie
     private static @org.jspecify.annotations.Nullable RenderPlushie itemRenderer;
     private final State itemState = new State();
 
-    /**
-     * 1.7 {@code RenderPlushie}'s item: {@code renderPlushie(type, false)} at the item's pose, cigarette included.
-     */
+    /** 1.7 {@code RenderPlushie}'s item: {@code renderPlushie(type, false)} at the item's pose, cigarette included. */
     public static void renderItem(PoseStack pose, SubmitSink sink, PlushieType type, int light) {
         if (itemRenderer == null) itemRenderer = new RenderPlushie();
         State state = itemRenderer.itemState;
@@ -125,8 +123,7 @@ public final class RenderPlushie extends GemBER<TileEntityPlushie, RenderPlushie
                 part(pose, sink, derg, DERG, state.squish >= 0F ? "Blep" : "ColonThree", light, true);
             }
             case NUMBERNINE -> numberNine(pose, sink, state, light);
-            default -> {
-            }
+            default -> { }
         }
     }
 
@@ -140,8 +137,7 @@ public final class RenderPlushie extends GemBER<TileEntityPlushie, RenderPlushie
         pose.pushPose();
         pose.mulPose(Axis.XP.rotationDegrees((float) -r));
         part(pose, sink, horse, NUMBERNINE, "Body", light, false);
-        horsePart(pose, sink, light, new double[]{0, 1.125, 0.375}, new double[]{0, r + 15, 0}, "Head", "Mane",
-                "NoseFemale");
+        horsePart(pose, sink, light, new double[]{0, 1.125, 0.375}, new double[]{0, r + 15, 0}, "Head", "Mane", "NoseFemale");
         horsePart(pose, sink, light, new double[]{0.125, 0.75, 0.3125}, new double[]{0, r - 25, 5}, "LeftFrontLeg");
         horsePart(pose, sink, light, new double[]{-0.125, 0.75, 0.3125}, new double[]{0, r - 25, -5}, "RightFrontLeg");
         horsePart(pose, sink, light, new double[]{0.125, 0.75, -0.25}, new double[]{0, -75 + r, 35}, "LeftBackLeg");

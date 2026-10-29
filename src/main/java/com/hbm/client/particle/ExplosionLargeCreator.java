@@ -22,15 +22,13 @@ import net.minecraft.world.phys.Vec3;
  */
 public class ExplosionLargeCreator implements IParticleCreator {
 
-    /**
-     * Upstream's throw: 45 to 70 degrees above the horizon, any bearing.
-     */
+    /** Upstream's throw: 45 to 70 degrees above the horizon, any bearing. */
     private static final double MIN_ELEVATION = 45D;
     private static final double ELEVATION_SPREAD = 25D;
 
     @Override
     public void makeParticle(ClientLevel level, Player player, RandomSource rand,
-                             double x, double y, double z, CompoundTag data) {
+            double x, double y, double z, CompoundTag data) {
 
         int cloudCount = Tags.getIntOr(data, "cloudCount", 0);
         float cloudScale = Tags.getFloatOr(data, "cloudScale", 1F);

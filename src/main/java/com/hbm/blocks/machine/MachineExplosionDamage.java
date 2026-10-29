@@ -41,12 +41,9 @@ import java.util.List;
  */
 public final class MachineExplosionDamage {
 
-    private MachineExplosionDamage() {
-    }
+    private MachineExplosionDamage() {}
 
-    /**
-     * Returns true when {@code pos} belongs to a tank or refinery, which then owns the hit.
-     */
+    /** Returns true when {@code pos} belongs to a tank or refinery, which then owns the hit. */
     public static boolean hit(ServerLevel level, BlockPos pos, Object explosion, @Nullable Entity exploder) {
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null) return false;
@@ -80,9 +77,7 @@ public final class MachineExplosionDamage {
         return false;
     }
 
-    /**
-     * 1.7: {@code triggerAchievement(achInferno)} for every player in the hit cell's box grown by 100.
-     */
+    /** 1.7: {@code triggerAchievement(achInferno)} for every player in the hit cell's box grown by 100. */
     private static void inferno(ServerLevel level, BlockPos pos, DetonationTrigger.Kind kind) {
         AABB box = new AABB(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                 pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5).inflate(100);
@@ -91,9 +86,7 @@ public final class MachineExplosionDamage {
         }
     }
 
-    /**
-     * 1.7 {@code IRepairable.tryRepairMultiblock} for the two machines; true when something was repaired.
-     */
+    /** 1.7 {@code IRepairable.tryRepairMultiblock} for the two machines; true when something was repaired. */
     public static boolean repair(Level level, BlockPos pos, Player player) {
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null) return false;
@@ -107,9 +100,7 @@ public final class MachineExplosionDamage {
      */
     public static boolean alwaysShowRepair = false;
 
-    /**
-     * 1.7 {@code IRepairable.addGenericOverlay}: with a blowtorch in hand, a damaged machine lists its repair.
-     */
+    /** 1.7 {@code IRepairable.addGenericOverlay}: with a blowtorch in hand, a damaged machine lists its repair. */
     public static ILookOverlay.@Nullable Data overlay(Level level, BlockPos pos, Player player, String title) {
         ItemStack held = player.getMainHandItem();
         boolean torch = ToolType.getType(held) == ToolType.TORCH;
@@ -119,12 +110,11 @@ public final class MachineExplosionDamage {
         BlockEntity be = level.getBlockEntity(core);
         List<AStack> materials;
         if (be instanceof TileEntityMachineFluidTank tank && tank.isDamaged()) materials = tank.getRepairMaterials();
-        else if (be instanceof TileEntityMachineRefinery refinery && refinery.isDamaged())
-            materials = refinery.getRepairMaterials();
+        else if (be instanceof TileEntityMachineRefinery refinery && refinery.isDamaged()) materials = refinery.getRepairMaterials();
         else return null;
         List<String> text = new ArrayList<>();
-        text.add(ChatFormatting.GOLD + Component.translatable("desc.repair.with").getString());
-        if (!torch) text.add(Component.translatable("desc.repair.tool").getString());
+        text.add(ChatFormatting.GOLD + Component.translatable("desc.hbm.repair.with").getString());
+        if (!torch) text.add(Component.translatable("desc.hbm.repair.tool").getString());
         for (AStack stack : materials) {
             try {
                 ItemStack display = stack.getCyclingDisplayStack();
@@ -136,9 +126,7 @@ public final class MachineExplosionDamage {
         return new ILookOverlay.Data(title, 0xffff00, 0x404000, text);
     }
 
-    /**
-     * 1.7 {@code onBlockActivated}: a blown-open machine opens no GUI.
-     */
+    /** 1.7 {@code onBlockActivated}: a blown-open machine opens no GUI. */
     public static boolean blownOpen(Level level, BlockPos core) {
         BlockEntity be = level.getBlockEntity(core);
         return be instanceof TileEntityMachineFluidTank tank && tank.hasExploded

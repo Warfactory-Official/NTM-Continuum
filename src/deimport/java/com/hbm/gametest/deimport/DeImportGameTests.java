@@ -37,7 +37,6 @@ import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteType;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import dev.golem.core.gametest.GameTests;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -87,9 +85,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * The DE importer against DE-shaped saves written by {@link DeFixtures}; Continuum itself loads what it wrote.
- */
+/** The DE importer against DE-shaped saves written by {@link DeFixtures}; Continuum itself loads what it wrote. */
 public final class DeImportGameTests {
     static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
@@ -110,8 +106,7 @@ public final class DeImportGameTests {
         TESTS.function("deimport_loot_and_references", 20, () -> DeImportGameTests::lootAndReferences);
     }
 
-    private DeImportGameTests() {
-    }
+    private DeImportGameTests() {}
 
     private static void sectionPackRoundTrip(GameTestHelper helper) {
         for (int size : new int[]{1, 2, 16, 17, 300}) {
@@ -156,8 +151,7 @@ public final class DeImportGameTests {
             DeFixtures.standardContent(chunk, origin);
             Ctx ctx = ctx(world, null);
             CompoundTag out = new ChunkConverter(ctx, "minecraft:overworld").convert(chunk);
-            helper.assertTrue(out != null && !out.contains(ChunkConverter.STAMP),
-                    "the chunk is converted and unstamped");
+            helper.assertTrue(out != null && !out.contains(ChunkConverter.STAMP), "the chunk is converted and unstamped");
 
             Map<BlockPos, CompoundTag> states = states(out);
             expectBlock(helper, states, origin, "hbm:machine_centrifuge");
@@ -182,8 +176,7 @@ public final class DeImportGameTests {
             helper.assertTrue(centrifuge != null && centrifuge.getString("id").equals("hbm:machine_centrifuge"),
                     "centrifuge block entity id: " + centrifuge);
             CompoundTag duct = bes.get(origin.south(4));
-            helper.assertTrue(duct != null && duct.getString("type").equals("hbm:oil"),
-                    "duct gets DE's graph fluid: " + duct);
+            helper.assertTrue(duct != null && duct.getString("type").equals("hbm:oil"), "duct gets DE's graph fluid: " + duct);
             CompoundTag tank = bes.get(origin.offset(5, 0, 1));
             helper.assertTrue(tank != null && tank.getInt("tank") == 16000 && tank.getInt("tank_max") == 256000
                     && tank.getString("tank_type").equals("hbm:oil"), "tank flattened: " + tank);
@@ -192,8 +185,7 @@ public final class DeImportGameTests {
             BlockEntity loadedCentrifuge = load(helper, origin, states.get(origin), centrifuge);
             CompoundTag saved = loadedCentrifuge.saveWithoutMetadata(helper.getLevel().registryAccess());
             String inv = saved.toString();
-            helper.assertTrue(
-                    inv.contains("hbm:canned_conserve_ass") && inv.contains("hbm:battery_lead") && inv.contains("1234"),
+            helper.assertTrue(inv.contains("hbm:canned_conserve_ass") && inv.contains("hbm:battery_lead") && inv.contains("1234"),
                     "centrifuge keeps its renamed stacks and the battery charge: " + inv);
             BlockEntity loadedTank = load(helper, origin.offset(5, 0, 1), states.get(origin.offset(5, 0, 1)), tank);
             CompoundTag tankSaved = loadedTank.saveWithoutMetadata(helper.getLevel().registryAccess());
@@ -202,8 +194,7 @@ public final class DeImportGameTests {
 
             String chest = bes.get(origin.south(9).east(3)).toString();
             helper.assertTrue(chest.contains("hbm:machine_capacitor_copper"), "DE's capacitor block item: " + chest);
-            helper.assertTrue(chest.contains("hbm:crashed_bomb_nuke"),
-                    "stack inside a shulker inside a chest: " + chest);
+            helper.assertTrue(chest.contains("hbm:crashed_bomb_nuke"), "stack inside a shulker inside a chest: " + chest);
             helper.assertTrue(chest.contains("hbm:wire_fine_red_copper"), "mingrade spelling: " + chest);
             helper.assertTrue(!chest.contains("hbm:test_item"), "test_item is parked, not left to vanish");
             helper.assertTrue(chest.contains("hbm:canister_full") && chest.contains("\"hbm:fluid\":\"hbm:diesel\""),
@@ -214,22 +205,15 @@ public final class DeImportGameTests {
                     "identifier fluids, with DE's watz_mud renamed: " + chest);
             helper.assertTrue(chest.contains("hbm:battery_redd_power"), "REDD charge kept: " + chest);
             helper.assertTrue(chest.contains("hbm:gun_data") && chest.contains("wear_0:50.0f")
-                            && chest.contains("magtype0:\"hbm:stone\"") && chest.contains("magcount0:6") && !chest.contains(
-                            "timer_0"),
+                    && chest.contains("magtype0:\"hbm:stone\"") && chest.contains("magcount0:6") && !chest.contains("timer_0"),
                     "gun wear, modes and its loaded ammo by name: " + chest);
             helper.assertTrue(chest.contains("hbm:ingot_uranium") && !chest.contains("locked_contents"),
                     "a sealed crate opens with the world key: " + chest);
-            helper.assertTrue(ctx.parking.counts().getOrDefault("item", 0) == 1,
-                    "one stack parked: " + ctx.parking.counts());
-            CompoundTag refund = bes.values().stream()
-                                    .filter(be -> be.getString("id").equals("minecraft:chest") && be.toString()
-                                                                                                    .contains(
-                                                                                                            "hbm:ingot_steel"))
-                                    .findFirst().orElse(null);
-            helper.assertTrue(refund != null && states(out).get(
-                                                                   new BlockPos(refund.getInt("x"), refund.getInt("y"), refund.getInt("z")))
-                                                           .getString("Name").equals("minecraft:chest"),
-                    "the steam turbine's stacks are in a chest in the chunk: " + refund);
+            helper.assertTrue(ctx.parking.counts().getOrDefault("item", 0) == 1, "one stack parked: " + ctx.parking.counts());
+            CompoundTag refund = bes.values().stream().filter(be -> be.getString("id").equals("minecraft:chest") && be.toString().contains("hbm:ingot_steel"))
+                    .findFirst().orElse(null);
+            helper.assertTrue(refund != null && states(out).get(new BlockPos(refund.getInt("x"), refund.getInt("y"), refund.getInt("z")))
+                    .getString("Name").equals("minecraft:chest"), "the steam turbine's stacks are in a chest in the chunk: " + refund);
             Set<Long> cores = new HashSet<>();
             for (CompoundTag core : ctx.cores) cores.add(core.getLong("pos"));
             helper.assertTrue(cores.contains(origin.asLong()) && cores.contains(origin.offset(5, 0, 1).asLong()),
@@ -249,16 +233,13 @@ public final class DeImportGameTests {
         return be;
     }
 
-    private static void expectBlock(GameTestHelper helper, Map<BlockPos, CompoundTag> states, BlockPos pos,
-                                    String name) {
+    private static void expectBlock(GameTestHelper helper, Map<BlockPos, CompoundTag> states, BlockPos pos, String name) {
         CompoundTag state = states.get(pos);
         String got = state == null ? "minecraft:air" : state.getString("Name");
         helper.assertTrue(got.equals(name), pos.toShortString() + " is " + got + ", not " + name);
     }
 
-    /**
-     * Every non-air block of a saved chunk by absolute position.
-     */
+    /** Every non-air block of a saved chunk by absolute position. */
     private static Map<BlockPos, CompoundTag> states(CompoundTag chunk) {
         Map<BlockPos, CompoundTag> out = new HashMap<>();
         int cx = chunk.getInt("xPos"), cz = chunk.getInt("zPos");
@@ -292,14 +273,11 @@ public final class DeImportGameTests {
         ImportedCells.Result result = ImportedCells.rebuild(helper.getLevel(), core);
         helper.assertTrue(result.placed() == cells.size() - 1 && result.blocked() == 1,
                 "placed " + result.placed() + " of " + (cells.size() - 1) + ", blocked " + result.blocked());
-        helper.assertTrue(helper.getLevel().getBlockState(stone).is(Blocks.STONE),
-                "a player's block is never replaced");
+        helper.assertTrue(helper.getLevel().getBlockState(stone).is(Blocks.STONE), "a player's block is never replaced");
         for (BlockPos cell : cells) {
             if (cell.equals(stone)) continue;
-            helper.assertTrue(machine.isCellOf(helper.getLevel().getBlockState(cell)),
-                    "cell at " + cell.toShortString());
-            helper.assertTrue(MultiblockCoreIndex.lookup(helper.getLevel(), cell) == core.asLong(),
-                    "indexed " + cell.toShortString());
+            helper.assertTrue(machine.isCellOf(helper.getLevel().getBlockState(cell)), "cell at " + cell.toShortString());
+            helper.assertTrue(MultiblockCoreIndex.lookup(helper.getLevel(), cell) == core.asLong(), "indexed " + cell.toShortString());
         }
         ImportedCells.Result again = ImportedCells.rebuild(helper.getLevel(), core);
         helper.assertTrue(again.placed() == cells.size() - 1, "a second rebuild finds every cell already there");
@@ -310,22 +288,18 @@ public final class DeImportGameTests {
         Path world = tempWorld();
         try {
             helper.assertTrue(!Signature.check(world, "1.0.1").de(), "a Continuum version with no DE data is not DE");
-            helper.assertTrue(Signature.check(world, DeFixtures.DE_VERSION).de(),
-                    "a world DE opened last imports, DE data found or not");
+            helper.assertTrue(Signature.check(world, DeFixtures.DE_VERSION).de(), "a world DE opened last imports, DE data found or not");
             Files.createDirectories(world.resolve("data"));
             NbtIo.writeCompressed(new CompoundTag(), world.resolve("data/hbm_locked_contents_key.dat"));
             helper.assertTrue(Signature.check(world, DeFixtures.DE_VERSION).de(), "DE's version and its key file");
-            helper.assertTrue(Signature.check(world, "1.0.1").de(),
-                    "DE's key file decides whatever version opened the world last");
+            helper.assertTrue(Signature.check(world, "1.0.1").de(), "DE's key file decides whatever version opened the world last");
             writeChunk(world, DeFixtures.emptyChunk(0, 0));
             Signature.Result stamped = Signature.check(world, "1.0.1");
-            helper.assertTrue(stamped.de() && stamped.dataVersion() == 7,
-                    "a stamped spawn chunk after a Continuum start");
+            helper.assertTrue(stamped.de() && stamped.dataVersion() == 7, "a stamped spawn chunk after a Continuum start");
             CompoundTag newer = DeFixtures.emptyChunk(0, 0);
             newer.putInt(ChunkConverter.STAMP, 8);
             writeChunk(world, newer);
-            helper.assertTrue(
-                    Signature.check(world, DeFixtures.DE_VERSION).dataVersion() > Signature.NEWEST_DATA_VERSION,
+            helper.assertTrue(Signature.check(world, DeFixtures.DE_VERSION).dataVersion() > Signature.NEWEST_DATA_VERSION,
                     "a newer DE data version is seen, so the world is refused");
             helper.succeed();
         } catch (IOException e) {
@@ -346,8 +320,7 @@ public final class DeImportGameTests {
             CompoundTag player = new CompoundTag();
             player.put("Inventory", new ListTag());
             DeFixtures.dePlayer(player);
-            player.getList("Inventory", Tag.TAG_COMPOUND)
-                  .add(DeFixtures.slot(11, DeFixtures.stack("hbm:battery_pack_capacitor_copper", 1)));
+            player.getList("Inventory", Tag.TAG_COMPOUND).add(DeFixtures.slot(11, DeFixtures.stack("hbm:battery_pack_capacitor_copper", 1)));
             NbtIo.writeCompressed(player, playerFile);
 
             CompoundTag impact = new CompoundTag();
@@ -363,17 +336,14 @@ public final class DeImportGameTests {
 
             Path advancements = world.resolve("advancements/00000000-0000-0000-0000-000000000001.json");
             Files.createDirectories(advancements.getParent());
-            Files.writeString(advancements,
-                    "{\"hbm:bosscreeper\":{\"criteria\":{\"earned\":\"2026-01-01 10:00:00 +0000\"},\"done\":true},"
-                            + "\"minecraft:story/root\":{\"criteria\":{\"crafting_table\":\"2026-01-01 10:00:00 +0000\"},\"done\":true},\"DataVersion\":3955}");
+            Files.writeString(advancements, "{\"hbm:bosscreeper\":{\"criteria\":{\"earned\":\"2026-01-01 10:00:00 +0000\"},\"done\":true},"
+                    + "\"minecraft:story/root\":{\"criteria\":{\"crafting_table\":\"2026-01-01 10:00:00 +0000\"},\"done\":true},\"DataVersion\":3955}");
             Path stats = world.resolve("stats/00000000-0000-0000-0000-000000000001.json");
             Files.createDirectories(stats.getParent());
-            Files.writeString(stats,
-                    "{\"stats\":{\"minecraft:mined\":{\"hbm:concrete_black\":3,\"hbm:concrete_colored\":2},"
-                            + "\"minecraft:custom\":{\"hbm:legendary\":1,\"minecraft:jump\":9}},\"DataVersion\":3955}");
+            Files.writeString(stats, "{\"stats\":{\"minecraft:mined\":{\"hbm:concrete_black\":3,\"hbm:concrete_colored\":2},"
+                    + "\"minecraft:custom\":{\"hbm:legendary\":1,\"minecraft:jump\":9}},\"DataVersion\":3955}");
 
-            List<Step> steps = List.of(new RegionsStep(), new PlayersStep(), new PlayerFilesStep(),
-                    new SavedDataStep());
+            List<Step> steps = List.of(new RegionsStep(), new PlayersStep(), new PlayerFilesStep(), new SavedDataStep());
             for (int run = 0; run < 2; run++) {
                 ImportState state = ImportState.exists(world) ? ImportState.read(world)
                         : ImportState.create(world, DeFixtures.DE_VERSION, 7, "test");
@@ -385,34 +355,25 @@ public final class DeImportGameTests {
             }
             CompoundTag converted = NbtIo.readCompressed(playerFile, NbtAccounter.unlimitedHeap());
             String text = converted.toString();
-            helper.assertTrue(text.contains("hbm:apple_lead") && !text.contains("apple_lead_nugget"),
-                    "player stacks: " + text);
+            helper.assertTrue(text.contains("hbm:apple_lead") && !text.contains("apple_lead_nugget"), "player stacks: " + text);
             helper.assertTrue(text.contains("\"hbm:capacitor_copper\"") && !text.contains("machine_capacitor_copper"),
                     "a battery capacitor is renamed once and never again: " + text);
             CompoundTag props = converted.getCompound("neoforge:attachments").getCompound("hbm:living_props");
-            helper.assertTrue(props.getDouble("rads") == 250.0 && props.getFloat("shield") == 5F && props.getInt(
-                            "asbestos") == 40,
+            helper.assertTrue(props.getDouble("rads") == 250.0 && props.getFloat("shield") == 5F && props.getInt("asbestos") == 40,
                     "DE's two props attachments merged: " + props);
-            helper.assertTrue(!new Parking(world).records().isEmpty(),
-                    "parked data kept (in the shards until the live phase is done)");
+            helper.assertTrue(!new Parking(world).records().isEmpty(), "parked data kept (in the shards until the live phase is done)");
             String adv = Files.readString(advancements);
-            helper.assertTrue(
-                    adv.contains("hbm:boss_creeper") && adv.contains("nuclear_creeper") && !adv.contains("bosscreeper")
-                            && adv.contains("minecraft:story/root"),
-                    "a completed DE advancement stays complete under its new name: " + adv);
+            helper.assertTrue(adv.contains("hbm:boss_creeper") && adv.contains("nuclear_creeper") && !adv.contains("bosscreeper")
+                    && adv.contains("minecraft:story/root"), "a completed DE advancement stays complete under its new name: " + adv);
             String stat = Files.readString(stats);
             helper.assertTrue(stat.contains("\"hbm:concrete_colored\": 5") && !stat.contains("concrete_black")
-                            && !stat.contains("legendary") && stat.contains("minecraft:jump"),
-                    "stats follow the renames: " + stat);
-            CompoundTag unwrapped = NbtIo.readCompressed(world.resolve("data/hbm_impact_data.dat"),
-                    NbtAccounter.unlimitedHeap());
-            helper.assertTrue(unwrapped.getCompound("data").getBoolean("impact") && unwrapped.getCompound("data")
-                                                                                             .getFloat("dust") == 0.5F,
+                    && !stat.contains("legendary") && stat.contains("minecraft:jump"), "stats follow the renames: " + stat);
+            CompoundTag unwrapped = NbtIo.readCompressed(world.resolve("data/hbm_impact_data.dat"), NbtAccounter.unlimitedHeap());
+            helper.assertTrue(unwrapped.getCompound("data").getBoolean("impact") && unwrapped.getCompound("data").getFloat("dust") == 0.5F,
                     "DE's extra saved-data level is unwrapped once: " + unwrapped);
             try (RegionFile region = RegionIo.open(world.resolve("region/r.0.0.mca"))) {
                 CompoundTag back = RegionIo.read(region, new ChunkPos(0, 0));
-                helper.assertTrue(back != null && !back.contains(ChunkConverter.STAMP),
-                        "region chunk rewritten in place");
+                helper.assertTrue(back != null && !back.contains(ChunkConverter.STAMP), "region chunk rewritten in place");
                 String chunkText = back.toString();
                 helper.assertTrue(chunkText.contains("hbm:canister_full") && chunkText.contains("minecraft:dyed_color"),
                         "a filled canister carries the tint Continuum's own canister writes: " + chunkText.length());
@@ -425,17 +386,13 @@ public final class DeImportGameTests {
         }
     }
 
-    /**
-     * DE's pockets decode to one block each, and setting that block gives Continuum's pocket the same density.
-     */
+    /** DE's pockets decode to one block each, and setting that block gives Continuum's pocket the same density. */
     private static void radiationPockets(GameTestHelper helper) {
         List<Radiation.Pocket> pockets = Radiation.decode(2, -3, DeFixtures.radiationPayload(4, 12.5, 30.0));
         helper.assertTrue(pockets.size() == 2, "two pockets: " + pockets);
         Radiation.Pocket west = pockets.get(0), east = pockets.get(1);
-        helper.assertTrue(west.pos().equals(new BlockPos(32, 64, -48)) && west.density() == 12.5,
-                "west pocket: " + west);
-        helper.assertTrue(east.pos().equals(new BlockPos(41, 64, -48)) && east.density() == 30.0,
-                "east pocket: " + east);
+        helper.assertTrue(west.pos().equals(new BlockPos(32, 64, -48)) && west.density() == 12.5, "west pocket: " + west);
+        helper.assertTrue(east.pos().equals(new BlockPos(41, 64, -48)) && east.density() == 30.0, "east pocket: " + east);
 
         BlockPos pos = helper.absolutePos(new BlockPos(2, 2, 2));
         ContinuumTarget.setRadiation(helper.getLevel(), pos, 30.0);
@@ -445,9 +402,7 @@ public final class DeImportGameTests {
         helper.succeed();
     }
 
-    /**
-     * Families DE saves differently, converted and then loaded and saved by Continuum's own block entities.
-     */
+    /** Families DE saves differently, converted and then loaded and saved by Continuum's own block entities. */
     private static void blockEntityMappers(GameTestHelper helper) {
         Path world = tempWorld();
         try {
@@ -457,15 +412,13 @@ public final class DeImportGameTests {
             crucible.putIntArray("rec", new int[]{30, 72});
             crucible.putIntArray("was", new int[]{30, 8});
             String saved = roundTrip(helper, crucible, "hbm:machine_crucible", ctx, walker);
-            helper.assertTrue(saved.contains("steel") && saved.contains("72"),
-                    "crucible keeps its molten steel: " + saved);
+            helper.assertTrue(saved.contains("steel") && saved.contains("72"), "crucible keeps its molten steel: " + saved);
 
             CompoundTag arc = DeFixtures.blockEntity("hbm:arc_furnace_large", BlockPos.ZERO);
             arc.putIntArray("liquidMats", new int[]{30});
             arc.putIntArray("liquidAmounts", new int[]{144});
             saved = roundTrip(helper, arc, "hbm:machine_arc_furnace", ctx, walker);
-            helper.assertTrue(saved.contains("m0:\"steel\"") && saved.contains("a0:144"),
-                    "arc furnace liquid steel: " + saved);
+            helper.assertTrue(saved.contains("m0:\"steel\"") && saved.contains("a0:144"), "arc furnace liquid steel: " + saved);
 
             CompoundTag pad = DeFixtures.blockEntity("hbm:launch1", BlockPos.ZERO);
             pad.put("fuel", DeFixtures.tank("hbm:kerosene", 1000, 24000));
@@ -475,8 +428,7 @@ public final class DeImportGameTests {
                     "launch pad fuel and oxidizer: " + saved);
 
             CompoundTag watz = DeFixtures.blockEntity("hbm:watz", BlockPos.ZERO);
-            watz.put("locks",
-                    DeFixtures.inventory(DeFixtures.slot(3, DeFixtures.stack("hbm:watz_pellet_schrabidium", 1))));
+            watz.put("locks", DeFixtures.inventory(DeFixtures.slot(3, DeFixtures.stack("hbm:watz_pellet_schrabidium", 1))));
             watz.putBoolean("isLocked", true);
             saved = roundTrip(helper, watz, "hbm:watz", ctx, walker);
             helper.assertTrue(saved.contains("lock3:\"hbm:watz_pellet_schrabidium\"") && saved.contains("isLocked:1b"),
@@ -494,13 +446,10 @@ public final class DeImportGameTests {
         String type = ctx.target.blockEntityType(block, new CompoundTag());
         helper.assertTrue(type != null, block + " has a block entity");
         BlockEntities.convert(de, type, ctx, walker, "test");
-        return load(helper, BlockPos.ZERO, state, de).saveWithoutMetadata(helper.getLevel().registryAccess())
-                                                     .toString();
+        return load(helper, BlockPos.ZERO, state, de).saveWithoutMetadata(helper.getLevel().registryAccess()).toString();
     }
 
-    /**
-     * A world datapack overriding DE's RBMK settings carries over into Continuum's world rules.
-     */
+    /** A world datapack overriding DE's RBMK settings carries over into Continuum's world rules. */
     private static void rbmkDials(GameTestHelper helper) {
         Path world = tempWorld();
         MinecraftServer server = helper.getLevel().getServer();
@@ -522,9 +471,7 @@ public final class DeImportGameTests {
         }
     }
 
-    /**
-     * An imported cable is a block no placement hook saw; the live step adds it to the power graph.
-     */
+    /** An imported cable is a block no placement hook saw; the live step adds it to the power graph. */
     private static void cablesJoinNetwork(GameTestHelper helper) {
         Path world = tempWorld();
         try {
@@ -537,15 +484,12 @@ public final class DeImportGameTests {
                     "the converted cable is listed for the live step: " + ctx.conductors);
 
             BlockPos pos = helper.absolutePos(new BlockPos(2, 2, 2));
-            helper.getLevel().setBlock(pos,
-                    BuiltInRegistries.BLOCK.get(ResourceLocation.parse("hbm:red_cable")).defaultBlockState(),
+            helper.getLevel().setBlock(pos, BuiltInRegistries.BLOCK.get(ResourceLocation.parse("hbm:red_cable")).defaultBlockState(),
                     Block.UPDATE_CLIENTS);
             PowerGraph.get(helper.getLevel()).removeNode(pos.asLong());
-            helper.assertTrue(!PowerGraph.get(helper.getLevel()).containsCell(pos.asLong()),
-                    "a cable written without its hook");
+            helper.assertTrue(!PowerGraph.get(helper.getLevel()).containsCell(pos.asLong()), "a cable written without its hook");
             ContinuumTarget.announceConductor(helper.getLevel(), pos);
-            helper.assertTrue(PowerGraph.get(helper.getLevel()).containsCell(pos.asLong()),
-                    "announced, it is in the power graph");
+            helper.assertTrue(PowerGraph.get(helper.getLevel()).containsCell(pos.asLong()), "announced, it is in the power graph");
             helper.succeed();
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -563,9 +507,7 @@ public final class DeImportGameTests {
         }
     }
 
-    /**
-     * DE's ordinal pollution list and nested satellites, wrapped as DE writes them, decode in Continuum's codecs.
-     */
+    /** DE's ordinal pollution list and nested satellites, wrapped as DE writes them, decode in Continuum's codecs. */
     private static void savedDataShapes(GameTestHelper helper) {
         Path world = tempWorld();
         try {
@@ -599,15 +541,12 @@ public final class DeImportGameTests {
 
             Ctx ctx = ctx(world, null);
             new SavedDataStep().run(ctx, null);
-            CompoundTag p = NbtIo.readCompressed(world.resolve("data/hbm_pollution.dat"), NbtAccounter.unlimitedHeap())
-                                 .getCompound("data");
+            CompoundTag p = NbtIo.readCompressed(world.resolve("data/hbm_pollution.dat"), NbtAccounter.unlimitedHeap()).getCompound("data");
             PollutionSavedData decoded = PollutionSavedData.CODEC.parse(NbtOps.INSTANCE, p).getOrThrow();
             PollutionSavedData.PollutionData region = decoded.pollution.get(new ChunkPos(3, -1));
-            helper.assertTrue(region != null && region.get(PollutionType.SOOT) == 12.5F && region.get(
-                    PollutionType.HEAVYMETAL) == 3F
+            helper.assertTrue(region != null && region.get(PollutionType.SOOT) == 12.5F && region.get(PollutionType.HEAVYMETAL) == 3F
                     && region.get(PollutionType.FALLOUT) == 0.25F, "pollution keeps every type: " + p);
-            CompoundTag s = NbtIo.readCompressed(world.resolve("data/hbm_satellites.dat"), NbtAccounter.unlimitedHeap())
-                                 .getCompound("data");
+            CompoundTag s = NbtIo.readCompressed(world.resolve("data/hbm_satellites.dat"), NbtAccounter.unlimitedHeap()).getCompound("data");
             CompoundTag converted = s.getList("sats", Tag.TAG_COMPOUND).getCompound(0).getCompound("sat");
             Satellite decodedSat = SatelliteType.DISPATCH_CODEC.parse(NbtOps.INSTANCE, converted).getOrThrow();
             helper.assertTrue(decodedSat.type() == SatelliteType.DEATH_RAY, "the death ray satellite decodes: " + s);
@@ -620,9 +559,7 @@ public final class DeImportGameTests {
         helper.succeed();
     }
 
-    /**
-     * A Sable airship's plot: its chunk converts, its multiblocks get their cells there, and what it carries converts.
-     */
+    /** A Sable airship's plot: its chunk converts, its multiblocks get their cells there, and what it carries converts. */
     private static void airshipPlot(GameTestHelper helper) {
         Path world = tempWorld();
         try {
@@ -653,8 +590,7 @@ public final class DeImportGameTests {
 
             Ctx ctx = ctx(world, null);
             Airships.convert(ctx, "minecraft:overworld", ship, "test airship");
-            CompoundTag out = ship.getCompound("plot").getCompound("chunks")
-                                  .getCompound(Long.toString(new ChunkPos(0, 0).toLong()));
+            CompoundTag out = ship.getCompound("plot").getCompound("chunks").getCompound(Long.toString(new ChunkPos(0, 0).toLong()));
             helper.assertTrue(!out.contains("xPos") && out.get("sections") instanceof CompoundTag,
                     "the plot chunk keeps Sable's shape: " + out.getAllKeys());
             ListTag asList = new ListTag();
@@ -667,13 +603,11 @@ public final class DeImportGameTests {
             out.put("sections", asList);
             Map<BlockPos, CompoundTag> states = states(out);
             expectBlock(helper, states, origin, "hbm:machine_centrifuge");
-            helper.assertTrue(states.containsKey(origin.above()) && !states.get(origin.above()).getString("Name")
-                                                                           .equals("minecraft:air"),
+            helper.assertTrue(states.containsKey(origin.above()) && !states.get(origin.above()).getString("Name").equals("minecraft:air"),
                     "the centrifuge gets its cells inside the plot");
             helper.assertTrue(ctx.report.get("airship cells placed") > 0, "cells were placed");
             helper.assertTrue(out.toString().contains("hbm:canister_full"), "the ship's chest converts: " + out);
-            helper.assertTrue(ship.getList("cargo", Tag.TAG_COMPOUND).getCompound(0).getString("id")
-                                  .equals("hbm:wire_fine_red_copper"),
+            helper.assertTrue(ship.getList("cargo", Tag.TAG_COMPOUND).getCompound(0).getString("id").equals("hbm:wire_fine_red_copper"),
                     "stacks outside the plot convert: " + ship);
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -683,16 +617,13 @@ public final class DeImportGameTests {
         helper.succeed();
     }
 
-    /**
-     * Every kind of data Continuum would drop on load is parked instead, checked against Continuum's own codecs.
-     */
+    /** Every kind of data Continuum would drop on load is parked instead, checked against Continuum's own codecs. */
     private static void nothingLostSilently(GameTestHelper helper) {
         Path world = tempWorld();
         try {
             BlockPos pos = new BlockPos(2, 70, 2);
             CompoundTag chunk = DeFixtures.emptyChunk(0, 0);
-            DeFixtures.setBlock(chunk, pos,
-                    DeFixtures.block("hbm:machine_centrifuge", "facing", "north", "bogus", "x"));
+            DeFixtures.setBlock(chunk, pos, DeFixtures.block("hbm:machine_centrifuge", "facing", "north", "bogus", "x"));
             CompoundTag be = DeFixtures.blockEntity("hbm:centrifuge", pos);
             be.putInt("deOnlyField", 7);
             CompoundTag sword = DeFixtures.stack("minecraft:iron_sword", 1);
@@ -700,8 +631,7 @@ public final class DeImportGameTests {
             swordComponents.putString("minecraft:damage", "not a number");
             swordComponents.putInt("minecraft:repair_cost", 3);
             sword.put("components", swordComponents);
-            be.put("inventory", DeFixtures.inventory(DeFixtures.slot(0, sword),
-                    DeFixtures.slot(1, DeFixtures.stack("hbm:not_an_item", 2))));
+            be.put("inventory", DeFixtures.inventory(DeFixtures.slot(0, sword), DeFixtures.slot(1, DeFixtures.stack("hbm:not_an_item", 2))));
             DeFixtures.addBlockEntity(chunk, be);
             ListTag entities = new ListTag();
             entities.add(entity("hbm:not_an_entity"));
@@ -722,40 +652,28 @@ public final class DeImportGameTests {
             Map<String, List<String>> parked = new HashMap<>();
             for (Tag t : ctx.parking.records()) {
                 CompoundTag r = (CompoundTag) t;
-                parked.computeIfAbsent(r.getString("kind"), k -> new ArrayList<>())
-                      .add(r.getString("where") + " " + r.getString("id"));
+                parked.computeIfAbsent(r.getString("kind"), k -> new ArrayList<>()).add(r.getString("where") + " " + r.getString("id"));
             }
-            helper.assertTrue(parked.getOrDefault("block_entity_field", List.of()).stream()
-                                    .anyMatch(w -> w.contains("deOnlyField")),
+            helper.assertTrue(parked.getOrDefault("block_entity_field", List.of()).stream().anyMatch(w -> w.contains("deOnlyField")),
                     "a field Continuum's centrifuge does not keep is parked: " + parked);
-            helper.assertTrue(
-                    parked.getOrDefault("component", List.of()).stream().anyMatch(w -> w.contains("minecraft:damage")),
+            helper.assertTrue(parked.getOrDefault("component", List.of()).stream().anyMatch(w -> w.contains("minecraft:damage")),
                     "a component Continuum cannot decode is parked: " + parked);
-            helper.assertTrue(
-                    parked.getOrDefault("item", List.of()).stream().anyMatch(w -> w.contains("hbm:not_an_item")),
+            helper.assertTrue(parked.getOrDefault("item", List.of()).stream().anyMatch(w -> w.contains("hbm:not_an_item")),
                     "an unknown item is parked: " + parked);
-            helper.assertTrue(parked.getOrDefault("block_state", List.of()).stream()
-                                    .anyMatch(w -> w.contains("machine_centrifuge")),
+            helper.assertTrue(parked.getOrDefault("block_state", List.of()).stream().anyMatch(w -> w.contains("machine_centrifuge")),
                     "a property the block does not have is parked: " + parked);
-            helper.assertTrue(
-                    parked.getOrDefault("entity", List.of()).stream().anyMatch(w -> w.contains("hbm:not_an_entity")),
+            helper.assertTrue(parked.getOrDefault("entity", List.of()).stream().anyMatch(w -> w.contains("hbm:not_an_entity")),
                     "an unknown HBM entity is parked: " + parked);
-            helper.assertTrue(parked.getOrDefault("chunk_attachment", List.of()).stream()
-                                    .anyMatch(w -> w.contains("hbm:de_only")),
+            helper.assertTrue(parked.getOrDefault("chunk_attachment", List.of()).stream().anyMatch(w -> w.contains("hbm:de_only")),
                     "a DE chunk attachment is parked: " + parked);
             String inv = out.getList("block_entities", Tag.TAG_COMPOUND).getCompound(0).toString();
-            helper.assertTrue(inv.contains("minecraft:iron_sword") && inv.contains("repair_cost") && !inv.contains(
-                            "not a number"),
+            helper.assertTrue(inv.contains("minecraft:iron_sword") && inv.contains("repair_cost") && !inv.contains("not a number"),
                     "the sword stays with the components Continuum reads: " + inv);
-            helper.assertTrue(ctx.report.get("block entities checked") == 1,
-                    "the centrifuge was checked against Continuum");
+            helper.assertTrue(ctx.report.get("block entities checked") == 1, "the centrifuge was checked against Continuum");
 
-            helper.assertTrue(ctx.entities.size() == 1,
-                    "the zombie with HBM data is kept for the live check: " + ctx.entities);
-            Map<String, Tag> lost = ContinuumTarget.entityLost(helper.getLevel(),
-                    ctx.entities.get(0).getCompound("nbt"), false);
-            helper.assertTrue(
-                    lost != null && lost.keySet().stream().anyMatch(k -> k.contains("hbm:unknown_attachment")),
+            helper.assertTrue(ctx.entities.size() == 1, "the zombie with HBM data is kept for the live check: " + ctx.entities);
+            Map<String, Tag> lost = ContinuumTarget.entityLost(helper.getLevel(), ctx.entities.get(0).getCompound("nbt"), false);
+            helper.assertTrue(lost != null && lost.keySet().stream().anyMatch(k -> k.contains("hbm:unknown_attachment")),
                     "an attachment Continuum does not register is found by the live check: " + lost);
 
             // An effect's cures are a set: saved in another order, nothing is lost.
@@ -789,8 +707,7 @@ public final class DeImportGameTests {
             CompoundTag b = place(chunk, planted, barrel, DeFixtures.block("hbm:barrel_steel"), "hbm:fluid_barrel");
             b.putInt("mode", 2);
             BlockPos redd = new BlockPos(4, 70, 1);
-            CompoundTag r = place(chunk, planted, redd, DeFixtures.block("hbm:machine_battery_redd", "facing", "north"),
-                    "hbm:battery_redd");
+            CompoundTag r = place(chunk, planted, redd, DeFixtures.block("hbm:machine_battery_redd", "facing", "north"), "hbm:battery_redd");
             r.putInt("redLow", 1);
             r.putInt("redHigh", 3);
             r.putInt("priority", 3);
@@ -803,8 +720,7 @@ public final class DeImportGameTests {
             target.putIntArray("pos", new int[]{10, 64, -20});
             t.put("target", target);
             BlockPos gascent = new BlockPos(1, 70, 6);
-            CompoundTag g = place(chunk, planted, gascent, DeFixtures.block("hbm:machine_gascent", "facing", "north"),
-                    "hbm:gas_centrifuge");
+            CompoundTag g = place(chunk, planted, gascent, DeFixtures.block("hbm:machine_gascent", "facing", "north"), "hbm:gas_centrifuge");
             CompoundTag in = new CompoundTag();
             in.putInt("fill", 800);
             in.putString("stage", "meuf6");
@@ -837,8 +753,7 @@ public final class DeImportGameTests {
             Ctx ctx = ctx(world, helper.getLevel().getServer());
             CompoundTag out = new ChunkConverter(ctx, "minecraft:overworld").convert(chunk);
             List<String> parked = new ArrayList<>();
-            for (Tag rec : ctx.parking.records())
-                parked.add(((CompoundTag) rec).getString("kind") + " " + ((CompoundTag) rec).getString("where"));
+            for (Tag rec : ctx.parking.records()) parked.add(((CompoundTag) rec).getString("kind") + " " + ((CompoundTag) rec).getString("where"));
             helper.assertTrue(parked.isEmpty(), "every audited field has a Continuum home: " + parked);
             helper.assertTrue(ctx.report.get("block entities checked") == planted.size(),
                     "each planted block entity was checked: " + ctx.report.get("block entities checked"));
@@ -851,25 +766,21 @@ public final class DeImportGameTests {
             helper.assertTrue(bes.get(barrel).get("mode") instanceof ShortTag && bes.get(barrel).getShort("mode") == 2,
                     "the barrel's mode is cast to the short Continuum reads: " + bes.get(barrel));
             CompoundTag reddOut = bes.get(redd);
-            helper.assertTrue(
-                    "high".equals(reddOut.getString("priority")) && reddOut.get("redHigh") instanceof ShortTag,
+            helper.assertTrue("high".equals(reddOut.getString("priority")) && reddOut.get("redHigh") instanceof ShortTag,
                     "the REDD's priority and redstone modes: " + reddOut);
-            helper.assertTrue("lucky38".equals(bes.get(globe).getString("type")),
-                    "snowglobe kind by name: " + bes.get(globe));
+            helper.assertTrue("lucky38".equals(bes.get(globe).getString("type")), "snowglobe kind by name: " + bes.get(globe));
             var teleTarget = bes.get(tele).getCompound("target");
             helper.assertTrue("minecraft:the_nether".equals(teleTarget.getString("dimension"))
                             && Arrays.equals(teleTarget.getIntArray("pos"), new int[]{10, 64, -20}),
                     "teleporter target: " + bes.get(tele));
-            helper.assertTrue(bes.get(gascent).getInt("inputTank") == 800 && "MEUF6".equals(
-                            bes.get(gascent).getString("inputTank_type")),
+            helper.assertTrue(bes.get(gascent).getInt("inputTank") == 800 && "MEUF6".equals(bes.get(gascent).getString("inputTank_type")),
                     "gas centrifuge tank: " + bes.get(gascent));
             helper.assertTrue(bes.get(pylon).getInt("conCount") == 1 && bes.get(pylon).getIntArray("con0")[0] == 30,
                     "the pylon's wire from DE's power graph: " + bes.get(pylon));
             ListTag outEntities = out.getList("entities", Tag.TAG_COMPOUND);
             helper.assertTrue(outEntities.getCompound(0).getString("id").equals("hbm:entity_missile_generic"),
                     "DE's missile id: " + outEntities.getCompound(0).getString("id"));
-            helper.assertTrue("concrete".equals(outEntities.getCompound(1).getString("type")),
-                    "zirnox debris kind: " + outEntities.getCompound(1));
+            helper.assertTrue("concrete".equals(outEntities.getCompound(1).getString("type")), "zirnox debris kind: " + outEntities.getCompound(1));
 
             CompoundTag lore = componentStack("hbm:book_lore");
             CompoundTag lc = lore.getCompound("components");
@@ -901,46 +812,31 @@ public final class DeImportGameTests {
             Walker walker = new Walker(ctx);
             for (CompoundTag stack : List.of(lore, pellet, pick)) walker.walk(stack, "test");
             CompoundTag book = lore.getCompound("components").getCompound("hbm:book_lore");
-            helper.assertTrue(book.getInt("p") == 3 && "Kelvin".equals(book.getCompound("p1").getString("a1")),
-                    "lore book: " + lore);
+            helper.assertTrue(book.getInt("p") == 3 && "Kelvin".equals(book.getCompound("p1").getString("a1")), "lore book: " + lore);
             helper.assertTrue("deuterium".equals(pellet.getCompound("components").getString("hbm:icf_type1"))
                     && pellet.getCompound("components").getLong("hbm:icf_depletion") == 77L, "ICF pellet: " + pellet);
             CompoundTag ability = pick.getCompound("components").getCompound("hbm:tool_ability");
             helper.assertTrue(ability.getInt("ability") == 1 && "tool.ability.silktouch".equals(
-                            ability.getList("abilityPresets", Tag.TAG_COMPOUND).getCompound(0).getString("harvest")),
-                    "tool presets: " + pick);
+                    ability.getList("abilityPresets", Tag.TAG_COMPOUND).getCompound(0).getString("harvest")), "tool presets: " + pick);
             helper.assertTrue(ctx.parking.records().isEmpty(), "no component was parked: " + ctx.parking.records());
 
             // block states DE spells differently: parts of tall machines, 1.7 metadata facings, renamed flags, volcano modes
-            helper.assertTrue(BlockStates.convert(DeFixtures.block("hbm:rbmk_fuel_rod", "part", "column"), ctx.target)
-                                         .kind() == BlockStates.Kind.CELL,
+            helper.assertTrue(BlockStates.convert(DeFixtures.block("hbm:rbmk_fuel_rod", "part", "column"), ctx.target).kind() == BlockStates.Kind.CELL,
                     "an RBMK column block above its core is a cell");
-            CompoundTag holder = BlockStates.convert(DeFixtures.block("hbm:skeleton_holder", "facing", "3"), ctx.target)
-                                            .entry();
-            helper.assertTrue("south".equals(holder.getCompound("Properties").getString("facing")),
-                    "metadata facing to a name: " + holder);
-            CompoundTag bomb = BlockStates.convert(DeFixtures.block("hbm:nuke_fstbmb", "facing", "west"), ctx.target)
-                                          .entry();
-            helper.assertTrue("4".equals(bomb.getCompound("Properties").getString("facing")),
-                    "a name to metadata facing: " + bomb);
-            CompoundTag light = BlockStates.convert(DeFixtures.block("hbm:floodlight", "facing", "7"), ctx.target)
-                                           .entry();
+            CompoundTag holder = BlockStates.convert(DeFixtures.block("hbm:skeleton_holder", "facing", "3"), ctx.target).entry();
+            helper.assertTrue("south".equals(holder.getCompound("Properties").getString("facing")), "metadata facing to a name: " + holder);
+            CompoundTag bomb = BlockStates.convert(DeFixtures.block("hbm:nuke_fstbmb", "facing", "west"), ctx.target).entry();
+            helper.assertTrue("4".equals(bomb.getCompound("Properties").getString("facing")), "a name to metadata facing: " + bomb);
+            CompoundTag light = BlockStates.convert(DeFixtures.block("hbm:floodlight", "facing", "7"), ctx.target).entry();
             helper.assertTrue("up".equals(light.getCompound("Properties").getString("facing"))
                     && "true".equals(light.getCompound("Properties").getString("flip")), "floodlight flip: " + light);
-            BlockStates.Converted fuel = BlockStates.convert(
-                    DeFixtures.block("hbm:block_graphite_fuel", "axis", "y", "shrouded", "true", "pu239", "true"),
-                    ctx.target);
+            BlockStates.Converted fuel = BlockStates.convert(DeFixtures.block("hbm:block_graphite_fuel", "axis", "y", "shrouded", "true", "pu239", "true"), ctx.target);
             helper.assertTrue("true".equals(fuel.entry().getCompound("Properties").getString("aluminum"))
-                            && "true".equals(fuel.entry().getCompound("Properties").getString("out")) && fuel.dropped()
-                                                                                                             .isEmpty(),
-                    "graphite flags: " + fuel);
-            helper.assertTrue(
-                    BlockStates.convert(DeFixtures.block("hbm:volcano_core", "mode", "smoldering"), ctx.target).entry()
-                               .getString("Name").equals("hbm:volcano_core_smoldering"), "volcano mode to its block");
-            CompoundTag vent = BlockStates.convert(DeFixtures.block("hbm:pile_vent", "facing", "west"), ctx.target)
-                                          .entry();
-            helper.assertTrue("6".equals(vent.getCompound("Properties").getString("meta")),
-                    "pile device kind and side in one meta: " + vent);
+                    && "true".equals(fuel.entry().getCompound("Properties").getString("out")) && fuel.dropped().isEmpty(), "graphite flags: " + fuel);
+            helper.assertTrue(BlockStates.convert(DeFixtures.block("hbm:volcano_core", "mode", "smoldering"), ctx.target).entry()
+                    .getString("Name").equals("hbm:volcano_core_smoldering"), "volcano mode to its block");
+            CompoundTag vent = BlockStates.convert(DeFixtures.block("hbm:pile_vent", "facing", "west"), ctx.target).entry();
+            helper.assertTrue("6".equals(vent.getCompound("Properties").getString("meta")), "pile device kind and side in one meta: " + vent);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         } finally {
@@ -949,30 +845,24 @@ public final class DeImportGameTests {
         helper.succeed();
     }
 
-    /**
-     * Lazy chest loot, a spawner's mob, a falling block's state and a stat objective, all outside the chunk palette.
-     */
+    /** Lazy chest loot, a spawner's mob, a falling block's state and a stat objective, all outside the chunk palette. */
     private static void lootAndReferences(GameTestHelper helper) {
         Path world = tempWorld();
         try {
             MinecraftServer server = helper.getLevel().getServer();
-            BlockPos chestPos = new BlockPos(2, 70, 2), safePos = new BlockPos(4, 70, 2), spawnerPos = new BlockPos(6,
-                    70, 2);
+            BlockPos chestPos = new BlockPos(2, 70, 2), safePos = new BlockPos(4, 70, 2), spawnerPos = new BlockPos(6, 70, 2);
             CompoundTag chunk = DeFixtures.emptyChunk(0, 0);
             Map<BlockPos, CompoundTag> planted = new HashMap<>();
-            place(chunk, planted, chestPos,
-                    DeFixtures.block("minecraft:chest", "facing", "north", "type", "single", "waterlogged", "false"),
+            place(chunk, planted, chestPos, DeFixtures.block("minecraft:chest", "facing", "north", "type", "single", "waterlogged", "false"),
                     "minecraft:chest").putString("LootTable", "hbm:chests/ammo_10_15");
-            CompoundTag safe = place(chunk, planted, safePos, DeFixtures.block("hbm:safe", "facing", "north"),
-                    "hbm:safe");
+            CompoundTag safe = place(chunk, planted, safePos, DeFixtures.block("hbm:safe", "facing", "north"), "hbm:safe");
             safe.putString("LootTable", "hbm:chests/component/unscaled/vault_rusty_3_6");
             safe.putLong("LootTableSeed", 42L);
             CompoundTag mob = new CompoundTag();
             mob.putString("id", "hbm:entity_missile_anti");
             CompoundTag spawnData = new CompoundTag();
             spawnData.put("entity", mob);
-            place(chunk, planted, spawnerPos, DeFixtures.block("minecraft:spawner"), "minecraft:mob_spawner").put(
-                    "SpawnData", spawnData);
+            place(chunk, planted, spawnerPos, DeFixtures.block("minecraft:spawner"), "minecraft:mob_spawner").put("SpawnData", spawnData);
             CompoundTag falling = entity("minecraft:falling_block");
             falling.put("BlockState", DeFixtures.block("hbm:concrete_black"));
             ListTag entities = new ListTag();
@@ -989,28 +879,21 @@ public final class DeImportGameTests {
             helper.assertTrue(bes.get(chestPos).getString("LootTable").equals("hbm_de:chests/ammo_10_15"),
                     "a chest keeps its lazy DE loot, by the table served for it: " + bes.get(chestPos));
             helper.assertTrue(!bes.get(safePos).contains("LootTable") && ctx.loot.size() == 1
-                            && ctx.loot.get(0).getString("table").equals("hbm_de:chests/component/unscaled/vault_rusty_3_6")
-                            && ctx.loot.get(0).getLong("seed") == 42L,
-                    "a safe's lazy loot waits for the live phase: " + ctx.loot);
-            helper.assertTrue(ctx.parking.counts().getOrDefault("block_entity_field", 0) == 0,
-                    "nothing parked: " + ctx.parking.counts());
-            helper.assertTrue(bes.get(spawnerPos).getCompound("SpawnData").getCompound("entity").getString("id")
-                                 .equals("hbm:entity_missile_ab"),
+                    && ctx.loot.get(0).getString("table").equals("hbm_de:chests/component/unscaled/vault_rusty_3_6")
+                    && ctx.loot.get(0).getLong("seed") == 42L, "a safe's lazy loot waits for the live phase: " + ctx.loot);
+            helper.assertTrue(ctx.parking.counts().getOrDefault("block_entity_field", 0) == 0, "nothing parked: " + ctx.parking.counts());
+            helper.assertTrue(bes.get(spawnerPos).getCompound("SpawnData").getCompound("entity").getString("id").equals("hbm:entity_missile_ab"),
                     "the spawner's mob follows the rename: " + bes.get(spawnerPos));
             CompoundTag state = out.getList("entities", Tag.TAG_COMPOUND).getCompound(0).getCompound("BlockState");
             helper.assertTrue(state.getString("Name").equals("hbm:concrete_colored")
-                            && state.getCompound("Properties").getString("color").equals("black"),
-                    "a falling block's state converts: " + state);
+                    && state.getCompound("Properties").getString("color").equals("black"), "a falling block's state converts: " + state);
 
             for (String table : List.of("hbm_de:chests/ammo_10_15", "hbm_de:chests/component/antenna_5_5")) {
-                LootTable loot = server.reloadableRegistries().getLootTable(
-                        ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(table)));
+                LootTable loot = server.reloadableRegistries().getLootTable(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(table)));
                 SimpleContainer container = new SimpleContainer(27);
-                loot.fill(container,
-                        new LootParams.Builder(helper.getLevel()).withParameter(LootContextParams.ORIGIN, Vec3.ZERO)
-                                                                 .create(LootContextParamSets.CHEST), 7L);
-                helper.assertTrue(loot != LootTable.EMPTY && !container.isEmpty(),
-                        "the served table loads and rolls: " + table);
+                loot.fill(container, new LootParams.Builder(helper.getLevel()).withParameter(LootContextParams.ORIGIN, Vec3.ZERO)
+                        .create(LootContextParamSets.CHEST), 7L);
+                helper.assertTrue(loot != LootTable.EMPTY && !container.isEmpty(), "the served table loads and rolls: " + table);
             }
 
             BlockPos live = helper.absolutePos(new BlockPos(1, 1, 1));
@@ -1033,10 +916,8 @@ public final class DeImportGameTests {
             NbtIo.writeCompressed(root, world.resolve("data/scoreboard.dat"));
             new SavedDataStep().run(ctx, server);
             String criteria = NbtIo.readCompressed(world.resolve("data/scoreboard.dat"), NbtAccounter.unlimitedHeap())
-                                   .getCompound("data").getList("Objectives", Tag.TAG_COMPOUND).getCompound(0)
-                                   .getString("CriteriaName");
-            helper.assertTrue(criteria.equals("minecraft.mined:hbm.concrete_colored"),
-                    "a stat objective follows the block: " + criteria);
+                    .getCompound("data").getList("Objectives", Tag.TAG_COMPOUND).getCompound(0).getString("CriteriaName");
+            helper.assertTrue(criteria.equals("minecraft.mined:hbm.concrete_colored"), "a stat objective follows the block: " + criteria);
             helper.succeed();
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -1045,8 +926,7 @@ public final class DeImportGameTests {
         }
     }
 
-    private static CompoundTag place(CompoundTag chunk, Map<BlockPos, CompoundTag> planted, BlockPos pos,
-                                     CompoundTag state, String deType) {
+    private static CompoundTag place(CompoundTag chunk, Map<BlockPos, CompoundTag> planted, BlockPos pos, CompoundTag state, String deType) {
         DeFixtures.setBlock(chunk, pos, state);
         CompoundTag be = DeFixtures.blockEntity(deType, pos);
         DeFixtures.addBlockEntity(chunk, be);
@@ -1060,9 +940,7 @@ public final class DeImportGameTests {
         return stack;
     }
 
-    /**
-     * A live loot record for a chest at {@code pos}, rolling a vanilla table with a fixed seed.
-     */
+    /** A live loot record for a chest at {@code pos}, rolling a vanilla table with a fixed seed. */
     static CompoundTag loot(ServerLevel level, BlockPos pos) {
         CompoundTag loot = new CompoundTag();
         loot.putString("dim", level.dimension().location().toString());
@@ -1072,9 +950,7 @@ public final class DeImportGameTests {
         return loot;
     }
 
-    /**
-     * The non-empty slots of the container at {@code pos}.
-     */
+    /** The non-empty slots of the container at {@code pos}. */
     static int stacks(ServerLevel level, BlockPos pos) {
         int stacks = 0;
         if (level.getBlockEntity(pos) instanceof Container container)

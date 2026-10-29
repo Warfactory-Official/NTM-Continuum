@@ -32,7 +32,6 @@ import com.mojang.serialization.JsonOps;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.ItemStacks;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -46,7 +45,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Supplier;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -62,14 +60,11 @@ import net.minecraft.world.item.Items;
  */
 public final class ItemRecipeTableGameTests {
 
-    private ItemRecipeTableGameTests() {
-    }
+    private ItemRecipeTableGameTests() {}
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
-    /**
-     * Only with HBM_DUMP_TABLES=<dir>: writes every table's lines to <dir>/<table>.txt (how the hashes were taken).
-     */
+    /** Only with HBM_DUMP_TABLES=<dir>: writes every table's lines to <dir>/<table>.txt (how the hashes were taken). */
     public static final GameTests.Function DUMP = System.getenv("HBM_DUMP_TABLES") == null ? null
             : TESTS.function("recipe_table_c2_dump", 100, () -> ItemRecipeTableGameTests::dump);
 
@@ -84,8 +79,7 @@ public final class ItemRecipeTableGameTests {
     public static final GameTests.Function SAWMILL =
             TESTS.function("recipe_table_sawmill_rows", 20, () -> ItemRecipeTableGameTests::sawmill);
 
-    public static void init() {
-    }
+    public static void init() {}
 
     /**
      * Each table's line count and SHA-256 of its joined lines, taken from the Java tables before they
@@ -111,22 +105,17 @@ public final class ItemRecipeTableGameTests {
             Map.entry("press", "48 4a487f4c553e2065372c439d6e4bae231584bdb55ddce16eb3b816fede56d2f8"),
             Map.entry("soldering", "30 3b20f88748496a0470a5407775dd85bb5244aeae8a1406aaf98a4ac23e11b15c"));
 
-    /**
-     * A few of the recorded lines, spelled out so a reader sees what the hashes cover.
-     */
+    /** A few of the recorded lines, spelled out so a reader sees what the hashes cover. */
     static final Map<String, String> SAMPLES = Map.of(
             "press", "FLAT #c:dusts/coalx1 => hbm:briquette_coalx1",
-            "ammo_press",
-            "hbm:ammo_standard_m357_bpx16 <= - #c:ingots/leadx2 - - minecraft:gunpowderx1 - - hbm:casing_smallx1 -",
+            "ammo_press", "hbm:ammo_standard_m357_bpx16 <= - #c:ingots/leadx2 - - minecraft:gunpowderx1 - - hbm:casing_smallx1 -",
             "breeder", "hbm:rod_dual_lithium => hbm:rod_dual_tritiumx1 flux=400",
             "combination", "#c:gems/coalx1 => hbm:coke_coalx1 + coalcreosotex100@0",
             "custom_nuke", "cell aschrab => SCHRAB ADD 15.0",
             "anvil_construction", "t=3..-1 SMITHING in=#c:ingots/ironx1, out=hbm:plate_ironx1%1.0,",
             "magic", "hbm:rod_of_discord <= minecraft:ender_pearl minecraft:blaze_rod hbm:nugget_euphemium");
 
-    /**
-     * Every item table equals the Java table it replaced, line for line (count, hash, samples).
-     */
+    /** Every item table equals the Java table it replaced, line for line (count, hash, samples). */
     public static void rows(GameTestHelper helper) {
         registries = helper.getLevel().registryAccess();
         List<String> wrong = new ArrayList<>();
@@ -161,9 +150,7 @@ public final class ItemRecipeTableGameTests {
         helper.succeed();
     }
 
-    /**
-     * Every row of every item table survives its JSON (the file form and the client sync form).
-     */
+    /** Every row of every item table survives its JSON (the file form and the client sync form). */
     public static void roundTrip(GameTestHelper helper) {
         List<String> broken = new ArrayList<>();
         HolderLookup.Provider access = helper.getLevel().registryAccess();
@@ -217,10 +204,8 @@ public final class ItemRecipeTableGameTests {
             anvil528 = AnvilRecipes.getConstruction().size();
             annihilator528 = AnnihilatorRecipes.recipes().size();
             analog = AnvilRecipes.getConstruction().stream()
-                                 .anyMatch(recipe -> id(recipe.output.get(0).stack.getItem()).equals(
-                                         "hbm:machine_assembly_machine")
-                                         && recipe.input.stream()
-                                                        .anyMatch(in -> stack(in).equals("hbm:circuit_analogx2")));
+                    .anyMatch(recipe -> id(recipe.output.get(0).stack.getItem()).equals("hbm:machine_assembly_machine")
+                            && recipe.input.stream().anyMatch(in -> stack(in).equals("hbm:circuit_analogx2")));
         } finally {
             GeneralConfig.enable528 = was528;
             GeneralConfig.enableExpensiveMode = wasExpensive;
@@ -228,11 +213,9 @@ public final class ItemRecipeTableGameTests {
             rebuild(construction);
             rebuild(annihilator);
         }
-        helper.assertTrue(solderDefault == 27 && solder528 == 14,
-                "soldering rows default/528: " + solderDefault + "/" + solder528);
-        helper.assertTrue(anvilDefault == 257 && anvil528 == 252 && analog,
-                "anvil construction rows default/528+expensive: "
-                        + anvilDefault + "/" + anvil528 + ", analog assembly machine " + analog);
+        helper.assertTrue(solderDefault == 27 && solder528 == 14, "soldering rows default/528: " + solderDefault + "/" + solder528);
+        helper.assertTrue(anvilDefault == 257 && anvil528 == 252 && analog, "anvil construction rows default/528+expensive: "
+                + anvilDefault + "/" + anvil528 + ", analog assembly machine " + analog);
         helper.assertTrue(annihilatorDefault == 0 && annihilator528 == 16, "annihilator keys default/528: "
                 + annihilatorDefault + "/" + annihilator528);
         helper.assertTrue(SolderingRecipes.recipes.size() == 27
@@ -240,15 +223,12 @@ public final class ItemRecipeTableGameTests {
         helper.succeed();
     }
 
-    /**
-     * The radiation generator and research reactor values (1.7 TileEntityMachineRadGen fuels, TileEntityReactorResearch.fuelMap).
-     */
+    /** The radiation generator and research reactor values (1.7 TileEntityMachineRadGen fuels, TileEntityReactorResearch.fuelMap). */
     public static void machineValues(GameTestHelper helper) {
         var radgen = MachineDataMaps.RADGEN_FUEL;
         var scrap = radgen.get(ModItems.scrap_nuclear.get());
         var gem = radgen.get(ModItems.gem_rad.get());
-        helper.assertTrue(
-                scrap != null && scrap.production() == 50 && scrap.duration() == 5 * 60 * 20 && scrap.output().isEmpty()
+        helper.assertTrue(scrap != null && scrap.production() == 50 && scrap.duration() == 5 * 60 * 20 && scrap.output().isEmpty()
                         && gem != null && gem.production() == 25_000 && gem.duration() == 30 * 60 * 20
                         && gem.output().equals(Optional.of("minecraft:diamond")) && gem.count() == 1
                         && radgen.byId().size() == 2,
@@ -267,9 +247,7 @@ public final class ItemRecipeTableGameTests {
         helper.succeed();
     }
 
-    /**
-     * The sawmill rows give 1.7's outputs and sawdust chances (1.7 TileEntitySawmill.getOutput / sawdustChance).
-     */
+    /** The sawmill rows give 1.7's outputs and sawdust chances (1.7 TileEntitySawmill.getOutput / sawdustChance). */
     public static void sawmill(GameTestHelper helper) {
         var level = helper.getLevel();
         ItemStack planks = SawmillRecipes.getOutput(level, new ItemStack(Items.BIRCH_LOG));
@@ -280,18 +258,16 @@ public final class ItemRecipeTableGameTests {
                         && SawmillRecipes.sawdustChance(new ItemStack(Items.STICK)) == 0F,
                 "sawdust chances differ from 1.7");
         helper.assertTrue(SawmillRecipes.getOutput(level, new ItemStack(Items.OAK_SAPLING))
-                                        .is(Items.STICK)
+                        .is(Items.STICK)
                         && SawmillRecipes.getOutput(level, new ItemStack(Items.STICK))
-                                         .is(ModItems.powder_sawdust.get())
+                        .is(ModItems.powder_sawdust.get())
                         && SawmillRecipes.getOutput(level, new ItemStack(Items.DIRT)).isEmpty()
                         && SawmillRecipes.getRecipes().size() == 4,
                 "sawmill outputs differ from 1.7");
         helper.succeed();
     }
 
-    /**
-     * Rebuilds a table from the current recipes, as a reload would (its config-dependent rows read the config again).
-     */
+    /** Rebuilds a table from the current recipes, as a reload would (its config-dependent rows read the config again). */
     static void rebuild(DataRecipeTable<?> table) {
         replace(table);
     }
@@ -338,9 +314,7 @@ public final class ItemRecipeTableGameTests {
         List<String> lines = new ArrayList<>();
         for (var recipe : ArcWelderRecipes.recipes) {
             StringBuilder line = new StringBuilder(stack(recipe.output)).append(" d=").append(recipe.duration)
-                                                                        .append(" p=").append(recipe.consumption)
-                                                                        .append(" f=").append(fluid(recipe.fluid))
-                                                                        .append(" <=");
+                    .append(" p=").append(recipe.consumption).append(" f=").append(fluid(recipe.fluid)).append(" <=");
             for (AStack in : recipe.ingredients) line.append(' ').append(stack(in));
             lines.add(line.toString());
         }
@@ -350,8 +324,7 @@ public final class ItemRecipeTableGameTests {
     static List<String> breeder() {
         List<String> lines = new ArrayList<>();
         for (var entry : BreederRecipes.getAllRecipes().entrySet()) {
-            lines.add(id(entry.getKey()) + " => " + stack(entry.getValue().output()) + " flux=" + entry.getValue()
-                                                                                                       .flux());
+            lines.add(id(entry.getKey()) + " => " + stack(entry.getValue().output()) + " flux=" + entry.getValue().flux());
         }
         return lines;
     }
@@ -359,8 +332,7 @@ public final class ItemRecipeTableGameTests {
     static List<String> combination() {
         List<String> lines = new ArrayList<>();
         for (var recipe : CombinationRecipes.getRecipes()) {
-            lines.add(
-                    stack(recipe.input()) + " => " + stack(recipe.itemOutput()) + " + " + fluid(recipe.fluidOutput()));
+            lines.add(stack(recipe.input()) + " => " + stack(recipe.itemOutput()) + " + " + fluid(recipe.fluidOutput()));
         }
         return lines;
     }
@@ -397,8 +369,7 @@ public final class ItemRecipeTableGameTests {
         List<String> lines = new ArrayList<>();
         for (var recipe : PedestalRecipes.recipes()) {
             StringBuilder line = new StringBuilder(recipe.output).append('x').append(recipe.outputCount)
-                                                                 .append(" extra=").append(recipe.extra).append(" set=")
-                                                                 .append(recipe.recipeSet).append(" <=");
+                    .append(" extra=").append(recipe.extra).append(" set=").append(recipe.recipeSet).append(" <=");
             for (var in : recipe.input) line.append(' ').append(in == null ? "-" : in.id() + "x" + in.count());
             lines.add(line.toString());
         }
@@ -422,10 +393,8 @@ public final class ItemRecipeTableGameTests {
         SolderingRecipes.register();
         List<String> lines = new ArrayList<>();
         for (var recipe : SolderingRecipes.recipes) {
-            lines.add(stack(recipe.output) + " d=" + recipe.duration + " p=" + recipe.consumption + " f=" + fluid(
-                    recipe.fluid)
-                    + " top=" + stacks(recipe.toppings) + " pcb=" + stacks(recipe.pcb) + " solder=" + stacks(
-                    recipe.solder));
+            lines.add(stack(recipe.output) + " d=" + recipe.duration + " p=" + recipe.consumption + " f=" + fluid(recipe.fluid)
+                    + " top=" + stacks(recipe.toppings) + " pcb=" + stacks(recipe.pcb) + " solder=" + stacks(recipe.solder));
         }
         lines.add("toppings " + sortedStacks(SolderingRecipes.toppings));
         lines.add("pcb " + sortedStacks(SolderingRecipes.pcb));
@@ -453,7 +422,7 @@ public final class ItemRecipeTableGameTests {
         List<String> lines = new ArrayList<>();
         for (var recipe : AnvilRecipes.getConstruction()) {
             StringBuilder line = new StringBuilder("t=").append(recipe.tierLower).append("..").append(recipe.tierUpper)
-                                                        .append(' ').append(recipe.getOverlay()).append(" in=");
+                    .append(' ').append(recipe.getOverlay()).append(" in=");
             for (AStack in : recipe.input) line.append(stack(in)).append(',');
             line.append(" out=");
             for (var out : recipe.output) line.append(stack(out.stack)).append('%').append(out.chance).append(',');
@@ -482,25 +451,18 @@ public final class ItemRecipeTableGameTests {
         }
         for (var entry : MachineDataMaps.CUSTOM_NUKE_CELL.byId().entrySet()) {
             var value = entry.getValue();
-            lines.add("cell " + fluidKey(entry.getKey()) + " => " + value.type()
-                                                                         .name() + " " + value.op() + " " + value.value());
+            lines.add("cell " + fluidKey(entry.getKey()) + " => " + value.type().name() + " " + value.op() + " " + value.value());
         }
         lines.sort(null);
         return lines;
     }
 
-    /**
-     * An HBM fluid's key ({@code deuterium}) from its vanilla fluid id ({@code hbm:deuterium}).
-     */
+    /** An HBM fluid's key ({@code deuterium}) from its vanilla fluid id ({@code hbm:deuterium}). */
     static String fluidKey(String vanillaId) {
-        return com.hbm.inventory.fluid.Fluids.fromVanilla(BuiltInRegistries.FLUID.getOptional(Ids.parse(vanillaId))
-                                                                                 .orElse(net.minecraft.world.level.material.Fluids.EMPTY))
-                                             .getKey();
+        return com.hbm.inventory.fluid.Fluids.fromVanilla(BuiltInRegistries.FLUID.getOptional(Ids.parse(vanillaId)).orElse(net.minecraft.world.level.material.Fluids.EMPTY)).getKey();
     }
 
-    /**
-     * The annihilator's milestones exist in 528 mode only; read with the mode on.
-     */
+    /** The annihilator's milestones exist in 528 mode only; read with the mode on. */
     static List<String> annihilator528() {
         List<String> lines = new ArrayList<>();
         for (var entry : AnnihilatorRecipes.recipes().entrySet()) {
@@ -508,8 +470,7 @@ public final class ItemRecipeTableGameTests {
             String name = key instanceof Item item ? id(item)
                     : key instanceof FluidType fluid ? "fluid:" + fluid.getKey() : "#" + key;
             StringBuilder line = new StringBuilder(name).append(" =>");
-            for (var milestone : entry.getValue().milestones)
-                line.append(' ').append(milestone.amount()).append(':').append(stack(milestone.payout()));
+            for (var milestone : entry.getValue().milestones) line.append(' ').append(milestone.amount()).append(':').append(stack(milestone.payout()));
             lines.add(line.toString());
         }
         lines.sort(null);
@@ -518,9 +479,7 @@ public final class ItemRecipeTableGameTests {
 
     // Describing stacks
 
-    /**
-     * The item's id as 26.1 spells it (1.20.1's {@code grass} is {@code short_grass}), so the lines read the same on every node.
-     */
+    /** The item's id as 26.1 spells it (1.20.1's {@code grass} is {@code short_grass}), so the lines read the same on every node. */
     static String id(Item item) {
         return Ids.canonicalItemId(String.valueOf(BuiltInRegistries.ITEM.getKey(item)));
     }
@@ -549,8 +508,7 @@ public final class ItemRecipeTableGameTests {
             if (comparable.exactData() || comparable instanceof RecipeIngredients.Exact) {
                 ItemStack display = comparable.getDisplayStack();
                 base += "!exact";
-                if (!ItemStacks.sameItemAndData(display, new ItemStack(display.getItem(), display.getCount())))
-                    base += data(display);
+                if (!ItemStacks.sameItemAndData(display, new ItemStack(display.getItem(), display.getCount()))) base += data(display);
             }
         } else if (stack instanceof MaterialStack material) {
             base = "mat:" + material.material.name + "/" + material.shape;
@@ -589,7 +547,7 @@ public final class ItemRecipeTableGameTests {
     static String sha256(List<String> lines) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")
-                                         .digest(String.join("\n", lines).getBytes(StandardCharsets.UTF_8));
+                    .digest(String.join("\n", lines).getBytes(StandardCharsets.UTF_8));
             StringBuilder hex = new StringBuilder();
             for (byte b : digest) hex.append(String.format("%02x", b));
             return hex.toString();

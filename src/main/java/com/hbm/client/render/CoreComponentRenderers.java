@@ -31,12 +31,9 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class CoreComponentRenderers {
 
-    private CoreComponentRenderers() {
-    }
+    private CoreComponentRenderers() {}
 
-    /**
-     * Shared body-placement and long-range visibility; subclasses add their own beam.
-     */
+    /** Shared body-placement and long-range visibility; subclasses add their own beam. */
     public abstract static class Base<T extends BlockEntity> extends GemBER<T, CoreComponentRenderState> {
 
         private final WavefrontObj model;
@@ -47,10 +44,7 @@ public final class CoreComponentRenderers {
             this.surface = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/" + texture + ".png");
         }
 
-        @Override
-        public CoreComponentRenderState createRenderState() {
-            return new CoreComponentRenderState();
-        }
+        @Override public CoreComponentRenderState createRenderState() { return new CoreComponentRenderState(); }
 
         /**
          * The emitter's beam reaches fifty blocks, so the machine has to stay visible from well outside
@@ -59,13 +53,13 @@ public final class CoreComponentRenderers {
         @Override
         protected void setup(Gem.Model<CoreComponentRenderState> declaration) {
             declaration.offScreen().viewDistance(256)
-                       .part(model.all(), surface)
-                       .translate(0.5F, 0F, 0.5F)
-                       .rotate(Gem.Axes.Y, 90F)
-                       .slide(Gem.Axes.Y, state -> aimUp(state.facing))
-                       .slide(Gem.Axes.Z, state -> aimForward(state.facing))
-                       .angle(Gem.Axes.X, state -> aimPitch(state.facing))
-                       .angle(Gem.Axes.Y, state -> aimYaw(state.facing));
+                    .part(model.all(), surface)
+                    .translate(0.5F, 0F, 0.5F)
+                    .rotate(Gem.Axes.Y, 90F)
+                    .slide(Gem.Axes.Y, state -> aimUp(state.facing))
+                    .slide(Gem.Axes.Z, state -> aimForward(state.facing))
+                    .angle(Gem.Axes.X, state -> aimPitch(state.facing))
+                    .angle(Gem.Axes.Y, state -> aimYaw(state.facing));
         }
 
         @Override
@@ -78,9 +72,7 @@ public final class CoreComponentRenderers {
 
         protected abstract void extractBeam(T be, CoreComponentRenderState state);
 
-        /**
-         * A beam is sized to where it lands and has no resident mesh, so it is drawn rather than declared.
-         */
+        /** A beam is sized to where it lands and has no resident mesh, so it is drawn rather than declared. */
         @Override
         protected void submitUndeclared(CoreComponentRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
             if (s.beam <= 0) return;
@@ -91,8 +83,7 @@ public final class CoreComponentRenderers {
             ps.popPose();
         }
 
-        protected void submitBeam(CoreComponentRenderState s, PoseStack ps, SubmitSink col) {
-        }
+        protected void submitBeam(CoreComponentRenderState s, PoseStack ps, SubmitSink col) {}
 
         /**
          * Upstream's placement, transliterated: a quarter turn about Y, then the facing's own turn, with
@@ -112,19 +103,11 @@ public final class CoreComponentRenderers {
         }
 
         private static float aimForward(Direction facing) {
-            return switch (facing) {
-                case DOWN -> -0.5F;
-                case UP -> 0.5F;
-                default -> 0F;
-            };
+            return switch (facing) { case DOWN -> -0.5F; case UP -> 0.5F; default -> 0F; };
         }
 
         private static float aimPitch(Direction facing) {
-            return switch (facing) {
-                case DOWN -> 90F;
-                case UP -> -90F;
-                default -> 0F;
-            };
+            return switch (facing) { case DOWN -> 90F; case UP -> -90F; default -> 0F; };
         }
 
         private static float aimYaw(Direction facing) {
@@ -137,9 +120,7 @@ public final class CoreComponentRenderers {
         }
     }
 
-    /**
-     * The emitter, whose beam thickens with the energy it last pushed.
-     */
+    /** The emitter, whose beam thickens with the energy it last pushed. */
     public static final class Emitter extends Base<TileEntityCoreEmitter> {
 
         public Emitter() {
@@ -166,9 +147,7 @@ public final class CoreComponentRenderers {
         }
     }
 
-    /**
-     * The stabiliser, whose field beam is a straight core wrapped in two counter-rotating spirals.
-     */
+    /** The stabiliser, whose field beam is a straight core wrapped in two counter-rotating spirals. */
     public static final class Stabilizer extends Base<TileEntityCoreStabilizer> {
 
         public Stabilizer() {
@@ -193,9 +172,7 @@ public final class CoreComponentRenderers {
         }
     }
 
-    /**
-     * The injector, which draws one spiral per fuel it is actually carrying, in that fuel's colour.
-     */
+    /** The injector, which draws one spiral per fuel it is actually carrying, in that fuel's colour. */
     public static final class Injector extends Base<TileEntityCoreInjector> {
 
         public Injector() {
@@ -224,9 +201,7 @@ public final class CoreComponentRenderers {
         }
     }
 
-    /**
-     * The receiver, which only ever draws its body.
-     */
+    /** The receiver, which only ever draws its body. */
     public static final class Receiver extends Base<TileEntityCoreReceiver> {
 
         public Receiver() {

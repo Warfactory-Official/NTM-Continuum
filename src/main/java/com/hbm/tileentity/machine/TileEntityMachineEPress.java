@@ -15,10 +15,8 @@ import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.world.ItemStacks;
-
 import java.util.HashMap;
 import java.util.List;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -62,9 +60,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     public static final long maxPower = 50000;
 
     public int progress;
-    /**
-     * Client-only: last tick's stroke, so the head glides between packets the way 1.7 interpolates it.
-     */
+    /** Client-only: last tick's stroke, so the head glides between packets the way 1.7 interpolates it. */
     public int lastProgress;
     public static final int maxProgress = 200;
     public static final int STAMP_SPEED = 45;
@@ -73,9 +69,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
 
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
 
-    /**
-     * Client-only: the ingredient (slot 2) being pressed, for the floating-item render above the head.
-     */
+    /** Client-only: the ingredient (slot 2) being pressed, for the floating-item render above the head. */
     @Nullable
     public ItemStack syncStack;
 
@@ -93,12 +87,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     }
 
     protected PortDef[] cachedPorts;
-
-    public PortDef[] getPorts() {
-        if (cachedPorts == null)
-            cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
-        return cachedPorts;
-    }
+    public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineEPress te) {
         te.setupPowerPorts(te.getPorts());
@@ -182,9 +171,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         return switch (i) {
             case SLOT_BATTERY -> Library.isBattery(stack);
             case SLOT_STAMP -> stack.getItem() instanceof ItemStamp;
-            case SLOT_INPUT ->
-                    !(stack.getItem() instanceof ItemStamp) && !Library.isBattery(stack) && !Library.isMachineUpgrade(
-                            stack);
+            case SLOT_INPUT -> !(stack.getItem() instanceof ItemStamp) && !Library.isBattery(stack) && !Library.isMachineUpgrade(stack);
             case 4 -> Library.isMachineUpgrade(stack); // upgrade slot (any type, like SlotUpgrade)
             default -> false; // case 3 output
         };
@@ -236,28 +223,12 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
 
     // IEnergyReceiverMK2
 
-    @Override
-    public long getPower() {
-        return power;
-    }
+    @Override public long getPower() { return power; }
+    @Override public void setPower(long power) { this.power = power; }
+    @Override public long getMaxPower() { return maxPower; }
 
-    @Override
-    public void setPower(long power) {
-        this.power = power;
-    }
-
-    @Override
-    public long getMaxPower() {
-        return maxPower;
-    }
-
-    public long getPowerScaled(int i) {
-        return (power * i) / maxPower;
-    }
-
-    public int getProgressScaled(int i) {
-        return (progress * i) / maxProgress;
-    }
+    public long getPowerScaled(int i) { return (power * i) / maxPower; }
+    public int getProgressScaled(int i) { return (progress * i) / maxProgress; }
 
     // MenuProvider
 

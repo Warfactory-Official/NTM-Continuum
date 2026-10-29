@@ -18,7 +18,6 @@ import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.ItemStacks;
 
 import java.util.function.Function;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,7 +37,7 @@ import java.util.List;
  * Each drink's effects, its can or bottle and its ring pull or cap are its {@code hbm:consumable_treatment}.
  */
 public final class ItemEnergy extends CompatItem implements ConsumableTreatments.Handled {
-    public enum Container {NONE, CAN, BOTTLE}
+    public enum Container { NONE, CAN, BOTTLE }
 
     private final String id;
     private final Container container;
@@ -67,9 +66,7 @@ public final class ItemEnergy extends CompatItem implements ConsumableTreatments
         return InteractionResult.CONSUME;
     }
 
-    /**
-     * Effects, the can or bottle and its ring pull or cap are the treatment; the chocolate milk's blast is not data.
-     */
+    /** Effects, the can or bottle and its ring pull or cap are the treatment; the chocolate milk's blast is not data. */
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         if (!(level instanceof ServerLevel server) || !(entity instanceof Player player)) return stack;
@@ -111,9 +108,7 @@ public final class ItemEnergy extends CompatItem implements ConsumableTreatments
         return false;
     }
 
-    /**
-     * 1.7: "Totally not made from nitroglycerine." A size-50 blast at chest height that drops nothing.
-     */
+    /** 1.7: "Totally not made from nitroglycerine." A size-50 blast at chest height that drops nothing. */
     private static void blast(ServerLevel level, Player player) {
         double y = player.getY() + player.getBbHeight() / 2;
         ExplosionCreator.composeEffectStandard(level, player.getX(), y, player.getZ());
@@ -133,27 +128,22 @@ public final class ItemEnergy extends CompatItem implements ConsumableTreatments
             case "can_creature" -> tooltip.add(Component.literal("Basically gasoline in a tin can"));
             case "can_redbomb" -> tooltip.add(Component.literal("Liquefied explosives"));
             case "can_mrsugar" -> tooltip.add(Component.literal("An intellectual drink, for the chosen ones!"));
-            case "can_overcharge" -> tooltip.add(
-                    Component.literal("Possible side effects include heart attacks, seizures or zombification"));
-            case "can_luna" ->
-                    tooltip.add(Component.literal("Contains actual selenium and star metal. Tastes like night."));
+            case "can_overcharge" -> tooltip.add(Component.literal("Possible side effects include heart attacks, seizures or zombification"));
+            case "can_luna" -> tooltip.add(Component.literal("Contains actual selenium and star metal. Tastes like night."));
             case "can_bepis" -> tooltip.add(Component.literal("beppp"));
-            case "can_breen" -> tooltip.add(
-                    Component.literal("Don't drink the water. They put something in it, to make you forget."));
+            case "can_breen" -> tooltip.add(Component.literal("Don't drink the water. They put something in it, to make you forget."));
             case "chocolate_milk" -> {
                 tooltip.add(Component.literal("Regular chocolate milk. Safe to drink."));
                 tooltip.add(Component.literal("Totally not made from nitroglycerine."));
             }
             case "bottle_nuka" -> tooltip.add(Component.literal("Contains about 210 kcal and 1500 mSv."));
-            case "bottle_cherry" ->
-                    tooltip.add(Component.literal("Now with severe radiation poisoning in every seventh bottle!"));
+            case "bottle_cherry" -> tooltip.add(Component.literal("Now with severe radiation poisoning in every seventh bottle!"));
             case "bottle_quantum" -> tooltip.add(Component.literal("Comes with a colorful mix of over 70 isotopes!"));
             case "bottle2_korl" -> tooltip.add(Component.literal("Contains actual orange juice!"));
             case "bottle2_fritz" -> tooltip.add(Component.literal("moremore caffeine"));
             case "bottle_sparkle" -> tooltip.add(Component.literal("The most delicious beverage in the wasteland!"));
             case "bottle_rad" -> tooltip.add(Component.literal("Tastes like radish and radiation."));
-            default -> {
-            }
+            default -> { }
         }
         if (container == Container.BOTTLE) tooltip.add(Component.literal("[Requires bottle opener]"));
     }

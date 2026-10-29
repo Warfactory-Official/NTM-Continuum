@@ -33,16 +33,13 @@ import net.minecraft.world.level.block.Blocks;
 
 /**
  * 1.7 X5846's network blocks: the flow control pump's per-tick limit, the network separator's limit and log, the
- * deprecated pump as a plain conductor, the directional diode, the anchors of all three networks and the counter valve's count.
+ * deprecated pump and diode as plain conductors, the anchors of all three networks and the counter valve's count.
  */
 public final class NetworkBlockGameTests {
 
-    private NetworkBlockGameTests() {
-    }
+    private NetworkBlockGameTests() {}
 
-    /**
-     * Ports are built on the first ticks and a round needs a tick more; a window then runs at full rate.
-     */
+    /** Ports are built on the first ticks and a round needs a tick more; a window then runs at full rate. */
     private static final int WARM = 20;
     private static final int WINDOW = 20;
 
@@ -66,8 +63,7 @@ public final class NetworkBlockGameTests {
             helper.runAfterDelay(WINDOW, () -> {
                 int moved = sink.tank.getFill() - s0;
                 // other tests may run extra rounds in the same tick; each round still moves exactly one buffer
-                helper.assertTrue(moved >= 100 * WINDOW && moved % 100 == 0,
-                        "100 mB per round for " + WINDOW + " ticks, moved " + moved);
+                helper.assertTrue(moved >= 100 * WINDOW && moved % 100 == 0, "100 mB per round for " + WINDOW + " ticks, moved " + moved);
                 CompoundTag control = new CompoundTag();
                 control.putInt("capacity", 250);
                 pump.receiveControl(control);
@@ -75,8 +71,7 @@ public final class NetworkBlockGameTests {
                     int s2 = sink.tank.getFill();
                     helper.runAfterDelay(WINDOW, () -> {
                         int fast = sink.tank.getFill() - s2;
-                        helper.assertTrue(fast >= 250 * WINDOW && fast % 250 == 0,
-                                "250 mB per round for " + WINDOW + " ticks, moved " + fast);
+                        helper.assertTrue(fast >= 250 * WINDOW && fast % 250 == 0, "250 mB per round for " + WINDOW + " ticks, moved " + fast);
                         helper.setBlock(core.north(), Blocks.REDSTONE_BLOCK);
                         helper.runAfterDelay(5, () -> {
                             int s4 = sink.tank.getFill();
@@ -104,19 +99,16 @@ public final class NetworkBlockGameTests {
         BlockPos core = new BlockPos(6, 1, 6);
         FoldedTestSupport.assemble(helper, ModEnergyNetBlocks.network_separator.get(), core);
         TileEntityNetworkSeparator sep = GameTestHelpers.blockEntity(helper, core, TileEntityNetworkSeparator.class);
-        TileEntityMachineBattery source = battery(level, helper.absolutePos(core.east(2)),
-                TileEntityMachineBattery.MODE_OUTPUT,
+        TileEntityMachineBattery source = battery(level, helper.absolutePos(core.east(2)), TileEntityMachineBattery.MODE_OUTPUT,
                 TileEntityMachineBattery.MAX_POWER);
-        TileEntityMachineBattery sink = battery(level, helper.absolutePos(core.west(2)),
-                TileEntityMachineBattery.MODE_INPUT, 0L);
+        TileEntityMachineBattery sink = battery(level, helper.absolutePos(core.west(2)), TileEntityMachineBattery.MODE_INPUT, 0L);
 
         helper.runAfterDelay(WARM + WINDOW, () -> {
             helper.assertTrue(sep.deltaTick[19] == 1_000 && sep.deltaSecond == 20_000,
                     "1,000 HE/t: logged " + sep.deltaTick[19] + " HE/t and " + sep.deltaSecond + " HE/s");
             long s0 = sink.power;
             helper.runAfterDelay(WINDOW, () -> {
-                helper.assertTrue(sink.power - s0 == 20_000,
-                        "the sink gained " + (sink.power - s0) + " HE in 20 ticks");
+                helper.assertTrue(sink.power - s0 == 20_000, "the sink gained " + (sink.power - s0) + " HE in 20 ticks");
                 helper.assertTrue(source.power < TileEntityMachineBattery.MAX_POWER, "the source paid for it");
                 sep.runRORFunction("FUN:setlimit", new String[]{"250"});
                 sep.runRORFunction("FUN:setpriority", new String[]{"2"});
@@ -138,49 +130,34 @@ public final class NetworkBlockGameTests {
         });
     }
 
-    /**
-     * The deprecated pump is a passthrough: both barrels share one net, so far more than 100 mB/t passes.
-     */
+    /** The deprecated pump is a passthrough: both barrels share one net, so far more than 100 mB/t passes. */
     public static void deprecatedPump(GameTestHelper helper) {
         BlockPos pos = new BlockPos(4, 1, 4);
-        helper.setBlock(pos,
-                ModFluidNetBlocks.fluid_pump.get().defaultBlockState().setValue(FluidPump.FACING, Direction.NORTH));
+        helper.setBlock(pos, ModFluidNetBlocks.fluid_pump.get().defaultBlockState().setValue(FluidPump.FACING, Direction.NORTH));
         TileEntityFluidPump pump = GameTestHelpers.blockEntity(helper, pos, TileEntityFluidPump.class);
         pump.tank[0].setTankType(Fluids.WATER);
         TileEntityBarrel sink = barrel(helper, pos.west(), 0, 0);
         barrel(helper, pos.east(), 2, 16_000);
         helper.runAfterDelay(WARM, () -> {
-            helper.assertTrue(sink.tank.getFill() > 100 * WARM,
-                    "a limiter would allow 2,000 mB, the pipe moved " + sink.tank.getFill());
+            helper.assertTrue(sink.tank.getFill() > 100 * WARM, "a limiter would allow 2,000 mB, the pipe moved " + sink.tank.getFill());
             helper.succeed();
         });
     }
 
-    /**
-     * A cable net feeds the five input faces; reversing the diode blocks return flow through its output face.
-     */
+    /** The deprecated diode is a plain cable: power crosses it either way round. */
     public static void deprecatedDiode(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        TileEntityMachineBattery[] sources = new TileEntityMachineBattery[2];
         TileEntityMachineBattery[] sinks = new TileEntityMachineBattery[2];
         Direction[] facings = {Direction.EAST, Direction.WEST};
         for (int i = 0; i < 2; i++) {
             BlockPos diode = new BlockPos(4, 1, 2 + 3 * i);
-            helper.setBlock(diode,
-                    ModEnergyNetBlocks.cable_diode.get().defaultBlockState().setValue(CableDiode.FACING, facings[i]));
-            helper.setBlock(diode.east(), ModEnergyNetBlocks.red_cable_classic.get().defaultBlockState());
-            helper.setBlock(diode.west(), ModEnergyNetBlocks.red_cable_classic.get().defaultBlockState());
-            sources[i] = battery(level, helper.absolutePos(diode.east(2)), TileEntityMachineBattery.MODE_OUTPUT,
-                    TileEntityMachineBattery.MAX_POWER);
-            sinks[i] = battery(level, helper.absolutePos(diode.west(2)), TileEntityMachineBattery.MODE_INPUT, 0L);
+            helper.setBlock(diode, ModEnergyNetBlocks.cable_diode.get().defaultBlockState().setValue(CableDiode.FACING, facings[i]));
+            battery(level, helper.absolutePos(diode.east()), TileEntityMachineBattery.MODE_OUTPUT, TileEntityMachineBattery.MAX_POWER);
+            sinks[i] = battery(level, helper.absolutePos(diode.west()), TileEntityMachineBattery.MODE_INPUT, 0L);
         }
         helper.runAfterDelay(WARM, () -> {
-            helper.assertTrue(sinks[0].power > 0 && sinks[1].power == 0,
-                    "power must cross forward and refuse reverse flow: " + sinks[0].power + ", " + sinks[1].power);
-            helper.assertTrue(sinks[0].power <= TileEntityMachineBattery.MAX_POWER - sources[0].power,
-                    "the diode delivered more power than its source supplied");
-            helper.assertTrue(sources[1].power == TileEntityMachineBattery.MAX_POWER,
-                    "the reverse-facing diode drained its source");
+            helper.assertTrue(sinks[0].power > 0 && sinks[1].power > 0,
+                    "power crosses a diode facing either way: " + sinks[0].power + ", " + sinks[1].power);
             helper.succeed();
         });
     }
@@ -196,30 +173,20 @@ public final class NetworkBlockGameTests {
         BlockPos pnA = new BlockPos(1, 2, 7), pnB = new BlockPos(7, 2, 7);
         helper.setBlock(fluidPos, ModFluidNetBlocks.pipe_anchor.get().defaultBlockState());
         for (BlockPos p : new BlockPos[]{exA, exB}) {
-            helper.setBlock(p, ModFluidNetBlocks.pipe_anchor_exhaust.get().defaultBlockState()
-                                                                    .setValue(BasePipeAnchor.FACING, Direction.UP));
+            helper.setBlock(p, ModFluidNetBlocks.pipe_anchor_exhaust.get().defaultBlockState().setValue(BasePipeAnchor.FACING, Direction.UP));
         }
         for (BlockPos p : new BlockPos[]{pnA, pnB}) {
-            helper.setBlock(p, ModPneumaticBlocks.PIPE_ANCHOR_PNEUMATIC.get().defaultBlockState()
-                                                                       .setValue(BasePipeAnchor.FACING, Direction.UP));
+            helper.setBlock(p, ModPneumaticBlocks.PIPE_ANCHOR_PNEUMATIC.get().defaultBlockState().setValue(BasePipeAnchor.FACING, Direction.UP));
         }
-        TileEntityFluidPipeAnchor fluid = GameTestHelpers.blockEntity(helper, fluidPos,
-                TileEntityFluidPipeAnchor.class);
-        TileEntityPipeExhaustAnchor exhaustA = GameTestHelpers.blockEntity(helper, exA,
-                TileEntityPipeExhaustAnchor.class);
-        TileEntityPipeExhaustAnchor exhaustB = GameTestHelpers.blockEntity(helper, exB,
-                TileEntityPipeExhaustAnchor.class);
-        TileEntityPneumaticPipeAnchor pneuA = GameTestHelpers.blockEntity(helper, pnA,
-                TileEntityPneumaticPipeAnchor.class);
-        TileEntityPneumaticPipeAnchor pneuB = GameTestHelpers.blockEntity(helper, pnB,
-                TileEntityPneumaticPipeAnchor.class);
+        TileEntityFluidPipeAnchor fluid = GameTestHelpers.blockEntity(helper, fluidPos, TileEntityFluidPipeAnchor.class);
+        TileEntityPipeExhaustAnchor exhaustA = GameTestHelpers.blockEntity(helper, exA, TileEntityPipeExhaustAnchor.class);
+        TileEntityPipeExhaustAnchor exhaustB = GameTestHelpers.blockEntity(helper, exB, TileEntityPipeExhaustAnchor.class);
+        TileEntityPneumaticPipeAnchor pneuA = GameTestHelpers.blockEntity(helper, pnA, TileEntityPneumaticPipeAnchor.class);
+        TileEntityPneumaticPipeAnchor pneuB = GameTestHelpers.blockEntity(helper, pnB, TileEntityPneumaticPipeAnchor.class);
 
-        helper.assertTrue(TileEntityPipelineBase.canConnect(fluid, exhaustA) == 1,
-                "a fluid anchor does not link to an exhaust anchor");
-        helper.assertTrue(TileEntityPipelineBase.canConnect(exhaustA, pneuA) == 1,
-                "an exhaust anchor does not link to a pneumatic one");
-        helper.assertTrue(TileEntityPipelineBase.canConnect(exhaustA, exhaustB) == 0,
-                "two exhaust anchors 6 m apart link");
+        helper.assertTrue(TileEntityPipelineBase.canConnect(fluid, exhaustA) == 1, "a fluid anchor does not link to an exhaust anchor");
+        helper.assertTrue(TileEntityPipelineBase.canConnect(exhaustA, pneuA) == 1, "an exhaust anchor does not link to a pneumatic one");
+        helper.assertTrue(TileEntityPipelineBase.canConnect(exhaustA, exhaustB) == 0, "two exhaust anchors 6 m apart link");
         helper.assertTrue(TileEntityPipelineBase.canConnect(pneuA, pneuB) == 0, "two pneumatic anchors 6 m apart link");
 
         ForgeDirection down = ForgeDirection.DOWN;
@@ -240,19 +207,15 @@ public final class NetworkBlockGameTests {
                 "the pneumatic pipeline joins the two anchors' nets");
 
         level.removeBlock(pneuB.getBlockPos(), false);
-        helper.assertTrue(pneuA.getConnected().isEmpty(),
-                "breaking a pneumatic anchor tears it out of its peer's list");
+        helper.assertTrue(pneuA.getConnected().isEmpty(), "breaking a pneumatic anchor tears it out of its peer's list");
         helper.succeed();
     }
 
-    /**
-     * Every mB that crossed the open valve is on its counter, the closing tick too.
-     */
+    /** Every mB that crossed the open valve is on its counter, the closing tick too. */
     public static void counterValve(GameTestHelper helper) {
         BlockPos valvePos = new BlockPos(4, 1, 4);
         helper.setBlock(valvePos, ModFluidNetBlocks.fluid_counter_valve.get().defaultBlockState());
-        TileEntityFluidCounterValve valve = GameTestHelpers.blockEntity(helper, valvePos,
-                TileEntityFluidCounterValve.class);
+        TileEntityFluidCounterValve valve = GameTestHelpers.blockEntity(helper, valvePos, TileEntityFluidCounterValve.class);
         valve.setFluidType(Fluids.WATER);
         valve.setState(1);
         barrel(helper, valvePos.east(), 2, 16_000);
@@ -270,17 +233,14 @@ public final class NetworkBlockGameTests {
         });
     }
 
-    /**
-     * A steel barrel given a highly corrosive fluid becomes a corroded barrel holding the same fluid.
-     */
+    /** A steel barrel given a highly corrosive fluid becomes a corroded barrel holding the same fluid. */
     public static void steelBarrelCorrodes(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 2);
         TileEntityBarrel barrel = barrel(helper, pos, 0, 0);
         barrel.tank.setTankType(Fluids.SCHRABIDIC);
         barrel.tank.setFill(4_000);
         helper.runAfterDelay(2, () -> {
-            helper.assertTrue(helper.getBlockState(pos).is(ModFluidNetBlocks.barrel_corroded.get()),
-                    "the steel barrel corroded");
+            helper.assertTrue(helper.getBlockState(pos).is(ModFluidNetBlocks.barrel_corroded.get()), "the steel barrel corroded");
             TileEntityBarrel corroded = GameTestHelpers.blockEntity(helper, pos, TileEntityBarrel.class);
             helper.assertTrue(corroded.tank.getTankType() == Fluids.SCHRABIDIC && corroded.tank.getMaxFill() == 16_000
                             && corroded.tank.getFill() <= 4_000 && corroded.tank.getFill() >= 3_990,
@@ -289,14 +249,11 @@ public final class NetworkBlockGameTests {
         });
     }
 
-    /**
-     * A battery at one of the catalytic reformer's six ports charges it.
-     */
+    /** A battery at one of the catalytic reformer's six ports charges it. */
     public static void reformerPower(GameTestHelper helper) {
         BlockPos core = new BlockPos(5, 1, 5);
         FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_catalytic_reformer.get(), core);
-        TileEntityMachineCatalyticReformer reformer = GameTestHelpers.blockEntity(helper, core,
-                TileEntityMachineCatalyticReformer.class);
+        TileEntityMachineCatalyticReformer reformer = GameTestHelpers.blockEntity(helper, core, TileEntityMachineCatalyticReformer.class);
         // facing north, the first port sits at core + north + east and connects north
         battery(helper.getLevel(), helper.absolutePos(core.north(2).east()), TileEntityMachineBattery.MODE_OUTPUT,
                 TileEntityMachineBattery.MAX_POWER);

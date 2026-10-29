@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import dev.golem.harness.api.Client;
 import dev.golem.harness.api.Expect;
 import dev.golem.harness.api.Scenario;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
@@ -79,10 +78,7 @@ public final class ItemIconAudit implements Scenario {
     }
 
     private static final String NAMESPACE = namespace();
-
-    /**
-     * The label regex from {@code ICON_AUDIT_ITEMS} / {@code ICON_AUDIT_FILTER}; empty = every stack.
-     */
+    /** The label regex from {@code ICON_AUDIT_ITEMS} / {@code ICON_AUDIT_FILTER}; empty = every stack. */
     private static final String FILTER = filter();
 
     private static String namespace() {

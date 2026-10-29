@@ -7,9 +7,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
-
 import java.util.Optional;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -21,17 +19,13 @@ import net.minecraft.sounds.SoundEvents;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Small client-GUI helpers shared by HBM screens (e.g. the energy-bar hover tooltip).
- */
+/** Small client-GUI helpers shared by HBM screens (e.g. the energy-bar hover tooltip). */
 public final class GuiUtil {
 
-    private GuiUtil() {
-    }
+    private GuiUtil() {}
 
     /**
      * The rotating needle from 1.12.2's {@code GUIElements.drawSmoothGauge}: a dark triangle behind a
@@ -53,9 +47,7 @@ public final class GuiUtil {
         GuiDraw.popMatrix(graphics);
     }
 
-    /**
-     * Supersample factor the needle is rasterised at before the pose scales it back down.
-     */
+    /** Supersample factor the needle is rasterised at before the pose scales it back down. */
     private static final int GAUGE_SUPERSAMPLE = 8;
 
     private static void fillNeedle(GuiGraphicsExtractor graphics, double tipLength, double backLength,
@@ -77,8 +69,7 @@ public final class GuiUtil {
      * {@code <power>/<max>HE} using 1.7's abbreviated numbers ({@link Library#getShortNumber}).
      */
     public static List<Component> energyTooltip(long power, long maxPower) {
-        return List.of(
-                Component.literal(Library.getShortNumber(power) + "/" + Library.getShortNumber(maxPower) + "HE"));
+        return List.of(Component.literal(Library.getShortNumber(power) + "/" + Library.getShortNumber(maxPower) + "HE"));
     }
 
     /**
@@ -91,48 +82,35 @@ public final class GuiUtil {
         if (delta > 0) {
             list.add(Component.literal("+" + Library.getShortNumber(delta) + "HE/s").withStyle(ChatFormatting.GREEN));
         } else if (delta < 0) {
-            list.add(Component.literal("-" + Library.getShortNumber(Math.abs(delta)) + "HE/s")
-                              .withStyle(ChatFormatting.RED));
+            list.add(Component.literal("-" + Library.getShortNumber(Math.abs(delta)) + "HE/s").withStyle(ChatFormatting.RED));
         } else {
             list.add(Component.literal("+0HE/s").withStyle(ChatFormatting.YELLOW)); // 1.7 prefixes "+" at zero too
         }
         return list;
     }
 
-    /**
-     * Plays the legacy master-channel UI click through the shared GUI helper.
-     */
+    /** Plays the legacy master-channel UI click through the shared GUI helper. */
     public static void playClickSound() {
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
-    /**
-     * The exact legacy fluid-tank tooltip: name, fill, optional pressure, then fluid metadata.
-     */
+    /** The exact legacy fluid-tank tooltip: name, fill, optional pressure, then fluid metadata. */
     public static List<Component> tankTooltip(FluidTankNTM tank) {
         return TankDisplay.tooltip(tank, true);
     }
 
-    /**
-     * The shared HBM {@code gui_utility.png} icon sheet (info/warning glyphs), the 1.12.2 {@code GuiInfoContainer.guiUtil}.
-     */
+    /** The shared HBM {@code gui_utility.png} icon sheet (info/warning glyphs), the 1.12.2 {@code GuiInfoContainer.guiUtil}. */
     private static final Identifier GUI_UTILITY = Ids.of("hbm", "textures/gui/gui_utility.png");
 
-    /**
-     * The 8×8 info-panel dimensions + a small-blue-"*" glyph, the hover target for the upgrade panel.
-     */
+    /** The 8×8 info-panel dimensions + a small-blue-"*" glyph, the hover target for the upgrade panel. */
     public static final int INFO_PANEL_SIZE = 8;
 
-    /**
-     * Draws the "small blue *" info‑panel glyph (1.12.2 {@code drawInfoPanel(...,8)}) at screen {@code x,y}.
-     */
+    /** Draws the "small blue *" info‑panel glyph (1.12.2 {@code drawInfoPanel(...,8)}) at screen {@code x,y}. */
     public static void drawUpgradeInfoPanel(GuiGraphicsExtractor graphics, int x, int y) {
         GuiDraw.blit(graphics, GUI_UTILITY, x, y, 0.0F, 32.0F, INFO_PANEL_SIZE, INFO_PANEL_SIZE, 256, 256);
     }
 
-    /**
-     * Draws one of the legacy info/warning glyphs from {@code gui_utility.png}.
-     */
+    /** Draws one of the legacy info/warning glyphs from {@code gui_utility.png}. */
     public static void drawInfoPanel(GuiGraphicsExtractor graphics, int x, int y, int type) {
         int sourceX = switch (type) {
             case 2, 6, 10 -> 8;
@@ -147,16 +125,11 @@ public final class GuiUtil {
             case 9 -> 40;
             default -> 0;
         };
-        int size = switch (type) {
-            case 2, 3, 6, 7, 10, 11 -> 16;
-            default -> 8;
-        }; // 1.7: 8 and 9 are the small 8x8 stars
+        int size = switch (type) { case 2, 3, 6, 7, 10, 11 -> 16; default -> 8; }; // 1.7: 8 and 9 are the small 8x8 stars
         GuiDraw.blit(graphics, GUI_UTILITY, x, y, sourceX, sourceY, size, size, 256, 256);
     }
 
-    /**
-     * The 16×16 "large red !" warning glyph (1.12.2 {@code drawInfoPanel(...,16,16,6)}) at screen {@code x,y}.
-     */
+    /** The 16×16 "large red !" warning glyph (1.12.2 {@code drawInfoPanel(...,16,16,6)}) at screen {@code x,y}. */
     public static void drawWarningPanel(GuiGraphicsExtractor graphics, int x, int y) {
         GuiDraw.blit(graphics, GUI_UTILITY, x, y, 8.0F, 16.0F, 16, 16, 256, 256);
     }
@@ -203,8 +176,7 @@ public final class GuiUtil {
      * fluid texture is tiled upward from the bottom with V wrapping, U spanning {@code width/16}, tinted with
      * {@code getTint()}. Fill height is {@code fluid * height / maxFluid} (integer, as 1.7).
      */
-    public static void tank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int yBottom, int width,
-                            int height) {
+    public static void tank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int yBottom, int width, int height) {
         int max = tank.getMaxFill();
         int i = max <= 0 ? 0 : tank.getFill() * height / max;
         if (i <= 0) return;
@@ -228,8 +200,7 @@ public final class GuiUtil {
      * 1.7 {@code renderTank(..., orientation 1)}: fills from the left edge to {@code fluid * width / maxFluid};
      * {@code yBottom} is still the bottom edge of the {@code height}-tall gauge.
      */
-    public static void tankHorizontal(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int yBottom, int width,
-                                      int height) {
+    public static void tankHorizontal(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int yBottom, int width, int height) {
         int max = tank.getMaxFill();
         int i = max <= 0 ? 0 : tank.getFill() * width / max;
         if (i <= 0) return;
@@ -249,11 +220,8 @@ public final class GuiUtil {
         graphics.disableScissor();
     }
 
-    /**
-     * Shorthand for a plain multi-line tooltip at the mouse.
-     */
-    public static void tooltip(GuiGraphicsExtractor graphics, Font font, List<Component> lines, int mouseX,
-                               int mouseY) {
+    /** Shorthand for a plain multi-line tooltip at the mouse. */
+    public static void tooltip(GuiGraphicsExtractor graphics, Font font, List<Component> lines, int mouseX, int mouseY) {
         GuiDraw.tooltip(graphics, font, lines, Optional.empty(), mouseX, mouseY);
     }
 
@@ -273,10 +241,7 @@ public final class GuiUtil {
             boolean hasStack = false;
             for (Object o : line) {
                 if (o instanceof String s) w += font.width(s);
-                else {
-                    w += 18;
-                    hasStack = true;
-                }
+                else { w += 18; hasStack = true; }
             }
             height += hasStack ? 18 : 10;
             if (w > longest) longest = w;
@@ -370,8 +335,7 @@ public final class GuiUtil {
      * {@code progress × 270°} (clamped to 0..1). 1.7 draws textured triangles out to the region's border; here each
      * row's covered runs (pixel-centre test against the same sector) are blitted as 1-pixel-tall strips.
      */
-    public static void smoothCircle(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int u, int v,
-                                    int w, int h,
+    public static void smoothCircle(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int u, int v, int w, int h,
                                     double progress) {
         progress = Math.max(0D, Math.min(1D, progress));
         double sweep = progress * 270D;
@@ -389,24 +353,19 @@ public final class GuiUtil {
                 }
                 if (in && runStart < 0) runStart = col;
                 if (!in && runStart >= 0) {
-                    GuiDraw.blit(graphics, texture, x + runStart, y + row, (float) (u + runStart), (float) (v + row),
-                            col - runStart, 1, 256, 256);
+                    GuiDraw.blit(graphics, texture, x + runStart, y + row, (float) (u + runStart), (float) (v + row), col - runStart, 1, 256, 256);
                     runStart = -1;
                 }
             }
         }
     }
 
-    /**
-     * 1.7 {@code I18nUtil.resolveKeyArray}: one translation, split on {@code $}.
-     */
+    /** 1.7 {@code I18nUtil.resolveKeyArray}: one translation, split on {@code $}. */
     public static List<Component> keyArray(String key, Object... args) {
         return lines(Component.translatable(key, args).getString().split("\\$"));
     }
 
-    /**
-     * Shorthand for literal lines.
-     */
+    /** Shorthand for literal lines. */
     public static List<Component> lines(String... text) {
         List<Component> out = new ArrayList<>(text.length);
         for (String s : text) out.add(Component.literal(s));

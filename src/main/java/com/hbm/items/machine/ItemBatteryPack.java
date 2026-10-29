@@ -7,9 +7,7 @@ import com.hbm.lib.Library;
 import dev.golem.core.Ids;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
-
 import java.util.List;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -30,17 +28,13 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
 
     public final EnumBatteryPack pack;
 
-    /**
-     * The pack values: the {@code hbm:battery_pack} entry, else HBM's enum constant.
-     */
+    /** The pack values: the {@code hbm:battery_pack} entry, else HBM's enum constant. */
     public ReactorDataMaps.BatteryPack stats() {
         ReactorDataMaps.BatteryPack data = ReactorDataMaps.BATTERY_PACK.get(this);
         return data != null ? data : codeStats();
     }
 
-    /**
-     * The code defaults (constructor or enum values) that the data map entry overrides.
-     */
+    /** The code defaults (constructor or enum values) that the data map entry overrides. */
     public ReactorDataMaps.BatteryPack codeStats() {
         return new ReactorDataMaps.BatteryPack(pack.capacity, pack.chargeRate,
                 pack.dischargeRate, pack.isCapacitor(), pack.texture.toString());
@@ -129,14 +123,10 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
                                          List<Component> tooltip, TooltipFlag flag) {
         long c = getCharge(stack);
         var pack = stats();
-        tooltip.add(Component.literal(
-                                     "Energy stored: " + Library.getShortNumber(c) + "/" + Library.getShortNumber(pack.capacity())
-                                             + "HE (" + (pack.capacity() <= 0 ? 0 : c * 100 / pack.capacity()) + "%)")
-                             .withStyle(ChatFormatting.GREEN));
-        tooltip.add(Component.literal("Charge rate: " + Library.getShortNumber(pack.chargeRate()) + "HE/t")
-                             .withStyle(ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("Discharge rate: " + Library.getShortNumber(pack.dischargeRate()) + "HE/t")
-                             .withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.literal("Energy stored: " + Library.getShortNumber(c) + "/" + Library.getShortNumber(pack.capacity())
+                + "HE (" + (pack.capacity() <= 0 ? 0 : c * 100 / pack.capacity()) + "%)").withStyle(ChatFormatting.GREEN));
+        tooltip.add(Component.literal("Charge rate: " + Library.getShortNumber(pack.chargeRate()) + "HE/t").withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.literal("Discharge rate: " + Library.getShortNumber(pack.dischargeRate()) + "HE/t").withStyle(ChatFormatting.YELLOW));
     }
 
     /**
@@ -160,13 +150,9 @@ public class ItemBatteryPack extends CompatItem implements IBatteryItem {
         CAPACITOR_BISMUTH("capacitor_bismuth", 2_500_000L, true),
         CAPACITOR_SPARK("capacitor_spark", 10_000_000L, true);
 
-        /**
-         * Registry id and texture base name.
-         */
+        /** Registry id and texture base name. */
         public final String name;
-        /**
-         * Model texture {@code textures/models/machines/<name>.png}.
-         */
+        /** Model texture {@code textures/models/machines/<name>.png}. */
         public final Identifier texture;
         public final long capacity;
         public final long chargeRate;

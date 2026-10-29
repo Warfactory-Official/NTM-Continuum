@@ -4,9 +4,7 @@ import com.hbm.handler.JetpackHandler;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.GolemArmorMaterial;
-
 import java.util.List;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
@@ -14,9 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-/**
- * BJ chest variant with the original powered jetpack and sneaking glider behavior.
- */
+/** BJ chest variant with the original powered jetpack and sneaking glider behavior. */
 public class ArmorBJJetpack extends ArmorBJ {
 
     public ArmorBJJetpack(GolemArmorMaterial material, ArmorSlot slot, Properties properties,
@@ -28,9 +24,9 @@ public class ArmorBJJetpack extends ArmorBJ {
     public void addInformation(ItemStack stack, List<Component> tooltip) {
         super.addInformation(stack, tooltip);
         tooltip.add(Component.literal("  + ").append(Component.translatable("armor.electricJetpack"))
-                             .withStyle(ChatFormatting.RED));
+                .withStyle(ChatFormatting.RED));
         tooltip.add(Component.literal("  + ").append(Component.translatable("armor.glider"))
-                             .withStyle(ChatFormatting.GRAY));
+                .withStyle(ChatFormatting.GRAY));
     }
 
     @Override

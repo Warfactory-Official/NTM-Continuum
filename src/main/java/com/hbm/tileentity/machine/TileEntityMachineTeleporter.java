@@ -15,10 +15,8 @@ import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.SubLevels;
 import dev.golem.core.world.Teleports;
-
 import java.util.List;
 import java.util.function.Supplier;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.Registries;
@@ -42,25 +40,18 @@ import org.jspecify.annotations.Nullable;
 public class TileEntityMachineTeleporter extends TileEntityLoadedBase
         implements IEnergyReceiverMK2, IFluidStandardReceiverMK2, IRelocatable {
 
-    private record CrossingFuel(Supplier<FluidType> fluid, int capacity, int cost) {
-    }
-
+    private record CrossingFuel(Supplier<FluidType> fluid, int capacity, int cost) {}
     private static volatile @Nullable CrossingFuel crossingFuel;
     private static final FluidTankNTM[] NO_TANKS = new FluidTankNTM[0];
 
-    /**
-     * Register during mod construction, before any world or block entity exists.
-     */
+    /** Register during mod construction, before any world or block entity exists. */
     public static synchronized void configureCrossingFuel(Supplier<FluidType> fluid, int capacity, int cost) {
         if (crossingFuel != null) throw new IllegalStateException("Teleporter crossing fuel is already configured");
-        if (cost <= 0 || capacity < cost)
-            throw new IllegalArgumentException("Invalid teleporter crossing fuel capacity/cost");
+        if (cost <= 0 || capacity < cost) throw new IllegalArgumentException("Invalid teleporter crossing fuel capacity/cost");
         crossingFuel = new CrossingFuel(fluid, capacity, cost);
     }
 
-    public static boolean hasCrossingFuel() {
-        return crossingFuel != null;
-    }
+    public static boolean hasCrossingFuel() { return crossingFuel != null; }
 
     public long power;
     public @Nullable GlobalPos target;
@@ -74,27 +65,14 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
         super(ModRadarUtilityBlockEntities.TELEPORTER.get(), pos, state);
         var fuel = crossingFuel;
         crossingTank = fuel == null ? null : new FluidTankNTM(fuel.fluid().get(), fuel.capacity());
-        receivingTanks = crossingTank == null ? NO_TANKS : new FluidTankNTM[]{crossingTank};
+        receivingTanks = crossingTank == null ? NO_TANKS : new FluidTankNTM[] {crossingTank};
         crossingCost = fuel == null ? 0 : fuel.cost();
     }
 
-    public @Nullable FluidTankNTM getCrossingTank() {
-        return crossingTank;
-    }
-
-    public int getCrossingCost() {
-        return crossingCost;
-    }
-
-    @Override
-    public FluidTankNTM[] getAllTanks() {
-        return receivingTanks;
-    }
-
-    @Override
-    public FluidTankNTM[] getReceivingTanks() {
-        return receivingTanks;
-    }
+    public @Nullable FluidTankNTM getCrossingTank() { return crossingTank; }
+    public int getCrossingCost() { return crossingCost; }
+    @Override public FluidTankNTM[] getAllTanks() { return receivingTanks; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return receivingTanks; }
 
     @Override
     public long transferFluid(FluidType type, int pressure, long amount) {
@@ -108,9 +86,7 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
         setChanged();
     }
 
-    /**
-     * A carried teleporter follows its destination only when that block was carried too.
-     */
+    /** A carried teleporter follows its destination only when that block was carried too. */
     @Override
     public void relocate(SubLevels.Move move) {
         if (target == null) return;
@@ -118,10 +94,8 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
     }
 
     protected PortDef[] cachedPorts;
-
     public PortDef[] getPorts() {
-        if (cachedPorts == null)
-            cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
+        if (cachedPorts == null) cachedPorts = TilePortShapes.around(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
         return cachedPorts;
     }
 
@@ -148,9 +122,7 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
         }
     }
 
-    public void teleport(Entity entity) {
-        teleport((ServerLevel) level, entity);
-    }
+    public void teleport(Entity entity) { teleport((ServerLevel) level, entity); }
 
     /**
      * Source order: refuse missing target/power, require and debit crossing fuel, then attempt the move and spend HE.
@@ -214,8 +186,16 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
     protected void loadData(DataIn input) {
         super.loadData(input);
         power = input.getLongOr("power", 0L);
-        target = input.read("target", GlobalPos.CODEC).orElse(null);
+        target = input.read("target", GlobalPos.CODEC).orElseGet(() -> legacyTarget(input));
         if (crossingTank != null) crossingTank.readFromNBT(input, "tt");
+    }
+
+    // Saves before the GlobalPos key kept the link as x1/y1/z1/dim, y1 = -1 for unlinked.
+    private static @Nullable GlobalPos legacyTarget(DataIn input) {
+        int y = input.getIntOr("y1", -1);
+        if (y == -1) return null;
+        var dim = ResourceKey.create(Registries.DIMENSION, Ids.parse(input.getStringOr("dim", "minecraft:overworld")));
+        return GlobalPos.of(dim, new BlockPos(input.getIntOr("x1", 0), y, input.getIntOr("z1", 0)));
     }
 
     @Override
@@ -226,18 +206,7 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
         if (crossingTank != null) crossingTank.writeToNBT(output, "tt");
     }
 
-    @Override
-    public void setPower(long amount) {
-        power = amount;
-    }
-
-    @Override
-    public long getPower() {
-        return power;
-    }
-
-    @Override
-    public long getMaxPower() {
-        return maxPower;
-    }
+    @Override public void setPower(long amount) { power = amount; }
+    @Override public long getPower() { return power; }
+    @Override public long getMaxPower() { return maxPower; }
 }

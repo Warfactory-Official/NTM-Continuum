@@ -1,7 +1,5 @@
 package com.hbm.client;
 
-import com.hbm.Constants;
-import dev.golem.core.client.Sounds;
 import com.hbm.api.environment.Environment;
 import net.minecraft.core.BlockPos;
 import com.hbm.particle.RocketFlameColor;
@@ -14,10 +12,8 @@ import com.hbm.entity.mob.EntityTeslaCrab;
 import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.data.Tags;
 import dev.golem.core.render.Particles;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -38,11 +34,8 @@ public final class ClientEffects {
     private ClientEffects() {
     }
 
-    /**
-     * Installs the entity-effect handlers on the shared particle bus. Client only.
-     */
+    /** Installs the entity-effect handlers on the shared particle bus. Client only. */
     public static void install() {
-        Sounds.spatialize(Constants.MOD_ID);
         HbmEffectNT.TeslaArc.setHandler((level, x, y, z, data) -> {
             Entity entity = level.getEntity(Tags.getIntOr(data, "entityID", -1));
             List<Vec3> targets = new ArrayList<>();
@@ -63,9 +56,7 @@ public final class ClientEffects {
                 Tags.getDoubleOr(data, "moZ", 0D), Tags.getFloatOr(data, "scale", GAS_FLAME_DEFAULT_SCALE)));
     }
 
-    /**
-     * 1.7 {@code ParticleUtil.spawnGasFlame} sets no scale; the gasfire handler defaults to 6.5.
-     */
+    /** 1.7 {@code ParticleUtil.spawnGasFlame} sets no scale; the gasfire handler defaults to 6.5. */
     public static final float GAS_FLAME_DEFAULT_SCALE = 6.5F;
 
     public static void spawnGasFlame(Level level, double x, double y, double z,

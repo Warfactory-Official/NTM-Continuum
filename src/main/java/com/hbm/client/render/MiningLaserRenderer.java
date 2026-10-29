@@ -44,27 +44,24 @@ public class MiningLaserRenderer extends GemBER<TileEntityMachineMiningLaser, Mi
     @Override
     protected void setup(Gem.Model<MiningLaserRenderState> declaration) {
         Gem.Part<MiningLaserRenderState> machine = declaration.offScreen().viewDistance(256)
-                                                              .joint()
-                                                              .translate(0.5F, -1F, 0.5F);
+                .joint()
+                .translate(0.5F, -1F, 0.5F);
 
         machine.child(model.part("Base"), base);
         machine.child(model.part("Pivot"), pivot)
-               .angle(Gem.Axes.Y, state -> state.yaw);
+                .angle(Gem.Axes.Y, state -> state.yaw);
         machine.child(model.part("Laser"), barrel)
-               .angle(Gem.Axes.Y, state -> state.yaw)
-               .translate(0F, -1F, 0F)
-               .angle(Gem.Axes.X, state -> -(state.pitch + 90F))
-               .translate(0F, 1F, 0F);
+                .angle(Gem.Axes.Y, state -> state.yaw)
+                .translate(0F, -1F, 0F)
+                .angle(Gem.Axes.X, state -> -(state.pitch + 90F))
+                .translate(0F, 1F, 0F);
     }
 
-    @Override
-    public MiningLaserRenderState createRenderState() {
-        return new MiningLaserRenderState();
-    }
+    @Override public MiningLaserRenderState createRenderState() { return new MiningLaserRenderState(); }
 
     @Override
     public void extract(TileEntityMachineMiningLaser be, MiningLaserRenderState state, float partialTicks,
-                        Vec3 cameraPosition) {
+                                   Vec3 cameraPosition) {
         state.beam = be.beam;
 
         // Interpolate the target while beaming (old RenderLaserMiner lines 36-38); parked aim otherwise
@@ -90,9 +87,7 @@ public class MiningLaserRenderer extends GemBER<TileEntityMachineMiningLaser, Mi
                 Math.atan2(rest.y, Math.sqrt(rest.x * rest.x + rest.z * rest.z)));
     }
 
-    /**
-     * The beam reaches wherever the laser is pointing, so its length is its geometry.
-     */
+    /** The beam reaches wherever the laser is pointing, so its length is its geometry. */
     @Override
     protected void submitUndeclared(MiningLaserRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
         if (!s.beam) return;

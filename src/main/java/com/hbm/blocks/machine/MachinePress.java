@@ -33,9 +33,7 @@ public class MachinePress extends BlockMultiblockMachine implements WorldlyConta
         super(properties);
     }
 
-    /**
-     * Any face of the column routes hoppers/pipes to the core's sided inventory.
-     */
+    /** Any face of the column routes hoppers/pipes to the core's sided inventory. */
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
