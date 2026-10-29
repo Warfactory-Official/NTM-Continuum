@@ -385,7 +385,6 @@
   "block.hbm.machine_wood_burner.desc.2": "Може спалювати рідини з ефективністю 50% зі швидкістю 40mB/s",
   "block.hbm.heater_oilburner": "Спалювач рідини",
   "block.hbm.heater_oilburner.desc.0": "Спалює рідини для отримання тепла.",
-  "block.hbm.heater_oilburner.desc.1": "Можна налаштувати за допомогою викрутки.",
   "block.hbm.launch_pad": "Бункерний стартовий майданчик",
   "block.hbm.machine_assembly_machine": "Збиральна машина",
   "block.hbm.machine_battery": "Блок накопичувач енергії (LEGACY)",

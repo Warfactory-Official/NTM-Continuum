@@ -384,7 +384,6 @@
   "block.hbm.machine_wood_burner.desc.2": "Может сжигать жидкости с эффективностью 50% при расходе 40mB/s",
   "block.hbm.heater_oilburner": "Жидкостный нагреватель",
   "block.hbm.heater_oilburner.desc.0": "Сжигает жидкое топливо для выработки тепла.",
-  "block.hbm.heater_oilburner.desc.1": "Можно настроить с помощью отвёртки.",
   "block.hbm.launch_pad": "Пусковая установка ракетной шахты",
   "block.hbm.machine_assembly_machine": "Сборочная машина",
   "block.hbm.machine_battery_socket": "Аккумуляторный разъем",

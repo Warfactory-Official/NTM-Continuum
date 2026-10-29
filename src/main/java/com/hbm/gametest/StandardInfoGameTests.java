@@ -65,7 +65,7 @@ public final class StandardInfoGameTests {
             Map.entry("heater_electric", 3),
             Map.entry("heater_firebox", 1),
             Map.entry("heater_heatex", 1),
-            Map.entry("heater_oilburner", 2),
+            Map.entry("heater_oilburner", 1), // port: no screwdriver line, 1.7 sets the burn rate in the GUI
             Map.entry("heater_oven", 2),
             Map.entry("machine_ashpit", 1),
             Map.entry("machine_assembly_factory", 5),

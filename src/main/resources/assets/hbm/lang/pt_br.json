@@ -390,7 +390,6 @@
   "block.hbm.machine_wood_burner.desc.2": "Pode queimar fluidos com 50% de eficiência a 40mB/s",
   "block.hbm.heater_oilburner": "Queimador de Fluidos",
   "block.hbm.heater_oilburner.desc.0": "Queima fluidos para produzir calor.",
-  "block.hbm.heater_oilburner.desc.1": "Pode ser configurado com uma chave de fenda.",
   "block.hbm.launch_pad": "Plataforma de Lançamento do Silo",
   "block.hbm.machine_assembly_machine": "Máquina de Montagem",
   "block.hbm.machine_battery": "Bloco de Armazenamento de Energia (LEGADO)",

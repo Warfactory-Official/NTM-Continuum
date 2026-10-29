@@ -330,7 +330,6 @@
   "block.hbm.machine_wood_burner.desc.2": "Kann 40mB/s Flüssigkeiten mit 50% Effizienz verbrennen",
   "block.hbm.heater_oilburner": "Brenner",
   "block.hbm.heater_oilburner.desc.0": "Erzäuft Wärme aus fluiden Brennstoffen.",
-  "block.hbm.heater_oilburner.desc.1": "Kann mit einem Schraubenzeiher konfiguriert werden.",
   "block.hbm.launch_pad": "Silo-Startrampe",
   "block.hbm.machine_assembly_machine": "Montagemaschine",
   "block.hbm.machine_battery": "Energiespeicherblock (LEGACY)",
