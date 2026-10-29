@@ -318,6 +318,8 @@ dependencies {
     // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devRuntime("maven.modrinth:jade:$it") }
+    // Just Enough Characters, dev runs only (`-Pjecharacters.run=true`): pinyin matching in HBM's search bars (Core TextSearch).
+    if (propOrNull("jecharacters.run") == "true") propOrNull("deps.jecharacters")?.let { devRuntime("maven.modrinth:justenoughcharacters:$it") }
     // Applied Energistics 2, dev runs only (`-Pae2.run=true`), through Golem Core's dev.golem.core.autocraft. 1.20.1 only.
     if (propOrNull("ae2.run") == "true") propOrNull("deps.ae2")?.let { devRuntime("maven.modrinth:ae2:$it") }
     // Refined Storage, dev runs only (`-Prefinedstorage.run=true`); it reads HBM's blocks through Fabric's transfer API.

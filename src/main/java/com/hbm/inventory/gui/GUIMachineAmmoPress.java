@@ -11,6 +11,7 @@ import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
+import dev.golem.core.gui.TextSearch;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
@@ -61,7 +62,7 @@ public class GUIMachineAmmoPress extends CompatContainerScreen<ContainerMachineA
         term = term.toLowerCase(Locale.US);
         recipes.clear();
         for (AmmoPressRecipe recipe : AmmoPressRecipes.getRecipes()) {
-            if (term.isEmpty() || recipe.output.getHoverName().getString().toLowerCase(Locale.US).contains(term)) {
+            if (term.isEmpty() || TextSearch.contains(recipe.output.getHoverName().getString().toLowerCase(Locale.US), term)) {
                 recipes.add(recipe);
             }
         }

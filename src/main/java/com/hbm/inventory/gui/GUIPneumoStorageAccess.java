@@ -8,6 +8,7 @@ import com.hbm.packet.PneumoAccessInputPayload;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
+import dev.golem.core.gui.TextSearch;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.ChatFormatting;
@@ -78,10 +79,10 @@ public class GUIPneumoStorageAccess extends PneumaticScreenBase<ContainerPneumoS
         String needle = term.toLowerCase(Locale.US);
 
         return stack -> {
-            if (stack.getHoverName().getString().toLowerCase(Locale.US).contains(needle)) return true;
+            if (TextSearch.contains(stack.getHoverName().getString().toLowerCase(Locale.US), needle)) return true;
             if (!detailedSearch) return false;
             for (Component line : getTooltipFromContainerItem(stack)) {
-                if (line.getString().toLowerCase(Locale.US).contains(needle)) return true;
+                if (TextSearch.contains(line.getString().toLowerCase(Locale.US), needle)) return true;
             }
             return false;
         };

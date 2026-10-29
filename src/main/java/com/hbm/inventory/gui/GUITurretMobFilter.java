@@ -7,6 +7,7 @@ import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
+import dev.golem.core.gui.TextSearch;
 import dev.golem.core.net.GolemNetwork;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -126,7 +127,7 @@ public final class GUITurretMobFilter extends CompatScreen {
         filteredMobList.clear();
         for (String id : mobList) {
             String name = getMobName(id).toLowerCase(Locale.ROOT);
-            if (id.toLowerCase(Locale.ROOT).contains(value) || name.contains(value)) {
+            if (id.toLowerCase(Locale.ROOT).contains(value) || TextSearch.contains(name, value)) {
                 filteredMobList.add(id);
             }
         }

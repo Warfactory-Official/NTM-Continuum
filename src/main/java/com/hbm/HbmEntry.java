@@ -2,6 +2,7 @@ package com.hbm;
 
 import com.hbm.api.data.HbmDataMaps;
 import com.hbm.api.script.HbmScripts;
+import com.hbm.config.GeneralConfig;
 import com.hbm.config.MachineDynConfig;
 import com.hbm.hazard.Hazards;
 import com.hbm.inventory.fluid.FluidProperties;
@@ -46,7 +47,10 @@ public class HbmEntry implements ModEntry {
     public void registered() {
         // after every mod's declare(), so an addon's MachineDynConfig.register is in the file too
         MachineDynConfig.initialize();
-        Lifecycle.onServerStarting(server -> MachineDynConfig.restoreLocal());
+        Lifecycle.onServerStarting(server -> {
+            MachineDynConfig.restoreLocal();
+            GeneralConfig.restoreLocalRecipeSwitches();
+        });
         // Item and material hazards name registered items.
         Hazards.init();
         // the missile item -> entity table, its own start-up step (separate from Hazards.init)

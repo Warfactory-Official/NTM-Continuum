@@ -1,6 +1,7 @@
 package com.hbm.inventory.recipes.loader;
 
 import dev.golem.core.Ids;
+import dev.golem.core.gui.TextSearch;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.Registry;
 import com.hbm.config.GeneralConfig;
@@ -555,6 +556,6 @@ public class GenericRecipe {
 
     /** Whether this recipe's localized name contains {@code substring} (case-insensitive). */
     public boolean matchesSearch(String substring) {
-        return getLocalizedName().toLowerCase(Locale.US).contains(substring.toLowerCase(Locale.US));
+        return TextSearch.contains(getLocalizedName().toLowerCase(Locale.US), substring.toLowerCase(Locale.US));
     }
 }

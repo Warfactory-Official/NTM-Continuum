@@ -9,6 +9,7 @@ import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
+import dev.golem.core.gui.TextSearch;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
@@ -181,7 +182,7 @@ public final class GUIScreenCalculator extends CompatScreen {
 
             LanguageManager lang = Minecraft.getInstance().getLanguageManager();
             for (QuickManualAndWiki page : QMAWLoader.sortedPages) {
-                if (page.getTitle(lang).toLowerCase(Locale.ROOT).contains(query)) qmawResults.add(page.getTitle(lang));
+                if (TextSearch.contains(page.getTitle(lang).toLowerCase(Locale.ROOT), query)) qmawResults.add(page.getTitle(lang));
             }
         }
 

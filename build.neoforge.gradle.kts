@@ -241,6 +241,8 @@ dependencies {
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devModJar("maven.modrinth:jade:$it") }
     // ImmediatelyFast, dev runs only (`-Pimmediatelyfast.run=true`): HUD batching that has hidden the hotbar before.
     if (propOrNull("immediatelyfast.run") == "true") propOrNull("deps.immediatelyfast")?.let { devModJar("maven.modrinth:immediatelyfast:$it") }
+    // Just Enough Characters, dev runs only (`-Pjecharacters.run=true`): pinyin matching in HBM's search bars (Core TextSearch).
+    if (propOrNull("jecharacters.run") == "true") propOrNull("deps.jecharacters")?.let { devModJar("maven.modrinth:justenoughcharacters:$it") }
 
     // Applied Energistics 2 and its required GuideME, dev runs only (`-Pae2.run=true`): HBM's machines reach AE2's
     // pattern providers through Golem Core's dev.golem.core.autocraft, so HBM has no AE2 dependency. Both carry mixins.

@@ -242,4 +242,47 @@ public final class GeneralConfig {
             enable528MachineGravity = false;
         }
     }
+
+    private static int localRecipeSwitches = -1;
+
+    /**
+     * The switches that pick recipe rows and their variants, one bit each. A server sends its own on every datapack
+     * sync: it keeps only the rows they admit, and a client filtering by its own {@code hbm.cfg} would hide them.
+     */
+    public static int recipeSwitches() {
+        boolean[] on = {enable528, enableExpensiveMode, enable528PressurizedRecipes, enableRawOres, enableLBSM,
+                enableLBSMSimpleArmorRecipes, enableLBSMSimpleToolRecipes, enableLBSMSimpleAlloy, enableLBSMSimpleChemsitry,
+                enableLBSMSimpleCentrifuge, enableLBSMUnlockAnvil, enableLBSMSimpleCrafting, enableLBSMSimpleMedicineRecipes};
+        int bits = 0;
+        for (int i = 0; i < on.length; i++) if (on[i]) bits |= 1 << i;
+        return bits;
+    }
+
+    /** Takes a remote server's {@link #recipeSwitches}, remembering this game's own for {@link #restoreLocalRecipeSwitches}. */
+    public static void applyRecipeSwitches(int bits) {
+        if (localRecipeSwitches < 0) localRecipeSwitches = recipeSwitches();
+        setRecipeSwitches(bits);
+    }
+
+    public static void restoreLocalRecipeSwitches() {
+        if (localRecipeSwitches < 0) return;
+        setRecipeSwitches(localRecipeSwitches);
+        localRecipeSwitches = -1;
+    }
+
+    private static void setRecipeSwitches(int bits) {
+        enable528 = (bits & 1) != 0;
+        enableExpensiveMode = (bits & 1 << 1) != 0;
+        enable528PressurizedRecipes = (bits & 1 << 2) != 0;
+        enableRawOres = (bits & 1 << 3) != 0;
+        enableLBSM = (bits & 1 << 4) != 0;
+        enableLBSMSimpleArmorRecipes = (bits & 1 << 5) != 0;
+        enableLBSMSimpleToolRecipes = (bits & 1 << 6) != 0;
+        enableLBSMSimpleAlloy = (bits & 1 << 7) != 0;
+        enableLBSMSimpleChemsitry = (bits & 1 << 8) != 0;
+        enableLBSMSimpleCentrifuge = (bits & 1 << 9) != 0;
+        enableLBSMUnlockAnvil = (bits & 1 << 10) != 0;
+        enableLBSMSimpleCrafting = (bits & 1 << 11) != 0;
+        enableLBSMSimpleMedicineRecipes = (bits & 1 << 12) != 0;
+    }
 }

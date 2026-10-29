@@ -12,6 +12,7 @@ import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
+import dev.golem.core.gui.TextSearch;
 import dev.golem.core.net.GolemNetwork;
 import java.util.ArrayList;
 import java.util.List;
@@ -208,7 +209,7 @@ public class GUIScreenFluid extends CompatScreen {
 
         for (FluidType type : Fluids.getInNiceOrder()) { // 1.7 GUIScreenFluid.updateSearch
             String name = type.getDisplayNameString().toLowerCase(Locale.US);
-            if (name.contains(subs) && !IFluidCopiable.ItemFluidIds.hasNoID(type)) {
+            if (TextSearch.contains(name, subs) && !IFluidCopiable.ItemFluidIds.hasNoID(type)) {
                 this.searchArray[next] = type;
                 next++;
                 if (next >= this.searchArray.length) return;

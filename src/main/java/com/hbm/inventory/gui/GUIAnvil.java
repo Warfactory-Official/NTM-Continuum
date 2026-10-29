@@ -13,6 +13,7 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes.OverlayType;
 import com.hbm.packet.AnvilCraftPayload;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
+import dev.golem.core.gui.TextSearch;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -128,7 +129,7 @@ public class GUIAnvil extends CompatContainerScreen<ContainerAnvil> {
         } else {
             for (AnvilConstructionRecipe recipe : this.originList) {
                 for (String s : recipeToSearchList(recipe)) {
-                    if (s.contains(term)) {
+                    if (TextSearch.contains(s, term)) {
                         this.recipes.add(recipe);
                         break;
                     }

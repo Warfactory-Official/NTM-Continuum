@@ -17,6 +17,7 @@ import com.hbm.client.particle.PlasmaBlastClient;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectStandard;
 import com.hbm.client.render.armor.ModelMan;
 import com.hbm.config.ClientConfig;
+import com.hbm.config.GeneralConfig;
 import com.hbm.config.MachineDynConfig;
 import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.handler.EnumCraneKey;
@@ -90,6 +91,11 @@ public final class HbmPackets {
         GolemNetwork.declarePlayToClient(ImpactSyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(GemRenderNoticePayload.CODEC);
         GolemNetwork.declarePlayToClient(MachineConfigPayload.CODEC);
+        GolemNetwork.declarePlayToClient(RecipeSwitchesPayload.CODEC);
+        Lifecycle.onDatapackSync((server, players) -> {
+            RecipeSwitchesPayload switches = new RecipeSwitchesPayload(GeneralConfig.recipeSwitches());
+            for (ServerPlayer player : players) GolemNetwork.sendToPlayer(player, RecipeSwitchesPayload.CODEC, switches);
+        });
         Lifecycle.onPlayerJoin((player, firstTime) -> {
             if (firstTime) GolemNetwork.sendToPlayer(player, GemRenderNoticePayload.CODEC, new GemRenderNoticePayload());
             GolemNetwork.sendToPlayer(player, MachineConfigPayload.CODEC, new MachineConfigPayload(MachineDynConfig.values()));
@@ -207,6 +213,8 @@ public final class HbmPackets {
         });
         GolemNetwork.registerPlayToClient(MachineConfigPayload.CODEC, (payload, context) ->
                 MachineDynConfig.apply(MachineDynConfig.gson.fromJson(payload.json(), JsonObject.class)));
+        GolemNetwork.registerPlayToClient(RecipeSwitchesPayload.CODEC,
+                (payload, context) -> GeneralConfig.applyRecipeSwitches(payload.bits()));
         GolemNetwork.registerPlayToClient(ImpactSyncPayload.CODEC, (payload, context) -> {
             // 1.7 PermaSyncHandler.readPacket: the values belong to the level the player is in
             ImpactWorldHandler.lastSyncWorld = context.level();

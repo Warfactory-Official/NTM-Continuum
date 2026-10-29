@@ -178,6 +178,8 @@ dependencies {
     // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { modRuntimeOnly("maven.modrinth:jade:$it") }
+    // Just Enough Characters, dev runs only (`-Pjecharacters.run=true`): pinyin matching in HBM's search bars (Core TextSearch).
+    if (propOrNull("jecharacters.run") == "true") propOrNull("deps.jecharacters")?.let { modRuntimeOnly("maven.modrinth:justenoughcharacters:$it") }
     // Applied Energistics 2 and its required GuideME, dev runs only (`-Pae2.run=true`), through Golem Core's
     // dev.golem.core.autocraft; HBM has no AE2 dependency.
     if (propOrNull("ae2.run") == "true") {
