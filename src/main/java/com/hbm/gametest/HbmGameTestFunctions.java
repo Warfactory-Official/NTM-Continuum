@@ -965,6 +965,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("pa_structure", 40, 16, () -> AlbionGameTests::structure);
     public static final GameTests.Function PA_SOURCE_FIRES =
             TESTS.function("pa_source_fires", 40, 16, () -> AlbionGameTests::sourceFires);
+    public static final GameTests.Function PA_SOURCE_ONE_CAPSULE =
+            TESTS.function("pa_source_one_capsule", 40, 16, () -> AlbionGameTests::sourceTakesOneCapsule);
     public static final GameTests.Function PA_BEAM_WALKS =
             TESTS.function("pa_beam_walks", 40, 24, () -> AlbionGameTests::beamWalks);
     public static final GameTests.Function PA_BEAMLINE =

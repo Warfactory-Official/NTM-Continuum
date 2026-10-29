@@ -5,6 +5,7 @@ import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.redstoneoverradio.RORFunctionException;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.albion.BlockPASource;
+import com.hbm.inventory.container.ContainerPASource;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes;
@@ -24,12 +25,16 @@ import com.hbm.tileentity.machine.albion.TileEntityPASource;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.PAState;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.Particle;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.gui.CompatContainerMenu.ClickAction;
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -342,6 +347,39 @@ public final class AlbionGameTests {
         source.tryRun();
         helper.assertTrue(source.particle == null,
                 "A source whose capsule returns are full must not fire");
+        helper.succeed();
+    }
+
+    /** Shift-clicking a stack twice leaves one capsule per input, and a shot takes only that one. */
+    public static void sourceTakesOneCapsule(GameTestHelper helper) {
+        TileEntityPASource source = place(helper, new BlockPos(9, 3, 9), ModMachineBlocks.pa_source.get(), TileEntityPASource.class);
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        ContainerPASource menu = new ContainerPASource(0, player.getInventory(), source);
+        int inv = ContainerPASource.MACHINE_SLOTS;
+        for (int i = 0; i < 2; i++) {
+            player.getInventory().setItem(9, new ItemStack(ModItems.particle_hydrogen.get(), 4));
+            player.getInventory().setItem(10, new ItemStack(ModItems.particle_copper.get(), 4));
+            menu.quickMoveStack(player, inv);
+            menu.quickMoveStack(player, inv + 1);
+        }
+        helper.assertTrue(source.inventory.getStackInSlot(1).getCount() == 1 && source.inventory.getStackInSlot(2).getCount() == 1,
+                "Each input holds one capsule; got " + source.inventory.getStackInSlot(1) + " and " + source.inventory.getStackInSlot(2));
+        source.inventory.setStackInSlot(1, ItemStack.EMPTY);
+        menu.setCarried(new ItemStack(ModItems.particle_hydrogen.get(), 4));
+        Menus.click(menu, 1, 0, ClickAction.PICKUP, player);
+        helper.assertTrue(source.inventory.getStackInSlot(1).getCount() == 1,
+                "A clicked stack leaves one capsule; got " + source.inventory.getStackInSlot(1));
+        menu.setCarried(ItemStack.EMPTY);
+
+        source.inventory.setStackInSlot(1, new ItemStack(ModItems.particle_hydrogen.get(), 4));
+        source.inventory.setStackInSlot(2, new ItemStack(ModItems.particle_copper.get(), 4));
+        source.power = source.getMaxPower();
+        chill(source);
+        source.tryRun();
+        helper.assertTrue(source.particle != null && source.particle.input1.getCount() == 1 && source.particle.input2.getCount() == 1,
+                "A shot carries one capsule of each input");
+        helper.assertTrue(source.inventory.getStackInSlot(1).getCount() == 3 && source.inventory.getStackInSlot(2).getCount() == 3,
+                "A shot leaves the other capsules; got " + source.inventory.getStackInSlot(1) + " and " + source.inventory.getStackInSlot(2));
         helper.succeed();
     }
 

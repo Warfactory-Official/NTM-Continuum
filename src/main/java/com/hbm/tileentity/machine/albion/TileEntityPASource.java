@@ -182,7 +182,7 @@ public class TileEntityPASource extends TileEntityCooledBase
         if (exit != null) particle.move(exit);
     }
 
-    /** Consumes both inputs and injects a fresh particle five blocks along the beamline. */
+    /** Consumes one of each input and injects a fresh particle five blocks along the beamline. */
     public void tryRun() {
         if (!isCool()) return;
 
@@ -202,10 +202,11 @@ public class TileEntityPASource extends TileEntityCooledBase
 
         this.power -= usage;
         ForgeDirection rot = getBeamDir();
+        // a shot is one capsule of each, even if something stacked the inputs past 1.7's limit of one
         this.particle = new Particle(this,
-                worldPosition.offset(rot.offsetX * 5, 0, rot.offsetZ * 5), rot, slot1, slot2);
-        inventory.setStackInSlot(1, ItemStack.EMPTY);
-        inventory.setStackInSlot(2, ItemStack.EMPTY);
+                worldPosition.offset(rot.offsetX * 5, 0, rot.offsetZ * 5), rot, slot1.split(1), slot2.split(1));
+        inventory.setStackInSlot(1, slot1);
+        inventory.setStackInSlot(2, slot2);
         this.markChanged();
     }
 
