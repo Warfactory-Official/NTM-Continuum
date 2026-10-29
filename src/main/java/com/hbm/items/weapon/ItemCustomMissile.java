@@ -1,5 +1,8 @@
 package com.hbm.items.weapon;
 
+import java.util.function.Consumer;
+
+import dev.golem.core.hook.Hook;
 import com.hbm.handler.MissileStruct;
 import com.hbm.items.ModCustomMissileItems;
 import com.hbm.items.weapon.ItemCustomMissilePart.PartType;
@@ -26,7 +29,21 @@ import java.util.Optional;
  */
 public class ItemCustomMissile extends CompatItem {
 
-    /** The five parts; {@code stability} is null for a finless missile. */
+    @FunctionalInterface
+    public interface Description {
+        boolean describe(MissileStruct parts, @Nullable ItemCustomMissilePart chip,
+                         Consumer<Component> output);
+    }
+
+    public static final Hook<Description> DESCRIBE =
+            Hook.of(listeners -> (parts, chip, output) -> {
+                for (var listener : listeners) if (listener.describe(parts, chip, output)) return true;
+                return false;
+            });
+
+    /**
+     * The five parts; {@code stability} is null for a finless missile.
+     */
     public record Parts(Item chip, Item warhead, Item fuselage, @Nullable Item stability, Item thruster) {
 
         private static final Codec<Item> ITEM = BuiltInRegistries.ITEM.byNameCodec();
@@ -45,13 +62,16 @@ public class ItemCustomMissile extends CompatItem {
         super(properties);
     }
 
-    public static ItemStack buildMissile(Item chip, Item warhead, Item fuselage, @Nullable Item stability, Item thruster) {
+    public static ItemStack buildMissile(Item chip, Item warhead, Item fuselage, @Nullable Item stability,
+                                         Item thruster) {
         ItemStack missile = new ItemStack(ModCustomMissileItems.missile_custom.get());
         ModCustomMissileItems.MISSILE_PARTS.set(missile, new Parts(chip, warhead, fuselage, stability, thruster));
         return missile;
     }
 
-    /** 1.7 {@code buildMissile(ItemStack...)}: the stacks only contribute their item. */
+    /**
+     * 1.7 {@code buildMissile(ItemStack...)}: the stacks only contribute their item.
+     */
     public static ItemStack buildMissile(ItemStack chip, ItemStack warhead, ItemStack fuselage, ItemStack stability,
                                          ItemStack thruster) {
         return buildMissile(chip.getItem(), warhead.getItem(), fuselage.getItem(),
@@ -73,7 +93,9 @@ public class ItemCustomMissile extends CompatItem {
         return parts != null && parts.stability() instanceof ItemCustomMissilePart part ? part : null;
     }
 
-    /** 1.7 {@code getStruct}: null for anything that is not a custom missile. */
+    /**
+     * 1.7 {@code getStruct}: null for anything that is not a custom missile.
+     */
     public static @Nullable MissileStruct getStruct(ItemStack stack) {
         Parts parts = parts(stack);
         if (parts == null) {
@@ -100,28 +122,41 @@ public class ItemCustomMissile extends CompatItem {
             ItemCustomMissilePart fuselage = (ItemCustomMissilePart) parts.fuselage();
             ItemCustomMissilePart stability = parts.stability() == null ? null : (ItemCustomMissilePart) parts.stability();
             ItemCustomMissilePart thruster = (ItemCustomMissilePart) parts.thruster();
-
-            tooltip.add(ItemCustomMissilePart.stat("item.missile.desc.warhead", warhead.warheadType().getDisplay()));
-            tooltip.add(ItemCustomMissilePart.stat("item.missile.desc.strength",
-                    Component.literal(String.valueOf(warhead.warheadStrength()))));
-            tooltip.add(ItemCustomMissilePart.stat("item.missile.desc.fuelType", fuselage.fuelType().getDisplay()));
-            tooltip.add(ItemCustomMissilePart.stat("item.missile.desc.fuelAmount",
-                    Component.literal(fuselage.fuelAmount() + "l")));
-            tooltip.add(ItemCustomMissilePart.stat("item.missile.desc.chipInaccuracy",
-                    Component.literal(chip.inaccuracy() * 100 + "%")));
-            tooltip.add(ItemCustomMissilePart.stat("item.missile.desc.finInaccuracy",
-                    Component.literal(stability != null ? stability.inaccuracy() * 100 + "%" : "100%")));
-            tooltip.add(ItemCustomMissilePart.stat("item.missile.desc.size",
-                    fuselage.top.getDisplay().copy().append("/").append(fuselage.bottom.getDisplay())));
-            float health = warhead.health + fuselage.health + thruster.health;
-            if (stability != null) health += stability.health;
-            tooltip.add(ItemCustomMissilePart.stat("item.missile.desc.health", Component.literal(health + "HP")));
+            var structure = new MissileStruct(warhead, fuselage, stability, thruster);
+            if (!DESCRIBE.invoker().describe(structure, chip, tooltip::add)) describe(structure, chip, tooltip::add);
         } catch (RuntimeException ex) {
             tooltip.add(Component.translatable("error.generic").withStyle(ChatFormatting.RED));
         }
     }
 
-    /** Whether a part of this type sits in the slot it claims to. Used by the part-type sanity checks. */
+    /**
+     * The base missile description, also used when no addon replaces its presentation.
+     */
+    public static void describe(MissileStruct parts, ItemCustomMissilePart chip,
+                                Consumer<Component> output) {
+        var warhead = parts.warhead();
+        var fuselage = parts.fuselage();
+        var stability = parts.fins();
+        output.accept(ItemCustomMissilePart.stat("item.missile.desc.warhead", warhead.warheadType().getDisplay()));
+        output.accept(ItemCustomMissilePart.stat("item.missile.desc.strength",
+                Component.literal(String.valueOf(warhead.warheadStrength()))));
+        output.accept(ItemCustomMissilePart.stat("item.missile.desc.fuelType", fuselage.fuelType().getDisplay()));
+        output.accept(ItemCustomMissilePart.stat("item.missile.desc.fuelAmount",
+                Component.literal(fuselage.fuelAmount() + "l")));
+        output.accept(ItemCustomMissilePart.stat("item.missile.desc.chipInaccuracy",
+                Component.literal(chip.inaccuracy() * 100 + "%")));
+        output.accept(ItemCustomMissilePart.stat("item.missile.desc.finInaccuracy",
+                Component.literal(stability != null ? stability.inaccuracy() * 100 + "%" : "100%")));
+        output.accept(ItemCustomMissilePart.stat("item.missile.desc.size",
+                fuselage.top.getDisplay().copy().append("/").append(fuselage.bottom.getDisplay())));
+        float health = warhead.health + fuselage.health + parts.thruster().health;
+        if (stability != null) health += stability.health;
+        output.accept(ItemCustomMissilePart.stat("item.missile.desc.health", Component.literal(health + "HP")));
+    }
+
+    /**
+     * Whether a part of this type sits in the slot it claims to. Used by the part-type sanity checks.
+     */
     static boolean is(@Nullable Item item, PartType type) {
         return item instanceof ItemCustomMissilePart part && part.type == type;
     }

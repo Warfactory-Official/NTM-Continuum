@@ -30,7 +30,9 @@ public class ArmorEuphemium extends ArmorFSB {
         super(material, slot, properties);
     }
 
-    /** 1.7 {@code ArmorUtil.checkArmor} over the four exact euphemium items. */
+    /**
+     * 1.7 {@code ArmorUtil.checkArmor} over the four exact euphemium items.
+     */
     public static boolean hasFullSet(Player player) {
         return player.getItemBySlot(EquipmentSlot.HEAD).is(ModArmorSetItems.euphemium_helmet.get())
                 && player.getItemBySlot(EquipmentSlot.CHEST).is(ModArmorSetItems.euphemium_plate.get())
@@ -49,7 +51,7 @@ public class ArmorEuphemium extends ArmorFSB {
         player.addEffect(Effects.instance(MobEffects.SATURATION, 5, 127, true, true, true));
 
         var motion = player.getDeltaMovement();
-        if (motion.y < -0.25D) {
+        if (!player.isFallFlying() && motion.y < -0.25D) {
             player.setDeltaMovement(motion.x, -0.25D, motion.z);
             player.fallDistance = 0;
         }

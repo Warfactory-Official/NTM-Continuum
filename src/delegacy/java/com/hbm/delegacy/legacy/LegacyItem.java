@@ -10,7 +10,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-/** A DE item id Continuum split into several items; it shows as {@code target} and converts once a player holds it. */
+/**
+ * A DE item id Continuum split into several items; it shows as {@code target} and converts once a player holds it.
+ */
 public class LegacyItem extends Item implements ILoadOnlyItem {
     private final ResourceLocation target;
 
@@ -24,10 +26,12 @@ public class LegacyItem extends Item implements ILoadOnlyItem {
         return BuiltInRegistries.ITEM.get(target).getDescriptionId();
     }
 
-    /** The target's shown name: some targets build theirs in getName and have no lang key of their own. */
+    /**
+     * The target's shown name: some targets build theirs in getName and have no lang key of their own.
+     */
     @Override
     public Component getName(ItemStack stack) {
-        Item item = BuiltInRegistries.ITEM.get(target);
+        var item = BuiltInRegistries.ITEM.get(target);
         return item.getName(new ItemStack(item));
     }
 

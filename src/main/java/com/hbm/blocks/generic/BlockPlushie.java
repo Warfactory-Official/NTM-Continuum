@@ -4,6 +4,7 @@ import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.deco.TileEntityPlushie;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -31,7 +32,8 @@ public class BlockPlushie extends BlockTrinket {
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof TileEntityPlushie plushie)) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(level.getBlockEntity(pos) instanceof TileEntityPlushie plushie))
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) {
             plushie.squishTimer = 11;
         } else if (plushie.type() == PlushieType.HUNDUN) {
@@ -44,12 +46,34 @@ public class BlockPlushie extends BlockTrinket {
         return InteractionResult.SUCCESS;
     }
 
-    /** The base mod's loud Hundun; forks may supply their authored squish volume. */
+    /**
+     * The base mod's loud Hundun; forks may supply their authored squish volume.
+     */
     protected float squishVolume(PlushieType type) {
         return type == PlushieType.HUNDUN ? 100F : 0.25F;
     }
 
-    public enum PlushieType {
+    public boolean isPressable() {
+        return false;
+    }
+
+    public SoundEvent pressSound() {
+        return ModSounds.PRESS_OPERATE.get();
+    }
+
+    public interface Plushie {
+        float scaleX();
+
+        default float scaleY() {
+            return scaleX();
+        }
+
+        default float scaleZ() {
+            return scaleX();
+        }
+    }
+
+    public enum PlushieType implements Plushie {
         NONE("NONE", null),
         YOMI("Yomi", "Hi! Can I be your rabbit friend?"),
         NUMBERNINE("Number Nine", "None of y'all deserve coal."),
@@ -68,6 +92,15 @@ public class BlockPlushie extends BlockTrinket {
 
         public static PlushieType of(int ordinal) {
             return VALUES[Math.floorMod(ordinal, VALUES.length)];
+        }
+
+        @Override
+        public float scaleX() {
+            return switch (this) {
+                case YOMI -> 0.5F;
+                case NUMBERNINE -> 0.75F;
+                default -> 1F;
+            };
         }
     }
 }

@@ -1,7 +1,9 @@
 package com.hbm.packet;
 
+import dev.golem.core.world.Tracking;
 import com.google.gson.JsonObject;
 import com.hbm.Constants;
+import com.hbm.blocks.multiblock.MultiblockPlacementEscape;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.client.AbilityToolClientRegistrations;
 import com.hbm.client.DroneClientRegistrations;
@@ -67,9 +69,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  */
 public final class HbmPackets {
 
-    private HbmPackets() {}
+    private HbmPackets() {
+    }
 
-    /** Declares HBM's play payloads once; loaders flush these declarations at their own hook. */
+    /**
+     * Declares HBM's play payloads once; loaders flush these declarations at their own hook.
+     */
     public static void declare() {
         GolemSync.install();
         CasingCreator.setSender((level, event) -> {
@@ -86,13 +91,16 @@ public final class HbmPackets {
             }
         });
         GolemNetwork.declarePlayToClient(BlockEntitySyncPayload.CODEC);
+        GolemNetwork.declarePlayToClient(PlacementEscapePayload.CODEC);
         GolemNetwork.declarePlayToClient(EntityPropsSyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(ImpactSyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(GemRenderNoticePayload.CODEC);
         GolemNetwork.declarePlayToClient(MachineConfigPayload.CODEC);
         Lifecycle.onPlayerJoin((player, firstTime) -> {
-            if (firstTime) GolemNetwork.sendToPlayer(player, GemRenderNoticePayload.CODEC, new GemRenderNoticePayload());
-            GolemNetwork.sendToPlayer(player, MachineConfigPayload.CODEC, new MachineConfigPayload(MachineDynConfig.values()));
+            if (firstTime)
+                GolemNetwork.sendToPlayer(player, GemRenderNoticePayload.CODEC, new GemRenderNoticePayload());
+            GolemNetwork.sendToPlayer(player, MachineConfigPayload.CODEC,
+                    new MachineConfigPayload(MachineDynConfig.values()));
             DuckPayload.onJoin(player);
         });
         GolemNetwork.registerPlayToServer(DuckPayload.CODEC, (payload, player) -> DuckPayload.handle(player));
@@ -112,6 +120,9 @@ public final class HbmPackets {
         GolemNetwork.declarePlayToClient(GunCasingEjectPayload.CODEC);
         GolemNetwork.declarePlayToClient(ParticlePayload.CODEC);
         GolemNetwork.declarePlayToClient(JetpackSyncPayload.CODEC);
+        Tracking.onStart((entity, observer) -> {
+            if (entity instanceof ServerPlayer player) JetpackHandler.sendStateTo(player, observer);
+        });
         GolemNetwork.declarePlayToClient(JetpackExhaustPayload.CODEC);
         GolemNetwork.declarePlayToClient(ProjectileStatePayload.CODEC);
         GolemNetwork.declarePlayToClient(FallingMultiblockPayload.CODEC);
@@ -132,22 +143,28 @@ public final class HbmPackets {
                 NetworkProbePayload::received);
     }
 
-    /** Tells one player's client that their gun played an animation cue. */
+    /**
+     * Tells one player's client that their gun played an animation cue.
+     */
     public static void sendGunAnimation(ServerPlayer player, ItemStack stack,
-            GunAnimation animation, int configIndex) {
+                                        GunAnimation animation, int configIndex) {
         sendGunAnimation(player, stack, animation, InteractionHand.MAIN_HAND, 0, configIndex);
     }
 
-    /** Sends an animation cue while retaining the source receiver/rail and config index. */
+    /**
+     * Sends an animation cue while retaining the source receiver/rail and config index.
+     */
     public static void sendGunAnimation(ServerPlayer player, ItemStack stack,
-            GunAnimation animation, int receiver, int configIndex) {
+                                        GunAnimation animation, int receiver, int configIndex) {
         sendGunAnimation(player, stack, animation, handOf(player, stack), receiver, configIndex);
     }
 
-    /** Sends an animation cue for the exact hand that owns {@code stack}. */
+    /**
+     * Sends an animation cue for the exact hand that owns {@code stack}.
+     */
     public static void sendGunAnimation(ServerPlayer player, ItemStack stack,
-            GunAnimation animation, InteractionHand hand, int receiver,
-            int configIndex) {
+                                        GunAnimation animation, InteractionHand hand, int receiver,
+                                        int configIndex) {
         GolemNetwork.sendToPlayer(player, GunAnimationPayload.CODEC,
                 new GunAnimationPayload(animation.ordinal(), receiver, configIndex, hand,
                         BuiltInRegistries.ITEM.getKey(stack.getItem()).toString()));
@@ -158,13 +175,17 @@ public final class HbmPackets {
         return InteractionHand.MAIN_HAND;
     }
 
-    /** Sends a seeded gun sound to the same tracking population as the source gun packet. */
+    /**
+     * Sends a seeded gun sound to the same tracking population as the source gun packet.
+     */
     public static void sendGunSound(ServerLevel level, boolean legacy, SoundEvent sound, SoundSource source,
-            double x, double y, double z, float volume, float pitch, long seed) {
+                                    double x, double y, double z, float volume, float pitch, long seed) {
         GunSoundPayload.send(level, legacy, sound, source, x, y, z, volume, pitch, seed);
     }
 
-    /** Sends the observer muzzle edge; the firing player's own animation packet handles the local gun. */
+    /**
+     * Sends the observer muzzle edge; the firing player's own animation packet handles the local gun.
+     */
     public static void sendMuzzleFlash(LivingEntity entity) {
         if (entity.level() instanceof ServerLevel level) {
             MuzzleFlashPayload payload = new MuzzleFlashPayload(entity.getId());
@@ -176,33 +197,43 @@ public final class HbmPackets {
         }
     }
 
-    /** Sends an ordinary casing snapshot to the tracking population. */
+    /**
+     * Sends an ordinary casing snapshot to the tracking population.
+     */
     public static void sendCasing(ServerLevel level, CasingEjectPayload payload) {
         sendToRadius(level, payload.x(), payload.y(), payload.z(), 50D, CasingEjectPayload.CODEC, payload);
     }
 
-    /** Sends a mode-filtered gun casing snapshot to the tracking population. */
+    /**
+     * Sends a mode-filtered gun casing snapshot to the tracking population.
+     */
     public static void sendGunCasing(ServerLevel level, GunCasingEjectPayload payload) {
         sendToRadius(level, payload.x(), payload.y(), payload.z(), 50D, GunCasingEjectPayload.CODEC, payload);
     }
 
     private static <P extends GolemPayload> void sendToRadius(ServerLevel level,
-            double x, double y, double z, double radius, GolemCodec<P> codec, P payload) {
+                                                              double x, double y, double z, double radius,
+                                                              GolemCodec<P> codec, P payload) {
         double radiusSquared = radius * radius;
         for (ServerPlayer player : level.players()) {
             if (player.distanceToSqr(x, y, z) <= radiusSquared) GolemNetwork.sendToPlayer(player, codec, payload);
         }
     }
 
-    /** Attaches client handlers only after the physical client is available. */
+    /**
+     * Attaches client handlers only after the physical client is available.
+     */
     public static void registerClientHandlers() {
         GolemNetwork.registerPlayToClient(BlockEntitySyncPayload.CODEC,
                 (payload, context) -> handleSync(context.level(), payload));
+        GolemNetwork.registerPlayToClient(PlacementEscapePayload.CODEC,
+                (payload, context) -> MultiblockPlacementEscape.receive(context.player(), payload));
         GolemNetwork.registerPlayToClient(EntityPropsSyncPayload.CODEC,
                 (payload, context) -> handlePropsSync(context.player(), payload));
         GolemNetwork.registerPlayToClient(GemRenderNoticePayload.CODEC, (payload, context) -> {
             if (!Instancing.isAvailable()) {
-                context.player().sendSystemMessage(Component.translatable("hbm.gemrender.missing").withStyle(ChatFormatting.GOLD));
+                context.player().sendSystemMessage(
+                        Component.translatable("hbm.gemrender.missing").withStyle(ChatFormatting.GOLD));
             }
         });
         GolemNetwork.registerPlayToClient(MachineConfigPayload.CODEC, (payload, context) ->
@@ -221,7 +252,8 @@ public final class HbmPackets {
             SmogFog.pollution[2] = payload.heavyMetal();
             SmogFog.pollution[3] = payload.fallout();
         });
-        GolemNetwork.registerPlayToClient(ManlySyncPayload.CODEC, (payload, context) -> ModelMan.setPlayers(payload.ids()));
+        GolemNetwork.registerPlayToClient(ManlySyncPayload.CODEC,
+                (payload, context) -> ModelMan.setPlayers(payload.ids()));
         GolemNetwork.registerPlayToClient(GunAnimationPayload.CODEC,
                 (payload, context) -> GunAnimationHandler.handle(payload));
         GolemNetwork.registerPlayToClient(PlasmaBlastPayload.CODEC,
@@ -251,8 +283,9 @@ public final class HbmPackets {
         });
         GolemNetwork.registerPlayToClient(FallingMultiblockPayload.CODEC,
                 (payload, context) -> FallingMultiblockPayload.handleClient(context.level(), payload));
-        GolemNetwork.registerPlayToClient(ExplosionBlocksPayload.CODEC, (payload, context) -> ExplosionEffectStandard.performClient(
-                context.level(), payload.x(), payload.y(), payload.z(), payload.size(), payload.blocks()));
+        GolemNetwork.registerPlayToClient(ExplosionBlocksPayload.CODEC,
+                (payload, context) -> ExplosionEffectStandard.performClient(
+                        context.level(), payload.x(), payload.y(), payload.z(), payload.size(), payload.blocks()));
         PneumaticClientRegistrations.registerPacketHandlers();
         DroneClientRegistrations.registerPacketHandlers();
         PowerGenClientRegistrations.registerPacketHandlers();
@@ -341,7 +374,9 @@ public final class HbmPackets {
         handleAnvilCraft(player, payload.recipeId(), payload.mode());
     }
 
-    /** Crafts per click: one, or with shift enough for one stack of the output. */
+    /**
+     * Crafts per click: one, or with shift enough for one stack of the output.
+     */
     public static int anvilCraftCount(AnvilRecipes.AnvilConstructionRecipe recipe, int mode) {
         if (mode != 1) return 1;
         ItemStack first = recipe.output.get(0).stack;
@@ -403,7 +438,9 @@ public final class HbmPackets {
         }
     }
 
-    /** Control packets are flat key/value schemas; nested tags have no receiver contract. */
+    /**
+     * Control packets are flat key/value schemas; nested tags have no receiver contract.
+     */
     private static boolean containsNestedCompound(CompoundTag data) {
         for (String key : Tags.keys(data)) {
             if (data.get(key) instanceof CompoundTag

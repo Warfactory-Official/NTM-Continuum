@@ -9,7 +9,6 @@ import com.hbm.packet.AnvilCraftPayload;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import dev.golem.core.registry.RegistryObject;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import net.minecraft.core.registries.Registries;
@@ -17,8 +16,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
@@ -86,23 +83,6 @@ public final class ForgeInit {
         MinecraftForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) -> {
             com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity());
             com.hbm.handler.pollution.PollutionHandler.decorateMob(event.getEntity());
-        });
-        // Forge 1.20.1 has no per-entity tick event: scan each level's item entities at the END of its tick,
-        // over a snapshot because the tickers may spawn new drops (screwdriver, singularity effects).
-        MinecraftForge.EVENT_BUS.addListener((TickEvent.LevelTickEvent event) -> {
-            if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)) return;
-            List<ItemEntity> items = new java.util.ArrayList<>();
-            for (Entity entity : level.getAllEntities()) {
-                if (entity instanceof ItemEntity item) items.add(item);
-                else com.hbm.handler.ExplosivesEntityHooks.tick(entity); // items: below, off the live iterator
-            }
-            for (ItemEntity item : items) {
-                com.hbm.handler.ExplosivesEntityHooks.tick(item);
-                com.hbm.items.special.ItemSingularity.tickDropped(item);
-                com.hbm.items.special.ItemCell.tickDropped(item);
-                com.hbm.items.special.ItemAntimatterPellet.tickDropped(item);
-                com.hbm.items.special.ItemDemonCore.tickDropped(item);
-            }
         });
         MinecraftForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {
             com.hbm.config.AutocalConfig.load(event.getServer());

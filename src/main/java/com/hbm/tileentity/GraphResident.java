@@ -15,11 +15,15 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  */
 public interface GraphResident {
 
+    default void onGraphLoad(ServerLevel server) {
+    }
+
     static void onLoad(BlockEntity be) {
         if (!(be.getLevel() instanceof ServerLevel server)) return;
         LevelNodeGraph.invalidateEndpointsAround(server, be.getBlockPos());
         if (!(be.getBlockState().getBlock() instanceof BlockMultiblockCore)) {
             EndpointRegistry.declareSelfIfEndpoint(server, be);
         }
+        if (be instanceof GraphResident resident) resident.onGraphLoad(server);
     }
 }

@@ -1,7 +1,13 @@
 package com.hbm.entity.item;
 
 import dev.golem.core.data.CompatPrimedTnt;
+import dev.golem.core.data.DataIn;
+import dev.golem.core.data.DataOut;
+import dev.golem.core.data.SynchedData;
 import com.hbm.api.block.IFuckingExplode;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -19,24 +25,45 @@ public class EntityTntNtm extends CompatPrimedTnt {
     public static boolean spin = false;
 
     private final boolean doesSpin;
-    private final float momentumPitch;
-    private final float momentumYaw;
+    private static final EntityDataAccessor<Float> MOMENTUM_PITCH =
+            SynchedEntityData.defineId(EntityTntNtm.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> MOMENTUM_YAW =
+            SynchedEntityData.defineId(EntityTntNtm.class, EntityDataSerializers.FLOAT);
 
     public EntityTntNtm(EntityType<? extends EntityTntNtm> type, Level level) {
         super(type, level);
         this.doesSpin = spin;
         // drawn only when spinning, so plain HBM's random sequence is untouched
-        this.momentumPitch = doesSpin ? (float) (level.getRandom().nextGaussian() * 5F) : 0F;
-        this.momentumYaw = doesSpin ? (float) (level.getRandom().nextGaussian() * 10F) : 0F;
+        if (doesSpin && !level.isClientSide()) {
+            entityData.set(MOMENTUM_PITCH, (float) (level.getRandom().nextGaussian() * 5F));
+            entityData.set(MOMENTUM_YAW, (float) (level.getRandom().nextGaussian() * 10F));
+        }
     }
 
     @Override
-    public void tick() {
-        super.tick();
-        if (doesSpin && !isRemoved()) {
-            setXRot(getXRot() + momentumPitch);
-            setYRot(getYRot() + momentumYaw);
-        }
+    protected void defineData(SynchedData data) {
+        data.define(MOMENTUM_PITCH, 0F);
+        data.define(MOMENTUM_YAW, 0F);
+    }
+
+    public float spinYaw(float partialTick) {
+        return (tickCount - 1 + partialTick) * entityData.get(MOMENTUM_YAW);
+    }
+
+    public float spinPitch(float partialTick) {
+        return (tickCount - 1 + partialTick) * entityData.get(MOMENTUM_PITCH);
+    }
+
+    @Override
+    protected void saveData(DataOut out) {
+        out.putFloat("spin_pitch", entityData.get(MOMENTUM_PITCH));
+        out.putFloat("spin_yaw", entityData.get(MOMENTUM_YAW));
+    }
+
+    @Override
+    protected void loadData(DataIn in) {
+        entityData.set(MOMENTUM_PITCH, in.getFloatOr("spin_pitch", entityData.get(MOMENTUM_PITCH)));
+        entityData.set(MOMENTUM_YAW, in.getFloatOr("spin_yaw", entityData.get(MOMENTUM_YAW)));
     }
 
     // 1.7: 5-arg ctor hardcodes EntityTypes.TNT; body reproduced

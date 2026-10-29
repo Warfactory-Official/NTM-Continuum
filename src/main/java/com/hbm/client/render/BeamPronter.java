@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import net.minecraft.util.Mth;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
@@ -23,7 +24,26 @@ import java.util.Random;
  */
 public final class BeamPronter {
 
-    private BeamPronter() {}
+    private BeamPronter() {
+    }
+
+    /**
+     * Authored machine-beam opacity; ordinary beams and line geometry keep their own opacity.
+     */
+    public static float alpha = 1F;
+
+    public static void prontMachineBeam(PoseStack ps, SubmitSink collector, Vec3 skeleton,
+                                        int outerColor, int innerColor, int layers, float thickness) {
+        prontMachineBeam(ps, collector, skeleton, EnumWaveType.STRAIGHT, EnumBeamType.SOLID,
+                0, 1, 0F, outerColor, innerColor, layers, thickness);
+    }
+
+    public static void prontMachineBeam(PoseStack ps, SubmitSink collector, Vec3 skeleton,
+                                        EnumWaveType wave, EnumBeamType beam, int start, int segments,
+                                        float size, int outerColor, int innerColor, int layers, float thickness) {
+        prontBeam(ps, collector, skeleton, wave, beam, start, segments, size, outerColor, innerColor,
+                layers, thickness, alpha);
+    }
 
     /**
      * Draws a straight solid beam from the current pose origin along {@code skeleton} (the old
@@ -35,7 +55,9 @@ public final class BeamPronter {
                 0, 1, 0F, outerColor, innerColor, layers, thickness);
     }
 
-    /** Source {@code renderBulletStandard}: a narrow material pass with endpoint colours. */
+    /**
+     * Source {@code renderBulletStandard}: a narrow material pass with endpoint colours.
+     */
     public static void prontBeamGradient(PoseStack ps, SubmitSink collector, Vec3 skeleton,
                                          int startColor, int endColor, float thickness) {
         ps.pushPose();
@@ -51,7 +73,9 @@ public final class BeamPronter {
         ps.popPose();
     }
 
-    /** The source six-face projectile pass used by NI4NI and the .358-00 beams. */
+    /**
+     * The source six-face projectile pass used by NI4NI and the .358-00 beams.
+     */
     public static void prontBulletGradient(PoseStack ps, SubmitSink collector, Vec3 skeleton,
                                            int startColor, int endColor, float muzzleWidth, float endpointWidth) {
         ps.pushPose();
@@ -81,10 +105,20 @@ public final class BeamPronter {
                         0.03125F, 0.0078125F, lightColor, darkColor));
     }
 
-    /** Full legacy beam contract used by the Exposure Chamber's animated line effects. */
+    /**
+     * Full legacy beam contract used by the Exposure Chamber's animated line effects.
+     */
     public static void prontBeam(PoseStack ps, SubmitSink collector, Vec3 skeleton,
                                  EnumWaveType wave, EnumBeamType beam, int start, int segments,
                                  float size, int outerColor, int innerColor, int layers, float thickness) {
+        prontBeam(ps, collector, skeleton, wave, beam, start, segments, size, outerColor, innerColor,
+                layers, thickness, 1F);
+    }
+
+    public static void prontBeam(PoseStack ps, SubmitSink collector, Vec3 skeleton,
+                                 EnumWaveType wave, EnumBeamType beam, int start, int segments,
+                                 float size, int outerColor, int innerColor, int layers, float thickness,
+                                 float opacity) {
 
         ps.pushPose();
 
@@ -107,7 +141,7 @@ public final class BeamPronter {
         } else {
             collector.submitCustomGeometry(ps, CompatRenderTypes.additiveTriangles(),
                     (pose, buffer) -> drawSolidBeam(pose, buffer, wave, start, size, layers, thickness,
-                            segmentCount, segmentLength, outerColor, innerColor));
+                            segmentCount, segmentLength, outerColor, innerColor, opacity));
         }
 
         ps.popPose();
@@ -115,7 +149,8 @@ public final class BeamPronter {
 
     private static void drawSolidBeam(PoseStack.Pose pose, VertexConsumer buffer, EnumWaveType wave, int start,
                                       float size, int layers, float thickness, int segments, float segmentLength,
-                                      int outerColor, int innerColor) {
+                                      int outerColor, int innerColor, float opacity) {
+        opacity = Mth.clamp(opacity, 0F, 1F);
         Random random = new Random(start);
         float lastX = 0F, lastY = 0F, lastZ = 0F;
         float radius = layers <= 0 ? 0F : thickness / layers;
@@ -131,7 +166,7 @@ public final class BeamPronter {
                     // widest the inner one. Under additive blending the core is the sum of every layer either way,
                     // so what this decides is the colour of the beam's edge.
                     int color = layers == 1 ? outerColor : interpolateColor(outerColor, innerColor, inter);
-                    segmentPrism(pose, buffer, color, lastX, lastY, lastZ, x, y, z, radius * layer);
+                    segmentPrism(pose, buffer, color, lastX, lastY, lastZ, x, y, z, radius * layer, opacity);
                 }
             }
             lastX = x;
@@ -149,12 +184,12 @@ public final class BeamPronter {
             float x = offset[0];
             float y = segmentLength * i;
             float z = offset[1];
-            if (i > 0) segmentPrism(pose, buffer, outerColor, lastX, lastY, lastZ, x, y, z, 0.01F);
+            if (i > 0) segmentPrism(pose, buffer, outerColor, lastX, lastY, lastZ, x, y, z, 0.01F, 1F);
             lastX = x;
             lastY = y;
             lastZ = z;
         }
-        segmentPrism(pose, buffer, innerColor, 0F, 0F, 0F, 0F, segmentLength * segments, 0F, 0.01F);
+        segmentPrism(pose, buffer, innerColor, 0F, 0F, 0F, 0F, segmentLength * segments, 0F, 0.01F, 1F);
     }
 
     private static float[] waveOffset(EnumWaveType wave, float size, int start, int segment, Random random) {
@@ -170,15 +205,16 @@ public final class BeamPronter {
     }
 
     private static void segmentPrism(PoseStack.Pose pose, VertexConsumer buffer, int color,
-                                     float x0, float y0, float z0, float x1, float y1, float z1, float radius) {
+                                     float x0, float y0, float z0, float x1, float y1, float z1, float radius,
+                                     float opacity) {
         quad(pose, buffer, color, x0 + radius, y0, z0 + radius, x0 + radius, y0, z0 - radius,
-                x1 + radius, y1, z1 - radius, x1 + radius, y1, z1 + radius);
+                x1 + radius, y1, z1 - radius, x1 + radius, y1, z1 + radius, opacity);
         quad(pose, buffer, color, x0 - radius, y0, z0 + radius, x0 - radius, y0, z0 - radius,
-                x1 - radius, y1, z1 - radius, x1 - radius, y1, z1 + radius);
+                x1 - radius, y1, z1 - radius, x1 - radius, y1, z1 + radius, opacity);
         quad(pose, buffer, color, x0 + radius, y0, z0 + radius, x0 - radius, y0, z0 + radius,
-                x1 - radius, y1, z1 + radius, x1 + radius, y1, z1 + radius);
+                x1 - radius, y1, z1 + radius, x1 + radius, y1, z1 + radius, opacity);
         quad(pose, buffer, color, x0 + radius, y0, z0 - radius, x0 - radius, y0, z0 - radius,
-                x1 - radius, y1, z1 - radius, x1 + radius, y1, z1 - radius);
+                x1 - radius, y1, z1 - radius, x1 + radius, y1, z1 - radius, opacity);
     }
 
     private static void gradientPrism(PoseStack.Pose pose, VertexConsumer buffer,
@@ -240,27 +276,41 @@ public final class BeamPronter {
 
     private static void quad(PoseStack.Pose pose, VertexConsumer buffer, int color,
                              float ax, float ay, float az, float bx, float by, float bz,
-                             float cx, float cy, float cz, float dx, float dy, float dz) {
-        tris(pose, buffer, color, ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz);
+                             float cx, float cy, float cz, float dx, float dy, float dz, float opacity) {
+        tris(pose, buffer, color, ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz, opacity);
     }
 
-    /** Emits the quad (a,b,c,d) as two triangles, matching the source's single no-cull quad. */
+    /**
+     * Emits the quad (a,b,c,d) as two triangles, matching the source's single no-cull quad.
+     */
     private static void tris(PoseStack.Pose pose, VertexConsumer buf, int color,
                              float ax, float ay, float az, float bx, float by, float bz,
-                             float cx, float cy, float cz, float dx, float dy, float dz) {
+                             float cx, float cy, float cz, float dx, float dy, float dz, float opacity) {
         // The source disables culling instead of submitting a second winding.
-        vert(pose, buf, color, ax, ay, az); vert(pose, buf, color, bx, by, bz); vert(pose, buf, color, cx, cy, cz);
-        vert(pose, buf, color, ax, ay, az); vert(pose, buf, color, cx, cy, cz); vert(pose, buf, color, dx, dy, dz);
+        vert(pose, buf, color, ax, ay, az, opacity);
+        vert(pose, buf, color, bx, by, bz, opacity);
+        vert(pose, buf, color, cx, cy, cz, opacity);
+        vert(pose, buf, color, ax, ay, az, opacity);
+        vert(pose, buf, color, cx, cy, cz, opacity);
+        vert(pose, buf, color, dx, dy, dz, opacity);
     }
 
     private static void vert(PoseStack.Pose pose, VertexConsumer buf, int color, float x, float y, float z) {
+        vert(pose, buf, color, x, y, z, 1F);
+    }
+
+    private static void vert(PoseStack.Pose pose, VertexConsumer buf, int color, float x, float y, float z,
+                             float opacity) {
         // Source beam tables use RGB literals; modern VertexConsumer.setColor(int) reads ARGB.
         // Preserve explicit alpha for fading callers, but never turn an RGB beam fully transparent.
         int argb = (color & 0xFF000000) == 0 ? 0xFF000000 | (color & 0xFFFFFF) : color;
-        Vertexes.color(buf, pose, x, y, z, argb);
+        int coverage = (int) ((argb >>> 24) * opacity);
+        Vertexes.color(buf, pose, x, y, z, coverage << 24 | argb & 0xFFFFFF);
     }
 
-    /** Per-channel linear colour interpolation (the old {@code BobMathUtil.interpolateColor}). */
+    /**
+     * Per-channel linear colour interpolation (the old {@code BobMathUtil.interpolateColor}).
+     */
     private static int interpolateColor(int from, int to, float inter) {
         int a = (int) ((from >> 24 & 0xFF) + ((to >> 24 & 0xFF) - (from >> 24 & 0xFF)) * inter);
         int r = (int) ((from >> 16 & 0xFF) + ((to >> 16 & 0xFF) - (from >> 16 & 0xFF)) * inter);
@@ -269,6 +319,7 @@ public final class BeamPronter {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    public enum EnumWaveType { STRAIGHT, RANDOM, SPIRAL }
-    public enum EnumBeamType { SOLID, LINE }
+    public enum EnumWaveType {STRAIGHT, RANDOM, SPIRAL}
+
+    public enum EnumBeamType {SOLID, LINE}
 }

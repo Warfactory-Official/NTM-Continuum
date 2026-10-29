@@ -28,10 +28,13 @@ import net.minecraft.world.level.GameType;
 
 import java.util.List;
 
-/** Focused contracts for the precision assembler's registry, recipe, fluid, and menu surfaces. */
+/**
+ * Focused contracts for the precision assembler's registry, recipe, fluid, and menu surfaces.
+ */
 public final class PrecisionAssemblerGameTests {
 
-    private PrecisionAssemblerGameTests() {}
+    private PrecisionAssemblerGameTests() {
+    }
 
     private static final GenericRecipeTableGameTests.Mode MODE_528 = new GenericRecipeTableGameTests.Mode(false, true);
 
@@ -64,7 +67,8 @@ public final class PrecisionAssemblerGameTests {
             Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
             ContainerMachinePrecAss menu = new ContainerMachinePrecAss(0, player.getInventory(), te);
 
-            helper.assertTrue(menu.slots.size() == 58, "Precision assembler menu must have 22 machine + 36 player slots");
+            helper.assertTrue(menu.slots.size() == 58,
+                    "Precision assembler menu must have 22 machine + 36 player slots");
             helper.assertTrue(menu.getSlot(4).x == 8 && menu.getSlot(4).y == 27
                             && menu.getSlot(12).x == 44 && menu.getSlot(12).y == 63,
                     "Precision assembler inputs must be a 3x3 grid at the legacy coordinates");
@@ -77,7 +81,8 @@ public final class PrecisionAssemblerGameTests {
                     "Blueprint slot must accept dynamic blueprints");
             helper.assertFalse(menu.getSlot(1).mayPlace(new ItemStack(Items.PAPER)),
                     "Blueprint slot must reject paper");
-            helper.assertTrue(menu.getSlot(4).mayPlace(new ItemStack(ModIntermediateItems.circuit(EnumCircuitType.SILICON))),
+            helper.assertTrue(
+                    menu.getSlot(4).mayPlace(new ItemStack(ModIntermediateItems.circuit(EnumCircuitType.SILICON))),
                     "First precision input must accept silicon");
             helper.assertFalse(menu.getSlot(13).mayPlace(new ItemStack(Items.IRON_INGOT)),
                     "Precision output slots must be take-only");
@@ -92,8 +97,8 @@ public final class PrecisionAssemblerGameTests {
     }
 
     public static void processing(GameTestHelper helper) {
+        TileEntityMachinePrecAss te = place(helper, new BlockPos(1, 1, 1));
         GenericRecipeTableGameTests.under(helper, MODE_528, () -> {
-            TileEntityMachinePrecAss te = place(helper, new BlockPos(1, 1, 1));
             GenericRecipe recipe = PrecAssRecipes.INSTANCE.getRecipe("precass.chip");
             te.assemblerModule.recipe = recipe.getInternalName();
             te.setItem(1, ItemBlueprints.make(GenericRecipes.POOL_PREFIX_528 + "chip"));
@@ -104,11 +109,25 @@ public final class PrecisionAssemblerGameTests {
             }
             te.power = 100_000L;
             for (int tick = 0; tick < recipe.duration; tick++) te.assemblerModule.update(1D, 1D, true, te.getItem(1));
-            helper.assertFalse(te.getItem(13).isEmpty(), "Precision assembler must produce either the product or faulty output");
+            helper.assertFalse(te.getItem(13).isEmpty(),
+                    "Precision assembler must produce either the product or faulty output");
             helper.assertTrue(te.getItem(4).isEmpty() && te.getItem(5).isEmpty() && te.getItem(6).isEmpty(),
                     "Precision assembler must consume all inputs after a completed cycle");
         });
-        helper.succeed();
+        for (var slot = 0; slot < te.inventory.getSlots(); slot++) te.setItem(slot, ItemStack.EMPTY);
+        var liveRecipe = PrecAssRecipes.INSTANCE.getRecipe("precass.crystalcircuit");
+        te.assemblerModule.recipe = liveRecipe.getInternalName();
+        te.assemblerModule.progress = 0D;
+        te.didProcess = false;
+        for (var index = 0; index < liveRecipe.inputItem.length; index++) {
+            te.setItem(4 + index, liveRecipe.inputItem[index].getDisplayStack());
+        }
+        te.power = liveRecipe.power * 2;
+        helper.runAfterDelay(1, () -> {
+            helper.assertTrue(te.didProcess && te.assemblerModule.progress > 0D && te.power == liveRecipe.power,
+                    "A world tick must process the loaded crystal-circuit recipe and consume one tick of power");
+            helper.succeed();
+        });
     }
 
     public static void blueprints(GameTestHelper helper) {
@@ -167,7 +186,7 @@ public final class PrecisionAssemblerGameTests {
 
     private static TileEntityMachinePrecAss place(GameTestHelper helper, BlockPos relative) {
         helper.setBlock(relative, ModMachineBlocks.machine_precass.get().defaultBlockState()
-                );
+        );
         return (TileEntityMachinePrecAss) helper.getLevel().getBlockEntity(helper.absolutePos(relative));
     }
 }

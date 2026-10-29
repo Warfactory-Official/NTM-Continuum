@@ -30,7 +30,8 @@ import java.util.Set;
  */
 public final class TickerGameTests {
 
-    private TickerGameTests() {}
+    private TickerGameTests() {
+    }
 
     /**
      * The number of block entity types that declare a ticker. It is pinned because the risk this
@@ -40,7 +41,8 @@ public final class TickerGameTests {
      * <p>The cable, fluid duct and fluid valve do not tick: a network node is a graph cell the block owns,
      * so none of the three has anything to do each tick.
      */
-    private static final int TICKING_TYPES = 317;
+    // cable_diode and capacitor each declare their own server ticker.
+    private static final int TICKING_TYPES = 319;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();

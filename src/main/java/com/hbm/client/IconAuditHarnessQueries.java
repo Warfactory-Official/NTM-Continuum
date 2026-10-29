@@ -7,6 +7,7 @@ import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.world.ItemStacks;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
@@ -26,20 +28,22 @@ import net.minecraft.world.level.block.EntityBlock;
 /**
  * The {@code hbm_icon_audit} harness query read by {@code ItemIconAudit}: every HBM stack a player can see in a slot
  * (each creative-tab entry, each custom tab stack such as enum variants and filled containers, then every remaining
- * registered {@code hbm:} item), paged onto an {@link IconAuditScreen}.
+ * registered item in the requested namespace, {@code hbm} by default), paged onto an {@link IconAuditScreen}.
  *
  * <p>Params: {@code {"page":n}} opens page {@code n} and answers its manifest (slot index, label, item id, variant
  * ordinal, display name, GUI origin); {@code {"page":-1}} opens the empty background reference page;
  * {@code "alt":true} draws the page in the alternate measurement colours; {@code {"close":true}} closes the screen. {@code "filter":"<regex>"} (optional, on every call) restricts
  * the paged list to stacks whose label ({@code id} or {@code id@variant}) matches the regex anywhere ({@code find}); labels
  * and variant ordinals are still counted over the full list, so a filtered run's labels equal an unfiltered run's. Every
- * answer carries the totals and the GUI geometry. Inert unless the harness runs.
+ * answer carries the totals and the GUI geometry. {@code "namespace":"ntmspace"} selects another registry namespace.
+ * Inert unless the harness runs.
  */
 public final class IconAuditHarnessQueries {
 
-    private static List<ItemStack> stacks;
+    private static final Map<String, List<ItemStack>> stacksByNamespace = new HashMap<>();
 
-    private IconAuditHarnessQueries() {}
+    private IconAuditHarnessQueries() {
+    }
 
     public static void register() {
         HarnessQueryRegistry.register("hbm_icon_audit", IconAuditHarnessQueries::query);
@@ -47,7 +51,9 @@ public final class IconAuditHarnessQueries {
         LangAuditHarnessQueries.register();
     }
 
-    /** Every hbm block (id, whether it has a block entity) and entity type (id, class name), sorted by id. */
+    /**
+     * Every hbm block (id, whether it has a block entity) and entity type (id, class name), sorted by id.
+     */
     private static JsonObject sweepIds(Minecraft mc, JsonObject params) {
         JsonObject json = new JsonObject();
         List<Block> blocks = new ArrayList<>();
@@ -80,10 +86,11 @@ public final class IconAuditHarnessQueries {
         return json;
     }
 
-    /** Every stack of the icon audit, built once. */
+    /**
+     * Every stack of the icon audit, built once.
+     */
     static List<ItemStack> allStacks() {
-        if (stacks == null) stacks = collect();
-        return stacks;
+        return stacksByNamespace.computeIfAbsent(Constants.MOD_ID, IconAuditHarnessQueries::collect);
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
@@ -93,7 +100,9 @@ public final class IconAuditHarnessQueries {
             json.addProperty("closed", true);
             return json;
         }
-        if (stacks == null || params.has("refresh")) stacks = collect();
+        String namespace = params.has("namespace") ? params.get("namespace").getAsString() : Constants.MOD_ID;
+        if (params.has("refresh")) stacksByNamespace.remove(namespace);
+        List<ItemStack> stacks = stacksByNamespace.computeIfAbsent(namespace, IconAuditHarnessQueries::collect);
         // full-list index of every stack shown (all of them unless a label filter is given)
         List<Integer> view = new ArrayList<>();
         List<String> labels = labels(stacks);
@@ -106,6 +115,7 @@ public final class IconAuditHarnessQueries {
         int pages = (view.size() + perPage - 1) / perPage;
         json.addProperty("total", view.size());
         json.addProperty("total_unfiltered", stacks.size());
+        json.addProperty("namespace", namespace);
         if (filter != null) json.addProperty("filter", filter.pattern());
         json.addProperty("per_page", perPage);
         json.addProperty("pages", pages);
@@ -146,7 +156,9 @@ public final class IconAuditHarnessQueries {
         return json;
     }
 
-    /** {@code id} for an item's first stack, {@code id@k} for its k-th further stack, counted over the full list. */
+    /**
+     * {@code id} for an item's first stack, {@code id@k} for its k-th further stack, counted over the full list.
+     */
     private static List<String> labels(List<ItemStack> all) {
         List<String> out = new ArrayList<>(all.size());
         Map<Item, Integer> ordinal = new HashMap<>();
@@ -158,8 +170,10 @@ public final class IconAuditHarnessQueries {
         return out;
     }
 
-    /** Tab order first (what a player browses), then any registered hbm item no tab shows. One stack per distinct item+data. */
-    private static List<ItemStack> collect() {
+    /**
+     * Tab order first, then any registered item in the namespace no tab shows. One stack per distinct item+data.
+     */
+    private static List<ItemStack> collect(String namespace) {
         List<ItemStack> out = new ArrayList<>();
         Map<Integer, List<ItemStack>> seen = new HashMap<>();
         for (var list : ModTabs.CONTENTS.values()) {
@@ -181,10 +195,10 @@ public final class IconAuditHarnessQueries {
             }
         }
         for (Item item : BuiltInRegistries.ITEM) {
-            if (!"hbm".equals(BuiltInRegistries.ITEM.getKey(item).getNamespace())) continue;
+            if (!namespace.equals(BuiltInRegistries.ITEM.getKey(item).getNamespace())) continue;
             add(out, seen, new ItemStack(item));
         }
-        out.removeIf(stack -> !"hbm".equals(BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace()));
+        out.removeIf(stack -> !namespace.equals(BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace()));
         return out;
     }
 

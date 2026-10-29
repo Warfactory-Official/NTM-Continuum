@@ -5,6 +5,10 @@ import com.hbm.items.armor.ItemModObsidian;
 import com.hbm.items.special.ItemDrop;
 import com.hbm.items.special.ItemDigamma;
 import com.hbm.items.special.ItemRag;
+import com.hbm.items.special.ItemSingularity;
+import com.hbm.items.special.ItemCell;
+import com.hbm.items.special.ItemAntimatterPellet;
+import com.hbm.items.special.ItemDemonCore;
 import com.hbm.items.weapon.WeaponizedCell;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -13,10 +17,11 @@ import com.hbm.items.armor.ItemModDefuser;
 import com.hbm.items.tool.ItemDropDetonator;
 
 /**
- * Dropped-item behaviors and defused creepers, forwarded by each loader's server entity tick.
+ * Dropped-item behaviors and defused creepers, after their server entity tick.
  */
 public final class ExplosivesEntityHooks {
-    private ExplosivesEntityHooks() {}
+    private ExplosivesEntityHooks() {
+    }
 
     public static void tick(Entity entity) {
         if (entity.level().isClientSide()) return;
@@ -28,6 +33,10 @@ public final class ExplosivesEntityHooks {
             ItemDrop.tickDropped(item); // 1.7 ItemDrop.onEntityItemUpdate: beta setDead
             ItemDigamma.tickDropped(item);
             ItemRag.tickDropped(item); // 1.7 ItemRag.onEntityItemUpdate: cloth in water -> damp
+            ItemSingularity.tickDropped(item);
+            ItemCell.tickDropped(item);
+            ItemAntimatterPellet.tickDropped(item);
+            ItemDemonCore.tickDropped(item);
             return;
         }
         if (entity instanceof Creeper creeper) {

@@ -27,15 +27,19 @@ import dev.golem.core.world.RecipeFields.Shape;
  */
 public final class HbmRecipeFields {
 
-    private HbmRecipeFields() {}
+    private HbmRecipeFields() {
+    }
 
-    /** States the fields; called by {@link HbmRecipeTables#declare()} once every table exists. */
+    /**
+     * States the fields; called by {@link HbmRecipeTables#declare()} once every table exists.
+     */
     public static void declare() {
         // Fluid tables
         CokerRecipes.TABLE.table.fields(of(
                 out("output", RecipeShapes.STACK_OUT), fin("input", RecipeShapes.FLUID_ID),
                 field("amount", Kind.INT).optional(), field("solid_fuel_energy", Kind.LONG).optional(),
-                fout("byproduct", RecipeShapes.FLUID_STACK).optional(), fout("byproduct_type", RecipeShapes.FLUID_ID).optional()));
+                fout("byproduct", RecipeShapes.FLUID_STACK).optional(),
+                fout("byproduct_type", RecipeShapes.FLUID_ID).optional()));
         CompressorRecipes.TABLE.fields(of(
                 fout("output", RecipeShapes.FLUID_STACK), fin("input", RecipeShapes.FLUID_ID),
                 field("amount", Kind.INT), field("duration", Kind.INT), field("pressure", Kind.INT).optional()));
@@ -46,7 +50,8 @@ public final class HbmRecipeFields {
         RadiolysisRecipes.TABLE.table.fields(leftRight);
         ElectrolyserFluidRecipes.TABLE.table.fields(of(
                 fin("input", RecipeShapes.FLUID_ID), field("amount", Kind.INT),
-                fout("output1", RecipeShapes.FLUID_STACK).optional(), fout("output2", RecipeShapes.FLUID_STACK).optional(),
+                fout("output1", RecipeShapes.FLUID_STACK).optional(),
+                fout("output2", RecipeShapes.FLUID_STACK).optional(),
                 field("duration", Kind.INT).optional(), out("byproducts", RecipeShapes.STACK_OUT).list().optional()));
         GasCentrifugeRecipes.PSEUDO_FLUIDS.fields(of(
                 field("name", Kind.STRING), out("outputs", RecipeShapes.STACK_OUT).list(),
@@ -63,9 +68,12 @@ public final class HbmRecipeFields {
                 fout("output", RecipeShapes.FLUID_STACK), in("input", RecipeShapes.INGREDIENT_ID)));
         PyroOvenRecipes.TABLE.fields(of(
                 field("duration", Kind.INT),
-                out("output_item", RecipeShapes.STACK_OUT).optional(), fout("output_fluid", RecipeShapes.FLUID_STACK).optional(),
-                in("input_item", RecipeShapes.INGREDIENT).optional(), fin("input_fluid", RecipeShapes.FLUID_STACK).optional(),
-                fin("solid_fuel", RecipeShapes.FLUID_ID).optional(), field("solid_fuel_energy", Kind.LONG).optional(), order()));
+                out("output_item", RecipeShapes.STACK_OUT).optional(),
+                fout("output_fluid", RecipeShapes.FLUID_STACK).optional(),
+                in("input_item", RecipeShapes.INGREDIENT).optional(),
+                fin("input_fluid", RecipeShapes.FLUID_STACK).optional(),
+                fin("solid_fuel", RecipeShapes.FLUID_ID).optional(), field("solid_fuel_energy", Kind.LONG).optional(),
+                order()));
         RefineryRecipes.TABLE.table.fields(of(
                 fout("outputs", RecipeShapes.FLUID_STACK).list(), out("byproduct", RecipeShapes.STACK_OUT),
                 fin("input", RecipeShapes.FLUID_ID)));
@@ -77,8 +85,10 @@ public final class HbmRecipeFields {
                 out("output", RecipeShapes.STACK_OUT), fin("input", RecipeShapes.FLUID_ID),
                 field("amount", Kind.INT).optional(), field("solid_fuel_energy", Kind.LONG).optional()));
         StorageDrumRecipes.TABLE.fields(of(
-                out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.ITEM_STACK_IN), field("decay", Kind.STRING),
-                field("divisor", Kind.INT).optional(), field("liquid", Kind.INT).optional(), field("gas", Kind.INT).optional()));
+                out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.ITEM_STACK_IN),
+                field("decay", Kind.STRING),
+                field("divisor", Kind.INT).optional(), field("liquid", Kind.INT).optional(),
+                field("gas", Kind.INT).optional()));
         FractionRecipes.TABLE.fields(of(
                 fout("left", RecipeShapes.FLUID_STACK), fout("right", RecipeShapes.FLUID_STACK),
                 fin("input", RecipeShapes.FLUID_ID)));
@@ -91,14 +101,16 @@ public final class HbmRecipeFields {
                 field("materials", Kind.JSON).list(), in("input", RecipeShapes.INGREDIENT_ID)));
         ArcFurnaceRecipes.TABLE.fields(of(
                 in("input", RecipeShapes.INGREDIENT),
-                out("solid_output", RecipeShapes.STACK_OUT).optional(), field("molten_outputs", Kind.JSON).list().optional(),
+                out("solid_output", RecipeShapes.STACK_OUT).optional(),
+                field("molten_outputs", Kind.JSON).list().optional(),
                 order()));
         CrucibleRecipes.TABLE.fields(of(
                 field("name", Kind.STRING), field("outputs", Kind.JSON).list(), field("inputs", Kind.JSON).list(),
                 field("frequency", Kind.INT).optional(),
                 out("icon", RecipeShapes.STACK_OUT).role(RecipeFields.Role.OTHER).optional(), order()));
         CentrifugeRecipes.TABLE.fields(of(
-                out("outputs", RecipeShapes.STACK_OUT).list(), in("input", RecipeShapes.INGREDIENT), requires(), order()));
+                out("outputs", RecipeShapes.STACK_OUT).list(), in("input", RecipeShapes.INGREDIENT), requires(),
+                order()));
         CrystallizerRecipes.TABLE.fields(of(
                 out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.INGREDIENT),
                 fin("acid", RecipeShapes.FLUID_STACK), field("duration", Kind.INT),
@@ -108,14 +120,17 @@ public final class HbmRecipeFields {
                 in("particle", RecipeShapes.ITEM_ID_IN), field("antimatter", Kind.INT), order()));
         ElectrolyserMetalRecipes.TABLE.fields(of(
                 field("molten", Kind.JSON).list(), in("input", RecipeShapes.ITEM_ID_IN),
-                out("byproducts", RecipeShapes.STACK_OUT).list().optional(), field("duration", Kind.INT).optional(), order()));
+                out("byproducts", RecipeShapes.STACK_OUT).list().optional(), field("duration", Kind.INT).optional(),
+                order()));
         RotaryFurnaceRecipes.TABLE.fields(of(
                 field("output", Kind.JSON), field("duration", Kind.INT), field("steam", Kind.INT),
-                in("inputs", RecipeShapes.INGREDIENT).list().optional(), fin("fluid", RecipeShapes.FLUID_STACK).optional(),
+                in("inputs", RecipeShapes.INGREDIENT).list().optional(),
+                fin("fluid", RecipeShapes.FLUID_STACK).optional(),
                 order()));
         SILEXRecipes.TABLE.fields(of(
                 field("outputs", Kind.JSON).list(), in("input", RecipeShapes.INGREDIENT),
-                field("laser_strength", Kind.STRING), field("fluid_produced", Kind.INT), field("fluid_consumed", Kind.INT),
+                field("laser_strength", Kind.STRING), field("fluid_produced", Kind.INT),
+                field("fluid_consumed", Kind.INT),
                 order()));
         ShredderRecipes.TABLE.fields(of(
                 out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.INGREDIENT_ID),
@@ -133,25 +148,30 @@ public final class HbmRecipeFields {
                 field("duration", Kind.INT), field("consumption", Kind.LONG),
                 fin("fluid", RecipeShapes.FLUID_STACK).optional(), order()));
         BreederRecipes.TABLE.fields(of(
-                out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.ITEM_ID_IN), field("flux", Kind.INT), order()));
+                out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.ITEM_ID_IN), field("flux", Kind.INT),
+                order()));
         CombinationRecipes.TABLE.fields(of(
                 in("input", RecipeShapes.INGREDIENT),
-                out("item_output", RecipeShapes.STACK_OUT).optional(), fout("fluid_output", RecipeShapes.FLUID_STACK).optional(),
+                out("item_output", RecipeShapes.STACK_OUT).optional(),
+                fout("fluid_output", RecipeShapes.FLUID_STACK).optional(),
                 order()));
         LemegetonRecipes.TABLE.fields(of(
                 out("output", RecipeShapes.ITEM_ID_OUT), in("input", RecipeShapes.INGREDIENT_ID), order()));
         MagicRecipes.TABLE.fields(of(
-                out("result", RecipeShapes.ITEM_ID_OUT), in("ingredients", RecipeShapes.INGREDIENT_ID).list(), order()));
+                out("result", RecipeShapes.ITEM_ID_OUT), in("ingredients", RecipeShapes.INGREDIENT_ID).list(),
+                order()));
         ParticleAcceleratorRecipes.TABLE.fields(of(
                 out("output1", RecipeShapes.STACK_OUT), in("input1", RecipeShapes.INGREDIENT),
                 in("input2", RecipeShapes.INGREDIENT), field("momentum", Kind.INT),
                 out("output2", RecipeShapes.STACK_OUT).optional(), order()));
         PedestalRecipes.TABLE.fields(of(
                 out("output", RecipeShapes.ITEM_ID_OUT), in("grid", RecipeShapes.PEDESTAL_SLOT).list(),
-                field("count", Kind.INT).optional(), field("extra", Kind.STRING).optional(), field("set", Kind.INT).optional(),
+                field("count", Kind.INT).optional(), field("extra", Kind.STRING).optional(),
+                field("set", Kind.INT).optional(),
                 order()));
         PressRecipes.TABLE.fields(of(
-                out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.INGREDIENT), field("stamp", Kind.STRING),
+                out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.INGREDIENT),
+                field("stamp", Kind.STRING),
                 order()));
         SawmillRecipes.TABLE.fields(of(
                 out("output", RecipeShapes.STACK_OUT), in("input", RecipeShapes.INGREDIENT),
@@ -159,22 +179,29 @@ public final class HbmRecipeFields {
                 field("hidden", Kind.BOOLEAN).optional(), order()));
         SolderingRecipes.TABLE.fields(of(
                 out("output", RecipeShapes.STACK_OUT), field("duration", Kind.INT), field("consumption", Kind.LONG),
-                in("toppings", RecipeShapes.INGREDIENT).list().optional(), in("pcb", RecipeShapes.INGREDIENT).list().optional(),
-                in("solder", RecipeShapes.INGREDIENT).list().optional(), fin("fluid", RecipeShapes.FLUID_STACK).optional(),
+                in("toppings", RecipeShapes.INGREDIENT).list().optional(),
+                in("pcb", RecipeShapes.INGREDIENT).list().optional(),
+                in("solder", RecipeShapes.INGREDIENT).list().optional(),
+                fin("fluid", RecipeShapes.FLUID_STACK).optional(),
                 requires(), order()));
         AnvilRecipes.SMITHING.fields(of(
-                out("output", RecipeShapes.STACK_OUT), in("left", RecipeShapes.INGREDIENT), in("right", RecipeShapes.INGREDIENT),
-                field("tier", Kind.INT), field("hot", Kind.BOOLEAN).optional(), field("shapeless", Kind.BOOLEAN).optional(),
+                out("output", RecipeShapes.STACK_OUT), in("left", RecipeShapes.INGREDIENT),
+                in("right", RecipeShapes.INGREDIENT),
+                field("tier", Kind.INT), field("hot", Kind.BOOLEAN).optional(),
+                field("shapeless", Kind.BOOLEAN).optional(),
                 order()));
         AnvilRecipes.CONSTRUCTION.fields(of(
                 out("outputs", RecipeShapes.CHANCE_OUTPUT_OBJECT).list(), in("inputs", RecipeShapes.INGREDIENT).list(),
-                field("tier", Kind.INT), field("tier_upper", Kind.INT).optional(), field("overlay", Kind.STRING).optional(),
+                field("tier", Kind.INT), field("tier_upper", Kind.INT).optional(),
+                field("overlay", Kind.STRING).optional(),
                 requires(), order()));
     }
 
     // Helpers
 
-    /** The fields in order, each key with an underscore also answering to its camelCase name. */
+    /**
+     * The fields in order, each key with an underscore also answering to its camelCase name.
+     */
     private static RecipeFields of(Field... fields) {
         RecipeFields result = RecipeFields.of();
         for (Field field : fields) {
@@ -214,12 +241,16 @@ public final class HbmRecipeFields {
         return field(name, Kind.FLUID_OUT).shape(shape);
     }
 
-    /** {@code "order"}: the row's position in 1.7's list (rows without one come last, by recipe id). */
+    /**
+     * {@code "order"}: the row's position in 1.7's list (rows without one come last, by recipe id).
+     */
     private static Field order() {
         return field("order", Kind.INT).optional();
     }
 
-    /** {@code "requires"}: the 1.7 config switches the row depends on ({@code TableCodecs.REQUIRES}). */
+    /**
+     * {@code "requires"}: the 1.7 config switches the row depends on ({@code TableCodecs.REQUIRES}).
+     */
     private static Field requires() {
         return field("requires", Kind.STRING).list().optional();
     }

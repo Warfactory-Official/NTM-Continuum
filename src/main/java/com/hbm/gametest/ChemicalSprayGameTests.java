@@ -33,7 +33,8 @@ import java.util.List;
  */
 public final class ChemicalSprayGameTests {
 
-    private ChemicalSprayGameTests() {}
+    private ChemicalSprayGameTests() {
+    }
 
     private static EntityChemical spray(GameTestHelper helper, FluidType type, LivingEntity at) {
         EntityChemical chemical = new EntityChemical(ModEntities.CHEMICAL.get(), helper.getLevel());
@@ -49,7 +50,9 @@ public final class ChemicalSprayGameTests {
         return pig;
     }
 
-    /** Applies one spray hit and returns the health it took. */
+    /**
+     * Applies one spray hit and returns the health it took.
+     */
     private static float hit(EntityChemical chemical, LivingEntity target, double intensity) {
         target.setHealth(target.getMaxHealth());
         target.clearFire();
@@ -78,7 +81,8 @@ public final class ChemicalSprayGameTests {
         LivingEntity pig = pig(helper, new BlockPos(1, 3, 1));
         helper.runAfterDelay(1, () -> {
             near(helper, hit(spray(helper, Fluids.HOTSTEAM, pig), pig, 0.5D), 0.45F, "HOTSTEAM boil");
-            helper.assertTrue(pig.getRemainingFireTicks() <= 0, "300 °C must not set fire, has " + pig.getRemainingFireTicks());
+            helper.assertTrue(pig.getRemainingFireTicks() <= 0,
+                    "300 °C must not set fire, has " + pig.getRemainingFireTicks());
 
             near(helper, hit(spray(helper, Fluids.ULTRAHOTSTEAM, pig), pig, 0.5D), 0.75F, "ULTRAHOTSTEAM boil");
             helper.assertTrue(pig.getRemainingFireTicks() == 200,
@@ -232,7 +236,8 @@ public final class ChemicalSprayGameTests {
                                     && now.y <= ty + 1.0E-6D && Math.abs((now.y - ty) - Math.rint(now.y - ty)) < 1.0E-6D,
                             (caller == 0 ? "spray" : "mist") + " seed " + seed + ": target (" + tx + ", " + ty + ", " + tz
                                     + ") but the pig is at " + now);
-                    helper.assertTrue(level.getBlockState(BlockPos.containing(now.x, now.y, now.z).below()).blocksMotion(),
+                    helper.assertTrue(
+                            level.getBlockState(BlockPos.containing(now.x, now.y, now.z).below()).blocksMotion(),
                             "a teleported pig must stand over a block that blocks movement, at " + now);
                     if (caller == 0) sprayMoved = true;
                     else mistMoved = true;
@@ -255,21 +260,21 @@ public final class ChemicalSprayGameTests {
      * fluids alone (2,000 mB canister, 4,000 mB gland), ahead of its lead-container cut-off.
      */
     public static void dispersable(GameTestHelper helper) {
-        // HBM's (and vanilla's) fluids only, so the 1.7 counts hold with an addon's fluids loaded
-        int dispersable = 0, ours = 0;
-        FluidType[] all = Fluids.getAll();
-        for (int i = 1; i < all.length; i++) {
-            if (!FluidRecipeTableGameTests.ours(all[i])) continue;
-            if (all[i].isDispersable()) dispersable++;
+        // Declared network fluids exclude discovered world-fluid resources and addon's fluids.
+        int dispersable = 0;
+        var all = FluidRecipeTableGameTests.declaredFluids();
+        for (FluidType type : all) {
+            if (type != Fluids.NONE && type.isDispersable()) dispersable++;
         }
-        for (FluidType type : all) if (FluidRecipeTableGameTests.ours(type)) ours++;
-        helper.assertTrue(ours == 157 && all[0] == Fluids.NONE, "157 (1.7) fluids with NONE first, have " + ours);
+        helper.assertTrue(all.size() == 157 && all.get(0) == Fluids.NONE,
+                "157 (1.7) fluids with NONE first, have " + all.size());
         helper.assertTrue(dispersable == 83, "83 fluids must be dispersable, counted " + dispersable);
 
         ItemDisperser canister = ModEntityItems.disperser_canister.get();
         ItemDisperser gland = ModEntityItems.glyphid_gland.get();
         List<ItemStack> canisters = canister.creativeVariants().stream()
-                .filter(s -> FluidRecipeTableGameTests.ours(canister.getContent(s))).toList();
+                                            .filter(s -> FluidRecipeTableGameTests.declaredFluid(
+                                                    canister.getContent(s))).toList();
         List<ItemStack> glands = gland.creativeVariants();
         helper.assertTrue(canisters.size() == 83, "83 creative disperser canisters, have " + canisters.size());
         helper.assertTrue(glands.size() == 2 && glands.stream().anyMatch(s -> gland.getContent(s) == Fluids.PHEROMONE)

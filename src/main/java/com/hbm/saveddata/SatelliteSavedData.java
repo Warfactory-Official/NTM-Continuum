@@ -8,7 +8,9 @@ import com.hbm.saveddata.satellites.SatelliteType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import java.util.Optional;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -35,7 +37,8 @@ public class SatelliteSavedData extends CompatSavedData<SatelliteSavedData> {
      */
     private static final Codec<EnumDriveType> DRIVE_CODEC = Codec.STRING.comapFlatMap(
             name -> {
-                for (EnumDriveType type : EnumDriveType.values()) if (type.name().equals(name)) return DataResult.success(type);
+                for (EnumDriveType type : EnumDriveType.values())
+                    if (type.name().equals(name)) return DataResult.success(type);
                 return DataResult.error(() -> "Unknown drive type " + name);
             }, EnumDriveType::name);
 
@@ -46,21 +49,24 @@ public class SatelliteSavedData extends CompatSavedData<SatelliteSavedData> {
             Codec.INT.optionalFieldOf("targetZ").forGetter(e -> base(e, e.sat().targetZ)),
             Codec.STRING.optionalFieldOf("tx").forGetter(e -> base(e, e.sat().tx)),
             CompoundTag.CODEC.optionalFieldOf("extra")
-                    .forGetter(e -> e.sat().extra.isEmpty() ? Optional.empty() : Optional.of(e.sat().extra)),
+                             .forGetter(e -> e.sat().extra.isEmpty() ? Optional.empty() : Optional.of(e.sat().extra)),
             DRIVE_CODEC.optionalFieldOf("driveInput")
-                    .forGetter(e -> e.sat().savesBaseData() ? Optional.ofNullable(e.sat().driveInput) : Optional.empty()),
+                       .forGetter(e -> e.sat().savesBaseData() ? Optional.ofNullable(
+                               e.sat().driveInput) : Optional.empty()),
             DRIVE_CODEC.optionalFieldOf("driveOutput")
-                    .forGetter(e -> e.sat().savesBaseData() ? Optional.ofNullable(e.sat().driveOutput) : Optional.empty()),
+                       .forGetter(e -> e.sat().savesBaseData() ? Optional.ofNullable(
+                               e.sat().driveOutput) : Optional.empty()),
             ItemStacks.optionalCodec().listOf().optionalFieldOf("requestableSlots")
-                    .forGetter(e -> e.sat().savesBaseData() && e.sat().requestableSlots.length > 0
-                            ? Optional.of(slots(e.sat().requestableSlots)) : Optional.empty())
+                      .forGetter(e -> e.sat().savesBaseData() && e.sat().requestableSlots.length > 0
+                              ? Optional.of(slots(e.sat().requestableSlots)) : Optional.empty())
     ).apply(i, (freq, sat, targetX, targetZ, tx, extra, driveInput, driveOutput, requestable) -> {
         sat.setTarget(targetX.orElse(0), targetZ.orElse(0));
         sat.tx = tx.orElse("");
         sat.extra = extra.map(CompoundTag::copy).orElseGet(CompoundTag::new);
         sat.driveInput = driveInput.orElse(null);
         sat.driveOutput = driveOutput.orElse(null);
-        sat.requestableSlots = requestable.map(list -> list.toArray(new ItemStack[0])).orElseGet(() -> new ItemStack[0]);
+        sat.requestableSlots = requestable.map(list -> list.toArray(new ItemStack[0]))
+                                          .orElseGet(() -> new ItemStack[0]);
         return new Entry(freq, sat);
     }));
 
@@ -99,13 +105,31 @@ public class SatelliteSavedData extends CompatSavedData<SatelliteSavedData> {
         return get(Environment.satelliteLevel(level, pos, ItemStack.EMPTY));
     }
 
+    /**
+     * The local namespace wins a frequency collision before other addon-visible registries are searched.
+     */
+    public static SatelliteSavedData get(ServerLevel level, BlockPos pos, int frequency) {
+        var local = get(level, pos);
+        if (local.isFreqTaken(frequency)) return local;
+        for (var candidate : Environment.satelliteLevels(level, pos)) {
+            var data = get(candidate);
+            if (data != local && data.isFreqTaken(frequency)) return data;
+        }
+        return local;
+    }
+
     private static SatelliteSavedData fromEntries(List<Entry> entries) {
         SatelliteSavedData data = new SatelliteSavedData();
-        for (Entry entry : entries) data.sats.put(entry.freq(), entry.sat());
+        for (Entry entry : entries) {
+            data.attach(entry.freq(), entry.sat());
+            entry.sat().isDirty = false;
+        }
         return data;
     }
 
-    /** 1.7 {@code ModEventHandler} world tick: every satellite ticks, and a dirty one saves the registry. */
+    /**
+     * 1.7 {@code ModEventHandler} world tick: every satellite ticks, and a dirty one saves the registry.
+     */
     public void tick(ServerLevel level) {
         boolean dirty = false;
         for (Satellite sat : sats.values()) {
@@ -127,15 +151,23 @@ public class SatelliteSavedData extends CompatSavedData<SatelliteSavedData> {
     }
 
     public void put(int freq, Satellite sat) {
-        sats.put(freq, sat);
+        attach(freq, sat);
         setDirty();
+    }
+
+    private void attach(int freq, Satellite sat) {
+        var previous = sats.put(freq, sat);
+        if (previous != null && previous != sat) previous.attachOwner(null);
+        sat.attachOwner(this);
     }
 
     /**
      * 1.7 {@code CommandSatellites} "descend"; false where nothing held that frequency.
      */
     public boolean descend(int freq) {
-        if (sats.remove(freq) == null) return false;
+        var satellite = sats.remove(freq);
+        if (satellite == null) return false;
+        satellite.attachOwner(null);
         setDirty();
         return true;
     }

@@ -1,13 +1,17 @@
 package com.hbm.commands;
 
+import dev.golem.core.Ids;
 import com.hbm.items.ISatChip;
 import com.hbm.items.ModSatelliteItems;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.saveddata.satellites.Satellite;
+import com.hbm.api.environment.Environment;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import dev.golem.core.command.Permissions;
+
 import java.util.List;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -27,27 +31,35 @@ import java.util.Map;
  */
 public final class CommandSatellites {
 
-    private CommandSatellites() {}
+    private CommandSatellites() {
+    }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("ntmsatellites")
-                .requires(Permissions.level(4))
-                .then(Commands.literal("orbit").executes(ctx -> orbit(ctx.getSource())))
-                .then(Commands.literal("descend")
-                        .then(Commands.argument("frequency", IntegerArgumentType.integer())
-                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(frequencies(ctx.getSource()), builder))
-                                .executes(ctx -> descend(ctx.getSource(), IntegerArgumentType.getInteger(ctx, "frequency")))))
-                .then(Commands.literal("list").executes(ctx -> list(ctx.getSource()))));
+                                    .requires(Permissions.level(4))
+                                    .then(Commands.literal("orbit").executes(ctx -> orbit(ctx.getSource())))
+                                    .then(Commands.literal("descend")
+                                                  .then(Commands.argument("frequency", IntegerArgumentType.integer())
+                                                                .suggests(
+                                                                        (ctx, builder) -> SharedSuggestionProvider.suggest(
+                                                                                frequencies(ctx.getSource()), builder))
+                                                                .executes(ctx -> descend(ctx.getSource(),
+                                                                        IntegerArgumentType.getInteger(ctx,
+                                                                                "frequency")))))
+                                    .then(Commands.literal("list").executes(ctx -> list(ctx.getSource()))));
     }
 
     private static Iterable<String> frequencies(CommandSourceStack source) {
         if (!(source.getEntity() instanceof ServerPlayer)) return List.of();
-        return SatelliteSavedData.get(source.getLevel(), BlockPos.containing(source.getPosition())).sats.keySet().stream().map(String::valueOf).toList();
+        return Environment.satelliteLevels(source.getLevel(), BlockPos.containing(source.getPosition())).stream()
+                          .flatMap(level -> SatelliteSavedData.get(level).sats.keySet().stream())
+                          .map(String::valueOf).distinct().toList();
     }
 
     private static boolean notPlayer(CommandSourceStack source) {
         if (source.getEntity() instanceof ServerPlayer) return false;
-        source.sendFailure(Component.translatable("commands.satellite.should_be_run_as_player").withStyle(ChatFormatting.RED));
+        source.sendFailure(
+                Component.translatable("commands.satellite.should_be_run_as_player").withStyle(ChatFormatting.RED));
         return true;
     }
 
@@ -59,11 +71,11 @@ public final class CommandSatellites {
         // 1.7: any ISatChip but the blank ID chip. A chip whose item launches nothing is still consumed and still
         // reported as launched, because XSatelliteRegistry.orbit quietly does nothing for it.
         if (held.getItem() instanceof ISatChip && held.getItem() != ModSatelliteItems.sat_chip.get()) {
-            Satellite.orbit(player.level() instanceof ServerLevel level ? level : source.getLevel(), held,
-                    ISatChip.getFreqS(held), player.getX(), player.getY(), player.getZ());
+            var position = source.getPosition();
+            Satellite.orbit(source.getLevel(), held, ISatChip.getFreqS(held), position.x, position.y, position.z);
             held.shrink(1);
             source.sendSuccess(() -> Component.translatable("commands.satellite.satellite_orbited")
-                    .withStyle(ChatFormatting.GREEN), false);
+                                              .withStyle(ChatFormatting.GREEN), false);
             return 1;
         }
 
@@ -73,10 +85,11 @@ public final class CommandSatellites {
 
     private static int descend(CommandSourceStack source, int freq) {
         if (notPlayer(source)) return 0;
-        SatelliteSavedData data = SatelliteSavedData.get(source.getLevel(), BlockPos.containing(source.getPosition()));
+        SatelliteSavedData data = SatelliteSavedData.get(source.getLevel(), BlockPos.containing(source.getPosition()),
+                freq);
         if (data.descend(freq)) {
             source.sendSuccess(() -> Component.translatable("commands.satellite.satellite_descended")
-                    .withStyle(ChatFormatting.GREEN), false);
+                                              .withStyle(ChatFormatting.GREEN), false);
             return 1;
         }
         source.sendFailure(Component.translatable("commands.satellite.no_satellite").withStyle(ChatFormatting.RED));
@@ -85,15 +98,22 @@ public final class CommandSatellites {
 
     private static int list(CommandSourceStack source) {
         if (notPlayer(source)) return 0;
-        SatelliteSavedData data = SatelliteSavedData.get(source.getLevel(), BlockPos.containing(source.getPosition()));
-        if (data.sats.isEmpty()) {
-            source.sendFailure(Component.translatable("commands.satellite.no_active_satellites").withStyle(ChatFormatting.RED));
+        var visible = Environment.satelliteLevels(source.getLevel(), BlockPos.containing(source.getPosition()));
+        int count = 0;
+        for (var level : visible) {
+            var data = SatelliteSavedData.get(level);
+            String namespace = visible.size() == 1 ? "" : "[" + Ids.keyId(level.dimension()) + "] ";
+            for (Map.Entry<Integer, Satellite> entry : data.sats.entrySet()) {
+                String messageText = namespace + entry.getKey() + " - " + entry.getValue().getClass().getSimpleName();
+                source.sendSuccess(() -> Component.literal(messageText).withStyle(ChatFormatting.GREEN), false);
+                count++;
+            }
+        }
+        if (count == 0) {
+            source.sendFailure(
+                    Component.translatable("commands.satellite.no_active_satellites").withStyle(ChatFormatting.RED));
             return 0;
         }
-        for (Map.Entry<Integer, Satellite> entry : data.sats.entrySet()) {
-            String messageText = entry.getKey() + " - " + entry.getValue().getClass().getSimpleName();
-            source.sendSuccess(() -> Component.literal(messageText).withStyle(ChatFormatting.GREEN), false);
-        }
-        return data.sats.size();
+        return count;
     }
 }

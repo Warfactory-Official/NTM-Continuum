@@ -9,9 +9,12 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.Ids;
 import dev.golem.core.world.Recipes;
+import dev.golem.core.world.ItemStacks;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -42,15 +45,23 @@ import org.jspecify.annotations.Nullable;
  */
 public final class SawmillRecipes {
 
-    private SawmillRecipes() {}
+    private SawmillRecipes() {
+    }
 
-    /** The modern equivalent of the old {@code stickWood} ore-dictionary entry. */
+    /**
+     * The modern equivalent of the old {@code stickWood} ore-dictionary entry.
+     */
     public static final TagKey<Item> WOODEN_RODS = TagKey.create(Registries.ITEM, Ids.of("c", "rods/wooden"));
 
-    /** The recipe viewer's effective inputs, primary output and unrounded sawdust probability. */
-    public record SawmillRecipe(List<ItemStack> input, ItemStack output, float sawdustChance) {}
+    /**
+     * The recipe viewer's effective inputs, primary output and unrounded sawdust probability.
+     */
+    public record SawmillRecipe(List<ItemStack> input, ItemStack output, float sawdustChance) {
+    }
 
-    /** The input's crafting-table result, if it is in {@code require}, scaled by {@code multiply / divide}. */
+    /**
+     * The input's crafting-table result, if it is in {@code require}, scaled by {@code multiply / divide}.
+     */
     public record CraftingResult(TagKey<Item> require, int multiply, int divide) {
 
         static final Codec<CraftingResult> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -61,7 +72,8 @@ public final class SawmillRecipes {
     }
 
     public record Row(AStack input, ItemSpec output, Optional<CraftingResult> craftingResult, float sawdustChance,
-                      boolean hidden, int order) {}
+                      boolean hidden, int order) {
+    }
 
     public static final MapCodec<Row> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             TableCodecs.INGREDIENT.fieldOf("input").forGetter(Row::input),
@@ -80,17 +92,23 @@ public final class SawmillRecipes {
         TABLE.changed.register(() -> rows = TableCodecs.ordered(TABLE.rows(), Row::order));
     }
 
-    /** Declares the table at mod construction. */
-    public static void declare() {}
+    /**
+     * Declares the table at mod construction.
+     */
+    public static void declare() {
+    }
 
     private static List<Row> index() {
         if (rows.isEmpty()) TABLE.rows();
         return rows;
     }
 
-    /** The row that saws {@code input} (the first match by order), or null. */
+    /**
+     * The row that saws {@code input} (the first match by order), or null.
+     */
     public static @Nullable Row match(ItemStack input) {
         if (input.isEmpty()) return null;
+        if (!ItemStacks.isPlain(input)) return null;
         return firstMatch(index(), input);
     }
 
@@ -99,7 +117,9 @@ public final class SawmillRecipes {
         return null;
     }
 
-    /** Visible rows contain only inputs that actually select that row, including addon overrides. */
+    /**
+     * Visible rows contain only inputs that actually select that row, including addon overrides.
+     */
     public static List<SawmillRecipe> getRecipes() {
         var out = new ArrayList<SawmillRecipe>();
         // Use one snapshot: a table reload must not compare old rows against a newer match index.
@@ -107,36 +127,42 @@ public final class SawmillRecipes {
         for (var row : snapshot) {
             if (row.hidden()) continue;
             var input = row.input().getDisplayStacks().stream()
-                    .filter(stack -> !stack.isEmpty() && firstMatch(snapshot, stack) == row)
-                    .map(ItemStack::copy).toList();
+                           .filter(stack -> !stack.isEmpty() && firstMatch(snapshot, stack) == row)
+                           .map(ItemStack::copy).toList();
             if (input.isEmpty()) continue;
             out.add(new SawmillRecipe(input, row.output().stack(), row.sawdustChance()));
         }
         return out;
     }
 
-    /** Resolves a sawmill input on the server (a crafting-result row reads the level's crafting recipes). */
+    /**
+     * Resolves a sawmill input on the server (a crafting-result row reads the level's crafting recipes).
+     */
     public static ItemStack getOutput(Level level, ItemStack input) {
         Row row = match(input);
         if (row == null) return ItemStack.EMPTY;
         if (row.craftingResult().isEmpty()) return row.output().stack();
         CraftingResult crafting = row.craftingResult().get();
         return Recipes.craftingResult(level, input)
-                .filter(result -> result.is(crafting.require()))
-                .map(result -> {
-                    result.setCount(result.getCount() * crafting.multiply() / crafting.divide());
-                    return result;
-                })
-                .orElse(ItemStack.EMPTY);
+                      .filter(result -> result.is(crafting.require()))
+                      .map(result -> {
+                          result.setCount(result.getCount() * crafting.multiply() / crafting.divide());
+                          return result;
+                      })
+                      .orElse(ItemStack.EMPTY);
     }
 
-    /** The chance of a sawdust beside the output of sawing {@code input} (1.7 {@code sawdustChance}). */
+    /**
+     * The chance of a sawdust beside the output of sawing {@code input} (1.7 {@code sawdustChance}).
+     */
     public static float sawdustChance(ItemStack input) {
         Row row = match(input);
         return row == null ? 0F : row.sawdustChance();
     }
 
-    /** Whether the output of {@code input} depends on the server's crafting recipes (a client cannot check it). */
+    /**
+     * Whether the output of {@code input} depends on the server's crafting recipes (a client cannot check it).
+     */
     public static boolean needsCraftingResult(ItemStack input) {
         Row row = match(input);
         return row != null && row.craftingResult().isPresent();

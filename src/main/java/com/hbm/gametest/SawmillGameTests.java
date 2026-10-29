@@ -25,20 +25,23 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.registries.BuiltInRegistries;
 
-/** Focused contracts for the heat-powered sawmill. */
+/**
+ * Focused contracts for the heat-powered sawmill.
+ */
 public final class SawmillGameTests {
 
-    private SawmillGameTests() {}
+    private SawmillGameTests() {
+    }
 
     public static void recipes(GameTestHelper helper) {
         helper.assertTrue(SawmillRecipes.getOutput(helper.getLevel(), new ItemStack(Items.OAK_LOG))
-                        .is(Items.OAK_PLANKS), "oak log did not become planks");
+                                        .is(Items.OAK_PLANKS), "oak log did not become planks");
         helper.assertTrue(SawmillRecipes.getOutput(helper.getLevel(), new ItemStack(Items.OAK_LOG)).getCount() == 6,
                 "oak log output was not six planks");
         helper.assertTrue(SawmillRecipes.getOutput(helper.getLevel(), new ItemStack(Items.OAK_PLANKS)).getCount() == 6,
                 "plank output was not six sticks");
         helper.assertTrue(SawmillRecipes.getOutput(helper.getLevel(), new ItemStack(Items.STICK))
-                        .is(ModItems.powder_sawdust.get()), "stick output was not sawdust");
+                                        .is(ModItems.powder_sawdust.get()), "stick output was not sawdust");
         helper.succeed();
     }
 
@@ -47,7 +50,8 @@ public final class SawmillGameTests {
         BlockPos core = new BlockPos(2, 1, 2);
         helper.setBlock(core, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
-        helper.assertTrue(MultiblockSurface.foldedCore(helper.getLevel().getBlockState(helper.absolutePos(core))) != null,
+        helper.assertTrue(
+                MultiblockSurface.foldedCore(helper.getLevel().getBlockState(helper.absolutePos(core))) != null,
                 "sawmill core was not formed");
         helper.assertTrue(helper.absolutePos(core).equals(MultiblockSurface.coreOfAny(helper.getLevel(),
                         helper.absolutePos(core.offset(-1, 0, 0)))),
@@ -75,8 +79,11 @@ public final class SawmillGameTests {
         MachineSawmill block = ModMachineBlocks.machine_sawmill.get();
         TileEntitySawmill sawmill = place(helper, new BlockPos(2, 1, 2));
         ItemStack remainder = sawmill.inventory.insertItem(0, new ItemStack(Items.OAK_LOG, 64), false);
-        helper.assertTrue(sawmill.inventory.getStackInSlot(0).getCount() == 1 && remainder.getCount() == 63,
-                "sawmill input must accept only one item");
+        helper.assertTrue(sawmill.inventory.getStackInSlot(0).isEmpty() && remainder.getCount() == 64,
+                "1.7 rejects an offered bulk stack before insertion");
+        remainder = sawmill.inventory.insertItem(0, new ItemStack(Items.OAK_LOG), false);
+        helper.assertTrue(sawmill.inventory.getStackInSlot(0).getCount() == 1 && remainder.isEmpty(),
+                "sawmill input must accept a single offered item");
 
         sawmill.inventory.setStackInSlot(0, ItemStack.EMPTY);
         for (var item : BuiltInRegistries.ITEM) {
@@ -88,8 +95,9 @@ public final class SawmillGameTests {
         }
 
         AnvilRecipes.AnvilConstructionRecipe recipe = AnvilRecipes.getConstruction().stream()
-                .filter(candidate -> candidate.output.get(0).stack.is(block.asItem()))
-                .findFirst().orElse(null);
+                                                                  .filter(candidate -> candidate.output.get(0).stack.is(
+                                                                          block.asItem()))
+                                                                  .findFirst().orElse(null);
         helper.assertTrue(recipe != null && recipe.tierLower == 2 && recipe.input.size() == 5,
                 "sawmill tier-2 construction recipe is missing or malformed");
 

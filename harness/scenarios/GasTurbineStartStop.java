@@ -2,7 +2,7 @@ import com.google.gson.JsonObject;
 import dev.golem.harness.api.*;
 
 /**
- * Gas turbine ignition button (History §19em-turbinegas): opens the turbine GUI by a real right-click and presses
+ * Gas turbine ignition: opens the turbine GUI by a real right-click and presses
  * 1.7's round start/stop button (GUI 88,40) with real mouse clicks. Start must bring the turbine online after the
  * 580-tick startup; stop must then fire (1.7 gated the button on the client's counter, 0 or 579, never on the
  * server's) and run the 225-tick shutdown ramp; once the ramp ends, start must work again.
@@ -20,43 +20,44 @@ public final class GasTurbineStartStop implements Scenario {
         c.markLog();
         c.cmd("fill -12 " + (Y - 1) + " -12 12 " + (Y + 14) + " 12 minecraft:air");
         Fixtures.platform(c, 0, Y, 0, 12);
-        c.waitTicks(5);
+        c.waitServerTicks(5);
         Fixtures.placeOnTop(c, "hbm:machine_turbine_gas", 0, Y, 0);
-        c.waitTicks(10);
+        c.waitServerTicks(10);
 
         int[] core = findCore(c);
         Expect.that(core != null, "gas turbine core block entity not found");
         c.cmd("data merge block " + core[0] + " " + core[1] + " " + core[2] + " {gas:50000,lube:4000,water:4000}");
-        c.waitTicks(5);
+        c.waitServerTicks(5);
         Expect.that(state(c, core) == 0, "turbine must start offline");
 
         open(c);
         c.screenshot("01-idle");
         pressIgnition(c);
-        c.waitTicks(40);
+        c.waitServerTicks(40);
         c.screenshot("02-startup");
-        c.waitTicks(600);
+        c.waitServerTicks(600);
         Expect.that(state(c, core) == 1, "start button did not bring the turbine online, nbt: " + nbt(c, core));
         c.screenshot("03-online");
 
         pressIgnition(c);
-        c.waitTicks(5);
+        c.waitServerTicks(5);
         Expect.that(state(c, core) == 0, "stop button did not stop the running turbine, nbt: " + nbt(c, core));
-        c.waitTicks(60);
+        c.waitServerTicks(60);
         c.screenshot("04-ramp-down");
-        c.waitTicks(200);
+        c.waitServerTicks(200);
         c.screenshot("05-stopped");
 
         pressIgnition(c);
-        c.waitTicks(600);
-        Expect.that(state(c, core) == 1, "start after a full shutdown did not bring the turbine online, nbt: " + nbt(c, core));
+        c.waitServerTicks(600);
+        Expect.that(state(c, core) == 1,
+                "start after a full shutdown did not bring the turbine online, nbt: " + nbt(c, core));
         c.screenshot("06-online-again");
         pressIgnition(c);
-        c.waitTicks(5);
+        c.waitServerTicks(5);
         Expect.that(state(c, core) == 0, "second stop did not fire");
 
         c.key("escape");
-        c.waitTicks(5);
+        c.waitServerTicks(5);
         c.cmd("fill -12 " + (Y - 1) + " -12 12 " + (Y + 14) + " 12 minecraft:air");
         Expect.logCleanSinceMark(c, "(?i)exception.*(gui|screen|render|hbm|turbine)");
     }
@@ -64,7 +65,7 @@ public final class GasTurbineStartStop implements Scenario {
     private static void open(Client c) throws Exception {
         c.teleport(0.5, Y + 1, -3.5);
         Fixtures.interact(c, 0, Y + 1, 0);
-        c.waitTicks(15);
+        c.waitServerTicks(15);
         Expect.that(c.screenClass() != null, "turbine GUI did not open");
         System.out.println("[turbinegas] screen " + c.screenClass());
     }

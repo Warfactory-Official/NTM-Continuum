@@ -13,7 +13,9 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-/** Wearable chest jetpack base, also accepted as the legacy chestplate armor module. */
+/**
+ * Wearable chest jetpack base, also accepted as the legacy chestplate armor module.
+ */
 public abstract class JetpackBase extends ArmorFSB {
 
     protected JetpackBase(Properties properties) {
@@ -30,6 +32,7 @@ public abstract class JetpackBase extends ArmorFSB {
 
     @Override
     public void armorTick(Level level, Player player, ItemStack stack) {
+        if (player.isFallFlying() && !isActive(player)) return;
         tickFlight(level, player, stack);
     }
 
@@ -45,7 +48,9 @@ public abstract class JetpackBase extends ArmorFSB {
         tooltip.add(Component.literal("Can be worn on its own!").withStyle(ChatFormatting.GOLD));
     }
 
-    /** The old module table treats every JetpackBase as the chestplate-only module. */
+    /**
+     * The old module table treats every JetpackBase as the chestplate-only module.
+     */
     public final int moduleSlot() {
         return ArmorModHandler.plate_only;
     }
@@ -54,7 +59,9 @@ public abstract class JetpackBase extends ArmorFSB {
         return JetpackHandler.isJetpackActive(player);
     }
 
-    /** Fueled packs override ItemArmorMod's plain name with the old red indented installed-mod line. */
+    /**
+     * Fueled packs override ItemArmorMod's plain name with the old red indented installed-mod line.
+     */
     public void addArmorModDescription(List<Component> tooltip, ItemStack stack, ItemStack armor) {
         tooltip.add(Component.literal("  ").append(stack.getHoverName().copy().withStyle(ChatFormatting.RED)));
     }

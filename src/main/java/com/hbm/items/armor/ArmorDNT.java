@@ -12,10 +12,14 @@ import dev.golem.core.world.Attributes;
 import dev.golem.core.world.DamageEvents;
 import dev.golem.core.world.Sounds;
 import dev.golem.core.hook.Hook;
+
 import java.util.function.Predicate;
+
 import net.minecraft.world.damagesource.DamageSource;
 import dev.golem.core.world.GolemArmorMaterial;
+
 import java.util.List;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
@@ -26,12 +30,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-/** DNS armor, including sprint amplification, powered jetpack and glider assist. */
+/**
+ * DNS armor, including sprint amplification, powered jetpack and glider assist.
+ */
 public class ArmorDNT extends ArmorFSBPowered {
 
     private static final String SPEED_MODIFIER = "hbm:dns_speed";
 
-    /** Damage that the suit cancels silently; addons may identify their own environmental sources. */
+    /**
+     * Damage that the suit cancels silently; addons may identify their own environmental sources.
+     */
     public static final Hook<Predicate<DamageSource>> SILENT_ATTACK = Hook.of(listeners -> source -> {
         for (var predicate : listeners) if (predicate.test(source)) return true;
         return false;
@@ -61,7 +69,9 @@ public class ArmorDNT extends ArmorFSBPowered {
         return Component.literal("  ").append(Component.translatable(key)).withStyle(colour);
     }
 
-    /** Called once per player tick so removing DNS cannot leave its transient speed modifier behind. */
+    /**
+     * Called once per player tick so removing DNS cannot leave its transient speed modifier behind.
+     */
     public static void updateSprintSpeed(Player player) {
         ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
         if (chest.getItem() == ModArmorItems.dns_plate.get() && player.isSprinting()) {
@@ -83,11 +93,13 @@ public class ArmorDNT extends ArmorFSBPowered {
         if (thrusting) {
             double y = player.getDeltaMovement().y;
             if (y < 0.6D) y += 0.2D;
+            y = SuitFlight.dnsDescent(player, y, JetpackHandler.isBackpackEnabled(player),
+                    (float) Environment.gravity(player));
             player.setDeltaMovement(player.getDeltaMovement().x, y, player.getDeltaMovement().z);
             player.fallDistance = 0;
             if (TickPhase.every(player, 4)) playThrustSound(level, player);
             if (!level.isClientSide()) JetpackHandler.sendExhaust(player, JetpackHandler.EXHAUST_DNS);
-        } else {
+        } else if (!player.isFallFlying()) {
             boolean backpack = JetpackHandler.isBackpackEnabled(player);
             float forward = JetpackHandler.getForwardInput(player);
             float strafe = JetpackHandler.getStrafeInput(player);

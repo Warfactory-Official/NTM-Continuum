@@ -19,7 +19,8 @@ package com.hbm.lib;
  */
 public final class TagIds {
 
-    private TagIds() {}
+    private TagIds() {
+    }
 
     public static final String animal_foods = "#c:animal_foods";
     public static final String armors = "#c:armors";

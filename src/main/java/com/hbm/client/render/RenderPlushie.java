@@ -2,6 +2,7 @@ package com.hbm.client.render;
 
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockPlushie.PlushieType;
+import com.hbm.blocks.generic.BlockPlushie.Plushie;
 import com.hbm.blocks.generic.BlockTrinket;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.deco.TileEntityPlushie;
@@ -32,9 +33,11 @@ import net.minecraft.world.phys.Vec3;
 public final class RenderPlushie extends GemBER<TileEntityPlushie, RenderPlushie.State> {
 
     public static final class State extends CompatRenderState {
-        public float yaw;
+        public int rotation;
         public PlushieType type = PlushieType.NONE;
         public float squish;
+        public boolean miserable;
+        public double misery;
         public final CompatItemRenderState cigarette = new CompatItemRenderState();
     }
 
@@ -62,9 +65,11 @@ public final class RenderPlushie extends GemBER<TileEntityPlushie, RenderPlushie
 
     @Override
     public void extract(TileEntityPlushie plushie, State state, float interp, Vec3 cameraPosition) {
-        state.yaw = -(22.5F * plushie.getBlockState().getValue(BlockTrinket.ROTATION) + 90F);
+        state.rotation = plushie.getBlockState().getValue(BlockTrinket.ROTATION);
         state.type = plushie.type();
         state.squish = plushie.squishTimer > 0 ? plushie.squishTimer - interp : -1F;
+        state.miserable = plushie.miseryFactor > 0.01F;
+        state.misery = plushie.lastMiseryFactor + (plushie.miseryFactor - plushie.lastMiseryFactor) * interp;
         if (state.type == PlushieType.NUMBERNINE) {
             state.cigarette.extract(plushie.getLevel(), new ItemStack(BuiltInRegistries.ITEM.getValue(
                     Ids.of(Constants.MOD_ID, "cigarette"))), ItemDisplayContext.NONE);
@@ -73,22 +78,19 @@ public final class RenderPlushie extends GemBER<TileEntityPlushie, RenderPlushie
         }
     }
 
+    public static void rootPose(PoseStack pose, Plushie type, int rotation, boolean miserable, double misery,
+                                boolean squishing, double squish) {
+        pose.translate(0.5D, 0D, 0.5D);
+        pose.mulPose(Axis.YP.rotationDegrees(-(22.5F * rotation + 90F)));
+        if (miserable) pose.scale(1F, (float) (1D - misery), 1F);
+        else if (squishing) pose.scale(1F, (float) (1D + (-Math.sin(squish) * squish) * 0.025D), 1F);
+        pose.scale(type.scaleX(), type.scaleY(), type.scaleZ());
+    }
+
     @Override
     protected void submitUndeclared(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
         pose.pushPose();
-        pose.translate(0.5D, 0D, 0.5D);
-        pose.mulPose(Axis.YP.rotationDegrees(state.yaw));
-
-        if (state.squish >= 0F) {
-            double squish = state.squish;
-            pose.scale(1F, (float) (1 + (-(Math.sin(squish)) * squish) * 0.025), 1F);
-        }
-
-        switch (state.type) {
-            case YOMI -> pose.scale(0.5F, 0.5F, 0.5F);
-            case NUMBERNINE -> pose.scale(0.75F, 0.75F, 0.75F);
-            default -> { }
-        }
+        rootPose(pose, state.type, state.rotation, state.miserable, state.misery, state.squish >= 0F, state.squish);
         renderPlushie(pose, sink, state, state.lightCoords);
         pose.popPose();
     }
@@ -96,7 +98,9 @@ public final class RenderPlushie extends GemBER<TileEntityPlushie, RenderPlushie
     private static @org.jspecify.annotations.Nullable RenderPlushie itemRenderer;
     private final State itemState = new State();
 
-    /** 1.7 {@code RenderPlushie}'s item: {@code renderPlushie(type, false)} at the item's pose, cigarette included. */
+    /**
+     * 1.7 {@code RenderPlushie}'s item: {@code renderPlushie(type, false)} at the item's pose, cigarette included.
+     */
     public static void renderItem(PoseStack pose, SubmitSink sink, PlushieType type, int light) {
         if (itemRenderer == null) itemRenderer = new RenderPlushie();
         State state = itemRenderer.itemState;
@@ -121,7 +125,8 @@ public final class RenderPlushie extends GemBER<TileEntityPlushie, RenderPlushie
                 part(pose, sink, derg, DERG, state.squish >= 0F ? "Blep" : "ColonThree", light, true);
             }
             case NUMBERNINE -> numberNine(pose, sink, state, light);
-            default -> { }
+            default -> {
+            }
         }
     }
 
@@ -135,7 +140,8 @@ public final class RenderPlushie extends GemBER<TileEntityPlushie, RenderPlushie
         pose.pushPose();
         pose.mulPose(Axis.XP.rotationDegrees((float) -r));
         part(pose, sink, horse, NUMBERNINE, "Body", light, false);
-        horsePart(pose, sink, light, new double[]{0, 1.125, 0.375}, new double[]{0, r + 15, 0}, "Head", "Mane", "NoseFemale");
+        horsePart(pose, sink, light, new double[]{0, 1.125, 0.375}, new double[]{0, r + 15, 0}, "Head", "Mane",
+                "NoseFemale");
         horsePart(pose, sink, light, new double[]{0.125, 0.75, 0.3125}, new double[]{0, r - 25, 5}, "LeftFrontLeg");
         horsePart(pose, sink, light, new double[]{-0.125, 0.75, 0.3125}, new double[]{0, r - 25, -5}, "RightFrontLeg");
         horsePart(pose, sink, light, new double[]{0.125, 0.75, -0.25}, new double[]{0, -75 + r, 35}, "LeftBackLeg");

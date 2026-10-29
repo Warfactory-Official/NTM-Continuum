@@ -41,7 +41,8 @@ public final class RenderFallback implements Scenario {
     private static final int ROW_A = Z;
     private static final int ROW_B = Z + 16;
 
-    private record Machine(String id, int x, int z) {}
+    private record Machine(String id, int x, int z) {
+    }
 
     private static final List<Machine> MACHINES = List.of(
             new Machine("machine_chungus", X - 24, ROW_A),
@@ -139,18 +140,22 @@ public final class RenderFallback implements Scenario {
         }
     }
 
-    /** Waits (up to 30 s) until the chunk renderer has no section build queued or running. */
+    /**
+     * Waits (up to 30 s) until the chunk renderer has no section build queued or running.
+     */
     private static void waitSectionsBuilt(Client c) {
         c.waitTicks(5);
-        for (int i = 0; i < 120; i++) {
-            JsonObject status = c.status();
-            if (status.has("sections_built") && status.get("sections_built").getAsBoolean()) {
+        long deadline = System.nanoTime() + 30_000_000_000L;
+        JsonObject status;
+        do {
+            status = c.status();
+            if (status.get("sections_built").getAsBoolean()) {
                 c.waitTicks(5);
                 return;
             }
-            c.waitTicks(5);
-        }
-        Expect.that(false, "chunk renderer still rebuilding sections 30 s after the render distance changed");
+            c.waitTicks(1);
+        } while (System.nanoTime() < deadline);
+        throw new AssertionError("Chunk renderer still rebuilding sections: " + status);
     }
 
     private static void shots(Client c, String suffix) {
@@ -169,7 +174,7 @@ public final class RenderFallback implements Scenario {
     }
 
     /**
-     * Counts which path drew each core over two seconds, from the overview camera where every core is
+     * Counts which path drew each core over at least ten submits, from the overview camera where every core is
      * inside the frustum — a block-entity renderer outside it is never submitted at all, which would
      * read as "not replayed" for the wrong reason.
      */
@@ -178,8 +183,22 @@ public final class RenderFallback implements Scenario {
         c.lookAt(X + 0.5, L + 2, Z + 8.5);
         c.waitTicks(10);
         gem(c, true);
-        c.waitTicks(40);
-        return gem(c, false);
+        long deadline = System.nanoTime() + 30_000_000_000L;
+        JsonObject report;
+        do {
+            report = gem(c, false);
+            boolean complete = true;
+            for (JsonElement element : report.getAsJsonArray("positions")) {
+                JsonObject position = element.getAsJsonObject();
+                if (Math.max(position.get("replayed").getAsInt(), position.get("skipped").getAsInt()) < 10) {
+                    complete = false;
+                    break;
+                }
+            }
+            if (complete) return report;
+            c.waitTicks(1);
+        } while (System.nanoTime() < deadline);
+        throw new AssertionError("Timed out waiting for ten real submits per core: " + report);
     }
 
     private static JsonObject gem(Client c, boolean restart) {

@@ -1,4 +1,6 @@
 {
+  "desc.repair.with": "Repair with:",
+  "desc.repair.tool": "Tool: Blowtorch",
   "item.hbm.structure_custommachine": "Custom Machine Structure Output Wand",
   "block.hbm.custom_machine_anchor": "Custom Machine Structure Positioning Anchor",
   "block.hbm.cm_block_alloy": "Bronze Machine Casing",
@@ -2362,6 +2364,8 @@
   "trait.hydro": "Hydroreactive",
   "trait.radResistance": "Radiation resistance: %s",
   "trait.radioactive": "Radioactive",
+  "desc.hbm.radiation.rate": "%sRAD/s",
+  "desc.hbm.radiation.stack_rate": "Stack: %s",
   "trait.toxic": "Toxicity",
   "trait.unstable": "Unstable",
   "upgrade.acid": "Acid required %s",

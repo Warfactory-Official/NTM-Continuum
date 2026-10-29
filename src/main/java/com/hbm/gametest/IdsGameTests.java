@@ -31,14 +31,15 @@ import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.world.ItemStacks;
+
 import java.util.Locale;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntArrayTag;
-import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NumericTag;
@@ -68,7 +69,6 @@ import java.util.regex.Pattern;
  *       fluid id, block-state id, material id or enum ordinal to a name.</li>
  *   <li>Round trips per converted system: fluid (tank, duct, valve, barrel item data, component codec), block state
  *       (structure wand blacklist, rubble entity), material (foundry), enum (battery priority, pollution data).</li>
- *   <li>Old int-keyed data reads as the default instead of failing (pre-release, no migration).</li>
  *   <li>The 1.7 fluid numbers survive only as a frozen side table, checked here against 1.7's registration order.</li>
  *   <li>Items: every HBM item and creative-tab stack is encoded: no {@code hbm:item_variant} /
  *       {@code hbm:storage_waste_class} and no number under an identity key in its components.</li>
@@ -76,7 +76,8 @@ import java.util.regex.Pattern;
  */
 public final class IdsGameTests {
 
-    private IdsGameTests() {}
+    private IdsGameTests() {
+    }
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function GUARD =
@@ -92,7 +93,8 @@ public final class IdsGameTests {
     public static final GameTests.Function ITEMS =
             TESTS.function("ids_no_numeric_ids_in_item_components", 40, () -> IdsGameTests::items);
 
-    public static void init() {}
+    public static void init() {
+    }
 
     /**
      * Keys whose value names an identity: a tank's {@code <name>_type} and every key the IDS phase converted. A numeric
@@ -105,10 +107,14 @@ public final class IdsGameTests {
             ".*_type|fluid|fluids|fluid[12]|fluidID|mat|nType|outType|leftType|rightType|blockState|paintblock|blocks"
                     + "|blacklist|priority|function|padSize|orientation|debtype|payload|flow|typeLoaded|formFactor"
                     + "|lock\\d+|dir|rec|recipe|was");
-    /** Block entities exempt from the scan (none: list a class here only with a written reason). */
+    /**
+     * Block entities exempt from the scan (none: list a class here only with a written reason).
+     */
     private static final Set<String> NUMERIC_ALLOWED = Set.of();
 
-    /** The 1.7 {@code Fluids.init} order: index = 1.7 {@code FluidType.getID()}. Frozen; never reorder. */
+    /**
+     * The 1.7 {@code Fluids.init} order: index = 1.7 {@code FluidType.getID()}. Frozen; never reorder.
+     */
     private static final String[] LEGACY_ORDER = {
             "NONE", "WATER", "STEAM", "HOTSTEAM", "SUPERHOTSTEAM", "ULTRAHOTSTEAM", "COOLANT", "LAVA", "DEUTERIUM",
             "TRITIUM", "OIL", "HOTOIL", "HEAVYOIL", "BITUMEN", "SMEAR", "HEATINGOIL", "RECLAIMED", "PETROIL",
@@ -135,7 +141,9 @@ public final class IdsGameTests {
     };
 
 
-    /** Every HBM block entity, created detached and saved: no identity key may hold a number. */
+    /**
+     * Every HBM block entity, created detached and saved: no identity key may hold a number.
+     */
     public static void guard(GameTestHelper helper) {
         var registries = helper.getLevel().registryAccess();
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
@@ -162,7 +170,8 @@ public final class IdsGameTests {
         helper.assertTrue(scanned >= 200, "expected to save at least 200 HBM block entity classes, saved " + scanned
                 + " (" + skipped + " needed a level)");
         helper.assertTrue(numeric.isEmpty(), "numeric ids in block entity saves: " + numeric);
-        Constants.LOG.info("[IDS] guard scanned {} block entity classes ({} skipped), 0 numeric identity values", scanned, skipped);
+        Constants.LOG.info("[IDS] guard scanned {} block entity classes ({} skipped), 0 numeric identity values",
+                scanned, skipped);
         helper.succeed();
     }
 
@@ -175,7 +184,8 @@ public final class IdsGameTests {
         var ops = RegistryOps.create(NbtOps.INSTANCE, helper.getLevel().registryAccess());
         List<ItemStack> stacks = new ArrayList<>();
         for (Item item : BuiltInRegistries.ITEM) {
-            if (BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Constants.MOD_ID)) stacks.add(new ItemStack(item));
+            if (BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Constants.MOD_ID))
+                stacks.add(new ItemStack(item));
         }
         for (var suppliers : ModTabs.STACK_CONTENTS.values()) {
             for (var supplier : suppliers) stacks.addAll(supplier.get());
@@ -198,7 +208,8 @@ public final class IdsGameTests {
         helper.assertTrue(scanned >= 3000, "expected to encode at least 3000 HBM item stacks, encoded " + scanned
                 + " (" + skipped + " did not encode)");
         helper.assertTrue(numeric.isEmpty(), "numeric ids in item components: " + numeric);
-        Constants.LOG.info("[IDS] item guard encoded {} HBM item stacks ({} skipped), 0 numeric identity values", scanned, skipped);
+        Constants.LOG.info("[IDS] item guard encoded {} HBM item stacks ({} skipped), 0 numeric identity values",
+                scanned, skipped);
         helper.succeed();
     }
 
@@ -249,61 +260,77 @@ public final class IdsGameTests {
             helper.assertTrue(names.add(name), "duplicate fluid registry name " + name);
             helper.assertTrue(Fluids.byRegistryName(name) == fluid, name + " does not read back");
             Tag encoded = Fluids.CODEC.encodeStart(NbtOps.INSTANCE, fluid).result().orElseThrow();
-            helper.assertTrue(!(encoded instanceof NumericTag) && Fluids.CODEC.parse(NbtOps.INSTANCE, encoded).result().orElseThrow() == fluid,
+            helper.assertTrue(!(encoded instanceof NumericTag) && Fluids.CODEC.parse(NbtOps.INSTANCE, encoded).result()
+                                                                              .orElseThrow() == fluid,
                     "the fluid codec must save " + name + " as its name, saved " + encoded);
         }
 
         // Older saves named the three vanilla fluids hbm:none, hbm:water, hbm:lava
-        helper.assertTrue(Fluids.byRegistryName("hbm:water") == Fluids.WATER && Fluids.byRegistryName("hbm:lava") == Fluids.LAVA
-                && Fluids.byRegistryName("hbm:none") == Fluids.NONE, "the former hbm: names of water, lava and none still read");
+        helper.assertTrue(
+                Fluids.byRegistryName("hbm:water") == Fluids.WATER && Fluids.byRegistryName("hbm:lava") == Fluids.LAVA
+                        && Fluids.byRegistryName("hbm:none") == Fluids.NONE,
+                "the former hbm: names of water, lava and none still read");
 
         // barrel: tank saved by name, round trip, carried item data by name
         BlockState barrelState = ModFluidNetBlocks.barrel_steel.get().defaultBlockState();
-        TileEntityBarrel barrel = (TileEntityBarrel) ((EntityBlock) barrelState.getBlock()).newBlockEntity(pos, barrelState);
+        TileEntityBarrel barrel = (TileEntityBarrel) ((EntityBlock) barrelState.getBlock()).newBlockEntity(pos,
+                barrelState);
         barrel.tank.setTankType(Fluids.DIESEL);
         barrel.tank.setFill(1234);
         CompoundTag saved = BlockEntities.saveWithoutMetadata(barrel, registries);
         helper.assertTrue(saved.toString().contains("\"hbm:diesel\""), "the barrel saves its fluid by name: " + saved);
-        TileEntityBarrel loaded = (TileEntityBarrel) BlockEntities.load(pos, barrelState, BlockEntities.save(barrel, registries), registries);
+        TileEntityBarrel loaded = (TileEntityBarrel) BlockEntities.load(pos, barrelState,
+                BlockEntities.save(barrel, registries), registries);
         helper.assertTrue(loaded != null && loaded.tank.getTankType() == Fluids.DIESEL && loaded.tank.getFill() == 1234,
                 "the barrel reloads diesel 1234 mB, got " + (loaded == null ? null : loaded.tank.getTankType() + " " + loaded.tank.getFill()));
 
         // duct and valve
         BlockState ductState = ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState();
-        TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) ((EntityBlock) ductState.getBlock()).newBlockEntity(pos, ductState);
+        TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) ((EntityBlock) ductState.getBlock()).newBlockEntity(pos,
+                ductState);
         duct.setFluidType(Fluids.KEROSENE);
         CompoundTag ductSave = BlockEntities.saveWithoutMetadata(duct, registries);
-        helper.assertTrue("hbm:kerosene".equals(Tags.getStringOr(ductSave, "type", "")), "the duct saves type by name: " + ductSave);
-        TileEntityFluidDuctNT ductLoaded = (TileEntityFluidDuctNT) BlockEntities.load(pos, ductState, BlockEntities.save(duct, registries), registries);
-        helper.assertTrue(ductLoaded != null && ductLoaded.getFluidType() == Fluids.KEROSENE, "the duct reloads kerosene");
+        helper.assertTrue("hbm:kerosene".equals(Tags.getStringOr(ductSave, "type", "")),
+                "the duct saves type by name: " + ductSave);
+        TileEntityFluidDuctNT ductLoaded = (TileEntityFluidDuctNT) BlockEntities.load(pos, ductState,
+                BlockEntities.save(duct, registries), registries);
+        helper.assertTrue(ductLoaded != null && ductLoaded.getFluidType() == Fluids.KEROSENE,
+                "the duct reloads kerosene");
 
         BlockState valveState = ModMachineBlocks.fluid_valve.get().defaultBlockState();
-        TileEntityFluidValve valve = (TileEntityFluidValve) ((EntityBlock) valveState.getBlock()).newBlockEntity(pos, valveState);
+        TileEntityFluidValve valve = (TileEntityFluidValve) ((EntityBlock) valveState.getBlock()).newBlockEntity(pos,
+                valveState);
         valve.setFluidType(Fluids.STEAM);
-        TileEntityFluidValve valveLoaded = (TileEntityFluidValve) BlockEntities.load(pos, valveState, BlockEntities.save(valve, registries), registries);
+        TileEntityFluidValve valveLoaded = (TileEntityFluidValve) BlockEntities.load(pos, valveState,
+                BlockEntities.save(valve, registries), registries);
         helper.assertTrue(valveLoaded != null && valveLoaded.getFluidType() == Fluids.STEAM, "the valve reloads steam");
 
         // the graph datum (saved with the level's plumbing) and the identifier item component
         for (DuctData data : new DuctData[]{DuctData.of(Fluids.WATER), DuctData.SMOKE_ANY, DuctData.NONE}) {
             Tag encoded = DuctData.CODEC.encodeStart(NbtOps.INSTANCE, data).result().orElseThrow();
-            helper.assertTrue(!(encoded instanceof NumericTag) && DuctData.CODEC.parse(NbtOps.INSTANCE, encoded).result().orElseThrow().equals(data),
+            helper.assertTrue(
+                    !(encoded instanceof NumericTag) && DuctData.CODEC.parse(NbtOps.INSTANCE, encoded).result()
+                                                                      .orElseThrow().equals(data),
                     "duct datum " + data + " saved as " + encoded);
         }
         ItemStack identifier = ItemFluidId.make(Fluids.CHLORINE);
-        helper.assertTrue(ModDataComponents.fluid(identifier) == Fluids.CHLORINE && ItemFluidId.getFluid(identifier) == Fluids.CHLORINE,
+        helper.assertTrue(ModDataComponents.fluid(identifier) == Fluids.CHLORINE && ItemFluidId.getFluid(
+                        identifier) == Fluids.CHLORINE,
                 "the identifier carries chlorine");
 
         // copied settings: a fluid list by name
         CompoundTag settings = new CompoundTag();
         Fluids.writeList(settings, "fluids", new FluidType[]{Fluids.WATER, Fluids.OIL});
         FluidType[] back = Fluids.readList(settings, "fluids");
-        helper.assertTrue(back.length == 2 && back[0] == Fluids.WATER && back[1] == Fluids.OIL, "settings fluid list round trip");
+        helper.assertTrue(back.length == 2 && back[0] == Fluids.WATER && back[1] == Fluids.OIL,
+                "settings fluid list round trip");
 
         // entities: the mist saves its fluid by name; the synched int never reaches the save
         EntityMist mist = Entities.createDetached(ModEntities.MIST.get(), helper.getLevel());
         mist.setType(Fluids.CHLORINE);
         CompoundTag mistSave = Entities.saveToTag(mist);
-        helper.assertTrue("hbm:chlorine".equals(Tags.getStringOr(mistSave, "type", "")), "the mist saves its fluid by name: " + mistSave);
+        helper.assertTrue("hbm:chlorine".equals(Tags.getStringOr(mistSave, "type", "")),
+                "the mist saves its fluid by name: " + mistSave);
         EntityMist mistLoaded = Entities.createDetached(ModEntities.MIST.get(), helper.getLevel());
         Entities.loadFromTag(mistLoaded, mistSave);
         helper.assertTrue(mistLoaded.getFluid() == Fluids.CHLORINE, "the mist reloads chlorine");
@@ -314,11 +341,12 @@ public final class IdsGameTests {
         var registries = helper.getLevel().registryAccess();
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
         BlockState stairs = Blocks.OAK_STAIRS.defaultBlockState()
-                .setValue(StairBlock.FACING, Direction.EAST);
+                                             .setValue(StairBlock.FACING, Direction.EAST);
 
         CompoundTag wand = new CompoundTag();
         SavedIds.putState(wand, "block", stairs);
-        helper.assertTrue(!(wand.get("block") instanceof NumericTag) && SavedIds.getState(wand, "block", null) == stairs,
+        helper.assertTrue(
+                !(wand.get("block") instanceof NumericTag) && SavedIds.getState(wand, "block", null) == stairs,
                 "a wand's block saves by state name: " + wand);
 
         BlockState wandState = ModStructureWandBlocks.wand_structure.get().defaultBlockState();
@@ -327,20 +355,24 @@ public final class IdsGameTests {
         structure.blacklist.add(stairs);
         structure.blacklist.add(Blocks.STONE.defaultBlockState());
         CompoundTag structureSave = BlockEntities.saveWithoutMetadata(structure, registries);
-        helper.assertTrue(!structureSave.contains("blocks") && structureSave.toString().contains("minecraft:oak_stairs[facing=east"),
+        helper.assertTrue(!structureSave.contains("blocks") && structureSave.toString().contains(
+                        "minecraft:oak_stairs[facing=east"),
                 "the structure blacklist saves state names: " + structureSave);
         BlockWandStructure.TileEntityWandStructure structureLoaded = (BlockWandStructure.TileEntityWandStructure)
                 BlockEntities.load(pos, wandState, BlockEntities.save(structure, registries), registries);
         helper.assertTrue(structureLoaded != null && structureLoaded.blacklist.contains(stairs)
-                && structureLoaded.blacklist.contains(Blocks.STONE.defaultBlockState()), "the blacklist reloads both states");
+                        && structureLoaded.blacklist.contains(Blocks.STONE.defaultBlockState()),
+                "the blacklist reloads both states");
 
         EntityRubble rubble = Entities.createDetached(ModEntities.RUBBLE.get(), helper.getLevel());
         rubble.setBlockState(stairs);
         CompoundTag rubbleSave = Entities.saveToTag(rubble);
-        helper.assertTrue(!(rubbleSave.get("blockState") instanceof NumericTag), "the rubble saves its state by name: " + rubbleSave);
+        helper.assertTrue(!(rubbleSave.get("blockState") instanceof NumericTag),
+                "the rubble saves its state by name: " + rubbleSave);
         EntityRubble rubbleLoaded = Entities.createDetached(ModEntities.RUBBLE.get(), helper.getLevel());
         Entities.loadFromTag(rubbleLoaded, rubbleSave);
-        helper.assertTrue(rubbleLoaded.getBlockState() == stairs, "the rubble reloads the stairs, got " + rubbleLoaded.getBlockState());
+        helper.assertTrue(rubbleLoaded.getBlockState() == stairs,
+                "the rubble reloads the stairs, got " + rubbleLoaded.getBlockState());
 
         // the undead soldier's type is saved by name (phase 7 hand-over)
         var soldier = Entities.createDetached(ModNtmEntities.UNDEAD_SOLDIER.get(), helper.getLevel());
@@ -349,7 +381,8 @@ public final class IdsGameTests {
         Entities.loadFromTag(soldier, soldierSave);
         CompoundTag soldierResave = Entities.saveToTag(soldier);
         helper.assertTrue(soldier.soldierType() == EntityUndeadSoldier.TYPE_SKELETON
-                && "skeleton".equals(Tags.getStringOr(soldierResave, "type", "")), "the soldier type round-trips by name: " + soldierResave);
+                        && "skeleton".equals(Tags.getStringOr(soldierResave, "type", "")),
+                "the soldier type round-trips by name: " + soldierResave);
         helper.succeed();
     }
 
@@ -358,21 +391,29 @@ public final class IdsGameTests {
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
 
         BlockState channelState = ModMachineBlocks.foundry_channel.get().defaultBlockState();
-        TileEntityFoundryBase channel = (TileEntityFoundryBase) ((EntityBlock) channelState.getBlock()).newBlockEntity(pos, channelState);
+        TileEntityFoundryBase channel = (TileEntityFoundryBase) ((EntityBlock) channelState.getBlock()).newBlockEntity(
+                pos, channelState);
         channel.type = Mats.MAT_IRON;
         channel.amount = 72;
         CompoundTag channelSave = BlockEntities.saveWithoutMetadata(channel, registries);
-        helper.assertTrue("iron".equals(Tags.getStringOr(channelSave, "type", "")), "the foundry saves its material by name: " + channelSave);
-        TileEntityFoundryBase channelLoaded = (TileEntityFoundryBase) BlockEntities.load(pos, channelState, BlockEntities.save(channel, registries), registries);
-        helper.assertTrue(channelLoaded != null && channelLoaded.type == Mats.MAT_IRON && channelLoaded.amount == 72, "the foundry reloads 72 iron");
+        helper.assertTrue("iron".equals(Tags.getStringOr(channelSave, "type", "")),
+                "the foundry saves its material by name: " + channelSave);
+        TileEntityFoundryBase channelLoaded = (TileEntityFoundryBase) BlockEntities.load(pos, channelState,
+                BlockEntities.save(channel, registries), registries);
+        helper.assertTrue(channelLoaded != null && channelLoaded.type == Mats.MAT_IRON && channelLoaded.amount == 72,
+                "the foundry reloads 72 iron");
 
         BlockState batteryState = ModMachineBlocks.machine_battery.get().defaultBlockState();
-        TileEntityMachineBattery battery = (TileEntityMachineBattery) ((EntityBlock) batteryState.getBlock()).newBlockEntity(pos, batteryState);
+        TileEntityMachineBattery battery = (TileEntityMachineBattery) ((EntityBlock) batteryState.getBlock()).newBlockEntity(
+                pos, batteryState);
         battery.priority = ConnectionPriority.HIGH;
         CompoundTag batterySave = BlockEntities.saveWithoutMetadata(battery, registries);
-        helper.assertTrue("high".equals(Tags.getStringOr(batterySave, "priority", "")), "the battery saves its priority by name: " + batterySave);
-        TileEntityMachineBattery batteryLoaded = (TileEntityMachineBattery) BlockEntities.load(pos, batteryState, BlockEntities.save(battery, registries), registries);
-        helper.assertTrue(batteryLoaded != null && batteryLoaded.priority == ConnectionPriority.HIGH, "the battery reloads HIGH");
+        helper.assertTrue("high".equals(Tags.getStringOr(batterySave, "priority", "")),
+                "the battery saves its priority by name: " + batterySave);
+        TileEntityMachineBattery batteryLoaded = (TileEntityMachineBattery) BlockEntities.load(pos, batteryState,
+                BlockEntities.save(battery, registries), registries);
+        helper.assertTrue(batteryLoaded != null && batteryLoaded.priority == ConnectionPriority.HIGH,
+                "the battery reloads HIGH");
 
         // pollution: saved per type name, not as an ordinal-indexed list
         CompoundTag region = new CompoundTag();
@@ -396,32 +437,17 @@ public final class IdsGameTests {
     }
 
     public static void legacy(GameTestHelper helper) {
-        var registries = helper.getLevel().registryAccess();
-        BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
-
         // the side table is exactly 1.7's order
-        FluidType[] all = FluidRecipeTableGameTests.registered();
-        helper.assertTrue(all.length == LEGACY_ORDER.length, "1.7 had " + LEGACY_ORDER.length + " fluids, the port has " + all.length);
+        var all = FluidRecipeTableGameTests.declaredFluids();
+        helper.assertTrue(all.size() == LEGACY_ORDER.length,
+                "1.7 had " + LEGACY_ORDER.length + " network fluids, the port declares " + all.size());
         for (int i = 0; i < LEGACY_ORDER.length; i++) {
             FluidType fluid = Fluids.byLegacyId(i);
             helper.assertTrue(fluid.getName().equals(LEGACY_ORDER[i]) && Fluids.legacyId(fluid) == i,
                     "1.7 fluid " + i + " is " + LEGACY_ORDER[i] + ", the side table says " + fluid.getName());
         }
 
-        // an int-keyed tank from an older save loads as an empty tank instead of failing
-        BlockState barrelState = ModFluidNetBlocks.barrel_steel.get().defaultBlockState();
-        TileEntityBarrel barrel = (TileEntityBarrel) ((EntityBlock) barrelState.getBlock()).newBlockEntity(pos, barrelState);
-        CompoundTag old = BlockEntities.save(barrel, registries);
-        old.putInt("tank_type", 20);
-        old.putInt("tank", 500);
-        TileEntityBarrel oldLoaded = (TileEntityBarrel) BlockEntities.load(pos, barrelState, old, registries);
-        helper.assertTrue(oldLoaded != null && oldLoaded.tank.getTankType() == Fluids.NONE, "an old numeric tank type reads as NONE");
-        helper.assertTrue(Fluids.CODEC.parse(NbtOps.INSTANCE, IntTag.valueOf(20)).result().orElseThrow() == Fluids.NONE,
-                "the fluid codec reads an old int as NONE");
-        CompoundTag oldEnum = new CompoundTag();
-        oldEnum.putByte("priority", (byte) 2);
-        helper.assertTrue(SavedIds.getEnum(oldEnum, "priority", ConnectionPriority.LOW) == ConnectionPriority.LOW,
-                "an old ordinal reads as the default");
+        // Numeric save formats are unsupported; the frozen side table remains a current API.
         helper.succeed();
     }
 }

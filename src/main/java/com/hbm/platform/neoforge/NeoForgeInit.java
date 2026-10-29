@@ -3,7 +3,6 @@ package com.hbm.platform.neoforge;
 //? if neoforge {
 
 import com.hbm.Constants;
-import java.util.List;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.RegistryObject;
 
@@ -16,7 +15,6 @@ import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -26,7 +24,6 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 @Mod(Constants.MOD_ID)
 public class NeoForgeInit {
@@ -80,19 +77,11 @@ public class NeoForgeInit {
             com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity());
             com.hbm.handler.pollution.PollutionHandler.decorateMob(event.getEntity());
         });
-        NeoForge.EVENT_BUS.addListener((EntityTickEvent.Post event) -> {
-            com.hbm.handler.ExplosivesEntityHooks.tick(event.getEntity());
-            if (event.getEntity() instanceof ItemEntity item) {
-                com.hbm.items.special.ItemSingularity.tickDropped(item);
-                com.hbm.items.special.ItemCell.tickDropped(item);
-                com.hbm.items.special.ItemAntimatterPellet.tickDropped(item);
-                com.hbm.items.special.ItemDemonCore.tickDropped(item);
-            }
-        });
 
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {
             com.hbm.config.AutocalConfig.load(event.getServer());
-            Constants.LOG.info("[HBM] Loaded {} total recipes", event.getServer().getRecipeManager().getRecipes().size());
+            Constants.LOG.info("[HBM] Loaded {} total recipes",
+                    event.getServer().getRecipeManager().getRecipes().size());
         });
     }
 

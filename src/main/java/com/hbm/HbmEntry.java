@@ -3,6 +3,7 @@ package com.hbm;
 import com.hbm.api.data.HbmDataMaps;
 import com.hbm.api.script.HbmScripts;
 import com.hbm.config.MachineDynConfig;
+import com.hbm.handler.ExplosivesEntityHooks;
 import com.hbm.hazard.Hazards;
 import com.hbm.inventory.fluid.FluidProperties;
 import com.hbm.inventory.recipes.HbmRecipeTables;
@@ -13,6 +14,7 @@ import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import dev.golem.core.platform.Lifecycle;
 import dev.golem.core.platform.ModEntry;
 import dev.golem.core.world.EntityLoot;
+import dev.golem.core.world.EntityTicks;
 
 /**
  * HBM's common start-up, in Golem Core's three phases (see {@link dev.golem.core.platform.ModEntries}): the same on
@@ -44,6 +46,7 @@ public class HbmEntry implements ModEntry {
 
     @Override
     public void registered() {
+        EntityTicks.AFTER.register(ExplosivesEntityHooks::tick);
         // after every mod's declare(), so an addon's MachineDynConfig.register is in the file too
         MachineDynConfig.initialize();
         Lifecycle.onServerStarting(server -> MachineDynConfig.restoreLocal());

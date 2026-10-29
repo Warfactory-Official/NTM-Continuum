@@ -15,7 +15,8 @@ package com.hbm.lib;
  */
 public final class ComponentIds {
 
-    private ComponentIds() {}
+    private ComponentIds() {
+    }
 
     public static final String ammo_bag = "hbm:ammo_bag";
     public static final String ams_lens_damage = "hbm:ams_lens_damage";

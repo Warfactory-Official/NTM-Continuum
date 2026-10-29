@@ -36,18 +36,23 @@ public class EntityBomber extends EntityPlaneBase {
     private static final EntityDataAccessor<String> SKIN =
             SynchedEntityData.defineId(EntityBomber.class, EntityDataSerializers.STRING);
 
-    /** The engine loop a bomber plays (client); the first non-null answer wins, else 1.7's by style. HBM registers none. */
+    /**
+     * The engine loop a bomber plays (client); the first non-null answer wins, else 1.7's by style. HBM registers none.
+     */
     @FunctionalInterface
     public interface LoopSound {
         net.minecraft.sounds.@org.jspecify.annotations.Nullable SoundEvent sound(EntityBomber bomber);
     }
 
     public static final Hook<LoopSound> LOOP_SOUND = Hook.notifying();
+    public static SoundSource loopSoundSource = SoundSource.AMBIENT;
 
     private int bombStart = 75;
     private int bombStop = 125;
     private int bombRate = 3;
-    /** The {@link BomberPayload} name, saved as such (1.7 saved the numeric {@code type}). */
+    /**
+     * The {@link BomberPayload} name, saved as such (1.7 saved the numeric {@code type}).
+     */
     private String payload = BomberPayload.CARPET.name();
     private AudioWrapper audio;
 
@@ -104,7 +109,9 @@ public class EntityBomber extends EntityPlaneBase {
         return bomber;
     }
 
-    /** Overwrites the airframe {@code fac} rolled (1.7 {@code dataWatcher.updateObject(16, style)}). */
+    /**
+     * Overwrites the airframe {@code fac} rolled (1.7 {@code dataWatcher.updateObject(16, style)}).
+     */
     public EntityBomber setStyle(int style) {
         entityData.set(STYLE, (byte) style);
         return this;
@@ -114,9 +121,11 @@ public class EntityBomber extends EntityPlaneBase {
         return payload;
     }
 
-    /** The drop window and rate: {start, stop, rate} in ticks. */
+    /**
+     * The drop window and rate: {start, stop, rate} in ticks.
+     */
     public int[] timing() {
-        return new int[] {bombStart, bombStop, bombRate};
+        return new int[]{bombStart, bombStop, bombRate};
     }
 
     @Override
@@ -147,10 +156,11 @@ public class EntityBomber extends EntityPlaneBase {
                     loop = listener.sound(this);
                     if (loop != null) break;
                 }
-                if (loop == null) loop = getStyle() <= 4 ? ModSounds.ENTITY_BOMBER_SMALL_LOOP.get() : ModSounds.ENTITY_BOMBER_LOOP.get();
+                if (loop == null)
+                    loop = getStyle() <= 4 ? ModSounds.ENTITY_BOMBER_SMALL_LOOP.get() : ModSounds.ENTITY_BOMBER_LOOP.get();
                 audio = AudioSystem.getLoopedSound(
                         loop,
-                        SoundSource.AMBIENT, (float) getX(), (float) getY(), (float) getZ(), 2F, 250F, 1F, 20);
+                        loopSoundSource, (float) getX(), (float) getY(), (float) getZ(), 2F, 250F, 1F, 20);
                 if (audio != null) audio.startSound();
             }
             if (audio != null) {
@@ -188,7 +198,9 @@ public class EntityBomber extends EntityPlaneBase {
         level().addFreshEntity(zeta);
     }
 
-    /** 1.7's boxcar branch (type 6): one falling {@link EntityBoxcar} out of the bay. */
+    /**
+     * 1.7's boxcar branch (type 6): one falling {@link EntityBoxcar} out of the bay.
+     */
     public void dropBoxcar() {
         EntityBoxcar rocket = new EntityBoxcar(ModNtmEntities.BOXCAR.get(), level());
         rocket.setPos(getX() + random.nextDouble() - 0.5D, getY() - random.nextDouble(),
@@ -196,7 +208,9 @@ public class EntityBomber extends EntityPlaneBase {
         level().addFreshEntity(rocket);
     }
 
-    /** 1.7's gas-release hiss (types 3 and 7). */
+    /**
+     * 1.7's gas-release hiss (types 3 and 7).
+     */
     public void fizz() {
         double x = getX(), y = getY(), z = getZ();
         level().playSound(null, x + 0.5D, y + 0.5D, z + 0.5D, SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS,
@@ -231,7 +245,9 @@ public class EntityBomber extends EntityPlaneBase {
         return entityData.get(STYLE);
     }
 
-    /** Names the airframe (an addon's skin, see {@link #SKIN}); empty restores HBM's numbered style. */
+    /**
+     * Names the airframe (an addon's skin, see {@link #SKIN}); empty restores HBM's numbered style.
+     */
     public EntityBomber setSkin(String skin) {
         entityData.set(SKIN, skin);
         return this;
@@ -248,7 +264,8 @@ public class EntityBomber extends EntityPlaneBase {
         bombStop = input.getIntOr("bombStop", 125);
         bombRate = input.getIntOr("bombRate", 3);
         // the payload by name; a legacy numeric type falls back to the carpet bomber with one WARN
-        if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE) SavedIds.warnNumeric("bomber payload", "type");
+        if (input.getIntOr("type", Integer.MIN_VALUE) != Integer.MIN_VALUE)
+            SavedIds.warnNumeric("bomber payload", "type");
         String saved = input.getStringOr("payload", BomberPayload.CARPET.name());
         payload = BomberPayload.byName(saved) != null ? saved : BomberPayload.CARPET.name();
         entityData.set(STYLE, input.getByteOr("style", (byte) 0));

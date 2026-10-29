@@ -1,7 +1,6 @@
 package com.hbm.client.render;
 
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.util.EntityDamageUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -14,22 +13,28 @@ import dev.golem.core.render.SubLevelPoses;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.WorldEffects;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
  * 1.7 {@code BlockDummyable#drawPlacementHighlight}, called from {@code ModEventHandlerRenderer#onDrawHighlight}:
  * while the main hand holds a multiblock's item and the crosshair is on a block, the footprint it would occupy is
- * outlined (only the outer edges of the union of its {@link BlockMultiblockCore#getAllDimensions} boxes), pulsing
+ * outlined from its occupied cells, including the held block-entity geometry, pulsing
  * green if it can be placed there and red if not, plus any {@link BlockMultiblockCore#getAABBExtras} boxes (blue unless
  * coloured) and a yellow square on each {@link BlockMultiblockCore#getAllPorts} face.
  * Vanilla's own block outline is suppressed for as long as the item is held, as 1.7 cancelled the event.
@@ -44,7 +49,8 @@ public final class MultiblockPlacementHighlight {
     private static final float LINE_WIDTH = 2F;
     private static boolean initialized;
 
-    private MultiblockPlacementHighlight() {}
+    private MultiblockPlacementHighlight() {
+    }
 
     public static void init() {
         if (initialized) return;
@@ -64,6 +70,81 @@ public final class MultiblockPlacementHighlight {
                 && item.getBlock() instanceof BlockMultiblockCore block ? block : null;
     }
 
+    /**
+     * The occupied cells and placement verdict submitted by the held-item highlight.
+     */
+    public record Preview(BlockPos core, Direction facing, boolean placeable, List<BlockPos> cells) {
+        /**
+         * The same occupied cells, expressed in the core's local frame.
+         */
+        public VoxelShape shape() {
+            var shape = Shapes.empty();
+            for (var pos : cells) {
+                int x = pos.getX() - core.getX();
+                int y = pos.getY() - core.getY();
+                int z = pos.getZ() - core.getZ();
+                shape = Shapes.joinUnoptimized(shape, Shapes.box(x, y, z, x + 1, y + 1, z + 1), BooleanOp.OR);
+            }
+            return shape.optimize();
+        }
+    }
+
+    public static @Nullable Preview extract(Level level, BlockHitResult hit, @Nullable Player player) {
+        if (player == null || hit.getType() != HitResult.Type.BLOCK) return null;
+        var block = heldMultiblock(player);
+        return block == null ? null : extract(level, hit, player, block);
+    }
+
+    private static Preview extract(Level level, BlockHitResult mop, Player player, BlockMultiblockCore block) {
+        // 1.7 always quartered 360 degrees here, even for a block that places on a finer yaw step
+        // (the large pylon's placementYawSpan); kept as it was.
+        int i = Mth.floor(player.getYRot() * 4.0F / 360.0F + 0.5D) & 3;
+        int o = -block.getOffset();
+        BlockPos hit = mop.getBlockPos();
+        int pY = hit.getY() + block.getHeightOffset();
+
+        Direction facing = switch (i) {
+            case 1 -> Direction.EAST;
+            case 2 -> Direction.SOUTH;
+            case 3 -> Direction.WEST;
+            default -> Direction.NORTH;
+        };
+        Direction sideHit = mop.getDirection();
+        facing = block.getDirModified(facing);
+        ForgeDirection fd = ForgeDirection.getOrientation(facing);
+
+        int originX = hit.getX() + fd.offsetX * o + sideHit.getStepX();
+        int originY = pY + sideHit.getStepY();
+        int originZ = hit.getZ() + fd.offsetZ * o + sideHit.getStepZ();
+
+        boolean canPlace;
+        if (BlockMultiblockCore.wallPlacement) {
+            // hbm-space's highlight: the same wall/ceiling placement as BlockMultiblockCore.placement (V-175)
+            BlockMultiblockCore.Placement layout = block.placement(hit.relative(sideHit), sideHit, player.getYRot());
+            facing = layout.facing();
+            fd = ForgeDirection.getOrientation(facing);
+            originX = layout.core().getX();
+            originY = layout.core().getY();
+            originZ = layout.core().getZ();
+            canPlace = block.canPlace(level, layout, player.getMainHandItem());
+        } else {
+            canPlace = block.canPlaceAt(level,
+                    new BlockPos(hit.getX() + sideHit.getStepX(), pY + sideHit.getStepY(),
+                            hit.getZ() + sideHit.getStepZ()),
+                    facing, player.getMainHandItem());
+        }
+
+        List<BlockPos> blocks = new ArrayList<>();
+        var core = new BlockPos(originX, originY, originZ);
+        var seen = new LongOpenHashSet();
+        seen.add(core.asLong());
+        blocks.add(core);
+        block.visitPlacementCells(core, facing, player.getMainHandItem(), (pos, ignored) -> {
+            if (seen.add(pos.asLong())) blocks.add(pos.immutable());
+        });
+        return new Preview(core, facing, canPlace, blocks);
+    }
+
     private static void submit(CameraInfo camera) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
@@ -77,10 +158,7 @@ public final class MultiblockPlacementHighlight {
         HitResult trace = EntityDamageUtil.getMouseOver(player, 5.0D);
         if (!(trace instanceof BlockHitResult mop) || mop.getType() != HitResult.Type.BLOCK) return;
 
-        // 1.7 always quartered 360 degrees here, even for a block that places on a finer yaw step
-        // (the large pylon's placementYawSpan); kept as it was.
-        int i = Mth.floor(player.getYRot() * 4.0F / 360.0F + 0.5D) & 3;
-        int o = -block.getOffset();
+        var preview = extract(mc.level, mop, player, block);
         BlockPos hit = mop.getBlockPos();
         // Everything is drawn relative to the block under the crosshair, through a pose that puts it where it is seen:
         // camera-relative in the world, or with the sub-level it stands on (a Create Aeronautics ship keeps its blocks
@@ -90,74 +168,28 @@ public final class MultiblockPlacementHighlight {
         double dX = hit.getX();
         double dY = hit.getY();
         double dZ = hit.getZ();
-        int pY = hit.getY() + block.getHeightOffset();
-
-        Direction facing = switch (i) {
-            case 1 -> Direction.EAST;
-            case 2 -> Direction.SOUTH;
-            case 3 -> Direction.WEST;
-            default -> Direction.NORTH;
-        };
-        Direction sideHit = mop.getDirection();
-        facing = block.getDirModified(facing);
-        ForgeDirection fd = ForgeDirection.getOrientation(facing);
-        ForgeDirection lateral = fd.getRotation(ForgeDirection.UP);
-
-        int originX = hit.getX() + fd.offsetX * o + sideHit.getStepX();
-        int originY = pY + sideHit.getStepY();
-        int originZ = hit.getZ() + fd.offsetZ * o + sideHit.getStepZ();
-
-        boolean canPlace;
-        if (BlockMultiblockCore.wallPlacement) {
-            // hbm-space's highlight: the same wall/ceiling placement as BlockMultiblockCore.placement (V-175)
-            BlockMultiblockCore.Placement layout = block.placement(hit.relative(sideHit), sideHit, player.getYRot());
-            facing = layout.facing();
-            fd = ForgeDirection.getOrientation(facing);
-            lateral = fd.getRotation(ForgeDirection.UP);
-            originX = layout.core().getX();
-            originY = layout.core().getY();
-            originZ = layout.core().getZ();
-            canPlace = block.canPlace(mc.level, layout);
-        } else {
-            canPlace = block.canPlaceAt(mc.level,
-                    new BlockPos(hit.getX() + sideHit.getStepX(), pY + sideHit.getStepY(), hit.getZ() + sideHit.getStepZ()),
-                    facing);
-        }
+        int originX = preview.core().getX();
+        int originY = preview.core().getY();
+        int originZ = preview.core().getZ();
+        int o = -block.getOffset();
+        ForgeDirection fdFinal = ForgeDirection.getOrientation(preview.facing());
+        ForgeDirection lateralFinal = fdFinal.getRotation(ForgeDirection.UP);
 
         double timer = (System.currentTimeMillis() % (1000D * Math.PI)) / 250D;
         double sine = Math.sin(timer);
         int color = (int) (255 * (sine * 0.25 + 0.75));
-        int footprintColor = canPlace ? 0xFF000000 | color << 8 : 0xFF000000 | color << 16;
+        int footprintColor = preview.placeable() ? 0xFF000000 | color << 8 : 0xFF000000 | color << 16;
         int extraColor = 0xFF000000 | color;
         int portColor = 0xFF000000 | color << 16 | color << 8;
 
-        // Every cell of every box; the set answers the neighbour tests that decide which edges are outer.
-        List<BlockPos> blocks = new ArrayList<>();
+        List<BlockPos> blocks = preview.cells();
         LongOpenHashSet set = new LongOpenHashSet();
-        for (int[] dims : block.getAllDimensions()) {
-            int offFwd = dims.length > 6 ? dims[6] : 0;
-            int offUp = dims.length > 7 ? dims[7] : 0;
-            int offLat = dims.length > 8 ? dims[8] : 0;
-            int worldOffY = offUp;
-            int worldOffX = fd.offsetX * offFwd + lateral.offsetX * offLat;
-            int worldOffZ = fd.offsetZ * offFwd + lateral.offsetZ * offLat;
-
-            int[] rot = MultiblockHandlerXR.rotate(dims, facing);
-            for (int bx = -rot[4] + worldOffX; bx <= rot[5] + worldOffX; bx++)
-                for (int by = -rot[1] + worldOffY; by <= rot[0] + worldOffY; by++)
-                    for (int bz = -rot[2] + worldOffZ; bz <= rot[3] + worldOffZ; bz++) {
-                        BlockPos bp = new BlockPos(originX + bx, originY + by, originZ + bz);
-                        blocks.add(bp);
-                        set.add(bp.asLong());
-                    }
-        }
-
-        ForgeDirection fdFinal = fd, lateralFinal = lateral; // the lambda below needs effectively final copies
+        for (var pos : blocks) set.add(pos.asLong());
         double[][] extras = block.getAABBExtras();
-        int[][] ports = block.getAllPorts(fd);
-        int portX = originX - fd.offsetX * o;
+        int[][] ports = block.getAllPorts(fdFinal);
+        int portX = originX - fdFinal.offsetX * o;
         int portY = originY;
-        int portZ = originZ - fd.offsetZ * o;
+        int portZ = originZ - fdFinal.offsetZ * o;
         double cX = originX - dX + 0.5;
         double cY = originY - dY;
         double cZ = originZ - dZ + 0.5;
@@ -272,14 +304,16 @@ public final class MultiblockPlacementHighlight {
         });
     }
 
-    /** The outline of a 0.6-wide square centred on {@code (x, y, z)}, flat across {@code axis}. */
+    /**
+     * The outline of a 0.6-wide square centred on {@code (x, y, z)}, flat across {@code axis}.
+     */
     private static void square(PoseStack.Pose pose, VertexConsumer buffer, float x, float y, float z,
                                Direction.Axis axis, int color) {
         float s = 0.3F;
         float[][] corners = switch (axis) {
-            case Y -> new float[][] {{x - s, y, z - s}, {x + s, y, z - s}, {x + s, y, z + s}, {x - s, y, z + s}};
-            case X -> new float[][] {{x, y - s, z - s}, {x, y + s, z - s}, {x, y + s, z + s}, {x, y - s, z + s}};
-            case Z -> new float[][] {{x - s, y - s, z}, {x + s, y - s, z}, {x + s, y + s, z}, {x - s, y + s, z}};
+            case Y -> new float[][]{{x - s, y, z - s}, {x + s, y, z - s}, {x + s, y, z + s}, {x - s, y, z + s}};
+            case X -> new float[][]{{x, y - s, z - s}, {x, y + s, z - s}, {x, y + s, z + s}, {x, y - s, z + s}};
+            case Z -> new float[][]{{x - s, y - s, z}, {x + s, y - s, z}, {x + s, y + s, z}, {x - s, y + s, z}};
         };
         for (int i = 0; i < 4; i++) {
             float[] a = corners[i];
@@ -288,7 +322,9 @@ public final class MultiblockPlacementHighlight {
         }
     }
 
-    /** One GL_LINES segment. A zero-length one (a flat extra box) drew nothing in 1.7 and has no direction here. */
+    /**
+     * One GL_LINES segment. A zero-length one (a flat extra box) drew nothing in 1.7 and has no direction here.
+     */
     private static void line(PoseStack.Pose pose, VertexConsumer buffer,
                              float x1, float y1, float z1, float x2, float y2, float z2, int color) {
         float dx = x2 - x1;

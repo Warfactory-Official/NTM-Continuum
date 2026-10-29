@@ -1,14 +1,17 @@
 package com.hbm.client.model;
 
+import net.minecraft.world.phys.Vec3;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.Ids;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.gem.Geometry;
+
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.TreeSet;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 
@@ -20,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -36,16 +40,27 @@ import org.jspecify.annotations.Nullable;
  */
 public final class WavefrontObj implements Geometry.Groups {
 
-    /** One OBJ object/group: a name and its faces (each face = vertex refs of [posIdx, uvIdx, normalIdx]).
+    /**
+     * One OBJ object/group: a name and its faces (each face = vertex refs of [posIdx, uvIdx, normalIdx]).
      * A {@code usemtl} directive starts a new group with the same name but a new {@link #material}, so
-     * multi-texture models can be drawn one material at a time ({@link WavefrontObj#renderMaterial}). */
+     * multi-texture models can be drawn one material at a time ({@link WavefrontObj#renderMaterial}).
+     */
     public static final class Group {
         public final String name;
         public final String material;
         private final List<int[][]> faces = new ArrayList<>();
-        private Group(String name, String material) { this.name = name; this.material = material; }
-        /** Authored faces in this material run, before fan triangulation. */
-        public int faceCount() { return faces.size(); }
+
+        private Group(String name, String material) {
+            this.name = name;
+            this.material = material;
+        }
+
+        /**
+         * Authored faces in this material run, before fan triangulation.
+         */
+        public int faceCount() {
+            return faces.size();
+        }
     }
 
     private final float[][] positions;
@@ -55,7 +70,9 @@ public final class WavefrontObj implements Geometry.Groups {
     private final float[] min;
     private final float[] max;
     private Identifier source = Ids.of("minecraft", "unknown");
-    /** Distinguishes a {@link #stripFrame} copy's mesh names from the source's. */
+    /**
+     * Distinguishes a {@link #stripFrame} copy's mesh names from the source's.
+     */
     private String variant = "";
 
     private WavefrontObj(List<float[]> pos, List<float[]> uv, List<float[]> norm, List<Group> groups) {
@@ -75,10 +92,55 @@ public final class WavefrontObj implements Geometry.Groups {
         this.max = mx;
     }
 
-    /** Model-space minimum corner [x,y,z]. */
-    public float[] boundsMin() { return min; }
-    /** Model-space maximum corner [x,y,z]. */
-    public float[] boundsMax() { return max; }
+    /**
+     * Authored quad order and per-face UV inset, as Forge's OBJ sky submissions used them.
+     */
+    public float[] texturedQuads(float inset) {
+        int vertices = 0;
+        for (var group : groups)
+            for (var face : group.faces)
+                vertices += (face.length == 4 ? 1 : face.length - 2) * 4;
+        var result = new float[vertices * 5];
+        int offset = 0;
+        for (var group : groups)
+            for (var face : group.faces) {
+                float meanU = 0F, meanV = 0F;
+                for (var ref : face) {
+                    meanU += uvs[ref[1]][0];
+                    meanV += uvs[ref[1]][1];
+                }
+                meanU /= face.length;
+                meanV /= face.length;
+                for (int triangle = 1; triangle <= (face.length == 4 ? 1 : face.length - 2); triangle++) {
+                    for (int corner = 0; corner < 4; corner++) {
+                        int index = face.length == 4 ? corner : corner == 0 ? 0 : corner == 1 ? triangle : triangle + 1;
+                        var ref = face[index];
+                        var point = positions[ref[0]];
+                        var uv = uvs[ref[1]];
+                        result[offset++] = point[0];
+                        result[offset++] = point[1];
+                        result[offset++] = point[2];
+                        result[offset++] = uv[0] + (uv[0] > meanU ? -inset : inset);
+                        result[offset++] = uv[1] + (uv[1] > meanV ? -inset : inset);
+                    }
+                }
+            }
+        return result;
+    }
+
+    /**
+     * Model-space minimum corner [x,y,z].
+     */
+    public float[] boundsMin() {
+        return min;
+    }
+
+    /**
+     * Model-space maximum corner [x,y,z].
+     */
+    public float[] boundsMax() {
+        return max;
+    }
 
     /**
      * The bounding box of everything except the named parts, as {@code {min, max}}.
@@ -89,10 +151,12 @@ public final class WavefrontObj implements Geometry.Groups {
      */
     public float[][] boundsExcluding(Set<String> excluded) {
         float[][] bounds = boundsExcludingExact(excluded);
-        return bounds == null ? new float[][] {min, max} : bounds;
+        return bounds == null ? new float[][]{min, max} : bounds;
     }
 
-    /** Bounding box of non-excluded geometry, or {@code null} when every rendered group was excluded. */
+    /**
+     * Bounding box of non-excluded geometry, or {@code null} when every rendered group was excluded.
+     */
     public @Nullable float[][] boundsExcludingExact(Set<String> excluded) {
         float[] mn = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
         float[] mx = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
@@ -111,10 +175,12 @@ public final class WavefrontObj implements Geometry.Groups {
                 }
             }
         }
-        return any ? new float[][] {mn, mx} : null;
+        return any ? new float[][]{mn, mx} : null;
     }
 
-    /** Bounding box of only the named groups, or {@code null} when none of them contains geometry. */
+    /**
+     * Bounding box of only the named groups, or {@code null} when none of them contains geometry.
+     */
     public @Nullable float[][] boundsIncluding(Set<String> included) {
         if (included.isEmpty()) return null;
 
@@ -135,10 +201,12 @@ public final class WavefrontObj implements Geometry.Groups {
                 }
             }
         }
-        return any ? new float[][] {mn, mx} : null;
+        return any ? new float[][]{mn, mx} : null;
     }
 
-    /** Bounding box of only groups whose material has a resolved render pass. */
+    /**
+     * Bounding box of only groups whose material has a resolved render pass.
+     */
     public @Nullable float[][] boundsIncludingMaterials(Set<String> included) {
         if (included.isEmpty()) return null;
 
@@ -159,10 +227,17 @@ public final class WavefrontObj implements Geometry.Groups {
                 }
             }
         }
-        return any ? new float[][] {mn, mx} : null;
+        return any ? new float[][]{mn, mx} : null;
     }
 
-    /** Loads and parses an OBJ from the client resource pack at {@code location}. */
+    /**
+     * Loads and parses an OBJ from the client resource pack at {@code location}.
+     */
+    public static WavefrontObj load(Identifier location, boolean vertexNormals) {
+        var model = load(location);
+        return vertexNormals ? model : model.withFaceNormals();
+    }
+
     public static WavefrontObj load(Identifier location) {
         List<float[]> pos = new ArrayList<>();
         List<float[]> uv = new ArrayList<>();
@@ -179,9 +254,11 @@ public final class WavefrontObj implements Geometry.Groups {
                 if (line.isEmpty() || line.charAt(0) == '#') continue;
                 String[] t = line.split("\\s+");
                 switch (t[0]) {
-                    case "v" -> pos.add(new float[]{Float.parseFloat(t[1]), Float.parseFloat(t[2]), Float.parseFloat(t[3])});
+                    case "v" -> pos.add(new float[]{Float.parseFloat(t[1]), Float.parseFloat(t[2]), Float.parseFloat(
+                            t[3])});
                     case "vt" -> uv.add(new float[]{Float.parseFloat(t[1]), 1.0F - Float.parseFloat(t[2])});
-                    case "vn" -> norm.add(new float[]{Float.parseFloat(t[1]), Float.parseFloat(t[2]), Float.parseFloat(t[3])});
+                    case "vn" -> norm.add(
+                            new float[]{Float.parseFloat(t[1]), Float.parseFloat(t[2]), Float.parseFloat(t[3])});
                     case "o", "g" -> {
                         // Some exporters emit a leading empty default group; reuse it instead of leaving it dangling.
                         if (current.faces.isEmpty() && groups.size() == 1) {
@@ -218,24 +295,30 @@ public final class WavefrontObj implements Geometry.Groups {
         return model;
     }
 
-    /** A copy whose UVs sample frame {@code frame} of a texture stacked as {@code frames} vertical frames. */
+    /**
+     * A copy whose UVs sample frame {@code frame} of a texture stacked as {@code frames} vertical frames.
+     */
     public WavefrontObj stripFrame(int frame, int frames) {
         List<float[]> uv = new ArrayList<>(uvs.length);
-        for (float[] t : uvs) uv.add(new float[] {t[0], (frame + t[1]) / frames});
+        for (float[] t : uvs) uv.add(new float[]{t[0], (frame + t[1]) / frames});
         WavefrontObj copy = new WavefrontObj(List.of(positions), uv, List.of(normals), groups);
         copy.source = source;
         copy.variant = "@" + frame + "/" + frames;
         return copy;
     }
 
-    /** The distinct material names used by this model, in first-use order (empty string = untextured runs). */
+    /**
+     * The distinct material names used by this model, in first-use order (empty string = untextured runs).
+     */
     public List<String> materialNames() {
         List<String> names = new ArrayList<>();
         for (Group g : groups) if (!g.faces.isEmpty() && !names.contains(g.material)) names.add(g.material);
         return names;
     }
 
-    /** Draws every face run using the given material (for multi-texture OBJs, one call per material). */
+    /**
+     * Draws every face run using the given material (for multi-texture OBJs, one call per material).
+     */
     public void renderMaterial(String material, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay) {
         for (Group g : groups) if (g.material.equals(material)) drawGroup(g, pose, buffer, light, overlay);
     }
@@ -267,7 +350,9 @@ public final class WavefrontObj implements Geometry.Groups {
         return map;
     }
 
-    /** Parses an OBJ face vertex ref "v", "v/vt", "v//vn" or "v/vt/vn" into 0-based [pos, uv, normal] (-1 = absent). */
+    /**
+     * Parses an OBJ face vertex ref "v", "v/vt", "v//vn" or "v/vt/vn" into 0-based [pos, uv, normal] (-1 = absent).
+     */
     private static int[] parseRef(String s) {
         String[] p = s.split("/", -1);
         int vi = Integer.parseInt(p[0]) - 1;
@@ -276,53 +361,72 @@ public final class WavefrontObj implements Geometry.Groups {
         return new int[]{vi, ti, ni};
     }
 
-    /** Draws every part of the model. */
+    /**
+     * Draws every part of the model.
+     */
     public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay) {
         renderExcept(pose, buffer, light, overlay, Set.of());
     }
 
-    /** Draws every part and optionally emits reversed faces for legacy double-sided models. */
+    /**
+     * Draws every part and optionally emits reversed faces for legacy double-sided models.
+     */
     public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, boolean doubleSided) {
         renderExcept(pose, buffer, light, overlay, Set.of(), doubleSided);
     }
 
-    /** Draws every part tinted with an ARGB vertex colour. */
+    /**
+     * Draws every part tinted with an ARGB vertex colour.
+     */
     public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
         for (Group g : groups) drawGroup(g, pose, buffer, light, overlay, color);
     }
 
-    /** Draws every part tinted, with the texture scrolled by {@code (uOffset, vOffset)}; see {@link #renderPart}. */
+    /**
+     * Draws every part tinted, with the texture scrolled by {@code (uOffset, vOffset)}; see {@link #renderPart}.
+     */
     public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color,
                           float uOffset, float vOffset) {
         for (Group g : groups) drawGroup(g, pose, buffer, light, overlay, color, false, uOffset, vOffset);
     }
 
-    /** Draws every part except those named in {@code exclude} (e.g. dynamic parts like a fluid overlay). */
+    /**
+     * Draws every part except those named in {@code exclude} (e.g. dynamic parts like a fluid overlay).
+     */
     public void renderExcept(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, Set<String> exclude) {
         renderExcept(pose, buffer, light, overlay, exclude, false);
     }
 
     public void renderExcept(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
                              Set<String> exclude, boolean doubleSided) {
-        for (Group g : groups) if (!exclude.contains(g.name)) drawGroup(g, pose, buffer, light, overlay, -1, doubleSided);
+        for (Group g : groups)
+            if (!exclude.contains(g.name)) drawGroup(g, pose, buffer, light, overlay, -1, doubleSided);
     }
 
-    /** Draws a single named part (no-op if the part doesn't exist). */
+    /**
+     * Draws a single named part (no-op if the part doesn't exist).
+     */
     public void renderPart(String name, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay) {
         renderPart(name, pose, buffer, light, overlay, -1);
     }
 
-    /** Draws a single named part with a vertex colour (e.g. an overlay tinted by a fluid colour). */
+    /**
+     * Draws a single named part with a vertex colour (e.g. an overlay tinted by a fluid colour).
+     */
     public void renderPart(String name, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
         for (Group g : groups) if (g.name.equals(name)) drawGroup(g, pose, buffer, light, overlay, color);
     }
 
-    /** Draws a named part with only position and vertex colour, for textureless legacy glow parts. */
+    /**
+     * Draws a named part with only position and vertex colour, for textureless legacy glow parts.
+     */
     public void renderPartColor(String name, PoseStack.Pose pose, VertexConsumer buffer, int color) {
         for (Group g : groups) if (g.name.equals(name)) drawColorGroup(g, pose, buffer, color);
     }
 
-    /** Draws every part with only position and vertex colour, for models used as untextured solids. */
+    /**
+     * Draws every part with only position and vertex colour, for models used as untextured solids.
+     */
     public void renderAllColor(PoseStack.Pose pose, VertexConsumer buffer, int color) {
         for (Group g : groups) drawColorGroup(g, pose, buffer, color);
     }
@@ -343,18 +447,24 @@ public final class WavefrontObj implements Geometry.Groups {
         }
     }
 
-    /** This model's parts as {@link Geometry}, the shape a {@code Gem} declaration names. */
+    /**
+     * This model's parts as {@link Geometry}, the shape a {@code Gem} declaration names.
+     */
     public Geometry part(String name) {
         return parts(name);
     }
 
-    /** Unlike {@link #renderPart}, a name this model does not have throws rather than drawing nothing. */
+    /**
+     * Unlike {@link #renderPart}, a name this model does not have throws rather than drawing nothing.
+     */
     @Override
     public Geometry parts(String... names) {
         return parts(Set.of(names), false);
     }
 
-    /** The same selection, optionally with each triangle emitted a second time wound the other way. */
+    /**
+     * The same selection, optionally with each triangle emitted a second time wound the other way.
+     */
     public Geometry parts(Set<String> names, boolean doubleSided) {
         Set<String> known = partNames();
         for (String name : names) {
@@ -379,7 +489,9 @@ public final class WavefrontObj implements Geometry.Groups {
         return new ObjGeometry(null, Set.of(), doubleSided);
     }
 
-    /** Every face run wearing one material, for an OBJ whose runs split by {@code usemtl} not {@code o}. */
+    /**
+     * Every face run wearing one material, for an OBJ whose runs split by {@code usemtl} not {@code o}.
+     */
     public Geometry material(String name) {
         if (!materialNames().contains(name)) {
             throw new IllegalArgumentException(
@@ -388,7 +500,9 @@ public final class WavefrontObj implements Geometry.Groups {
         return new ObjGeometry(null, Set.of(), false, name);
     }
 
-    /** Every part except those named: a fluid overlay or a conditional frame drawn separately. */
+    /**
+     * Every part except those named: a fluid overlay or a conditional frame drawn separately.
+     */
     public Geometry allExcept(Set<String> exclude) {
         return new ObjGeometry(null, Set.copyOf(exclude), false);
     }
@@ -397,7 +511,9 @@ public final class WavefrontObj implements Geometry.Groups {
         return new ObjGeometry(null, Set.copyOf(exclude), doubleSided);
     }
 
-    /** The names of every group this model actually holds, for declarations to be checked against. */
+    /**
+     * The names of every group this model actually holds, for declarations to be checked against.
+     */
     public Set<String> partNames() {
         Set<String> names = new LinkedHashSet<>();
         for (Group g : groups) if (!g.faces.isEmpty()) names.add(g.name);
@@ -508,13 +624,56 @@ public final class WavefrontObj implements Geometry.Groups {
             float nx = 0F, ny = 1F, nz = 0F;
             if (ref[2] >= 0) {
                 float[] nrm = normals[ref[2]];
-                nx = nrm[0]; ny = nrm[1]; nz = nrm[2];
+                nx = nrm[0];
+                ny = nrm[1];
+                nz = nrm[2];
             }
-            if (reverseNormal) { nx = -nx; ny = -ny; nz = -nz; }
-            data.add(p[0]); data.add(p[1]); data.add(p[2]);
-            data.add(u); data.add(v);
-            data.add(nx); data.add(ny); data.add(nz);
+            if (reverseNormal) {
+                nx = -nx;
+                ny = -ny;
+                nz = -nz;
+            }
+            data.add(p[0]);
+            data.add(p[1]);
+            data.add(p[2]);
+            data.add(u);
+            data.add(v);
+            data.add(nx);
+            data.add(ny);
+            data.add(nz);
         }
+    }
+
+    /**
+     * AdvancedModelLoader's face normal in place of the supplied vertex normals.
+     */
+    public WavefrontObj withFaceNormals() {
+        var converted = new ArrayList<Group>();
+        var faceNormals = new ArrayList<float[]>();
+        for (var group : groups) {
+            var target = new Group(group.name, group.material);
+            for (var face : group.faces) {
+                var a = positions[face[0][0]];
+                var b = positions[face[1][0]];
+                var c = positions[face[2][0]];
+                var normal = new Vec3(b[0] - a[0], b[1] - a[1], b[2] - a[2])
+                        .cross(new Vec3(c[0] - a[0], c[1] - a[1], c[2] - a[2])).normalize();
+                int index = faceNormals.size();
+                faceNormals.add(new float[]{(float) normal.x, (float) normal.y, (float) normal.z});
+                var refs = new int[face.length][3];
+                for (int i = 0; i < face.length; i++) {
+                    refs[i][0] = face[i][0];
+                    refs[i][1] = face[i][1];
+                    refs[i][2] = index;
+                }
+                target.faces.add(refs);
+            }
+            converted.add(target);
+        }
+        var copy = new WavefrontObj(List.of(positions), List.of(uvs), faceNormals, converted);
+        copy.source = source;
+        copy.variant = variant + "/face_normals";
+        return copy;
     }
 
     private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay) {
@@ -531,7 +690,7 @@ public final class WavefrontObj implements Geometry.Groups {
     }
 
     private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
-                            int color, boolean doubleSided, float uOffset, float vOffset) {
+                           int color, boolean doubleSided, float uOffset, float vOffset) {
         for (int[][] face : g.faces) {
             // Fan-triangulate; emit each triangle as a quad (4th vertex duplicates the 3rd) for QUADS mode.
             for (int i = 1; i + 1 < face.length; i++) {
@@ -582,9 +741,15 @@ public final class WavefrontObj implements Geometry.Groups {
         float nx = 0F, ny = 1F, nz = 0F;
         if (ref[2] >= 0) {
             float[] nrm = normals[ref[2]];
-            nx = nrm[0]; ny = nrm[1]; nz = nrm[2];
+            nx = nrm[0];
+            ny = nrm[1];
+            nz = nrm[2];
         }
-        if (reverseNormal) { nx = -nx; ny = -ny; nz = -nz; }
+        if (reverseNormal) {
+            nx = -nx;
+            ny = -ny;
+            nz = -nz;
+        }
         Vertexes.vertex(buffer, pose, p[0], p[1], p[2], color, u, v, overlay, light, nx, ny, nz);
     }
 }

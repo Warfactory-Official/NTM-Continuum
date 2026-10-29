@@ -35,8 +35,8 @@ public class RenderTNTPrimedBase extends CompatEntityRenderer<EntityTntNtm, Rend
     @Override
     public void extract(EntityTntNtm entity, State state, float partialTicks) {
         state.fuse = entity.getFuse() - partialTicks + 1.0F;
-        state.yaw = entity.getYRot();
-        state.pitch = entity.getXRot();
+        state.yaw = entity.spinYaw(1.0F);
+        state.pitch = entity.spinPitch(1.0F);
         state.block.extract(entity.getBlockState());
     }
 

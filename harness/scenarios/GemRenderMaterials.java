@@ -1,4 +1,5 @@
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.golem.harness.api.Client;
 import dev.golem.harness.api.Expect;
@@ -17,6 +18,8 @@ import java.util.List;
  * (or with the backend already off) the scenario only checks that every machine replays on vanilla.
  */
 public final class GemRenderMaterials implements Scenario {
+    private static final int CAPTURE_TIME = Integer.parseInt(
+            System.getenv().getOrDefault("GEM_MATERIALS_TIME", "6000"));
 
     private static final int X = 900;
     private static final int Y = 100;
@@ -26,7 +29,8 @@ public final class GemRenderMaterials implements Scenario {
     private static final int PER_ROW = 8;
     private static final int ROW_GAP = 28;
 
-    private record Machine(String id, String state, double distance) {}
+    private record Machine(String id, String state, double distance) {
+    }
 
     private static final List<Machine> MACHINES = List.of(
             new Machine("machine_chemical_plant", "[facing=north]", 7),
@@ -51,15 +55,16 @@ public final class GemRenderMaterials implements Scenario {
         c.markLog();
         int span = PER_ROW * SPACING;
         String forceload = (X - 24) + " " + (Z - 24) + " " + (X + span + 24) + " " + (Z + ROW_GAP + 24);
-        String hideGui = null, renderDistance = null, fov = null;
+        String hideGui = null, renderDistance = null, fov = null, autoUnpause = null;
         boolean backendSwitched = false;
         boolean frozen = false;
         try {
             hideGui = c.setOption("hide_gui", "true");
             renderDistance = c.setOption("render_distance", "12");
             fov = c.setOption("fov", "70");
+            autoUnpause = c.setOption("auto_unpause", "false");
             c.cmd("forceload add " + forceload);
-            c.waitTicks(40);
+            waitSectionsBuilt(c);
             Fixtures.platform(c, X + span / 2, Y, Z + ROW_GAP / 2, span / 2 + 12);
             c.cmd("time set 6000");
             c.cmd("gamerule doDaylightCycle false");
@@ -70,24 +75,21 @@ public final class GemRenderMaterials implements Scenario {
                 Fixtures.setBlock(c, x(i), L, z(i), "hbm:" + m.id + m.state);
             }
             c.cmd("gamemode spectator");
-            // Sky light over a freshly filled platform takes a while to settle; shots taken earlier differ by it.
-            c.waitTicks(300);
-            List<String> missing = new ArrayList<>();
-            for (int i = 0; i < MACHINES.size(); i++) {
-                JsonObject block = c.block(x(i), L, z(i));
-                if (block.get("block_entity").isJsonNull()) missing.add(MACHINES.get(i).id + " " + block);
-            }
-            Expect.that(missing.isEmpty(), "every core has its block entity: " + missing);
+            waitForScene(c);
+            c.cmd("time set " + CAPTURE_TIME);
+            c.waitServerTicks(20);
+            c.cmd("gamerule sendCommandFeedback false");
+            c.waitTicks(220);
 
-            // 1.20.1 has no /tick; animated parts then differ between the pair by their motion only.
-            if (!c.node().startsWith("1.20")) {
-                c.cmd("tick freeze");
-                frozen = true;
-            }
+            c.setOption("paused", "true");
+            frozen = true;
+            c.waitTicks(20);
+            Expect.that(c.status().get("paused").getAsBoolean(), "vanilla pauses the world for both render paths");
             JsonObject start = measure(c);
             String backend = start.get("backend").getAsString();
             boolean visualizing = start.get("visualizing").getAsBoolean();
-            c.chat("gemrender-materials: node=" + c.node() + " backend=" + backend + " visualizing=" + visualizing);
+            System.out.println(
+                    "gemrender-materials: node=" + c.node() + " backend=" + backend + " visualizing=" + visualizing);
             check(start, visualizing ? "instanced" : "vanilla");
             shots(c, "");
 
@@ -112,7 +114,9 @@ public final class GemRenderMaterials implements Scenario {
             Expect.that(bad.isEmpty(), "log clean since the mark: " + bad);
         } finally {
             if (backendSwitched) c.cmd("flywheel backend DEFAULT");
-            if (frozen) c.cmd("tick unfreeze");
+            if (frozen) c.setOption("paused", "false");
+            if (autoUnpause != null) c.setOption("auto_unpause", autoUnpause);
+            c.cmd("gamerule sendCommandFeedback true");
             c.cmd("gamemode creative");
             if (hideGui != null) c.setOption("hide_gui", hideGui);
             if (renderDistance != null) c.setOption("render_distance", renderDistance);
@@ -121,8 +125,11 @@ public final class GemRenderMaterials implements Scenario {
         }
     }
 
-    /** One shot per machine from the south-west, high enough to see tops and translucent fills. */
+    /**
+     * One shot per machine from the south-west, high enough to see tops and translucent fills.
+     */
     private static void shots(Client c, String suffix) {
+        c.send("clear_chat");
         for (int i = 0; i < MACHINES.size(); i++) {
             Machine m = MACHINES.get(i);
             double x = x(i) + 0.5;
@@ -141,15 +148,69 @@ public final class GemRenderMaterials implements Scenario {
         return Z + (i / PER_ROW) * ROW_GAP;
     }
 
-    /** Which path drew each core over two seconds, from a camera that sees both rows. */
+    /**
+     * Waits for real chunk lighting and core placement before freezing a material comparison.
+     */
+    private static void waitForScene(Client c) {
+        long deadline = System.nanoTime() + 30_000_000_000L;
+        List<String> missing;
+        do {
+            missing = new ArrayList<>();
+            for (int i = 0; i < MACHINES.size(); i++) {
+                JsonObject core = c.block(x(i), L, z(i));
+                if (core.get("block_entity").isJsonNull()) missing.add(MACHINES.get(i).id);
+            }
+            if (missing.isEmpty()) {
+                var positions = new int[MACHINES.size()][3];
+                for (int i = 0; i < positions.length; i++) positions[i] = new int[]{x(i) - 3, L, z(i) - 3};
+                Fixtures.waitForSkylight(c, positions);
+                return;
+            }
+            c.waitTicks(1);
+        } while (System.nanoTime() < deadline);
+        throw new AssertionError("Scene not ready: missing cores=" + missing);
+    }
+
+    /**
+     * Waits for the render-distance rebuild before placing cores into the section lists.
+     */
+    private static void waitSectionsBuilt(Client c) {
+        c.waitTicks(5);
+        long deadline = System.nanoTime() + 30_000_000_000L;
+        JsonObject status;
+        do {
+            status = c.status();
+            if (status.get("sections_built").getAsBoolean()) return;
+            c.waitTicks(1);
+        } while (System.nanoTime() < deadline);
+        throw new AssertionError("Chunk renderer still rebuilding sections: " + status);
+    }
+
+    /**
+     * Which path drew each core over at least ten submits, from a camera that sees both rows.
+     */
     private static JsonObject measure(Client c) {
         int span = PER_ROW * SPACING;
         c.teleport(X + span / 2.0, L + 50, Z + ROW_GAP + 60.5);
         c.lookAt(X + span / 2.0, L + 2, Z + ROW_GAP / 2.0);
         c.waitTicks(10);
         gem(c, true);
-        c.waitTicks(40);
-        return gem(c, false);
+        long deadline = System.nanoTime() + 30_000_000_000L;
+        JsonObject report;
+        do {
+            report = gem(c, false);
+            boolean complete = true;
+            for (JsonElement element : report.getAsJsonArray("positions")) {
+                JsonObject position = element.getAsJsonObject();
+                if (Math.max(position.get("replayed").getAsInt(), position.get("skipped").getAsInt()) < 10) {
+                    complete = false;
+                    break;
+                }
+            }
+            if (complete) return report;
+            c.waitTicks(1);
+        } while (System.nanoTime() < deadline);
+        throw new AssertionError("Timed out waiting for ten real submits per core: " + report);
     }
 
     private static JsonObject gem(Client c, boolean restart) {

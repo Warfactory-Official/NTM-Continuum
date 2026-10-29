@@ -51,18 +51,6 @@ public class FabricInit implements ModEntry {
             com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(entity);
             com.hbm.handler.pollution.PollutionHandler.decorateMob(entity);
         });
-        dev.golem.core.platform.Lifecycle.onServerTick(server -> server.getAllLevels().forEach(level ->
-                level.getAllEntities().forEach(entity -> {
-                    // 26.1's entity lookup can yield null for an entity removed earlier in this tick
-                    if (entity == null) return;
-                    com.hbm.handler.ExplosivesEntityHooks.tick(entity);
-                    if (entity instanceof net.minecraft.world.entity.item.ItemEntity item) {
-                        com.hbm.items.special.ItemSingularity.tickDropped(item);
-                        com.hbm.items.special.ItemCell.tickDropped(item);
-                        com.hbm.items.special.ItemAntimatterPellet.tickDropped(item);
-                        com.hbm.items.special.ItemDemonCore.tickDropped(item);
-                    }
-                })));
 
         // Worldgen: the biome modifiers ModBiomeModifiers declares reach Fabric through Golem Core's
         // BiomeFeatures.install(), called from MainRegistry right after the declaration.

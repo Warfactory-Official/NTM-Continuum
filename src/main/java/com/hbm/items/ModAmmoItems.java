@@ -12,27 +12,40 @@ import dev.golem.core.Ids;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+
 import java.util.Locale;
 import java.util.function.Supplier;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 
-/** Every ammunition identity represented by 1.7's weapon catalogue. */
+/**
+ * Every ammunition identity represented by 1.7's weapon catalogue.
+ */
 public final class ModAmmoItems {
 
-    private ModAmmoItems() {}
+    private ModAmmoItems() {
+    }
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
-    /** Returns an already-declared ammo item without creating another registry entry. */
+    /**
+     * Returns an already-declared ammo item without creating another registry entry.
+     */
     public static Supplier<Item> ammo(String id) {
         if (!id.startsWith("ammo_")) throw new IllegalArgumentException("Not an ammo id: " + id);
         return () -> BuiltInRegistries.ITEM.getValue(Ids.of(Constants.MOD_ID, id));
     }
 
-    /** Resolves the flattened identity produced from GunFactory.EnumAmmo. */
+    /**
+     * Resolves the flattened identity produced from GunFactory.EnumAmmo.
+     */
     public static Supplier<Item> standardAmmo(String enumName) {
+        return ammo(standardAmmoId(enumName));
+    }
+
+    public static String standardAmmoId(String enumName) {
         String suffix = enumName.toLowerCase(Locale.ROOT);
         String id = switch (suffix) {
             // ItemAmmoEnums.AmmoFireExt kept these source ids instead of using the Sedna family prefix.
@@ -41,34 +54,42 @@ public final class ModAmmoItems {
             case "fext_sand" -> "ammo_fireext_sand";
             default -> "ammo_standard_" + suffix;
         };
-        return ammo(id);
+        return id;
     }
 
-    /** Resolves the flattened identity produced from GunFactory.EnumAmmoSecret. */
+    /**
+     * Resolves the flattened identity produced from GunFactory.EnumAmmoSecret.
+     */
     public static Supplier<Item> secretAmmo(String enumName) {
         return ammo("ammo_secret_" + enumName.toLowerCase(Locale.ROOT));
     }
 
-    /** GunFactory.ammo_debug; the source item is separate from EnumAmmo. */
+    /**
+     * GunFactory.ammo_debug; the source item is separate from EnumAmmo.
+     */
     public static final RegistryObject<Item> ammo_debug = REG.item("ammo_debug").transform(Presets.sprite());
 
     // GunFactory.EnumAmmo. The field suffix is the lower-case enum constant; the registry id is stable.
     public static final RegistryObject<Item> stone = REG.item("ammo_standard_stone").transform(Presets.sprite());
     public static final RegistryObject<Item> stone_ap = REG.item("ammo_standard_stone_ap").transform(Presets.sprite());
-    public static final RegistryObject<Item> stone_iron = REG.item("ammo_standard_stone_iron").transform(Presets.sprite());
-    public static final RegistryObject<Item> stone_shot = REG.item("ammo_standard_stone_shot").transform(Presets.sprite());
+    public static final RegistryObject<Item> stone_iron = REG.item("ammo_standard_stone_iron")
+                                                             .transform(Presets.sprite());
+    public static final RegistryObject<Item> stone_shot = REG.item("ammo_standard_stone_shot")
+                                                             .transform(Presets.sprite());
     public static final RegistryObject<Item> m357_bp = REG.item("ammo_standard_m357_bp").transform(Presets.sprite());
     public static final RegistryObject<Item> m357_sp = REG.item("ammo_standard_m357_sp").transform(Presets.sprite());
     public static final RegistryObject<Item> m357_fmj = REG.item("ammo_standard_m357_fmj").transform(Presets.sprite());
     public static final RegistryObject<Item> m357_jhp = REG.item("ammo_standard_m357_jhp").transform(Presets.sprite());
     public static final RegistryObject<Item> m357_ap = REG.item("ammo_standard_m357_ap").transform(Presets.sprite());
-    public static final RegistryObject<Item> m357_express = REG.item("ammo_standard_m357_express").transform(Presets.sprite());
+    public static final RegistryObject<Item> m357_express = REG.item("ammo_standard_m357_express")
+                                                               .transform(Presets.sprite());
     public static final RegistryObject<Item> m44_bp = REG.item("ammo_standard_m44_bp").transform(Presets.sprite());
     public static final RegistryObject<Item> m44_sp = REG.item("ammo_standard_m44_sp").transform(Presets.sprite());
     public static final RegistryObject<Item> m44_fmj = REG.item("ammo_standard_m44_fmj").transform(Presets.sprite());
     public static final RegistryObject<Item> m44_jhp = REG.item("ammo_standard_m44_jhp").transform(Presets.sprite());
     public static final RegistryObject<Item> m44_ap = REG.item("ammo_standard_m44_ap").transform(Presets.sprite());
-    public static final RegistryObject<Item> m44_express = REG.item("ammo_standard_m44_express").transform(Presets.sprite());
+    public static final RegistryObject<Item> m44_express = REG.item("ammo_standard_m44_express")
+                                                              .transform(Presets.sprite());
     public static final RegistryObject<Item> p22_sp = REG.item("ammo_standard_p22_sp").transform(Presets.sprite());
     public static final RegistryObject<Item> p22_fmj = REG.item("ammo_standard_p22_fmj").transform(Presets.sprite());
     public static final RegistryObject<Item> p22_jhp = REG.item("ammo_standard_p22_jhp").transform(Presets.sprite());
@@ -88,8 +109,10 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> r762_du = REG.item("ammo_standard_r762_du").transform(Presets.sprite());
     public static final RegistryObject<Item> r762_he = REG.item("ammo_standard_r762_he").transform(Presets.sprite());
     public static final RegistryObject<Item> bmg50_sp = REG.item("ammo_standard_bmg50_sp").transform(Presets.sprite());
-    public static final RegistryObject<Item> bmg50_fmj = REG.item("ammo_standard_bmg50_fmj").transform(Presets.sprite());
-    public static final RegistryObject<Item> bmg50_jhp = REG.item("ammo_standard_bmg50_jhp").transform(Presets.sprite());
+    public static final RegistryObject<Item> bmg50_fmj = REG.item("ammo_standard_bmg50_fmj")
+                                                            .transform(Presets.sprite());
+    public static final RegistryObject<Item> bmg50_jhp = REG.item("ammo_standard_bmg50_jhp")
+                                                            .transform(Presets.sprite());
     public static final RegistryObject<Item> bmg50_ap = REG.item("ammo_standard_bmg50_ap").transform(Presets.sprite());
     public static final RegistryObject<Item> bmg50_du = REG.item("ammo_standard_bmg50_du").transform(Presets.sprite());
     public static final RegistryObject<Item> bmg50_he = REG.item("ammo_standard_bmg50_he").transform(Presets.sprite());
@@ -97,69 +120,112 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> b75_inc = REG.item("ammo_standard_b75_inc").transform(Presets.sprite());
     public static final RegistryObject<Item> b75_exp = REG.item("ammo_standard_b75_exp").transform(Presets.sprite());
     public static final RegistryObject<Item> g12_bp = REG.item("ammo_standard_g12_bp").transform(Presets.sprite());
-    public static final RegistryObject<Item> g12_bp_magnum = REG.item("ammo_standard_g12_bp_magnum").transform(Presets.sprite());
-    public static final RegistryObject<Item> g12_bp_slug = REG.item("ammo_standard_g12_bp_slug").transform(Presets.sprite());
+    public static final RegistryObject<Item> g12_bp_magnum = REG.item("ammo_standard_g12_bp_magnum")
+                                                                .transform(Presets.sprite());
+    public static final RegistryObject<Item> g12_bp_slug = REG.item("ammo_standard_g12_bp_slug")
+                                                              .transform(Presets.sprite());
     public static final RegistryObject<Item> g12 = REG.item("ammo_standard_g12").transform(Presets.sprite());
     public static final RegistryObject<Item> g12_slug = REG.item("ammo_standard_g12_slug").transform(Presets.sprite());
-    public static final RegistryObject<Item> g12_flechette = REG.item("ammo_standard_g12_flechette").transform(Presets.sprite());
-    public static final RegistryObject<Item> g12_magnum = REG.item("ammo_standard_g12_magnum").transform(Presets.sprite());
-    public static final RegistryObject<Item> g12_explosive = REG.item("ammo_standard_g12_explosive").transform(Presets.sprite());
-    public static final RegistryObject<Item> g12_phosphorus = REG.item("ammo_standard_g12_phosphorus").transform(Presets.sprite());
-    public static final RegistryObject<Item> g26_flare = REG.item("ammo_standard_g26_flare").transform(Presets.sprite());
-    public static final RegistryObject<Item> g26_flare_supply = REG.item("ammo_standard_g26_flare_supply").transform(Presets.sprite());
-    public static final RegistryObject<Item> g26_flare_weapon = REG.item("ammo_standard_g26_flare_weapon").transform(Presets.sprite());
+    public static final RegistryObject<Item> g12_flechette = REG.item("ammo_standard_g12_flechette")
+                                                                .transform(Presets.sprite());
+    public static final RegistryObject<Item> g12_magnum = REG.item("ammo_standard_g12_magnum")
+                                                             .transform(Presets.sprite());
+    public static final RegistryObject<Item> g12_explosive = REG.item("ammo_standard_g12_explosive")
+                                                                .transform(Presets.sprite());
+    public static final RegistryObject<Item> g12_phosphorus = REG.item("ammo_standard_g12_phosphorus")
+                                                                 .transform(Presets.sprite());
+    public static final RegistryObject<Item> g26_flare = REG.item("ammo_standard_g26_flare")
+                                                            .transform(Presets.sprite());
+    public static final RegistryObject<Item> g26_flare_supply = REG.item("ammo_standard_g26_flare_supply")
+                                                                   .transform(Presets.sprite());
+    public static final RegistryObject<Item> g26_flare_weapon = REG.item("ammo_standard_g26_flare_weapon")
+                                                                   .transform(Presets.sprite());
     public static final RegistryObject<Item> g40_he = REG.item("ammo_standard_g40_he").transform(Presets.sprite());
     public static final RegistryObject<Item> g40_heat = REG.item("ammo_standard_g40_heat").transform(Presets.sprite());
     public static final RegistryObject<Item> g40_demo = REG.item("ammo_standard_g40_demo").transform(Presets.sprite());
     public static final RegistryObject<Item> g40_inc = REG.item("ammo_standard_g40_inc").transform(Presets.sprite());
-    public static final RegistryObject<Item> g40_phosphorus = REG.item("ammo_standard_g40_phosphorus").transform(Presets.sprite());
-    public static final RegistryObject<Item> rocket_he = REG.item("ammo_standard_rocket_he").transform(Presets.sprite());
-    public static final RegistryObject<Item> rocket_heat = REG.item("ammo_standard_rocket_heat").transform(Presets.sprite());
-    public static final RegistryObject<Item> rocket_demo = REG.item("ammo_standard_rocket_demo").transform(Presets.sprite());
-    public static final RegistryObject<Item> rocket_inc = REG.item("ammo_standard_rocket_inc").transform(Presets.sprite());
-    public static final RegistryObject<Item> rocket_phosphorus = REG.item("ammo_standard_rocket_phosphorus").transform(Presets.sprite());
-    public static final RegistryObject<Item> flame_diesel = REG.item("ammo_standard_flame_diesel").transform(Presets.sprite());
-    public static final RegistryObject<Item> flame_gas = REG.item("ammo_standard_flame_gas").transform(Presets.sprite());
-    public static final RegistryObject<Item> flame_napalm = REG.item("ammo_standard_flame_napalm").transform(Presets.sprite());
-    public static final RegistryObject<Item> flame_balefire = REG.item("ammo_standard_flame_balefire").transform(Presets.sprite());
-    public static final RegistryObject<Item> capacitor = REG.item("ammo_standard_capacitor").transform(Presets.sprite());
-    public static final RegistryObject<Item> capacitor_overcharge = REG.item("ammo_standard_capacitor_overcharge").transform(Presets.sprite());
-    public static final RegistryObject<Item> capacitor_ir = REG.item("ammo_standard_capacitor_ir").transform(Presets.sprite());
-    public static final RegistryObject<Item> tau_uranium = REG.item("ammo_standard_tau_uranium").transform(Presets.sprite());
-    public static final RegistryObject<Item> coil_tungsten = REG.item("ammo_standard_coil_tungsten").transform(Presets.sprite());
-    public static final RegistryObject<Item> coil_ferrouranium = REG.item("ammo_standard_coil_ferrouranium").transform(Presets.sprite());
-    public static final RegistryObject<Item> nuke_standard = REG.item("ammo_standard_nuke_standard").transform(Presets.sprite());
-    public static final RegistryObject<Item> nuke_demo = REG.item("ammo_standard_nuke_demo").transform(Presets.sprite());
-    public static final RegistryObject<Item> nuke_high = REG.item("ammo_standard_nuke_high").transform(Presets.sprite());
-    /** Existing factory integration name; this aliases the flattened nuke_high entry. */
+    public static final RegistryObject<Item> g40_phosphorus = REG.item("ammo_standard_g40_phosphorus")
+                                                                 .transform(Presets.sprite());
+    public static final RegistryObject<Item> rocket_he = REG.item("ammo_standard_rocket_he")
+                                                            .transform(Presets.sprite());
+    public static final RegistryObject<Item> rocket_heat = REG.item("ammo_standard_rocket_heat")
+                                                              .transform(Presets.sprite());
+    public static final RegistryObject<Item> rocket_demo = REG.item("ammo_standard_rocket_demo")
+                                                              .transform(Presets.sprite());
+    public static final RegistryObject<Item> rocket_inc = REG.item("ammo_standard_rocket_inc")
+                                                             .transform(Presets.sprite());
+    public static final RegistryObject<Item> rocket_phosphorus = REG.item("ammo_standard_rocket_phosphorus")
+                                                                    .transform(Presets.sprite());
+    public static final RegistryObject<Item> flame_diesel = REG.item("ammo_standard_flame_diesel")
+                                                               .transform(Presets.sprite());
+    public static final RegistryObject<Item> flame_gas = REG.item("ammo_standard_flame_gas")
+                                                            .transform(Presets.sprite());
+    public static final RegistryObject<Item> flame_napalm = REG.item("ammo_standard_flame_napalm")
+                                                               .transform(Presets.sprite());
+    public static final RegistryObject<Item> flame_balefire = REG.item("ammo_standard_flame_balefire")
+                                                                 .transform(Presets.sprite());
+    public static final RegistryObject<Item> capacitor = REG.item("ammo_standard_capacitor")
+                                                            .transform(Presets.sprite());
+    public static final RegistryObject<Item> capacitor_overcharge = REG.item("ammo_standard_capacitor_overcharge")
+                                                                       .transform(Presets.sprite());
+    public static final RegistryObject<Item> capacitor_ir = REG.item("ammo_standard_capacitor_ir")
+                                                               .transform(Presets.sprite());
+    public static final RegistryObject<Item> tau_uranium = REG.item("ammo_standard_tau_uranium")
+                                                              .transform(Presets.sprite());
+    public static final RegistryObject<Item> coil_tungsten = REG.item("ammo_standard_coil_tungsten")
+                                                                .transform(Presets.sprite());
+    public static final RegistryObject<Item> coil_ferrouranium = REG.item("ammo_standard_coil_ferrouranium")
+                                                                    .transform(Presets.sprite());
+    public static final RegistryObject<Item> nuke_standard = REG.item("ammo_standard_nuke_standard")
+                                                                .transform(Presets.sprite());
+    public static final RegistryObject<Item> nuke_demo = REG.item("ammo_standard_nuke_demo")
+                                                            .transform(Presets.sprite());
+    public static final RegistryObject<Item> nuke_high = REG.item("ammo_standard_nuke_high")
+                                                            .transform(Presets.sprite());
+    /**
+     * Existing factory integration name; this aliases the flattened nuke_high entry.
+     */
     public static final RegistryObject<Item> ammo_standard_nuke_high = nuke_high;
-    public static final RegistryObject<Item> nuke_tots = REG.item("ammo_standard_nuke_tots").transform(Presets.sprite());
-    public static final RegistryObject<Item> nuke_hive = REG.item("ammo_standard_nuke_hive").transform(Presets.sprite());
+    public static final RegistryObject<Item> nuke_tots = REG.item("ammo_standard_nuke_tots")
+                                                            .transform(Presets.sprite());
+    public static final RegistryObject<Item> nuke_hive = REG.item("ammo_standard_nuke_hive")
+                                                            .transform(Presets.sprite());
     public static final RegistryObject<Item> g10 = REG.item("ammo_standard_g10").transform(Presets.sprite());
-    public static final RegistryObject<Item> g10_shrapnel = REG.item("ammo_standard_g10_shrapnel").transform(Presets.sprite());
+    public static final RegistryObject<Item> g10_shrapnel = REG.item("ammo_standard_g10_shrapnel")
+                                                               .transform(Presets.sprite());
     public static final RegistryObject<Item> g10_du = REG.item("ammo_standard_g10_du").transform(Presets.sprite());
     public static final RegistryObject<Item> g10_slug = REG.item("ammo_standard_g10_slug").transform(Presets.sprite());
-    public static final RegistryObject<Item> g10_explosive = REG.item("ammo_standard_g10_explosive").transform(Presets.sprite());
+    public static final RegistryObject<Item> g10_explosive = REG.item("ammo_standard_g10_explosive")
+                                                                .transform(Presets.sprite());
     public static final RegistryObject<Item> p45_sp = REG.item("ammo_standard_p45_sp").transform(Presets.sprite());
     public static final RegistryObject<Item> p45_fmj = REG.item("ammo_standard_p45_fmj").transform(Presets.sprite());
     public static final RegistryObject<Item> p45_jhp = REG.item("ammo_standard_p45_jhp").transform(Presets.sprite());
     public static final RegistryObject<Item> p45_ap = REG.item("ammo_standard_p45_ap").transform(Presets.sprite());
     public static final RegistryObject<Item> p45_du = REG.item("ammo_standard_p45_du").transform(Presets.sprite());
     public static final RegistryObject<Item> ct_hook = REG.item("ammo_standard_ct_hook").transform(Presets.sprite());
-    public static final RegistryObject<Item> ct_mortar = REG.item("ammo_standard_ct_mortar").transform(Presets.sprite());
-    public static final RegistryObject<Item> ct_mortar_charge = REG.item("ammo_standard_ct_mortar_charge").transform(Presets.sprite());
-    public static final RegistryObject<Item> nuke_balefire = REG.item("ammo_standard_nuke_balefire").transform(Presets.sprite());
+    public static final RegistryObject<Item> ct_mortar = REG.item("ammo_standard_ct_mortar")
+                                                            .transform(Presets.sprite());
+    public static final RegistryObject<Item> ct_mortar_charge = REG.item("ammo_standard_ct_mortar_charge")
+                                                                   .transform(Presets.sprite());
+    public static final RegistryObject<Item> nuke_balefire = REG.item("ammo_standard_nuke_balefire")
+                                                                .transform(Presets.sprite());
     public static final RegistryObject<Item> bmg50_sm = REG.item("ammo_standard_bmg50_sm").transform(Presets.sprite());
 
     // GunFactory.EnumAmmoSecret. These are registered but not placed in the creative tab.
     public static final RegistryObject<Item> folly_sm = REG.item("ammo_secret_folly_sm").transform(Presets.sprite());
-    public static final RegistryObject<Item> folly_nuke = REG.item("ammo_secret_folly_nuke").transform(Presets.sprite());
-    public static final RegistryObject<Item> m44_equestrian = REG.item("ammo_secret_m44_equestrian").transform(Presets.sprite());
-    public static final RegistryObject<Item> g12_equestrian = REG.item("ammo_secret_g12_equestrian").transform(Presets.sprite());
-    public static final RegistryObject<Item> bmg50_equestrian = REG.item("ammo_secret_bmg50_equestrian").transform(Presets.sprite());
+    public static final RegistryObject<Item> folly_nuke = REG.item("ammo_secret_folly_nuke")
+                                                             .transform(Presets.sprite());
+    public static final RegistryObject<Item> m44_equestrian = REG.item("ammo_secret_m44_equestrian")
+                                                                 .transform(Presets.sprite());
+    public static final RegistryObject<Item> g12_equestrian = REG.item("ammo_secret_g12_equestrian")
+                                                                 .transform(Presets.sprite());
+    public static final RegistryObject<Item> bmg50_equestrian = REG.item("ammo_secret_bmg50_equestrian")
+                                                                   .transform(Presets.sprite());
     public static final RegistryObject<Item> p35_800 = REG.item("ammo_secret_p35_800").transform(Presets.sprite());
-    public static final RegistryObject<Item> bmg50_black = REG.item("ammo_secret_bmg50_black").transform(Presets.sprite());
-    public static final RegistryObject<Item> p35_800_bl = REG.item("ammo_secret_p35_800_bl").transform(Presets.sprite());
+    public static final RegistryObject<Item> bmg50_black = REG.item("ammo_secret_bmg50_black")
+                                                              .transform(Presets.sprite());
+    public static final RegistryObject<Item> p35_800_bl = REG.item("ammo_secret_p35_800_bl")
+                                                             .transform(Presets.sprite());
 
     // ItemAmmoEnums.AmmoFireExt. The primary enum value keeps 1.7's ammo_fireext id.
     public static final RegistryObject<Item> fext_water = REG.item(
@@ -192,10 +258,10 @@ public final class ModAmmoItems {
     public static final ItemFamily<ItemAmmoArty.ArtilleryShellType, ItemAmmoArty> ammo_arty =
             ItemFamily.of(ItemAmmoArty.ArtilleryShellType.class,
                     type -> REG.item(type.name, p -> new ItemAmmoArty(p, type))
-                            .transform(Presets.sprite(Constants.MOD_ID + ":items/" + type.name)));
+                               .transform(Presets.sprite(Constants.MOD_ID + ":items/" + type.name)));
     public static final RegistryObject<ItemDesignatorArtyRange> designator_arty_range =
             REG.item("designator_arty_range", ItemDesignatorArtyRange::new)
-                    .transform(Presets.handheld());
+               .transform(Presets.handheld());
 
     static {
         addToWeapons(
@@ -233,5 +299,6 @@ public final class ModAmmoItems {
         for (RegistryObject<? extends Item> entry : entries) ModTabs.addTo(HbmTab.WEAPONS, entry);
     }
 
-    public static void init() {}
+    public static void init() {
+    }
 }

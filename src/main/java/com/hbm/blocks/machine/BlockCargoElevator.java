@@ -3,9 +3,14 @@ package com.hbm.blocks.machine;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockCoreIndex;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.world.ItemStacks;
+import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityCargoElevator;
+import dev.golem.core.data.Tags;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -38,8 +43,13 @@ import org.jspecify.annotations.Nullable;
  */
 public class BlockCargoElevator extends BlockMultiblockMachine {
 
-    /** The elevator splices its cells as it moves. */
-    @Override public boolean proxiesCells() { return false; }
+    /**
+     * The elevator splices its cells as it moves.
+     */
+    @Override
+    public boolean proxiesCells() {
+        return false;
+    }
 
     private static final int[] DIMENSIONS = {0, 0, 1, 1, 1, 1};
 
@@ -66,6 +76,12 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
     public void visitPlacedCells(BlockGetter level, BlockPos core, Direction facing, CellVisitor visitor) {
         int height = level.getBlockEntity(core) instanceof TileEntityCargoElevator lift ? lift.height : 0;
         visitCourses(core, height, visitor);
+    }
+
+    @Override
+    public void visitPlacementCells(BlockPos core, Direction facing, ItemStack stack, CellVisitor visitor) {
+        var data = ItemStacks.blockEntityData(stack, ModBlockEntities.CARGO_ELEVATOR.get());
+        visitCourses(core, data == null ? 0 : Tags.getIntOr(data, "height", 0), visitor);
     }
 
     @Override

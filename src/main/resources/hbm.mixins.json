@@ -9,9 +9,12 @@
     "MixinItemEntity",
     "MixinLivingEntity",
     "MixinPlayer",
+    "MixinPlacementCollision",
+    "MixinPlacementSuffocation",
     "MixinServerLevel"
   ],
   "client": [
+    "MixinPlacementOverlay",
     "MixinGui",
     "MixinHumanoidModel",
     "MixinBiome"

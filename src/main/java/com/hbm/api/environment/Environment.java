@@ -1,14 +1,18 @@
 package com.hbm.api.environment;
 
+import java.util.List;
+
 import net.minecraft.network.chat.Component;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import dev.golem.core.hook.Hook;
 import dev.golem.core.hook.Verdict;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -31,9 +35,12 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class Environment {
 
-    private Environment() {}
+    private Environment() {
+    }
 
-    /** An addon's terrain-fog range takes precedence over the local soot range in this level. */
+    /**
+     * An addon's terrain-fog range takes precedence over the local soot range in this level.
+     */
     public static final Hook<Predicate<Level>> TERRAIN_FOG_RANGE = Hook.of(listeners -> level -> {
         for (var listener : listeners) if (listener.test(level)) return true;
         return false;
@@ -41,7 +48,9 @@ public final class Environment {
 
     // Breathing (hbm-space TileEntityMachineBase.breatheAir, ChunkAtmosphereManager.canBreathe)
 
-    /** A listener's answer to "can a fire breathe here, consuming {@code amount} of oxygen?". */
+    /**
+     * A listener's answer to "can a fire breathe here, consuming {@code amount} of oxygen?".
+     */
     @FunctionalInterface
     public interface Breathing {
         /**
@@ -91,19 +100,27 @@ public final class Environment {
 
     // Pressure (hbm-space CBT_Atmosphere.getPressure)
 
-    /** A listener's air pressure at a position, in atmospheres, or {@link Double#NaN} to leave it to the next listener. */
+    /**
+     * A listener's air pressure at a position, in atmospheres, or {@link Double#NaN} to leave it to the next listener.
+     */
     @FunctionalInterface
     public interface Pressure {
         double pressure(Level level, BlockPos pos);
     }
 
-    /** Earth's air pressure, what plain HBM assumes everywhere. */
+    /**
+     * Earth's air pressure, what plain HBM assumes everywhere.
+     */
     public static final double EARTH_PRESSURE = 1.0D;
 
-    /** Below this many atmospheres hbm-space treats a place as vacuum (condensers, towers, fans, the Torex). */
+    /**
+     * Below this many atmospheres hbm-space treats a place as vacuum (condensers, towers, fans, the Torex).
+     */
     public static final double VACUUM_PRESSURE = 0.01D;
 
-    /** Pressure answers, in order; the first that is not NaN decides, and nothing deciding means Earth. */
+    /**
+     * Pressure answers, in order; the first that is not NaN decides, and nothing deciding means Earth.
+     */
     public static final Hook<Pressure> PRESSURE = Hook.of(listeners -> (level, pos) -> {
         for (Pressure listener : listeners) {
             double pressure = listener.pressure(level, pos);
@@ -112,7 +129,9 @@ public final class Environment {
         return Double.NaN;
     });
 
-    /** The air pressure at {@code pos} in atmospheres (hbm-space's {@code CBT_Atmosphere.getPressure()}); Earth is 1. */
+    /**
+     * The air pressure at {@code pos} in atmospheres (hbm-space's {@code CBT_Atmosphere.getPressure()}); Earth is 1.
+     */
     public static double pressure(Level level, BlockPos pos) {
         double pressure = PRESSURE.invoker().pressure(level, pos);
         return Double.isNaN(pressure) ? EARTH_PRESSURE : pressure;
@@ -126,13 +145,17 @@ public final class Environment {
         return inOrbit(level) || pressure(level, pos) < VACUUM_PRESSURE;
     }
 
-    /** An additional cause of condenser evaporation, even for a vacuum-optimised machine. */
+    /**
+     * An additional cause of condenser evaporation, even for a vacuum-optimised machine.
+     */
     @FunctionalInterface
     public interface Evaporation {
         boolean evaporates(Level level, BlockPos pos, boolean vacuumProof);
     }
 
-    /** Addons can contribute evaporation causes such as Space's exposed Tom firestorm. */
+    /**
+     * Addons can contribute evaporation causes such as Space's exposed Tom firestorm.
+     */
     public static final Hook<Evaporation> EVAPORATION = Hook.of(listeners -> (level, pos, vacuumProof) -> {
         for (var listener : listeners) if (listener.evaporates(level, pos, vacuumProof)) return true;
         return false;
@@ -144,7 +167,9 @@ public final class Environment {
 
     // Surface and orbit (1.7 provider.isSurfaceWorld / dimensionId == 0; hbm-space CelestialBody.inOrbit)
 
-    /** A listener's answer to "is this level a surface world?" ({@link Verdict#PASS} leaves it to the next one). */
+    /**
+     * A listener's answer to "is this level a surface world?" ({@link Verdict#PASS} leaves it to the next one).
+     */
     @FunctionalInterface
     public interface Surface {
         Verdict surface(Level level);
@@ -158,33 +183,45 @@ public final class Environment {
     public static final Hook<Surface> SURFACE = Hook.of(listeners -> level ->
             Verdict.first(listeners, listener -> listener.surface(level)));
 
-    /** Whether {@code level} is a surface world in 1.7's sense (meteors, boss raids, Tom's impact on entities). */
+    /**
+     * Whether {@code level} is a surface world in 1.7's sense (meteors, boss raids, Tom's impact on entities).
+     */
     public static boolean isSurface(Level level) {
         return SURFACE.invoker().surface(level).orElse(level.dimension() == Level.OVERWORLD);
     }
 
-    /** A listener's answer to "is this level in orbit?". */
+    /**
+     * A listener's answer to "is this level in orbit?".
+     */
     @FunctionalInterface
     public interface Orbit {
         Verdict orbit(Level level);
     }
 
-    /** Orbit answers, in order; nothing deciding means not in orbit (plain HBM has no orbit). */
+    /**
+     * Orbit answers, in order; nothing deciding means not in orbit (plain HBM has no orbit).
+     */
     public static final Hook<Orbit> ORBIT = Hook.of(listeners -> level ->
             Verdict.first(listeners, listener -> listener.orbit(level)));
 
-    /** hbm-space's {@code CelestialBody.inOrbit(world)}: no tilt, no groundwater, no condensing, no infinite water. */
+    /**
+     * hbm-space's {@code CelestialBody.inOrbit(world)}: no tilt, no groundwater, no condensing, no infinite water.
+     */
     public static boolean inOrbit(Level level) {
         return ORBIT.invoker().orbit(level).orElse(false);
     }
 
-    /** A reason an off-world delivery cannot arrive, or null to accept the level. */
+    /**
+     * A reason an off-world delivery cannot arrive, or null to accept the level.
+     */
     @FunctionalInterface
     public interface DeliveryRefusal {
         @Nullable Component refuse(ServerLevel level);
     }
 
-    /** The first delivery restriction wins; plain HBM accepts every level. */
+    /**
+     * The first delivery restriction wins; plain HBM accepts every level.
+     */
     public static final Hook<DeliveryRefusal> DELIVERY_REFUSAL = Hook.of(listeners -> level -> {
         for (var listener : listeners) {
             var reason = listener.refuse(level);
@@ -193,20 +230,26 @@ public final class Environment {
         return null;
     });
 
-    /** Queried before Bobmazon charges caps or launches a delivery drone. */
+    /**
+     * Queried before Bobmazon charges caps or launches a delivery drone.
+     */
     public static @Nullable Component deliveryRefusal(ServerLevel level) {
         return DELIVERY_REFUSAL.invoker().refuse(level);
     }
 
     // Sunlight (hbm-space WorldProviderCelestial.getSunPower)
 
-    /** A listener's sun-power multiplier at a position, or {@link Double#NaN} to leave it to the next listener. */
+    /**
+     * A listener's sun-power multiplier at a position, or {@link Double#NaN} to leave it to the next listener.
+     */
     @FunctionalInterface
     public interface Sunlight {
         double sunlight(Level level, BlockPos pos);
     }
 
-    /** Sunlight answers, in order; the first that is not NaN decides, and nothing deciding means Earth's sun, 1. */
+    /**
+     * Sunlight answers, in order; the first that is not NaN decides, and nothing deciding means Earth's sun, 1.
+     */
     public static final Hook<Sunlight> SUNLIGHT = Hook.of(listeners -> (level, pos) -> {
         for (Sunlight listener : listeners) {
             double sun = listener.sunlight(level, pos);
@@ -215,7 +258,9 @@ public final class Environment {
         return Double.NaN;
     });
 
-    /** hbm-space's {@code getSunPower(provider, x, z)}: how strong the sun is here relative to Earth's. */
+    /**
+     * hbm-space's {@code getSunPower(provider, x, z)}: how strong the sun is here relative to Earth's.
+     */
     public static double sunlight(Level level, BlockPos pos) {
         double sun = SUNLIGHT.invoker().sunlight(level, pos);
         return Double.isNaN(sun) ? 1.0D : sun;
@@ -232,7 +277,9 @@ public final class Environment {
         @Nullable FluidType groundwater(Level level, BlockPos pos);
     }
 
-    /** Groundwater answers, in order; the first non-null decides. */
+    /**
+     * Groundwater answers, in order; the first non-null decides.
+     */
     public static final Hook<Groundwater> GROUNDWATER = Hook.of(listeners -> (level, pos) -> {
         for (Groundwater listener : listeners) {
             FluidType table = listener.groundwater(level, pos);
@@ -251,7 +298,9 @@ public final class Environment {
         return table == null ? Fluids.WATER : table;
     }
 
-    /** The water table an addon has declared at {@code pos}, or {@code null} where nobody answered (plain HBM). */
+    /**
+     * The water table an addon has declared at {@code pos}, or {@code null} where nobody answered (plain HBM).
+     */
     public static @Nullable FluidType declaredGroundwater(Level level, BlockPos pos) {
         if (inOrbit(level)) return Fluids.NONE;
         return GROUNDWATER.invoker().groundwater(level, pos);
@@ -265,13 +314,17 @@ public final class Environment {
      */
     public static final float EARTH_GRAVITY = 1.6F;
 
-    /** A listener's gravity on an entity as a multiple of Earth's (0 is free fall), or NaN to pass. */
+    /**
+     * A listener's gravity on an entity as a multiple of Earth's (0 is free fall), or NaN to pass.
+     */
     @FunctionalInterface
     public interface Gravity {
         double gravity(Entity entity);
     }
 
-    /** Gravity answers, in order; the first that is not NaN decides, and nothing deciding means Earth, 1. */
+    /**
+     * Gravity answers, in order; the first that is not NaN decides, and nothing deciding means Earth, 1.
+     */
     public static final Hook<Gravity> GRAVITY = Hook.of(listeners -> entity -> {
         for (Gravity listener : listeners) {
             double gravity = listener.gravity(entity);
@@ -291,13 +344,17 @@ public final class Environment {
 
     // Gas into and out of the air (hbm-space FT_Gaseous.release / capture, CelestialBody.emitGas)
 
-    /** A listener told that {@code mB} of a gas was vented into the air at {@code pos}. */
+    /**
+     * A listener told that {@code mB} of a gas was vented into the air at {@code pos}.
+     */
     @FunctionalInterface
     public interface GasRelease {
         void release(Level level, BlockPos pos, FluidType type, double mB);
     }
 
-    /** Notified for every gas HBM vents into the open air (gas flare, drain); plain HBM has no listener. */
+    /**
+     * Notified for every gas HBM vents into the open air (gas flare, drain); plain HBM has no listener.
+     */
     public static final Hook<GasRelease> GAS_RELEASE = Hook.notifying();
 
     /**
@@ -306,7 +363,8 @@ public final class Environment {
      */
     public static void releaseGas(Level level, BlockPos pos, FluidType type, double mB) {
         if (level.isClientSide() || GAS_RELEASE.isEmpty()) return;
-        if (!type.hasTrait(FluidTraitSimple.FT_Gaseous.class) && !type.hasTrait(FluidTraitSimple.FT_Gaseous_ART.class)) return;
+        if (!type.hasTrait(FluidTraitSimple.FT_Gaseous.class) && !type.hasTrait(FluidTraitSimple.FT_Gaseous_ART.class))
+            return;
         for (GasRelease listener : GAS_RELEASE) listener.release(level, pos, type, mB);
     }
 
@@ -319,16 +377,22 @@ public final class Environment {
         Verdict compress(Level level, BlockPos pos, int amount);
     }
 
-    /** Compression answers, in order; nothing deciding means Earth: there is always air to compress. */
+    /**
+     * Compression answers, in order; nothing deciding means Earth: there is always air to compress.
+     */
     public static final Hook<Compression> COMPRESSION = Hook.of(listeners -> (level, pos, amount) ->
             Verdict.first(listeners, listener -> listener.compress(level, pos, amount)));
 
-    /** hbm-space's {@code TileEntityMachineIntake.canCompress} past its "tank already full" shortcut. */
+    /**
+     * hbm-space's {@code TileEntityMachineIntake.canCompress} past its "tank already full" shortcut.
+     */
     public static boolean compressAir(Level level, BlockPos pos, int amount) {
         return COMPRESSION.invoker().compress(level, pos, amount).orElse(true);
     }
 
-    /** A listener's answer to "may seed slurry turn the dirt at {@code pos} into grass?" (and its side effects). */
+    /**
+     * A listener's answer to "may seed slurry turn the dirt at {@code pos} into grass?" (and its side effects).
+     */
     @FunctionalInterface
     public interface Growth {
         Verdict grow(Level level, BlockPos pos);
@@ -341,12 +405,16 @@ public final class Environment {
     public static final Hook<Growth> GROWTH = Hook.of(listeners -> (level, pos) ->
             Verdict.first(listeners, listener -> listener.grow(level, pos)));
 
-    /** Whether seed slurry may grow grass at {@code pos} (hbm-space {@code EntityChemical} seed-slurry branch). */
+    /**
+     * Whether seed slurry may grow grass at {@code pos} (hbm-space {@code EntityChemical} seed-slurry branch).
+     */
     public static boolean canGrow(Level level, BlockPos pos) {
         return GROWTH.invoker().grow(level, pos).orElse(true);
     }
 
-    /** Addon fluid traits applied when an actual chemical projectile hits a block. */
+    /**
+     * Addon fluid traits applied when an actual chemical projectile hits a block.
+     */
     @FunctionalInterface
     public interface ChemicalImpact {
         void impact(ServerLevel level, BlockPos pos, FluidType type);
@@ -358,7 +426,9 @@ public final class Environment {
         for (ChemicalImpact listener : CHEMICAL_IMPACT) listener.impact(level, pos, type);
     }
 
-    /** Living-entity tick HEAD, on both sides and before vanilla movement and potion ticking. */
+    /**
+     * Living-entity tick HEAD, on both sides and before vanilla movement and potion ticking.
+     */
     public static final Hook<Consumer<LivingEntity>> LIVING_TICK_START = Hook.notifying();
 
     public static void livingTickStart(LivingEntity entity) {
@@ -374,13 +444,17 @@ public final class Environment {
      */
     public static final Hook<Consumer<LivingEntity>> LIVING_TICK = Hook.notifying();
 
-    /** Runs {@link #LIVING_TICK} for {@code entity}. */
+    /**
+     * Runs {@link #LIVING_TICK} for {@code entity}.
+     */
     public static void livingTick(LivingEntity entity) {
         if (LIVING_TICK.isEmpty()) return;
         for (Consumer<LivingEntity> listener : LIVING_TICK) listener.accept(entity);
     }
 
-    /** A listener's ambient radiation floor in RAD/s at a position, or NaN (or 0) to add none. */
+    /**
+     * A listener's ambient radiation floor in RAD/s at a position, or NaN (or 0) to add none.
+     */
     @FunctionalInterface
     public interface AmbientRadiation {
         double floor(Level level, BlockPos pos, LivingEntity entity);
@@ -392,7 +466,9 @@ public final class Environment {
      */
     public static final Hook<AmbientRadiation> AMBIENT_RADIATION = Hook.notifying();
 
-    /** The highest ambient radiation floor at {@code pos}, 0 where nobody answers. */
+    /**
+     * The highest ambient radiation floor at {@code pos}, 0 where nobody answers.
+     */
     public static float ambientRadiationFloor(Level level, BlockPos pos, LivingEntity entity) {
         double floor = 0D;
         for (AmbientRadiation listener : AMBIENT_RADIATION) {
@@ -404,35 +480,49 @@ public final class Environment {
 
     // Events other mods track (hbm-space CBT_Impact, CBT_Lights)
 
-    /** A listener told that Tom's impact happened in {@code level} at {@code pos}. */
+    /**
+     * A listener told that Tom's impact happened in {@code level} at {@code pos}.
+     */
     @FunctionalInterface
     public interface Impact {
         void impact(ServerLevel level, BlockPos pos);
     }
 
-    /** Notified once when Tom hits ({@code EntityTomBlast}); hbm-space marked the body as impacted here. */
+    /**
+     * Notified once when Tom hits ({@code EntityTomBlast}); hbm-space marked the body as impacted here.
+     */
     public static final Hook<Impact> IMPACT = Hook.notifying();
 
-    /** Runs {@link #IMPACT}. */
+    /**
+     * Runs {@link #IMPACT}.
+     */
     public static void impact(ServerLevel level, BlockPos pos) {
         for (Impact listener : IMPACT) listener.impact(level, pos);
     }
 
-    /** A listener told that an HBM light block came on at {@code pos}. */
+    /**
+     * A listener told that an HBM light block came on at {@code pos}.
+     */
     @FunctionalInterface
     public interface LightOn {
         void lightOn(ServerLevel level, BlockPos pos, BlockState state);
     }
 
-    /** Notified when a spotlight is (re)lit; hbm-space registered the light with the body for its night-side view. */
+    /**
+     * Notified when a spotlight is (re)lit; hbm-space registered the light with the body for its night-side view.
+     */
     public static final Hook<LightOn> LIGHT_ON = Hook.notifying();
 
-    /** Runs {@link #LIGHT_ON}. */
+    /**
+     * Runs {@link #LIGHT_ON}.
+     */
     public static void lightOn(ServerLevel level, BlockPos pos, BlockState state) {
         for (LightOn listener : LIGHT_ON) listener.lightOn(level, pos, state);
     }
 
-    /** A listener told that a nuclear blast of {@code radius} blocks went off at {@code x} / {@code z} in {@code level}. */
+    /**
+     * A listener told that a nuclear blast of {@code radius} blocks went off at {@code x} / {@code z} in {@code level}.
+     */
     @FunctionalInterface
     public interface NuclearBlast {
         void blast(ServerLevel level, double x, double z, float radius);
@@ -446,7 +536,9 @@ public final class Environment {
      */
     public static final Hook<NuclearBlast> NUCLEAR_BLAST = Hook.notifying();
 
-    /** Runs {@link #NUCLEAR_BLAST}. */
+    /**
+     * Runs {@link #NUCLEAR_BLAST}.
+     */
     public static void nuclearBlast(ServerLevel level, double x, double z, float radius) {
         for (NuclearBlast listener : NUCLEAR_BLAST) listener.blast(level, x, z, radius);
     }
@@ -461,9 +553,15 @@ public final class Environment {
     @FunctionalInterface
     public interface Satellites {
         @Nullable ServerLevel satellites(ServerLevel level, @Nullable BlockPos pos, ItemStack launched);
+
+        default java.util.@Nullable List<ServerLevel> levels(ServerLevel level, @Nullable BlockPos pos) {
+            return null;
+        }
     }
 
-    /** Satellite level answers, in order; the first non-null decides, and nothing deciding means the level itself. */
+    /**
+     * Satellite level answers, in order; the first non-null decides, and nothing deciding means the level itself.
+     */
     public static final Hook<Satellites> SATELLITES = Hook.of(listeners -> (level, pos, launched) -> {
         for (Satellites listener : listeners) {
             ServerLevel target = listener.satellites(level, pos, launched);
@@ -472,9 +570,22 @@ public final class Environment {
         return null;
     });
 
-    /** The level whose satellite data serves {@code level} at {@code pos}; plain HBM: {@code level} itself. */
+    /**
+     * The level whose satellite data serves {@code level} at {@code pos}; plain HBM: {@code level} itself.
+     */
     public static ServerLevel satelliteLevel(ServerLevel level, @Nullable BlockPos pos, ItemStack launched) {
         ServerLevel target = SATELLITES.invoker().satellites(level, pos, launched);
         return target == null ? level : target;
+    }
+
+    /**
+     * Visible registry namespaces, in lookup order; without an addon only the current level is visible.
+     */
+    public static List<ServerLevel> satelliteLevels(ServerLevel level, @Nullable BlockPos pos) {
+        for (Satellites listener : SATELLITES) {
+            var levels = listener.levels(level, pos);
+            if (levels != null) return levels;
+        }
+        return List.of(level);
     }
 }

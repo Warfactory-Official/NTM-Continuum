@@ -16,7 +16,9 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 
-/** 1.7 {@code RenderTesla}: {@code tesla.obj} turned 180, both-sided, and a random solid arc to every target. */
+/**
+ * 1.7 {@code RenderTesla}: {@code tesla.obj} turned 180, both-sided, and a random solid arc to every target.
+ */
 public class RenderTesla extends GemBER<TileEntityTesla, RenderTesla.State> {
 
     public static class State extends CompatRenderState {
@@ -58,7 +60,8 @@ public class RenderTesla extends GemBER<TileEntityTesla, RenderTesla.State> {
         ps.translate(0.5D, TileEntityTesla.offset, 0.5D);
         for (Vec3 skeleton : state.arcs) {
             double length = skeleton.length();
-            BeamPronter.prontBeam(ps, sink, skeleton, BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID,
+            BeamPronter.prontMachineBeam(ps, sink, skeleton, BeamPronter.EnumWaveType.RANDOM,
+                    BeamPronter.EnumBeamType.SOLID,
                     state.start, (int) (length * 5), 0.125F, 0x404040, 0x404040, 2, 0.03125F);
         }
         ps.popPose();
