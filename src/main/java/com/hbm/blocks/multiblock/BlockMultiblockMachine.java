@@ -23,6 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.BiConsumer;
+
 import com.hbm.tileentity.TileEntityProxyCell;
 
 /**
@@ -47,30 +48,39 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
         registerDefaultState(defaultBlockState().setValue(CELL, Boolean.FALSE));
     }
 
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(CELL);
     }
 
-    @Override protected BlockState cellStateFor(int localX, int localY, int localZ, Direction facing, int shapeId) {
+    @Override
+    protected BlockState cellStateFor(int localX, int localY, int localZ, Direction facing, int shapeId) {
         return defaultBlockState().setValue(FACING, facing).setValue(CELL, Boolean.TRUE);
     }
 
-    @Override public boolean isCellState(BlockState state) {
+    @Override
+    public boolean isCellState(BlockState state) {
         return state.getValue(CELL);
     }
 
-    /** The block entity renderer on the core draws the whole machine; every cell of it draws nothing. */
-    @Override public RenderShape getRenderShape(BlockState state) {
+    /**
+     * The block entity renderer on the core draws the whole machine; every cell of it draws nothing.
+     */
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
 
-    @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         if (!state.getValue(CELL)) return createCoreBlockEntity(pos, state);
         return proxiesCells() ? TileEntityProxyCell.at(pos, state) : null;
     }
 
-    /** Whether the cells carry {@link TileEntityProxyCell} where the loader needs one. Off for machines that move or police their cells. */
+    /**
+     * Whether the cells carry {@link TileEntityProxyCell} where the loader needs one. Off for machines that move or police their cells.
+     */
     public boolean proxiesCells() {
         return true;
     }
@@ -99,13 +109,14 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
         return state.getValue(CELL) ? MultiblockSurface.coreOfCell(level, pos) : pos;
     }
 
-    @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return shapeAt(state, level, pos, false);
     }
 
-    @Override public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos,
-                                                  CollisionContext context) {
-        if (ignoresCollision(context)) return Shapes.empty(); // hbm-space internalPlayers
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos,
+                                        CollisionContext context) {
         return shapeAt(state, level, pos, true);
     }
 
@@ -132,7 +143,9 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
                 MultiblockMaskTable.localZ(dx, dy, dz, facing), facing, forCollision);
     }
 
-    /** Whether the core's item carries state ({@code CarriedDrops}): a cell a player breaks then rolls the core's loot. */
+    /**
+     * Whether the core's item carries state ({@code CarriedDrops}): a cell a player breaks then rolls the core's loot.
+     */
     protected boolean carriesData() {
         return false;
     }
@@ -153,20 +166,23 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
         Block.dropResources(coreState, server, pos, server.getBlockEntity(core), player, player.getMainHandItem());
     }
 
-    @Override protected void removedAt(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+    @Override
+    protected void removedAt(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         if (state.getValue(CELL)) BlockMultiblockCore.foldedCellRemoved(level, pos, movedByPiston);
         else super.removedAt(state, level, pos, movedByPiston);
     }
 
-    @Override protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
-                                                           BlockHitResult hit) {
+    @Override
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                                 BlockHitResult hit) {
         BlockPos core = coreOf(level, pos, state);
         if (core == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
         return useAtCore(level.getBlockState(core), level, core, player, hit);
     }
 
-    @Override protected boolean onExplosion(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion,
-                                            BiConsumer<ItemStack, BlockPos> onHit) {
+    @Override
+    protected boolean onExplosion(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion,
+                                  BiConsumer<ItemStack, BlockPos> onHit) {
         if (!state.getValue(CELL)) return false;
         FoldedOwner owner = MultiblockSurface.ownerOf(level, pos);
         if (owner == null) return false;
@@ -174,29 +190,34 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
         return true;
     }
 
-    @Override protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+    @Override
+    protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
         BlockPos core = coreOf(level, pos, state);
         return core == null ? 0 : super.onAnalogOutputSignal(level.getBlockState(core), level, core);
     }
 
-    @Override protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
-                                               boolean movedByPiston) {
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
+                                     boolean movedByPiston) {
         if (!wantsNeighborUpdates() || !(level instanceof ServerLevel server)) return;
         BlockPos core = coreOf(level, pos, state);
         if (core != null) cellNeighborChanged(server, core, pos);
     }
 
-    @Override public @Nullable CompoundTag getSettings(Level level, BlockPos pos) {
+    @Override
+    public @Nullable CompoundTag getSettings(Level level, BlockPos pos) {
         BlockPos core = coreOf(level, pos, level.getBlockState(pos));
         return core == null ? null : super.getSettings(level, core);
     }
 
-    @Override public void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
+    @Override
+    public void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
         BlockPos core = coreOf(level, pos, level.getBlockState(pos));
         if (core != null) super.pasteSettings(nbt, index, level, player, core);
     }
 
-    @Override public String @Nullable [] infoForDisplay(Level level, BlockPos pos) {
+    @Override
+    public String @Nullable [] infoForDisplay(Level level, BlockPos pos) {
         BlockPos core = coreOf(level, pos, level.getBlockState(pos));
         return core == null ? null : super.infoForDisplay(level, core);
     }

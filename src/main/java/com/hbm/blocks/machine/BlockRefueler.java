@@ -41,14 +41,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Refueler block, a 1:1 port of the 1.12.2 {@code BlockRefueler}: a single horizontal-facing INVISIBLE
- * fuel pad drawn by {@code RefuelerRenderer}. Fluid-ID right-click retypes the tank. Collision is a
- * 12/16-tall slab (the directional slab is simplified to a uniform pad).
+ * 1.7 refueler: a thin wall leaves standing room inside the fuel-transfer area.
  */
 public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidConnectorBlockMK2, ICapabilityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
-    private static final VoxelShape SHAPE = box(0, 0, 0, 16, 12, 16);
+    private static final VoxelShape NORTH = box(0, 0, 12, 16, 16, 16);
+    private static final VoxelShape SOUTH = box(0, 0, 0, 16, 16, 4);
+    private static final VoxelShape WEST = box(12, 0, 0, 16, 16, 16);
+    private static final VoxelShape EAST = box(0, 0, 0, 4, 16, 16);
 
     public BlockRefueler(Properties properties) {
         super(properties);
@@ -68,11 +69,17 @@ public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidCo
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return switch (state.getValue(FACING)) {
+            case SOUTH -> SOUTH;
+            case WEST -> WEST;
+            case EAST -> EAST;
+            default -> NORTH;
+        };
     }
 
     @Override
-    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
+                                          InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!stack.isEmpty() && stack.getItem() instanceof IItemFluidId identifier) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityRefueler te) {
                 FluidType type = identifier.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
@@ -114,16 +121,23 @@ public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidCo
 
     private static DirPos[] portOf(TileEntityRefueler te) {
         // pipe connects on the side opposite the facing (matches the TE's subscribe port)
-        Direction facing = te.getBlockState().hasProperty(FACING) ? te.getBlockState().getValue(FACING) : Direction.NORTH;
+        Direction facing = te.getBlockState().hasProperty(FACING) ? te.getBlockState()
+                                                                      .getValue(FACING) : Direction.NORTH;
         ForgeDirection dir = ForgeDirection.getOrientation(facing.get3DDataValue()).getOpposite();
         BlockPos p = te.getBlockPos();
-        return new DirPos[]{ new DirPos(p.getX() + dir.offsetX, p.getY(), p.getZ() + dir.offsetZ, dir) };
+        return new DirPos[]{new DirPos(p.getX() + dir.offsetX, p.getY(), p.getZ() + dir.offsetZ, dir)};
     }
 
-    /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
+    /**
+     * Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts.
+     */
     private static final MachineCaps CAPS = MachineCaps.blockKeyed().fluidIn()
-            .fluidFaces(BlockEntity.class, (be, side) -> side == be.getBlockState().getValue(FACING).getOpposite());
+                                                       .fluidFaces(BlockEntity.class,
+                                                               (be, side) -> side == be.getBlockState().getValue(FACING)
+                                                                                       .getOpposite());
 
     @Override
-    public MachineCaps caps() { return CAPS; }
+    public MachineCaps caps() {
+        return CAPS;
+    }
 }

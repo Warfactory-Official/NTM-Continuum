@@ -29,7 +29,8 @@ public class ItemSatDesignator extends ItemSatChip {
         ItemStack stack = player.getItemInHand(hand);
 
         if (level instanceof ServerLevel server) {
-            Satellite sat = SatelliteSavedData.get(server).getSatFromFreq(this.getFreq(stack));
+            SatelliteSavedData data = SatelliteSavedData.get(server, player.blockPosition());
+            Satellite sat = data.getSatFromFreq(this.getFreq(stack));
 
             if (sat != null) {
                 // 1.7 Library.rayTrace(player, 300, 1): blocks only, and a MOP even on a miss (the last cell
@@ -39,7 +40,7 @@ public class ItemSatDesignator extends ItemSatChip {
                     BlockPos pos = SubLevels.toWorldBlock(level,
                             blockHit.getBlockPos().relative(blockHit.getDirection()));
                     sat.onCoordAction(server, player, pos.getX(), pos.getY(), pos.getZ());
-                    SatelliteSavedData.get(server).setDirty();
+                    data.setDirty();
                 }
             }
         }

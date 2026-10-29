@@ -37,8 +37,10 @@ import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.registry.BlockEntities;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -57,10 +59,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-/** RBMK checks against hand-worked 1.7 values: fuel burn pipeline, columns, meltdown debris, saves, lids. */
+/**
+ * RBMK checks against hand-worked 1.7 values: fuel burn pipeline, columns, meltdown debris, saves, lids.
+ */
 public final class RcNukeGameTests {
 
-    private RcNukeGameTests() {}
+    private RcNukeGameTests() {
+    }
 
     private static AABB around(GameTestHelper helper, BlockPos rel) {
         return new AABB(helper.absolutePos(rel)).inflate(40);
@@ -79,7 +84,9 @@ public final class RcNukeGameTests {
         helper.succeed();
     }
 
-    /** UEU rod under a constant 100 flux: the whole column tick against an independent 1.7 simulation. */
+    /**
+     * UEU rod under a constant 100 flux: the whole column tick against an independent 1.7 simulation.
+     */
     public static void rodRunMatchesFormula(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 2);
         helper.setBlock(pos, ModRBMKBlocks.rbmk_fuel_rod.get().defaultBlockState());
@@ -138,10 +145,12 @@ public final class RcNukeGameTests {
     public static void controlRates(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 2);
         helper.setBlock(pos, ModRBMKBlocks.rbmk_control.get().defaultBlockState());
-        BlockEntityRBMKControlManual control = GameTestHelpers.blockEntity(helper, pos, BlockEntityRBMKControlManual.class);
+        BlockEntityRBMKControlManual control = GameTestHelpers.blockEntity(helper, pos,
+                BlockEntityRBMKControlManual.class);
         control.setTarget(1D);
         for (int i = 0; i < 100; i++) control.tickServer();
-        helper.assertTrue(Math.abs(control.level - 100 * 0.00277D) < 1e-9, "100 ticks move 0.277, got " + control.level);
+        helper.assertTrue(Math.abs(control.level - 100 * 0.00277D) < 1e-9,
+                "100 ticks move 0.277, got " + control.level);
         double start = control.level;
         control.setTarget(0D);
         control.tickServer();
@@ -150,18 +159,21 @@ public final class RcNukeGameTests {
         helper.assertTrue(Math.abs(control.getMult() - (level + surge)) < 1e-9,
                 "scram surge " + control.getMult() + " vs 1.7 " + (level + surge));
         for (int i = 0; i < 200; i++) control.tickServer();
-        helper.assertTrue(control.level == 0D && control.getMult() == 0D, "rods end fully inserted, got " + control.level);
+        helper.assertTrue(control.level == 0D && control.getMult() == 0D,
+                "rods end fully inserted, got " + control.level);
 
         // powered ReaSim variant: no power, no movement; each moving tick costs 5000
         BlockPos powered = new BlockPos(4, 1, 2);
         helper.setBlock(powered, ModRBMKBlocks.rbmk_control_reasim.get().defaultBlockState());
-        BlockEntityRBMKControlManual reasim = GameTestHelpers.blockEntity(helper, powered, BlockEntityRBMKControlManual.class);
+        BlockEntityRBMKControlManual reasim = GameTestHelpers.blockEntity(helper, powered,
+                BlockEntityRBMKControlManual.class);
         reasim.setTarget(1D);
         reasim.tickServer();
         helper.assertTrue(reasim.level == 0D && !reasim.hasPower, "an unpowered ReaSim control rod must not move");
         reasim.power = 50_000;
         reasim.tickServer();
-        helper.assertTrue(reasim.level > 0D && reasim.power == 45_000, "a moving tick costs 5000, power " + reasim.power);
+        helper.assertTrue(reasim.level > 0D && reasim.power == 45_000,
+                "a moving tick costs 5000, power " + reasim.power);
         helper.succeed();
     }
 
@@ -202,7 +214,8 @@ public final class RcNukeGameTests {
         hot.feed.setFill(1000);
         hot.heat = 500D;
         hot.tickServer();
-        helper.assertTrue(hot.consumption == 1000 && hot.output == 10_000, "HOTSTEAM: " + hot.consumption + "/" + hot.output);
+        helper.assertTrue(hot.consumption == 1000 && hot.output == 10_000,
+                "HOTSTEAM: " + hot.consumption + "/" + hot.output);
 
         helper.setBlock(pos, ModRBMKBlocks.rbmk_boiler.get().defaultBlockState());
         BlockEntityRBMKBoiler ultra = GameTestHelpers.blockEntity(helper, pos, BlockEntityRBMKBoiler.class);
@@ -210,7 +223,8 @@ public final class RcNukeGameTests {
         ultra.feed.setFill(500);
         ultra.heat = 700D;
         ultra.tickServer();
-        helper.assertTrue(ultra.consumption == 500 && ultra.output == 50, "ULTRAHOTSTEAM: " + ultra.consumption + "/" + ultra.output);
+        helper.assertTrue(ultra.consumption == 500 && ultra.output == 50,
+                "ULTRAHOTSTEAM: " + ultra.consumption + "/" + ultra.output);
         helper.succeed();
     }
 
@@ -227,11 +241,13 @@ public final class RcNukeGameTests {
         }
         cooler.cold.setFill(100);
         cooler.tickServer();
-        helper.assertTrue(Math.abs(near.get(0).heat - 272D) < 1e-9, "adjacent column: 300 C, then heat flow, got " + near.get(0).heat);
+        helper.assertTrue(Math.abs(near.get(0).heat - 272D) < 1e-9,
+                "adjacent column: 300 C, then heat flow, got " + near.get(0).heat);
         for (BlockEntityRBMKBase be : near.subList(1, 3)) {
             helper.assertTrue(Math.abs(be.heat - 300D) < 1e-9, "a cooling cycle removes 200 C, got " + be.heat);
         }
-        helper.assertTrue(cooler.cold.getFill() == 50 && cooler.hot.getFill() == 50, "50 mB cycle: " + cooler.cold.getFill() + "/" + cooler.hot.getFill());
+        helper.assertTrue(cooler.cold.getFill() == 50 && cooler.hot.getFill() == 50,
+                "50 mB cycle: " + cooler.cold.getFill() + "/" + cooler.hot.getFill());
 
         BlockPos heaterPos = new BlockPos(3, 1, 6);
         helper.setBlock(heaterPos, ModRBMKBlocks.rbmk_heater.get().defaultBlockState());
@@ -247,12 +263,15 @@ public final class RcNukeGameTests {
         int temp = (int) Math.floor((2000D - step.typeProduced.getTemperature()) * perDegree / step.heatReq);
         int ops = Math.min(input, Math.min(output, temp));
         heater.tickServer();
-        helper.assertTrue(heater.feed.getFill() == 16_000 - step.amountReq * ops && heater.steam.getFill() == step.amountProduced * ops,
+        helper.assertTrue(
+                heater.feed.getFill() == 16_000 - step.amountReq * ops && heater.steam.getFill() == step.amountProduced * ops,
                 "heat exchanger ops " + ops + ": feed " + heater.feed.getFill() + " out " + heater.steam.getFill());
         helper.succeed();
     }
 
-    /** Every column type melting together: debris counts per type as 1.7's onMelt overrides give them. */
+    /**
+     * Every column type melting together: debris counts per type as 1.7's onMelt overrides give them.
+     */
     public static void meltdownDebris(GameTestHelper helper) {
         BlockPos[] cells = {
                 new BlockPos(3, 1, 3), new BlockPos(3, 1, 2), new BlockPos(4, 1, 3), new BlockPos(3, 1, 4),
@@ -270,7 +289,8 @@ public final class RcNukeGameTests {
 
         int[] counts = new int[DebrisType.values().length];
         double maxUp = 0D, minUp = 99D;
-        for (EntityRBMKDebris debris : helper.getLevel().getEntitiesOfClass(EntityRBMKDebris.class, around(helper, cells[0]))) {
+        for (EntityRBMKDebris debris : helper.getLevel()
+                                             .getEntitiesOfClass(EntityRBMKDebris.class, around(helper, cells[0]))) {
             counts[debris.getDebrisType().ordinal()]++;
             if (debris.getDebrisType() != DebrisType.LID) {
                 maxUp = Math.max(maxUp, debris.getDeltaMovement().y);
@@ -289,7 +309,8 @@ public final class RcNukeGameTests {
         helper.assertTrue(counts[DebrisType.ELEMENT.ordinal()] == 1, "one fuel assembly casing");
         int fuel = counts[DebrisType.FUEL.ordinal()];
         helper.assertTrue(fuel >= 1 && fuel <= RBMKDials.getColumnHeight(helper.getLevel()), "FUEL debris " + fuel);
-        helper.assertTrue(minUp >= 0.25D - 1e-9 && maxUp <= 1.5D + 1e-9, "debris launch speed " + minUp + ".." + maxUp + ", 1.7 is 0.25..1.5");
+        helper.assertTrue(minUp >= 0.25D - 1e-9 && maxUp <= 1.5D + 1e-9,
+                "debris launch speed " + minUp + ".." + maxUp + ", 1.7 is 0.25..1.5");
         helper.assertTrue(helper.getBlockState(cells[0]).is(ModFluidNetBlocks.corium_block.get()),
                 "a fuelled rod column turns into corium, got " + helper.getBlockState(cells[0]));
         helper.succeed();
@@ -303,10 +324,12 @@ public final class RcNukeGameTests {
         rod.meltdown();
         helper.assertTrue(helper.getBlockState(pos).is(ModFluidNetBlocks.corium_block.get()),
                 "a DRX rod column is corium too, got " + helper.getBlockState(pos));
-        List<EntitySpear> spears = helper.getLevel().getEntitiesOfClass(EntitySpear.class, around(helper, pos).inflate(200));
+        List<EntitySpear> spears = helper.getLevel()
+                                         .getEntitiesOfClass(EntitySpear.class, around(helper, pos).inflate(200));
         helper.assertTrue(!spears.isEmpty(), "a DRX meltdown calls the spear");
         spears.forEach(EntitySpear::discard);
-        helper.getLevel().getEntitiesOfClass(EntityRBMKDebris.class, around(helper, pos)).forEach(EntityRBMKDebris::discard);
+        helper.getLevel().getEntitiesOfClass(EntityRBMKDebris.class, around(helper, pos))
+              .forEach(EntityRBMKDebris::discard);
         helper.succeed();
     }
 
@@ -339,12 +362,16 @@ public final class RcNukeGameTests {
         helper.succeed();
     }
 
-    /** A running column saves and loads to the same data. */
+    /**
+     * A running column saves and loads to the same data.
+     */
     public static void columnsRoundTrip(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         List<Block> columns = List.of(
-                ModRBMKBlocks.rbmk_fuel_rod.get(), ModRBMKBlocks.rbmk_fuel_rod_moderated.get(), ModRBMKBlocks.rbmk_fuel_rod_reasim.get(),
-                ModRBMKBlocks.rbmk_control.get(), ModRBMKBlocks.rbmk_control_mod.get(), ModRBMKBlocks.rbmk_control_auto.get(),
+                ModRBMKBlocks.rbmk_fuel_rod.get(), ModRBMKBlocks.rbmk_fuel_rod_moderated.get(),
+                ModRBMKBlocks.rbmk_fuel_rod_reasim.get(),
+                ModRBMKBlocks.rbmk_control.get(), ModRBMKBlocks.rbmk_control_mod.get(),
+                ModRBMKBlocks.rbmk_control_auto.get(),
                 ModRBMKBlocks.rbmk_control_reasim.get(), ModRBMKBlocks.rbmk_control_reasim_auto.get(),
                 ModRBMKBlocks.rbmk_boiler.get(), ModRBMKBlocks.rbmk_moderator.get(), ModRBMKBlocks.rbmk_reflector.get(),
                 ModRBMKBlocks.rbmk_absorber.get(), ModRBMKBlocks.rbmk_blank.get(), ModRBMKBlocks.rbmk_cooler.get(),
@@ -371,8 +398,10 @@ public final class RcNukeGameTests {
             fresh.setLevel(level);
             BlockEntities.loadWithComponents(fresh, saved, level.registryAccess());
             CompoundTag again = BlockEntities.save(fresh, level.registryAccess());
-            helper.assertTrue(saved.equals(again), BuiltInRegistries.BLOCK.getKey(block) + " does not round trip: " + saved + " vs " + again);
-            helper.assertTrue(((BlockEntityRBMKBase) fresh).heat == 777.5D, BuiltInRegistries.BLOCK.getKey(block) + " lost its heat");
+            helper.assertTrue(saved.equals(again),
+                    BuiltInRegistries.BLOCK.getKey(block) + " does not round trip: " + saved + " vs " + again);
+            helper.assertTrue(((BlockEntityRBMKBase) fresh).heat == 777.5D,
+                    BuiltInRegistries.BLOCK.getKey(block) + " lost its heat");
         }
         helper.succeed();
     }
@@ -396,11 +425,14 @@ public final class RcNukeGameTests {
         boiler.heat = 300D;
         boiler.tickServer();
         helper.assertTrue(boiler.steam.getFill() == boiler.steam.getMaxFill(), "the steam tank caps at its maximum");
-        helper.assertTrue(boiler.ventDelay >= 19 && boiler.ventDelay <= 29, "an overflow vents and waits 20-29 ticks, delay " + boiler.ventDelay);
+        helper.assertTrue(boiler.ventDelay >= 19 && boiler.ventDelay <= 29,
+                "an overflow vents and waits 20-29 ticks, delay " + boiler.ventDelay);
         helper.succeed();
     }
 
-    /** Mining a column whose rod hull is at 1500 C melts the neighbours and drops no rod; a cool rod does not melt anything. */
+    /**
+     * Mining a column whose rod hull is at 1500 C melts the neighbours and drops no rod; a cool rod does not melt anything.
+     */
     public static void hotRodRemoval(GameTestHelper helper) {
         BlockPos hot = new BlockPos(2, 1, 2), neighbour = new BlockPos(3, 1, 2);
         BlockPos cold = new BlockPos(2, 1, 5), coldNeighbour = new BlockPos(3, 1, 5);
@@ -415,15 +447,18 @@ public final class RcNukeGameTests {
             rod.inventory.setStackInSlot(0, stack);
         }
         helper.getLevel().removeBlock(helper.absolutePos(cold), false);
-        helper.assertTrue(helper.getBlockState(coldNeighbour).is(ModRBMKBlocks.rbmk_blank.get()), "a cool rod removal leaves the reactor alone");
+        helper.assertTrue(helper.getBlockState(coldNeighbour).is(ModRBMKBlocks.rbmk_blank.get()),
+                "a cool rod removal leaves the reactor alone");
         long droppedRods = helper.getLevel().getEntitiesOfClass(ItemEntity.class, around(helper, hot)).stream()
-                .filter(item -> item.getItem().getItem() instanceof ItemRBMKRod).count();
+                                 .filter(item -> item.getItem().getItem() instanceof ItemRBMKRod).count();
         helper.getLevel().removeBlock(helper.absolutePos(hot), false);
-        helper.assertFalse(helper.getBlockState(neighbour).is(ModRBMKBlocks.rbmk_blank.get()), "a hot rod removal melts the connected columns");
+        helper.assertFalse(helper.getBlockState(neighbour).is(ModRBMKBlocks.rbmk_blank.get()),
+                "a hot rod removal melts the connected columns");
         helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, around(helper, hot)).stream()
-                .filter(item -> item.getItem().getItem() instanceof ItemRBMKRod).count() == droppedRods,
+                                .filter(item -> item.getItem().getItem() instanceof ItemRBMKRod).count() == droppedRods,
                 "a hot rod is consumed by the melt and drops nothing");
-        helper.getLevel().getEntitiesOfClass(EntityRBMKDebris.class, around(helper, hot)).forEach(EntityRBMKDebris::discard);
+        helper.getLevel().getEntitiesOfClass(EntityRBMKDebris.class, around(helper, hot))
+              .forEach(EntityRBMKDebris::discard);
         helper.succeed();
     }
 
@@ -432,28 +467,36 @@ public final class RcNukeGameTests {
         FoldedTestSupport.assemble(helper, ModMachineBlocks.watz.get(), core);
         TileEntityWatz watz = GameTestHelpers.blockEntity(helper, core, TileEntityWatz.class);
         watz.meltdown(helper.getLevel(), helper.absolutePos(core));
-        List<EntityShrapnel> shrapnel = helper.getLevel().getEntitiesOfClass(EntityShrapnel.class, around(helper, core));
+        List<EntityShrapnel> shrapnel = helper.getLevel()
+                                              .getEntitiesOfClass(EntityShrapnel.class, around(helper, core));
         helper.assertTrue(shrapnel.size() == 100, "a Watz meltdown throws 100 shrapnel, saw " + shrapnel.size());
         shrapnel.forEach(EntityShrapnel::discard);
         helper.assertTrue(helper.getBlockState(core).is(ModHazardBlocks.mud_block.get()), "the core becomes mud");
         helper.succeed();
     }
 
-    /** Machines of this domain save and load to the same data. */
+    /**
+     * Machines of this domain save and load to the same data.
+     */
     public static void machinesRoundTrip(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        List<Block> blocks = List.of(ModMachineBlocks.machine_zirnox.get(), ModMachineBlocks.watz.get(), ModIcfBlocks.icf.get(),
+        List<Block> blocks = List.of(ModMachineBlocks.machine_zirnox.get(), ModMachineBlocks.watz.get(),
+                ModIcfBlocks.icf.get(),
                 ModDFCBlocks.dfc_core.get(), ModDFCBlocks.dfc_emitter.get(), ModDFCBlocks.dfc_receiver.get(),
-                ModDFCBlocks.dfc_injector.get(), ModDFCBlocks.dfc_stabilizer.get(), ModMachineBlocks.machine_cyclotron.get(),
-                ModMachineBlocks.machine_waste_drum.get(), ModMachineBlocks.fusion_torus.get(), ModMachineBlocks.fusion_collector.get(),
-                ModMachineBlocks.fusion_klystron.get(), ModMachineBlocks.fusion_boiler.get(), ModMachineBlocks.fusion_breeder.get(),
+                ModDFCBlocks.dfc_injector.get(), ModDFCBlocks.dfc_stabilizer.get(),
+                ModMachineBlocks.machine_cyclotron.get(),
+                ModMachineBlocks.machine_waste_drum.get(), ModMachineBlocks.fusion_torus.get(),
+                ModMachineBlocks.fusion_collector.get(),
+                ModMachineBlocks.fusion_klystron.get(), ModMachineBlocks.fusion_boiler.get(),
+                ModMachineBlocks.fusion_breeder.get(),
                 ModNuclearMiscBlocks.REACTOR_RESEARCH.get(), ModNuclearMiscBlocks.MACHINE_REACTOR_BREEDING.get());
         int n = 0;
         for (Block block : blocks) {
             BlockPos rel = new BlockPos(1 + n % 6 * 3, 1, 1 + n / 6 * 3);
             n++;
             BlockState state = block.defaultBlockState();
-            if (state.hasProperty(BlockMultiblockCore.FACING)) state = state.setValue(BlockMultiblockCore.FACING, Direction.NORTH);
+            if (state.hasProperty(BlockMultiblockCore.FACING))
+                state = state.setValue(BlockMultiblockCore.FACING, Direction.NORTH);
             helper.setBlock(rel, state);
             BlockEntity be = level.getBlockEntity(helper.absolutePos(rel));
             if (be == null) continue;
@@ -462,59 +505,41 @@ public final class RcNukeGameTests {
             fresh.setLevel(level);
             BlockEntities.loadWithComponents(fresh, saved, level.registryAccess());
             CompoundTag again = BlockEntities.save(fresh, level.registryAccess());
-            helper.assertTrue(saved.equals(again), BuiltInRegistries.BLOCK.getKey(block) + " does not round trip: " + saved + " vs " + again);
+            helper.assertTrue(saved.equals(again),
+                    BuiltInRegistries.BLOCK.getKey(block) + " does not round trip: " + saved + " vs " + again);
         }
         helper.succeed();
     }
 
-    /** The crane lifts a rod out of a column and sets it back: 25 ticks down, then the action, then back up. */
+    /**
+     * The crane lifts a rod out of a column and sets it back: 25 ticks down, then the action, then back up.
+     */
     public static void craneLoadUnload(GameTestHelper helper) {
         var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         BlockPos column = new BlockPos(5, 1, 5), desk = new BlockPos(1, 1, 1);
         var rodBlock = ModRBMKBlocks.rbmk_fuel_rod.get();
         helper.setBlock(column, rodBlock.defaultBlockState());
-        rodBlock.setPlacedBy(helper.getLevel(), helper.absolutePos(column), rodBlock.defaultBlockState(), player, new ItemStack(rodBlock));
+        rodBlock.setPlacedBy(helper.getLevel(), helper.absolutePos(column), rodBlock.defaultBlockState(), player,
+                new ItemStack(rodBlock));
         BlockEntityRBMKRod rod = GameTestHelpers.blockEntity(helper, column, BlockEntityRBMKRod.class);
         rod.inventory.setStackInSlot(0, new ItemStack(ModRBMKItems.rbmk_fuel_ueu.get()));
-        helper.setBlock(desk, ModRBMKBlocks.rbmk_crane_console.get().defaultBlockState().setValue(BlockMultiblockCore.FACING, Direction.NORTH));
+        helper.setBlock(desk, ModRBMKBlocks.rbmk_crane_console.get().defaultBlockState()
+                                                              .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
         BlockEntityCraneConsole crane = GameTestHelpers.blockEntity(helper, desk, BlockEntityCraneConsole.class);
         BlockPos abs = helper.absolutePos(column);
         crane.setTarget(abs.getX(), abs.getY(), abs.getZ());
         helper.assertTrue(crane.isAboveValidTarget(), "the carriage starts above the column");
         crane.requestLoad();
         for (int i = 0; i < 60; i++) crane.tickServer();
-        helper.assertTrue(rod.inventory.getStackInSlot(0).isEmpty() && crane.hasItemLoaded(), "the crane lifts the rod out of the column");
+        helper.assertTrue(rod.inventory.getStackInSlot(0).isEmpty() && crane.hasItemLoaded(),
+                "the crane lifts the rod out of the column");
         helper.assertTrue(crane.progress == 1D, "the hoist returns to the top, progress " + crane.progress);
         crane.requestLoad();
         for (int i = 0; i < 60; i++) crane.tickServer();
-        helper.assertTrue(rod.inventory.getStackInSlot(0).is(ModRBMKItems.rbmk_fuel_ueu.get()) && !crane.hasItemLoaded(),
+        helper.assertTrue(
+                rod.inventory.getStackInSlot(0).is(ModRBMKItems.rbmk_fuel_ueu.get()) && !crane.hasItemLoaded(),
                 "the crane sets the rod back");
         helper.succeed();
-    }
-
-    /**
-     * The ReaSim boiler dial: the inlet beside a column's base fills it, the hot column boils, and the outlet beside
-     * the base collects the steam (1.7 findCore answers for the core block too).
-     */
-    public static void reasimBoilerSteam(GameTestHelper helper) {
-        ServerLevel level = helper.getLevel();
-        boolean old = RBMKDials.REASIM_BOILERS.get(level);
-        RBMKDials.REASIM_BOILERS.set(level.getServer(), true);
-        BlockPos column = new BlockPos(2, 1, 2);
-        helper.setBlock(column, ModRBMKBlocks.rbmk_blank.get().defaultBlockState());
-        helper.setBlock(column.west(), ModRBMKBlocks.rbmk_steam_inlet.get().defaultBlockState());
-        helper.setBlock(column.east(), ModRBMKBlocks.rbmk_steam_outlet.get().defaultBlockState());
-        BlockEntityRBMKBase base = GameTestHelpers.blockEntity(helper, column, BlockEntityRBMKBase.class);
-        BlockEntityRBMKInlet inlet = GameTestHelpers.blockEntity(helper, column.west(), BlockEntityRBMKInlet.class);
-        BlockEntityRBMKOutlet outlet = GameTestHelpers.blockEntity(helper, column.east(), BlockEntityRBMKOutlet.class);
-        inlet.water.setFill(4_000);
-        helper.runAfterDelay(40, () -> {
-            RBMKDials.REASIM_BOILERS.set(level.getServer(), old);
-            helper.assertTrue(outlet.steam.getFill() > 0, "the outlet collected no steam (column water " + base.reasimWater
-                    + ", steam " + base.reasimSteam + ", heat " + base.heat + ")");
-            helper.succeed();
-        });
-        helper.onEachTick(() -> base.heat = Math.max(base.heat, 1_500D));
     }
 
     /**
@@ -526,24 +551,28 @@ public final class RcNukeGameTests {
         boolean old = RBMKDials.REASIM_BOILERS.get(level);
         RBMKDials.REASIM_BOILERS.set(level.getServer(), true);
         List<BlockEntityRBMKBase> columns = new ArrayList<>();
-        for (int x = 3; x <= 5; x++) for (int z = 2; z <= 4; z++) {
-            BlockPos core = new BlockPos(x, 1, z);
-            helper.setBlock(core, ModRBMKBlocks.rbmk_blank.get().defaultBlockState());
-            ModRBMKBlocks.rbmk_blank.get().fillSpace(level, helper.absolutePos(core), Direction.NORTH);
-            columns.add(GameTestHelpers.blockEntity(helper, core, BlockEntityRBMKBase.class));
-        }
+        for (int x = 3; x <= 5; x++)
+            for (int z = 2; z <= 4; z++) {
+                BlockPos core = new BlockPos(x, 1, z);
+                helper.setBlock(core, ModRBMKBlocks.rbmk_blank.get().defaultBlockState());
+                ModRBMKBlocks.rbmk_blank.get().fillSpace(level, helper.absolutePos(core), Direction.NORTH);
+                columns.add(GameTestHelpers.blockEntity(helper, core, BlockEntityRBMKBase.class));
+            }
         TileEntityBarrel water = barrel(helper, new BlockPos(0, 2, 3), Fluids.WATER, 2, 64_000);
         duct(helper, new BlockPos(1, 2, 3), Fluids.WATER);
         helper.setBlock(new BlockPos(2, 2, 3), ModRBMKBlocks.rbmk_steam_inlet.get().defaultBlockState());
         helper.setBlock(new BlockPos(6, 3, 3), ModRBMKBlocks.rbmk_steam_outlet.get().defaultBlockState());
         duct(helper, new BlockPos(7, 3, 3), Fluids.SUPERHOTSTEAM);
         TileEntityBarrel steam = barrel(helper, new BlockPos(8, 3, 3), Fluids.SUPERHOTSTEAM, 0, 0);
-        helper.onEachTick(() -> { for (BlockEntityRBMKBase column : columns) column.heat = Math.max(column.heat, 1_400D); });
+        helper.onEachTick(() -> {
+            for (BlockEntityRBMKBase column : columns) column.heat = Math.max(column.heat, 1_400D);
+        });
         helper.runAfterDelay(100, () -> {
             RBMKDials.REASIM_BOILERS.set(level.getServer(), old);
             BlockEntityRBMKBase middle = columns.get(4);
-            helper.assertTrue(steam.tank.getFill() >= 1_000, "the steam barrel holds " + steam.tank.getFill() + " mB (water barrel "
-                    + water.tank.getFill() + ", middle column water " + middle.reasimWater + ", steam " + middle.reasimSteam + ")");
+            helper.assertTrue(steam.tank.getFill() >= 1_000,
+                    "the steam barrel holds " + steam.tank.getFill() + " mB (water barrel "
+                            + water.tank.getFill() + ", middle column water " + middle.reasimWater + ", steam " + middle.reasimSteam + ")");
             helper.succeed();
         });
     }

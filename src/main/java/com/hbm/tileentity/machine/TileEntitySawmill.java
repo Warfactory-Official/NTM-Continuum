@@ -33,7 +33,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
-/** Heat-powered sawmill core, ported from the old three-slot TileEntitySawmill. */
+/**
+ * Heat-powered sawmill core, ported from the old three-slot TileEntitySawmill.
+ */
 public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyContainer {
 
     public static final int PROCESSING_TIME = 600;
@@ -156,7 +158,9 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
         sawmill.heat = 0;
     }
 
-    /** The running blade's fixed damage volume, rotated exactly like the footprint helper. */
+    /**
+     * The running blade's fixed damage volume, rotated exactly like the footprint helper.
+     */
     private static void damageOperatingBlade(Level level, BlockPos pos, BlockState state) {
         if (!(level instanceof ServerLevel server)) return;
 
@@ -226,7 +230,7 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return slot == 0 && canAcceptInput(stack);
+        return slot == 0 && stack.getCount() == 1 && canAcceptInput(stack);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import dev.golem.harness.api.Client;
 import dev.golem.harness.api.Expect;
 import dev.golem.harness.api.Scenario;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
@@ -17,6 +18,7 @@ import java.nio.file.Files;
  *
  * <p>Item filter (optional, read from the harness CLI's environment):
  * <ul>
+ *   <li>{@code ICON_AUDIT_NAMESPACE=ntmspace}: registry namespace to capture; defaults to {@code hbm};</li>
  *   <li>{@code ICON_AUDIT_ITEMS=nuke_fleija,watz,hbm:fluid_pump} — exact item ids (namespace optional), every variant of each;</li>
  *   <li>{@code ICON_AUDIT_FILTER=<regex>} — matched ({@code find}) against each stack label {@code hbm:id} / {@code hbm:id@k}.</li>
  * </ul>
@@ -39,6 +41,7 @@ public final class ItemIconAudit implements Scenario {
 
         JsonObject manifest = new JsonObject();
         manifest.addProperty("node", c.node());
+        manifest.addProperty("namespace", NAMESPACE);
         manifest.add("info", info);
         if (!FILTER.isEmpty()) manifest.addProperty("filter", FILTER);
         JsonArray pageList = new JsonArray();
@@ -69,12 +72,23 @@ public final class ItemIconAudit implements Scenario {
 
         Files.writeString(c.screenshotDir().resolve("manifest.json"),
                 new GsonBuilder().setPrettyPrinting().create().toJson(manifest), StandardCharsets.UTF_8);
-        if (FILTER.isEmpty()) Expect.that(info.get("total").getAsInt() > 1000, "expected > 1000 hbm stacks, got " + info.get("total"));
-        else Expect.that(info.get("total").getAsInt() > 0, "filter " + FILTER + " matched no stack");
+        if (FILTER.isEmpty() && NAMESPACE.equals("hbm"))
+            Expect.that(info.get("total").getAsInt() > 1000, "expected > 1000 hbm stacks, got " + info.get("total"));
+        else Expect.that(info.get("total").getAsInt() > 0,
+                "namespace " + NAMESPACE + " filter " + FILTER + " matched no stack");
     }
 
-    /** The label regex from {@code ICON_AUDIT_ITEMS} / {@code ICON_AUDIT_FILTER}; empty = every stack. */
+    private static final String NAMESPACE = namespace();
+
+    /**
+     * The label regex from {@code ICON_AUDIT_ITEMS} / {@code ICON_AUDIT_FILTER}; empty = every stack.
+     */
     private static final String FILTER = filter();
+
+    private static String namespace() {
+        String requested = System.getenv("ICON_AUDIT_NAMESPACE");
+        return requested == null || requested.isBlank() ? "hbm" : requested.trim();
+    }
 
     private static String filter() {
         java.util.List<String> parts = new java.util.ArrayList<>();
@@ -83,7 +97,7 @@ public final class ItemIconAudit implements Scenario {
             java.util.List<String> ids = new java.util.ArrayList<>();
             for (String raw : items.split("[,\\s]+")) {
                 if (raw.isBlank()) continue;
-                String id = raw.contains(":") ? raw : "hbm:" + raw;
+                String id = raw.contains(":") ? raw : NAMESPACE + ":" + raw;
                 ids.add(java.util.regex.Pattern.quote(id));
             }
             if (!ids.isEmpty()) parts.add("^(?:" + String.join("|", ids) + ")(?:@\\d+)?$");
@@ -94,6 +108,7 @@ public final class ItemIconAudit implements Scenario {
     }
 
     private static JsonObject withFilter(JsonObject params) {
+        params.addProperty("namespace", NAMESPACE);
         if (!FILTER.isEmpty()) params.addProperty("filter", FILTER);
         return params;
     }

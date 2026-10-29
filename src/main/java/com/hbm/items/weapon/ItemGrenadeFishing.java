@@ -1,8 +1,10 @@
 package com.hbm.items.weapon;
 
 import dev.golem.core.world.Explosions;
+import dev.golem.core.world.FishingLoot;
 import com.hbm.entity.item.EntityItemBuoyant;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -41,8 +43,9 @@ public class ItemGrenadeFishing extends ItemGenericGrenade {
             int rY = iY + rand.nextInt(15) - 7;
             int rZ = iZ + rand.nextInt(15) - 7;
 
-            if (world.getBlockState(new BlockPos(rX, rY, rZ)).is(Blocks.WATER)) {
-                ItemStack loot = getRandomLoot(rand);
+            var pos = new BlockPos(rX, rY, rZ);
+            if (world.getBlockState(pos).is(Blocks.WATER)) {
+                ItemStack loot = getRandomLoot((ServerLevel) world, pos);
                 EntityItemBuoyant item = new EntityItemBuoyant(world, rX + 0.5, rY + 0.5, rZ + 0.5, loot.copy());
                 item.setDeltaMovement(item.getDeltaMovement().x, 1, item.getDeltaMovement().z);
                 world.addFreshEntity(item);
@@ -50,13 +53,23 @@ public class ItemGrenadeFishing extends ItemGenericGrenade {
         }
     }
 
-    /** Forge 1.7 {@code FishingHooks.fish}: fish 60, salmon 25, clownfish 2, pufferfish 13. */
+    /**
+     * Forge 1.7 {@code FishingHooks.fish}: fish 60, salmon 25, clownfish 2, pufferfish 13.
+     */
     public static ItemStack getRandomLoot(RandomSource rand) {
         int roll = rand.nextInt(100);
         if (roll < 60) return new ItemStack(Items.COD);
         if (roll < 85) return new ItemStack(Items.SALMON);
         if (roll < 87) return new ItemStack(Items.TROPICAL_FISH);
         return new ItemStack(Items.PUFFERFISH);
+    }
+
+    /**
+     * A fishing category override uses the same world and position as the actual detonation.
+     */
+    public static ItemStack getRandomLoot(ServerLevel level, BlockPos origin) {
+        var selected = FishingLoot.select(level, origin, FishingLoot.Category.FISH, level.getRandom());
+        return selected == null ? getRandomLoot(level.getRandom()) : selected;
     }
 
     @Override

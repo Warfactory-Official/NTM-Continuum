@@ -78,6 +78,7 @@ import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Biomes;
 import dev.golem.core.world.ItemStacks;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -87,6 +88,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -105,10 +107,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-/** Shared, server-only GameTest functions and execution budgets. */
+/**
+ * Shared, server-only GameTest functions and execution budgets.
+ */
 public final class HbmGameTestFunctions {
 
-    private HbmGameTestFunctions() {}
+    private HbmGameTestFunctions() {
+    }
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
@@ -159,15 +164,19 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function COMPONENT_COPY_EXACT_MULTISET =
             TESTS.function("component_copy_exact_multiset", 20, () -> ComponentCopyRecipeGameTests::exactMultiset);
     public static final GameTests.Function COMPONENT_COPY_SOURCE_STATE =
-            TESTS.function("component_copy_source_state", 20, () -> ComponentCopyRecipeGameTests::sourceStateAndFreshOutput);
+            TESTS.function("component_copy_source_state", 20,
+                    () -> ComponentCopyRecipeGameTests::sourceStateAndFreshOutput);
     public static final GameTests.Function COMPONENT_COPY_REJECTION =
-            TESTS.function("component_copy_rejection", 20, () -> ComponentCopyRecipeGameTests::rejectsWrongExtraAndAmbiguousInput);
+            TESTS.function("component_copy_rejection", 20,
+                    () -> ComponentCopyRecipeGameTests::rejectsWrongExtraAndAmbiguousInput);
     public static final GameTests.Function CHEMICAL_DYE_FAMILIES =
             TESTS.function("chemical_dye_families", 40, () -> ChemicalDyeAndComponentRecipeGameTests::dyeFamilies);
     public static final GameTests.Function CHEMICAL_DYE_CRYSTALLIZER =
-            TESTS.function("chemical_dye_crystallizer", 40, () -> ChemicalDyeAndComponentRecipeGameTests::dyeCrystallizerRecipes);
+            TESTS.function("chemical_dye_crystallizer", 40,
+                    () -> ChemicalDyeAndComponentRecipeGameTests::dyeCrystallizerRecipes);
     public static final GameTests.Function COMPONENT_SHAPED_RECIPES =
-            TESTS.function("component_shaped_recipes", 40, () -> ChemicalDyeAndComponentRecipeGameTests::componentShapedRecipes);
+            TESTS.function("component_shaped_recipes", 40,
+                    () -> ChemicalDyeAndComponentRecipeGameTests::componentShapedRecipes);
     public static final GameTests.Function HEATEX_COOLABLE_TABLE =
             TESTS.function("heatex_coolable_table", 20, () -> HeatexGameTests::coolableTable);
     public static final GameTests.Function HEATEX_LAYOUT_PORTS =
@@ -223,11 +232,13 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function ADVANCED_OIL_PYRO_GATE =
             TESTS.function("advanced_oil_pyro_gate", 40, 8, () -> AdvancedOilParityGameTests::pyroProgressGate);
     public static final GameTests.Function ADVANCED_OIL_COMBUSTION_GATE =
-            TESTS.function("advanced_oil_combustion_gate", 40, 8, () -> AdvancedOilParityGameTests::combustionOperationGate);
+            TESTS.function("advanced_oil_combustion_gate", 40, 8,
+                    () -> AdvancedOilParityGameTests::combustionOperationGate);
     public static final GameTests.Function ADVANCED_OIL_REFUELER_GATE =
             TESTS.function("advanced_oil_refueler_gate", 40, 8, () -> AdvancedOilParityGameTests::refuelerIdleGate);
     public static final GameTests.Function ADVANCED_OIL_REFUELER_TRANSFER =
-            TESTS.function("advanced_oil_refueler_transfer", 40, 8, () -> AdvancedOilParityGameTests::refuelerFillsAcrossTicks);
+            TESTS.function("advanced_oil_refueler_transfer", 40, 8,
+                    () -> AdvancedOilParityGameTests::refuelerFillsAcrossTicks);
     public static final GameTests.Function FLUID_TANK_EXTRACTION =
             TESTS.function("fluid_tank_extraction", 40, 8, () -> FluidTankGameTests::extractionUsesOutputBay);
     public static final GameTests.Function FLUID_TANK_INVALID_FLUID =
@@ -378,7 +389,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function RC_BOMB_LEGACY_DAMAGE =
             TESTS.function("rc_bomb_legacy_damage", 40, 12, () -> RcBombGameTests::legacyExplosionDamage);
     public static final GameTests.Function RC_BOMB_PROJECTILE_CREDIT =
-            TESTS.function("rc_bomb_projectile_explosion_credit", 40, 12, () -> RcBombGameTests::projectileExplosionCredit);
+            TESTS.function("rc_bomb_projectile_explosion_credit", 40, 12,
+                    () -> RcBombGameTests::projectileExplosionCredit);
     public static final GameTests.Function METAL_ANVIL_SHIFT =
             TESTS.function("metal_anvil_shift_count", 20, 8, () -> MetalAuditGameTests::anvilShiftCraftCount);
     public static final GameTests.Function METAL_STRAND_LARGE_MOLD =
@@ -455,7 +467,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function STIRLING_MISSING_GEAR =
             TESTS.function("stirling_missing_gear", 100, 8, () -> StirlingGameTests::missingGearPlacement);
     public static final GameTests.Function WOOD_BURNER_LAYOUT_AND_FUEL =
-            TESTS.function("wood_burner_layout_and_fuel", 100, 8, () -> CombustionHeatGameTests::woodBurnerLayoutAndFuel);
+            TESTS.function("wood_burner_layout_and_fuel", 100, 8,
+                    () -> CombustionHeatGameTests::woodBurnerLayoutAndFuel);
     public static final GameTests.Function FIREBOX_FUEL_AND_HEAT =
             TESTS.function("firebox_fuel_and_heat", 40, 8, () -> CombustionHeatGameTests::fireboxFuelAndHeat);
     public static final GameTests.Function HEATER_OVEN_PULLS_HEAT =
@@ -463,9 +476,11 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function OILBURNER_FUEL_AND_SETTING =
             TESTS.function("oilburner_fuel_and_setting", 40, 8, () -> CombustionHeatGameTests::oilburnerFuelAndSetting);
     public static final GameTests.Function ELECTRIC_HEATER_CONVERSION =
-            TESTS.function("electric_heater_conversion", 40, 8, () -> CombustionHeatGameTests::electricHeaterConversion);
+            TESTS.function("electric_heater_conversion", 40, 8,
+                    () -> CombustionHeatGameTests::electricHeaterConversion);
     public static final GameTests.Function INDUSTRIAL_BOILER_CONVERSION =
-            TESTS.function("industrial_boiler_conversion", 100, 8, () -> CombustionHeatGameTests::industrialBoilerConversion);
+            TESTS.function("industrial_boiler_conversion", 100, 8,
+                    () -> CombustionHeatGameTests::industrialBoilerConversion);
     public static final GameTests.Function FLUID_VALVE_NODE_LIFECYCLE =
             TESTS.function("fluid_valve_node_lifecycle", 100, 8,
                     () -> FluidValveDrainGameTests::valveTypeAndNodeLifecycle);
@@ -546,9 +561,11 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function BLOWTORCH_FUEL =
             TESTS.function("blowtorch_fuel", 20, () -> HbmGameTestFunctions::blowtorchFuel);
     public static final GameTests.Function MULTIBLOCK_INTERACTION_RANGE =
-            TESTS.function("multiblock_interaction_range", 40, 26, () -> HbmGameTestFunctions::multiblockInteractionRange);
+            TESTS.function("multiblock_interaction_range", 40, 26,
+                    () -> HbmGameTestFunctions::multiblockInteractionRange);
     public static final GameTests.Function MULTIBLOCK_CELLS_MATCH_OUTLINE =
-            TESTS.function("multiblock_cells_match_outline", 20, () -> HbmGameTestFunctions::multiblockCellsMatchOutline);
+            TESTS.function("multiblock_cells_match_outline", 20,
+                    () -> HbmGameTestFunctions::multiblockCellsMatchOutline);
     public static final GameTests.Function FUSION_TORUS_LAYOUT =
             TESTS.function("fusion_torus_layout", 200, 20, () -> HbmGameTestFunctions::fusionTorusLayout);
     public static final GameTests.Function FUSION_STRUCT_ASSEMBLY =
@@ -657,18 +674,23 @@ public final class HbmGameTestFunctions {
 
     // Material catalogue and integration
     public static final GameTests.Function MATERIAL_CATALOGUE_COMPLETE =
-            TESTS.function("material_catalogue_complete", 40, () -> MaterialCompletionGameTests::materialCatalogueComplete);
+            TESTS.function("material_catalogue_complete", 40,
+                    () -> MaterialCompletionGameTests::materialCatalogueComplete);
     public static final GameTests.Function MATERIAL_AUTOGEN_SHAPES_COMPLETE =
-            TESTS.function("material_autogen_shapes_complete", 40, () -> MaterialCompletionGameTests::materialAutogenShapesComplete);
+            TESTS.function("material_autogen_shapes_complete", 40,
+                    () -> MaterialCompletionGameTests::materialAutogenShapesComplete);
     public static final GameTests.Function MATERIAL_DISTRIBUTION_COMPLETE =
-            TESTS.function("material_distribution_complete", 40, () -> MaterialCompletionGameTests::materialDistributionComplete);
+            TESTS.function("material_distribution_complete", 40,
+                    () -> MaterialCompletionGameTests::materialDistributionComplete);
     public static final GameTests.Function MATERIAL_CRUCIBLE_PRESS_CRYSTALLIZER_COMPLETE =
             TESTS.function("material_crucible_press_crystallizer_complete", 80,
                     () -> MaterialCompletionGameTests::materialCruciblePressCrystallizerComplete);
     public static final GameTests.Function MATERIAL_FRAGMENT_RECIPES_COMPLETE =
-            TESTS.function("material_fragment_recipes_complete", 40, () -> MaterialCompletionGameTests::materialFragmentRecipesComplete);
+            TESTS.function("material_fragment_recipes_complete", 40,
+                    () -> MaterialCompletionGameTests::materialFragmentRecipesComplete);
     public static final GameTests.Function MATERIAL_TAG_ALIASES_COMPLETE =
-            TESTS.function("material_tag_aliases_complete", 40, () -> MaterialCompletionGameTests::materialTagAliasesComplete);
+            TESTS.function("material_tag_aliases_complete", 40,
+                    () -> MaterialCompletionGameTests::materialTagAliasesComplete);
     public static final GameTests.Function MACHINE_RECIPE_COMPLETION =
             TESTS.function("machine_recipe_completion", 40, () -> MaterialCompletionGameTests::machineRecipeCompletion);
 
@@ -741,7 +763,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function GAS_CENTRIFUGE_TWO_BATCHES =
             TESTS.function("gas_centrifuge_two_batches", 400, 8, () -> GasCentrifugeGameTests::twoBatchesResetProgress);
     public static final GameTests.Function GAS_CENTRIFUGE_CASCADE_TARGET =
-            TESTS.function("gas_centrifuge_cascade_target", 100, 8, () -> GasCentrifugeGameTests::cascadeIgnoresTargetTank);
+            TESTS.function("gas_centrifuge_cascade_target", 100, 8,
+                    () -> GasCentrifugeGameTests::cascadeIgnoresTargetTank);
     public static final GameTests.Function GAS_CENTRIFUGE_UF6_NETWORK =
             TESTS.function("gas_centrifuge_uf6_network", 100, 8, () -> GasCentrifugeGameTests::uf6FluidNetwork);
     public static final GameTests.Function GAS_CENTRIFUGE_OVERCLOCK =
@@ -780,7 +803,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function NUCLEAR_MISC_RADIOLYSIS =
             TESTS.function("nuclear_misc_radiolysis_cracking", 60, 8, () -> NuclearMiscGameTests::radiolysisCracking);
     public static final GameTests.Function NUCLEAR_MISC_RESEARCH_BREEDER =
-            TESTS.function("nuclear_misc_research_feeds_breeder", 60, 8, () -> NuclearMiscGameTests::researchReactorFeedsBreeder);
+            TESTS.function("nuclear_misc_research_feeds_breeder", 60, 8,
+                    () -> NuclearMiscGameTests::researchReactorFeedsBreeder);
     public static final GameTests.Function NUCLEAR_MISC_CONTROLLER =
             TESTS.function("nuclear_misc_controller_links", 40, 8, () -> NuclearMiscGameTests::controllerLinks);
     public static final GameTests.Function NUCLEAR_MISC_PILE_INSERT =
@@ -838,8 +862,6 @@ public final class HbmGameTestFunctions {
             TESTS.function("rc_nuke_dials_column_height", 60, 12, () -> RbmkDialGameTests::columnHeight);
     public static final GameTests.Function RC_NUKE_PWR_HEAT =
             TESTS.function("rc_nuke_pwr_heat", 60, 8, () -> PwrGameTests::heatAndMeltdown);
-    public static final GameTests.Function RC_NUKE_REASIM_BOILER =
-            TESTS.function("rc_nuke_reasim_boiler_steam", 60, () -> RcNukeGameTests::reasimBoilerSteam);
     public static final GameTests.Function RC_NUKE_REASIM_PIPED =
             TESTS.function("rc_nuke_reasim_boiler_piped", 140, 10, () -> RcNukeGameTests::reasimBoilerPiped);
 
@@ -847,7 +869,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function RC_NUKE2_FUSION_TABLE =
             TESTS.function("rc_nuke2_fusion_table", 40, () -> RcNuke2GameTests::fusionRecipeTable);
     public static final GameTests.Function RC_NUKE2_FUSION_CHAIN =
-            TESTS.function("rc_nuke2_fusion_chain", 900, RcNuke2GameTests.FUSION_PADDING, () -> RcNuke2GameTests::fusionChainRun);
+            TESTS.function("rc_nuke2_fusion_chain", 900, RcNuke2GameTests.FUSION_PADDING,
+                    () -> RcNuke2GameTests::fusionChainRun);
     public static final GameTests.Function RC_NUKE2_CYCLOTRON =
             TESTS.function("rc_nuke2_cyclotron", 1100, 12, () -> RcNuke2GameTests::cyclotronRun);
     public static final GameTests.Function RC_NUKE2_CYCLOTRON_UPGRADES =
@@ -865,7 +888,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function RC_NUKE2_REACTOR_BREEDER =
             TESTS.function("rc_nuke2_reactor_breeder", 600, 8, () -> RcNuke2GameTests::reactorBreederRun);
     public static final GameTests.Function RC_NUKE2_WASTE_DRUM =
-            TESTS.function("rc_nuke2_waste_drum", 1000, RcNuke2GameTests.WASTE_PADDING, () -> RcNuke2GameTests::wasteDrumCooling);
+            TESTS.function("rc_nuke2_waste_drum", 1000, RcNuke2GameTests.WASTE_PADDING,
+                    () -> RcNuke2GameTests::wasteDrumCooling);
     public static final GameTests.Function RC_NUKE2_WASTE_ITEMS =
             TESTS.function("rc_nuke2_waste_items", 60, 8, () -> RcNuke2GameTests::wasteItems);
     public static final GameTests.Function RC_NUKE2_AUTOLOADER =
@@ -888,24 +912,30 @@ public final class HbmGameTestFunctions {
     // --- production machines (group A) ---
 
     public static final GameTests.Function PRODUCTION_ROTARY_FURNACE =
-            TESTS.function("production_rotary_furnace_processing", 200, 16, () -> ProductionMachineGameTests::rotaryFurnaceProcessing);
+            TESTS.function("production_rotary_furnace_processing", 200, 16,
+                    () -> ProductionMachineGameTests::rotaryFurnaceProcessing);
     public static final GameTests.Function PRODUCTION_MICROWAVE =
-            TESTS.function("production_microwave_processing", 200, () -> ProductionMachineGameTests::microwaveProcessing);
+            TESTS.function("production_microwave_processing", 200,
+                    () -> ProductionMachineGameTests::microwaveProcessing);
     public static final GameTests.Function PRODUCTION_MICROWAVE_BATTERY =
             TESTS.function("production_microwave_battery", 40, () -> ProductionMachineGameTests::microwaveBattery);
     public static final GameTests.Function PRODUCTION_AUTOCRAFTER =
-            TESTS.function("production_autocrafter_processing", 100, () -> ProductionMachineGameTests::autocrafterProcessing);
+            TESTS.function("production_autocrafter_processing", 100,
+                    () -> ProductionMachineGameTests::autocrafterProcessing);
     public static final GameTests.Function PRODUCTION_CONVEYOR_PRESS =
-            TESTS.function("production_conveyor_press_idle", 60, 8, () -> ProductionMachineGameTests::conveyorPressIdle);
+            TESTS.function("production_conveyor_press_idle", 60, 8,
+                    () -> ProductionMachineGameTests::conveyorPressIdle);
 
     // --- production machines (group B): excavator, ore slopper, RTG furnaces ---
 
     public static final GameTests.Function PRODUCTION2_ORE_SLOPPER =
-            TESTS.function("production2_ore_slopper_processing", 200, 8, () -> Production2GameTests::oreSlopperProcessing);
+            TESTS.function("production2_ore_slopper_processing", 200, 8,
+                    () -> Production2GameTests::oreSlopperProcessing);
     public static final GameTests.Function PRODUCTION2_RTG_FURNACE =
             TESTS.function("production2_rtg_furnace_processing", 40, () -> Production2GameTests::rtgFurnaceProcessing);
     public static final GameTests.Function PRODUCTION2_DIFURNACE_RTG =
-            TESTS.function("production2_difurnace_rtg_processing", 40, () -> Production2GameTests::diFurnaceRtgProcessing);
+            TESTS.function("production2_difurnace_rtg_processing", 40,
+                    () -> Production2GameTests::diFurnaceRtgProcessing);
     public static final GameTests.Function PRODUCTION2_EXCAVATOR =
             TESTS.function("production2_excavator_drilling", 100, 16, () -> Production2GameTests::excavatorDrilling);
 
@@ -948,7 +978,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function DEUTERIUM_EXTRACTOR_RATIO =
             TESTS.function("deuterium_extractor_ratio", 40, () -> IsotopeProcessingGameTests::deuteriumExtractorRatio);
     public static final GameTests.Function DEUTERIUM_TOWER_CONTRACT =
-            TESTS.function("deuterium_tower_contract", 100, 8, () -> IsotopeProcessingGameTests::deuteriumTowerContract);
+            TESTS.function("deuterium_tower_contract", 100, 8,
+                    () -> IsotopeProcessingGameTests::deuteriumTowerContract);
     public static final GameTests.Function GIANT_TANK_LAYOUTS_PORTS =
             TESTS.function("giant_tank_layouts_ports", 100, 8, () -> GiantTankGameTests::layoutsAndPorts);
     public static final GameTests.Function GIANT_TANK_CONTAINER =
@@ -1014,7 +1045,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function PIPE_ANCHORS =
             TESTS.function("pipe_anchors_three_networks", 40, 10, () -> NetworkBlockGameTests::anchors);
     public static final GameTests.Function COUNTER_VALVE_COUNT =
-            TESTS.function("fluid_counter_valve_counts_closing_tick", 100, 8, () -> NetworkBlockGameTests::counterValve);
+            TESTS.function("fluid_counter_valve_counts_closing_tick", 100, 8,
+                    () -> NetworkBlockGameTests::counterValve);
     public static final GameTests.Function STEEL_BARREL_CORRODES =
             TESTS.function("barrel_steel_corrodes", 40, 6, () -> NetworkBlockGameTests::steelBarrelCorrodes);
     public static final GameTests.Function CATALYTIC_REFORMER_POWER =
@@ -1048,7 +1080,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function MACHINE_UPDATE_DOORS =
             TESTS.function("machine_update_door_skins_larp", 20, () -> MachineUpdateGameTests::doorSkinsAndLarp);
     public static final GameTests.Function MACHINE_UPDATE_BLAST_DOOR =
-            TESTS.function("machine_update_blast_door_placement", 20, 8, () -> MachineUpdateGameTests::blastDoorPlacement);
+            TESTS.function("machine_update_blast_door_placement", 20, 8,
+                    () -> MachineUpdateGameTests::blastDoorPlacement);
     public static final GameTests.Function MACHINE_UPDATE_CONVEYOR_CRAM =
             TESTS.function("machine_update_conveyor_cram", 20, 8, () -> MachineUpdateGameTests::conveyorCram);
     public static final GameTests.Function MACHINE_UPDATE_THRESHER =
@@ -1064,7 +1097,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function MACHINE_UPDATE_LANTERN =
             TESTS.function("machine_update_lantern_repair", 20, () -> MachineUpdateGameTests::lanternRepair);
     public static final GameTests.Function MACHINE_UPDATE_BATTERY_SOCKET =
-            TESTS.function("machine_update_battery_socket_extraction", 20, 8, () -> MachineUpdateGameTests::batterySocketExtraction);
+            TESTS.function("machine_update_battery_socket_extraction", 20, 8,
+                    () -> MachineUpdateGameTests::batterySocketExtraction);
     public static final GameTests.Function MACHINE_UPDATE_ROR_COMMANDS =
             TESTS.function("machine_update_ror_commands", 20, () -> MachineUpdateGameTests::rorMachineCommands);
 
@@ -1275,7 +1309,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function ENTITY_DATA_LEGACY_NO_OVERRIDE =
             TESTS.function("entity_data_legacy_no_override", 20, () -> EntityDataGameTests::legacyDoesNotOverride);
     public static final GameTests.Function ENTITY_DATA_FALLING_BLOCK =
-            TESTS.function("entity_data_falling_block_round_trip", 20, () -> EntityDataGameTests::fallingBlockRoundTrip);
+            TESTS.function("entity_data_falling_block_round_trip", 20,
+                    () -> EntityDataGameTests::fallingBlockRoundTrip);
     public static final GameTests.Function GUN_CREATIVE_QUALITY_VISIBILITY =
             TESTS.function("gun_creative_quality_visibility", 20, () -> GunGameTests::gunCreativeQualityVisibility);
     public static final GameTests.Function GUN_OBTAINMENT_AMMO_PRESS_CATALOGUE =
@@ -1385,7 +1420,8 @@ public final class HbmGameTestFunctions {
 
     // --- rotation (implementations live in RotationGameTests) ---
     public static final GameTests.Function ROTATION_DIRECTIONAL_BLOCKS =
-            TESTS.function("rotation_directional_blocks", 40, () -> RotationGameTests::everyDirectionalBlockStatesItsRotation);
+            TESTS.function("rotation_directional_blocks", 40,
+                    () -> RotationGameTests::everyDirectionalBlockStatesItsRotation);
 
     // --- tickers declared at registration (implementations live in TickerGameTests) ---
     public static final GameTests.Function TICKER_BLOCKS_ANSWER =
@@ -1451,7 +1487,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("rc_logi_mass_storage_infinite", 40, 16, () -> RcLogiGameTests::massStorageInfinite);
 
     public static final GameTests.Function RC_LOGI_TICKERS =
-            TESTS.function("ticker_every_ticking_block_entity_ticks", 40, () -> RcLogiGameTests::everyTickingBlockEntityHasATicker);
+            TESTS.function("ticker_every_ticking_block_entity_ticks", 40,
+                    () -> RcLogiGameTests::everyTickingBlockEntityHasATicker);
 
     public static final GameTests.Function RC_LOGI_ROUTER =
             TESTS.function("rc_logi_router_filters", 40, 16, () -> RcLogiGameTests::routerFilters);
@@ -1493,22 +1530,28 @@ public final class HbmGameTestFunctions {
             TESTS.function("fallout_holds_water", 60, () -> PickAndFalloutGameTests::falloutHoldsWater);
 
     public static final GameTests.Function FALLOUT_BURNS_TALL_TREES =
-            TESTS.function("pt1012_fallout_burns_tall_trees", 100, 24, () -> PickAndFalloutGameTests::falloutBurnsTallTrees);
+            TESTS.function("pt1012_fallout_burns_tall_trees", 100, 24,
+                    () -> PickAndFalloutGameTests::falloutBurnsTallTrees);
 
     public static final GameTests.Function FALLOUT_SPARED_LEAVES_NOT_SOLID =
-            TESTS.function("pt1012_fallout_spared_leaves_not_solid", 100, 24, () -> PickAndFalloutGameTests::falloutSparedLeavesAreNotSolid);
+            TESTS.function("pt1012_fallout_spared_leaves_not_solid", 100, 24,
+                    () -> PickAndFalloutGameTests::falloutSparedLeavesAreNotSolid);
     public static final GameTests.Function FALLOUT_URANIUM_TO_SCHRABIDIUM =
-            TESTS.function("fallout_uranium_to_schrabidium", 100, () -> PickAndFalloutGameTests::falloutUraniumToSchrabidium);
+            TESTS.function("fallout_uranium_to_schrabidium", 100,
+                    () -> PickAndFalloutGameTests::falloutUraniumToSchrabidium);
     public static final GameTests.Function FALLOUT_RAIN_CONVERTS_URANIUM =
-            TESTS.function("fallout_rain_converts_uranium", 400, 40, () -> PickAndFalloutGameTests::falloutRainConvertsUranium);
+            TESTS.function("fallout_rain_converts_uranium", 400, 40,
+                    () -> PickAndFalloutGameTests::falloutRainConvertsUranium);
     public static final GameTests.Function FALLOUT_URANIUM_OUTGAS_ONLY_ON_BREAK =
-            TESTS.function("fallout_uranium_outgas_only_on_break", 20, () -> PickAndFalloutGameTests::uraniumOutgasOnlyOnBreak);
+            TESTS.function("fallout_uranium_outgas_only_on_break", 20,
+                    () -> PickAndFalloutGameTests::uraniumOutgasOnlyOnBreak);
 
     // --- volcano cores + blobs (implementations live in VolcanoGameTests) ---
     public static final GameTests.Function VOLCANO_GROWING_CORE_CLIMBS =
             TESTS.function("volcano_growing_core_climbs", 400, 64, () -> VolcanoGameTests::growingCoreClimbs);
     public static final GameTests.Function VOLCANO_SHRAPNEL_POOLS_LAVA =
-            TESTS.function("volcano_shrapnel_pools_lava", 80, 16, () -> VolcanoGameTests::volcanoShrapnelPoolsLavaAndMonoxide);
+            TESTS.function("volcano_shrapnel_pools_lava", 80, 16,
+                    () -> VolcanoGameTests::volcanoShrapnelPoolsLavaAndMonoxide);
     public static final GameTests.Function VOLCANO_LAVA_BLAST =
             TESTS.function("volcano_lava_blast", 20, 24, () -> VolcanoGameTests::lavaBlastFillsDestroyedCubesOnly);
 
@@ -1538,7 +1581,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function CHUNK_REFCOUNTING =
             TESTS.function("chunk_refcounting", 40, () -> MissileGameTests::chunkRefcounting);
     public static final GameTests.Function CHUNK_CLAIM_LEAVES_FORCED_TICKING =
-            TESTS.function("chunk_claim_leaves_forced_chunk_ticking", 100, () -> MissileGameTests::chunkClaimLeavesForcedChunkTicking);
+            TESTS.function("chunk_claim_leaves_forced_chunk_ticking", 100,
+                    () -> MissileGameTests::chunkClaimLeavesForcedChunkTicking);
     public static final GameTests.Function CHUNK_FOLLOWS_MOVEMENT =
             TESTS.function("chunk_follows_movement", 40, () -> MissileGameTests::chunkFollowsMovement);
     public static final GameTests.Function CHUNK_RELEASED_TICKET_INERT =
@@ -1602,9 +1646,11 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function MISSILE_DETONATOR_LAUNCH =
             TESTS.function("missile_detonator_launch", 60, 8, () -> MissileGameTests::detonatorLaunch);
     public static final GameTests.Function MISSILE_FORMERLY_BLOCKED_ACCEPTED =
-            TESTS.function("missile_formerly_blocked_accepted", 20, () -> MissileGameTests::formerlyBlockedMissilesAccepted);
+            TESTS.function("missile_formerly_blocked_accepted", 20,
+                    () -> MissileGameTests::formerlyBlockedMissilesAccepted);
     public static final GameTests.Function MISSILE_FORMERLY_BLOCKED_LAUNCH =
-            TESTS.function("missile_formerly_blocked_launch", 60, () -> MissileGameTests::formerlyBlockedMissilesLaunch);
+            TESTS.function("missile_formerly_blocked_launch", 60,
+                    () -> MissileGameTests::formerlyBlockedMissilesLaunch);
     public static final GameTests.Function MISSILE_RARE_DROPS =
             TESTS.function("missile_rare_drops", 20, () -> MissileGameTests::missileRareDrops);
     public static final GameTests.Function MISSILE_VOLCANO_CORE =
@@ -1622,11 +1668,15 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function MISSILE_DESIGNATOR =
             TESTS.function("missile_designator", 20, () -> MissileGameTests::designatorRecordsTarget);
 
-    /** A real crater, timed. See {@link NukePerfGameTests}; it logs the phase split. */
+    /**
+     * A real crater, timed. See {@link NukePerfGameTests}; it logs the phase split.
+     */
     public static final GameTests.Function NUKE_CRATER_BENCHMARK =
             TESTS.function("nuke_crater_benchmark", 20 * 90, () -> NukePerfGameTests::craterBenchmark);
 
-    /** Complete per-chunk hit-set parity between resident rays and event-driven chunk resumes. */
+    /**
+     * Complete per-chunk hit-set parity between resident rays and event-driven chunk resumes.
+     */
     public static final GameTests.Function NUKE_RAY_RESUME_EQUIVALENCE =
             TESTS.function("nuke_ray_resume_equivalence", 20 * 90,
                     () -> NukePerfGameTests::rayResumeEquivalence);
@@ -1647,49 +1697,73 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function FIX1D_TOREX_SCALE =
             TESTS.function("fix1d_torex_scale", 20, () -> Fix1DGameTests::torexScale);
 
-    /** setBlock vs direct section write: the number behind the destruction-phase design. */
+    /**
+     * setBlock vs direct section write: the number behind the destruction-phase design.
+     */
     public static final GameTests.Function NUKE_WRITE_THROUGHPUT =
             TESTS.function("nuke_write_throughput", 20 * 90, () -> NukePerfGameTests::writeThroughput);
 
-    /** The section carve against the setBlock path it replaces: states, block entities, heightmaps. */
+    /**
+     * The section carve against the setBlock path it replaces: states, block entities, heightmaps.
+     */
     public static final GameTests.Function NUKE_CARVE_EQUIVALENCE =
             TESTS.function("nuke_carve_equivalence", 20 * 90, () -> NukePerfGameTests::carveEquivalence);
 
-    /** A crater reaching only some of a multiblock's cells still removes the whole machine (carve path). */
+    /**
+     * A crater reaching only some of a multiblock's cells still removes the whole machine (carve path).
+     */
     public static final GameTests.Function NUKE_CARVE_MULTIBLOCK_TEARDOWN =
-            TESTS.function("nuke_carve_multiblock_teardown", 20 * 30, () -> NukePerfGameTests::carveTearsDownMultiblock);
+            TESTS.function("nuke_carve_multiblock_teardown", 20 * 30,
+                    () -> NukePerfGameTests::carveTearsDownMultiblock);
 
-    /** The same through the per-block setBlock path, where 26.1 skips the removal hook without neighbour updates. */
+    /**
+     * The same through the per-block setBlock path, where 26.1 skips the removal hook without neighbour updates.
+     */
     public static final GameTests.Function NUKE_WRITE_MULTIBLOCK_TEARDOWN =
-            TESTS.function("nuke_write_multiblock_teardown", 20 * 30, () -> NukePerfGameTests::writeTearsDownMultiblock);
+            TESTS.function("nuke_write_multiblock_teardown", 20 * 30,
+                    () -> NukePerfGameTests::writeTearsDownMultiblock);
 
-    /** Does a carved pocket actually relight? The one thing a block-state comparison cannot see. */
+    /**
+     * Does a carved pocket actually relight? The one thing a block-state comparison cannot see.
+     */
     public static final GameTests.Function NUKE_CARVE_LIGHTING =
             TESTS.function("nuke_carve_lighting", 20 * 400, () -> NukePerfGameTests::carveLighting);
 
-    /** The same question asked of a real blast: whole sections emptied across many chunks. */
+    /**
+     * The same question asked of a real blast: whole sections emptied across many chunks.
+     */
     public static final GameTests.Function NUKE_CRATER_LIGHTING =
             TESTS.function("nuke_crater_lighting", 20 * 400, () -> NukePerfGameTests::craterLighting);
 
-    /** The phase after the crater: the fallout sweep's ash, fire and sellafite conversions, timed. */
+    /**
+     * The phase after the crater: the fallout sweep's ash, fire and sellafite conversions, timed.
+     */
     public static final GameTests.Function NUKE_FALLOUT_BENCHMARK =
             TESTS.function("nuke_fallout_benchmark", 20 * 900, () -> NukePerfGameTests::falloutBenchmark);
 
-    /** How a fallout conversion reaches the world: setBlock vs the references' section write. */
+    /**
+     * How a fallout conversion reaches the world: setBlock vs the references' section write.
+     */
     public static final GameTests.Function NUKE_FALLOUT_WRITE_THROUGHPUT =
             TESTS.function("nuke_fallout_write_throughput", 20 * 180,
                     () -> NukePerfGameTests::falloutWriteThroughput);
 
-    /** Worker output retains old last-state/first-falling position-map semantics. */
+    /**
+     * Worker output retains old last-state/first-falling position-map semantics.
+     */
     public static final GameTests.Function NUKE_FALLOUT_WRITE_DEDUPLICATION =
             TESTS.function("nuke_fallout_write_deduplication", 20,
                     () -> NukePerfGameTests::falloutWriteDeduplication);
 
-    /** What the ash layer's self-rescheduling block tick costs, during and after the sweep. */
+    /**
+     * What the ash layer's self-rescheduling block tick costs, during and after the sweep.
+     */
     public static final GameTests.Function NUKE_FALLOUT_ASH_LOAD =
             TESTS.function("nuke_fallout_ash_load", 20 * 180, () -> NukePerfGameTests::falloutAshLoad);
 
-    /** Where the sweep's notify pass actually goes: neighbour updates vs the shape pass, by terrain. */
+    /**
+     * Where the sweep's notify pass actually goes: neighbour updates vs the shape pass, by terrain.
+     */
     public static final GameTests.Function NUKE_FALLOUT_NOTIFY_COST =
             TESTS.function("nuke_fallout_notify_cost", 20 * 300, () -> NukePerfGameTests::falloutNotifyCost);
 
@@ -1733,7 +1807,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function FOUNDRY_REMOVAL_SCRAPS =
             TESTS.function("foundry_removal_scraps", 20, () -> CompatibilityBoundaryGameTests::foundryRemovalScraps);
     public static final GameTests.Function LEGACY_CUSTOM_RENDERER_ITEMS =
-            TESTS.function("legacy_custom_renderer_items", 40, () -> LegacyCompatGameTests::customRendererItemsUseCompatBases);
+            TESTS.function("legacy_custom_renderer_items", 40,
+                    () -> LegacyCompatGameTests::customRendererItemsUseCompatBases);
     public static final GameTests.Function LEGACY_SMELTING_COUNT =
             TESTS.function("legacy_smelting_count", 300, () -> LegacyCompatGameTests::smeltingKeepsResultCount);
     public static final GameTests.Function CRUCIBLE_REMOVAL_SCRAPS =
@@ -1757,7 +1832,8 @@ public final class HbmGameTestFunctions {
     // --- conventional explosives (com.hbm.explosives) ---
 
     public static final GameTests.Function EXPLOSIVES_LANDMINE =
-            TESTS.function("explosives_landmine_priming_defuse", 40, () -> ExplosivesGameTests::landminePrimingAndDefuse);
+            TESTS.function("explosives_landmine_priming_defuse", 40,
+                    () -> ExplosivesGameTests::landminePrimingAndDefuse);
     public static final GameTests.Function EXPLOSIVES_CHARGE =
             TESTS.function("explosives_charge_timer_defuse", 40, () -> ExplosivesGameTests::chargeTimerAndDefuse);
 
@@ -1768,7 +1844,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function CUSTOM_MACHINE_CONTROLLER_RECIPE =
             TESTS.function("custom_machine_controller_recipe", 40, () -> CustomMachineGameTests::controllerRecipe);
     public static final GameTests.Function CUSTOM_MACHINE_GENERATOR_POWERS_CONSUMER =
-            TESTS.function("custom_machine_generator_powers_consumer", 80, 10, () -> CustomMachineGameTests::generatorPowersConsumer);
+            TESTS.function("custom_machine_generator_powers_consumer", 80, 10,
+                    () -> CustomMachineGameTests::generatorPowersConsumer);
 
     // --- the generated id constants (implementations live in IdGameTests) ---
     public static final GameTests.Function IDS_MATCH_REGISTRY =
@@ -1800,25 +1877,43 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function NTM_STRUCTURE_BOUNDS_MISMATCH =
             TESTS.function("ntm_structure_bounds_mismatch", 40, 48, () -> NTMStructureGameTests::boundsMismatch);
     // --- legacy hardcoded dungeons + scattered world blocks, WG-D (implementations live in LegacyDungeonGameTests) ---
-    public static final GameTests.Function WGD_BUILDERS = TESTS.function("wgd_builders", 200, () -> LegacyDungeonGameTests::builders);
-    public static final GameTests.Function WGD_APPLY = TESTS.function("wgd_apply", 40, 16, () -> LegacyDungeonGameTests::apply);
-    public static final GameTests.Function WGD_FEATURES = TESTS.function("wgd_features", 40, 16, () -> LegacyDungeonGameTests::features);
+    public static final GameTests.Function WGD_BUILDERS = TESTS.function("wgd_builders", 200,
+            () -> LegacyDungeonGameTests::builders);
+    public static final GameTests.Function WGD_APPLY = TESTS.function("wgd_apply", 40, 16,
+            () -> LegacyDungeonGameTests::apply);
+    public static final GameTests.Function WGD_FEATURES = TESTS.function("wgd_features", 40, 16,
+            () -> LegacyDungeonGameTests::features);
     // --- multi-piece 1.7 structures, WG-C (implementations live in NTMComponentStructureGameTests) ---
-    public static final GameTests.Function WGC_SPAWNS = TESTS.function("wgc_spawns", 20, () -> NTMComponentStructureGameTests::spawnsRegistered);
-    public static final GameTests.Function WGC_METEOR_ASSEMBLY = TESTS.function("wgc_meteor_assembly", 200, () -> NTMComponentStructureGameTests::meteorAssembly);
-    public static final GameTests.Function WGC_METEOR_PALETTES = TESTS.function("wgc_meteor_palettes", 100, () -> NTMComponentStructureGameTests::meteorPalettes);
-    public static final GameTests.Function WGC_METEOR_BLOCK_TABLE = TESTS.function("wgc_meteor_block_table", 40, 24, () -> NTMComponentStructureGameTests::meteorBlockTable);
-    public static final GameTests.Function WGC_FEATURES_ASSEMBLY = TESTS.function("wgc_features_assembly", 200, () -> NTMComponentStructureGameTests::featuresAssembly);
-    public static final GameTests.Function WGC_BUNKER_ASSEMBLY = TESTS.function("wgc_bunker_assembly", 40, () -> NTMComponentStructureGameTests::bunkerAssembly);
-    public static final GameTests.Function WGC_HOUSE1 = TESTS.function("wgc_house1", 40, 20, () -> NTMComponentStructureGameTests::house1);
-    public static final GameTests.Function WGC_HOUSE2 = TESTS.function("wgc_house2", 40, 24, () -> NTMComponentStructureGameTests::house2);
-    public static final GameTests.Function WGC_LAB1 = TESTS.function("wgc_lab1", 40, 20, () -> NTMComponentStructureGameTests::lab1);
-    public static final GameTests.Function WGC_LAB2 = TESTS.function("wgc_lab2", 40, 24, () -> NTMComponentStructureGameTests::lab2);
-    public static final GameTests.Function WGC_RURAL_HOUSE = TESTS.function("wgc_rural_house", 40, 24, () -> NTMComponentStructureGameTests::ruralHouse);
-    public static final GameTests.Function WGC_LARGE_OFFICE = TESTS.function("wgc_large_office", 40, 24, () -> NTMComponentStructureGameTests::largeOffice);
-    public static final GameTests.Function WGC_LARGE_OFFICE_CORNER = TESTS.function("wgc_large_office_corner", 40, 24, () -> NTMComponentStructureGameTests::largeOfficeCorner);
-    public static final GameTests.Function WGC_SILO = TESTS.function("wgc_silo", 60, 56, () -> NTMComponentStructureGameTests::silo);
-    public static final GameTests.Function WGC_BUNKER_HUB = TESTS.function("wgc_bunker_hub", 40, 20, () -> NTMComponentStructureGameTests::bunkerHub);
+    public static final GameTests.Function WGC_SPAWNS = TESTS.function("wgc_spawns", 20,
+            () -> NTMComponentStructureGameTests::spawnsRegistered);
+    public static final GameTests.Function WGC_METEOR_ASSEMBLY = TESTS.function("wgc_meteor_assembly", 200,
+            () -> NTMComponentStructureGameTests::meteorAssembly);
+    public static final GameTests.Function WGC_METEOR_PALETTES = TESTS.function("wgc_meteor_palettes", 100,
+            () -> NTMComponentStructureGameTests::meteorPalettes);
+    public static final GameTests.Function WGC_METEOR_BLOCK_TABLE = TESTS.function("wgc_meteor_block_table", 40, 24,
+            () -> NTMComponentStructureGameTests::meteorBlockTable);
+    public static final GameTests.Function WGC_FEATURES_ASSEMBLY = TESTS.function("wgc_features_assembly", 200,
+            () -> NTMComponentStructureGameTests::featuresAssembly);
+    public static final GameTests.Function WGC_BUNKER_ASSEMBLY = TESTS.function("wgc_bunker_assembly", 40,
+            () -> NTMComponentStructureGameTests::bunkerAssembly);
+    public static final GameTests.Function WGC_HOUSE1 = TESTS.function("wgc_house1", 40, 20,
+            () -> NTMComponentStructureGameTests::house1);
+    public static final GameTests.Function WGC_HOUSE2 = TESTS.function("wgc_house2", 40, 24,
+            () -> NTMComponentStructureGameTests::house2);
+    public static final GameTests.Function WGC_LAB1 = TESTS.function("wgc_lab1", 40, 20,
+            () -> NTMComponentStructureGameTests::lab1);
+    public static final GameTests.Function WGC_LAB2 = TESTS.function("wgc_lab2", 40, 24,
+            () -> NTMComponentStructureGameTests::lab2);
+    public static final GameTests.Function WGC_RURAL_HOUSE = TESTS.function("wgc_rural_house", 40, 24,
+            () -> NTMComponentStructureGameTests::ruralHouse);
+    public static final GameTests.Function WGC_LARGE_OFFICE = TESTS.function("wgc_large_office", 40, 24,
+            () -> NTMComponentStructureGameTests::largeOffice);
+    public static final GameTests.Function WGC_LARGE_OFFICE_CORNER = TESTS.function("wgc_large_office_corner", 40, 24,
+            () -> NTMComponentStructureGameTests::largeOfficeCorner);
+    public static final GameTests.Function WGC_SILO = TESTS.function("wgc_silo", 60, 56,
+            () -> NTMComponentStructureGameTests::silo);
+    public static final GameTests.Function WGC_BUNKER_HUB = TESTS.function("wgc_bunker_hub", 40, 20,
+            () -> NTMComponentStructureGameTests::bunkerHub);
 
     // --- 1.7 world features (implementations live in WorldFeatureGameTests) ---
     public static final GameTests.Function WG_OVERWORLD_FEATURES =
@@ -1891,7 +1986,8 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function FOREIGN_ITEMS_VIEWER_TOTALS =
             TESTS.function("foreign_items_viewer_totals", 20, 16, () -> ForeignItemsGameTests::viewerTotals);
 
-    public static void init() {}
+    public static void init() {
+    }
 
     private static void coolingRecipes(GameTestHelper helper) {
         Fluids.init();
@@ -1909,7 +2005,9 @@ public final class HbmGameTestFunctions {
                 "Slot " + index + " sits at " + slot.x + "," + slot.y + ", expected " + x + "," + y);
     }
 
-    /** The condenser closes the loop: spent steam in, the same amount of water out. */
+    /**
+     * The condenser closes the loop: spent steam in, the same amount of water out.
+     */
     private static void condenserConversion(GameTestHelper helper) {
         Fluids.init();
         var pos = new BlockPos(1, 1, 1);
@@ -1926,7 +2024,9 @@ public final class HbmGameTestFunctions {
 
     // --- PUREX ---------------------------------------------------------------------------------------
 
-    /** One full ZIRNOX reprocessing cycle: 100 ticks at 1000 HE/t, exact reagent draw and the four products. */
+    /**
+     * One full ZIRNOX reprocessing cycle: 100 ticks at 1000 HE/t, exact reagent draw and the four products.
+     */
     private static void purexRecipeCycle(GameTestHelper helper) {
         Fluids.init();
         var pos = new BlockPos(1, 1, 1);
@@ -1957,7 +2057,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** Hot spent fuel must be cooled in a waste drum first; the recipes only match cold stacks. */
+    /**
+     * Hot spent fuel must be cooled in a waste drum first; the recipes only match cold stacks.
+     */
     private static void purexHotWasteRejected(GameTestHelper helper) {
         Fluids.init();
         var pos = new BlockPos(1, 1, 1);
@@ -1975,7 +2077,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** The 1.12.2 upgrade formulas, pinned through observable speed (progress/tick) and draw (HE/tick). */
+    /**
+     * The 1.12.2 upgrade formulas, pinned through observable speed (progress/tick) and draw (HE/tick).
+     */
     private static void purexUpgrades(GameTestHelper helper) {
         Fluids.init();
         var pos = new BlockPos(1, 1, 1);
@@ -2010,7 +2114,9 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(drawn == expectedDraw, upgrade + " drew " + drawn + " HE, expected " + expectedDraw);
     }
 
-    /** The dynamic power ceiling: {@code recipe.power * 100}, floored at the buffer and at 1,000,000. */
+    /**
+     * The dynamic power ceiling: {@code recipe.power * 100}, floored at the buffer and at 1,000,000.
+     */
     private static void purexMaxPower(GameTestHelper helper) {
         Fluids.init();
         var pos = new BlockPos(1, 1, 1);
@@ -2034,7 +2140,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** A recipe with a fluid product fills the output tank, and that tank is offered to the network. */
+    /**
+     * A recipe with a fluid product fills the output tank, and that tank is offered to the network.
+     */
     private static void purexOutputFluid(GameTestHelper helper) {
         Fluids.init();
         var pos = new BlockPos(1, 1, 1);
@@ -2050,7 +2158,8 @@ public final class HbmGameTestFunctions {
             tick(helper, pos, purex);
         }
 
-        helper.assertTrue(purex.outputTanks[0].getTankType() == Fluids.HELIUM4 && purex.outputTanks[0].getFill() == 1_250,
+        helper.assertTrue(
+                purex.outputTanks[0].getTankType() == Fluids.HELIUM4 && purex.outputTanks[0].getFill() == 1_250,
                 "The ICF recipe must leave 1250 mB of helium-4 in the product tank");
         helper.assertTrue(purex.getSendingTanks().length == 1 && purex.getSendingTanks()[0] == purex.outputTanks[0],
                 "The product tank must be offered to the fluid network");
@@ -2058,7 +2167,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** The 13-slot layout: what each slot accepts, and what automation may reach. */
+    /**
+     * The 13-slot layout: what each slot accepts, and what automation may reach.
+     */
     private static void purexSlots(GameTestHelper helper) {
         Fluids.init();
         var pos = new BlockPos(1, 1, 1);
@@ -2072,9 +2183,12 @@ public final class HbmGameTestFunctions {
         var waste = new ItemStack(ModZirnoxItems.waste(ZirnoxFuel.NATURAL_URANIUM));
         var junk = new ItemStack(Items.STONE);
 
-        helper.assertTrue(purex.isItemValidForSlot(0, battery) && !purex.isItemValidForSlot(0, junk), "Slot 0 takes batteries only");
-        helper.assertTrue(purex.isItemValidForSlot(1, blueprint) && !purex.isItemValidForSlot(1, junk), "Slot 1 takes blueprints only");
-        helper.assertTrue(purex.isItemValidForSlot(2, upgrade) && !purex.isItemValidForSlot(2, junk), "Slot 2 takes upgrades only");
+        helper.assertTrue(purex.isItemValidForSlot(0, battery) && !purex.isItemValidForSlot(0, junk),
+                "Slot 0 takes batteries only");
+        helper.assertTrue(purex.isItemValidForSlot(1, blueprint) && !purex.isItemValidForSlot(1, junk),
+                "Slot 1 takes blueprints only");
+        helper.assertTrue(purex.isItemValidForSlot(2, upgrade) && !purex.isItemValidForSlot(2, junk),
+                "Slot 2 takes upgrades only");
         helper.assertTrue(purex.isItemValidForSlot(4, waste) && !purex.isItemValidForSlot(4, junk),
                 "Slot 4 takes the selected recipe's ingredients only");
 
@@ -2094,7 +2208,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** The menu layout: the original slot count and coordinates. */
+    /**
+     * The menu layout: the original slot count and coordinates.
+     */
     private static void purexMenu(GameTestHelper helper) {
         Fluids.init();
         var pos = new BlockPos(1, 1, 1);
@@ -2116,7 +2232,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** The 5×5 footprint and the ring of 20 network ports around it, built through the real placement path. */
+    /**
+     * The 5×5 footprint and the ring of 20 network ports around it, built through the real placement path.
+     */
     private static void purexLayout(GameTestHelper helper) {
         Fluids.init();
         var block = ModMachineBlocks.machine_purex.get();
@@ -2176,7 +2294,8 @@ public final class HbmGameTestFunctions {
         reactor.carbonDioxide.setFill(14_000);
         reactor.water.setFill(32_000);
         reactor.inventory.setStackInSlot(0, new ItemStack(ModZirnoxItems.active(ZirnoxFuel.NATURAL_URANIUM)));
-        TileEntityReactorZirnox.serverTick(helper.getLevel(), helper.absolutePos(pos), reactor.getBlockState(), reactor);
+        TileEntityReactorZirnox.serverTick(helper.getLevel(), helper.absolutePos(pos), reactor.getBlockState(),
+                reactor);
         helper.assertTrue(reactor.pressure == 71_776, "ZIRNOX pressure formula regressed");
         // 1.7.10 factor 25 * 7.5: (50,030 - 10,256) / 100,000 * 187.5 = 74.6 -> 74 mB per tick
         helper.assertTrue(reactor.steam.getFill() == 74 && reactor.water.getFill() == 31_926,
@@ -2239,7 +2358,7 @@ public final class HbmGameTestFunctions {
             }
         }
         ModTabs.STACK_CONTENTS.values()
-                .forEach(list -> list.forEach(supplier -> shown.addAll(supplier.get())));
+                              .forEach(list -> list.forEach(supplier -> shown.addAll(supplier.get())));
         for (Item item : BuiltInRegistries.ITEM) {
             if (!(item instanceof ItemEnumMulti family)) continue;
             boolean anywhere = shown.stream().anyMatch(stack -> stack.is(item));
@@ -2285,7 +2404,8 @@ public final class HbmGameTestFunctions {
 
         // Fluids whose real name is not a title-cased id. If a call site ever falls back to the id
         // again, these are the ones that catch it.
-        record Named(FluidType type, String expected) {}
+        record Named(FluidType type, String expected) {
+        }
         Named[] cases = {
                 new Named(Fluids.OIL, "Crude Oil"),
                 new Named(Fluids.HEAVYOIL, "Heavy Oil"),
@@ -2350,7 +2470,9 @@ public final class HbmGameTestFunctions {
      * <p>Checks all three axes: the horizontal footprint alone would miss the tall machines (coker 22 high over a
      * 1-block footprint, gas flare, oil well).
      */
-    /** 1.7 fills the same boxes its placement highlight outlines, so a machine with several boxes occupies exactly them. */
+    /**
+     * 1.7 fills the same boxes its placement highlight outlines, so a machine with several boxes occupies exactly them.
+     */
     private static void multiblockCellsMatchOutline(GameTestHelper helper) {
         // 1.7 MachineChungus.fillSpace sets one more block above the front, outside its highlight.
         Map<Block, Integer> extras = Map.of(ModPowerGenBlocks.MACHINE_CHUNGUS.get(), 1);
@@ -2364,7 +2486,8 @@ public final class HbmGameTestFunctions {
             if (!plain) continue;
             for (Direction facing : Direction.Plane.HORIZONTAL) {
                 Set<BlockPos> outlined = new HashSet<>();
-                for (int[] box : boxes) MultiblockHandlerXR.visitBox(core, box, facing, (pos, toward) -> outlined.add(pos.immutable()));
+                for (int[] box : boxes)
+                    MultiblockHandlerXR.visitBox(core, box, facing, (pos, toward) -> outlined.add(pos.immutable()));
                 Set<BlockPos> cells = new HashSet<>();
                 machine.visitPlacedCells(helper.getLevel(), core, facing, (pos, mask) -> cells.add(pos.immutable()));
                 if (outlined.equals(cells)) continue;
@@ -2372,7 +2495,8 @@ public final class HbmGameTestFunctions {
                 missing.removeAll(cells);
                 cells.removeAll(outlined);
                 if (missing.isEmpty() && cells.size() == extras.getOrDefault(block, 0)) continue;
-                wrong.add(BuiltInRegistries.BLOCK.getKey(block) + " " + facing + ": " + missing.size() + " outlined but not occupied, "
+                wrong.add(BuiltInRegistries.BLOCK.getKey(
+                        block) + " " + facing + ": " + missing.size() + " outlined but not occupied, "
                         + cells.size() + " occupied but not outlined");
             }
         }
@@ -2383,7 +2507,8 @@ public final class HbmGameTestFunctions {
     private static void multiblockInteractionRange(GameTestHelper helper) {
         // Every multiblock must be usable from any cell it occupies, plus a player's reach.
         // Mixed while the migration runs: a folded core answers its own range, a dummyable the old one.
-        record Case(String name, double rangeSq, int[] dimensions) {}
+        record Case(String name, double rangeSq, int[] dimensions) {
+        }
         var cases = new Case[]{
                 new Case("fusion_torus", ModMachineBlocks.fusion_torus.get().getInteractionRangeSq(),
                         ModMachineBlocks.fusion_torus.get().getDimensions()),
@@ -2454,7 +2579,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** The long/short metadata families, byproduct amounts, and neutron-contamination input gate. */
+    /**
+     * The long/short metadata families, byproduct amounts, and neutron-contamination input gate.
+     */
     private static void storageDrumRecipes(GameTestHelper helper) {
         Fluids.init();
         StorageDrumRecipes.registerRecipes();
@@ -2469,7 +2596,7 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(output != null
                         && ModStorageDrumItems.nuclear_waste_short_depleted.is(output.getItem())
                         && ((ItemWasteStorage) output.getItem()).variant(output)
-                                == ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(),
+                        == ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(),
                 "Short-waste transformation lost its subtype");
         // 1.7 VersatileConfig.getShortDecayChance: 15 min (the 1.12.2 table had 3 h)
         helper.assertTrue(waste != null && waste[0] == 18_000 && waste[1] == 350 && waste[2] == 1_000,
@@ -2483,7 +2610,7 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(longTinyOutput != null
                         && ModStorageDrumItems.nuclear_waste_long_depleted_tiny.is(longTinyOutput.getItem())
                         && ((ItemWasteStorage) longTinyOutput.getItem()).variant(longTinyOutput)
-                                == ItemWasteStorage.LongWasteClass.URANIUM233.ordinal()
+                        == ItemWasteStorage.LongWasteClass.URANIUM233.ordinal()
                         && longTinyWaste != null && longTinyWaste[0] == 21_600
                         && longTinyWaste[1] == 0 && longTinyWaste[2] == 5,
                 "Long-tiny waste must scale liquid and gas by 0.1");
@@ -2534,7 +2661,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** The original six-by-six ring's 24 slots and player-inventory coordinates. */
+    /**
+     * The original six-by-six ring's 24 slots and player-inventory coordinates.
+     */
     private static void storageDrumMenu(GameTestHelper helper) {
         var pos = new BlockPos(1, 1, 1);
         helper.setBlock(pos, ModMachineBlocks.machine_storage_drum.get().defaultBlockState());
@@ -2559,7 +2688,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** Powered condenser conversion needs 95% of 10 HE per mB and consumes the full amount, down to zero. */
+    /**
+     * Powered condenser conversion needs 95% of 10 HE per mB and consumes the full amount, down to zero.
+     */
     private static void poweredCondenserConversion(GameTestHelper helper) {
         Fluids.init();
         var pos = new BlockPos(1, 1, 1);
@@ -2582,7 +2713,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** The six anchored fluid/power positions are the legacy powered-condenser ports. */
+    /**
+     * The six anchored fluid/power positions are the legacy powered-condenser ports.
+     */
     private static void poweredCondenserPorts(GameTestHelper helper) {
         var pos = new BlockPos(1, 1, 1);
         var state = ModMachineBlocks.machine_condenser_powered.get().defaultBlockState();
@@ -2611,7 +2744,7 @@ public final class HbmGameTestFunctions {
                         && coal.fluidOutput().fill == 100,
                 "Coal must produce coal coke and 100 mB of coal creosote");
         helper.assertTrue(CombinationRecipes.getOutput(
-                new ItemStack(Items.DIAMOND)) == null,
+                        new ItemStack(Items.DIAMOND)) == null,
                 "Unregistered items must not match a combination recipe");
         helper.succeed();
     }
@@ -2631,7 +2764,7 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(furnace.inventory.getStackInSlot(1).is(ModOilItems.coke(
                 ItemEnums.EnumCokeType.COAL)), "A completed cycle must write the item output");
         helper.assertTrue(furnace.tank.getTankType() == Fluids.COALCREOSOTE
-                        && furnace.tank.getFill() == 100, "A completed cycle must write its fluid byproduct");
+                && furnace.tank.getFill() == 100, "A completed cycle must write its fluid byproduct");
         helper.succeed();
     }
 
@@ -2643,7 +2776,8 @@ public final class HbmGameTestFunctions {
                 TileEntityFurnaceCombination.class);
         var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         var menu = new ContainerFurnaceCombination(0, player.getInventory(), furnace);
-        helper.assertTrue(menu.slots.size() == 40, "Combination furnace menu must have 4 machine slots + 36 player slots");
+        helper.assertTrue(menu.slots.size() == 40,
+                "Combination furnace menu must have 4 machine slots + 36 player slots");
         assertSlot(helper, menu, 0, 26, 36);
         assertSlot(helper, menu, 1, 89, 36);
         assertSlot(helper, menu, 2, 136, 18);
@@ -2658,7 +2792,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** The fuel cycles must be registered, or they are dead data until the torus asks for them. */
+    /**
+     * The fuel cycles must be registered, or they are dead data until the torus asks for them.
+     */
     private static void fusionRecipes(GameTestHelper helper) {
         var set = FusionRecipes.INSTANCE;
         set.registerRecipes();
@@ -2818,7 +2954,7 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(menu.slots.size() == 52,
                 "Plasma-forge menu must have 16 machine slots plus 36 player slots");
         helper.assertFalse(menu.slots.get(TileEntityFusionPlasmaForge.SLOT_OUTPUT)
-                        .mayPlace(new ItemStack(Items.IRON_INGOT)),
+                                     .mayPlace(new ItemStack(Items.IRON_INGOT)),
                 "The plasma-forge output slot must be take-only");
         var castIron = ModAutogenItems.get(
                 MaterialShapes.CASTPLATE,
@@ -2848,8 +2984,9 @@ public final class HbmGameTestFunctions {
         forge.inventory.setStackInSlot(TileEntityFusionPlasmaForge.FIRST_INPUT,
                 new ItemStack(castIron, 2));
 
-        for (int tick = 0; tick < 50; tick++) forge.plasmaModule.update(1D, 1D, true,
-                ItemStack.EMPTY);
+        for (int tick = 0; tick < 50; tick++)
+            forge.plasmaModule.update(1D, 1D, true,
+                    ItemStack.EMPTY);
 
         helper.assertTrue(forge.inventory.getStackInSlot(
                         TileEntityFusionPlasmaForge.SLOT_OUTPUT).is(weldedIron),
@@ -2991,7 +3128,7 @@ public final class HbmGameTestFunctions {
             helper.assertBlockProperty(seed, BlockMultiblockCore.FACING,
                     Direction.NORTH);
             helper.assertTrue(GameTestHelpers.blockEntity(helper, seed,
-                    TileEntityFusionTorus.class) != null,
+                            TileEntityFusionTorus.class) != null,
                     "Assembled torus has no controller");
             helper.assertTrue(helper.getBlockState(seed.offset(7, 0, 0)).getBlock() == block,
                     "Assembled torus did not fill its outer ring");
@@ -3001,7 +3138,9 @@ public final class HbmGameTestFunctions {
 
     // --- Watz power plant + the struct-core assembly framework ---
 
-    /** Builds the reactor's component shape around {@code seed}, which must be a struct core. */
+    /**
+     * Builds the reactor's component shape around {@code seed}, which must be a struct core.
+     */
     private static void buildWatzShape(GameTestHelper helper, BlockPos seed) {
         var struct = GameTestHelpers.blockEntity(helper, seed,
                 TileEntityWatzStruct.class);
@@ -3038,7 +3177,8 @@ public final class HbmGameTestFunctions {
         var watz = GameTestHelpers.blockEntity(helper, core,
                 TileEntityWatz.class);
         var ports = watz.getConPos();
-        helper.assertTrue(ports.size() == 10, "Watz must expose five intake and five outlet ports, found " + ports.size());
+        helper.assertTrue(ports.size() == 10,
+                "Watz must expose five intake and five outlet ports, found " + ports.size());
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.above(3)))
                 && p.getDir() == ForgeDirection.UP), "Missing centre coolant intake");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.below()))
@@ -3046,7 +3186,9 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    /** The whole struct ritual: build the shape, wait a second, get a reactor. */
+    /**
+     * The whole struct ritual: build the shape, wait a second, get a reactor.
+     */
     private static void watzStructAssembly(GameTestHelper helper) {
         var seed = new BlockPos(4, 1, 4);
         helper.setBlock(seed, ModMachineBlocks.struct_watz_core.get().defaultBlockState());
@@ -3068,7 +3210,9 @@ public final class HbmGameTestFunctions {
         });
     }
 
-    /** One wrong block must keep the seed a seed, however long it waits. */
+    /**
+     * One wrong block must keep the seed a seed, however long it waits.
+     */
     private static void structPartialNoAssembly(GameTestHelper helper) {
         var seed = new BlockPos(4, 1, 4);
         helper.setBlock(seed, ModMachineBlocks.struct_watz_core.get().defaultBlockState());
@@ -3115,13 +3259,13 @@ public final class HbmGameTestFunctions {
         var ports = List.of(reactor.getConPos());
         helper.assertTrue(ports.size() == 4, "ZIRNOX must expose four lateral duct ports");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.offset(3, 1, 0)))
-                        && p.getDir() == ForgeDirection.EAST), "Missing lower east port");
+                && p.getDir() == ForgeDirection.EAST), "Missing lower east port");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.offset(3, 3, 0)))
-                        && p.getDir() == ForgeDirection.EAST), "Missing upper east port");
+                && p.getDir() == ForgeDirection.EAST), "Missing upper east port");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.offset(-3, 1, 0)))
-                        && p.getDir() == ForgeDirection.WEST), "Missing lower west port");
+                && p.getDir() == ForgeDirection.WEST), "Missing lower west port");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.offset(-3, 3, 0)))
-                        && p.getDir() == ForgeDirection.WEST), "Missing upper west port");
+                && p.getDir() == ForgeDirection.WEST), "Missing upper west port");
         var lowerEastCell = helper.absolutePos(core.offset(2, 1, 0));
         helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), lowerEastCell.getX(), lowerEastCell.getY(),
                 lowerEastCell.getZ(), ForgeDirection.EAST), "Lower east shell must connect to its external duct");
@@ -3193,7 +3337,8 @@ public final class HbmGameTestFunctions {
         TileEntityReactorZirnox reactor = GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
         reactor.heat = TileEntityReactorZirnox.MAX_HEAT + 1;
-        TileEntityReactorZirnox.serverTick(helper.getLevel(), helper.absolutePos(core), reactor.getBlockState(), reactor);
+        TileEntityReactorZirnox.serverTick(helper.getLevel(), helper.absolutePos(core), reactor.getBlockState(),
+                reactor);
 
         helper.assertTrue(helper.getBlockState(core).getBlock() == ModMachineBlocks.zirnox_destroyed.get(),
                 "Meltdown did not form the destroyed ZIRNOX core");
@@ -3252,7 +3397,7 @@ public final class HbmGameTestFunctions {
                 position.getX(), position.getZ(), target, holder -> false)));
         helper.assertTrue(changed, "Biome section mutation did not report a change");
         helper.assertTrue(chunk.getNoiseBiome(position.getX() >> 2, position.getY() >> 2, position.getZ() >> 2)
-                        .is(ModBiomes.crater_inner),
+                               .is(ModBiomes.crater_inner),
                 "Biome section mutation did not write the requested holder");
 
         boolean preserved = Biomes.apply(chunk, List.of(new Biomes.Change(

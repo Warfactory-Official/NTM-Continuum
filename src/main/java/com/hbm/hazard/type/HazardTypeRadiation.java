@@ -1,6 +1,7 @@
 package com.hbm.hazard.type;
 
 import dev.golem.core.hook.Hook;
+
 import java.util.List;
 
 import com.hbm.config.GeneralConfig;
@@ -9,7 +10,9 @@ import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
+
 import java.util.function.ToDoubleFunction;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,7 +31,9 @@ public class HazardTypeRadiation implements IHazardType {
     public static final Hook<ToDoubleFunction<ItemStack>> STACK_RADIATION =
             Hook.notifying();
 
-    /** The sum of {@link #STACK_RADIATION} for {@code stack}; 0 with no listener. */
+    /**
+     * The sum of {@link #STACK_RADIATION} for {@code stack}; 0 with no listener.
+     */
     public static double stackRadiation(final ItemStack stack) {
         if (STACK_RADIATION.isEmpty()) return 0D;
         double extra = 0D;
@@ -64,18 +69,23 @@ public class HazardTypeRadiation implements IHazardType {
     }
 
     @Override
-    public void addHazardInformation(final Player player, final List<Component> list, double level, final ItemStack stack, final List<IHazardModifier> modifiers) {
+    public void addHazardInformation(final Player player, final List<Component> list, double level,
+                                     final ItemStack stack, final List<IHazardModifier> modifiers) {
 
         level = IHazardModifier.evalAllModifiers(stack, player, level, modifiers);
         level += stackRadiation(stack);
         if (level < 1e-5) return;
-        list.add(Component.literal("[").append(Component.translatable("trait.radioactive")).append(Component.literal("]")).withStyle(ChatFormatting.GREEN));
+        list.add(Component.literal("[").append(Component.translatable("trait.radioactive"))
+                          .append(Component.literal("]")).withStyle(ChatFormatting.GREEN));
         // 1.7 builds the text from a float level, floored to three places, with no space before the unit
         float rad = (float) level;
-        list.add(Component.literal(Math.floor(rad * 1000) / 1000 + "RAD/s").withStyle(ChatFormatting.YELLOW));
+        list.add(Component.translatable("desc.hbm.radiation.rate", Math.floor(rad * 1000) / 1000)
+                          .withStyle(ChatFormatting.YELLOW));
 
         if (stack.getCount() > 1) {
-            list.add(Component.literal("Stack: " + Math.floor(rad * 1000 * stack.getCount()) / 1000 + "RAD/s").withStyle(ChatFormatting.YELLOW));
+            list.add(Component.translatable("desc.hbm.radiation.stack_rate",
+                                      Component.translatable("desc.hbm.radiation.rate", Math.floor(rad * 1000 * stack.getCount()) / 1000))
+                              .withStyle(ChatFormatting.YELLOW));
         }
     }
 

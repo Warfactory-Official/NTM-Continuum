@@ -1,5 +1,7 @@
 package com.hbm.client.render;
 
+import dev.golem.core.world.ItemModels;
+
 //? if <26.1 {
 
 /*import com.google.gson.JsonElement;
@@ -511,7 +513,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
     public static boolean renderCustom(ItemStack stack, net.minecraft.world.item.ItemDisplayContext context, com.mojang.blaze3d.vertex.PoseStack poseStack,
                                  net.minecraft.client.renderer.MultiBufferSource buffers, int light, int overlay) {
         if (customModels.isEmpty()) return false;
-        CustomEntry entry = customModels.get(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()));
+        CustomEntry entry = customModels.get(ItemModels.id(stack.getItem()));
         if (entry == null) return false;
 
         // No slot clip, unlike the machines: every renderer here that draws the inventory is oversized (1.7 clipped

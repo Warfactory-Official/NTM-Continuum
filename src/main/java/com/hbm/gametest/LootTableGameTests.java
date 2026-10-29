@@ -10,11 +10,13 @@ import dev.golem.core.registry.Entities;
 import dev.golem.core.world.ChestLoot;
 import dev.golem.core.world.CompatEnchantments;
 import dev.golem.core.world.EntityLoot;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -41,7 +43,8 @@ import org.jspecify.annotations.Nullable;
  */
 public final class LootTableGameTests {
 
-    private LootTableGameTests() {}
+    private LootTableGameTests() {
+    }
 
     private static final int ROLLS = 4000;
 
@@ -55,9 +58,12 @@ public final class LootTableGameTests {
     public static final GameTests.Function MOB_TABLES =
             TESTS.function("loot_mob_tables_match_formulas", 200, () -> LootTableGameTests::mobTablesMatchFormulas);
 
-    public static void init() {}
+    public static void init() {
+    }
 
-    /** Every item pool has its table, which picks each item as often as the pool's weights say, in its count range. */
+    /**
+     * Every pool's table produces nonempty items at the frequency given by its weights and count ranges.
+     */
     public static void chestTablesMatchPools(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         Vec3 origin = Vec3.atCenterOf(helper.absolutePos(BlockPos.ZERO));
@@ -69,7 +75,7 @@ public final class LootTableGameTests {
                 failures.add(table + " missing");
                 continue;
             }
-            Map<Item, double[]> expected = new HashMap<>(); // item: probability, min count, max count
+            Map<Item, double[]> expected = new HashMap<>(); // item: nonempty probability, min count, max count
             int total = 0;
             for (ItemPool.Entry entry : ItemPool.getPool(pool)) total += entry.weight();
             for (ItemPool.Entry entry : ItemPool.getPool(pool)) {
@@ -84,6 +90,7 @@ public final class LootTableGameTests {
             Map<Item, int[]> seen = new HashMap<>();
             for (int roll = 0; roll < ROLLS; roll++) {
                 for (ItemStack stack : ChestLoot.rollUnsplit(level, table, origin, seeds.nextLong())) {
+                    if (stack.isEmpty()) continue;
                     double[] e = expected.get(stack.getItem());
                     if (e == null) {
                         failures.add(table + " rolled " + stack.getItem() + ", not in " + pool);
@@ -97,18 +104,23 @@ public final class LootTableGameTests {
                 double p = e.getValue()[0];
                 int count = seen.getOrDefault(e.getKey(), new int[1])[0];
                 if (Math.abs(count - p * ROLLS) > 6 * Math.sqrt(ROLLS * p * (1 - p)) + 2) {
-                    failures.add(table + " " + e.getKey() + " in " + count + " of " + ROLLS + " rolls, expected " + p * ROLLS);
+                    failures.add(
+                            table + " " + e.getKey() + " in " + count + " of " + ROLLS + " rolls, expected " + p * ROLLS);
                 }
             }
         }
-        helper.assertTrue(failures.isEmpty(), "chest tables differ from their item pools: " + failures);
+        helper.assertTrue(failures.isEmpty(),
+                "chest tables differ from their item pools: " + summarizeFailures(failures));
         helper.succeed();
     }
 
-    /** A structure fill puts the pool's items into the container, through the table. */
+    /**
+     * A structure fill puts the pool's items into the container, through the table.
+     */
     public static void structureFill(GameTestHelper helper) {
         SimpleContainer chest = new SimpleContainer(27);
-        PoolLoot.fill(helper.getLevel(), helper.absolutePos(BlockPos.ZERO), chest, "POOL_MACHINE_PARTS", RandomSource.create(7L), 10);
+        PoolLoot.fill(helper.getLevel(), helper.absolutePos(BlockPos.ZERO), chest, "POOL_MACHINE_PARTS",
+                RandomSource.create(7L), 10);
         helper.assertFalse(chest.isEmpty(), "a structure fill from POOL_MACHINE_PARTS left the chest empty");
         helper.succeed();
     }
@@ -124,7 +136,7 @@ public final class LootTableGameTests {
                 if (!ChestLoot.exists(level, PoolLoot.table(pool, draws))) missing.add(PoolLoot.table(pool, draws));
             }
         }
-        helper.assertTrue(missing.isEmpty(), "draw tables missing: " + missing);
+        helper.assertTrue(missing.isEmpty(), "draw tables missing: " + summarizeFailures(missing));
 
         RandomSource seeds = RandomSource.create(0x10075L);
         double one = 0, eight = 0;
@@ -155,7 +167,7 @@ public final class LootTableGameTests {
         ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
         DamageSource none = level.damageSources().generic();
 
-        for (int looting : new int[] {0, 3}) {
+        for (int looting : new int[]{0, 3}) {
             ItemStack sword = new ItemStack(Items.IRON_SWORD);
             CompatEnchantments.enchantLooting(level, sword, looting);
             player.setItemInHand(InteractionHand.MAIN_HAND, sword);
@@ -183,29 +195,34 @@ public final class LootTableGameTests {
             taint.expect(failures, "taint crab" + l, "hbm:coil_magnetized_tungsten", (5 + looting) / 200.0, 0, 1);
             roll(helper, "entity_tesla_crab", kill, player, false)
                     .expect(failures, "tesla crab" + l, "hbm:coil_copper", (5 + looting) / 200.0, 0, 1);
-            glyphid(helper, failures, "entity_glyphid", 1, looting, kill, player);
-            glyphid(helper, failures, "entity_glyphid_scout", 0, looting, kill, player);
-            glyphid(helper, failures, "entity_glyphid_brawler", 1, looting, kill, player);
-            glyphid(helper, failures, "entity_glyphid_digger", 1, looting, kill, player);
-            glyphid(helper, failures, "entity_glyphid_bombardier", 1, looting, kill, player);
-            glyphid(helper, failures, "entity_glyphid_blaster", 1, looting, kill, player);
-            glyphid(helper, failures, "entity_glyphid_behemoth", 1, looting, kill, player);
-            glyphid(helper, failures, "entity_glyphid_brenda", 2, looting, kill, player);
-            glyphid(helper, failures, "entity_glyphid_nuclear", 2, looting, kill, player);
+            glyphid(helper, failures, "entity_glyphid", 1, true, looting, kill, player);
+            glyphid(helper, failures, "entity_glyphid_scout", 0, true, looting, kill, player);
+            glyphid(helper, failures, "entity_glyphid_brawler", 1, true, looting, kill, player);
+            glyphid(helper, failures, "entity_glyphid_digger", 1, true, looting, kill, player);
+            glyphid(helper, failures, "entity_glyphid_bombardier", 1, true, looting, kill, player);
+            glyphid(helper, failures, "entity_glyphid_blaster", 1, true, looting, kill, player);
+            glyphid(helper, failures, "entity_glyphid_behemoth", 1, true, looting, kill, player);
+            glyphid(helper, failures, "entity_glyphid_brenda", 2, false, looting, kill, player);
+            glyphid(helper, failures, "entity_glyphid_nuclear", 2, false, looting, kill, player);
         }
 
         // no player: the player-only drops stop, the gold creeper drops 3
-        roll(helper, "entity_mob_gold_creeper", none, null, false).expect(failures, "gold creeper unattended", "hbm:crystal_gold", 3, 3, 3);
-        roll(helper, "entity_radiation_blaze", none, null, false).expect(failures, "rad beast unattended", "hbm:nugget_polonium", 0, 0, 0);
-        roll(helper, "entity_taint_crab", none, null, false).expect(failures, "taint crab unattended", "hbm:coil_magnetized_tungsten", 0, 0, 0);
-        roll(helper, "entity_tesla_crab", none, null, false).expect(failures, "tesla crab unattended", "hbm:coil_copper", 0, 0, 0);
+        roll(helper, "entity_mob_gold_creeper", none, null, false).expect(failures, "gold creeper unattended",
+                "hbm:crystal_gold", 3, 3, 3);
+        roll(helper, "entity_radiation_blaze", none, null, false).expect(failures, "rad beast unattended",
+                "hbm:nugget_polonium", 0, 0, 0);
+        roll(helper, "entity_taint_crab", none, null, false).expect(failures, "taint crab unattended",
+                "hbm:coil_magnetized_tungsten", 0, 0, 0);
+        roll(helper, "entity_tesla_crab", none, null, false).expect(failures, "tesla crab unattended",
+                "hbm:coil_copper", 0, 0, 0);
 
         // a burning duck drops cooked chicken; a skeleton's kill drops a music disc
         Rolls burning = roll(helper, "entity_fucc_a_ducc", none, null, true);
         burning.expect(failures, "burning duck", "minecraft:cooked_chicken", 1, 1, 1);
         burning.expect(failures, "burning duck", "minecraft:chicken", 0, 0, 0);
         LivingEntity skeleton = (LivingEntity) Entities.createDetached(EntityType.SKELETON, level);
-        Rolls shot = roll(helper, "entity_mob_volatile_creeper", level.damageSources().mobAttack(skeleton), null, false);
+        Rolls shot = roll(helper, "entity_mob_volatile_creeper", level.damageSources().mobAttack(skeleton), null,
+                false);
         shot.expect(failures, "volatile creeper", "hbm:sulfur", 3, 2, 4);
         shot.expect(failures, "volatile creeper", "hbm:stick_tnt", 1.5, 1, 2);
         int discs = 0;
@@ -214,26 +231,33 @@ public final class LootTableGameTests {
         }
         if (discs != ROLLS) failures.add("skeleton-killed creeper dropped " + discs + " discs in " + ROLLS + " deaths");
 
-        helper.assertTrue(failures.isEmpty(), "mob loot differs from the 1.7 formulas: " + failures);
+        helper.assertTrue(failures.isEmpty(), "mob loot differs from the 1.7 formulas: " + summarizeFailures(failures));
         helper.succeed();
     }
 
     /**
-     * Half the time {@code scale * 2 + looting} meat, grilled when the glyphid burns. 1.7 {@code isBurning()} is false
-     * for a fire-immune mob, so Brenda and the nuclear glyphid drop raw meat even when set alight.
+     * Half the time {@code scale * 2 + looting} meat; fire-immune variants retain raw meat with fire ticks set.
      */
-    private static void glyphid(GameTestHelper helper, List<String> failures, String id, int scale, int looting,
+    private static void glyphid(GameTestHelper helper, List<String> failures, String id, int scale, boolean burnable,
+                                int looting,
                                 DamageSource kill, ServerPlayer player) {
         int meat = scale * 2 + looting;
-        roll(helper, id, kill, player, false).expect(failures, id + " looting " + looting, "hbm:glyphid_meat", meat / 2.0, 0, meat);
+        roll(helper, id, kill, player, false).expect(failures, id + " looting " + looting, "hbm:glyphid_meat",
+                meat / 2.0, 0, meat);
         Rolls burning = roll(helper, id, kill, player, true);
-        boolean burns = !Entities.createDetached(Entities.byId(Constants.MOD_ID + ":" + id), helper.getLevel()).fireImmune();
-        String cooked = burns ? "hbm:glyphid_meat_grilled" : "hbm:glyphid_meat";
-        burning.expect(failures, id + " burning", cooked, meat / 2.0, 0, meat);
-        burning.expect(failures, id + " burning", burns ? "hbm:glyphid_meat" : "hbm:glyphid_meat_grilled", 0, 0, 0);
+        burning.expect(failures, id + " with fire ticks", "hbm:glyphid_meat_grilled", burnable ? meat / 2.0 : 0, 0,
+                burnable ? meat : 0);
+        burning.expect(failures, id + " with fire ticks", "hbm:glyphid_meat", burnable ? 0 : meat / 2.0, 0,
+                burnable ? 0 : meat);
     }
 
-    private static Rolls roll(GameTestHelper helper, String id, DamageSource source, @Nullable ServerPlayer player, boolean burning) {
+    private static String summarizeFailures(List<String> failures) {
+        int shown = Math.min(failures.size(), 10);
+        return failures.size() + " failures; sample " + failures.subList(0, shown);
+    }
+
+    private static Rolls roll(GameTestHelper helper, String id, DamageSource source, @Nullable ServerPlayer player,
+                              boolean burning) {
         ServerLevel level = helper.getLevel();
         LivingEntity victim = (LivingEntity) Entities.createDetached(Entities.byId(Constants.MOD_ID + ":" + id), level);
         Vec3 at = Vec3.atCenterOf(helper.absolutePos(new BlockPos(1, 2, 1)));
@@ -241,7 +265,8 @@ public final class LootTableGameTests {
         if (burning) victim.setRemainingFireTicks(100);
         Rolls rolls = new Rolls();
         for (int roll = 0; roll < ROLLS; roll++) {
-            for (ItemStack stack : EntityLoot.roll(level, Constants.MOD_ID + ":entities/" + id, victim, source, player)) {
+            for (ItemStack stack : EntityLoot.roll(level, Constants.MOD_ID + ":entities/" + id, victim, source,
+                    player)) {
                 rolls.counts.computeIfAbsent(stack.getItem(), k -> new int[ROLLS])[roll] += stack.getCount();
             }
         }
@@ -265,8 +290,10 @@ public final class LootTableGameTests {
             }
             double observed = sum / ROLLS;
             double error = Math.sqrt(Math.max(squares / ROLLS - observed * observed, 0) / ROLLS);
-            if (Math.abs(observed - mean) > 6 * error + 0.01) failures.add(label + " " + item + " mean " + observed + ", expected " + mean);
-            if (low < min || high > max) failures.add(label + " " + item + " ranged " + low + ".." + high + ", expected " + min + ".." + max);
+            if (Math.abs(observed - mean) > 6 * error + 0.01)
+                failures.add(label + " " + item + " mean " + observed + ", expected " + mean);
+            if (low < min || high > max)
+                failures.add(label + " " + item + " ranged " + low + ".." + high + ", expected " + min + ".." + max);
         }
     }
 }

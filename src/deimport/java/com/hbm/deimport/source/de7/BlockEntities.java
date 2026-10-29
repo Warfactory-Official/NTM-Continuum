@@ -3,12 +3,14 @@ package com.hbm.deimport.source.de7;
 import com.hbm.deimport.engine.Ctx;
 import com.hbm.delegacy.de7.Tables;
 import com.hbm.delegacy.de7.Walker;
+
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.IntTag;
@@ -75,7 +77,8 @@ public final class BlockEntities {
             Map.entry("hbm:battery", (tag, ctx) -> ordinalToName(tag, "priority", PRIORITY)),
             Map.entry("hbm:battery_socket", (tag, ctx) -> ordinalToName(tag, "priority", PRIORITY)),
             Map.entry("hbm:rbmk_control_auto", (tag, ctx) -> ordinalToName(tag, "function", RBMK_FUNCTION)),
-            Map.entry("hbm:reactor_remote_control", (tag, ctx) -> ordinalToName(tag, "function", new String[]{"LINEAR", "QUAD", "LOG"})),
+            Map.entry("hbm:reactor_remote_control",
+                    (tag, ctx) -> ordinalToName(tag, "function", new String[]{"LINEAR", "QUAD", "LOG"})),
             Map.entry("hbm:pwr_controller", BlockEntities::pwr),
             Map.entry("hbm:fluid_drain", (tag, ctx) -> rename(tag, "tank", "t")),
             Map.entry("hbm:refueler", (tag, ctx) -> rename(tag, "tank", "t")),
@@ -86,7 +89,8 @@ public final class BlockEntities {
             Map.entry("hbm:pile_vent", (tag, ctx) -> rename(tag, "tank", "t")),
             Map.entry("hbm:silex", BlockEntities::silex),
             Map.entry("hbm:electrolyser", (tag, ctx) -> {
-                renames(tag, "t0", "tank0", "t1", "tank1", "t2", "tank2", "t3", "tank3", "progressOre", "progressMetal");
+                renames(tag, "t0", "tank0", "t1", "tank1", "t2", "tank2", "t3", "tank3", "progressOre",
+                        "progressMetal");
                 // derived: Continuum recomputes both process times from the installed upgrades
                 tag.remove("processFluidTime");
                 tag.remove("processOreTime");
@@ -109,8 +113,9 @@ public final class BlockEntities {
             Map.entry("hbm:machine_shredder", (tag, ctx) -> rename(tag, "powerTime", "power")),
             Map.entry("hbm:machine_turbofan", (tag, ctx) -> rename(tag, "power", "powerTime")),
             Map.entry("hbm:machine_field", (tag, ctx) -> rename(tag, "power", "powerTime")),
-            Map.entry("hbm:wood_burner", (tag, ctx) -> renames(tag, "ashWood", "ashLevelWood", "ashCoal", "ashLevelCoal",
-                    "ashMisc", "ashLevelMisc")),
+            Map.entry("hbm:wood_burner",
+                    (tag, ctx) -> renames(tag, "ashWood", "ashLevelWood", "ashCoal", "ashLevelCoal",
+                            "ashMisc", "ashLevelMisc")),
             Map.entry("hbm:coker", (tag, ctx) -> rename(tag, "progress", "prog")),
             Map.entry("hbm:pyrooven", (tag, ctx) -> rename(tag, "progress", "prog")),
             Map.entry("hbm:rotary_furnace", (tag, ctx) -> material(tag, "outType", ctx)),
@@ -140,7 +145,6 @@ public final class BlockEntities {
             }),
             Map.entry("hbm:foundry_tank", (tag, ctx) -> material(tag, "type", ctx)),
             Map.entry("hbm:foundry_slag", (tag, ctx) -> material(tag, "mat", ctx)),
-            Map.entry("hbm:teleblock", BlockEntities::teleporter),
             Map.entry("hbm:piston_inserter", (tag, ctx) -> firstSlotTo(tag, "inventory", "stack")),
             Map.entry("hbm:pile_loader", (tag, ctx) -> {
                 firstSlotTo(tag, "inventory", "stack");
@@ -156,7 +160,8 @@ public final class BlockEntities {
             Map.entry("hbm:pa_source", BlockEntities::particleSource),
             Map.entry("hbm:rbmk_console", (tag, ctx) -> {
                 String[] screens = {"NONE", "COL_TEMP", "ROD_EXTRACTION", "FUEL_DEPLETION", "FUEL_POISON", "FUEL_TEMP"};
-                for (String key : List.copyOf(tag.getAllKeys())) if (key.matches("t\\d+")) ordinalToName(tag, key, screens);
+                for (String key : List.copyOf(tag.getAllKeys()))
+                    if (key.matches("t\\d+")) ordinalToName(tag, key, screens);
             }),
             Map.entry("hbm:rbmk_control", (tag, ctx) -> {
                 if (tag.getInt("color") < 0) tag.remove("color");
@@ -165,7 +170,8 @@ public final class BlockEntities {
             Map.entry("hbm:rbmk_cooler", (tag, ctx) -> renames(tag, "t0", "cold", "t1", "hot")),
             Map.entry("hbm:pipe_pump", BlockEntities::pump),
             Map.entry("hbm:pipe_paintable", (tag, ctx) -> {
-                if (tag.get("camo") instanceof CompoundTag camo) tag.put("paint", BlockStates.convert(camo, ctx.target).entry());
+                if (tag.get("camo") instanceof CompoundTag camo)
+                    tag.put("paint", BlockStates.convert(camo, ctx.target).entry());
                 tag.remove("camo");
             }),
             Map.entry("hbm:rtty_autocal", (tag, ctx) -> {
@@ -174,7 +180,8 @@ public final class BlockEntities {
                 for (int i = 0; i < stack.size(); i++) tag.putString("st" + i, stack.getString(i));
                 tag.remove("stack");
             }),
-            Map.entry("hbm:rtty_controller", (tag, ctx) -> renames(tag, "p", "polling", "c", "channel", "r", "receiving")),
+            Map.entry("hbm:rtty_controller",
+                    (tag, ctx) -> renames(tag, "p", "polling", "c", "channel", "r", "receiving")),
             Map.entry("hbm:rtty_counter", BlockEntities::radioTorch),
             Map.entry("hbm:rtty_logic", (tag, ctx) -> {
                 renames(tag, "p", "polling", "d", "descending", "l", "lastState", "u", "lastUpdate", "c", "channel");
@@ -223,9 +230,12 @@ public final class BlockEntities {
                 pseudoTank(tag, "outputTank");
             }));
 
-    private BlockEntities() {}
+    private BlockEntities() {
+    }
 
-    /** Converts {@code de} in place for a block whose Continuum block entity is {@code type}; a null walker leaves its stacks. */
+    /**
+     * Converts {@code de} in place for a block whose Continuum block entity is {@code type}; a null walker leaves its stacks.
+     */
     public static void convert(CompoundTag de, String type, Ctx ctx, @Nullable Walker walker, String where) {
         String deId = de.getString("id");
         de.putString("id", type);
@@ -241,7 +251,9 @@ public final class BlockEntities {
         ctx.report.count("block entities converted");
     }
 
-    /** DE's {@code [id, amount, id, amount, ...]} to Continuum's {@code [{mat, amount}]}; an unknown material is parked. */
+    /**
+     * DE's {@code [id, amount, id, amount, ...]} to Continuum's {@code [{mat, amount}]}; an unknown material is parked.
+     */
     private static void materialPairs(CompoundTag tag, String key, Ctx ctx) {
         if (!tag.contains(key, Tag.TAG_INT_ARRAY)) return;
         int[] pairs = tag.getIntArray(key);
@@ -266,7 +278,8 @@ public final class BlockEntities {
         for (int i = 0; i < mats.length && i < amounts.length; i++) {
             String name = Tables.get().material(mats[i]);
             if (name == null) {
-                ctx.parking.park("material", ctx.where("liquidMats"), Integer.toString(mats[i]), IntTag.valueOf(amounts[i]));
+                ctx.parking.park("material", ctx.where("liquidMats"), Integer.toString(mats[i]),
+                        IntTag.valueOf(amounts[i]));
                 continue;
             }
             tag.putString("m" + count, name);
@@ -278,7 +291,9 @@ public final class BlockEntities {
         tag.remove("liquidAmounts");
     }
 
-    /** DE keeps the pellet each Watz slot is locked to as a stack; Continuum as the pellet's item id. */
+    /**
+     * DE keeps the pellet each Watz slot is locked to as a stack; Continuum as the pellet's item id.
+     */
     private static void watzLocks(CompoundTag tag, Ctx ctx) {
         for (Tag t : tag.getCompound("locks").getList("Items", Tag.TAG_COMPOUND)) {
             CompoundTag stack = (CompoundTag) t;
@@ -287,7 +302,9 @@ public final class BlockEntities {
         tag.remove("locks");
     }
 
-    /** DE's fuel and oxidizer tanks are Continuum's {@code t0} and {@code t1}; DE's reload counter is Continuum's delay. */
+    /**
+     * DE's fuel and oxidizer tanks are Continuum's {@code t0} and {@code t1}; DE's reload counter is Continuum's delay.
+     */
     private static void launchPad(CompoundTag tag, Ctx ctx) {
         rename(tag, "fuel", "t0");
         rename(tag, "oxidizer", "t1");
@@ -310,7 +327,9 @@ public final class BlockEntities {
         tag.remove("redstone");
     }
 
-    /** DE's material id (-1 for none) to Continuum's name; an id with no name is parked. */
+    /**
+     * DE's material id (-1 for none) to Continuum's name; an id with no name is parked.
+     */
     private static void material(CompoundTag tag, String key, Ctx ctx) {
         if (!tag.contains(key, Tag.TAG_ANY_NUMERIC)) return;
         int id = tag.getInt(key);
@@ -321,7 +340,9 @@ public final class BlockEntities {
         else tag.putString(key, name);
     }
 
-    /** DE's lists of {@code [x, y, z]} to one flat array of triples. */
+    /**
+     * DE's lists of {@code [x, y, z]} to one flat array of triples.
+     */
     private static void flattenTriples(CompoundTag tag, String key) {
         if (!(tag.get(key) instanceof ListTag list)) return;
         List<Integer> out = new ArrayList<>();
@@ -329,14 +350,18 @@ public final class BlockEntities {
         tag.putIntArray(key, out);
     }
 
-    /** A DE list to Continuum's numbered keys {@code prefix0, prefix1, ...}. */
+    /**
+     * A DE list to Continuum's numbered keys {@code prefix0, prefix1, ...}.
+     */
     private static void spread(CompoundTag tag, String key, String prefix) {
         if (!(tag.get(key) instanceof ListTag list)) return;
         for (int i = 0; i < list.size(); i++) tag.put(prefix + i, list.get(i));
         tag.remove(key);
     }
 
-    /** A one-slot DE inventory to Continuum's single stack. */
+    /**
+     * A one-slot DE inventory to Continuum's single stack.
+     */
     private static void firstSlotTo(CompoundTag tag, String inventory, String to) {
         ListTag items = tag.getCompound(inventory).getList("Items", Tag.TAG_COMPOUND);
         if (!items.isEmpty()) tag.put(to, stripSlot(items.getCompound(0)));
@@ -356,7 +381,9 @@ public final class BlockEntities {
         tag.remove("currentFluid");
     }
 
-    /** DE saves the mixer's choice as an index into the recipes for its output fluid; Continuum by the recipe's name. */
+    /**
+     * DE saves the mixer's choice as an index into the recipes for its output fluid; Continuum by the recipe's name.
+     */
     private static void mixer(CompoundTag tag, Ctx ctx) {
         renames(tag, "t0", "tank0", "t1", "tank1", "t2", "tank2");
         if (!tag.contains("recipe", Tag.TAG_ANY_NUMERIC)) return;
@@ -370,13 +397,9 @@ public final class BlockEntities {
         if (name != null) tag.putString("recipe", name);
     }
 
-    /** DE's {@code target} is already the {@code GlobalPos} form Continuum saves; a malformed one is dropped. */
-    private static void teleporter(CompoundTag tag, Ctx ctx) {
-        if (!(tag.get("target") instanceof CompoundTag target)) return;
-        if (target.getIntArray("pos").length != 3 || target.getString("dimension").isEmpty()) tag.remove("target");
-    }
-
-    /** DE numbers every channel's fields ({@code f0_x}, {@code f0item2}); Continuum keeps one list per channel kind. */
+    /**
+     * DE numbers every channel's fields ({@code f0_x}, {@code f0item2}); Continuum keeps one list per channel kind.
+     */
     private static void pileCore(CompoundTag tag, Ctx ctx) {
         ordinalToName(tag, "orientation", new String[]{"NORTH_SOUTH", "EAST_WEST", "NEITHER"});
         tag.put("fuelChannels", pileChannels(tag, "f", "fc", List.of("heat", "neutrons")));
@@ -426,7 +449,9 @@ public final class BlockEntities {
         tag.remove("processing");
     }
 
-    /** DE's Base64 height map to Continuum's four bytes per int. */
+    /**
+     * DE's Base64 height map to Continuum's four bytes per int.
+     */
     private static void radarMap(CompoundTag tag, Ctx ctx) {
         if (!tag.contains("map", Tag.TAG_STRING)) return;
         byte[] bytes = Base64.getDecoder().decode(tag.getString("map"));
@@ -444,11 +469,14 @@ public final class BlockEntities {
             particle.putInt("z", pos[2]);
         }
         particle.remove("pos");
-        if (particle.contains("dir", Tag.TAG_ANY_NUMERIC)) particle.putString("dir", DIRECTIONS[Math.floorMod(particle.getInt("dir"), 6)]);
+        if (particle.contains("dir", Tag.TAG_ANY_NUMERIC))
+            particle.putString("dir", DIRECTIONS[Math.floorMod(particle.getInt("dir"), 6)]);
         tag.putBoolean("hasParticle", true);
     }
 
-    /** DE's pump keeps fluid, pressure, rate and stock loose; Continuum one tank {@code t} sized to the rate. */
+    /**
+     * DE's pump keeps fluid, pressure, rate and stock loose; Continuum one tank {@code t} sized to the rate.
+     */
     private static void pump(CompoundTag tag, Ctx ctx) {
         int rate = tag.getInt("rate");
         tag.putInt("buffer", rate);
@@ -465,7 +493,9 @@ public final class BlockEntities {
         for (int i = 0; i < 16; i++) rename(tag, "m" + i, "mapping" + i);
     }
 
-    /** DE names the concrete in a rebar by block id; Continuum holds that block's item. */
+    /**
+     * DE names the concrete in a rebar by block id; Continuum holds that block's item.
+     */
     private static void rebar(CompoundTag tag, Ctx ctx) {
         if (!tag.contains("block", Tag.TAG_STRING)) return;
         CompoundTag probe = new CompoundTag();
@@ -493,14 +523,19 @@ public final class BlockEntities {
         tag.put("lastItems", out);
     }
 
-    /** DE's gas centrifuge tank {@code {fill, stage}} to Continuum's {@code k} and upper-case {@code k_type}. */
+    /**
+     * DE's gas centrifuge tank {@code {fill, stage}} to Continuum's {@code k} and upper-case {@code k_type}.
+     */
     private static void pseudoTank(CompoundTag tag, String key) {
         if (!(tag.get(key) instanceof CompoundTag tank)) return;
         tag.putInt(key, tank.getInt("fill"));
-        tag.putString(key + "_type", tank.contains("stage") ? tank.getString("stage").toUpperCase(Locale.ROOT) : "NONE");
+        tag.putString(key + "_type",
+                tank.contains("stage") ? tank.getString("stage").toUpperCase(Locale.ROOT) : "NONE");
     }
 
-    /** The stacks a block entity holds, for a refund when its block has no Continuum counterpart. */
+    /**
+     * The stacks a block entity holds, for a refund when its block has no Continuum counterpart.
+     */
     public static List<CompoundTag> contents(CompoundTag de) {
         List<CompoundTag> out = new ArrayList<>();
         collect(de, out);
@@ -530,10 +565,13 @@ public final class BlockEntities {
         return copy;
     }
 
-    /** DE nests {@code {fill, capacity, pressure, type, pin, held}}; Continuum writes {@code k, k_max, k_type, k_p}. */
+    /**
+     * DE nests {@code {fill, capacity, pressure, type, pin, held}}; Continuum writes {@code k, k_max, k_type, k_p}.
+     */
     static void flattenTanks(CompoundTag tag) {
         for (String key : new ArrayList<>(tag.getAllKeys())) {
-            if (!(tag.get(key) instanceof CompoundTag tank) || !tank.contains("fill") || !tank.contains("capacity")) continue;
+            if (!(tag.get(key) instanceof CompoundTag tank) || !tank.contains("fill") || !tank.contains("capacity"))
+                continue;
             String fluid = !tank.getString("held").isEmpty() ? tank.getString("held")
                     : !tank.getString("type").isEmpty() ? tank.getString("type") : tank.getString("pin");
             int fill = tank.getInt("fill");
@@ -551,14 +589,18 @@ public final class BlockEntities {
         tag.remove(from);
     }
 
-    /** Continuum saves enums by lower-case name ({@code SavedIds.putEnum}) and reads them in any case. */
+    /**
+     * Continuum saves enums by lower-case name ({@code SavedIds.putEnum}) and reads them in any case.
+     */
     private static void ordinalToName(CompoundTag tag, String key, String[] names) {
         if (!tag.contains(key, Tag.TAG_ANY_NUMERIC)) return;
         int i = tag.getInt(key);
         tag.putString(key, names[Math.floorMod(i, names.length)].toLowerCase(Locale.ROOT));
     }
 
-    /** As {@link #ordinalToName} in lower case; a negative ordinal (none) removes the key. */
+    /**
+     * As {@link #ordinalToName} in lower case; a negative ordinal (none) removes the key.
+     */
     private static void ordinalToLower(CompoundTag tag, String key, String[] names) {
         if (!tag.contains(key, Tag.TAG_ANY_NUMERIC)) return;
         int i = tag.getInt(key);

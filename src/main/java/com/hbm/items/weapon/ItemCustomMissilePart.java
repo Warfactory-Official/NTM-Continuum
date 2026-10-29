@@ -1,5 +1,7 @@
 package com.hbm.items.weapon;
 
+import java.util.Set;
+
 import com.hbm.api.registry.NamedRegistry;
 import com.hbm.client.ClientEffects;
 import com.hbm.entity.missile.EntityMissileCustom;
@@ -11,21 +13,35 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
+
 import java.util.List;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
 
+import dev.golem.core.hook.Hook;
+
 /**
  * One assembly part of a custom missile - chip, warhead, fuselage, fins or thruster. Every distinct stat combination
  * is its own Item; the builder call in ModItems decides which of the five it is and what its attribute row holds.
- *
+ * <p>
  * 1.7 kept a {@code HashMap<Integer, ItemCustomMissilePart> parts} so it could map a datawatcher-synced numeric item
  * id back to the part. 26.1 syncs the ItemStack itself, so the map has no callers and is dropped.
  */
 public class ItemCustomMissilePart extends CompatItem {
+
+    @FunctionalInterface
+    public interface Description {
+        boolean describe(ItemCustomMissilePart part, Consumer<Component> output);
+    }
+
+    public static final Hook<Description> DESCRIBE = Hook.of(listeners -> (part, output) -> {
+        for (var listener : listeners) if (listener.describe(part, output)) return true;
+        return false;
+    });
 
     public PartType type;
     public PartSize top;
@@ -39,12 +55,25 @@ public class ItemCustomMissilePart extends CompatItem {
      * three unset, exactly as 1.7 left the chips out of that table.
      */
     public float height;
+    public float guiHeight;
     public @Nullable Identifier mesh;
     public @Nullable Identifier skin;
 
     private String title;
     private String author;
     private String witty;
+
+    public @Nullable String title() {
+        return title;
+    }
+
+    public @Nullable String author() {
+        return author;
+    }
+
+    public @Nullable String witty() {
+        return witty;
+    }
 
     /**
      * Untyped attribute row, indexed exactly as 1.7 indexed it so the assembler and the missile read the same slots:
@@ -73,9 +102,13 @@ public class ItemCustomMissilePart extends CompatItem {
 
     public enum PartSize {
 
-        /** chips fit anything */
+        /**
+         * chips fit anything
+         */
         ANY,
-        /** missile tips and thrusters cap the stack */
+        /**
+         * missile tips and thrusters cap the stack
+         */
         NONE,
         SIZE_10,
         SIZE_15,
@@ -83,11 +116,16 @@ public class ItemCustomMissilePart extends CompatItem {
 
         public Component getDisplay() {
             switch (this) {
-                case ANY: return Component.translatable("item.missile.part.size.any");
-                case SIZE_10: return Component.literal("1.0m");
-                case SIZE_15: return Component.literal("1.5m");
-                case SIZE_20: return Component.literal("2.0m");
-                default: return Component.translatable("item.missile.part.size.none");
+                case ANY:
+                    return Component.translatable("item.missile.part.size.any");
+                case SIZE_10:
+                    return Component.literal("1.0m");
+                case SIZE_15:
+                    return Component.literal("1.5m");
+                case SIZE_20:
+                    return Component.literal("2.0m");
+                default:
+                    return Component.translatable("item.missile.part.size.none");
             }
         }
     }
@@ -123,11 +161,17 @@ public class ItemCustomMissilePart extends CompatItem {
         private final String name;
         private final java.util.function.Supplier<Component> display;
 
-        /** Overrides that type's impact effect. Only runs serverside */
+        /**
+         * Overrides that type's impact effect. Only runs serverside
+         */
         public Consumer<EntityMissileCustom> impactCustom = null;
-        /** Runs at the beginning of the missile's update cycle, both client and serverside. */
+        /**
+         * Runs at the beginning of the missile's update cycle, both client and serverside.
+         */
         public Consumer<EntityMissileCustom> updateCustom = null;
-        /** Override for the warhead's name in the missile description */
+        /**
+         * Override for the warhead's name in the missile description
+         */
         public String labelCustom = null;
 
         private WarheadType(String name, java.util.function.Supplier<Component> display) {
@@ -144,7 +188,8 @@ public class ItemCustomMissilePart extends CompatItem {
          * it does when the missile hits (server) and each tick (both sides, may be null).
          */
         public static WarheadType register(String name, java.util.function.Supplier<Component> display,
-                                           Consumer<EntityMissileCustom> impact, @Nullable Consumer<EntityMissileCustom> update) {
+                                           Consumer<EntityMissileCustom> impact,
+                                           @Nullable Consumer<EntityMissileCustom> update) {
             WarheadType type = new WarheadType(name, display);
             type.impactCustom = impact;
             type.updateCustom = update;
@@ -197,7 +242,9 @@ public class ItemCustomMissilePart extends CompatItem {
         private final String name;
         private final String key;
         private final ChatFormatting color;
-        /** The plume a missile burning this leaves; null for none. */
+        /**
+         * The plume a missile burning this leaves; null for none.
+         */
         public final ClientEffects.@Nullable Contrail contrail;
         /**
          * What the custom launcher's two tanks hold for it (1.7 {@code TileEntityLaunchTable.updateTypes}): the fuel
@@ -229,7 +276,9 @@ public class ItemCustomMissilePart extends CompatItem {
             return REGISTRY.register(new FuelType(name, key, color, contrail, fuel, oxidizer));
         }
 
-        /** Burns from the launcher's solid-fuel store (1.7 {@code SOLID}). */
+        /**
+         * Burns from the launcher's solid-fuel store (1.7 {@code SOLID}).
+         */
         public boolean solid() {
             return fuel == null;
         }
@@ -311,10 +360,34 @@ public class ItemCustomMissilePart extends CompatItem {
     }
 
     public ItemCustomMissilePart setAssembly(float height, Identifier mesh, Identifier skin) {
+        return setAssembly(height, height, mesh, skin);
+    }
+
+    public ItemCustomMissilePart setAssembly(float height, float guiHeight, Identifier mesh, Identifier skin) {
         this.height = height;
+        this.guiHeight = guiHeight;
         this.mesh = mesh;
         this.skin = skin;
         return this;
+    }
+
+    private static Set<Identifier> vertexNormalMeshes = Set.of();
+    private static boolean normalPolicyInstalled;
+
+    public static void configureVertexNormals(Set<Identifier> meshes) {
+        vertexNormalMeshes = Set.copyOf(meshes);
+        normalPolicyInstalled = true;
+    }
+
+    public static Set<Identifier> vertexNormalMeshes() {
+        return vertexNormalMeshes;
+    }
+
+    /**
+     * Without an addon policy, retain the native renderer's supplied OBJ normals.
+     */
+    public static boolean useVertexNormals(Identifier mesh) {
+        return !normalPolicyInstalled || vertexNormalMeshes.contains(mesh);
     }
 
     public ItemCustomMissilePart setAuthor(String author) {
@@ -377,7 +450,9 @@ public class ItemCustomMissilePart extends CompatItem {
         return this.type == PartType.CHIP || this.type == PartType.FINS ? (Float) this.attributes[0] : 0F;
     }
 
-    /** The part carried by this stack, or null if the stack is empty or holds something else. */
+    /**
+     * The part carried by this stack, or null if the stack is empty or holds something else.
+     */
     public static ItemCustomMissilePart part(ItemStack stack) {
         return stack != null && stack.getItem() instanceof ItemCustomMissilePart part ? part : null;
     }
@@ -385,6 +460,8 @@ public class ItemCustomMissilePart extends CompatItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
+
+        if (DESCRIBE.invoker().describe(this, tooltip::add)) return;
 
         if (this.title != null) {
             tooltip.add(Component.literal("\"" + this.title + "\"").withStyle(ChatFormatting.DARK_PURPLE));
@@ -429,11 +506,11 @@ public class ItemCustomMissilePart extends CompatItem {
         // 1.7 indented the byline and the witty line with three spaces
         if (this.author != null) {
             tooltip.add(Component.literal("   ").append(Component.translatable("item.missile.part.by"))
-                                  .append(" " + this.author).withStyle(ChatFormatting.WHITE));
+                                 .append(" " + this.author).withStyle(ChatFormatting.WHITE));
         }
         if (this.witty != null) {
             tooltip.add(Component.literal("   \"" + this.witty + "\"")
-                                  .withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
+                                 .withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
         }
     }
 
@@ -441,7 +518,7 @@ public class ItemCustomMissilePart extends CompatItem {
      * 1.7 {@code BOLD + key + ": " + GRAY + value}. 1.7's tooltip renderer prefixed every line after the name
      * with gray, so the bold key reads gray too; the value's own colour code, where it has one, wins.
      */
-    static Component stat(String key, Component value) {
+    public static Component stat(String key, Component value) {
         return Component.translatable(key.contains(".") ? key : "item.missile.part." + key).append(": ")
                         .withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD)
                         .append(value.copy().withStyle(style -> style.getColor() == null

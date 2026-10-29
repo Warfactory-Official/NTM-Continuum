@@ -1,12 +1,18 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.api.block.IToolable;
+import com.hbm.tileentity.machine.PlushiePress;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -21,13 +27,15 @@ import org.jspecify.annotations.Nullable;
  * <b>furnace fuel</b> (no power connection), so it needs no {@code IEnergyConnectorBlock}. Right-click
  * any part opens the menu via the core's menu.
  */
-public class MachinePress extends BlockMultiblockMachine implements WorldlyContainerHolder {
+public class MachinePress extends BlockMultiblockMachine implements WorldlyContainerHolder, IToolable {
 
     public MachinePress(Properties properties) {
         super(properties);
     }
 
-    /** Any face of the column routes hoppers/pipes to the core's sided inventory. */
+    /**
+     * Any face of the column routes hoppers/pipes to the core's sided inventory.
+     */
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
@@ -48,5 +56,11 @@ public class MachinePress extends BlockMultiblockMachine implements WorldlyConta
     @Override
     public int getOffset() {
         return 0;
+    }
+
+    @Override
+    public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit,
+                           InteractionHand hand, ToolType tool) {
+        return PlushiePress.drill(level, pos, level.getBlockState(pos).getValue(CELL), tool);
     }
 }

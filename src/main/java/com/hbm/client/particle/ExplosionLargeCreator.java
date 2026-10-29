@@ -17,19 +17,20 @@ import net.minecraft.world.phys.Vec3;
  * preset's scale (the same ten-quad cloud a missile trails, blown up), and the debris is
  * {@link DebrisParticles}, which throws real scoops of the terrain rather than block-dust sprites.
  *
- * <p><b>The shockwave is not drawn here.</b> Upstream's {@code ParticleMukeWave} serves both this
- * effect and the nuke, and the port has it only as part of the detonation in
- * {@link MukeParticles}. {@code waveScale} rides on the tag so the senders stay upstream's.
+ * <p>The expanding sheet shares the nuke's {@link MukeParticles} shockwave renderer at the supplied
+ * {@code waveScale}, without adding a nuclear flash or mushroom cloud.
  */
 public class ExplosionLargeCreator implements IParticleCreator {
 
-    /** Upstream's throw: 45 to 70 degrees above the horizon, any bearing. */
+    /**
+     * Upstream's throw: 45 to 70 degrees above the horizon, any bearing.
+     */
     private static final double MIN_ELEVATION = 45D;
     private static final double ELEVATION_SPREAD = 25D;
 
     @Override
     public void makeParticle(ClientLevel level, Player player, RandomSource rand,
-            double x, double y, double z, CompoundTag data) {
+                             double x, double y, double z, CompoundTag data) {
 
         int cloudCount = Tags.getIntOr(data, "cloudCount", 0);
         float cloudScale = Tags.getFloatOr(data, "cloudScale", 1F);
@@ -41,6 +42,7 @@ public class ExplosionLargeCreator implements IParticleCreator {
         float debrisHDev = Tags.getFloatOr(data, "debrisHorizontalDeviation", 1F);
         float debrisVOff = Tags.getFloatOr(data, "debrisVerticalOffset", -2F);
         float soundRange = Tags.getFloatOr(data, "soundRange", 200F);
+        MukeParticles.spawnWave(level, x, y, z, Tags.getFloatOr(data, "waveScale", 1F));
 
         if (player != null) {
             float distance = (float) Math.sqrt(player.distanceToSqr(x, y, z));

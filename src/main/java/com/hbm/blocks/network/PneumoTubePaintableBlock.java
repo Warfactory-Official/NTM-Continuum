@@ -44,7 +44,9 @@ import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
 public class PneumoTubePaintableBlock extends CompatBlock
         implements TickingBlock, IToolable, IFluidConnectorBlockMK2, IPneumaticConnector, ICapabilityBlock {
 
-    /** 1.7 meta 1: the DEFUSER hides the overlay pass. */
+    /**
+     * 1.7 meta 1: the DEFUSER hides the overlay pass.
+     */
     public static final BooleanProperty OVERLAY = BooleanProperty.create("overlay");
 
     public PneumoTubePaintableBlock(Properties properties) {
@@ -52,7 +54,9 @@ public class PneumoTubePaintableBlock extends CompatBlock
         registerDefaultState(stateDefinition.any().setValue(OVERLAY, true));
     }
 
-    /** 1.7 {@code BlockCablePaintable.allowedPaint}: any full-cube block but grass and itself. */
+    /**
+     * 1.7 {@code BlockCablePaintable.allowedPaint}: any full-cube block but grass and itself.
+     */
     public static boolean allowedPaint(Block paint, Block that) {
         if (paint == Blocks.GRASS_BLOCK) return false;
         return paint != that && Compat.isSolidRender(paint.defaultBlockState());
@@ -84,6 +88,7 @@ public class PneumoTubePaintableBlock extends CompatBlock
                 return InteractionResult.TRY_WITH_EMPTY_HAND;
             }
         }
+        if (PneumoTube.useGasIdentifier(level, pos, player, stack)) return InteractionResult.SUCCESS;
         return PneumoTube.openTubeMenu(level, pos, player);
     }
 
@@ -137,5 +142,7 @@ public class PneumoTubePaintableBlock extends CompatBlock
     }
 
     @Override
-    public MachineCaps caps() { return PneumoTube.CAPS; }
+    public MachineCaps caps() {
+        return PneumoTube.CAPS;
+    }
 }

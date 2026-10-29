@@ -18,9 +18,12 @@ import net.minecraft.world.entity.player.Inventory;
 public final class ScreenRBMKOutgasser extends RBMKContainerScreen<MenuRBMKOutgasser> {
     private static final Identifier TEX = Ids.of("hbm", "textures/gui/reactors/gui_rbmk_outgasser.png");
 
-    public ScreenRBMKOutgasser(MenuRBMKOutgasser menu, Inventory inventory, Component title) { super(menu, inventory, title, 176, 186); }
+    public ScreenRBMKOutgasser(MenuRBMKOutgasser menu, Inventory inventory, Component title) {
+        super(menu, inventory, title, 176, 186);
+    }
 
-    @Override public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    @Override
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         texture(graphics, TEX);
         BlockEntityRBMKOutgasser outgasser = menu.blockEntity();
         if (outgasser == null) return;
@@ -30,13 +33,14 @@ public final class ScreenRBMKOutgasser extends RBMKContainerScreen<MenuRBMKOutga
         if (gas > 0) GuiDraw.blit(graphics, TEX, leftPos + 115, topPos + 66 - gas, 188, 42 - gas, 10, gas, 256, 256);
     }
 
-    @Override protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    @Override
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         BlockEntityRBMKOutgasser outgasser = menu.blockEntity();
         if (outgasser == null) return;
         // 1.7 FluidTank.renderTankInfo hit test: x <= mouse < x + w, y < mouse <= y + h.
         int x = leftPos + 112, y = topPos + 21;
         if (x <= mouseX && x + 16 > mouseX && y < mouseY && y + 48 >= mouseY) {
-            tooltip(graphics, TankDisplay.tooltip(outgasser.gas), mouseX, mouseY);
+            tooltip(graphics, TankDisplay.tooltip(outgasser.gas, true), mouseX, mouseY);
         }
     }
 }

@@ -38,7 +38,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Slots: 0 fuel, 1 stamp, 2 input, 3 output, 4–12 storage buffer.
  *
  * <p>The {@code press_preheater} block (speeds up the stroke) lives in {@code com.hbm.production}. The
- * press-operate sound is not implemented.
+ * completed stroke selects the authored plushie sound and reaction through {@link PlushiePress}.
  */
 public class TileEntityMachinePress extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
     public static final int SLOT_FUEL = 0;
@@ -56,13 +56,17 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     public int burnTime = 0;
 
     public int progress;
-    /** Client-only: last tick's stroke, so the head glides between packets the way 1.7 interpolates it. */
+    /**
+     * Client-only: last tick's stroke, so the head glides between packets the way 1.7 interpolates it.
+     */
     public int lastProgress;
     public static final int maxProgress = 200;
     private boolean isRetracting = false;
     private int delay;
 
-    /** Client-only: the ingredient (slot 2) being pressed, for the floating-item render above the head. */
+    /**
+     * Client-only: the ingredient (slot 2) being pressed, for the floating-item render above the head.
+     */
     @Nullable
     public ItemStack syncStack;
 
@@ -84,7 +88,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         boolean preheated = false;
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             if (level.getBlockState(pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ))
-                    .is(ModProductionBlocks.PRESS_PREHEATER.get())) {
+                     .is(ModProductionBlocks.PRESS_PREHEATER.get())) {
                 preheated = true;
                 break;
             }
@@ -113,7 +117,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
                 te.progress += stampSpeed;
                 if (te.progress >= maxProgress) {
                     te.progress = maxProgress;
-                    level.playSound(null, pos, ModSounds.PRESS_OPERATE.get(), SoundSource.BLOCKS, 1.5F, 1.0F);
+                    level.playSound(null, pos, PlushiePress.sound(level, pos), SoundSource.BLOCKS, 1.5F, 1.0F);
                     te.craftItem();
                     te.isRetracting = true;
                     te.delay = 5;
@@ -158,7 +162,9 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         damageStamp(stamp);
     }
 
-    /** Damages a breakable stamp by one; clears the slot when it wears out (matching the original). */
+    /**
+     * Damages a breakable stamp by one; clears the slot when it wears out (matching the original).
+     */
     private void damageStamp(ItemStack stamp) {
         if (!stamp.isDamageableItem()) return;
         stamp.setDamageValue(stamp.getDamageValue() + 1);

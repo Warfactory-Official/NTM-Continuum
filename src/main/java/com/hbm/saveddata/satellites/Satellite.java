@@ -33,7 +33,9 @@ public abstract class Satellite {
     public static final String CMD_GETTARGETX = "gettargetx";
     public static final String CMD_GETTARGETZ = "gettargetz";
 
-    /** The ground coordinates a targeted satellite works over; 1.7 keeps them on the satellite itself. */
+    /**
+     * The ground coordinates a targeted satellite works over; 1.7 keeps them on the satellite itself.
+     */
     public int targetX;
     public int targetZ;
 
@@ -51,24 +53,43 @@ public abstract class Satellite {
      */
     public CompoundTag extra = new CompoundTag();
 
-    /** Set by a ticking satellite that changed; the tick loop turns it into {@code SatelliteSavedData.setDirty()}. */
+    /**
+     * Set by a ticking satellite that changed; the tick loop turns it into {@code SatelliteSavedData.setDirty()}.
+     */
     public boolean isDirty = false;
 
-    /** The drive type the satellite swaps for its data, and the one it hands back. */
+    private @Nullable SatelliteSavedData owner;
+
+    /**
+     * The registry that saves this instance, including registries restored directly by the codec.
+     */
+    public final void attachOwner(@Nullable SatelliteSavedData owner) {
+        this.owner = owner;
+    }
+
+    /**
+     * The drive type the satellite swaps for its data, and the one it hands back.
+     */
     public @Nullable EnumDriveType driveInput = null;
     public @Nullable EnumDriveType driveOutput = null;
 
-    /** Cargo waiting for a cargo pad to call it down. */
+    /**
+     * Cargo waiting for a cargo pad to call it down.
+     */
     public ItemStack[] requestableSlots = new ItemStack[0];
 
-    /** 1.7 {@code XSatelliteRegistry.orbit}. */
+    /**
+     * 1.7 {@code XSatelliteRegistry.orbit}.
+     */
     public static void orbit(ServerLevel level, ItemStack stack, int freq, double x, double y, double z) {
         XSatelliteRegistry.orbit(level, stack, freq, x, y, z);
     }
 
     public abstract SatelliteType type();
 
-    /** The model name a ground station and the launch broadcast print for this satellite. */
+    /**
+     * The model name a ground station and the launch broadcast print for this satellite.
+     */
     public abstract String getType();
 
     /**
@@ -92,7 +113,9 @@ public abstract class Satellite {
         return Component.translatable(ModSatelliteItems.satellite.get(type).getDescriptionId());
     }
 
-    /** Whether data is waiting for a drive; may produce it first once a cooldown has passed. */
+    /**
+     * Whether data is waiting for a drive; may produce it first once a cooldown has passed.
+     */
     public boolean hasData(Level level) {
         return this.driveInput != null && this.driveOutput != null;
     }
@@ -103,20 +126,28 @@ public abstract class Satellite {
     }
 
     public void produceData(EnumDriveType input, EnumDriveType output) {
+        if (this.driveInput == input && this.driveOutput == output) return;
         this.driveInput = input;
         this.driveOutput = output;
+        markDirty();
     }
 
     public void consumeData() {
+        if (this.driveInput == null && this.driveOutput == null) return;
         this.driveInput = null;
         this.driveOutput = null;
+        markDirty();
     }
 
-    /** Run every server tick for every satellite in orbit. */
+    /**
+     * Run every server tick for every satellite in orbit.
+     */
     public void onUpdateTick(ServerLevel level) {
     }
 
-    /** Sends the waiting cargo down to {@code x, z} in a drop pod; false if there was none or it could not spawn. */
+    /**
+     * Sends the waiting cargo down to {@code x, z} in a drop pod; false if there was none or it could not spawn.
+     */
     public boolean tryRequestItems(ServerLevel level, int x, int y, int z) {
         if (this.requestableSlots.length <= 0) return false;
 
@@ -132,37 +163,44 @@ public abstract class Satellite {
 
     public void markDirty() {
         this.isDirty = true;
+        if (owner != null) owner.setDirty();
     }
 
-    /** When a satellite is created, i.e. this frequency is occupied for the first time. */
+    /**
+     * When a satellite is created, i.e. this frequency is occupied for the first time.
+     */
     public void onOrbit(ServerLevel level, double x, double y, double z) {
         setTarget((int) Math.floor(x), (int) Math.floor(z));
         RTTYSystem.broadcast(level, CHAN_SATLINK,
                 "Established connection to " + getType() + " at " + targetX + " / " + targetZ);
     }
 
-    /** For subsequent items sent under the same frequency as an existing satellite. */
+    /**
+     * For subsequent items sent under the same frequency as an existing satellite.
+     */
     public void onPartDelivered(ServerLevel level, ItemStack part) {
     }
 
-    /** Run one radio command. The reply, if any, is left in {@link #tx}. */
+    /**
+     * Run one radio command. The reply, if any, is left in {@link #tx}.
+     */
     public void onCommand(Level level, String... cmd) {
         onCommandTarget(level, cmd);
         onCommandImpl(level, cmd);
     }
 
-    /** The four commands every satellite answers, whatever it is; 1.7 {@code onCommandTarget}. */
+    /**
+     * The four commands every satellite answers, whatever it is; 1.7 {@code onCommandTarget}.
+     */
     public void onCommandTarget(Level level, String... cmd) {
         if (cmd.length <= 0) return;
 
         if (cmd[0].equals(CMD_SETTARGET)) {
             if (cmd.length == 3) {
-                targetX = parse(cmd[1]);
-                targetZ = parse(cmd[2]);
+                setTarget(parse(cmd[1]), parse(cmd[2]));
             }
             if (cmd.length == 4) {
-                targetX = parse(cmd[1]);
-                targetZ = parse(cmd[3]);
+                setTarget(parse(cmd[1]), parse(cmd[3]));
             }
             return;
         }
@@ -182,14 +220,18 @@ public abstract class Satellite {
         }
     }
 
-    /** 1.7 {@code IRORInteractive.parseInt(String)}: unbounded. */
+    /**
+     * 1.7 {@code IRORInteractive.parseInt(String)}: unbounded.
+     */
     protected static int parse(String value) {
         return IRORInteractive.parseInt(value, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     public void setTarget(int x, int z) {
+        if (this.targetX == x && this.targetZ == z) return;
         this.targetX = x;
         this.targetZ = z;
+        markDirty();
     }
 
     public void onCommandImpl(Level level, String... cmd) {

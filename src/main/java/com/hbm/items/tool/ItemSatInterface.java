@@ -29,8 +29,11 @@ public class ItemSatInterface extends ItemSatChip implements IItemControlReceive
 
     public static final String KEY_NBT_CONNECTED = "connected";
 
-    /** Installed by the client registrations; 1.7 {@code provideGUI} returning {@code GUIScreenSatCoord}. */
-    public static Consumer<Player> OPEN_SCREEN = player -> { };
+    /**
+     * Installed by the client registrations; 1.7 {@code provideGUI} returning {@code GUIScreenSatCoord}.
+     */
+    public static Consumer<Player> OPEN_SCREEN = player -> {
+    };
 
     public ItemSatInterface(Properties properties) {
         super(properties);
@@ -44,17 +47,16 @@ public class ItemSatInterface extends ItemSatChip implements IItemControlReceive
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         if (level.isClientSide()) OPEN_SCREEN.accept(player);
-        return InteractionResult.SUCCESS;
+        return InteractionResult.CONSUME;
     }
 
     @Override
     protected void compatInventoryTick(ItemStack stack, ServerLevel level, Entity entity, EquipmentSlot slot,
                                        boolean held) {
         if (!(entity instanceof ServerPlayer player)) return;
-        // 1.7: only the stack in the main hand
-        if (player.getMainHandItem() != stack) return;
+        if (player.getMainHandItem() != stack && player.getOffhandItem() != stack) return;
 
-        Satellite sat = SatelliteSavedData.get(level).getSatFromFreq(this.getFreq(stack));
+        Satellite sat = SatelliteSavedData.get(level, player.blockPosition()).getSatFromFreq(this.getFreq(stack));
         boolean connected = sat != null;
         if (isConnected(stack) == connected && ModDataComponents.PERSISTENT_DATA.get(stack).isPresent()) return;
 
@@ -68,11 +70,12 @@ public class ItemSatInterface extends ItemSatChip implements IItemControlReceive
     @Override
     public void receiveControl(Player player, ItemStack stack, CompoundTag data) {
         if (!(player.level() instanceof ServerLevel level)) return;
-        Satellite sat = SatelliteSavedData.get(level).getSatFromFreq(this.getFreq(stack));
+        var satelliteData = SatelliteSavedData.get(level, player.blockPosition());
+        Satellite sat = satelliteData.getSatFromFreq(this.getFreq(stack));
         if (sat != null) {
             sat.onCoordAction(level, player, Tags.getIntOr(data, "x", 0),
                     Tags.contains(data, "y") ? Tags.getIntOr(data, "y", 0) : -1, Tags.getIntOr(data, "z", 0));
-            SatelliteSavedData.get(level).setDirty();
+            satelliteData.setDirty();
         }
     }
 }

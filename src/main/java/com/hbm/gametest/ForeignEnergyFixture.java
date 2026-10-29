@@ -8,6 +8,7 @@ import dev.golem.core.world.CompatBlock;
 import dev.golem.core.world.EnergyExposure;
 import dev.golem.core.world.EnergySource;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -30,13 +31,34 @@ public final class ForeignEnergyFixture {
     private static final DeferredRegister.BlockEntityTypes BLOCK_ENTITIES =
             DeferredRegister.createBlockEntityTypes(Constants.MOD_ID);
     public static final RegistryObject<Cell> CELL = BLOCKS.registerBlock("test_fe_cell", Cell::new);
+    public static final RegistryObject<Cell> OPTIONAL_CELL = BLOCKS.registerBlock("test_fe_optional_cell",
+            properties -> new Cell(properties, true));
     public static final RegistryObject<BlockEntityType<CellEntity>> CELL_ENTITY = BLOCK_ENTITIES.register(
-            "test_fe_cell", () -> BlockEntities.type(CellEntity::new, CELL.get()));
+            "test_fe_cell", () -> BlockEntities.type(CellEntity::new, CELL.get(), OPTIONAL_CELL.get()));
 
-    private ForeignEnergyFixture() {}
+    private ForeignEnergyFixture() {
+    }
 
     public static void init() {
-        EnergyExposure.expose(new CellSource(), () -> new Block[]{CELL.get()});
+        EnergyExposure.expose(new CellSource(), () -> new Block[]{CELL.get(), OPTIONAL_CELL.get()});
+    }
+
+    public static void receiver(ServerLevel level, BlockPos pos, long capacity, int faceMask) {
+        var cell = (CellEntity) level.getBlockEntity(pos);
+        cell.capacity = capacity;
+        cell.faceMask = faceMask;
+        cell.exposed = true;
+    }
+
+    public static void removeEnergy(ServerLevel level, BlockPos pos) {
+        ((CellEntity) level.getBlockEntity(pos)).exposed = false;
+    }
+
+    public static void forget(ServerLevel level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof CellEntity cell) {
+            cell.exposed = false;
+            cell.stored = 0;
+        }
     }
 
     public static long stored(ServerLevel level, BlockPos pos) {
@@ -44,9 +66,15 @@ public final class ForeignEnergyFixture {
     }
 
     public static final class Cell extends CompatBlock implements EntityBlock {
+        private final boolean optional;
 
         private Cell(Properties properties) {
+            this(properties, false);
+        }
+
+        private Cell(Properties properties, boolean optional) {
             super(properties);
+            this.optional = optional;
         }
 
         @Override
@@ -58,13 +86,30 @@ public final class ForeignEnergyFixture {
     public static final class CellEntity extends BlockEntity {
 
         private long stored;
+        private long capacity = CAPACITY;
+        private int faceMask = 0x3F;
+        private boolean exposed;
 
         private CellEntity(BlockPos pos, BlockState state) {
             super(CELL_ENTITY.get(), pos, state);
+            exposed = !((Cell) state.getBlock()).optional;
         }
     }
 
     private static final class CellSource implements EnergySource {
+
+        @Override
+        public @Nullable EnergySource forFace(ServerLevel level, BlockPos pos, @Nullable Direction side) {
+            var cell = at(level, pos);
+            return cell != null && cell.exposed && (side == null || (cell.faceMask & 1 << side.ordinal()) != 0)
+                    ? this : null;
+        }
+
+        @Override
+        public @Nullable EnergySource forOperation(ServerLevel level, BlockPos pos) {
+            var cell = at(level, pos);
+            return cell != null && cell.exposed ? this : null;
+        }
 
         private static @Nullable CellEntity at(ServerLevel level, BlockPos pos) {
             return level.getBlockEntity(pos) instanceof CellEntity cell ? cell : null;
@@ -73,18 +118,19 @@ public final class ForeignEnergyFixture {
         @Override
         public long amountFe(ServerLevel level, BlockPos pos) {
             CellEntity cell = at(level, pos);
-            return cell == null ? 0L : cell.stored;
+            return cell == null || !cell.exposed ? 0L : cell.stored;
         }
 
         @Override
         public long capacityFe(ServerLevel level, BlockPos pos) {
-            return CAPACITY;
+            var cell = at(level, pos);
+            return cell == null || !cell.exposed ? 0L : cell.capacity;
         }
 
         @Override
         public long insertableFe(ServerLevel level, BlockPos pos) {
             CellEntity cell = at(level, pos);
-            return cell == null ? 0L : Math.min(RATE, CAPACITY - cell.stored);
+            return cell == null || !cell.exposed ? 0L : Math.min(RATE, cell.capacity - cell.stored);
         }
 
         @Override

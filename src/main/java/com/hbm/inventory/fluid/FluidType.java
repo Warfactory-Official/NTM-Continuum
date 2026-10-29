@@ -17,10 +17,12 @@ import com.hbm.inventory.fluid.trait.FT_VentRadiation;
 import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import com.hbm.util.BobMathUtil;
 import dev.golem.core.Ids;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Consumer;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -30,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
 import net.minecraft.world.level.material.Fluid;
 
 /**
@@ -52,19 +55,33 @@ public class FluidType {
      * {@link Fluids#legacyId}/{@link Fluids#networkId}.
      */
     private int id;
-    /** The stable namespaced id this fluid is saved under ({@code hbm:<lowercase name>}). */
+    /**
+     * The stable namespaced id this fluid is saved under ({@code hbm:<lowercase name>}).
+     */
     private String registryName;
-    /** The internal/string name (e.g. {@code "water"}). */
+    /**
+     * The internal/string name (e.g. {@code "water"}).
+     */
     private final String stringId;
-    /** Approximate HEX colour of the fluid, used for pipe/GUI rendering. */
+    /**
+     * Approximate HEX colour of the fluid, used for pipe/GUI rendering.
+     */
     private int color;
-    /** Unlocalized translation key. */
+    /**
+     * Unlocalized translation key.
+     */
     private final String unlocalized;
-    /** Title-cased id, used only when a fluid has no {@code hbmfluid.*} entry. */
+    /**
+     * Title-cased id, used only when a fluid has no {@code hbmfluid.*} entry.
+     */
     private final String fallbackName;
-    /** GUI tint (defaults to the colour; overridable for custom fluids). */
+    /**
+     * GUI tint (defaults to the colour; overridable for custom fluids).
+     */
     private int guiTint;
-    /** The lowercase id, which every asset path and translation key for this fluid is built from. */
+    /**
+     * The lowercase id, which every asset path and translation key for this fluid is built from.
+     */
     private final String key;
     private final Identifier texture;
     private final Identifier icon;
@@ -73,15 +90,23 @@ public class FluidType {
     private volatile List<TagKey<Fluid>> sharedTags = List.of();
     private volatile boolean propertiesDefined;
 
-    /** Conventional tags whose foreign fluids this type accepts as its own kind. */
-    public List<TagKey<Fluid>> getSharedTags() { return metadataType().sharedTags; }
+    /**
+     * Conventional tags whose foreign fluids this type accepts as its own kind.
+     */
+    public List<TagKey<Fluid>> getSharedTags() {
+        return metadataType().sharedTags;
+    }
 
-    /** An unconfigured exact resource inherits its kind's metadata while retaining its own registry identity. */
+    /**
+     * An unconfigured exact resource inherits its kind's metadata while retaining its own registry identity.
+     */
     public FluidType metadataType() {
         return foreign && !propertiesDefined ? Fluids.kindOf(this) : this;
     }
 
-    boolean hasOwnProperties() { return propertiesDefined; }
+    boolean hasOwnProperties() {
+        return propertiesDefined;
+    }
 
     FluidProperties.Properties ownProperties() {
         return new FluidProperties.Properties(color, guiTint != color ? guiTint : null, temperature, hazard,
@@ -111,10 +136,14 @@ public class FluidType {
     public static final String ICON_ART = "items/fluid_icon";
 
     public static final int ROOM_TEMPERATURE = 20;
-    /** How hot this fluid is, in °C. */
+    /**
+     * How hot this fluid is, in °C.
+     */
     private int temperature = ROOM_TEMPERATURE;
 
-    public int getTemperature() { return metadataType().temperature; }
+    public int getTemperature() {
+        return metadataType().temperature;
+    }
 
     public FluidType(String name, int color) {
         this(Constants.MOD_ID, name, color);
@@ -144,14 +173,21 @@ public class FluidType {
 
     private final String namespace;
 
-    /** The namespace this fluid is registered in ({@code hbm}, or an addon's). */
-    public String getNamespace() { return this.namespace; }
+    /**
+     * The namespace this fluid is registered in ({@code hbm}, or an addon's).
+     */
+    public String getNamespace() {
+        return this.namespace;
+    }
 
-    /** Constructor with an asserted ID, mirroring the 1.12.2 safeguard against fluid-ID drift. */
+    /**
+     * Constructor with an asserted ID, mirroring the 1.12.2 safeguard against fluid-ID drift.
+     */
     public FluidType(int forcedId, String name, int color) {
         this(name, color);
         if (this.id != forcedId) {
-            throw new IllegalStateException("Fluid ID mismatch for '" + name + "': expected " + forcedId + " but got " + this.id);
+            throw new IllegalStateException(
+                    "Fluid ID mismatch for '" + name + "': expected " + forcedId + " but got " + this.id);
         }
     }
 
@@ -167,38 +203,66 @@ public class FluidType {
         return this;
     }
 
-    /** The 1.7 number; package-private so no caller outside {@link Fluids} can persist it by accident. */
-    int numericId() { return this.id; }
+    /**
+     * The 1.7 number; package-private so no caller outside {@link Fluids} can persist it by accident.
+     */
+    int numericId() {
+        return this.id;
+    }
 
     /**
      * The stable namespaced id, the only form in which a fluid is ever saved: its vanilla fluid id ({@code hbm:oil},
      * {@code minecraft:water}, another mod's {@code othermod:x}).
      */
-    public String getRegistryName() { return this.registryName; }
+    public String getRegistryName() {
+        return this.registryName;
+    }
 
     private boolean foreign;
 
-    /** Whether this is another mod's fluid that HBM met at run time (the open model), not one registered with HBM. */
-    public boolean isForeign() { return this.foreign; }
+    /**
+     * Whether this is another mod's fluid that HBM met at run time (the open model), not one registered with HBM.
+     */
+    public boolean isForeign() {
+        return this.foreign;
+    }
 
-    void markForeign() { this.foreign = true; }
+    void markForeign() {
+        this.foreign = true;
+    }
 
-    /** Fluids.init: NONE, WATER and LAVA are vanilla's own fluids and are named by vanilla's ids. */
-    void useVanillaName(String id) { this.registryName = id; }
+    /**
+     * Fluids.init: NONE, WATER and LAVA are vanilla's own fluids and are named by vanilla's ids.
+     */
+    void useVanillaName(String id) {
+        this.registryName = id;
+    }
 
     // A FluidType is a data component value (ModDataComponents.FLUID), and 26.1 refuses component values that do not
     // declare value equality. One instance exists per fluid, so identity is the value equality.
     @Override
-    public boolean equals(Object other) { return this == other; }
+    public boolean equals(Object other) {
+        return this == other;
+    }
 
     @Override
-    public int hashCode() { return this.registryName.hashCode(); }
+    public int hashCode() {
+        return this.registryName.hashCode();
+    }
 
-    /** Used internally by {@link Fluids} when (re)assigning IDs. */
-    void setID(int id) { this.id = id; }
+    /**
+     * Used internally by {@link Fluids} when (re)assigning IDs.
+     */
+    void setID(int id) {
+        this.id = id;
+    }
 
-    /** The unique mapping name for this fluid, usually matching the unlocalized name minus the prefix. */
-    public String getName() { return this.stringId; }
+    /**
+     * The unique mapping name for this fluid, usually matching the unlocalized name minus the prefix.
+     */
+    public String getName() {
+        return this.stringId;
+    }
 
     /**
      * The fluid's name as the player should see it: the localised {@code hbmfluid.*} entry.
@@ -213,7 +277,9 @@ public class FluidType {
         return Component.translatableWithFallback(metadata.unlocalized, metadata.fallbackName);
     }
 
-    /** The title-cased id {@link #getDisplayName()} falls back on (also the fallback other mods show). */
+    /**
+     * The title-cased id {@link #getDisplayName()} falls back on (also the fallback other mods show).
+     */
     public String getFallbackName() {
         return metadataType().fallbackName;
     }
@@ -227,12 +293,16 @@ public class FluidType {
         return Fluids.toVanilla(this);
     }
 
-    /** {@link #getDisplayName()} flattened, for the {@code &[colour]&]} look-overlay strings. */
+    /**
+     * {@link #getDisplayName()} flattened, for the {@code &[colour]&]} look-overlay strings.
+     */
     public String getDisplayNameString() {
         return getDisplayName().getString();
     }
 
-    /** {@code HEAVY_OIL} becomes "Heavy Oil". The fallback only; see {@link #getDisplayName()}. */
+    /**
+     * {@code HEAVY_OIL} becomes "Heavy Oil". The fallback only; see {@link #getDisplayName()}.
+     */
     private static String titleCase(String id) {
         StringBuilder sb = new StringBuilder();
         for (String part : id.toLowerCase(Locale.US).split("_")) {
@@ -242,23 +312,47 @@ public class FluidType {
         return sb.toString().trim();
     }
 
-    /** Explicit client-side metadata; exact resource identity and canonical server fields are unchanged. */
-    public FluidMetadata clientMetadata() { return ClientFluidProperties.get(this); }
+    /**
+     * Explicit client-side metadata; exact resource identity and canonical server fields are unchanged.
+     */
+    public FluidMetadata clientMetadata() {
+        return ClientFluidProperties.get(this);
+    }
 
-    public int getColor(boolean client) { return client ? clientMetadata().getColor() : getColor(); }
+    public int getColor(boolean client) {
+        return client ? clientMetadata().getColor() : getColor();
+    }
 
-    Component ownDisplayName() { return Component.translatableWithFallback(unlocalized, fallbackName); }
-    Identifier ownIconSprite() { return icon; }
-    Identifier ownTexture() { return texture; }
+    Component ownDisplayName() {
+        return Component.translatableWithFallback(unlocalized, fallbackName);
+    }
 
-    public int getColor() { return metadataType().color; }
+    Identifier ownIconSprite() {
+        return icon;
+    }
 
-    public int getTint() { return metadataType().guiTint; }
+    Identifier ownTexture() {
+        return texture;
+    }
 
-    public Identifier getTexture() { return metadataType().texture; }
+    public int getColor() {
+        return metadataType().color;
+    }
 
-    /** The lowercase id every asset this fluid names is built from. */
-    public String getKey() { return this.key; }
+    public int getTint() {
+        return metadataType().guiTint;
+    }
+
+    public Identifier getTexture() {
+        return metadataType().texture;
+    }
+
+    /**
+     * The lowercase id every asset this fluid names is built from.
+     */
+    public String getKey() {
+        return this.key;
+    }
 
     /**
      * The droplet sprite for this fluid: the grayscale {@code fluid_icon} art recoloured onto
@@ -268,22 +362,33 @@ public class FluidType {
      * {@link com.hbm.client.FluidSprites#draw}, which is what a screen or a JEI category wants when it
      * has somewhere to put a droplet but no item slot to put it in.
      */
-    public Identifier getIconSprite() { return metadataType().icon; }
+    public Identifier getIconSprite() {
+        return metadataType().icon;
+    }
 
-    public String getTranslationKey() { return metadataType().unlocalized; }
+    public String getTranslationKey() {
+        return metadataType().unlocalized;
+    }
 
-    public boolean isHot() { return getTemperature() >= 100; }
+    public boolean isHot() {
+        return getTemperature() >= 100;
+    }
 
     public synchronized FluidType addTraits(Object... traits) {
         defineProperties();
         Map<Class<?>, Object> next = new HashMap<>(this.traits);
         for (Object trait : traits) next.put(trait.getClass(), trait);
         this.traits = Map.copyOf(next);
+        Fluids.catalogChanged();
         return this;
     }
 
-    /** Every trait this fluid has, in no particular order. */
-    public Collection<Object> traits() { return metadataType().traits.values(); }
+    /**
+     * Every trait this fluid has, in no particular order.
+     */
+    public Collection<Object> traits() {
+        return metadataType().traits.values();
+    }
 
     /**
      * {@link FluidProperties}: replaces colour, GUI tint, temperature, hazard diamond and every trait with a
@@ -309,25 +414,38 @@ public class FluidType {
             Fluids.sharingChanged();
         }
         propertiesDefined = defined;
+        Fluids.catalogChanged();
     }
 
     private volatile FluidHazard hazard = FluidHazard.NONE;
 
-    /** 1.7's {@code poison}, {@code flammability}, {@code reactivity} and {@code symbol}: the hazard diamond's values. */
-    public FluidHazard getHazard() { return metadataType().hazard; }
+    /**
+     * 1.7's {@code poison}, {@code flammability}, {@code reactivity} and {@code symbol}: the hazard diamond's values.
+     */
+    public FluidHazard getHazard() {
+        return metadataType().hazard;
+    }
 
-    /** A code default for a fluid without a {@code fluid_property} file (1.7's constructor arguments {@code p, f, r, symbol}). */
+    /**
+     * A code default for a fluid without a {@code fluid_property} file (1.7's constructor arguments {@code p, f, r, symbol}).
+     */
     public FluidType setHazard(FluidHazard hazard) {
         defineProperties();
         this.hazard = Objects.requireNonNull(hazard);
         return this;
     }
 
-    public boolean hasTrait(Class<?> trait) { return metadataType().traits.containsKey(trait); }
+    public boolean hasTrait(Class<?> trait) {
+        return metadataType().traits.containsKey(trait);
+    }
 
-    public <T> T getTrait(Class<T> trait) { return trait.cast(metadataType().traits.get(trait)); }
+    public <T> T getTrait(Class<T> trait) {
+        return trait.cast(metadataType().traits.get(trait));
+    }
 
-    /** Adds the fluid facts currently represented by the port's fluid model to a tooltip. */
+    /**
+     * Adds the fluid facts currently represented by the port's fluid model to a tooltip.
+     */
     public void addInfo(List<Component> info) {
         addInfo(info, StandardInfo.shiftHeld());
     }
@@ -341,10 +459,13 @@ public class FluidType {
      * and Shift is up. The order is the registry's, never the order a fluid's traits were added in.
      */
     public void addInfo(List<Component> info, boolean shiftHeld) {
-        addInfo(info, shiftHeld, new FluidMetadata(FluidProperties.Properties.of(this), null, metadataType(), metadataType().hasOwnProperties()));
+        addInfo(info, shiftHeld, new FluidMetadata(FluidProperties.Properties.of(this), null, metadataType(),
+                metadataType().hasOwnProperties()));
     }
 
-    /** Shared tooltip formatting over explicit server or client metadata. */
+    /**
+     * Shared tooltip formatting over explicit server or client metadata.
+     */
     static void addInfo(List<Component> info, boolean shiftHeld, FluidMetadata metadata) {
         var temperature = metadata.getTemperature();
         List<Component> hidden = new ArrayList<>();
@@ -364,13 +485,15 @@ public class FluidType {
             if (energy > 0) info.add(provides(ChatFormatting.YELLOW, energy, "TU "));
         }
 
-        FluidCombustion.Combustible combustible = metadata.hasTrait(FT_Combustible.class) ? metadata.getTrait(FT_Combustible.class).combustible() : null;
+        FluidCombustion.Combustible combustible = metadata.hasTrait(FT_Combustible.class) ? metadata.getTrait(
+                FT_Combustible.class).combustible() : null;
         if (combustible != null) {
             info.add(bracketed("hbmfluid.trait.combustible", ChatFormatting.GOLD));
             if (combustible.energyPerBucket() > 0) {
                 info.add(provides(ChatFormatting.GOLD, combustible.energyPerBucket(), "HE "));
                 info.add(Component.translatable("hbmfluid.trait.fuelGrade").append(": ").withStyle(ChatFormatting.GOLD)
-                        .append(Component.translatable(fuelGradeKey(combustible.grade())).withStyle(ChatFormatting.RED)));
+                                  .append(Component.translatable(fuelGradeKey(combustible.grade()))
+                                                   .withStyle(ChatFormatting.RED)));
             }
         }
 
@@ -437,9 +560,11 @@ public class FluidType {
         }
     }
 
-    /** 1.7's per-trait {@code if(shiftHeld) trait.addInfoHidden(info); trait.addInfoHidden(hidden);}. */
+    /**
+     * 1.7's per-trait {@code if(shiftHeld) trait.addInfoHidden(info); trait.addInfoHidden(hidden);}.
+     */
     private static void hidden(List<Component> info, List<Component> hidden, boolean shiftHeld,
-            Consumer<List<Component>> adder) {
+                               Consumer<List<Component>> adder) {
         if (shiftHeld) adder.accept(info);
         adder.accept(hidden);
     }
@@ -448,14 +573,19 @@ public class FluidType {
         return Component.literal("[").append(Component.translatable(key)).append("]").withStyle(style);
     }
 
-    /** 1.7 {@code "Provides " + RED + getShortNumber(energy) + unit + "per bucket"} in the trait's colour. */
+    /**
+     * 1.7 {@code "Provides " + RED + getShortNumber(energy) + unit + "per bucket"} in the trait's colour.
+     */
     private static Component provides(ChatFormatting style, long energy, String unit) {
         return Component.translatable("hbmfluid.trait.provides").append(" ").withStyle(style)
-                .append(Component.literal(BobMathUtil.getShortNumber(energy) + unit).withStyle(ChatFormatting.RED))
-                .append(Component.translatable("hbmfluid.trait.perBucket").withStyle(style));
+                        .append(Component.literal(BobMathUtil.getShortNumber(energy) + unit)
+                                         .withStyle(ChatFormatting.RED))
+                        .append(Component.translatable("hbmfluid.trait.perBucket").withStyle(style));
     }
 
-    /** 1.7 {@code FuelGrade.getLocalizedName}: {@code hbmfluid.trait.fuel.<grade>}. */
+    /**
+     * 1.7 {@code FuelGrade.getLocalizedName}: {@code hbmfluid.trait.fuel.<grade>}.
+     */
     private static String fuelGradeKey(FluidCombustion.FuelGrade grade) {
         return switch (grade) {
             case LOW -> "hbmfluid.trait.fuel.low";
@@ -467,11 +597,26 @@ public class FluidType {
     }
 
     // 1.7 FluidType's trait shorthands.
-    public boolean isCorrosive() { return hasTrait(FT_Corrosive.class); }
-    public boolean isAntimatter() { return hasTrait(FluidTraitSimple.FT_Amat.class); }
-    public boolean hasNoContainer() { return hasTrait(FluidTraitSimple.FT_NoContainer.class); }
-    public boolean hasNoID() { return hasTrait(FluidTraitSimple.FT_NoID.class); }
-    public boolean needsLeadContainer() { return hasTrait(FluidTraitSimple.FT_LeadContainer.class); }
+    public boolean isCorrosive() {
+        return hasTrait(FT_Corrosive.class);
+    }
+
+    public boolean isAntimatter() {
+        return hasTrait(FluidTraitSimple.FT_Amat.class);
+    }
+
+    public boolean hasNoContainer() {
+        return hasTrait(FluidTraitSimple.FT_NoContainer.class);
+    }
+
+    public boolean hasNoID() {
+        return hasTrait(FluidTraitSimple.FT_NoID.class);
+    }
+
+    public boolean needsLeadContainer() {
+        return hasTrait(FluidTraitSimple.FT_LeadContainer.class);
+    }
+
     public boolean isDispersable() {
         return !(hasTrait(FluidTraitSimple.FT_Amat.class) || hasTrait(FluidTraitSimple.FT_NoContainer.class)
                 || hasTrait(FluidTraitSimple.FT_Viscous.class));

@@ -14,9 +14,11 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFluidContainerNT;
 import com.hbm.items.machine.ItemFluidIcon;
 import dev.golem.core.Ids;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -51,8 +53,18 @@ public class AssemblyMachineRecipes extends DataGenericRecipes<GenericRecipe> {
         super(Constants.MOD_ID, "assembly_machine");
     }
 
-    /** Declares the table at mod construction (its recipe type and serializer register with HBM's content). */
-    public static void declare() {}
+    /**
+     * Declares the table at mod construction (its recipe type and serializer register with HBM's content).
+     */
+    public static void declare() {
+    }
+
+    @Override
+    protected long derivedInputRevision() {
+        // Resolving a placed fluid's metadata may discover other declared exact resources.
+        Fluids.resolveDeclaredResources();
+        return Fluids.catalogRevision();
+    }
 
     @Override
     protected void arrange(List<GenericRecipe> rows) {
@@ -64,7 +76,9 @@ public class AssemblyMachineRecipes extends DataGenericRecipes<GenericRecipe> {
         rows.addAll(at, fluidPacks());
     }
 
-    /** 1.7's package/unpackage pair per fluid the pack allows; ids "ass.package" + 1.7's {@code hbmfluid.<name>}. */
+    /**
+     * 1.7's package/unpackage pair per fluid the pack allows; ids "ass.package" + 1.7's {@code hbmfluid.<name>}.
+     */
     private static List<GenericRecipe> fluidPacks() {
         List<GenericRecipe> rows = new ArrayList<>();
         ItemFluidContainerNT pack = ModFluidNetItems.fluid_pack_full.get();
@@ -77,14 +91,16 @@ public class AssemblyMachineRecipes extends DataGenericRecipes<GenericRecipe> {
             if (type == Fluids.NONE || type.isForeign() || !pack.allows(type)) continue;
             String suffix = "hbmfluid." + type.getName().toLowerCase(Locale.ROOT);
             rows.add(new GenericRecipe("ass.package" + suffix).setup(40, 100)
-                    .inputItems(new ComparableStack(empty))
-                    .inputFluids(new FluidStack(type, amount))
-                    .outputItems(pack.make(type, amount)));
+                                                              .inputItems(new ComparableStack(empty))
+                                                              .inputFluids(new FluidStack(type, amount))
+                                                              .outputItems(pack.make(type, amount)));
             rows.add(new GenericRecipe("ass.unpackage" + suffix).setup(40, 100)
-                    .setIcon(ItemFluidIcon.make(new FluidStack(type, amount)))
-                    .inputItems(new ComparableStack(pack.make(type, amount)))
-                    .outputItems(new ItemStack(empty))
-                    .outputFluids(new FluidStack(type, amount)));
+                                                                .setIcon(ItemFluidIcon.make(
+                                                                        new FluidStack(type, amount)))
+                                                                .inputItems(
+                                                                        new ComparableStack(pack.make(type, amount)))
+                                                                .outputItems(new ItemStack(empty))
+                                                                .outputFluids(new FluidStack(type, amount)));
         }
         return rows;
     }

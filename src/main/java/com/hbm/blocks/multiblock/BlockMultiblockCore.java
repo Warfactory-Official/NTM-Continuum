@@ -10,11 +10,12 @@ import com.hbm.uninos.graph.LevelNodeGraph;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
-import dev.golem.core.world.DamageEvents;
 import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.SubLevels;
+
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -23,10 +24,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
@@ -45,10 +46,10 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -66,11 +67,15 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    /** No face. Distinct from {@link MultiblockMaskTable#NOT_A_CELL}. */
+    /**
+     * No face. Distinct from {@link MultiblockMaskTable#NOT_A_CELL}.
+     */
     public static final int MASK_NONE = 0;
     public static final int MASK_DOWN = 1, MASK_UP = 1 << 1, MASK_NORTH = 1 << 2;
     public static final int MASK_SOUTH = 1 << 3, MASK_WEST = 1 << 4, MASK_EAST = 1 << 5;
-    /** NORTH|SOUTH|WEST|EAST, the {@code Direction.ordinal()} values 2..5. */
+    /**
+     * NORTH|SOUTH|WEST|EAST, the {@code Direction.ordinal()} values 2..5.
+     */
     public static final int MASK_HORIZONTAL = 0b111100;
     public static final int MASK_ALL = 0b111111;
 
@@ -93,7 +98,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     public static final int PASSIVE_NONE = 0;
     public static final int PASSIVE_POWER_IN = 1;
     public static final int PASSIVE_FLUID_IN = 1 << 1;
-    /** The proxy's inventory surface, an independent flag rather than a third receive domain. */
+    /**
+     * The proxy's inventory surface, an independent flag rather than a third receive domain.
+     */
     public static final int PASSIVE_ITEMS = 1 << 2;
     public static final int PASSIVE_ANY = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
     public static final int PASSIVE_DOMAINS = 3;
@@ -111,6 +118,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     protected boolean isLightTransparent(BlockState state) {
         return true;
     }
+
     /**
      * Per-cell collision and outline boxes in the core's own frame (1.7 {@code BlockDummyable#bounding});
      * the base answers the whole silhouette at every cell of the footprint.
@@ -125,12 +133,20 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
-    public static boolean isBusy() { return BUSY.get(); }
+    public static boolean isBusy() {
+        return BUSY.get();
+    }
 
-    /** 1.7 {@code safeRem}: true while {@link #setPlacedBy} clears the block its item placed, which is no machine yet. */
-    public static boolean isSafeRem() { return SAFE_REM.get(); }
+    /**
+     * 1.7 {@code safeRem}: true while {@link #setPlacedBy} clears the block its item placed, which is no machine yet.
+     */
+    public static boolean isSafeRem() {
+        return SAFE_REM.get();
+    }
 
-    /** Suppresses removal-triggered teardown while a batch replaces folded cells. */
+    /**
+     * Suppresses removal-triggered teardown while a batch replaces folded cells.
+     */
     public static void withoutTeardown(Runnable action) {
         boolean previous = BUSY.get();
         BUSY.set(true);
@@ -141,14 +157,22 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         }
     }
 
-    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
 
     public abstract int[] getDimensions();
+
     public abstract int getOffset();
-    public int getHeightOffset() { return 0; }
-    public Direction getDirModified(Direction direction) { return direction; }
+
+    public int getHeightOffset() {
+        return 0;
+    }
+
+    public Direction getDirModified(Direction direction) {
+        return direction;
+    }
 
     /**
      * 1.7 {@code BlockDummyable#getAllDimensions}: the boxes the placement highlight outlines, in
@@ -157,7 +181,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * overrides it, or the highlight shows the wrong shape (as in 1.7).
      */
     public int[][] getAllDimensions() {
-        return new int[][] { getDimensions() };
+        return new int[][]{getDimensions()};
     }
 
     /**
@@ -219,14 +243,20 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * facing {@code facing}, the core found as {@link #setPlacedBy} finds it.
      */
     public final boolean canPlaceAt(Level level, BlockPos placed, Direction facing) {
-        return checkRequirement(level, placed.relative(facing, -getOffset()), facing, placed);
+        return canPlaceAt(level, placed, facing, ItemStack.EMPTY);
+    }
+
+    public final boolean canPlaceAt(Level level, BlockPos placed, Direction facing, ItemStack stack) {
+        return canPlace(level, new Placement(placed.relative(facing, -getOffset()), facing, placed), stack);
     }
 
     /**
      * The yaw the placer turns through to cycle all four facings once. 1.7's large pylon halves it, so its
      * facing advances every 45 degrees and a full turn cycles the four twice.
      */
-    public float placementYawSpan() { return 360.0F; }
+    public float placementYawSpan() {
+        return 360.0F;
+    }
 
     /**
      * Every cell this machine currently occupies (never the core). Runtime footprints override this;
@@ -237,7 +267,16 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         visitCells(core, facing, visitor);
     }
 
-    /** State-only geometry used to bake masks and check placement clearance before a core exists. */
+    /**
+     * The actual occupied cells after this held stack's initial geometry is restored.
+     */
+    public void visitPlacementCells(BlockPos core, Direction facing, ItemStack stack, CellVisitor visitor) {
+        visitCells(core, facing, visitor);
+    }
+
+    /**
+     * State-only geometry used to bake masks and check placement clearance before a core exists.
+     */
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         MultiblockHandlerXR.visitBox(core, getDimensions(), facing, visitor);
     }
@@ -259,7 +298,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         visitCells(core, facing, visitor);
     }
 
-    public int coreMask() { return MASK_NONE; }
+    public int coreMask() {
+        return MASK_NONE;
+    }
 
     /**
      * The faces a cell on the edge of a square footprint turns outward. What 1.7 left unsaid: {@code
@@ -279,7 +320,8 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * Every cell where 1.7 stamps a fluid- or power-carrying proxy, and the faces that proxy accepts on;
      * read the stamp's arguments. Only {@code .power()} and {@code .fluid()} name a domain.
      */
-    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {}
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+    }
 
     protected final void passiveEverywhere(BlockPos core, Direction facing, PassiveCellVisitor visitor, int domains) {
         visitCells(core, facing, (pos, mask) -> visitor.passiveCell(pos, MASK_ALL, domains));
@@ -289,7 +331,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * The core cell's own passive mask, in the local frame: {@link #MASK_ALL} for every folded machine,
      * because the core holds the real machine tile, reachable by a bare fetch on any face.
      */
-    public int passiveCoreMask() { return MASK_ALL; }
+    public int passiveCoreMask() {
+        return MASK_ALL;
+    }
 
     /**
      * Which domains {@link #passiveCoreMask} applies to: receive only, since no 1.7 asker ever pulls, so a
@@ -306,13 +350,17 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * The face mask at a local offset, or {@link MultiblockMaskTable#NOT_A_CELL}. Override for a footprint
      * the packed table cannot size. An RBMK column answers analytically.
      */
-    public int maskAt(int lx, int ly, int lz) { return maskTable().maskAtLocal(lx, ly, lz); }
+    public int maskAt(int lx, int ly, int lz) {
+        return maskTable().maskAtLocal(lx, ly, lz);
+    }
 
     /**
      * The active mask at a local offset for a core facing this way. A narrow licence for a machine whose
      * 1.7 code names world directions that do not rotate with the machine.
      */
-    public int maskAt(int lx, int ly, int lz, Direction facing) { return maskAt(lx, ly, lz); }
+    public int maskAt(int lx, int ly, int lz, Direction facing) {
+        return maskAt(lx, ly, lz);
+    }
 
     /**
      * The active mask one role sees. Falls through to the role-blind {@link #maskAt} unless the machine
@@ -324,7 +372,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         return baked.maskAtLocal(lx, ly, lz, role);
     }
 
-    /** {@link #maskAt}'s passive counterpart, over a set of receive domains. Override alongside it. */
+    /**
+     * {@link #maskAt}'s passive counterpart, over a set of receive domains. Override alongside it.
+     */
     public int passiveMaskAt(int lx, int ly, int lz, int domains) {
         return maskTable().passiveMaskAtLocal(lx, ly, lz, domains);
     }
@@ -333,7 +383,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * Does this machine present a heat source at the cell? Heat is a raw {@code instanceof} in 1.7 and
      * cannot ride either mask plane.
      */
-    public boolean heatSourceAt(int lx, int ly, int lz) { return false; }
+    public boolean heatSourceAt(int lx, int ly, int lz) {
+        return false;
+    }
 
     /**
      * Whether a heat-source owner answers at {@code pos}. 1.7 reaches the core through its own tile and a
@@ -365,18 +417,24 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         return baked;
     }
 
-    public boolean isCellState(BlockState state) { return false; }
+    public boolean isCellState(BlockState state) {
+        return false;
+    }
 
     public final boolean isCellOf(BlockState state) {
         return state.getBlock() instanceof BlockMultiblockCell || state.getBlock() == this && isCellState(state);
     }
 
-    /** The family spans this machine's core and every cell block, so the test cannot be identity alone. */
+    /**
+     * The family spans this machine's core and every cell block, so the test cannot be identity alone.
+     */
     public boolean isSameMultiblock(Block other) {
         return other == this || other instanceof BlockMultiblockCell;
     }
 
-    /** Runtime footprints may resolve their own cells instead of using the finite reverse offsets. */
+    /**
+     * Runtime footprints may resolve their own cells instead of using the finite reverse offsets.
+     */
     public @Nullable BlockPos findClientCore(BlockGetter level, BlockPos cell) {
         return MultiblockSurface.findClientCore(level, cell);
     }
@@ -395,7 +453,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         return isOpenAt(facing, dx, dy, dz, side, passiveDomains, null);
     }
 
-    /** {@link #isOpenAt} for one role; a null role is the role-blind ask and reads the union. */
+    /**
+     * {@link #isOpenAt} for one role; a null role is the role-blind ask and reads the union.
+     */
     public boolean isOpenAt(Direction facing, int dx, int dy, int dz, Direction side, int passiveDomains,
                             @Nullable CapRole role) {
         int lx = MultiblockMaskTable.localX(dx, dy, dz, facing);
@@ -432,7 +492,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         return (mask & (1 << MultiblockMaskTable.toLocal(side, facing).ordinal())) != 0;
     }
 
-    /** Is any of {@code roles} open on this face? The union a caller holding a commodity but not a direction wants. */
+    /**
+     * Is any of {@code roles} open on this face? The union a caller holding a commodity but not a direction wants.
+     */
     public boolean isOpenForAny(Direction facing, int dx, int dy, int dz, Direction side, int roles) {
         for (CapRole role : CapRole.VALUES) {
             if ((roles & role.bit) != 0 && isOpenAt(facing, dx, dy, dz, side, PASSIVE_NONE, role)) return true;
@@ -459,7 +521,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         return true;
     }
 
-    /** The duct answer; see {@link #canConnect(BlockGetter, BlockPos, ForgeDirection)}. */
+    /**
+     * The duct answer; see {@link #canConnect(BlockGetter, BlockPos, ForgeDirection)}.
+     */
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z,
                               ForgeDirection dir) {
         return acceptsFluid(type) && openForConnector(world, new BlockPos(x, y, z), dir, ROLE_FLUID);
@@ -476,8 +540,11 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
                 pos.getY() - core.getY(), pos.getZ() - core.getZ(), dir.toDirection(), roles);
     }
 
-    /** This cell's world-frame geometry, or null for a plain full cube. */
-    public @Nullable VoxelShape cellShape(int lx, int ly, int lz, Direction facing, boolean open, boolean forCollision) {
+    /**
+     * This cell's world-frame geometry, or null for a plain full cube.
+     */
+    public @Nullable VoxelShape cellShape(int lx, int ly, int lz, Direction facing, boolean open,
+                                          boolean forCollision) {
         if (bounding.isEmpty()) return null;
         return MultiblockHandlerXR.boundingSilhouette(bounding, facing,
                 -MultiblockMaskTable.worldX(lx, ly, lz, facing), -ly,
@@ -506,7 +573,6 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if (ignoresCollision(context)) return Shapes.empty();
         return cachedCellShape(0, 0, 0, state.getValue(FACING), true);
     }
 
@@ -519,25 +585,28 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      */
     public static boolean wallPlacement = false;
     /**
-     * hbm-space {@code BlockDummyable.internalPlayers}: a player standing inside a multiblock they just placed does not
-     * collide with it until no such player is inside any multiblock of that type. Off in plain HBM.
+     * A player embedded by their own successful placement can leave that exact structure. Off in plain HBM.
      */
+    // port: Core-scoped grants keep concurrent placements from sharing collision exemptions.
     public static boolean walkOutAfterPlacing = false;
 
-    /** hbm-space's per-block-type {@code internalPlayers} (1.7 kept it on the Block, shared by every machine of the type). */
-    private final Set<Player> internalPlayers = ConcurrentHashMap.newKeySet();
-    /** Types with internal players. 1.7 dummies were no normal cubes and never suffocated a player walking out. */
-    private static final Set<BlockMultiblockCore> WALKING_OUT = ConcurrentHashMap.newKeySet();
-    private static boolean suffocationGuard;
+    /**
+     * The face the last placement on this thread clicked, with the position it placed at.
+     */
+    private record PlacedFace(BlockPos pos, Direction face) {
+    }
 
-    /** The face the last placement on this thread clicked, with the position it placed at. */
-    private record PlacedFace(BlockPos pos, Direction face) {}
     private static final ThreadLocal<@Nullable PlacedFace> PLACED_FACE = new ThreadLocal<>();
 
-    /** Where a placement puts the core, which way it faces, and the cell 1.7 left out of the space check. */
-    public record Placement(BlockPos core, Direction facing, BlockPos clicked) {}
+    /**
+     * Where a placement puts the core, which way it faces, and the cell 1.7 left out of the space check.
+     */
+    public record Placement(BlockPos core, Direction facing, BlockPos clicked) {
+    }
 
-    /** 1.7 {@code onBlockPlaced} returned the clicked side as metadata; this remembers it for {@link #setPlacedBy}. */
+    /**
+     * 1.7 {@code onBlockPlaced} returned the clicked side as metadata; this remembers it for {@link #setPlacedBy}.
+     */
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
         PLACED_FACE.set(new PlacedFace(context.getClickedPos().immutable(), context.getClickedFace()));
@@ -547,7 +616,8 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         // tested lying across the wrong axis and refused a player standing beside it; 1.7 checked only the clicked
         // cell. Hand the check the facing the machine will really have.
         if (state != null && state.hasProperty(FACING) && context.getPlayer() != null) {
-            Direction facing = placement(context.getClickedPos(), context.getClickedFace(), context.getPlayer().getYRot()).facing();
+            Direction facing = placement(context.getClickedPos(), context.getClickedFace(),
+                    context.getPlayer().getYRot()).facing();
             if (FACING.getPossibleValues().contains(facing)) state = state.setValue(FACING, facing);
         }
         return state;
@@ -559,7 +629,10 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      */
     public final Placement placement(BlockPos pos, Direction face, float yaw) {
         Direction yawFacing = switch (Mth.floor(yaw * 4.0F / placementYawSpan() + .5D) & 3) {
-            case 1 -> Direction.EAST; case 2 -> Direction.SOUTH; case 3 -> Direction.WEST; default -> Direction.NORTH;
+            case 1 -> Direction.EAST;
+            case 2 -> Direction.SOUTH;
+            case 3 -> Direction.WEST;
+            default -> Direction.NORTH;
         };
         if (!wallPlacement) {
             Direction facing = getDirModified(yawFacing);
@@ -589,88 +662,33 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         return new Placement(core, dir, new BlockPos(ox - dir.getStepX() * o, oy, oz - dir.getStepZ() * o));
     }
 
-    /** The placement highlight's green/red answer for a {@link #placement}. */
+    /**
+     * The placement highlight's green/red answer for a {@link #placement}.
+     */
     public final boolean canPlace(Level level, Placement placement) {
-        return checkRequirement(level, placement.core(), placement.facing(), placement.clicked());
+        return canPlace(level, placement, ItemStack.EMPTY);
     }
 
-    /** Whether a placement under a ceiling lowers the core by the machine's height; false where getHeightOffset hangs it. */
+    public final boolean canPlace(Level level, Placement placement, ItemStack stack) {
+        if (!checkRequirement(level, placement.core(), placement.facing(), placement.clicked())) return false;
+        boolean[] clear = {true};
+        visitPlacementCells(placement.core(), placement.facing(), stack, (pos, ignored) -> {
+            if (!clear[0] || pos.equals(placement.clicked())) return;
+            clear[0] = !level.isOutsideBuildHeight(pos) && level.getBlockState(pos).canBeReplaced();
+        });
+        return clear[0];
+    }
+
+    /**
+     * Whether a placement under a ceiling lowers the core by the machine's height; false where getHeightOffset hangs it.
+     */
     protected boolean hangsFromCeiling() {
         return true;
     }
 
-    /**
-     * hbm-space {@code addCollisionBoxesToList}: true while {@code context}'s player is one of this type's internal
-     * players. As 1.7's per-tick check, the list is cleared only once none of them is inside any more.
-     */
-    protected final boolean ignoresCollision(CollisionContext context) {
-        return !internalPlayers.isEmpty() && context instanceof EntityCollisionContext entityContext
-                && entityContext.getEntity() instanceof Player player && walksOut(player);
-    }
-
-    /** Public spelling of {@link #ignoresCollision} for cell blocks of another class. */
-    public final boolean ignoresCollisionFor(CollisionContext context) {
-        return ignoresCollision(context);
-    }
-
-    private boolean walksOut(Player player) {
-        if (!internalPlayers.contains(player)) return false;
-        for (Player inside : internalPlayers) {
-            if (isPlayerInside(inside)) return true;
-        }
-        internalPlayers.clear();
-        WALKING_OUT.remove(this);
-        return false;
-    }
-
-    private void addInternalPlayer(Player player) {
-        internalPlayers.add(player);
-        WALKING_OUT.add(this);
-        guardSuffocation();
-    }
-
-    /** Vanilla's in-wall check reads the context-free collision shape, so the walk-out reaches it as damage instead. */
-    private static synchronized void guardSuffocation() {
-        if (suffocationGuard) return;
-        suffocationGuard = true;
-        DamageEvents.onAttack(event -> {
-            if (!WALKING_OUT.isEmpty() && event.entity() instanceof Player player
-                    && event.source().is(DamageTypes.IN_WALL)) {
-                for (BlockMultiblockCore block : WALKING_OUT) {
-                    if (block.walksOut(player)) {
-                        event.cancel();
-                        return;
-                    }
-                }
-            }
-        });
-    }
-
-    /** hbm-space {@code isPlayerInside}: the block at the player's feet (+0.1) or the one above belongs to this type. */
-    private boolean isPlayerInside(Player player) {
-        if (player.isRemoved()) return false;
-        Level level = player.level();
-        BlockPos feet = BlockPos.containing(player.getX(), player.getY() + 0.1D, player.getZ());
-        return partOfThis(level, feet) || partOfThis(level, feet.above());
-    }
-
-    private boolean partOfThis(Level level, BlockPos pos) {
-        BlockState state = level.getBlockState(pos);
-        if (state.getBlock() == this) return true;
-        if (!MultiblockSurface.isFoldedCell(state)) return false;
-        BlockPos core = MultiblockSurface.coreOfCell(level, pos);
-        return core != null && MultiblockSurface.foldedCore(level.getBlockState(core)) == this;
-    }
-
-    /** Whether the structure at {@code core} occupies {@code pos} (the client's stand-in before the cells arrive). */
-    private boolean occupies(BlockPos core, Direction facing, BlockPos pos) {
-        if (core.equals(pos)) return true;
-        boolean[] hit = {false};
-        visitCells(core, facing, (cell, mask) -> { if (cell.equals(pos)) hit[0] = true; });
-        return hit[0];
-    }
-
-    @Override public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer,
+                            ItemStack stack) {
         if (!(placer instanceof Player player)) return;
         SAFE_REM.set(true);
         try {
@@ -684,38 +702,33 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         Placement placement = placement(pos, face, player.getYRot());
         Direction facing = placement.facing();
         BlockPos core = placement.core();
-        if (!checkRequirement(level, core, facing, placement.clicked())) {
+        if (!canPlace(level, placement, stack)) {
             ItemStack refund = ItemStacks.copyWithCount(stack, 1);
             if (!player.getAbilities().instabuild && !player.getInventory().add(refund)) player.drop(refund, false);
             return;
         }
-        if (level.isClientSide()) {
-            // the cells have not arrived yet: the client asks the footprint instead of the world
-            if (walkOutAfterPlacing) {
-                BlockPos feet = BlockPos.containing(player.getX(), player.getY() + 0.1D, player.getZ());
-                if (occupies(core, facing, feet) || occupies(core, facing, feet.above())) addInternalPlayer(player);
-            }
-            return;
-        }
+        if (level.isClientSide()) return;
         withoutTeardown(() -> {
             level.setBlock(core, defaultBlockState().setValue(FACING, facing), 3);
+            BlockEntity placedCore = level.getBlockEntity(core);
+            if (placedCore != null) {
+                BlockItem.updateCustomBlockEntityTag(level, player, core, stack);
+                ItemStacks.applyComponents(placedCore, stack);
+                placedCore.setChanged();
+            }
             fillSpace(level, core, facing);
         });
         MultiblockHandlerXR.refreshSpace(level, core, getDimensions(), facing);
-        BlockEntity placedCore = level.getBlockEntity(core);
-        if (placedCore != null) {
-            ItemStacks.applyComponents(placedCore, stack);
-            placedCore.setChanged();
-        }
-        // hbm-space: "check if the placing player is inside the placed multiblock"
-        if (walkOutAfterPlacing && isPlayerInside(player)) addInternalPlayer(player);
+        if (walkOutAfterPlacing) MultiblockPlacementEscape.placed(level, core, this, player);
     }
 
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         return MultiblockHandlerXR.checkSpace(level, core, getDimensions(), clicked, facing);
     }
 
-    /** The state written for one cell. */
+    /**
+     * The state written for one cell.
+     */
     protected abstract BlockState cellStateFor(int localX, int localY, int localZ, Direction facing, int shapeId);
 
     public final void fillSpace(LevelAccessor level, BlockPos core, Direction facing) {
@@ -733,12 +746,14 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
             visitPlacedCells(level, core, facing, (pos, mask) -> {
                 if (clip != null && !clip.isInside(pos)) return;
                 int dx = pos.getX() - core.getX(), dy = pos.getY() - core.getY(), dz = pos.getZ() - core.getZ();
-                int lx = MultiblockMaskTable.localX(dx, dy, dz, facing), lz = MultiblockMaskTable.localZ(dx, dy, dz, facing);
+                int lx = MultiblockMaskTable.localX(dx, dy, dz, facing), lz = MultiblockMaskTable.localZ(dx, dy, dz,
+                        facing);
                 level.setBlock(pos, cellStateFor(lx, dy, lz, facing, 0), 3);
                 if (isCellOf(level.getBlockState(pos))) scratch.add(pos);
             });
             if (level instanceof ServerLevel server) {
-                for (int i = 0; i < scratch.size(); i++) MultiblockCoreIndex.put(server, BlockPos.of(scratch.get(i)), core);
+                for (int i = 0; i < scratch.size(); i++)
+                    MultiblockCoreIndex.put(server, BlockPos.of(scratch.get(i)), core);
             } else if (level instanceof WorldGenLevel worldgen && scratch.size() > 0) {
                 // A structure placed during world generation (a worker thread): the index is level SavedData, so
                 // its entries are handed to the server thread instead of being written from here.
@@ -750,14 +765,19 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
                     for (long cell : cells) MultiblockCoreIndex.put(server, BlockPos.of(cell), owner);
                 });
             }
-        } finally { scratch.release(); }
+        } finally {
+            scratch.release();
+        }
     }
 
-    @Override protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
+    @Override
+    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         if (level instanceof ServerLevel server) removedAt(state, server, pos, movedByPiston);
     }
 
-    /** Split out so own-block cells such as RBMK columns can route removal through the recorded owner. */
+    /**
+     * Split out so own-block cells such as RBMK columns can route removal through the recorded owner.
+     */
     protected void removedAt(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         LevelNodeGraph.invalidateEndpointsAround(level, pos);
         if (!movedByPiston && !BUSY.get()) demolish(level, pos, this, state.getValue(FACING), false);
@@ -773,10 +793,12 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         if (block != null) demolish(level, core, block, level.getBlockState(core).getValue(FACING), true);
     }
 
-    private static void demolish(ServerLevel level, BlockPos core, BlockMultiblockCore block, Direction facing, boolean removeCore) {
+    private static void demolish(ServerLevel level, BlockPos core, BlockMultiblockCore block, Direction facing,
+                                 boolean removeCore) {
         withoutTeardown(() -> {
             block.visitTeardownCells(level, core, facing, (cell, mask) -> {
-                if (!block.isCellOf(level.getBlockState(cell)) || MultiblockCoreIndex.lookup(level, cell) != core.asLong()) return;
+                if (!block.isCellOf(level.getBlockState(cell)) || MultiblockCoreIndex.lookup(level,
+                        cell) != core.asLong()) return;
                 BlockPos at = cell.immutable();
                 level.removeBlock(at, false);
                 MultiblockCoreIndex.remove(level, at);
@@ -794,7 +816,9 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         visitCells(core, facing, (pos, mask) -> LevelNodeGraph.invalidateEndpointsAround(level, pos));
     }
 
-    /** Re-index and re-notify every cell of a freshly loaded core; the index is the authority. */
+    /**
+     * Re-index and re-notify every cell of a freshly loaded core; the index is the authority.
+     */
     public void reindexLoadedCells(ServerLevel level, BlockPos core) {
         Direction facing = level.getBlockState(core).getValue(FACING);
         long corePacked = core.asLong();
@@ -829,25 +853,32 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         return range * range;
     }
 
-    /** Whether {@code player} is close enough to interact with the machine cored at {@code core}. */
+    /**
+     * Whether {@code player} is close enough to interact with the machine cored at {@code core}.
+     */
     public static boolean isWithinInteractionRange(BlockGetter level, BlockPos core, Player player) {
         BlockMultiblockCore block = MultiblockSurface.foldedCore(level.getBlockState(core));
         // Measured in the world: a machine on a moving sub-level keeps its blocks far from where the player sees it.
         double distance = SubLevels.distanceSq(player.level(),
-                core.getX() + 0.5D, core.getY() + 0.5D, core.getZ() + 0.5D, player.getX(), player.getY(), player.getZ());
+                core.getX() + 0.5D, core.getY() + 0.5D, core.getZ() + 0.5D, player.getX(), player.getY(),
+                player.getZ());
         return distance <= (block == null ? BASE_INTERACTION_RANGE_SQ : block.getInteractionRangeSq());
     }
 
-    public boolean wantsNeighborUpdates() { return false; }
+    public boolean wantsNeighborUpdates() {
+        return false;
+    }
 
     /**
      * A neighbour of {@code cell} changed; {@code cell} may be the core itself. The cell position goes
      * through, not the core's: 1.7 keys its redstone bookkeeping on the edge position.
      */
-    public void cellNeighborChanged(ServerLevel level, BlockPos core, BlockPos cell) {}
+    public void cellNeighborChanged(ServerLevel level, BlockPos core, BlockPos cell) {
+    }
 
-    @Override protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
-                                               boolean movedByPiston) {
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
+                                     boolean movedByPiston) {
         if (wantsNeighborUpdates() && level instanceof ServerLevel server) cellNeighborChanged(server, pos, pos);
     }
 
@@ -862,7 +893,8 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * <p>Override for a machine that does something other than open its menu, or treats a sneak-click
      * differently.
      */
-    protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core, Player player, BlockHitResult hit) {
+    protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core, Player player,
+                                          BlockHitResult hit) {
         if (!(level.getBlockEntity(core) instanceof MenuProvider menu)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
@@ -879,45 +911,60 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         forwardExplosionHit(state, level, core, explosion, onHit);
     }
 
-    @Override protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    @Override
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                                 BlockHitResult hit) {
         return useAtCore(state, level, pos, player, hit);
     }
 
     // 1.7 BlockDummyable.getSettings/pasteSettings/infoForDisplay: findCore first, so the settings tool works on
     // any part of the machine, not only the core.
-    @Override public @Nullable CompoundTag getSettings(Level level, BlockPos pos) {
+    @Override
+    public @Nullable CompoundTag getSettings(Level level, BlockPos pos) {
         BlockPos core = copyCore(level, pos);
-        return core != null && level.getBlockEntity(core) instanceof ICopiable copiable ? copiable.getSettings(level, core) : null;
+        return core != null && level.getBlockEntity(core) instanceof ICopiable copiable ? copiable.getSettings(level,
+                core) : null;
     }
 
-    @Override public void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
+    @Override
+    public void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
         BlockPos core = copyCore(level, pos);
-        if (core != null && level.getBlockEntity(core) instanceof ICopiable copiable) copiable.pasteSettings(nbt, index, level, player, core);
+        if (core != null && level.getBlockEntity(core) instanceof ICopiable copiable)
+            copiable.pasteSettings(nbt, index, level, player, core);
     }
 
-    @Override public String @Nullable [] infoForDisplay(Level level, BlockPos pos) {
+    @Override
+    public String @Nullable [] infoForDisplay(Level level, BlockPos pos) {
         BlockPos core = copyCore(level, pos);
-        return core != null && level.getBlockEntity(core) instanceof ICopiable copiable ? copiable.infoForDisplay(level, core) : null;
+        return core != null && level.getBlockEntity(core) instanceof ICopiable copiable ? copiable.infoForDisplay(level,
+                core) : null;
     }
 
     private @Nullable BlockPos copyCore(Level level, BlockPos pos) {
         return isCellState(level.getBlockState(pos)) ? MultiblockSurface.coreOfCell(level, pos) : pos;
     }
 
-    @Override public BlockState rotate(BlockState state, Rotation rotation) {
+    @Override
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
-    @Override public BlockState mirror(BlockState state, Mirror mirror) {
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
-    /** How {@link #visitPassiveCells} reports the proxy accept surface. */
-    @FunctionalInterface public interface PassiveCellVisitor {
+    /**
+     * How {@link #visitPassiveCells} reports the proxy accept surface.
+     */
+    @FunctionalInterface
+    public interface PassiveCellVisitor {
         void passiveCell(BlockPos pos, int faces, int domains);
     }
 
-    /** How {@link #visitCells} reports geometry. */
+    /**
+     * How {@link #visitCells} reports geometry.
+     */
     public interface CellVisitor extends MultiblockHandlerXR.BoxVisitor {
 
         void cell(BlockPos pos, int mask);
@@ -927,10 +974,16 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
          * two emissions on one cell compose; only the mask table distinguishes them, every other visitor
          * wants the union and takes the default.
          */
-        default void cell(BlockPos pos, int mask, int roles) { cell(pos, mask); }
+        default void cell(BlockPos pos, int mask, int roles) {
+            cell(pos, mask);
+        }
 
-        @Override default void cell(BlockPos pos, Direction facingCore) { cell(pos, MASK_NONE); }
+        @Override
+        default void cell(BlockPos pos, Direction facingCore) {
+            cell(pos, MASK_NONE);
+        }
     }
 
-    public record FoldedOwner(BlockPos pos, BlockState state, BlockMultiblockCore block, Direction facing) {}
+    public record FoldedOwner(BlockPos pos, BlockState state, BlockMultiblockCore block, Direction facing) {
+    }
 }

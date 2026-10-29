@@ -35,9 +35,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
+import java.util.function.Supplier;
+
 
 public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
 
+    /**
+     * The authored special drop between the coin and skull.
+     */
+    public static Supplier<ItemStack> SPECIAL_DROP = () -> new ItemStack(ModArmorModItems.bottled_cloud.get());
 
     // 1.7's edge detector read EntityLivingBase.prevHealth, which starts at zero. Seeding this from the max health
     // instead re-armed the crossing on every load, so a mask man left below half health blew up again each time
@@ -145,7 +151,6 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
     }
 
 
-
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
@@ -157,7 +162,7 @@ public class EntityMaskMan extends CompatMonster implements IRadiationImmune {
 
         spawnAtLocation(level, mask);
         spawnAtLocation(level, new ItemStack(ModItems.coin_maskman.get()));
-        spawnAtLocation(level, new ItemStack(ModArmorModItems.bottled_cloud.get()));
+        spawnAtLocation(level, SPECIAL_DROP.get());
         spawnAtLocation(level, new ItemStack(Items.SKELETON_SKULL));
     }
 }

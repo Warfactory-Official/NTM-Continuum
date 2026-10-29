@@ -128,6 +128,9 @@ public class ExplosionTom {
             }
         }
 
+        // Visit the full lava band even when the old surface lies below sea level.
+        y = Math.max(y, terrain + 1);
+
         int height = terrain - 14;
         int offset = 20;
         int threshold = (int) (planar * (height + offset) / (float) this.radius)

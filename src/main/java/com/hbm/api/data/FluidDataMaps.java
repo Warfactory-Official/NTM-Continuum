@@ -1,11 +1,14 @@
 package com.hbm.api.data;
 
 import com.hbm.Constants;
+import com.hbm.config.GeneralConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.data.DataMaps;
 import dev.golem.core.data.DataMaps.DataMap;
+
 import java.util.Optional;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.material.Fluid;
@@ -16,7 +19,8 @@ import net.minecraft.world.level.material.Fluid;
  */
 public final class FluidDataMaps {
 
-    private FluidDataMaps() {}
+    private FluidDataMaps() {
+    }
 
     private static <V> DataMap<Fluid, V> fluid(String name, Codec<V> codec) {
         return DataMaps.map(FluidDataMaps.class, Constants.MOD_ID, name, "fluid", () -> BuiltInRegistries.FLUID, codec);
@@ -36,7 +40,9 @@ public final class FluidDataMaps {
         ).apply(i, Containers::new));
     }
 
-    /** Fluids the autosaw and the thresher burn ({@code true}; 1.7 {@code TileEntityMachineAutosaw.acceptedFuels}). */
+    /**
+     * Fluids the autosaw and the thresher burn ({@code true}; 1.7 {@code TileEntityMachineAutosaw.acceptedFuels}).
+     */
     public static final DataMap<Fluid, Boolean> AUTOSAW_FUEL = fluid("autosaw_fuel", Codec.BOOL);
 
     /**
@@ -48,19 +54,32 @@ public final class FluidDataMaps {
     /**
      * A fixed fluid container (1.7 {@code FluidContainerRegistry}), keyed by the full item: {@code amount} mB of
      * {@code fluid} (a fluid registry name), and the item crafting leaves ({@code empty}; absent when the item is
-     * used up).
+     * used up). An optional {@code amount_528} overrides the amount while 528 mode is enabled.
      */
     public static final DataMap<Item, Container> FLUID_CONTAINER = DataMaps.map(FluidDataMaps.class,
             Constants.MOD_ID, "fluid_container", "item", () -> BuiltInRegistries.ITEM, Container.CODEC);
 
-    public record Container(String fluid, int amount, Optional<String> empty) {
+    public record Container(String fluid, int amount, Optional<String> empty, Optional<Integer> amount528) {
+        public Container(String fluid, int amount, Optional<String> empty) {
+            this(fluid, amount, empty, Optional.empty());
+        }
+
+        @Override
+        public int amount() {
+            return GeneralConfig.enable528 ? amount528.orElse(amount) : amount;
+        }
+
         public static final Codec<Container> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("fluid").forGetter(Container::fluid),
-                Codec.INT.fieldOf("amount").forGetter(Container::amount),
-                Codec.STRING.optionalFieldOf("empty").forGetter(Container::empty)
+                Codec.INT.fieldOf("amount").forGetter((Container value) -> value.amount),
+                Codec.STRING.optionalFieldOf("empty").forGetter(Container::empty),
+                Codec.INT.optionalFieldOf("amount_528").forGetter(Container::amount528)
         ).apply(i, Container::new));
     }
 
-    /** Loads the class at mod construction (from {@link HbmDataMaps#declare()}). */
-    public static void declare() {}
+    /**
+     * Loads the class at mod construction (from {@link HbmDataMaps#declare()}).
+     */
+    public static void declare() {
+    }
 }

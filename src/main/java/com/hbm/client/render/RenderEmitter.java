@@ -64,12 +64,19 @@ public final class RenderEmitter extends GemBER<TileEntityEmitter, RenderEmitter
         pose.translate(0.5D, 0D, 0.5D);
         pose.mulPose(Axis.YP.rotationDegrees(90F));
         switch (state.facing) {
-            case DOWN -> { pose.translate(0D, 0.5D, -0.5D); pose.mulPose(Axis.XP.rotationDegrees(90F)); }
-            case UP -> { pose.translate(0D, 0.5D, 0.5D); pose.mulPose(Axis.XP.rotationDegrees(-90F)); }
+            case DOWN -> {
+                pose.translate(0D, 0.5D, -0.5D);
+                pose.mulPose(Axis.XP.rotationDegrees(90F));
+            }
+            case UP -> {
+                pose.translate(0D, 0.5D, 0.5D);
+                pose.mulPose(Axis.XP.rotationDegrees(-90F));
+            }
             case NORTH -> pose.mulPose(Axis.YP.rotationDegrees(90F));
             case WEST -> pose.mulPose(Axis.YP.rotationDegrees(180F));
             case SOUTH -> pose.mulPose(Axis.YP.rotationDegrees(270F));
-            default -> { }
+            default -> {
+            }
         }
         pose.translate(0D, 0.5D, 0.5D);
 
@@ -87,20 +94,21 @@ public final class RenderEmitter extends GemBER<TileEntityEmitter, RenderEmitter
         float f = state.interp;
 
         int segments = (int) Math.max(Math.sqrt(girth * 50), 2);
-        BeamPronter.prontBeam(pose, sink, beam, EnumWaveType.SPIRAL, EnumBeamType.SOLID, 0, 1, 0F,
+        BeamPronter.prontMachineBeam(pose, sink, beam, EnumWaveType.SPIRAL, EnumBeamType.SOLID, 0, 1, 0F,
                 colorOuter, colorInner, segments, girth);
 
         if (state.effect == 1) {
-            BeamPronter.prontBeam(pose, sink, beam, EnumWaveType.RANDOM, EnumBeamType.SOLID, (int) time / 2,
+            BeamPronter.prontMachineBeam(pose, sink, beam, EnumWaveType.RANDOM, EnumBeamType.SOLID, (int) time / 2,
                     (int) Math.max(range / girth / 2, 1), girth * 2, colorOuter, colorInner, 4, girth * 0.1F);
-            BeamPronter.prontBeam(pose, sink, beam, EnumWaveType.RANDOM, EnumBeamType.SOLID, (int) time / 2 + 15,
+            BeamPronter.prontMachineBeam(pose, sink, beam, EnumWaveType.RANDOM, EnumBeamType.SOLID, (int) time / 2 + 15,
                     (int) Math.max(range / girth / 4, 1), girth * 2, colorOuter, colorInner, 4, girth * 0.1F);
         }
         if (state.effect == 2 || state.effect == 3) {
             int helices = state.effect == 2 ? 2 : 3;
             int spin = (int) (time + f) * -10 % 360;
             for (int i = 0; i < helices; i++) {
-                BeamPronter.prontBeam(pose, sink, beam, EnumWaveType.SPIRAL, EnumBeamType.SOLID, spin + i * 360 / helices,
+                BeamPronter.prontMachineBeam(pose, sink, beam, EnumWaveType.SPIRAL, EnumBeamType.SOLID,
+                        spin + i * 360 / helices,
                         (int) Math.max(range / girth / 2, 1), girth * 2, colorOuter, colorInner, 4, girth * 0.1F);
             }
         }

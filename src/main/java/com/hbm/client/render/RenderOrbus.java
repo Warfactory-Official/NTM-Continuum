@@ -42,9 +42,9 @@ public final class RenderOrbus extends GemBER<TileEntityMachineOrbus, RenderOrbu
     @Override
     protected void setup(Gem.Model<State> declaration) {
         declaration.offScreen().viewDistance(256).joint()
-                .slide(Gem.Axes.X, state -> state.offX)
-                .slide(Gem.Axes.Z, state -> state.offZ)
-                .child(model.all(), skin);
+                   .slide(Gem.Axes.X, state -> state.offX)
+                   .slide(Gem.Axes.Z, state -> state.offZ)
+                   .child(model.all(), skin);
     }
 
     @Override
@@ -55,10 +55,22 @@ public final class RenderOrbus extends GemBER<TileEntityMachineOrbus, RenderOrbu
     @Override
     public void extract(TileEntityMachineOrbus orbus, State state, float partialTicks, Vec3 cameraPosition) {
         switch (MachineCore.facingOrdinal(orbus.getBlockState(), 3)) {
-            case 2 -> { state.offX = 1F; state.offZ = 1F; }
-            case 4 -> { state.offX = 1F; state.offZ = 0F; }
-            case 5 -> { state.offX = 0F; state.offZ = 1F; }
-            default -> { state.offX = 0F; state.offZ = 0F; }
+            case 2 -> {
+                state.offX = 1F;
+                state.offZ = 1F;
+            }
+            case 4 -> {
+                state.offX = 1F;
+                state.offZ = 0F;
+            }
+            case 5 -> {
+                state.offX = 0F;
+                state.offZ = 1F;
+            }
+            default -> {
+                state.offX = 0F;
+                state.offZ = 0F;
+            }
         }
         state.fill = orbus.tank.getFill();
         state.scale = (double) orbus.tank.getFill() / (double) Math.max(1, orbus.tank.getMaxFill());
@@ -76,19 +88,24 @@ public final class RenderOrbus extends GemBER<TileEntityMachineOrbus, RenderOrbu
         poseStack.translate(state.offX, 0F, state.offZ);
 
         poseStack.pushPose();
-        poseStack.translate(0D, 2.5D + Math.sin(((state.time + state.interp) * 0.1D) % (Math.PI * 2D)) * 0.125 * scale, 0D);
+        poseStack.translate(0D, 2.5D + Math.sin(((state.time + state.interp) * 0.1D) % (Math.PI * 2D)) * 0.125 * scale,
+                0D);
         poseStack.scale((float) scale, (float) scale, (float) scale);
         int color = 0xFF000000 | (state.color & 0xFFFFFF);
-        sink.submitCustomGeometry(poseStack, CompatRenderTypes.weaponSmoke(), (pose, buffer) -> sphere.renderAllColor(pose, buffer, color));
+        sink.submitCustomGeometry(poseStack, CompatRenderTypes.weaponSmoke(),
+                (pose, buffer) -> sphere.renderAllColor(pose, buffer, color));
         poseStack.popPose();
 
         poseStack.translate(0F, 1F, 0F);
         Vec3 up = new Vec3(0, 3, 0);
-        BeamPronter.prontBeam(poseStack, sink, up, BeamPronter.EnumWaveType.SPIRAL, BeamPronter.EnumBeamType.SOLID,
+        BeamPronter.prontMachineBeam(poseStack, sink, up, BeamPronter.EnumWaveType.SPIRAL,
+                BeamPronter.EnumBeamType.SOLID,
                 0, 1, 0F, 0x101020, 0x101020, 6, (float) scale * 0.5F);
-        BeamPronter.prontBeam(poseStack, sink, up, BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID,
+        BeamPronter.prontMachineBeam(poseStack, sink, up, BeamPronter.EnumWaveType.RANDOM,
+                BeamPronter.EnumBeamType.SOLID,
                 (int) (state.time / 2) % 1000, 6, (float) scale, 0x202060, 0x202060, 2, 0.0625F * (float) scale);
-        BeamPronter.prontBeam(poseStack, sink, up, BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID,
+        BeamPronter.prontMachineBeam(poseStack, sink, up, BeamPronter.EnumWaveType.RANDOM,
+                BeamPronter.EnumBeamType.SOLID,
                 (int) (state.time / 4) % 1000, 6, (float) scale, 0x202060, 0x202060, 2, 0.0625F * (float) scale);
 
         poseStack.popPose();

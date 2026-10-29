@@ -1,5 +1,7 @@
 package com.hbm.client.render;
 
+import dev.golem.core.world.ItemModels;
+
 //? if <26.1 {
 
 /*import com.mojang.blaze3d.systems.RenderSystem;
@@ -7,7 +9,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.RecordingSubmitSink;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -39,7 +40,7 @@ public final class MachineItemRenderers {
         if (com.hbm.client.render.weapon.GunLegacyModels.render(stack, context, poseStack, buffers, light, overlay)) return;
         // Ported 1.7 IItemRenderers (hbm:custom_item) are context-driven for the same reason.
         if (MachineItemModels.renderCustom(stack, context, poseStack, buffers, light, overlay)) return;
-        Identifier id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        Identifier id = ItemModels.id(stack.getItem());
         if (MachineItemModels.isGlider(id)) {
             com.hbm.client.jetpack.JetpackGliderLegacyRenderer.render(stack, context, poseStack, buffers, light, overlay);
             return;

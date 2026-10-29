@@ -19,7 +19,8 @@ package com.hbm.lib;
  */
 public final class ItemIds {
 
-    private ItemIds() {}
+    private ItemIds() {
+    }
 
     public static final String acetylene_torch = "hbm:acetylene_torch";
     public static final String achievement_icon_acid = "hbm:achievement_icon_acid";

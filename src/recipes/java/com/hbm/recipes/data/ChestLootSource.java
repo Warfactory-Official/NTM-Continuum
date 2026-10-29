@@ -10,15 +10,17 @@ import com.hbm.itempool.PoolFill;
 import com.hbm.itempool.PoolLoot;
 import dev.golem.core.Ids;
 import dev.golem.core.world.DataSource;
+
 import java.util.Map;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 
 /**
  * The structure loot table of each item pool, {@code data/hbm/loot_table/chests/<pool>.json}: one roll of the pool's rows
- * with their weights. A vanilla loot pool picks by weight as 1.7's {@code WeightedRandom} does, and {@code set_count}
- * with a uniform count is 1.7's {@code min + rand(max - min + 1)}.
+ * with their weights. A vanilla loot pool picks by weight as 1.7's {@code WeightedRandom} does. Count functions keep
+ * unclamped counts, including stacks the structure fill later splits into single items.
  */
 public final class ChestLootSource extends DataSource<JsonObject> {
 
@@ -84,14 +86,18 @@ public final class ChestLootSource extends DataSource<JsonObject> {
         return table;
     }
 
-    /** False where {@code ItemPool} skips the row: an item this port has not registered, or a fluid it cannot hold. */
+    /**
+     * False where {@code ItemPool} skips the row: an item this port has not registered, or a fluid it cannot hold.
+     */
     private static boolean kept(Row row) {
         Identifier id = Ids.parse(row.item());
         if (!BuiltInRegistries.ITEM.containsKey(id)) return false;
         return row.fluid() == null || PoolFill.fills(BuiltInRegistries.ITEM.getValue(id), row.fluid());
     }
 
-    /** In {@code ItemPool.Row}'s order: the fluid fill (it may change the item), then the components, then the count. */
+    /**
+     * In {@code ItemPool.Row}'s order: the fluid fill (it may change the item), then the components, then the count.
+     */
     private static JsonObject entry(Row row) {
         JsonObject entry = new JsonObject();
         if (row.item() == null) {

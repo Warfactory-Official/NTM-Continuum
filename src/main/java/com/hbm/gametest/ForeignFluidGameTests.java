@@ -30,8 +30,10 @@ import dev.golem.core.fluid.TokenFluids;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.world.ItemExposure;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -61,10 +63,13 @@ import java.util.Set;
  */
 public final class ForeignFluidGameTests {
 
-    /** Long enough for every machine to build its ports and a round to run. */
+    /**
+     * Long enough for every machine to build its ports and a round to run.
+     */
     private static final int PORT_CLAIM_WAIT = 20;
 
-    private ForeignFluidGameTests() {}
+    private ForeignFluidGameTests() {
+    }
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
     public static final GameTests.Function REGISTRY =
@@ -74,25 +79,36 @@ public final class ForeignFluidGameTests {
     public static final GameTests.Function BARREL =
             TESTS.function("foreign_fluids_barrel_modes_and_save", 200, 8, () -> ForeignFluidGameTests::barrel);
     public static final GameTests.Function MACHINE_TO_MACHINE =
-            TESTS.function("foreign_fluids_machine_to_machine_and_bucket", 200, 8, () -> ForeignFluidGameTests::machineToMachine);
+            TESTS.function("foreign_fluids_machine_to_machine_and_bucket", 200, 8,
+                    () -> ForeignFluidGameTests::machineToMachine);
     public static final GameTests.Function ITEMS =
             TESTS.function("foreign_fluids_container_items", 20, () -> ForeignFluidGameTests::items);
     public static final GameTests.Function INPUT_NOT_DRAINED =
-            TESTS.function("fluid_net_consumer_input_not_drained", 200, 8, () -> ForeignFluidGameTests::inputNotDrained);
+            TESTS.function("fluid_net_consumer_input_not_drained", 200, 8,
+                    () -> ForeignFluidGameTests::inputNotDrained);
     public static final GameTests.Function INPUT_NOT_PROVIDED =
-            TESTS.function("fluid_providers_offer_only_sending_tanks", 20, () -> ForeignFluidGameTests::inputNotProvided);
+            TESTS.function("fluid_providers_offer_only_sending_tanks", 20,
+                    () -> ForeignFluidGameTests::inputNotProvided);
     public static final GameTests.Function EVERY_MACHINE =
             TESTS.function("foreign_every_machine_has_a_face", 24_000, 24, () -> ForeignFluidGameTests::everyMachine);
-    /** 1.7: tubes take air only once set as compressors, the PWR only through its pwr_port blocks. */
-    private static final Set<String> NO_OWN_FLUID_FACE = Set.of("pneumatic_tube", "pneumatic_tube_paintable", "pwr_controller");
-    /** 1.7: these accelerator parts list no slot on any side (TileEntityMachineBase), so no automation reaches them. */
+    /**
+     * 1.7: tubes take air only once set as compressors, the PWR only through its pwr_port blocks.
+     */
+    private static final Set<String> NO_OWN_FLUID_FACE = Set.of("pneumatic_tube", "pneumatic_tube_paintable",
+            "pwr_controller");
+    /**
+     * 1.7: these accelerator parts list no slot on any side (TileEntityMachineBase), so no automation reaches them.
+     */
     private static final Set<String> NO_ITEM_FACE = Set.of("pa_rfc", "pa_quadrupole", "pa_dipole");
 
-    public static void init() {}
+    public static void init() {
+    }
 
     private static final int Y = 2;
 
-    /** Every registered FluidType is a vanilla Fluid with the right id, 1:1, and none of them is placeable or bucketable. */
+    /**
+     * Every declared network fluid has its vanilla identity; its tokens are neither placeable nor bucketable.
+     */
     private static void registry(GameTestHelper helper) {
         int tokens = 0;
         Set<Fluid> seen = new HashSet<>();
@@ -111,7 +127,8 @@ public final class ForeignFluidGameTests {
                 helper.assertTrue(TokenFluids.isToken(fluid), id + " is not a token fluid");
                 helper.assertTrue(fluid.getBucket() == Items.AIR, id + " has a bucket");
                 helper.assertTrue(fluid.defaultFluidState().createLegacyBlock().isAir(), id + " has a world block");
-                helper.assertTrue(fluid.defaultFluidState().isSource(), id + " must be a source so recipe viewers list it");
+                helper.assertTrue(fluid.defaultFluidState().isSource(),
+                        id + " must be a source so recipe viewers list it");
                 // the saved form is unchanged: still the FluidType registry name
                 helper.assertTrue(Fluids.byRegistryName(id) == type, id + " does not read back as a save");
             }
@@ -131,7 +148,8 @@ public final class ForeignFluidGameTests {
      */
     private static void pump(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos pos = FoldedTestSupport.assemble(helper, ModFluidNetBlocks.flow_control_pump.get(), new BlockPos(3, Y, 3));
+        BlockPos pos = FoldedTestSupport.assemble(helper, ModFluidNetBlocks.flow_control_pump.get(),
+                new BlockPos(3, Y, 3));
         TileEntityFlowControlPump pump = (TileEntityFlowControlPump) level.getBlockEntity(pos);
         pump.tank[0].setTankType(Fluids.WATER);
         Direction out = direction(pump.outSide());
@@ -143,25 +161,30 @@ public final class ForeignFluidGameTests {
             FluidView outlet = FluidCompat.find(level, pos.relative(out), out);
             if (intake == null && outlet == null && level.getBlockEntity(pos.relative(in)) == null) {
                 // Forge 1.20.1 attaches capabilities to block entities only, and a folded cell has none
-                Constants.LOG.info("[ports] {}: folded cells expose no fluid capability on this loader", level.dimension());
+                Constants.LOG.info("[ports] {}: folded cells expose no fluid capability on this loader",
+                        level.dimension());
                 helper.succeed();
                 return;
             }
             helper.assertTrue(intake != null && outlet != null, "the pump exposes its intake and outlet");
             helper.assertTrue(FluidCompat.find(level, pos, Direction.UP) == null, "the pump's top is not a fluid port");
-            helper.assertTrue(intake.tanks() == 1 && intake.capacity(0) == 100, "one 100 mB buffer, got " + intake.tanks() + "/" + intake.capacity(0));
+            helper.assertTrue(intake.tanks() == 1 && intake.capacity(0) == 100,
+                    "one 100 mB buffer, got " + intake.tanks() + "/" + intake.capacity(0));
 
             helper.assertTrue(intake.insert(Fluids.LAVA.getFluid(), 1000, false) == 0, "a water pump took lava");
             helper.assertTrue(outlet.insert(water, 1000, false) == 0, "the outlet took water");
             long simulated = intake.insert(water, 1000, true);
-            helper.assertTrue(simulated == 100 && pump.tank[0].getFill() == 0, "a simulation moved fluid: " + simulated);
+            helper.assertTrue(simulated == 100 && pump.tank[0].getFill() == 0,
+                    "a simulation moved fluid: " + simulated);
             long moved = intake.insert(water, 1000, false);
-            helper.assertTrue(moved == 100 && pump.tank[0].getFill() == 100, "the intake took " + moved + ", buffer " + pump.tank[0].getFill());
+            helper.assertTrue(moved == 100 && pump.tank[0].getFill() == 100,
+                    "the intake took " + moved + ", buffer " + pump.tank[0].getFill());
             helper.assertTrue(intake.amount(0) == 100 && intake.fluid(0) == water, "the buffer reads 100 mB water");
 
             helper.assertTrue(intake.extract(water, 1000, false) == 0, "the intake gave water");
             long given = outlet.extract(water, 30, false);
-            helper.assertTrue(given == 30 && pump.tank[0].getFill() == 70, "the outlet gave " + given + ", buffer " + pump.tank[0].getFill());
+            helper.assertTrue(given == 30 && pump.tank[0].getFill() == 70,
+                    "the outlet gave " + given + ", buffer " + pump.tank[0].getFill());
 
             pump.tank[0].withPressure(1);
             helper.assertTrue(intake.insert(water, 10, false) == 0, "a pressurised buffer took unpressurised water");
@@ -185,7 +208,8 @@ public final class ForeignFluidGameTests {
         helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
             FluidView view = FluidCompat.find(level, pos, Direction.EAST);
             helper.assertTrue(view != null, "the barrel exposes its tank");
-            helper.assertTrue(view.insert(Fluids.KEROSENE.getFluid(), 1000, false) == 0, "a diesel barrel took kerosene");
+            helper.assertTrue(view.insert(Fluids.KEROSENE.getFluid(), 1000, false) == 0,
+                    "a diesel barrel took kerosene");
             helper.assertTrue(view.insert(diesel, 1234, false) == 1234 && barrel.tank.getFill() == 1234,
                     "mode 0 takes 1234 mB, got " + barrel.tank.getFill());
             helper.assertTrue(view.extract(diesel, 100, false) == 0, "mode 0 (input) gave diesel");
@@ -201,9 +225,11 @@ public final class ForeignFluidGameTests {
                 // The save is the IDS format, byte-identical to a hand-filled barrel's.
                 var registries = level.registryAccess();
                 CompoundTag saved = BlockEntities.saveWithoutMetadata(barrel, registries);
-                helper.assertTrue(saved.toString().contains("\"hbm:diesel\""), "the barrel saves diesel by name: " + saved);
+                helper.assertTrue(saved.toString().contains("\"hbm:diesel\""),
+                        "the barrel saves diesel by name: " + saved);
                 BlockState state = level.getBlockState(pos);
-                TileEntityBarrel byHand = (TileEntityBarrel) ((EntityBlock) state.getBlock()).newBlockEntity(pos, state);
+                TileEntityBarrel byHand = (TileEntityBarrel) ((EntityBlock) state.getBlock()).newBlockEntity(pos,
+                        state);
                 byHand.tank.setTankType(Fluids.DIESEL);
                 byHand.tank.setFill(15234);
                 byHand.mode = 2;
@@ -246,7 +272,8 @@ public final class ForeignFluidGameTests {
             long room = in.insert(kerosene, offered, true);
             long taken = out.extract(kerosene, room, false);
             long put = in.insert(kerosene, taken, false);
-            helper.assertTrue(taken == 1500 && put == 1500 && source.tank.getFill() == 3500 && sink.tank.getFill() == 1500,
+            helper.assertTrue(
+                    taken == 1500 && put == 1500 && source.tank.getFill() == 3500 && sink.tank.getFill() == 1500,
                     "moved " + taken + "/" + put + ", source " + source.tank.getFill() + ", sink " + sink.tank.getFill());
 
             FluidView bucket = FluidCompat.findItem(new ItemStack(Items.WATER_BUCKET));
@@ -257,7 +284,8 @@ public final class ForeignFluidGameTests {
             long filled = barrelView == null ? -1 : barrelView.insert(water, drained, false);
             helper.assertTrue(drained == 1000 && filled == 1000 && waterBarrel.tank.getFill() == 1000,
                     "bucket gave " + drained + ", barrel took " + filled + ", holds " + waterBarrel.tank.getFill());
-            helper.assertTrue(bucket.container().is(Items.BUCKET), "the drained bucket is an empty bucket: " + bucket.container());
+            helper.assertTrue(bucket.container().is(Items.BUCKET),
+                    "the drained bucket is an empty bucket: " + bucket.container());
             helper.succeed();
         });
     }
@@ -273,9 +301,11 @@ public final class ForeignFluidGameTests {
         FluidView full = FluidCompat.findItem(canister.make(Fluids.DIESEL, 1000));
         helper.assertTrue(full != null && full.tanks() == 1 && full.fluid(0) == diesel && full.amount(0) == 1000,
                 "a full diesel canister reads 1000 mB diesel");
-        helper.assertTrue(full.extract(Fluids.KEROSENE.getFluid(), 1000, false) == 0, "the diesel canister gave kerosene");
+        helper.assertTrue(full.extract(Fluids.KEROSENE.getFluid(), 1000, false) == 0,
+                "the diesel canister gave kerosene");
         helper.assertTrue(full.extract(diesel, 1000, false) == 1000, "the canister drains 1000 mB");
-        helper.assertTrue(ItemFluidTank.getType(full.container()) == Fluids.NONE && canister.getFill(full.container()) == 0,
+        helper.assertTrue(
+                ItemFluidTank.getType(full.container()) == Fluids.NONE && canister.getFill(full.container()) == 0,
                 "the drained canister is empty: " + full.container());
 
         FluidView empty = FluidCompat.findItem(new ItemStack(ModItems.canister_empty.get()));
@@ -284,13 +314,15 @@ public final class ForeignFluidGameTests {
         helper.assertTrue(empty.insert(Fluids.WATER.getFluid(), 1000, false) == 0, "1.7 had no water canister");
         helper.assertTrue(empty.insert(diesel, 1000, false) == 1000, "the empty canister takes 1000 mB diesel");
         ItemStack filled = empty.container();
-        helper.assertTrue(filled.is(canister) && ItemFluidTank.getType(filled) == Fluids.DIESEL && canister.getFill(filled) == 1000,
+        helper.assertTrue(filled.is(canister) && ItemFluidTank.getType(filled) == Fluids.DIESEL && canister.getFill(
+                        filled) == 1000,
                 "the canister became a full diesel canister: " + filled);
 
         FluidView tank = FluidCompat.findItem(new ItemStack(ModFluidItems.fluid_tank.get()));
         helper.assertTrue(tank != null && tank.insert(Fluids.STEAM.getFluid(), 250, false) == 250,
                 "the universal tank takes 250 mB steam");
-        helper.assertTrue(tank.amount(0) == 250 && tank.fluid(0) == Fluids.STEAM.getFluid(), "the tank reads 250 mB steam");
+        helper.assertTrue(tank.amount(0) == 250 && tank.fluid(0) == Fluids.STEAM.getFluid(),
+                "the tank reads 250 mB steam");
         helper.assertTrue(!ForeignFluids.rowItemsForTest().isEmpty(), "the 1.7 container rows are exposed");
         helper.succeed();
     }
@@ -331,7 +363,8 @@ public final class ForeignFluidGameTests {
             for (int pass = 0; pass < 8; pass++) FluidNetwork.distributeAll(level);
             helper.assertTrue(input.tank.getFill() == 0 && buffer.tank.getFill() == 0,
                     "barrels drew a consumer's input through a duct: input " + input.tank.getFill() + ", buffer " + buffer.tank.getFill());
-            helper.assertTrue(diesel.tank.getFill() == 8000, "the generator lost fuel to the net: " + diesel.tank.getFill());
+            helper.assertTrue(diesel.tank.getFill() == 8000,
+                    "the generator lost fuel to the net: " + diesel.tank.getFill());
 
             // A foreign pipe on the generator's other side: it may fill the input tank, never empty it.
             FluidView face = FluidCompat.find(level, dieselPos, Direction.WEST);
@@ -345,10 +378,11 @@ public final class ForeignFluidGameTests {
                     "a foreign insert into the input tank moved " + inserted + ", tank " + diesel.tank.getFill());
 
             input.mode = 2;
-                helper.runAfterDelay(3, () -> {
+            helper.runAfterDelay(3, () -> {
                 input.tank.setFill(1000);
                 for (int pass = 0; pass < 8 && diesel.tank.getFill() == 8500; pass++) FluidNetwork.distributeAll(level);
-                helper.assertTrue(diesel.tank.getFill() > 8500, "the duct never reached the generator, so the first half proved nothing");
+                helper.assertTrue(diesel.tank.getFill() > 8500,
+                        "the duct never reached the generator, so the first half proved nothing");
                 helper.succeed();
             });
         });
@@ -383,12 +417,14 @@ public final class ForeignFluidGameTests {
                     tank.setFill(tank.getMaxFill());
                     long expected = 0;
                     for (FluidTankNTM out : sending) {
-                        if (out != null && out != tank && out.getTankType() == type && out.getPressure() == tank.getPressure()) expected += out.getFill();
+                        if (out != null && out != tank && out.getTankType() == type && out.getPressure() == tank.getPressure())
+                            expected += out.getFill();
                     }
                     long available = provider.getFluidAvailable(type, tank.getPressure());
                     if (available != expected) {
-                        leaks.add(BuiltInRegistries.BLOCK.getKey(block) + " offers " + available + " mB " + type.getName()
-                                + " from an input tank (expected " + expected + ")");
+                        leaks.add(
+                                BuiltInRegistries.BLOCK.getKey(block) + " offers " + available + " mB " + type.getName()
+                                        + " from an input tank (expected " + expected + ")");
                     }
                     any = true;
                 }
@@ -397,9 +433,11 @@ public final class ForeignFluidGameTests {
                 // a machine that needs a level to build its tanks is covered by its own tests
             }
         }
-        helper.assertTrue(checked >= 20, "expected at least 20 HBM machines with an input tank and a sending role, checked " + checked);
+        helper.assertTrue(checked >= 20,
+                "expected at least 20 HBM machines with an input tank and a sending role, checked " + checked);
         helper.assertTrue(leaks.isEmpty(), "input tanks offered as supply: " + leaks);
-        Constants.LOG.info("[network theft] {} provider machines with input tanks offer none of them as supply", checked);
+        Constants.LOG.info("[network theft] {} provider machines with input tanks offer none of them as supply",
+                checked);
         helper.succeed();
     }
 
@@ -430,7 +468,8 @@ public final class ForeignFluidGameTests {
     }
 
     private static @Nullable BlockEntity sample(Block block) {
-        if (block instanceof BlockMultiblockMachine machine) return machine.newBlockEntity(BlockPos.ZERO, machine.defaultBlockState());
+        if (block instanceof BlockMultiblockMachine machine)
+            return machine.newBlockEntity(BlockPos.ZERO, machine.defaultBlockState());
         if (block instanceof BlockMultiblockCore || !(block instanceof EntityBlock entity)) return null;
         return entity.newBlockEntity(BlockPos.ZERO, block.defaultBlockState());
     }
@@ -445,9 +484,11 @@ public final class ForeignFluidGameTests {
                                    List<String> noFluidFace, List<String> noItemFace, int[] faces) {
         if (index >= machines.size()) {
             // the totals compare loaders: a face missing on one loader shows as a smaller count
-            Constants.LOG.info("[foreign faces] {} machines, {} fluid faces, {} item faces", machines.size(), faces[0], faces[1]);
-            helper.assertTrue(noFluidFace.isEmpty() && noItemFace.isEmpty(), machines.size() + " machines; no fluid face: "
-                    + noFluidFace + "; no item face: " + noItemFace);
+            Constants.LOG.info("[foreign faces] {} machines, {} fluid faces, {} item faces", machines.size(), faces[0],
+                    faces[1]);
+            helper.assertTrue(noFluidFace.isEmpty() && noItemFace.isEmpty(),
+                    machines.size() + " machines; no fluid face: "
+                            + noFluidFace + "; no item face: " + noItemFace);
             helper.succeed();
             return;
         }
@@ -464,18 +505,26 @@ public final class ForeignFluidGameTests {
         }
         helper.runAfterDelay(PORT_CLAIM_WAIT, () -> {
             BlockEntity be = level.getBlockEntity(core);
-            boolean fluids = !isFluidUser(be) || NO_OWN_FLUID_FACE.contains(name), items = !(be instanceof Container) || NO_ITEM_FACE.contains(name);
+            boolean fluids = !isFluidUser(be) || NO_OWN_FLUID_FACE.contains(
+                    name), items = !(be instanceof Container) || NO_ITEM_FACE.contains(name);
             for (BlockPos part : parts) {
                 for (Direction side : Direction.values()) {
                     if (parts.contains(part.relative(side))) continue;
-                    if (FluidCompat.find(level, part, side) != null) { fluids = true; faces[0]++; }
-                    if (ItemExposure.extract(level, part, side, 0) != null) { items = true; faces[1]++; }
+                    if (FluidCompat.find(level, part, side) != null) {
+                        fluids = true;
+                        faces[0]++;
+                    }
+                    if (ItemExposure.extract(level, part, side, 0) != null) {
+                        items = true;
+                        faces[1]++;
+                    }
                 }
             }
             if (!fluids) noFluidFace.add(name);
             if (!items) noItemFace.add(name);
             for (BlockPos part : parts) level.setBlock(part, Blocks.AIR.defaultBlockState(), 2 | 16);
-            helper.runAfterDelay(1, () -> tryMachine(helper, level, machines, index + 1, noFluidFace, noItemFace, faces));
+            helper.runAfterDelay(1,
+                    () -> tryMachine(helper, level, machines, index + 1, noFluidFace, noItemFace, faces));
         });
     }
 }

@@ -9,6 +9,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -29,6 +30,14 @@ public class MachineSiren extends CompatBlock implements TickingBlock {
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityMachineSiren(pos, state);
+    }
+
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
+                                     boolean movedByPiston) {
+        if (!level.isClientSide()) {
+            TileEntityMachineSiren.serverTick(level, pos, state, (TileEntityMachineSiren) level.getBlockEntity(pos));
+        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.hbm.entity.effect;
 
+import net.minecraft.world.level.levelgen.RandomSupport;
 import com.hbm.Constants;
 import com.hbm.blocks.ModTerrainBlocks;
 import com.hbm.blocks.bomb.BlockVolcano;
@@ -12,6 +13,7 @@ import dev.golem.core.data.CompatEntity;
 import dev.golem.core.world.Chunks;
 import dev.golem.core.world.Compat;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -87,12 +89,18 @@ public class EntityFalloutRain extends CompatEntity {
     private static final int MAX_SCAN_FAILURE_RETRIES = 3;
 
     private int scale = 1;
-    /** Lays this block in place of {@code hbm:fallout}; set before the rain is added, saved with it. */
+    /**
+     * Lays this block in place of {@code hbm:fallout}; set before the rain is added, saved with it.
+     */
     private @Nullable Block layer;
-    /** 1.7 {@code tickDelay}, initialised from {@code BombConfig.fDelay} and not saved (1.7 did not save it either). */
+    /**
+     * 1.7 {@code tickDelay}, initialised from {@code BombConfig.fDelay} and not saved (1.7 did not save it either).
+     */
     private final TickDelay tickDelay = new TickDelay(BombConfig.fDelay);
 
-    /** 1.7 {@code EntityFalloutRain.onUpdate}'s {@code tickDelay} counter, alone so the GameTests can drive it. */
+    /**
+     * 1.7 {@code EntityFalloutRain.onUpdate}'s {@code tickDelay} counter, alone so the GameTests can drive it.
+     */
     public static final class TickDelay {
         private int delay;
 
@@ -100,7 +108,9 @@ public class EntityFalloutRain extends CompatEntity {
             this.delay = initial;
         }
 
-        /** One tick: true when this tick applies ({@code tickDelay == 0}); then reset to {@code fDelay}, and count down. */
+        /**
+         * One tick: true when this tick applies ({@code tickDelay == 0}); then reset to {@code fDelay}, and count down.
+         */
         public boolean step(int fDelay) {
             boolean apply = delay == 0;
             if (apply) delay = fDelay;
@@ -108,16 +118,23 @@ public class EntityFalloutRain extends CompatEntity {
             return apply;
         }
     }
-    /** Radius 0, as upstream's {@code EntityExplosionChunkloading}: the sweep keeps its own chunk up so
-     * it can keep resolving the rest of the disc even with no player nearby. */
+
+    /**
+     * Radius 0, as upstream's {@code EntityExplosionChunkloading}: the sweep keeps its own chunk up so
+     * it can keep resolving the rest of the disc even with no player nearby.
+     */
     private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 0);
 
-    /** Chunks fully inside the disc, then the boundary ring (whose columns are clamped to the radius). */
+    /**
+     * Chunks fully inside the disc, then the boundary ring (whose columns are clamped to the radius).
+     */
     private LongArrayList chunksToProcess = new LongArrayList();
     private LongArrayList outerChunksToProcess = new LongArrayList();
     private boolean gathered = false;
 
-    /** Chunks claimed by this sweep (requested or scanning), so they are handed out only once. */
+    /**
+     * Chunks claimed by this sweep (requested or scanning), so they are handed out only once.
+     */
     private final LongOpenHashSet inFlight = new LongOpenHashSet();
     /**
      * Chunks asked for but not in memory yet (server thread only).
@@ -135,18 +152,28 @@ public class EntityFalloutRain extends CompatEntity {
      */
     private final Long2IntOpenHashMap claimRefs =
             new Long2IntOpenHashMap();
-    /** Chunks this sweep is holding, so they can all be dropped if it is removed mid-run. */
+    /**
+     * Chunks this sweep is holding, so they can all be dropped if it is removed mid-run.
+     */
     private final LongOpenHashSet heldChunks =
             new LongOpenHashSet();
-    /** Scans handed to the pool and not yet applied. Bounds pool width; requests are counted separately. */
+    /**
+     * Scans handed to the pool and not yet applied. Bounds pool width; requests are counted separately.
+     */
     private int activeScans;
-    /** Scan results awaiting application, produced by pool workers. */
+    /**
+     * Scan results awaiting application, produced by pool workers.
+     */
     private final ConcurrentLinkedQueue<ChunkScan> completedScans = new ConcurrentLinkedQueue<>();
-    /** Server-thread retry counts; a permanently failing chunk must abort the sweep, not vanish. */
+    /**
+     * Server-thread retry counts; a permanently failing chunk must abort the sweep, not vanish.
+     */
     private final Long2IntOpenHashMap scanFailures =
             new Long2IntOpenHashMap();
     private boolean failed;
-    /** The scan currently being applied (may span ticks if the budget runs out mid-chunk). */
+    /**
+     * The scan currently being applied (may span ticks if the budget runs out mid-chunk).
+     */
     private ChunkScan applying;
 
     // Instrumentation: where the sweep's wall-clock goes
@@ -162,16 +189,22 @@ public class EntityFalloutRain extends CompatEntity {
     private long msPlace, msNeighbours, msShapes;
     private int borderCells, borderCellsMissingNeighbour;
     private int chunkWaitPolls, centreApplyParks, neighbourhoodParks;
-    /** Set by applyWrites when it stepped aside for a neighbourhood rather than running out of budget. */
+    /**
+     * Set by applyWrites when it stepped aside for a neighbourhood rather than running out of budget.
+     */
     private boolean lastApplyParked;
-    /** Peak simultaneous loading-only claims. */
+    /**
+     * Peak simultaneous loading-only claims.
+     */
     private int peakClaims;
     private int peakUnresolvedRequests;
     private final int scanParallelism = Math.max(1, ForkJoinPool.commonPool().getParallelism());
     private final int claimWindowPerWorker = Math.max(1,
             Math.min(MAX_CLAIM_WINDOW_PER_WORKER, BombConfig.falloutClaimWindow));
     private final int maxUnresolvedRequests = scanParallelism * claimWindowPerWorker;
-    /** Wall clock between consecutive sweep ticks: how long the REST of the server tick took. */
+    /**
+     * Wall clock between consecutive sweep ticks: how long the REST of the server tick took.
+     */
     private long lastTickAt, maxTickGapMs, sumTickGapMs;
     private int tickGaps;
     private long msBorderMissing;
@@ -182,7 +215,23 @@ public class EntityFalloutRain extends CompatEntity {
         super(type, level);
     }
 
-    public void setScale(int scale) {        this.scale = Math.max(scale, 1);
+    private volatile boolean seededScans;
+    private volatile long scanSeed;
+
+    /**
+     * Optional independently seeded chunk scans; ordinary sweeps retain their unseeded random sources.
+     */
+    public void setScanSeed(long seed) {
+        scanSeed = seed;
+        seededScans = true;
+    }
+
+    public void clearScanSeed() {
+        seededScans = false;
+    }
+
+    public void setScale(int scale) {
+        this.scale = Math.max(scale, 1);
     }
 
     /**
@@ -201,7 +250,9 @@ public class EntityFalloutRain extends CompatEntity {
         return scale;
     }
 
-    /** Claims the source chunk before the completed MK5 blast releases its own ticket. */
+    /**
+     * Claims the source chunk before the completed MK5 blast releases its own ticket.
+     */
     public void startChunkLoading() {
         chunkLoader.tick();
     }
@@ -210,7 +261,9 @@ public class EntityFalloutRain extends CompatEntity {
         return chunkLoader.isLoading();
     }
 
-    /** Diagnostics for the real-world loading pipeline and its GameTest. */
+    /**
+     * Diagnostics for the real-world loading pipeline and its GameTest.
+     */
     public int getChunksRequested() {
         return chunksRequested;
     }
@@ -223,9 +276,11 @@ public class EntityFalloutRain extends CompatEntity {
         return maxUnresolvedRequests;
     }
 
-    /** Diagnostics seam: the state writes one column's stomp emits (last write per position wins). */
+    /**
+     * Diagnostics seam: the state writes one column's stomp emits (last write per position wins).
+     */
     public static Map<BlockPos, BlockState> stompColumnForTest(ServerLevel level, int x, int z,
-                                                                        double distPercent, RandomSource rand) {
+                                                               double distPercent, RandomSource rand) {
         ChunkScan scan = new ChunkScan(ChunkPos.pack(x >> 4, z >> 4));
         stompColumn(scan, level.getChunk(x >> 4, z >> 4), x, z, distPercent, rand, ModFalloutBlocks.fallout.get());
         Map<BlockPos, BlockState> writes = new LinkedHashMap<>();
@@ -233,7 +288,9 @@ public class EntityFalloutRain extends CompatEntity {
         return writes;
     }
 
-    /** Diagnostics seam proving the references' separate last-state/first-falling position maps. */
+    /**
+     * Diagnostics seam proving the references' separate last-state/first-falling position maps.
+     */
     public static boolean writeDeduplicationContractForTest(BlockState first, BlockState last) {
         ChunkScan scan = new ChunkScan(0L);
         long pos = BlockPos.asLong(1, 2, 3);
@@ -339,7 +396,7 @@ public class EntityFalloutRain extends CompatEntity {
             while (iterator.hasNext() && activeScans < maxInFlight) {
                 long packed = iterator.nextLong();
                 LevelChunk chunk = server.getChunkSource()
-                        .getChunkNow(ChunkPos.getX(packed), ChunkPos.getZ(packed));
+                                         .getChunkNow(ChunkPos.getX(packed), ChunkPos.getZ(packed));
                 if (chunk == null) {
                     chunkWaitPolls++;
                     continue; // still being generated; look again next tick
@@ -424,12 +481,16 @@ public class EntityFalloutRain extends CompatEntity {
         }
     }
 
-    /** Drops the claim on one chunk and its neighbours once the sweep is finished with it. */
+    /**
+     * Drops the claim on one chunk and its neighbours once the sweep is finished with it.
+     */
     private void dropClaim(long packed) {
         releaseWithNeighbours(ChunkPos.getX(packed), ChunkPos.getZ(packed));
     }
 
-    /** Hands one resolved chunk to the pool. Server thread only. */
+    /**
+     * Hands one resolved chunk to the pool. Server thread only.
+     */
     private void submitScan(long packed, LevelChunk chunk, boolean clamp) {
         inFlight.add(packed);
         activeScans++;
@@ -438,16 +499,16 @@ public class EntityFalloutRain extends CompatEntity {
         ChunkScan scan = new ChunkScan(packed);
         try {
             ForkJoinPool.commonPool().execute(() -> {
-            try {
-                scanChunk(scan, chunk, clamp, ex, ez, sc);
-                scan.completed = true;
-            } catch (Throwable e) {
-                // The scan is published as failed, never as an empty successful scan.
-                // Its local writes are discarded; the server thread decides whether to retry or abort.
-                scan.failure = e;
-            } finally {
-                completedScans.add(scan);
-            }
+                try {
+                    scanChunk(scan, chunk, clamp, ex, ez, sc);
+                    scan.completed = true;
+                } catch (Throwable e) {
+                    // The scan is published as failed, never as an empty successful scan.
+                    // Its local writes are discarded; the server thread decides whether to retry or abort.
+                    scan.failure = e;
+                } finally {
+                    completedScans.add(scan);
+                }
             });
         } catch (Throwable e) {
             // Rejection happens before the worker wrapper can publish a result. Publish the same
@@ -457,7 +518,9 @@ public class EntityFalloutRain extends CompatEntity {
         }
     }
 
-    /** Last-to-first like the old removeLong(size-1) processing order, skipping in-flight chunks. */
+    /**
+     * Last-to-first like the old removeLong(size-1) processing order, skipping in-flight chunks.
+     */
     private long nextUndispatched(LongArrayList list) {
         for (int i = list.size() - 1; i >= 0; i--) {
             long packed = list.getLong(i);
@@ -466,7 +529,9 @@ public class EntityFalloutRain extends CompatEntity {
         return Long.MIN_VALUE;
     }
 
-    /** Applies completed scans' block writes on the server thread within the old mk5 ms budget. */
+    /**
+     * Applies completed scans' block writes on the server thread within the old mk5 ms budget.
+     */
     private void applyScans(ServerLevel server) {
         long applyStart = System.currentTimeMillis();
         try {
@@ -597,7 +662,9 @@ public class EntityFalloutRain extends CompatEntity {
         int stateAppliedUpTo = 0;
         int fallingAppliedUpTo = 0;
 
-        /** Cells the write pass actually changed, and what they were, for the notify pass. */
+        /**
+         * Cells the write pass actually changed, and what they were, for the notify pass.
+         */
         final LongArrayList changedPos = new LongArrayList();
         final List<BlockState> changedOld = new ArrayList<>();
         int notifiedUpTo = 0;
@@ -606,6 +673,7 @@ public class EntityFalloutRain extends CompatEntity {
         boolean fallingWritesDone = false;
         boolean biomesDone = false;
         boolean biomesChanged = false;
+
         ChunkScan(long chunkPos) {
             this.chunkPos = chunkPos;
             stateWriteIndices.defaultReturnValue(-1);
@@ -642,11 +710,14 @@ public class EntityFalloutRain extends CompatEntity {
         }
     }
 
-    private record BlockWrite(long pos, BlockState state) {}
+    private record BlockWrite(long pos, BlockState state) {
+    }
 
-    private record FallingWrite(long pos, BlockState state) {}
+    private record FallingWrite(long pos, BlockState state) {
+    }
 
-    private record BiomeWrite(int x, int z, double distancePercent, int scale) {}
+    private record BiomeWrite(int x, int z, double distancePercent, int scale) {
+    }
 
     /**
      * Applies one chunk's writes, <b>through its sections</b>, and repairs the chunk once at the end.
@@ -703,7 +774,9 @@ public class EntityFalloutRain extends CompatEntity {
         return notifyPass(server, chunk, scan, pos, deadline, cx, cz);
     }
 
-    /** True when all eight neighbours of a chunk are in memory, so a border read cannot generate one. */
+    /**
+     * True when all eight neighbours of a chunk are in memory, so a border read cannot generate one.
+     */
     private boolean neighbourhoodResident(ServerLevel server, int chunkX, int chunkZ) {
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
@@ -714,7 +787,9 @@ public class EntityFalloutRain extends CompatEntity {
         return true;
     }
 
-    /** Pass one: the section writes. Records what changed so pass two can notify it. */
+    /**
+     * Pass one: the section writes. Records what changed so pass two can notify it.
+     */
     private boolean writePass(ServerLevel server, LevelChunk chunk, ChunkScan scan,
                               BlockPos.MutableBlockPos pos, long deadline) {
         List<BlockWrite> writes = scan.stateWrites;
@@ -767,7 +842,9 @@ public class EntityFalloutRain extends CompatEntity {
         return true;
     }
 
-    /** Reference ordering: all state writes and their notifications complete before falling entries. */
+    /**
+     * Reference ordering: all state writes and their notifications complete before falling entries.
+     */
     private boolean fallingPass(ServerLevel server, LevelChunk chunk, ChunkScan scan,
                                 BlockPos.MutableBlockPos pos, long deadline) {
         float stonebrickRes = Blocks.STONE_BRICKS.getExplosionResistance();
@@ -950,7 +1027,9 @@ public class EntityFalloutRain extends CompatEntity {
     private void scanChunk(ChunkScan scan, LevelChunk chunk, boolean clampToRadius, double ex, double ez, int scale) {
         int minX = chunk.getPos().getMinBlockX();
         int minZ = chunk.getPos().getMinBlockZ();
-        RandomSource rand = RandomSource.create();
+        RandomSource rand = seededScans ? RandomSource.create(RandomSupport
+                                                              .mixStafford13(scanSeed ^ Chunks.key(
+                                                                      chunk.getPos()))) : RandomSource.create();
 
         for (int x = minX; x < minX + 16; x++) {
             for (int z = minZ; z < minZ + 16; z++) {
@@ -963,7 +1042,9 @@ public class EntityFalloutRain extends CompatEntity {
         }
     }
 
-    /** Resolves original biome holders and mutates biome containers only from the server-thread apply phase. */
+    /**
+     * Resolves original biome holders and mutates biome containers only from the server-thread apply phase.
+     */
     private static boolean applyBiomeWrites(ServerLevel server, LevelChunk chunk, List<BiomeWrite> writes) {
         if (writes.isEmpty()) return false;
         List<Biomes.Change> changes = new ArrayList<>(writes.size());
@@ -984,7 +1065,7 @@ public class EntityFalloutRain extends CompatEntity {
      * Emits writes instead of applying them.
      */
     private static void stompColumn(ChunkScan scan, LevelChunk chunk, int x, int z, double distPercent,
-                                      RandomSource rand, Block layer) {
+                                    RandomSource rand, Block layer) {
         int solidDepth = 0;
         int bottomY = chunk.getMinY();
         int maxY = chunk.getMaxY();

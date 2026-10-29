@@ -20,10 +20,12 @@ import com.hbm.items.ModItems;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemScraps;
 import dev.golem.core.gametest.GameTests;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
@@ -36,25 +38,31 @@ import net.minecraft.world.item.Items;
  */
 public final class ItemProcessingTableGameTests {
 
-    private ItemProcessingTableGameTests() {}
+    private ItemProcessingTableGameTests() {
+    }
 
     public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
 
     public static final GameTests.Function TABLES =
             TESTS.function("recipe_table_item_processing", 200, () -> ItemProcessingTableGameTests::tables);
 
-    public static void init() {}
+    public static void init() {
+    }
 
     static String describeCrucible(CrucibleRecipes.CrucibleRecipe recipe) {
         return recipe.getInternalName() + " f=" + recipe.frequency + " icon=" + RecipeText.describe(recipe.getIcon())
                 + " in=" + MaterialCodecs.describe(recipe.input) + " out=" + MaterialCodecs.describe(recipe.output);
     }
 
-    /** SHA-256 over every loaded row's JSON (keys sorted, see {@link CanonicalJson}: 1.20.1's DFU orders a record's fields differently), in recipe-id order. */
+    /**
+     * SHA-256 over every loaded row's JSON (keys sorted, see {@link CanonicalJson}: 1.20.1's DFU orders a record's fields differently), in recipe-id order.
+     */
     static <R> String hash(DataRecipeTable<R> table, HolderLookup.Provider registries) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            for (R row : table.rows()) digest.update((CanonicalJson.text(table.table.toJson(row, registries)) + "\n").getBytes(StandardCharsets.UTF_8));
+            for (R row : table.rows())
+                digest.update((CanonicalJson.text(table.table.toJson(row, registries)) + "\n").getBytes(
+                        StandardCharsets.UTF_8));
             StringBuilder out = new StringBuilder();
             for (byte b : digest.digest()) out.append(String.format("%02x", b));
             return table.rows().size() + ":" + out;
@@ -88,7 +96,9 @@ public final class ItemProcessingTableGameTests {
         var steel = (CrucibleRecipes.CrucibleRecipe) CrucibleRecipes.INSTANCE.getRecipe("crucible.steel");
         check(failures, "crucible.steel", steel == null ? "-" : describeCrucible(steel),
                 "crucible.steel f=20 icon=hbm:ingot_steel x1 in=[iron:16,carbon:24,flux:8,] out=[steel:16,]");
-        check(failures, "crucible order", CrucibleRecipes.INSTANCE.recipeOrderedList.stream().map(GenericRecipe::getInternalName).toList().toString(),
+        check(failures, "crucible order",
+                CrucibleRecipes.INSTANCE.recipeOrderedList.stream().map(GenericRecipe::getInternalName).toList()
+                                                          .toString(),
                 "[crucible.steel, crucible.hematite, crucible.malachite, crucible.redcopper, crucible.hss, crucible.ferro, "
                         + "crucible.tcalloy, crucible.cdalloy, crucible.bbronze, crucible.abronze, crucible.cmb, crucible.magtung, crucible.bscco]");
         check(failures, "material c:ores/iron", MaterialCodecs.describe(MaterialDistribution.tags().get("c:ores/iron")),
@@ -103,10 +113,13 @@ public final class ItemProcessingTableGameTests {
         check(failures, "centrifuge first", first == null ? "-" : CentrifugeRecipes.describe(first),
                 "hbm:chunk_ore_rare x1 -> [hbm:powder_cobalt_tiny x2,hbm:powder_boron_tiny x2,hbm:powder_niobium_tiny x2,hbm:nugget_zirconium x3,]");
         CrystallizerRecipes.register();
-        var malachite = CrystallizerRecipes.recipes.stream().filter(r -> r.output.getItem() == ModMachineItems.scraps.get()).findFirst();
+        var malachite = CrystallizerRecipes.recipes.stream()
+                                                   .filter(r -> r.output.getItem() == ModMachineItems.scraps.get())
+                                                   .findFirst();
         check(failures, "crystallizer malachite scraps", malachite.map(r -> RecipeText.describe(r.input)
-                + " " + MaterialCodecs.describe(ItemScraps.getMats(r.output)) + " t=" + r.duration + " "
-                + r.fluid.getKey() + "x" + r.acidAmount).orElse("-"), "#c:ingots/malachite x1 copper:72 t=300 sulfuric_acidx250");
+                        + " " + MaterialCodecs.describe(ItemScraps.getMats(r.output)) + " t=" + r.duration + " "
+                        + r.fluid.getKey() + "x" + r.acidAmount).orElse("-"),
+                "#c:ingots/malachite x1 copper:72 t=300 sulfuric_acidx250");
         long compat = CrystallizerRecipes.TABLE.rows().stream().filter(r -> r.requires().isPresent()).count();
         check(failures, "crystallizer compat rows", String.valueOf(compat), "4");
         var cyc = CyclotronRecipes.recipes.isEmpty() ? null : CyclotronRecipes.recipes.get(0);
@@ -124,6 +137,8 @@ public final class ItemProcessingTableGameTests {
                 "#c:ingots/uranium x1 900/100 VISIBLE -> hbm:nugget_u235 x1@1 hbm:nugget_u238 x1@11"); // 1.7 U.ingot()
         check(failures, "shredder scrap", RecipeText.describe(
                 ShredderRecipes.getShredderResult(new ItemStack(ModItems.scrap.get()))), "hbm:dust x1");
+        check(failures, "shredder copper ingot", RecipeText.describe(
+                ShredderRecipes.getShredderResult(new ItemStack(Items.COPPER_INGOT))), "hbm:powder_copper x1");
 
         helper.assertTrue(failures.isEmpty(), "item-processing tables differ from the conversion: " + failures);
         helper.succeed();
@@ -133,8 +148,11 @@ public final class ItemProcessingTableGameTests {
         if (!want.equals(have)) failures.add(name + ": " + have);
     }
 
-    /** Row count and hash equal {@code expected} ({@code "<count>:<sha256>"}) and every row survives its JSON. */
-    private static <R> void expect(List<String> failures, DataRecipeTable<R> table, HolderLookup.Provider registries, String expected) {
+    /**
+     * Row count and hash equal {@code expected} ({@code "<count>:<sha256>"}) and every row survives its JSON.
+     */
+    private static <R> void expect(List<String> failures, DataRecipeTable<R> table, HolderLookup.Provider registries,
+                                   String expected) {
         String have = hash(table, registries);
         if (!have.equals(expected)) failures.add(table.table.id() + " rows " + have);
         for (R row : table.rows()) {
