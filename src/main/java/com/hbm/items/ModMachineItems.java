@@ -3,8 +3,6 @@ package com.hbm.items;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
@@ -18,6 +16,7 @@ import com.hbm.items.machine.ItemBroken;
 import com.hbm.items.machine.ItemFELCrystal;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidId;
+import com.hbm.items.machine.ItemFluidIDMulti;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.items.machine.ItemTurretBiometry;
@@ -216,9 +215,8 @@ public final class ModMachineItems {
         ModTabs.addTo(HbmTab.CONTROL, arc_electrode_burnt_lanthanium);
         ModTabs.addTo(HbmTab.CONTROL, arc_electrode_burnt_desh);
         ModTabs.addTo(HbmTab.CONTROL, arc_electrode_burnt_saturnite);
-        // One identifier per fluid in the creative menu (skip NONE), each pre-set to its fluid: the 26.1
-        // equivalent of the 1.12.2 ItemFluidIDMulti's one-metadata-per-fluid subtypes. Resolved lazily at
-        // tab-build time, after Fluids.init() has populated.
+        // Resolved at tab-build time, after Fluids.init(). The identifiers are 1.7's craftable multi identifier;
+        // the single-fluid fluid_identifier stays registered for existing stacks only.
         ModTabs.addStacksTo(HbmTab.TEMPLATES, () -> {
             List<ItemStack> list = new ArrayList<>();
             AssemblyMachineRecipes.INSTANCE.registerRecipes();
@@ -226,10 +224,7 @@ public final class ModMachineItems {
             for (String pool : GenericRecipes.blueprintPools.keySet()) {
                 if (!pool.startsWith(GenericRecipes.POOL_PREFIX_SECRET)) list.add(ItemBlueprints.make(pool));
             }
-            for (FluidType fluid : Fluids.getInNiceOrder()) { // as 1.7's ItemFluidIDMulti.getSubItems
-                if (fluid == Fluids.NONE) continue;
-                list.add(ItemFluidId.make(fluid));
-            }
+            list.addAll(ItemFluidIDMulti.creativeStacks());
             return list;
         });
         // One ingot's worth of scraps per meltable material (the old ItemScraps creative subtypes).

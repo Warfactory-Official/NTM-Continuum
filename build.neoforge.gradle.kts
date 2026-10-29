@@ -177,11 +177,12 @@ val sableServerMod: Configuration by configurations.creating
 val kubejsServerMod: Configuration by configurations.creating
 val ae2ServerMod: Configuration by configurations.creating
 val rsServerMod: Configuration by configurations.creating
+val stellarityServerMod: Configuration by configurations.creating
 for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestServer")) {
     val modsDir = layout.projectDirectory.dir("runs/$run/mods")
     val sync = tasks.register("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
-        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run, -Pkubejs.run, -Pae2.run, -Prefinedstorage.run)."
-        inputs.files(ccServerMod, sableServerMod, kubejsServerMod, ae2ServerMod, rsServerMod)
+        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run, -Pkubejs.run, -Pae2.run, -Prefinedstorage.run, -Pstellarity.run)."
+        inputs.files(ccServerMod, sableServerMod, kubejsServerMod, ae2ServerMod, rsServerMod, stellarityServerMod)
         outputs.dir(modsDir)
         doLast {
             project.sync {
@@ -190,6 +191,7 @@ for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestSe
                 from(kubejsServerMod)
                 from(ae2ServerMod)
                 from(rsServerMod)
+                from(stellarityServerMod)
                 into(modsDir)
             }
         }
@@ -241,6 +243,10 @@ dependencies {
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devModJar("maven.modrinth:jade:$it") }
     // ImmediatelyFast, dev runs only (`-Pimmediatelyfast.run=true`): HUD batching that has hidden the hotbar before.
     if (propOrNull("immediatelyfast.run") == "true") propOrNull("deps.immediatelyfast")?.let { devModJar("maven.modrinth:immediatelyfast:$it") }
+    // Stellarity, dev runs only (`-Pstellarity.run=true`): an End overhaul datapack shipped as a mod.
+    if (propOrNull("stellarity.run") == "true") propOrNull("deps.stellarity")?.let {
+        for (conf in listOf(devModJar, stellarityServerMod)) add(conf.name, "maven.modrinth:stellarity:$it")
+    }
     // Just Enough Characters, dev runs only (`-Pjecharacters.run=true`): pinyin matching in HBM's search bars (Core TextSearch).
     if (propOrNull("jecharacters.run") == "true") propOrNull("deps.jecharacters")?.let { devModJar("maven.modrinth:justenoughcharacters:$it") }
 

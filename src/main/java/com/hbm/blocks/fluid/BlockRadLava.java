@@ -73,7 +73,7 @@ public class BlockRadLava extends BlockVolcanicLava {
         if (b.is(BlockTags.LOGS)) return ModFalloutBlocks.waste_log.get().defaultBlockState();
         if (b.is(BlockTags.PLANKS)) return ModBlocks.waste_planks.get().defaultBlockState();
         if (b.is(BlockTags.LEAVES)) return Blocks.FIRE.defaultBlockState();
-        if (b.is(Blocks.DIAMOND_ORE)) return ModFalloutBlocks.ore_sellafield_radgem.get().defaultBlockState();
+        if (b.is(BlockTags.DIAMOND_ORES)) return ModFalloutBlocks.ore_sellafield_radgem.get().defaultBlockState();
         if (b.is(ModNuclearBlocks.ore_uranium.get()) || b.is(ModNuclearBlocks.ore_gneiss_uranium.get())) {
             return level.getRandom().nextInt(5) == 0
                     ? ModFalloutBlocks.ore_sellafield_schrabidium.get().defaultBlockState()

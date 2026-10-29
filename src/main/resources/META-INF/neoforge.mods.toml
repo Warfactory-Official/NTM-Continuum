@@ -39,8 +39,8 @@ side = "BOTH"
 [[dependencies.${mod_id}]]
 modId = "gemrender"
 type = "incompatible"
-reason = "GemRender 0.1.14 and 0.1.17 are not supported; install 0.1.18 or later."
-versionRange = "[0.1.14],[0.1.17]"
+reason = "GemRender before 0.1.20 is not supported; install 0.1.20 or later."
+versionRange = "(,0.1.20)"
 ordering = "NONE"
 side = "CLIENT"
 

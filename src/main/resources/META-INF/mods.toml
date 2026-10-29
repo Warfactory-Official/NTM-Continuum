@@ -28,11 +28,11 @@ versionRange = "[1.0.2,)"
 ordering = "AFTER"
 side = "BOTH"
 
-# GemRender 0.1.14 has no lights here and 0.1.17 crashes with Embeddium.
+# GemRender before 0.1.20 hangs the loading screen when another mod replaces a vanilla core shader.
 [[dependencies.${mod_id}]]
 modId = "gemrender"
 mandatory = false
-versionRange = "(,0.1.14),(0.1.14,0.1.17),(0.1.17,)"
+versionRange = "[0.1.20,)"
 ordering = "NONE"
 side = "CLIENT"
 

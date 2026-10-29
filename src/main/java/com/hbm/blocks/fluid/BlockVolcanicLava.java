@@ -2,6 +2,8 @@ package com.hbm.blocks.fluid;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
+import com.hbm.blocks.ModTerrainBlocks;
+import com.hbm.blocks.generic.BlockOreBasalt;
 import dev.golem.core.fluid.FluidBlock;
 import dev.golem.core.fluid.WorldFluids;
 import dev.golem.core.world.Compat;
@@ -30,9 +32,7 @@ import org.jspecify.annotations.Nullable;
  * planks to waste planks, leaves to fire and diamond ore to basalt ore. After every flow update with no lava below,
  * a flowing block with fewer than two lava neighbours, or any block one time in five with fewer than five, solidifies:
  * mostly to basalt, rarely to a basalt ore, and to a basalt gem where it is fully surrounded and ten blocks under more
- * basalt or lava. Vanilla-style lava pops and drips.
- *
- * <p>{@code ore_basalt} is not ported, so every basalt-ore outcome is plain basalt here (marked below).
+ * basalt or lava. Vanilla-style lava pops and drips. Port: deepslate diamond ore reacts like diamond ore.
  */
 public class BlockVolcanicLava extends FluidBlock {
 
@@ -72,7 +72,7 @@ public class BlockVolcanicLava extends FluidBlock {
         if (b.is(BlockTags.LOGS)) return ModFalloutBlocks.waste_log.get().defaultBlockState();
         if (b.is(BlockTags.PLANKS)) return ModBlocks.waste_planks.get().defaultBlockState();
         if (b.is(BlockTags.LEAVES)) return Blocks.FIRE.defaultBlockState();
-        if (b.is(Blocks.DIAMOND_ORE)) return ModBlocks.basalt.get().defaultBlockState(); // 1.7: ore_basalt (unported)
+        if (b.is(BlockTags.DIAMOND_ORES)) return ModTerrainBlocks.ore_basalt(BlockOreBasalt.Type.GEM).defaultBlockState();
         return null;
     }
 
@@ -121,10 +121,14 @@ public class BlockVolcanicLava extends FluidBlock {
         int r = rand.nextInt(200);
         BlockState above = level.getBlockState(pos.above(10));
         boolean canMakeGem = lavaCount + basaltCount == 6 && lavaCount < 3 && (above.is(ModBlocks.basalt.get()) || above.is(this));
-        BlockState basalt = ModBlocks.basalt.get().defaultBlockState();
-        // 1.7: r < 2 -> ore_basalt:0, 2 -> :1, 3 -> :2, 4 -> :4, r < 15 && canMakeGem -> :3 (gem); all unported -> basalt.
-        if (r < 5 || (r < 15 && canMakeGem)) level.setBlock(pos, basalt, 3);
-        else level.setBlock(pos, basalt, 3);
+        Block block;
+        if (r < 2) block = ModTerrainBlocks.ore_basalt(BlockOreBasalt.Type.SULFUR);
+        else if (r == 2) block = ModTerrainBlocks.ore_basalt(BlockOreBasalt.Type.FLUORITE);
+        else if (r == 3) block = ModTerrainBlocks.ore_basalt(BlockOreBasalt.Type.ASBESTOS);
+        else if (r == 4) block = ModTerrainBlocks.ore_basalt(BlockOreBasalt.Type.MOLYSITE);
+        else if (r < 15 && canMakeGem) block = ModTerrainBlocks.ore_basalt(BlockOreBasalt.Type.GEM);
+        else block = ModBlocks.basalt.get();
+        level.setBlock(pos, block.defaultBlockState(), 3);
     }
 
     @Override

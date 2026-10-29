@@ -7,6 +7,7 @@ import com.hbm.items.ModEntityItems;
 import com.hbm.items.ModFluidItems;
 import com.hbm.items.ModJetpackDependencyItems;
 import com.hbm.items.ModMachineItems;
+import com.hbm.items.ModUtilityToolItems;
 import com.hbm.items.machine.ItemRBMKPellet;
 import dev.golem.core.viewer.Subtypes;
 import java.util.List;
@@ -37,6 +38,8 @@ public final class HbmViewerSubtypes {
                 ModDataComponents.FLUID, ModDataComponents.FLUID_AMOUNT);
         reg.components(ModMachineItems.fluid_identifier.get(),
                 ModDataComponents.FLUID);
+        reg.components(ModUtilityToolItems.fluid_identifier_multi.get(),
+                ModDataComponents.FLUID_IDENTIFIER);
         reg.components(ModFluidItems.fluid_bucket.get(),
                 ModDataComponents.FLUID);
         reg.components(ModEntityItems.disperser_canister.get(), ModDataComponents.FLUID);
