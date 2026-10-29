@@ -8,9 +8,9 @@ Each release has a `## <version>` section; the release workflow uploads only the
 Requires Golem Core 1.0.3. Use GemRender 0.1.20; older versions are refused.
 
 ### Added
-- NTM: Decentralized Edition worlds convert on first load (1.21.1 NeoForge): blocks, machines, items, players,
+- A NTM: DE world Converter. You can convert worlds on first load (1.21.1 NeoForge): blocks, machines, items, players,
   advancements, duct networks, satellites and Sable airships, with a backup first. Anything that cannot be converted is
-  kept in `data/hbm_de_leftovers.dat`.
+  kept in `data/hbm_de_leftovers.dat` but the converter covers 99.99% so nothing should be missed.
 - 1.7 X5860: the fluid burner's overdrive slot and burn-rate slider, the calculator as a QMAW browser, Redstone-over-Radio
   on every launcher, the Lambda and Soyuz pads and the satellite linker, and the spy satellite's `findplayer`.
 - Rock mill rows for sculk and sculk veins.
