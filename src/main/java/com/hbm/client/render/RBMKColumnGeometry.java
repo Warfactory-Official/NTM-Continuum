@@ -15,9 +15,34 @@ final class RBMKColumnGeometry {
     /** The lid, a quarter-block cap sitting on the column's top cell. */
     static final float LID_HEIGHT = .25F;
     static final Geometry LID_SIDES =
-            sides(Quads.named("hbm:rbmk_lid_side"), 0F, 0F, 0F, 1F, LID_HEIGHT, 1F).build();
+            blockSides(Quads.named("hbm:rbmk_lid_side"), 0F, 0F, 0F, 1F, LID_HEIGHT, 1F).build();
     static final Geometry LID_CAPS =
-            caps(Quads.named("hbm:rbmk_lid_cap"), 0F, 0F, 0F, 1F, LID_HEIGHT, 1F).build();
+            blockCaps(Quads.named("hbm:rbmk_lid_cap"), 0F, 0F, 0F, 1F, LID_HEIGHT, 1F).build();
+
+    /**
+     * Sides textured like 1.7 RenderBlocks: UVs from the position in the block (v = 1 - y), so a quarter-high box
+     * shows the texture's bottom four rows, where the lid and pipe textures draw.
+     */
+    static Quads.Builder blockSides(Quads.Builder faces, float x0, float y0, float z0,
+                                    float x1, float y1, float z1) {
+        blockFace(faces, 0F, 0F, -1F, x1, y0, z0, x0, y0, z0, x0, y1, z0, x1, y1, z0);
+        blockFace(faces, 0F, 0F, 1F, x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1);
+        blockFace(faces, -1F, 0F, 0F, x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0);
+        blockFace(faces, 1F, 0F, 0F, x1, y0, z1, x1, y0, z0, x1, y1, z0, x1, y1, z1);
+        return faces;
+    }
+
+    /** Caps with UVs from the position in the block, wound like {@link #caps}. */
+    static Quads.Builder blockCaps(Quads.Builder faces, float x0, float y0, float z0,
+                                   float x1, float y1, float z1) {
+        faces.normal(0F, 1F, 0F)
+                .vertex(x0, y1, z0, x0, z0).vertex(x0, y1, z1, x0, z1)
+                .vertex(x1, y1, z1, x1, z1).vertex(x1, y1, z0, x1, z0);
+        faces.normal(0F, -1F, 0F)
+                .vertex(x0, y0, z1, x0, z1).vertex(x0, y0, z0, x0, z0)
+                .vertex(x1, y0, z0, x1, z0).vertex(x1, y0, z1, x1, z1);
+        return faces;
+    }
 
     static Quads.Builder sides(Quads.Builder faces, float x0, float y0, float z0,
                                float x1, float y1, float z1) {
@@ -55,6 +80,17 @@ final class RBMKColumnGeometry {
                 .vertex(bx, by, bz, 1F, 0F)
                 .vertex(cx, cy, cz, 1F, 1F)
                 .vertex(dx, dy, dz, 0F, 1F);
+    }
+
+    private static void blockFace(Quads.Builder faces, float nx, float ny, float nz,
+            float ax, float ay, float az, float bx, float by, float bz,
+            float cx, float cy, float cz, float dx, float dy, float dz) {
+        boolean alongZ = nx != 0F;
+        faces.normal(nx, ny, nz)
+                .vertex(ax, ay, az, alongZ ? az : ax, 1F - ay)
+                .vertex(bx, by, bz, alongZ ? bz : bx, 1F - by)
+                .vertex(cx, cy, cz, alongZ ? cz : cx, 1F - cy)
+                .vertex(dx, dy, dz, alongZ ? dz : dx, 1F - dy);
     }
 
 }

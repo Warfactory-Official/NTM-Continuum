@@ -41,7 +41,7 @@ public class EntityTom extends EntityThrowableNT {
         setDeltaMovement(motion.x, -0.5D, motion.z);
 
         // 1.7: getBlock((int) posX, ...) != Blocks.air - int truncation, not floor
-        if (!level().getBlockState(new BlockPos((int) getX(), (int) getY(), (int) getZ())).isAir() || getY() < 10) {
+        if (!level().getBlockState(new BlockPos((int) getX(), (int) getY(), (int) getZ())).isAir() || getY() < level().getMinY() + 10) {
             if (!level().isClientSide()) {
 
                 EntityTomBlast tom = new EntityTomBlast(ModNtmEntities.TOM_BUST.get(), level());

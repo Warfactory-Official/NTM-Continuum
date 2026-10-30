@@ -110,7 +110,9 @@ public class ExplosionTom {
         double Z = Math.pow(this.posZ - pZ, 2);
         double distance = Math.sqrt(X + Z); // distance calculations used for crater rim stuff
 
-        int y = 256;
+        int minY = level.getMinY();
+        int maxY = level.getMaxY();
+        int y = maxY;
         int terrain = 63;
         double planar = Math.sqrt(x * x + z * z);
 
@@ -121,7 +123,7 @@ public class ExplosionTom {
         // crater rim
         int craterFloor = (int) (cB + Math.pow(Math.E, -Math.pow(planar - 500, 2) / 2000) * 37);
 
-        for (int i = 256; i > 0; i--) {
+        for (int i = maxY; i > minY; i--) {
             if (i == craterFloor || !level.getBlockState(new BlockPos(pX, i, pZ)).isAir()) {
                 y = i;
                 break;
@@ -130,12 +132,13 @@ public class ExplosionTom {
 
         int height = terrain - 14;
         int offset = 20;
-        int threshold = (int) (planar * (height + offset) / (float) this.radius)
+        // port: 1.7's cone runs from its world floor 0 to the rim; here from the world's bottom, the rim unchanged
+        int threshold = minY + (int) (planar * (height - minY + offset) / (float) this.radius)
                 + level.getRandom().nextInt(2) - offset;
 
         while (y > threshold) {
 
-            if (y == 0) break;
+            if (y == minY) break;
 
             if (y <= craterFloor) {
 

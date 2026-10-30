@@ -119,8 +119,8 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
     }
 
     /**
-     * Set the column's lid, core and cells alike: the bake draws it from the top cell, which
-     * {@link #cellStateFor} leaves lidded-less. Template assembly calls this through {@link #assembled}.
+     * Set the column's lid, core and cells alike. The column renderers draw it from the core's state.
+     * Template assembly calls this through {@link #assembled}.
      */
     public void writeLid(ServerLevel level, BlockPos core, BlockState coreState, Lid lid) {
         level.setBlock(core, coreState.setValue(LID, lid), 3);

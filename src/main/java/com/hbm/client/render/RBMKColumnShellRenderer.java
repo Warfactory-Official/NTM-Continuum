@@ -32,8 +32,8 @@ public final class RBMKColumnShellRenderer<T extends BlockEntityRBMKBase> extend
     private static Geometry stubs(boolean caps) {
         Quads.Builder faces = Quads.named(Constants.MOD_ID + ":rbmk_pipe_" + (caps ? "cap" : "side"));
         for (float x : STUBS) for (float z : STUBS) {
-            if (caps) RBMKColumnGeometry.caps(faces, x, 0F, z, x + STUB, STUB_HEIGHT, z + STUB);
-            else RBMKColumnGeometry.sides(faces, x, 0F, z, x + STUB, STUB_HEIGHT, z + STUB);
+            if (caps) RBMKColumnGeometry.blockCaps(faces, x, 0F, z, x + STUB, STUB_HEIGHT, z + STUB);
+            else RBMKColumnGeometry.blockSides(faces, x, 0F, z, x + STUB, STUB_HEIGHT, z + STUB);
         }
         return faces.build();
     }
@@ -72,7 +72,8 @@ public final class RBMKColumnShellRenderer<T extends BlockEntityRBMKBase> extend
     @Override public State createRenderState() { return new State(); }
 
     @Override public void extract(T be, State state, float partial, Vec3 camera) {
-        state.height = RBMKDials.getColumnHeight(be.getLevel());
+        // 1.7 draws these from the top dummy at y + 1, the block above the column
+        state.height = RBMKDials.getColumnHeightRuleValue(be.getLevel());
         state.lid = RBMKBase.lidOf(be.getBlockState());
         state.topLight = be.getLevel() == null ? 0 : Renderers.lightAt(be.getLevel(), be.getBlockPos().above(state.height));
     }
