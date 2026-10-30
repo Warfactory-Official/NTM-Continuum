@@ -38,7 +38,8 @@ public final class HbmViewerSubtypes {
                 ModDataComponents.FLUID, ModDataComponents.FLUID_AMOUNT);
         reg.components(ModMachineItems.fluid_identifier.get(),
                 ModDataComponents.FLUID);
-        reg.components(ModUtilityToolItems.fluid_identifier_multi.get(),
+        // 1.7 crafted it with a wildcard-metadata output, so every fluid's identifier finds that recipe.
+        reg.listed(ModUtilityToolItems.fluid_identifier_multi.get(),
                 ModDataComponents.FLUID_IDENTIFIER);
         reg.components(ModFluidItems.fluid_bucket.get(),
                 ModDataComponents.FLUID);

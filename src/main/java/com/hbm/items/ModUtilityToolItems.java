@@ -211,7 +211,6 @@ public final class ModUtilityToolItems {
             ItemBookLemegeton::new, single(), Presets.sprite());
 
     static {
-        ModTabs.addStacksTo(HbmTab.TEMPLATES, ItemFluidIDMulti::creativeStacks);
         ModTabs.addStacksTo(HbmTab.CONSUMABLES, ItemGuideBook::creativeStacks);
     }
 

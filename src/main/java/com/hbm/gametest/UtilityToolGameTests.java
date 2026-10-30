@@ -3,6 +3,8 @@ package com.hbm.gametest;
 import com.hbm.Constants;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
+import com.hbm.creativetabs.HbmTab;
+import com.hbm.creativetabs.ModTabs;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.inventory.fluid.Fluids;
@@ -17,6 +19,7 @@ import dev.golem.core.data.ItemContents;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Effects;
+import dev.golem.core.world.ItemStacks;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -51,6 +54,8 @@ public final class UtilityToolGameTests {
             TESTS.function("utility_tools_containment", 20, () -> UtilityToolGameTests::containment);
     public static final GameTests.Function SETTINGS =
             TESTS.function("utility_tools_settings_duct", 40, () -> UtilityToolGameTests::settingsDuct);
+    public static final GameTests.Function TAB_STACKS =
+            TESTS.function("utility_tools_tab_stacks_distinct", 20, () -> UtilityToolGameTests::tabStacksDistinct);
 
     public static void init() {}
 
@@ -157,6 +162,24 @@ public final class UtilityToolGameTests {
         Player hurt = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ItemGlitch.effect(2, level, hurt);
         helper.assertTrue(hurt.isDeadOrDying(), "roll 2 kills with radiation");
+        helper.succeed();
+    }
+
+    /** A creative tab refuses to build when two of its stacks are equal, and JEI then lists none of that tab. */
+    public static void tabStacksDistinct(GameTestHelper helper) {
+        int identifiers = 0;
+        for (HbmTab tab : HbmTab.values()) {
+            List<ItemStack> stacks = ModTabs.displayStacks(ModTabs.get(tab).getKey());
+            for (int i = 0; i < stacks.size(); i++) {
+                ItemStack stack = stacks.get(i);
+                if (stack.is(ModUtilityToolItems.fluid_identifier_multi.get())) identifiers++;
+                for (int j = i + 1; j < stacks.size(); j++) {
+                    helper.assertFalse(ItemStacks.sameItemAndData(stack, stacks.get(j)),
+                            tab + " lists " + stack + " twice, at " + i + " and " + j);
+                }
+            }
+        }
+        helper.assertTrue(identifiers > 100, "one multi identifier per fluid, got " + identifiers);
         helper.succeed();
     }
 }
