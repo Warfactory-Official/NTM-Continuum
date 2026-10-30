@@ -26,7 +26,11 @@ Requires Golem Core 1.0.3. Use GemRender 0.1.20; older versions are refused.
 - A server whose `hbm.cfg` recipe switches differed from the client's hid recipe rows in the viewer and machine selectors.
 - Wind charges destroyed multiblock machines on 1.21.1.
 - The 1.21.1 client hung on world exit while terrain was still generating.
-- The templates tab listed the uncraftable multi fluid identifier instead of 1.7's craftable one.
+- The templates tab listed the uncraftable multi fluid identifier instead of 1.7's craftable one; JEI and REI find its
+  crafting recipe from any listed identifier.
+- RBMK cover panels sat inside the top of structural, storage, boiler, heater and other non-fuel columns, and every
+  cover panel looked like a thin floating plate (GitHub issue 94).
+- The Tom crater only cleared up to y 256 and filled down to y 0; it now uses the world's full height (GitHub issue 95).
 - Volcanic lava makes 1.7's basalt ores again and turns any diamond ore, deepslate included, into gem ore.
 - Guns in the offhand were drawn inside out.
 - The Torex shock ring follows the terrain again; rotated multiblocks kept unrotated hitboxes, and the ore slopper could
