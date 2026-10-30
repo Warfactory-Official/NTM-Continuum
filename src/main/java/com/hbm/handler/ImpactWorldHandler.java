@@ -49,31 +49,36 @@ public final class ImpactWorldHandler {
 
         if (listSize > 0) {
             for (int i = 0; i < 3; i++) {
+                try {
 
-                LevelChunk chunk = loaded.get(rand.nextInt(listSize));
-                int chunkX = chunk.getPos().getMinBlockX();
-                int chunkZ = chunk.getPos().getMinBlockZ();
+                    LevelChunk chunk = loaded.get(rand.nextInt(listSize));
+                    int chunkX = chunk.getPos().getMinBlockX();
+                    int chunkZ = chunk.getPos().getMinBlockZ();
 
-                for (int x = 0; x < 16; x++) {
-                    for (int z = 0; z < 16; z++) {
+                    for (int x = 0; x < 16; x++) {
+                        for (int z = 0; z < 16; z++) {
 
-                        if (rand.nextBoolean()) continue;
+                            if (rand.nextBoolean()) continue;
 
-                        int X = chunkX + x;
-                        int Z = chunkZ + z;
-                        int height = world.getHeight(Heightmap.Types.MOTION_BLOCKING, X, Z);
-                        // 1.7: getHeightValue - rand(max(1, getHeightValue)), a y between 1 and the surface measured
-                        // from 1.7's floor at 0; kept absolute so a surface block is hit as often as in 1.7.
-                        int Y = height - rand.nextInt(Math.max(1, height));
-                        BlockPos pos = new BlockPos(X, Y, Z);
+                            int X = chunkX + x;
+                            int Z = chunkZ + z;
+                            int height = world.getHeight(Heightmap.Types.MOTION_BLOCKING, X, Z);
+                            // 1.7: getHeightValue - rand(max(1, getHeightValue)), a y between 1 and the surface measured
+                            // from 1.7's floor at 0; kept absolute so a surface block is hit as often as in 1.7.
+                            int Y = height - rand.nextInt(Math.max(1, height));
+                            BlockPos pos = new BlockPos(X, Y, Z);
 
-                        if (data.dust > 0) {
-                            die(world, pos, data);
-                        }
-                        if (data.fire > 0) {
-                            burn(world, pos);
+                            if (data.dust > 0) {
+                                die(world, pos, data);
+                            }
+                            if (data.fire > 0) {
+                                burn(world, pos);
+                            }
                         }
                     }
+                } catch (IndexOutOfBoundsException e){
+                    i--;
+                    listSize = loaded.size();
                 }
             }
         }
