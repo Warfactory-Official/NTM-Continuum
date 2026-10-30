@@ -19,13 +19,17 @@ public final class ClientFluidProperties {
 
     private static volatile Resolved local;
     private static volatile State state;
+    private static boolean installed;
 
     private ClientFluidProperties() {}
 
-    /** Called after common fluid registration and before the first client resource load or connection. */
+    /**
+     * Called from client start-up, which is mod construction on NeoForge and Forge: the registries may hold another
+     * mod's fluids but not HBM's yet, so the local metadata is resolved on first use.
+     */
     public static synchronized void init() {
-        if (local != null) throw new IllegalStateException("Client fluid metadata initialized twice");
-        local = resolve(FluidProperties.declarationSnapshot());
+        if (installed) throw new IllegalStateException("Client fluid metadata initialized twice");
+        installed = true;
         ClientSessions.START.register(ClientFluidProperties::start);
         ClientSessions.END.register(ClientFluidProperties::reset);
         Configurations.registerClient(FluidPropertySnapshot.CODEC, ClientFluidProperties::accept);
@@ -74,7 +78,7 @@ public final class ClientFluidProperties {
     /** Explicit client access; an active connection must install its required metadata before world rendering. */
     public static FluidMetadata get(FluidType type) {
         var current = state;
-        var resolved = current != null && current.session().active() ? current.resolved() : local;
+        var resolved = current != null && current.session().active() ? current.resolved() : local();
         if (resolved == null) throw new IllegalStateException("Client fluid metadata is not installed");
         var metadata = resolved.metadata().get(type);
         if (metadata == null) throw new IllegalStateException("Client lacks fluid metadata for " + type.getRegistryName());
@@ -83,11 +87,21 @@ public final class ClientFluidProperties {
 
     public static FluidType kindOf(FluidType type) {
         var current = state;
-        var resolved = current != null && current.session().active() ? current.resolved() : local;
+        var resolved = current != null && current.session().active() ? current.resolved() : local();
         if (resolved == null) throw new IllegalStateException("Client fluid metadata is not installed");
         var kind = resolved.kinds().get(type);
         if (kind == null) throw new IllegalStateException("Client lacks fluid kind for " + type.getRegistryName());
         return kind;
+    }
+
+    private static Resolved local() {
+        var resolved = local;
+        if (resolved != null) return resolved;
+        synchronized (ClientFluidProperties.class) {
+            if (!installed) return null;
+            if (local == null) local = resolve(FluidProperties.declarationSnapshot());
+            return local;
+        }
     }
 
     private static Resolved resolve(FluidPropertySnapshot snapshot) {

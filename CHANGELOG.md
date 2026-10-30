@@ -31,6 +31,8 @@ Requires Golem Core 1.0.3. Use GemRender 0.1.20; older versions are refused.
 - RBMK cover panels sat inside the top of structural, storage, boiler, heater and other non-fuel columns, and every
   cover panel looked like a thin floating plate (GitHub issue 94).
 - The Tom crater only cleared up to y 256 and filled down to y 0; it now uses the world's full height (GitHub issue 95).
+- The client failed to load ("Missing key ... minecraft:fluid / hbm:...") next to a mod that registers a fluid early,
+  such as Create: Estrogen, on NeoForge and Forge.
 - Volcanic lava makes 1.7's basalt ores again and turns any diamond ore, deepslate included, into gem ore.
 - Guns in the offhand were drawn inside out.
 - The Torex shock ring follows the terrain again; rotated multiblocks kept unrotated hitboxes, and the ore slopper could
