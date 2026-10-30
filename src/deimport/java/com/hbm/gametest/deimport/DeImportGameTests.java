@@ -6,6 +6,8 @@ import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.ImportedCells;
 import com.hbm.blocks.multiblock.MultiblockCoreIndex;
+import com.hbm.deimport.DeImport;
+import com.hbm.deimport.engine.ChunkBlocks;
 import com.hbm.deimport.engine.Ctx;
 import com.hbm.deimport.engine.Journal;
 import com.hbm.deimport.engine.NbtDiff;
@@ -15,9 +17,11 @@ import com.hbm.deimport.engine.Pipeline;
 import com.hbm.deimport.engine.RegionIo;
 import com.hbm.deimport.engine.Report;
 import com.hbm.deimport.engine.Step;
+import com.hbm.deimport.engine.Unit;
 import com.hbm.deimport.gate.ImportState;
 import com.hbm.deimport.gate.Signature;
 import com.hbm.deimport.source.de7.Airships;
+import com.hbm.deimport.source.de7.BackupMerge;
 import com.hbm.deimport.source.de7.BlockEntities;
 import com.hbm.deimport.source.de7.BlockStates;
 import com.hbm.deimport.source.de7.ChunkConverter;
@@ -28,11 +32,15 @@ import com.hbm.deimport.steps.PlayersStep;
 import com.hbm.deimport.steps.RbmkDialsStep;
 import com.hbm.deimport.steps.RegionsStep;
 import com.hbm.deimport.steps.SavedDataStep;
+import com.hbm.deimport.steps.SubLevelsStep;
 import com.hbm.deimport.target.ContinuumTarget;
+import com.hbm.delegacy.DeAddons;
+import com.hbm.delegacy.de7.Entities;
 import com.hbm.delegacy.de7.Walker;
 import com.hbm.handler.pollution.PollutionSavedData;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.handler.radiation.RadiationSystemNT;
+import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteType;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
@@ -48,7 +56,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -83,6 +93,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.Nullable;
 
 /** The DE importer against DE-shaped saves written by {@link DeFixtures}; Continuum itself loads what it wrote. */
@@ -104,6 +115,17 @@ public final class DeImportGameTests {
         TESTS.function("deimport_nothing_lost_silently", 20, () -> DeImportGameTests::nothingLostSilently);
         TESTS.function("deimport_audited_mappings", 20, () -> DeImportGameTests::auditedMappings);
         TESTS.function("deimport_loot_and_references", 20, () -> DeImportGameTests::lootAndReferences);
+        TESTS.function("deimport_satellites_and_pack_recipes", 20, () -> DeImportGameTests::satellitesAndPackRecipes);
+        TESTS.function("deimport_jigsaw_pieces", 20, () -> DeImportGameTests::jigsawPieces);
+        TESTS.function("deimport_deferred_addons", 20, () -> DeImportGameTests::deferredAddons);
+        TESTS.function("deimport_late_walker_and_records", 20, () -> DeImportGameTests::lateWalkerAndRecords);
+        TESTS.function("deimport_backup_merge", 20, () -> DeImportGameTests::backupMerge);
+        TESTS.function("deimport_backup_merge_cells", 20, () -> DeImportGameTests::backupMergeCells);
+        TESTS.function("deimport_airship_plot_positions", 20, () -> DeImportGameTests::airshipPlotPositions);
+        if (ModList.get().isLoaded("sable")) {
+            TESTS.function("deimport_airship_merge", 20, () -> DeSableGameTests::merge);
+            TESTS.function("deimport_airship_plots_repaired", 20, () -> DeSableGameTests::plotsRepaired);
+        }
     }
 
     private DeImportGameTests() {}
@@ -433,6 +455,26 @@ public final class DeImportGameTests {
             saved = roundTrip(helper, watz, "hbm:watz", ctx, walker);
             helper.assertTrue(saved.contains("lock3:\"hbm:watz_pellet_schrabidium\"") && saved.contains("isLocked:1b"),
                     "Watz slot locks: " + saved);
+
+            CompoundTag hydrotreater = DeFixtures.blockEntity("hbm:hydrotreater", BlockPos.ZERO);
+            hydrotreater.put("inventory", DeFixtures.inventory(DeFixtures.slot(3, DeFixtures.stack("minecraft:iron_ingot", 1))));
+            saved = roundTrip(helper, hydrotreater, "hbm:machine_hydrotreater", ctx, walker);
+            helper.assertTrue(saved.contains("Slot:5") && saved.contains("minecraft:iron_ingot"), "a hydrotreater's DE slot 3 is its slot 5: " + saved);
+            CompoundTag loader = DeFixtures.blockEntity("hbm:pile_loader", BlockPos.ZERO);
+            loader.put("inventory", DeFixtures.inventory(DeFixtures.slot(0, DeFixtures.stack("minecraft:iron_ingot", 1))));
+            loader.putBoolean("wasRedstone", true);
+            saved = roundTrip(helper, loader, "hbm:pile_device", ctx, walker);
+            helper.assertTrue(saved.contains("stack:{") && saved.contains("minecraft:iron_ingot") && saved.contains("redstone:1b"),
+                    "a pile loader keeps one stack: " + saved);
+            CompoundTag caster = DeFixtures.blockEntity("hbm:strand_caster", BlockPos.ZERO);
+            caster.put("items", DeFixtures.inventory(DeFixtures.slot(0, DeFixtures.stack("minecraft:iron_ingot", 1))));
+            saved = roundTrip(helper, caster, "hbm:machine_strand_caster", ctx, walker);
+            helper.assertTrue(saved.contains("minecraft:iron_ingot"), "a strand caster's DE items are its inventory: " + saved);
+            CompoundTag storage = DeFixtures.blockEntity("hbm:mass_storage", BlockPos.ZERO);
+            storage.put("inventory", DeFixtures.inventory(DeFixtures.slot(1, DeFixtures.stack("minecraft:iron_ingot", 1))));
+            storage.putInt("stockpile", 500);
+            saved = roundTrip(helper, storage, "hbm:mass_storage_iron", ctx, walker);
+            helper.assertTrue(saved.contains("stack:500"), "a mass storage keeps its count: " + saved);
             helper.succeed();
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -498,6 +540,529 @@ public final class DeImportGameTests {
         }
     }
 
+    /** Saved data where no chunk was saved, Continuum's own annihilator, an unknown satellite type, pack recipe names. */
+    private static void satellitesAndPackRecipes(GameTestHelper helper) {
+        Path world = tempWorld();
+        try {
+            ListTag sats = new ListTag();
+            for (String type : List.of("radar", "bogus")) {
+                CompoundTag sat = new CompoundTag();
+                sat.putString("type", type);
+                CompoundTag outer = new CompoundTag();
+                outer.put("sat", sat);
+                outer.put("state", new CompoundTag());
+                CompoundTag entry = new CompoundTag();
+                entry.putInt("freq", sats.size() + 1);
+                entry.put("sat", outer);
+                sats.add(entry);
+            }
+            CompoundTag data = new CompoundTag();
+            data.put("sats", sats);
+            writeWrapped(world.resolve("dimensions/somemod/orbit"), "hbm_satellites", data);
+            writeWrapped(world.resolve("dimensions/somemod/orbit"), "hbm_annihilator", new CompoundTag());
+            CompoundTag annihilator = new CompoundTag();
+            annihilator.put("pools", new ListTag());
+            CompoundTag own = new CompoundTag();
+            own.put("data", annihilator);
+            Files.createDirectories(world.resolve("data"));
+            NbtIo.writeCompressed(own, world.resolve("data/hbm_annihilator.dat"));
+            Ctx ctx = ctx(world, helper.getLevel().getServer());
+            new SavedDataStep().run(ctx, null);
+            helper.assertTrue(Files.isRegularFile(world.resolve("data/hbm_annihilator.dat")), "Continuum's own annihilator stays");
+            helper.assertTrue(!Files.exists(world.resolve("dimensions/somemod/orbit/data/hbm_annihilator.dat")), "DE's is parked");
+            CompoundTag out = NbtIo.readCompressed(world.resolve("dimensions/somemod/orbit/data/hbm_satellites.dat"), NbtAccounter.unlimitedHeap());
+            SatelliteSavedData loaded = SatelliteSavedData.CODEC.parse(NbtOps.INSTANCE, out.getCompound("data")).getOrThrow();
+            helper.assertTrue(loaded.getSatFromFreq(1) != null && loaded.getSatFromFreq(2) == null, "the radar loads, the unknown type is gone: " + out);
+            helper.assertTrue(ctx.parking.counts().getOrDefault("satellite", 0) == 1, "and parked: " + ctx.parking.counts());
+            ctx.flushGlobal();
+            CompoundTag parkedOriginal = null;
+            for (Tag t : new Parking(world).records()) {
+                CompoundTag record = (CompoundTag) t;
+                if (record.getString("where").equals("somemod:orbit hbm_satellites") && record.getString("kind").equals("saved_data")) parkedOriginal = record;
+            }
+            ListTag originalSats = parkedOriginal == null ? new ListTag()
+                    : parkedOriginal.getCompound("nbt").getCompound("data").getCompound("data").getList("sats", Tag.TAG_COMPOUND);
+            helper.assertTrue(originalSats.size() == 2 && originalSats.getCompound(1).getCompound("sat").contains("sat", Tag.TAG_COMPOUND),
+                    "the leftovers keep DE's file as DE saved it, both satellites nested: " + parkedOriginal);
+
+            CompoundTag assembler = DeFixtures.blockEntity("hbm:assemblymachine", BlockPos.ZERO);
+            assembler.putString("recipe0", "ass.package.water");
+            String type = ctx.target.blockEntityType("hbm:machine_assembly_machine", new CompoundTag());
+            BlockEntities.convert(assembler, type, ctx, new Walker(ctx), "test assembler");
+            helper.assertTrue(assembler.getString("recipe0").equals("ass.packagehbmfluid.water"), "the water pack recipe: " + assembler);
+            CompoundTag factory = DeFixtures.blockEntity("hbm:assemblyfactory", BlockPos.ZERO);
+            factory.putString("recipe2", "ass.unpackage.water");
+            BlockEntities.convert(factory, ctx.target.blockEntityType("hbm:machine_assembly_factory", new CompoundTag()), ctx, new Walker(ctx), "test factory");
+            helper.assertTrue(factory.getString("recipe2").equals("ass.unpackagehbmfluid.water"), "the factory's unpack recipe: " + factory);
+            helper.succeed();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            delete(world);
+        }
+    }
+
+    /** Starts as vanilla loads them: a piece that cannot load is parked, the start stays while one is left. */
+    private static void jigsawPieces(GameTestHelper helper) {
+        Path world = tempWorld();
+        try {
+            Ctx ctx = ctx(world, helper.getLevel().getServer());
+            CompoundTag chunk = DeFixtures.emptyChunk(0, 0);
+            String house = "minecraft:village/plains/houses/plains_small_house_1";
+            CompoundTag starts = new CompoundTag();
+            starts.put("minecraft:village_plains", start("minecraft:village_plains", piece(house, "minecraft:empty"),
+                    piece(house, "hbm:multiblock_assembly")));
+            starts.put("minecraft:village_desert", start("minecraft:village_desert", piece(house, "hbm:multiblock_assembly")));
+            starts.put("minecraft:village_savanna", start("minecraft:village_savanna", piece("hbmspace:duna_comms", "minecraft:empty")));
+            CompoundTag structures = new CompoundTag();
+            structures.put("starts", starts);
+            chunk.put("structures", structures);
+            new ChunkConverter(ctx, "minecraft:overworld").convert(chunk);
+            CompoundTag kept = chunk.getCompound("structures").getCompound("starts");
+            helper.assertTrue(kept.getCompound("minecraft:village_plains").getList("Children", Tag.TAG_COMPOUND).size() == 1
+                    && kept.contains("minecraft:village_savanna") && !kept.contains("minecraft:village_desert"),
+                    "the loadable pieces stay with their starts: " + kept);
+            helper.assertTrue(ctx.parking.counts().getOrDefault("structure_piece", 0) == 2
+                    && ctx.parking.counts().getOrDefault("structure", 0) == 1, "the rest is parked: " + ctx.parking.counts());
+            helper.succeed();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            delete(world);
+        }
+    }
+
+    private static CompoundTag piece(String location, String processors) {
+        CompoundTag element = new CompoundTag();
+        element.putString("element_type", "minecraft:single_pool_element");
+        element.putString("location", location);
+        element.putString("processors", processors);
+        element.putString("projection", "rigid");
+        CompoundTag piece = new CompoundTag();
+        piece.putString("id", "minecraft:jigsaw");
+        piece.put("pool_element", element);
+        return piece;
+    }
+
+    private static CompoundTag start(String id, CompoundTag... pieces) {
+        ListTag children = new ListTag();
+        children.addAll(List.of(pieces));
+        CompoundTag start = new CompoundTag();
+        start.putString("id", id);
+        start.putInt("ChunkX", 0);
+        start.putInt("ChunkZ", 0);
+        start.put("Children", children);
+        return start;
+    }
+
+    /**
+     * An addon left for later (a stand-in id, the same with NTM: Space loaded) keeps its data in DE's shape and nothing
+     * waits on it; an import converting with an addon waits for it, -Dhbm.deimport.without or not.
+     */
+    private static void deferredAddons(GameTestHelper helper) {
+        Path world = tempWorld();
+        try {
+            Path mun = world.resolve("dimensions/testaddon/mun");
+            writeChunk(mun, DeFixtures.emptyChunk(0, 0));
+            CompoundTag data = new CompoundTag();
+            data.put("sats", new ListTag());
+            writeWrapped(mun, "hbm_satellites", data);
+            Files.createDirectories(mun.resolve("sublevels"));
+            ImportState state = ImportState.create(world, DeFixtures.DE_VERSION, 7, "test");
+            state.put("deferred_addons", "testaddon");
+            Ctx ctx = ctx(world, null);
+            DeImport.deferred(state, ctx);
+            helper.assertTrue(ctx.deferredAddons.contains("testaddon"), "the addon is still left for later: " + ctx.deferredAddons);
+            new RegionsStep().run(ctx, null);
+            new SavedDataStep().run(ctx, null);
+            SubLevelsStep airships = new SubLevelsStep();
+            airships.run(ctx, null);
+            helper.assertTrue(airships.waitsFor(ctx) == null && Files.isDirectory(mun.resolve("sublevels"))
+                    && !ctx.journal.done("sublevels@1", world, mun.resolve("sublevels")), "its airships are left to its converter, and nothing waits");
+            CompoundTag props = new CompoundTag();
+            props.putFloat("activation", 3.5F);
+            CompoundTag attachments = new CompoundTag();
+            attachments.put("hbm:living_props", props);
+            CompoundTag player = new CompoundTag();
+            player.put("neoforge:attachments", attachments);
+            Entities.living(player, ctx, "test player");
+            helper.assertTrue(player.getCompound("neoforge:attachments").getCompound("hbm:living_props").get("neutrons") instanceof DoubleTag,
+                    "neutron activation is the double Continuum reads, with or without the addon: " + player);
+            CompoundTag chunk;
+            try (RegionFile region = RegionIo.open(mun.resolve("region/r.0.0.mca"))) {
+                chunk = RegionIo.read(region, new ChunkPos(0, 0));
+            }
+            helper.assertTrue(chunk != null && chunk.contains(ChunkConverter.STAMP), "Mun keeps DE's stamp for NTM: Space");
+            CompoundTag saved = NbtIo.readCompressed(mun.resolve("data/hbm_satellites.dat"), NbtAccounter.unlimitedHeap());
+            helper.assertTrue(saved.getCompound("data").contains("data", Tag.TAG_COMPOUND), "and its saved data stays DE's");
+            state.put("addons", "hbmspace");
+            String why = DeImport.missingAddon(state);
+            helper.assertTrue(DeAddons.has("hbmspace") ? why == null : why != null && why.contains("NTM: Space"),
+                    "an import begun with NTM: Space waits for it: " + why);
+            System.setProperty("hbm.deimport.without", "hbmspace");
+            try {
+                helper.assertTrue(Objects.equals(DeImport.missingAddon(state), why), "-Dhbm.deimport.without=hbmspace cannot take it away halfway");
+            } finally {
+                System.clearProperty("hbm.deimport.without");
+            }
+            state.put("addons", "");
+            state.put("converting_addons", "hbmspace");
+            String converting = DeImport.missingAddon(state);
+            helper.assertTrue(DeAddons.has("hbmspace") ? converting == null : converting != null,
+                    "nor can an addon left for later once its converter has begun: " + converting);
+            helper.succeed();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            delete(world);
+        }
+    }
+
+    /**
+     * What a late addon converter must leave alone: stacks an earlier import converted, inside a block entity of the
+     * addon (a stand-in id), and the records an earlier run left for its airships, in any unit's shard.
+     */
+    private static void lateWalkerAndRecords(GameTestHelper helper) {
+        Path world = tempWorld();
+        try {
+            Ctx ctx = ctx(world, null);
+            CompoundTag box = new CompoundTag();
+            box.putString("id", "testaddon:box");
+            ListTag items = new ListTag();
+            items.add(DeFixtures.stack("hbm:capacitor_copper", 1));
+            box.put("Items", items);
+            CompoundTag control = box.copy();
+            new Walker(ctx, id -> id.startsWith("testaddon:")).walk(box, "test");
+            new Walker(ctx).walk(control, "test");
+            helper.assertTrue(box.getList("Items", Tag.TAG_COMPOUND).getCompound(0).getString("id").equals("hbm:capacitor_copper")
+                    && !control.getList("Items", Tag.TAG_COMPOUND).getCompound(0).getString("id").equals("hbm:capacitor_copper"),
+                    "Continuum's capacitor is not taken for DE's a second time: " + box + " " + control);
+
+            Unit unit = ctx.begin("airships testaddon:duna r.0.0.0.slvls");
+            CompoundTag cells = new CompoundTag();
+            cells.putString("dim", "testaddon:duna");
+            cells.putLong("pos", 0L);
+            ctx.add("plotcells", cells);
+            CompoundTag cable = new CompoundTag();
+            cable.putString("dim", "testaddon:duna");
+            cable.putLong("pos", 1L);
+            ctx.add("conductors", cable);
+            ctx.commit(unit);
+            ctx.flushGlobal();
+            Ctx next = ctx(world, null);
+            int dropped = next.dropEarlier((kind, t) -> t.getString("dim").equals("testaddon:duna") && kind.equals("plotcells"));
+            Ctx after = ctx(world, null);
+            helper.assertTrue(dropped == 1 && after.list("plotcells").isEmpty() && after.list("conductors").size() == 1,
+                    "the stale record leaves its unit's shard, the other stays: " + dropped + " " + after.list("conductors"));
+            helper.assertTrue(new Parking(world).records().stream().anyMatch(t -> ((CompoundTag) t).getString("kind").equals("live_record")),
+                    "and is kept in the leftovers");
+            helper.succeed();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            delete(world);
+        }
+    }
+
+    /**
+     * A DE addon's content a start without its converter lost, put back from DE's copy (a stand-in addon id): a block
+     * where the chunk now has air, never over one built since or for HBM's own ids; container, item frame and armor
+     * stand stacks into empty places only; and a ship's block where its plot has room.
+     */
+    private static void backupMerge(GameTestHelper helper) {
+        Path world = tempWorld();
+        try {
+            Ctx ctx = ctx(world, null);
+            Predicate<String> addon = id -> id.startsWith("testaddon:");
+            BlockPos lost = new BlockPos(1, 70, 1), built = new BlockPos(2, 70, 2), own = new BlockPos(3, 70, 3), chest = new BlockPos(4, 70, 4);
+            CompoundTag backed = DeFixtures.emptyChunk(0, 0);
+            DeFixtures.setBlock(backed, lost, DeFixtures.block("testaddon:machine"));
+            DeFixtures.setBlock(backed, built, DeFixtures.block("testaddon:machine"));
+            DeFixtures.setBlock(backed, own, DeFixtures.block("hbm:block_steel"));
+            DeFixtures.setBlock(backed, chest, DeFixtures.block("minecraft:chest"));
+            CompoundTag box = DeFixtures.blockEntity("minecraft:chest", chest);
+            ListTag items = new ListTag();
+            items.add(DeFixtures.slot(0, DeFixtures.stack("testaddon:part", 1)));
+            items.add(DeFixtures.slot(1, DeFixtures.stack("testaddon:part", 2)));
+            CompoundTag shulker = DeFixtures.stack("minecraft:shulker_box", 1);
+            CompoundTag inside = new CompoundTag();
+            ListTag contents = new ListTag();
+            CompoundTag inShulker = new CompoundTag();
+            inShulker.putInt("slot", 0);
+            inShulker.put("item", DeFixtures.stack("testaddon:part", 1));
+            contents.add(inShulker);
+            inside.put("minecraft:container", contents);
+            shulker.put("components", inside);
+            items.add(DeFixtures.slot(2, shulker));
+            box.put("Items", items);
+            DeFixtures.addBlockEntity(backed, box);
+            CompoundTag live = DeFixtures.emptyChunk(0, 0);
+            live.remove("hbm_data_version");
+            DeFixtures.setBlock(live, built, DeFixtures.block("minecraft:stone"));
+            DeFixtures.setBlock(live, chest, DeFixtures.block("minecraft:chest"));
+            CompoundTag kept = DeFixtures.blockEntity("minecraft:chest", chest);
+            ListTag keptItems = new ListTag();
+            keptItems.add(DeFixtures.slot(0, DeFixtures.stack("minecraft:stone", 1)));
+            kept.put("Items", keptItems);
+            DeFixtures.addBlockEntity(live, kept);
+            live.put("Heightmaps", new CompoundTag());
+            live.putBoolean("isLightOn", true);
+            CompoundTag untouched = live.copy();
+
+            int stacks = BackupMerge.containers(ctx, live, backed, new Walker(ctx), addon, "test");
+            int blocks = BackupMerge.blocks(ctx, "minecraft:overworld", live, backed, addon);
+            helper.assertTrue(blocks == 1 && ChunkBlocks.get(live, lost).getString("Name").equals("testaddon:machine")
+                    && ChunkBlocks.get(live, built).getString("Name").equals("minecraft:stone")
+                    && ChunkBlocks.get(live, own).getString("Name").equals("minecraft:air"),
+                    "only the addon's block where there is room comes back: " + blocks);
+            helper.assertTrue(stacks == 1 && kept.getList("Items", Tag.TAG_COMPOUND).size() == 2
+                    && kept.getList("Items", Tag.TAG_COMPOUND).getCompound(0).getString("id").equals("minecraft:stone"),
+                    "the chest gets back only the addon stack whose slot is empty, not a stack holding one: " + kept);
+            helper.assertTrue(!live.contains("Heightmaps") && !live.getBoolean("isLightOn"), "a chunk that got blocks back is lit again on load");
+            CompoundTag lacking = DeFixtures.emptyChunk(0, 0);
+            DeFixtures.setBlock(lacking, lost, DeFixtures.block("testaddon:machine"));
+            untouched.getList("sections", Tag.TAG_COMPOUND).removeIf(t -> ((CompoundTag) t).getByte("Y") == lost.getY() >> 4);
+            helper.assertTrue(BackupMerge.blocks(ctx, "minecraft:overworld", untouched, lacking, addon) == 0
+                    && untouched.contains("Heightmaps") && untouched.getBoolean("isLightOn"), "one that got none keeps its light");
+
+            String crateName = BlockStates.convert(DeFixtures.block("hbm:crate_iron"), ctx.target).entry().getString("Name");
+            CompoundTag crateBefore = DeFixtures.emptyChunk(0, 0), crateNow = DeFixtures.emptyChunk(0, 0);
+            DeFixtures.setBlock(crateBefore, chest, DeFixtures.block("hbm:crate_iron"));
+            DeFixtures.setBlock(crateNow, chest, DeFixtures.block(crateName));
+            CompoundTag crate = DeFixtures.blockEntity("hbm:crate_iron", chest), crateKept = DeFixtures.blockEntity("hbm:crate_iron", chest);
+            crate.put("inventory", DeFixtures.inventory(DeFixtures.slot(3, DeFixtures.stack("testaddon:part", 1))));
+            crateKept.put("inventory", DeFixtures.inventory());
+            DeFixtures.addBlockEntity(crateBefore, crate);
+            DeFixtures.addBlockEntity(crateNow, crateKept);
+            CompoundTag furnaceNow = crateNow.copy();
+            DeFixtures.setBlock(furnaceNow, chest, DeFixtures.block("minecraft:furnace"));
+            helper.assertTrue(BackupMerge.containers(ctx, crateNow, crateBefore, new Walker(ctx), addon, "test") == 1
+                    && crateKept.getCompound("inventory").getList("Items", Tag.TAG_COMPOUND).size() == 1,
+                    "an HBM crate gets its stack back into its inventory: " + crateKept);
+            helper.assertTrue(BackupMerge.containers(ctx, furnaceNow, crateBefore, new Walker(ctx), addon, "test") == 0,
+                    "a container replaced since takes nothing");
+
+            // DE's slot 3 of a hydrotreater is Continuum's slot 5; a piston inserter keeps its one stack apart
+            BlockPos inserter = new BlockPos(5, 70, 5);
+            CompoundTag machinesBefore = DeFixtures.emptyChunk(0, 0), machinesNow = DeFixtures.emptyChunk(0, 0);
+            for (BlockPos pos : List.of(chest, inserter)) {
+                CompoundTag block = DeFixtures.block(pos == chest ? "hbm:machine_hydrotreater" : "hbm:piston_inserter");
+                DeFixtures.setBlock(machinesBefore, pos, block);
+                DeFixtures.setBlock(machinesNow, pos, BlockStates.convert(block, ctx.target).entry());
+            }
+            CompoundTag hydrotreater = DeFixtures.blockEntity("hbm:hydrotreater", chest), hydrotreaterNow = DeFixtures.blockEntity("hbm:machine_hydrotreater", chest);
+            hydrotreater.put("inventory", DeFixtures.inventory(DeFixtures.slot(3, DeFixtures.stack("testaddon:part", 1))));
+            hydrotreaterNow.put("inventory", DeFixtures.inventory(DeFixtures.slot(3, DeFixtures.stack("minecraft:stone", 1))));
+            CompoundTag pusher = DeFixtures.blockEntity("hbm:piston_inserter", inserter), pusherNow = DeFixtures.blockEntity("hbm:piston_inserter", inserter);
+            pusher.put("inventory", DeFixtures.inventory(DeFixtures.slot(0, DeFixtures.stack("testaddon:part", 1))));
+            DeFixtures.addBlockEntity(machinesBefore, hydrotreater);
+            DeFixtures.addBlockEntity(machinesBefore, pusher);
+            DeFixtures.addBlockEntity(machinesNow, hydrotreaterNow);
+            DeFixtures.addBlockEntity(machinesNow, pusherNow);
+            int machines = BackupMerge.containers(ctx, machinesNow, machinesBefore, new Walker(ctx), addon, "test");
+            ListTag hydrotreaterItems = hydrotreaterNow.getCompound("inventory").getList("Items", Tag.TAG_COMPOUND);
+            helper.assertTrue(machines == 2 && hydrotreaterItems.stream().anyMatch(t -> ((CompoundTag) t).getByte("Slot") == 5
+                            && ((CompoundTag) t).getString("id").equals("testaddon:part")) && pusherNow.getCompound("stack").getString("id").equals("testaddon:part"),
+                    "machines get their stacks back where Continuum keeps them: " + machines + " " + hydrotreaterNow + " " + pusherNow);
+
+            CompoundTag storageNow = new CompoundTag(), storageBefore = DeFixtures.blockEntity("hbm:mass_storage", chest);
+            storageNow.put("inventory", DeFixtures.inventory());
+            storageNow.putInt("stack", 0);
+            storageNow.putInt("capacity", 300);
+            storageBefore.put("inventory", DeFixtures.inventory(DeFixtures.slot(1, DeFixtures.stack("testaddon:part", 1))));
+            storageBefore.putInt("stockpile", 500);
+            helper.assertTrue(BackupMerge.stacks(storageNow, BlockEntities.layout(storageBefore), new Walker(ctx), addon, "test") == 1
+                    && storageNow.getInt("stack") == 300, "a mass storage gets its type back with its count, up to what it holds: " + storageNow);
+            CompoundTag reused = new CompoundTag(), reusedBefore = BlockEntities.layout(storageBefore);
+            reused.put("inventory", DeFixtures.inventory(DeFixtures.slot(1, DeFixtures.stack("minecraft:diamond", 1))));
+            reused.putInt("stack", 0);
+            reused.putInt("capacity", 300);
+            reusedBefore.getCompound("inventory").getList("Items", Tag.TAG_COMPOUND).add(DeFixtures.slot(2, DeFixtures.stack("testaddon:part", 64)));
+            helper.assertTrue(BackupMerge.stacks(reused, reusedBefore, new Walker(ctx), addon, "test") == 1 && reused.getInt("stack") == 0,
+                    "one given another type since keeps its count: " + reused);
+            CompoundTag pedestal = new CompoundTag(), pedestalBefore = new CompoundTag();
+            pedestalBefore.put("item", DeFixtures.stack("testaddon:part", 1));
+            helper.assertTrue(BackupMerge.stacks(pedestal, pedestalBefore, new Walker(ctx), addon, "test") == 1
+                    && pedestal.getCompound("item").getString("id").equals("testaddon:part"), "a pedestal gets its item back: " + pedestal);
+
+            // the first import set aside a kept stack's component holding the addon's stacks; a diamond stands in for one
+            Predicate<String> diamond = id -> id.equals("minecraft:diamond");
+            CompoundTag full = DeFixtures.stack("minecraft:shulker_box", 1), fullComponents = new CompoundTag(), inBox = new CompoundTag();
+            ListTag boxContents = new ListTag();
+            inBox.putInt("slot", 0);
+            inBox.put("item", DeFixtures.stack("minecraft:diamond", 3));
+            boxContents.add(inBox);
+            fullComponents.put("minecraft:container", boxContents);
+            full.put("components", fullComponents);
+            CompoundTag boxChest = new CompoundTag(), boxChestBefore = new CompoundTag(), shown = new CompoundTag(), shownBefore = new CompoundTag();
+            ListTag boxNow = new ListTag(), boxThen = new ListTag();
+            boxNow.add(DeFixtures.slot(2, DeFixtures.stack("minecraft:shulker_box", 1)));
+            boxThen.add(DeFixtures.slot(2, full.copy()));
+            boxChest.put("Items", boxNow);
+            boxChestBefore.put("Items", boxThen);
+            shown.put("Item", DeFixtures.stack("minecraft:shulker_box", 1));
+            shownBefore.put("Item", full.copy());
+            int refilled = BackupMerge.stacks(boxChest, boxChestBefore, new Walker(ctx), diamond, "test") + BackupMerge.stacks(shown, shownBefore, new Walker(ctx), diamond, "test");
+            helper.assertTrue(refilled == 2 && boxChest.getList("Items", Tag.TAG_COMPOUND).size() == 1
+                            && boxChest.getList("Items", Tag.TAG_COMPOUND).getCompound(0).getCompound("components").toString().contains("minecraft:diamond")
+                            && shown.getCompound("Item").getCompound("components").toString().contains("minecraft:diamond"),
+                    "a shulker box the game kept gets back what it held: " + boxChest + " " + shown);
+            helper.assertTrue(BackupMerge.stacks(boxChest, boxChestBefore, new Walker(ctx), diamond, "test") == 0, "and only once");
+            CompoundTag grown = new CompoundTag();
+            grown.put("Item", DeFixtures.stack("minecraft:shulker_box", 2));
+            helper.assertTrue(BackupMerge.stacks(grown, shownBefore, new Walker(ctx), diamond, "test") == 0,
+                    "a stack grown since gets nothing, as more items would share what one held");
+
+            CompoundTag frame = new CompoundTag(), frameBefore = new CompoundTag(), filled = new CompoundTag();
+            frameBefore.put("Item", DeFixtures.stack("testaddon:part", 1));
+            filled.put("Item", DeFixtures.stack("minecraft:stone", 1));
+            helper.assertTrue(BackupMerge.stacks(filled, frameBefore, new Walker(ctx), addon, "test") == 0, "a frame holding something keeps it");
+            CompoundTag boxFrame = new CompoundTag();
+            boxFrame.put("Item", shulker.copy());
+            helper.assertTrue(BackupMerge.stacks(new CompoundTag(), boxFrame, new Walker(ctx), addon, "test") == 0,
+                    "a stack only holding the addon's, which the game kept, is not given again");
+            CompoundTag stand = new CompoundTag(), standBefore = new CompoundTag();
+            ListTag armor = new ListTag(), armorBefore = new ListTag();
+            for (int i = 0; i < 4; i++) armor.add(i == 2 ? DeFixtures.stack("minecraft:iron_chestplate", 1) : new CompoundTag());
+            for (int i = 0; i < 4; i++) armorBefore.add(i >= 2 ? DeFixtures.stack(i == 3 ? "testaddon:helmet" : "testaddon:chestplate", 1) : new CompoundTag());
+            stand.put("ArmorItems", armor);
+            standBefore.put("ArmorItems", armorBefore);
+            int held = BackupMerge.stacks(frame, frameBefore, new Walker(ctx), addon, "test") + BackupMerge.stacks(stand, standBefore, new Walker(ctx), addon, "test");
+            helper.assertTrue(held == 2 && frame.getCompound("Item").getString("id").equals("testaddon:part")
+                    && stand.getList("ArmorItems", Tag.TAG_COMPOUND).getCompound(3).getString("id").equals("testaddon:helmet")
+                    && stand.getList("ArmorItems", Tag.TAG_COMPOUND).getCompound(2).getString("id").equals("minecraft:iron_chestplate"),
+                    "the item frame and armor stand get theirs back where the slot is empty: " + frame + " " + stand);
+
+            BlockPos high = new BlockPos(1, 100, 1);
+            CompoundTag shipBefore = backed.copy(), liveChunk = DeFixtures.emptyChunk(0, 0);
+            DeFixtures.setBlock(shipBefore, high, DeFixtures.block("testaddon:machine"));
+            DeFixtures.setBlock(liveChunk, built, DeFixtures.block("minecraft:stone"));
+            DeFixtures.setBlock(liveChunk, chest, DeFixtures.block("minecraft:chest"));
+            CompoundTag shipBox = DeFixtures.blockEntity("minecraft:chest", chest);
+            ListTag shipBoxItems = new ListTag();
+            shipBoxItems.add(DeFixtures.slot(0, DeFixtures.stack("minecraft:stone", 1)));
+            shipBox.put("Items", shipBoxItems);
+            DeFixtures.addBlockEntity(liveChunk, shipBox);
+            DeFixtures.setBlock(shipBefore, inserter, DeFixtures.block("hbm:machine_hydrotreater"));
+            DeFixtures.setBlock(liveChunk, inserter, BlockStates.convert(DeFixtures.block("hbm:machine_hydrotreater"), ctx.target).entry());
+            CompoundTag shipHydrotreater = hydrotreater.copy(), shipHydrotreaterNow = DeFixtures.blockEntity("hbm:machine_hydrotreater", inserter);
+            shipHydrotreater.putInt("x", inserter.getX());
+            shipHydrotreater.putInt("z", inserter.getZ());
+            shipHydrotreaterNow.put("inventory", DeFixtures.inventory(DeFixtures.slot(3, DeFixtures.stack("minecraft:stone", 1))));
+            DeFixtures.addBlockEntity(shipBefore, shipHydrotreater);
+            DeFixtures.addBlockEntity(liveChunk, shipHydrotreaterNow);
+            CompoundTag liveShip = DeFixtures.ship(liveChunk), backedShip = DeFixtures.ship(shipBefore);
+            CompoundTag liveChunks = liveShip.getCompound("plot").getCompound("chunks"), backedChunks = backedShip.getCompound("plot").getCompound("chunks");
+            liveChunks.getCompound(Long.toString(ChunkPos.asLong(0, 0))).put("heightmaps", new CompoundTag());
+            liveChunks.getCompound(Long.toString(ChunkPos.asLong(0, 0))).getCompound("sections").getCompound(Integer.toString((lost.getY() >> 4) + 4))
+                    .putByteArray("SkyLight", new byte[2048]);
+            // a chunk nothing comes back to keeps its heightmaps, and one only the backup has without the addon's blocks stays out
+            CompoundTag bare = DeFixtures.ship(DeFixtures.emptyChunk(0, 0)).getCompound("plot").getCompound("chunks").getCompound(Long.toString(ChunkPos.asLong(0, 0)));
+            bare.put("heightmaps", new CompoundTag());
+            String quiet = Long.toString(ChunkPos.asLong(3, 0)), empty = Long.toString(ChunkPos.asLong(2, 0));
+            liveChunks.put(quiet, bare.copy());
+            backedChunks.put(quiet, bare.copy());
+            backedChunks.put(empty, bare.copy());
+            String gone = Long.toString(ChunkPos.asLong(1, 0));
+            backedShip.getCompound("plot").getCompound("chunks").put(gone, DeFixtures.ship(backed.copy()).getCompound("plot").getCompound("chunks").getCompound(Long.toString(ChunkPos.asLong(0, 0))));
+            CompoundTag liveSections = liveShip.getCompound("plot").getCompound("chunks").getCompound(Long.toString(ChunkPos.asLong(0, 0))).getCompound("sections");
+            String index = Integer.toString((high.getY() >> 4) + 4);
+            liveSections.remove(index);
+            int onShip = BackupMerge.ship(ctx, "minecraft:overworld", liveShip, backedShip, addon, "test ship");
+            CompoundTag shipChunk = liveShip.getCompound("plot").getCompound("chunks").getCompound(Long.toString(ChunkPos.asLong(0, 0)));
+            ListTag shipItems = shipChunk.getList("block_entities", Tag.TAG_COMPOUND).getCompound(0).getList("Items", Tag.TAG_COMPOUND);
+            CompoundTag goneChunk = liveShip.getCompound("plot").getCompound("chunks").getCompound(gone);
+            CompoundTag shipMachine = shipChunk.getList("block_entities", Tag.TAG_COMPOUND).stream().map(t -> (CompoundTag) t)
+                    .filter(t -> t.getString("id").equals("hbm:machine_hydrotreater")).findFirst().orElseGet(CompoundTag::new);
+            helper.assertTrue(shipMachine.getCompound("inventory").getList("Items", Tag.TAG_COMPOUND).stream()
+                    .anyMatch(t -> ((CompoundTag) t).getByte("Slot") == 5), "a machine on the ship gets its stack where Continuum keeps it: " + shipMachine);
+            helper.assertTrue(!shipChunk.getCompound("sections").getCompound(Integer.toString((lost.getY() >> 4) + 4)).contains("SkyLight")
+                            && liveChunks.getCompound(quiet).contains("heightmaps") && !liveChunks.contains(empty),
+                    "a ship chunk that got blocks back is lit again, the others stay as they were: " + liveChunks.getAllKeys());
+            CompoundTag elsewhere = backedShip.copy(), still = liveShip.copy();
+            elsewhere.getCompound("plot").putInt("plot_x", 1);
+            helper.assertTrue(BackupMerge.ship(ctx, "minecraft:overworld", still, elsewhere, addon, "test ship") == 0 && still.equals(liveShip),
+                    "a copy in another plot is not this ship");
+            helper.assertTrue(onShip == 2 + 2 + 2 && new PackedSection(shipChunk.getCompound("sections").getCompound(index).getCompound("block_states")).palette.stream()
+                    .anyMatch(t -> ((CompoundTag) t).getString("Name").equals("testaddon:machine")) && shipItems.size() == 2,
+                    "the ship gets back its blocks where it has room, one into a section Sable did not save as it was all air, and its chest's stack: "
+                            + onShip + " " + shipItems);
+            helper.assertTrue(!goneChunk.isEmpty() && goneChunk.getCompound("sections").getAllKeys().size() == 1 && !shipChunk.contains("heightmaps"),
+                    "a chunk Sable left out comes back with the addon's blocks only: " + goneChunk.getCompound("sections").getAllKeys());
+            helper.succeed();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            delete(world);
+        }
+    }
+
+    /** A machine of the addon's comes back onto a ship with the cells its plot has room for, and no others listed. */
+    private static void backupMergeCells(GameTestHelper helper) {
+        Path world = tempWorld();
+        try {
+            Ctx ctx = ctx(world, helper.getLevel().getServer());
+            BlockPos core = new BlockPos((10000 << 7 << 4) + 2, 70, (10000 << 7 << 4) + 2);
+            CompoundTag machine = DeFixtures.block("hbm:machine_centrifuge", "facing", "north");
+            CompoundTag converted = BlockStates.convert(machine, ctx.target).entry();
+            List<Long> cells = ctx.target.footprint(converted.getString("Name"), converted.getCompound("Properties"), core.asLong(), ctx.rbmkColumnHeight())
+                    .keySet().stream().filter(c -> BlockPos.of(c).getX() >> 4 == core.getX() >> 4 && BlockPos.of(c).getZ() >> 4 == core.getZ() >> 4).toList();
+            BlockPos taken = BlockPos.of(cells.get(0));
+            CompoundTag before = DeFixtures.emptyChunk(0, 0), now = DeFixtures.emptyChunk(0, 0);
+            DeFixtures.setBlock(before, core, machine);
+            DeFixtures.setBlock(now, taken, DeFixtures.block("minecraft:stone"));
+            CompoundTag liveShip = DeFixtures.ship(now);
+            int back = BackupMerge.ship(ctx, "minecraft:overworld", liveShip, DeFixtures.ship(before), id -> id.equals("hbm:machine_centrifuge"), "test ship");
+            CompoundTag record = ctx.plotCells.stream().filter(t -> t.getLong("pos") == core.asLong()).findFirst().orElse(null);
+            CompoundTag chunk = liveShip.getCompound("plot").getCompound("chunks").getCompound(Long.toString(ChunkPos.asLong(0, 0)));
+            helper.assertTrue(back > 0 && record != null && cells.size() > 1
+                    && Arrays.stream(record.getLongArray("cells")).noneMatch(c -> c == taken.asLong())
+                    && Arrays.stream(record.getLongArray("cells")).anyMatch(c -> cells.contains(c)),
+                    "the cell where the ship has a block now is left out: " + record + " of " + cells);
+            helper.assertTrue(plotBlock(chunk, taken).equals("minecraft:stone") && plotBlock(chunk, core).equals(converted.getString("Name")),
+                    "and the block there stays");
+            helper.succeed();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            delete(world);
+        }
+    }
+
+    private static String plotBlock(CompoundTag chunk, BlockPos pos) {
+        PackedSection section = new PackedSection(chunk.getCompound("sections").getCompound(Integer.toString((pos.getY() >> 4) + 4)).getCompound("block_states"));
+        return ((CompoundTag) section.palette.get(section.index[PackedSection.indexOf(pos.getX(), pos.getY(), pos.getZ())])).getString("Name");
+    }
+
+    /**
+     * Sable keys a plot's chunks by their place in the plot and its block entities by their place in the level: what
+     * the converter adds to a ship (a cable's block entity, its record) is placed where Sable will look.
+     */
+    private static void airshipPlotPositions(GameTestHelper helper) {
+        Path world = tempWorld();
+        try {
+            Ctx ctx = ctx(world, null);
+            CompoundTag chunk = DeFixtures.emptyChunk(0, 0);
+            DeFixtures.setBlock(chunk, new BlockPos(1, 64, 1), DeFixtures.block("hbm:cable"));
+            CompoundTag ship = DeFixtures.ship(chunk);
+            ship.getCompound("plot").putInt("plot_x", 2);
+            Unit unit = ctx.begin("test ship");
+            Airships.convert(ctx, "minecraft:overworld", ship, "test ship");
+            int x = (10000 + 2) << 7 << 4, z = 10000 << 7 << 4;
+            ListTag entities = ship.getCompound("plot").getCompound("chunks").getCompound(Long.toString(ChunkPos.asLong(0, 0))).getList("block_entities", Tag.TAG_COMPOUND);
+            helper.assertTrue(entities.size() == 1 && entities.getCompound(0).getInt("x") == x + 1 && entities.getCompound(0).getInt("z") == z + 1,
+                    "the cable's block entity is at the cable's place in the level: " + entities);
+            ctx.commit(unit);
+            helper.assertTrue(ctx.conductors.size() == 1 && ctx.conductors.get(0).getLong("pos") == BlockPos.asLong(x + 1, 64, z + 1),
+                    "and so is its record: " + ctx.conductors);
+            helper.succeed();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            delete(world);
+        }
+    }
+
     private static void writeChunk(Path world, CompoundTag chunk) throws IOException {
         Path file = world.resolve("region/r.0.0.mca");
         Files.createDirectories(file.getParent());
@@ -550,7 +1115,10 @@ public final class DeImportGameTests {
             CompoundTag converted = s.getList("sats", Tag.TAG_COMPOUND).getCompound(0).getCompound("sat");
             Satellite decodedSat = SatelliteType.DISPATCH_CODEC.parse(NbtOps.INSTANCE, converted).getOrThrow();
             helper.assertTrue(decodedSat.type() == SatelliteType.DEATH_RAY, "the death ray satellite decodes: " + s);
-            helper.assertTrue(ctx.parking.counts().getOrDefault("satellite_state", 0) == 1, "its DE state is parked");
+            SatelliteSavedData loaded = SatelliteSavedData.CODEC.parse(NbtOps.INSTANCE, s).getOrThrow();
+            helper.assertTrue(loaded.getSatFromFreq(77) != null && loaded.getSatFromFreq(77).targetX == 40,
+                    "its DE state's target is Continuum's: " + s);
+            helper.assertTrue(ctx.parking.counts().getOrDefault("satellite_state", 0) == 0, "nothing of its state is parked");
         } catch (IOException e) {
             throw new IllegalStateException(e);
         } finally {

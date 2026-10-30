@@ -14,17 +14,19 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Registry aliases for NTM: Decentralized Edition's one-to-one renames, so a DE stack the importer could not reach
  * (an AE2 drive, a backpack, a quest reward) loads as its Continuum item. Splits and same-id collisions need the
- * converter and are not aliased.
+ * converter and are not aliased. A registered DE addon's {@code aliases} table is applied too.
  */
 @EventBusSubscriber(modid = Constants.MOD_ID)
 public final class DeAliases {
     private record Alias(String registry, ResourceLocation from, ResourceLocation to) {}
 
-    private static final List<Alias> ALIASES = load();
+    private static final List<Alias> ALIASES = load(DeAliases.class.getResourceAsStream("/hbm_delegacy/aliases.tsv"));
+    private static @Nullable List<Alias> withAddons;
 
     private DeAliases() {}
 
@@ -33,13 +35,20 @@ public final class DeAliases {
         String registry = event.getRegistryKey().location().getPath();
         Registry<?> target = event.getRegistry();
         if (target == null) return;
-        for (Alias alias : ALIASES) if (alias.registry().equals(registry)) target.addAlias(alias.from(), alias.to());
+        if (withAddons == null) {
+            withAddons = new ArrayList<>(ALIASES);
+            for (DeAddons.Addon addon : DeAddons.all()) {
+                InputStream in = addon.table("aliases");
+                if (in != null) withAddons.addAll(load(in));
+            }
+        }
+        for (Alias alias : withAddons) if (alias.registry().equals(registry)) target.addAlias(alias.from(), alias.to());
     }
 
-    private static List<Alias> load() {
+    private static List<Alias> load(@Nullable InputStream stream) {
         List<Alias> out = new ArrayList<>();
-        try (InputStream in = DeAliases.class.getResourceAsStream("/hbm_delegacy/aliases.tsv")) {
-            if (in == null) throw new IllegalStateException("missing hbm_delegacy/aliases.tsv");
+        try (InputStream in = stream) {
+            if (in == null) throw new IllegalStateException("missing aliases table");
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             for (String line; (line = reader.readLine()) != null; ) {
                 if (line.isEmpty() || line.startsWith("#")) continue;

@@ -5,12 +5,14 @@ import com.hbm.delegacy.ContinuumStacks;
 import com.hbm.delegacy.de7.StackContext;
 import com.hbm.delegacy.de7.Walker;
 import com.mojang.logging.LogUtils;
+import dev.golem.core.data.ItemContents;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -20,6 +22,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BundleContents;
+import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -34,14 +39,31 @@ public final class LegacyStacks {
 
     private LegacyStacks() {}
 
-    /** True for a stack that still carries a DE id or a raw DE component. */
+    /** True for a stack that still carries a DE id or a raw DE component, itself or in a stack it holds. */
     public static boolean isLegacy(ItemStack stack) {
+        return own(stack) || stack.getComponentsPatch().entrySet().stream()
+                .anyMatch(e -> e.getValue().map(LegacyStacks::held).orElse(Stream.empty()).anyMatch(LegacyStacks::isLegacy));
+    }
+
+    private static boolean own(ItemStack stack) {
         if (stack.isEmpty()) return false;
         if (stack.getItem() instanceof LegacyItem) return true;
         for (Map.Entry<DataComponentType<?>, Optional<?>> e : stack.getComponentsPatch().entrySet()) {
             if (DeLegacy.isRaw(e.getKey())) return true;
         }
         return false;
+    }
+
+    /** The stacks a component value holds: a container, a bundle, crossbow projectiles, Continuum's item lists. */
+    private static Stream<ItemStack> held(Object value) {
+        return switch (value) {
+            case ItemStack stack -> Stream.of(stack);
+            case ItemContents contents -> contents.copies().stream();
+            case ItemContainerContents container -> container.stream();
+            case BundleContents bundle -> bundle.itemCopyStream();
+            case ChargedProjectiles projectiles -> projectiles.getItems().stream();
+            default -> Stream.empty();
+        };
     }
 
     /**
@@ -80,6 +102,7 @@ public final class LegacyStacks {
         }
 
         ItemStack convert(ItemStack stack, String where) {
+            if (!own(stack)) return inside(stack, where);
             // the stack codec takes counts up to 99; a storage mod's bigger stack keeps its count in the tag
             CompoundTag tag = (CompoundTag) stack.copyWithCount(Math.min(stack.getCount(), 99)).save(server.registryAccess());
             tag.putInt("count", stack.getCount());
@@ -89,12 +112,39 @@ public final class LegacyStacks {
             CompoundTag probe = tag.copy();
             probe.putInt("count", Math.clamp(count, 1, 99));
             ItemStack out = ItemStack.parse(server.registryAccess(), probe).orElse(ItemStack.EMPTY);
-            if (out.isEmpty() || isLegacy(out)) {
+            if (out.isEmpty() || own(out)) {
                 park("item", where, tag.getString("id"), tag);
                 return ItemStack.EMPTY;
             }
             out.setCount(count);
             return out;
+        }
+
+        /** A clean stack holding legacy ones (a DE: Space PLSS in a helmet): only those convert, never it a second time. */
+        @SuppressWarnings("unchecked")
+        private ItemStack inside(ItemStack stack, String where) {
+            ItemStack out = stack.copy();
+            for (Map.Entry<DataComponentType<?>, Optional<?>> e : stack.getComponentsPatch().entrySet()) {
+                if (e.getValue().isEmpty()) continue;
+                Object value = e.getValue().get();
+                Object converted = switch (value) {
+                    case ItemStack held -> each(held, where);
+                    case ItemContents contents -> new ItemContents(contents.copies().stream().map(s -> each(s, where)).toList());
+                    case ItemContainerContents container -> ItemContainerContents.fromItems(container.stream().map(s -> each(s, where)).toList());
+                    // these and a lone held stack cannot save an empty stack; a parked one is kept in the leftovers
+                    case BundleContents bundle -> new BundleContents(bundle.itemCopyStream().map(s -> each(s, where)).filter(s -> !s.isEmpty()).toList());
+                    case ChargedProjectiles projectiles -> ChargedProjectiles.of(projectiles.getItems().stream().map(s -> each(s, where)).filter(s -> !s.isEmpty()).toList());
+                    default -> value;
+                };
+                if (converted == value) continue;
+                if (converted instanceof ItemStack single && single.isEmpty()) out.remove(e.getKey());
+                else out.set((DataComponentType<Object>) e.getKey(), converted);
+            }
+            return out;
+        }
+
+        private ItemStack each(ItemStack stack, String where) {
+            return isLegacy(stack) ? convert(stack, where) : stack;
         }
 
         /** Keeps the parked records; false leaves the stacks as they were, to convert on a later touch. */

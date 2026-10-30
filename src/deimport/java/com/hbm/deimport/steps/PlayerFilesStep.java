@@ -9,6 +9,7 @@ import com.hbm.deimport.engine.Ctx;
 import com.hbm.deimport.engine.Step;
 import com.hbm.deimport.engine.Unit;
 import com.hbm.deimport.source.de7.WorldTables;
+import com.hbm.delegacy.DeAddons;
 import com.hbm.delegacy.de7.Tables;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -105,11 +106,11 @@ public final class PlayerFilesStep implements Step {
         JsonObject out = new JsonObject();
         for (Map.Entry<String, JsonElement> e : root.entrySet()) {
             String id = e.getKey();
-            if (!id.startsWith("hbm:") || !e.getValue().isJsonObject()) {
+            if (!DeAddons.isSource(id) || !e.getValue().isJsonObject()) {
                 out.add(id, e.getValue());
                 continue;
             }
-            String target = WorldTables.get().advancements.getOrDefault(id, id);
+            String target = WorldTables.get().advancements.getOrDefault(id, DeAddons.rename(id));
             List<String> criteria = ctx.target.advancementCriteria(target);
             if (target.equals("park") || criteria == null) {
                 ctx.parking.park("advancement", where, id, StringTag.valueOf(e.getValue().toString()));
@@ -140,11 +141,12 @@ public final class PlayerFilesStep implements Step {
     private static void rename(JsonObject group, Map<String, String> table, boolean custom, Ctx ctx, String where) {
         Map<String, Long> moved = new LinkedHashMap<>();
         for (String key : List.copyOf(group.keySet())) {
-            if (!key.startsWith("hbm:")) continue;
-            String rule = custom ? "park" : table.getOrDefault(key.substring(4), table.get(key));
+            if (!DeAddons.isSource(key)) continue;
+            String rule = custom ? "park" : table.getOrDefault(DeAddons.key(key), table.get(key));
+            if (rule == null && !key.startsWith("hbm:")) rule = DeAddons.rename(key);
             if (rule == null) continue;
             JsonElement value = group.remove(key);
-            String target = rule.startsWith("hbm:") ? rule.split("\\[")[0] : null;
+            String target = DeAddons.isTarget(rule) ? rule.split("\\[")[0] : null;
             if (target == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isNumber()) {
                 ctx.parking.park("stat", where, key, StringTag.valueOf(value.toString()));
                 continue;

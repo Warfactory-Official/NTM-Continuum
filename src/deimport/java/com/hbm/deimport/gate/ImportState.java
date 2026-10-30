@@ -127,6 +127,10 @@ public final class ImportState {
         root.addProperty(key, value);
     }
 
+    public @Nullable String get(String key) {
+        return root.has(key) && root.get(key).isJsonPrimitive() ? root.get(key).getAsString() : null;
+    }
+
     public void addLegacyConversions(int count) {
         JsonObject legacy = root.getAsJsonObject("legacy");
         legacy.addProperty("conversions", legacy.get("conversions").getAsLong() + count);

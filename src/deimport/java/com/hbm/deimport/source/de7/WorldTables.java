@@ -1,11 +1,9 @@
 package com.hbm.deimport.source.de7;
 
-import java.io.BufferedReader;
+import com.hbm.delegacy.DeAddons;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +12,9 @@ public final class WorldTables {
     public final Map<String, String> blocks = load("blocks");
     public final Map<String, String> props = load("props");
     public final Map<String, String> advancements = load("advancements");
+    /** Biome and structure renames; DE has none of its own, a DE addon's are its rows. */
+    public final Map<String, String> biomes = DeAddons.rows("biomes");
+    public final Map<String, String> structures = DeAddons.rows("structures");
 
     private static WorldTables instance;
 
@@ -26,15 +27,11 @@ public final class WorldTables {
         Map<String, String> out = new HashMap<>();
         try (InputStream in = WorldTables.class.getResourceAsStream("/hbm_deimport/de7/" + name + ".tsv")) {
             if (in == null) throw new IllegalStateException("missing table " + name);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-            for (String line; (line = reader.readLine()) != null; ) {
-                if (line.isEmpty() || line.startsWith("#")) continue;
-                int tab = line.indexOf('	');
-                out.put(line.substring(0, tab), line.substring(tab + 1));
-            }
+            DeAddons.read(in, out);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+        out.putAll(DeAddons.rows(name));
         return out;
     }
 }

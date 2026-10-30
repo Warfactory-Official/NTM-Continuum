@@ -1,7 +1,9 @@
 package com.hbm.delegacy.de7;
 
+import com.hbm.delegacy.DeAddons;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.function.Predicate;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -23,10 +25,27 @@ public final class Walker {
     private static final Set<String> WRAPPER_KEYS = Set.of("slot", "Slot", "progress");
     private final StackContext ctx;
     private final Stacks stacks;
+    private final Predicate<String> source;
+    private final boolean filtered;
 
     public Walker(StackContext ctx) {
+        this(ctx, DeAddons::isSource, false);
+    }
+
+    /** Converts only the DE ids {@code source} accepts; anything else, which an earlier import converted, is only walked into. */
+    public Walker(StackContext ctx, Predicate<String> source) {
+        this(ctx, source, true);
+    }
+
+    private Walker(StackContext ctx, Predicate<String> source, boolean filtered) {
         this.ctx = ctx;
+        this.source = source;
+        this.filtered = filtered;
         this.stacks = new Stacks(ctx, this);
+    }
+
+    boolean source(String id) {
+        return source.test(id);
     }
 
     public Stacks stacks() {
@@ -53,7 +72,7 @@ public final class Walker {
         boolean stackRemoved = false;
         for (String key : new ArrayList<>(tag.getAllKeys())) {
             Tag child = tag.get(key);
-            if (child instanceof CompoundTag compound && BLOCK_STATE_KEYS.contains(key) && compound.getString("Name").startsWith("hbm:")) {
+            if (child instanceof CompoundTag compound && BLOCK_STATE_KEYS.contains(key) && source.test(compound.getString("Name"))) {
                 tag.put(key, blockState(compound, where));
             } else if (child instanceof CompoundTag compound) {
                 if (SPAWN_KEYS.contains(key) && !isEntity(compound)) spawnedId(compound, where);
@@ -96,11 +115,12 @@ public final class Walker {
 
     private void spawnedId(CompoundTag tag, String where) {
         String id = tag.getString("id");
-        String target = Tables.get().entities.get(id);
-        if (target != null && !target.equals("park")) {
+        if (filtered && !source.test(id)) return;
+        String target = Tables.get().entities.getOrDefault(id, DeAddons.rename(id));
+        if (!target.equals("park") && !target.equals(id)) {
             tag.putString("id", target);
             ctx.count("entities renamed");
-        } else if (id.startsWith("hbm:") && !ctx.hasEntity(id)) {
+        } else if (DeAddons.isSource(id) && !ctx.hasEntity(id)) {
             ctx.park("spawned_entity", where, id, tag.copy());
         }
     }
@@ -111,32 +131,36 @@ public final class Walker {
         if (to != null) tag.putString(key, to);
     }
 
-    /** An HBM entity, or any entity with an HBM attachment. */
+    /** An HBM or HBM addon entity, or any entity with an attachment of theirs. */
     public static boolean hasHbmData(CompoundTag tag) {
-        if (tag.getString("id").startsWith("hbm:")) return true;
-        for (String key : tag.getCompound("neoforge:attachments").getAllKeys()) if (key.startsWith("hbm:")) return true;
+        if (DeAddons.isTarget(tag.getString("id"))) return true;
+        for (String key : tag.getCompound("neoforge:attachments").getAllKeys()) if (DeAddons.isTarget(key)) return true;
         return false;
     }
 
     /** Renames and reshapes an entity; false parks it. Its contents are walked by the caller's loop. */
     private boolean entity(CompoundTag tag, String where) {
         String id = tag.getString("id");
+        if (filtered && !source.test(id)) return true;
         String target = Tables.get().entities.get(id);
+        if (target == null && !id.startsWith("hbm:")) target = DeAddons.rename(id);
         if ("park".equals(target)) {
             ctx.park("entity", where, id, tag);
             ctx.count("entities parked");
             return false;
         }
-        if (target != null) {
+        if (target != null && !target.equals(id)) {
             tag.putString("id", target);
             ctx.count("entities renamed");
         }
-        if (tag.getString("id").startsWith("hbm:") && !ctx.hasEntity(tag.getString("id"))) {
+        if (DeAddons.isTarget(tag.getString("id")) && !ctx.hasEntity(tag.getString("id"))) {
             ctx.park("entity", where, id, tag);
             ctx.count("entities parked");
             return false;
         }
         Entities.reshape(tag, id, ctx, where);
+        DeAddons.Addon addon = DeAddons.bySource(id);
+        if (addon != null) addon.entity(id, tag, ctx, where);
         return true;
     }
 }

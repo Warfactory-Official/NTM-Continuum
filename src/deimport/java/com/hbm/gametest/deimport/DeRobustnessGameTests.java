@@ -394,11 +394,11 @@ public final class DeRobustnessGameTests {
         try {
             ImportState state = ImportState.create(world, "1.0.0-beta.12", 7, "test");
             state.status("done");
-            for (var step : Steps.ALL) state.markDone(step.id());
+            for (var step : Steps.all()) state.markDone(step.id());
             helper.assertTrue(!DeImport.hasNewSteps(state), "every step known: nothing to run");
             ImportState older = ImportState.create(world, "1.0.0-beta.12", 7, "test");
             older.status("done");
-            for (var step : Steps.ALL.subList(0, Steps.ALL.size() - 1)) older.markDone(step.id());
+            for (var step : Steps.all().subList(0, Steps.all().size() - 1)) older.markDone(step.id());
             helper.assertTrue(DeImport.hasNewSteps(older), "a step added later runs in an imported world");
         } finally {
             DeImportGameTests.delete(world);

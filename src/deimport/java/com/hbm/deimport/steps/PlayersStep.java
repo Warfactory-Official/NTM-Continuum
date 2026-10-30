@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class PlayersStep implements Step {
     /** Vanilla drops unknown keys from a player file when it saves it, so the mark lasts only until the player plays. */
-    static final String CONVERTED = "hbm_de_converted";
+    public static final String CONVERTED = "hbm_de_converted";
     @Override
     public String id() {
         return "players@1";

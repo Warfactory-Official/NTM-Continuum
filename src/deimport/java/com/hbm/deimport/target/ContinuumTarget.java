@@ -6,6 +6,7 @@ import com.hbm.api.energymk2.PowerGraph;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.ImportedCells;
 import com.hbm.blocks.multiblock.MultiblockCoreIndex;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.network.BlockCable;
 import com.hbm.blocks.network.BlockCablePaintable;
 import com.hbm.blocks.network.WireCoated;
@@ -16,7 +17,9 @@ import com.hbm.delegacy.ContinuumStacks;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.MixerRecipes;
+import com.hbm.saveddata.satellites.SatelliteType;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import com.hbm.tileentity.machine.pile.TileEntityPileBaseMK2;
@@ -25,6 +28,7 @@ import dev.golem.core.world.WorldRules;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -34,8 +38,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -51,6 +57,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import org.jetbrains.annotations.Nullable;
 
 /** The running Continuum, read through its registries: the converter's only view of Continuum's blocks and items. */
@@ -126,6 +133,14 @@ public final class ContinuumTarget implements Target {
     }
 
     @Override
+    public boolean isCoreState(String id, CompoundTag properties) {
+        CompoundTag entry = new CompoundTag();
+        entry.putString("Name", id);
+        if (!properties.isEmpty()) entry.put("Properties", properties);
+        return MultiblockSurface.foldedCore(NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), entry)) != null;
+    }
+
+    @Override
     public @Nullable CompoundTag filledComponents(String item, String fluid, int amount) {
         return ContinuumStacks.filledComponents(server == null ? null : server.registryAccess(), item, fluid, amount);
     }
@@ -189,9 +204,13 @@ public final class ContinuumTarget implements Target {
     }
 
     @Override
-    public boolean hasStructurePiece(String id) {
-        ResourceLocation rl = ResourceLocation.tryParse(id);
-        return rl != null && BuiltInRegistries.STRUCTURE_PIECE.containsKey(rl);
+    public boolean loadsPiece(CompoundTag piece) {
+        ResourceLocation rl = ResourceLocation.tryParse(piece.getString("id"));
+        if (rl == null || !BuiltInRegistries.STRUCTURE_PIECE.containsKey(rl)) return false;
+        if (server == null || !(piece.get("pool_element") instanceof CompoundTag element)) return true;
+        // vanilla takes a partial element too, and a template it cannot find as an empty one
+        return StructurePoolElement.CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, server.registryAccess()), element)
+                .resultOrPartial(error -> {}).isPresent();
     }
 
     @Override
@@ -199,6 +218,19 @@ public final class ContinuumTarget implements Target {
         FluidType type = Fluids.byRegistryName(fluid);
         MixerRecipes.MixerRecipe[] recipes = type == null ? null : MixerRecipes.getOutput(type);
         return recipes == null || recipes.length == 0 ? null : recipes[Math.floorMod(index, recipes.length)].name;
+    }
+
+    @Override
+    public @Nullable String packRecipe(String fluid, boolean unpack) {
+        FluidType type = Fluids.byRegistryName(fluid);
+        if (type == null) return null;
+        String name = (unpack ? "ass.unpackage" : "ass.package") + "hbmfluid." + type.getName().toLowerCase(Locale.ROOT);
+        return AssemblyMachineRecipes.INSTANCE.getRecipe(name) == null ? null : name;
+    }
+
+    @Override
+    public boolean hasSatelliteType(String type) {
+        return SatelliteType.REGISTRY.get(type) != null;
     }
 
     /** Points every pile block inside DE's member box at its core, which Continuum keeps on the members. */
@@ -236,6 +268,32 @@ public final class ContinuumTarget implements Target {
     public static int indexCells(ServerLevel level, BlockPos core, long[] cells) {
         for (long cell : cells) MultiblockCoreIndex.put(level, BlockPos.of(cell), core);
         return cells.length;
+    }
+
+    /**
+     * Takes out the core index entries and the cable node an older importer put at an airship's place in its plot, near
+     * the level's origin; returns how many. A real machine or cable standing there keeps its own.
+     */
+    public static int dropStale(ServerLevel level, BlockPos pos, CompoundTag record) {
+        List<BlockPos> cells = new ArrayList<>();
+        for (long cell : record.getLongArray("cells"))
+            if (MultiblockCoreIndex.lookup(level, BlockPos.of(cell)) == pos.asLong()) cells.add(BlockPos.of(cell));
+        boolean node = record.getBoolean("conductor") && PowerGraph.get(level).containsCell(pos.asLong());
+        // the block is read only where something was put, so no chunk loads for nothing
+        if (cells.isEmpty() && !node) return 0;
+        BlockState state = level.getBlockState(pos);
+        int removed = 0;
+        if (!(state.getBlock() instanceof BlockMultiblockCore)) {
+            for (BlockPos cell : cells) MultiblockCoreIndex.remove(level, cell);
+            removed += cells.size();
+        }
+        boolean owned = state.getBlock() instanceof BlockCable || state.getBlock() instanceof BlockCablePaintable
+                || state.getBlock() instanceof WireCoated || level.getBlockEntity(pos) != null;
+        if (node && !owned) {
+            PowerGraph.get(level).removeNode(pos.asLong());
+            removed++;
+        }
+        return removed;
     }
 
     public static int linkPile(ServerLevel level, BlockPos core, int[] box) {

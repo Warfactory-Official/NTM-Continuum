@@ -1,5 +1,6 @@
 package com.hbm.delegacy.de7;
 
+import com.hbm.delegacy.DeAddons;
 import java.util.List;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -20,7 +21,11 @@ public final class Stacks {
     /** False when the stack has no Continuum home: it is parked and must be removed. */
     public boolean convert(CompoundTag stack, String where) {
         String id = stack.getString("id");
-        if (!id.startsWith("hbm:")) {
+        CompoundTag lodestone = stack.getCompound("components").getCompound("minecraft:lodestone_tracker").getCompound("target");
+        if (lodestone.contains("dimension", Tag.TAG_STRING)) lodestone.putString("dimension", DeAddons.rename(lodestone.getString("dimension")));
+        if (!walker.source(id)) {
+            // an addon's item its alias loaded before the converter saw it, so its components are still DE's
+            if (!id.startsWith("hbm:") && DeAddons.isTarget(id)) components(id, stack, stack.getCompound("components"), where);
             walkComponents(stack, where);
             // another mod's compound that only looks like a stack, or an item of a mod not installed: left in place, a
             // copy parked in case it was an item vanilla will drop
@@ -33,9 +38,13 @@ public final class Stacks {
         CompoundTag components = stack.getCompound("components");
         if (components.getBoolean("hbm:akimbo_ghost")) return false;
         if (id.equals("hbm:marshmallow") && components.getBoolean("hbm:roasted")) stack.putString("id", "hbm:marshmallow_roasted");
-        String rule = Tables.get().items.get(id.substring(4));
+        String rule = Tables.get().items.get(DeAddons.key(id));
+        if (rule == null && !id.startsWith("hbm:")) rule = DeAddons.rename(id);
         if (rule != null) {
+            CompoundTag deComponents = rule.startsWith("split:") ? components.copy() : null;
             String target = resolve(rule, id, components);
+            for (DeAddons.Addon addon : DeAddons.all())
+                if (target == null && deComponents != null) target = addon.split(rule.split(":")[1], deComponents, components);
             if (target == null) {
                 ctx.park("item", where, id, stack);
                 ctx.count("stacks parked");
@@ -46,13 +55,18 @@ public final class Stacks {
                 ctx.count("stacks renamed");
             }
         }
-        if (!components.isEmpty()) {
-            Components.convert(id, stack.getString("id"), components, ctx, where);
-            if (components.isEmpty()) stack.remove("components");
-            else stack.put("components", components);
-        }
+        components(id, stack, components, where);
         walkComponents(stack, where);
         return decodable(stack, where);
+    }
+
+    private void components(String deId, CompoundTag stack, CompoundTag components, String where) {
+        if (components.isEmpty()) return;
+        Components.convert(deId, stack.getString("id"), components, ctx, where);
+        for (DeAddons.Addon addon : DeAddons.all()) addon.components(deId, components, ctx, where);
+        Components.parkUnknown(deId, components, ctx, where);
+        if (components.isEmpty()) stack.remove("components");
+        else stack.put("components", components);
     }
 
     /** Parks what Continuum would reject on load: the stack when its item is unknown, else each failing component. */
@@ -82,7 +96,7 @@ public final class Stacks {
     private static String resolve(String rule, String id, CompoundTag components) {
         if (rule.equals("drop") || rule.equals("park")) return null;
         if (rule.equals("ignore")) return id;
-        if (rule.startsWith("hbm:")) return rule.split("\\[")[0];
+        if (DeAddons.isTarget(rule)) return rule.split("\\[")[0];
         String[] parts = rule.split(":");
         switch (parts[0]) {
             case "split" -> {

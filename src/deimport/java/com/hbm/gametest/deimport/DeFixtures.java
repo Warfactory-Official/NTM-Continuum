@@ -121,6 +121,31 @@ public final class DeFixtures {
         return be;
     }
 
+    /** A ship holding one chunk as Sable saves it: sections by index from the level's lowest, the plot at grid square 0. */
+    public static CompoundTag ship(CompoundTag chunk) {
+        CompoundTag sections = new CompoundTag();
+        for (Tag t : chunk.getList("sections", Tag.TAG_COMPOUND)) {
+            CompoundTag section = ((CompoundTag) t).copy();
+            int index = section.getByte("Y") + 4;
+            section.remove("Y");
+            section.remove("biomes");
+            sections.put(Integer.toString(index), section);
+        }
+        CompoundTag stored = new CompoundTag();
+        stored.put("sections", sections);
+        stored.put("block_entities", chunk.getList("block_entities", Tag.TAG_COMPOUND).copy());
+        CompoundTag chunks = new CompoundTag();
+        chunks.put(Long.toString(ChunkPos.asLong(0, 0)), stored);
+        CompoundTag plot = new CompoundTag();
+        plot.putInt("plot_x", 0);
+        plot.putInt("plot_z", 0);
+        plot.putInt("log_size", 7);
+        plot.put("chunks", chunks);
+        CompoundTag ship = new CompoundTag();
+        ship.put("plot", plot);
+        return ship;
+    }
+
     /** An empty full chunk as 1.21.1 saves it, already stamped by DE. */
     public static CompoundTag emptyChunk(int cx, int cz) {
         CompoundTag chunk = new CompoundTag();

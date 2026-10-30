@@ -27,6 +27,9 @@ public interface Target {
 
     boolean isMultiblockCore(String id);
 
+    /** A multiblock core's own state, never one of its cells, which can be the core's block in another state. */
+    boolean isCoreState(String id, CompoundTag properties);
+
     /** A conductor that joins its network when placed, so an imported one must be announced once the level exists. */
     boolean isPlacedConductor(String id);
 
@@ -63,10 +66,16 @@ public interface Target {
     /** Whether the running game knows this structure; true when it cannot be asked. */
     boolean hasStructure(String id);
 
-    boolean hasStructurePiece(String id);
+    /** Whether a structure piece decodes as vanilla loads it: its type, and a jigsaw piece's pool element. */
+    boolean loadsPiece(CompoundTag piece);
 
     /** Continuum's name for the {@code index}th mixer recipe making {@code fluid}, or null. */
     @Nullable String mixerRecipe(String fluid, int index);
+
+    /** Continuum's assembler recipe that packs {@code fluid} into a fluid pack, or unpacks it; null without one. */
+    @Nullable String packRecipe(String fluid, boolean unpack);
+
+    boolean hasSatelliteType(String type);
 
     /** The lowest section index of a dimension, -4 when it is not known. */
     int minSection(String dim);

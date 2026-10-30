@@ -3,6 +3,7 @@ package com.hbm.deimport.source.de7;
 import com.hbm.deimport.engine.ChunkBlocks;
 import com.hbm.deimport.engine.Ctx;
 import com.hbm.delegacy.de7.Walker;
+import com.hbm.delegacy.DeAddons;
 import com.hbm.delegacy.de7.Tables;
 import com.hbm.deimport.engine.PackedSection;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -61,6 +63,9 @@ public final class ChunkConverter {
     private final Walker walker;
     private final String dim;
     private final boolean plot;
+    /** The DE ids this converter takes; any other id is kept as it is. */
+    private final Predicate<String> source;
+    private final boolean late;
     /** Multiblock cores in an airship's plot, {pos, block}: rebuilt in the plot, not through the world. */
     public final List<CompoundTag> plotCores = new ArrayList<>();
     /** Pile cores in an airship's plot, {pos, box}: linked inside the ship, whose chunks are all at hand. */
@@ -75,10 +80,31 @@ public final class ChunkConverter {
 
     /** {@code plot}: a Sable airship's chunk, which DE does not stamp and whose positions are not world blocks. */
     public ChunkConverter(Ctx ctx, String dim, boolean plot) {
+        this(ctx, dim, plot, DeAddons::isSource);
+    }
+
+    /** Converts only the ids {@code only} accepts, in a chunk an import without their converter took DE's stamp off. */
+    public ChunkConverter(Ctx ctx, String dim, Predicate<String> only) {
+        this(ctx, dim, false, only, false);
+    }
+
+    /** Converts only the blocks {@code only} accepts; {@code pristine}: DE's own copy, so what they hold converts whole. */
+    public ChunkConverter(Ctx ctx, String dim, boolean plot, Predicate<String> only, boolean pristine) {
+        this.ctx = ctx;
+        this.walker = pristine ? new Walker(ctx) : new Walker(ctx, only);
+        this.dim = dim;
+        this.plot = plot;
+        this.source = only;
+        this.late = true;
+    }
+
+    private ChunkConverter(Ctx ctx, String dim, boolean plot, Predicate<String> source) {
         this.ctx = ctx;
         this.walker = new Walker(ctx);
         this.dim = dim;
         this.plot = plot;
+        this.source = source;
+        this.late = false;
     }
 
     /**
@@ -86,7 +112,7 @@ public final class ChunkConverter {
      * this importer knows is parked and left as it is too.
      */
     public @Nullable CompoundTag convert(CompoundTag chunk) {
-        if (!plot && !chunk.contains(STAMP) && !chunk.contains(OLD_INDEX)) return null;
+        if (!plot && !late && !chunk.contains(STAMP) && !chunk.contains(OLD_INDEX)) return null;
         int cx = chunk.getInt("xPos"), cz = chunk.getInt("zPos");
         String where = dim + " chunk " + cx + "," + cz;
         refunds.clear();
@@ -97,7 +123,7 @@ public final class ChunkConverter {
             ctx.report.count("chunks from a newer DE");
             return null;
         }
-        if (!plot && version < NEWEST) OldChunks.upgrade(chunk, version);
+        if (!plot && !late && version < NEWEST) OldChunks.upgrade(chunk, version);
 
         Map<Integer, Section> sections = new HashMap<>();
         for (Tag t : chunk.getList("sections", Tag.TAG_COMPOUND)) {
@@ -118,8 +144,8 @@ public final class ChunkConverter {
             String deBlock = slot < 0 ? "" : ((CompoundTag) section.packed.palette.get(slot)).getString("Name");
             // vanilla's and other mods' block entities are their own data, kept even when their mod is missing; only
             // the DE stacks inside them convert
-            if (!deBlock.startsWith("hbm:") && !be.getString("id").startsWith("hbm:")) {
-                walker.walk(be, where + " " + pos.toShortString());
+            if (!source.test(deBlock) && !source.test(be.getString("id"))) {
+                if (!late) walker.walk(be, where + " " + pos.toShortString());
                 blockEntities.put(pos.asLong(), be);
                 continue;
             }
@@ -148,7 +174,7 @@ public final class ChunkConverter {
                 else ctx.add("piles", pile);
             }
             BlockEntities.convert(be, type, ctx, walker, where + " " + pos.toShortString());
-            if (!plot && type.startsWith("hbm:") && be.contains("LootTable", Tag.TAG_STRING)) {
+            if (!plot && DeAddons.isTarget(type) && be.contains("LootTable", Tag.TAG_STRING)) {
                 CompoundTag loot = new CompoundTag();
                 loot.putString("dim", dim);
                 loot.putLong("pos", pos.asLong());
@@ -177,7 +203,7 @@ public final class ChunkConverter {
                     refundBlocks(section, slot, e.getKey(), cx, cz, deEntities, where);
                 CompoundTag entry = section.converted.get(slot).entry();
                 String name = entry.getString("Name");
-                if (!name.startsWith("hbm:")) continue;
+                if (!section.ours.get(slot) || !DeAddons.isTarget(name)) continue;
                 boolean core = ctx.target.isMultiblockCore(name);
                 boolean conductor = ctx.target.isPlacedConductor(name);
                 String type = ctx.target.blockEntityType(name, entry.getCompound("Properties"));
@@ -215,6 +241,10 @@ public final class ChunkConverter {
         for (Section section : sections.values()) section.store();
         Set<Long> taken = new HashSet<>(blockEntities.keySet());
         for (Refund refund : refunds) placeRefund(chunk, beList, taken, refund, where);
+        if (late) {
+            if (!plot) ctx.report.count("chunks with an addon's blocks converted");
+            return chunk;
+        }
         structures(chunk.getCompound("structures"), where);
         walker.walkList(chunk.getList("entities", Tag.TAG_COMPOUND), where);
 
@@ -371,7 +401,7 @@ public final class ChunkConverter {
         for (int i = ticks.size() - 1; i >= 0; i--) {
             CompoundTag tick = ticks.getCompound(i);
             String id = tick.getString("i");
-            if (!id.startsWith("hbm:")) continue;
+            if (!source.test(id)) continue;
             String name = null;
             Section section = sections.get(tick.getInt("y") >> 4);
             if (section != null) {
@@ -397,7 +427,9 @@ public final class ChunkConverter {
         for (String group : List.of("starts", "References")) {
             CompoundTag map = structures.getCompound(group);
             for (String key : new ArrayList<>(map.getAllKeys())) {
-                String to = STRUCTURES.getOrDefault(key, key);
+                // an addon's "park" row keeps DE's name, which no game knows, so the start is parked under it
+                String mapped = STRUCTURES.getOrDefault(key, WorldTables.get().structures.getOrDefault(key, DeAddons.rename(key)));
+                String to = mapped.equals("park") ? key : mapped;
                 Tag value = map.get(key);
                 map.remove(key);
                 if (value instanceof CompoundTag start && start.contains("id")) {
@@ -407,7 +439,7 @@ public final class ChunkConverter {
                         piece.putString("id", PIECES.getOrDefault(piece.getString("id"), piece.getString("id")));
                     }
                 }
-                if (!loadable(to, value)) {
+                if (!loadable(to, value, where)) {
                     ctx.parking.park("structure", where + " " + group, to, value);
                     ctx.report.count("structure records parked");
                     continue;
@@ -417,13 +449,17 @@ public final class ChunkConverter {
         }
     }
 
-    private boolean loadable(String structure, Tag value) {
+    /** As vanilla loads a start: a piece it cannot load is dropped (here parked), and the start stays while any is left. */
+    private boolean loadable(String structure, Tag value, String where) {
         if (!ctx.target.hasStructure(structure)) return false;
-        if (!(value instanceof CompoundTag start)) return true;
-        for (Tag t : start.getList("Children", Tag.TAG_COMPOUND)) {
-            if (!ctx.target.hasStructurePiece(((CompoundTag) t).getString("id"))) return false;
+        if (!(value instanceof CompoundTag start) || start.getList("Children", Tag.TAG_COMPOUND).isEmpty()) return true;
+        ListTag children = start.getList("Children", Tag.TAG_COMPOUND);
+        for (int i = children.size() - 1; i >= 0; i--) {
+            if (ctx.target.loadsPiece(children.getCompound(i))) continue;
+            ctx.parking.park("structure_piece", where, structure, children.remove(i));
+            ctx.report.count("structure pieces parked");
         }
-        return true;
+        return !children.isEmpty();
     }
 
     /**
@@ -434,24 +470,40 @@ public final class ChunkConverter {
         CompoundTag attachments = chunk.getCompound("neoforge:attachments");
         attachments.remove("hbm:generated_conductors");
         for (String key : List.copyOf(attachments.getAllKeys())) {
-            if (!key.startsWith("hbm:")) continue;
+            if (!DeAddons.isSource(key)) continue;
             ctx.parking.park("chunk_attachment", where, key, attachments.get(key));
             attachments.remove(key);
         }
         if (attachments.isEmpty()) chunk.remove("neoforge:attachments");
     }
 
+    /** A section's biomes by Continuum's names: an addon's DE biomes have its namespace. */
+    private void biomes(CompoundTag biomes) {
+        ListTag palette = biomes.getList("palette", Tag.TAG_STRING);
+        for (int i = 0; i < palette.size(); i++) if (source.test(palette.getString(i))) palette.set(i, StringTag.valueOf(biome(palette.getString(i))));
+    }
+
+    public static String biome(String id) {
+        return DeAddons.isSource(id) ? WorldTables.get().biomes.getOrDefault(id, DeAddons.rename(id)) : id;
+    }
+
     private final class Section {
         final CompoundTag tag;
         final PackedSection packed;
         final List<BlockStates.Converted> converted = new ArrayList<>();
+        /** Per palette slot: converted by this converter, so its block entity or core is this run's to make. */
+        final List<Boolean> ours = new ArrayList<>();
 
         Section(CompoundTag section, String where) {
+            biomes(section.getCompound("biomes"));
             this.tag = section.getCompound("block_states");
             this.packed = new PackedSection(tag);
             for (Tag entry : packed.palette) {
-                BlockStates.Converted c = BlockStates.convert((CompoundTag) entry, ctx.target);
+                boolean taken = source.test(((CompoundTag) entry).getString("Name"));
+                BlockStates.Converted c = taken ? BlockStates.convert((CompoundTag) entry, ctx.target)
+                        : new BlockStates.Converted((CompoundTag) entry, BlockStates.Kind.PLAIN, "");
                 converted.add(c);
+                ours.add(taken || !late);
                 CompoundTag lost = c.dropped().copy();
                 String deBlock = ((CompoundTag) entry).getString("Name");
                 for (String key : List.copyOf(lost.getAllKeys())) {

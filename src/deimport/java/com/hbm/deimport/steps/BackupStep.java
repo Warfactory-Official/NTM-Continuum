@@ -21,7 +21,10 @@ import org.jetbrains.annotations.Nullable;
  * {@code -Dhbm.deimport.backup=none} skips it for operators who made their own.
  */
 public final class BackupStep implements Step {
-    private static final Set<String> SKIPPED = Set.of("session.lock", ImportState.FILE, ImportState.PREV, Journal.FILE);
+    /** The finished backup's folder name, in the world: an earlier or interrupted backup can lie beside it. */
+    public static final String RECORD = "hbm_de_backup.txt";
+    private static final Set<String> SKIPPED = Set.of("session.lock", ImportState.FILE, ImportState.PREV, Journal.FILE, RECORD);
+
     @Override
     public String id() {
         return "backup@1";
@@ -55,6 +58,7 @@ public final class BackupStep implements Step {
                 return FileVisitResult.CONTINUE;
             }
         });
+        Files.writeString(world.resolve(RECORD), target.getFileName().toString());
         ctx.report.line("backup: " + target);
         ctx.report.count("backup MB", size >> 20);
         return true;

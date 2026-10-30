@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
@@ -104,6 +105,22 @@ public final class Signature {
             // a damaged chunk says nothing either way
         }
         return -1;
+    }
+
+    /** The DE addons among {@code known} whose data the world holds: in its saved mod list, or as a dimension folder. */
+    public static List<String> addons(Path world, Set<String> known) {
+        List<String> out = new ArrayList<>();
+        try {
+            CompoundTag root = NbtIo.readCompressed(world.resolve("level.dat"), NbtAccounter.unlimitedHeap());
+            for (Tag t : root.getCompound("fml").getList("LoadingModList", Tag.TAG_COMPOUND)) {
+                String id = ((CompoundTag) t).getString("ModId");
+                if (known.contains(id)) out.add(id);
+            }
+        } catch (IOException | RuntimeException e) {
+            // no readable level.dat: the dimension folders still tell
+        }
+        for (String id : known) if (!out.contains(id) && Files.isDirectory(world.resolve("dimensions").resolve(id))) out.add(id);
+        return out;
     }
 
     /** DE wraps its saved data in a second {@code data} level, which Continuum never writes. */

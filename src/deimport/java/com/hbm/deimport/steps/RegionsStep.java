@@ -42,8 +42,14 @@ public final class RegionsStep implements Step {
 
     @Override
     public boolean run(Ctx ctx, MinecraftServer server) throws IOException {
+        convert(ctx, Dimensions.without(Dimensions.all(ctx.world), ctx.deferredAddons));
+        return true;
+    }
+
+    /** Also for an addon's dimensions moved in after this step ran. */
+    public void convert(Ctx ctx, Map<String, Path> dims) throws IOException {
         List<Runnable> jobs = new ArrayList<>();
-        for (Map.Entry<String, Path> dim : Dimensions.all(ctx.world).entrySet()) {
+        for (Map.Entry<String, Path> dim : dims.entrySet()) {
             for (Path file : RegionIo.regionFiles(dim.getValue().resolve("region")))
                 jobs.add(() -> terrain(ctx, dim.getKey(), file));
             for (Path file : RegionIo.regionFiles(dim.getValue().resolve("entities")))
@@ -60,7 +66,6 @@ public final class RegionsStep implements Step {
         } catch (UncheckedIOException e) {
             throw e.getCause();
         }
-        return true;
     }
 
     private void terrain(Ctx ctx, String dim, Path file) {

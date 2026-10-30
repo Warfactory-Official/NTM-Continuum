@@ -146,6 +146,10 @@ final class Components {
             c.put("minecraft:block_entity_data", data);
             c.remove("hbm:block_inventory");
         }
+    }
+
+    /** DE components Continuum lacks; run after the addon hooks, which may take a DE component for their own item. */
+    static void parkUnknown(String deItem, CompoundTag c, StackContext ctx, String where) {
         for (String key : List.copyOf(c.getAllKeys())) {
             if (!key.startsWith("hbm:") || ctx.hasComponent(key)) continue;
             ctx.park("component", where, deItem + " " + key, c.get(key));
@@ -288,7 +292,8 @@ final class Components {
             else if (power > 0) c.putLong("hbm:battery_power", Math.min(power, 1_000_000L));
             c.remove("hbm:machine_battery_state");
         }
-        if (c.contains("hbm:capacitor_state", Tag.TAG_COMPOUND)) {
+        // an addon's capacitor keeps DE's state for its own reader
+        if (c.contains("hbm:capacitor_state", Tag.TAG_COMPOUND) && cItem.startsWith("hbm:")) {
             c.putLong("hbm:capacitor_power", c.getCompound("hbm:capacitor_state").getLong("power"));
             c.remove("hbm:capacitor_state");
         }
@@ -427,28 +432,14 @@ final class Components {
             "beryllium", "boron", "carbon", "oxygen", "sodium", "chlorine", "calcium"};
     private static final Set<String> AREA_ABILITIES = Set.of("recursion", "hammer", "hammer_flat", "explosion");
 
-    /** HBM's own six kinds go to the density record, an addon set's kinds to the open composition list. */
+    /** HBM's own six kinds go to the density record; an addon set's sample Continuum reads in DE's shape. */
     private static void bedrockOreSample(CompoundTag c) {
         if (!(c.get("hbm:bedrock_ore_sample") instanceof CompoundTag sample)) return;
         String set = sample.getString("set");
-        if (set.isEmpty() || set.equals("hbm")) {
-            CompoundTag density = new CompoundTag();
-            for (String kind : BEDROCK_KINDS) density.putDouble(kind, sample.getDouble(kind));
-            c.put("hbm:bedrock_ore_density", density);
-        } else {
-            ListTag amounts = new ListTag();
-            for (String kind : sample.getAllKeys()) {
-                if (kind.equals("set")) continue;
-                CompoundTag amount = new CompoundTag();
-                amount.putString("type", kind);
-                amount.putDouble("amount", sample.getDouble(kind));
-                amounts.add(amount);
-            }
-            CompoundTag composition = new CompoundTag();
-            composition.putString("origin", "");
-            composition.put("amounts", amounts);
-            c.put("hbm:bedrock_ore_composition", composition);
-        }
+        if (!set.isEmpty() && !set.equals("hbm")) return;
+        CompoundTag density = new CompoundTag();
+        for (String kind : BEDROCK_KINDS) density.putDouble(kind, sample.getDouble(kind));
+        c.put("hbm:bedrock_ore_density", density);
         c.remove("hbm:bedrock_ore_sample");
     }
 

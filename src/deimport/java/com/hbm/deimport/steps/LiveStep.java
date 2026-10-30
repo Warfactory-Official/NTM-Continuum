@@ -5,6 +5,7 @@ import com.hbm.deimport.engine.Ctx;
 import com.hbm.deimport.engine.Step;
 import com.hbm.deimport.engine.Unit;
 import com.hbm.deimport.target.ContinuumTarget;
+import com.hbm.delegacy.DeAddons;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
  * levels are saved before the records are dropped.
  */
 public final class LiveStep implements Step {
-    private static final List<String> ORDER = List.of("cores", "pads", "plotcells", "conductors", "radiation", "piles", "loot", "entities");
+    private static final List<String> ORDER = List.of("stale", "cores", "pads", "plotcells", "conductors", "radiation", "piles", "loot", "entities");
     /** On a rolled container, in NeoForge's block-entity data: the record that filled it. */
     static final String MARK = "hbm_de_live";
     private record Work(String kind, CompoundTag record, String id) {}
@@ -65,7 +66,7 @@ public final class LiveStep implements Step {
 
     @Override
     public boolean applies(Ctx ctx) {
-        for (String kind : List.of("cores", "plotcells", "radiation", "conductors", "piles", "entities", "loot"))
+        for (String kind : List.of("cores", "plotcells", "radiation", "conductors", "piles", "entities", "loot", "stale"))
             if (!ctx.list(kind).isEmpty()) return true;
         return false;
     }
@@ -170,6 +171,7 @@ public final class LiveStep implements Step {
                             + result.blocked() + " cell(s) blocked by other blocks, left out");
             }
             case "plotcells" -> ctx.report.count("airship cells indexed", ContinuumTarget.indexCells(level, pos, record.getLongArray("cells")));
+            case "stale" -> ctx.report.count("misplaced airship records removed", ContinuumTarget.dropStale(level, pos, record));
             case "pads" -> {
                 if (ContinuumTarget.settleRedstone(level, pos)) ctx.report.count("powered launch pads settled");
             }
@@ -232,8 +234,13 @@ public final class LiveStep implements Step {
         done = true;
     }
 
+    /** A record an earlier run wrote under a DE addon's dimension name finds the level under its Continuum name. */
     private static @Nullable ServerLevel level(MinecraftServer server, String dim) {
-        ResourceLocation id = ResourceLocation.tryParse(dim);
-        return id == null ? null : server.getLevel(ResourceKey.create(Registries.DIMENSION, id));
+        for (String name : new String[]{dim, DeAddons.rename(dim)}) {
+            ResourceLocation id = ResourceLocation.tryParse(name);
+            ServerLevel level = id == null ? null : server.getLevel(ResourceKey.create(Registries.DIMENSION, id));
+            if (level != null) return level;
+        }
+        return null;
     }
 }

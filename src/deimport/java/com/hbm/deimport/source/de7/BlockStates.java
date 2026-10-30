@@ -1,6 +1,7 @@
 package com.hbm.deimport.source.de7;
 
 import com.hbm.deimport.engine.Target;
+import com.hbm.delegacy.DeAddons;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.nbt.CompoundTag;
@@ -23,11 +24,11 @@ public final class BlockStates {
 
     public static Converted convert(CompoundTag entry, Target target) {
         String name = entry.getString("Name");
-        if (!name.startsWith("hbm:")) return new Converted(entry, Kind.PLAIN, "");
-        String path = name.substring(4);
+        if (!DeAddons.isSource(name)) return new Converted(entry, Kind.PLAIN, "");
+        String tableKey = DeAddons.key(name);
         CompoundTag props = entry.getCompound("Properties").copy();
-        String rule = WorldTables.get().blocks.get(path);
-        String outName = name;
+        String rule = WorldTables.get().blocks.get(tableKey);
+        String outName = DeAddons.rename(name);
         if (rule != null) {
             String[] parts = rule.split(":");
             switch (parts[0]) {
@@ -78,7 +79,7 @@ public final class BlockStates {
                 }
             }
         }
-        String propRule = WorldTables.get().props.get(path);
+        String propRule = WorldTables.get().props.get(tableKey);
         if (propRule != null) for (String one : propRule.split(";")) renameProperty(props, one);
         if (!target.hasBlock(outName)) return new Converted(air(), Kind.REFUND, "");
         // DE builds tall machines (RBMK columns, the cargo elevator) from one block id with a part; only the core stays
@@ -86,6 +87,8 @@ public final class BlockStates {
         if (!part.isEmpty() && !part.equals("core") && !part.equals("assembling") && target.isMultiblockCore(outName))
             return new Converted(air(), Kind.CELL, "");
         Map<String, List<String>> valid = target.properties(outName);
+        // a core's part told only that it is the core
+        if (part.equals("core") && !valid.containsKey("part")) props.remove("part");
         facing(props, valid);
         // a lit, level or variant rule spent its property on the block id
         if (rule != null && rule.matches("(lit|level|variant):.*") && !valid.containsKey(rule.substring(0, rule.indexOf(':'))))

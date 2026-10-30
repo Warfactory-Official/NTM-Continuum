@@ -1,6 +1,7 @@
 package com.hbm.delegacy.legacy;
 
 import com.hbm.Constants;
+import com.hbm.delegacy.DeAddons;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import java.io.BufferedReader;
@@ -72,17 +73,27 @@ public final class DeLegacy {
         return type != null && RAW_TYPES.contains(type);
     }
 
+    /** DE's rows and every registered addon's, whose tables name its own DE ids. */
     private static List<String[]> rows(String table) {
         List<String[]> out = new ArrayList<>();
         try (InputStream in = DeLegacy.class.getResourceAsStream("/hbm_delegacy/de7/" + table + ".tsv")) {
             if (in == null) throw new IllegalStateException("missing hbm_delegacy/de7/" + table + ".tsv");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-            for (String line; (line = reader.readLine()) != null; ) {
-                if (!line.isEmpty() && !line.startsWith("#")) out.add(line.split("\t"));
+            read(in, out);
+            for (DeAddons.Addon addon : DeAddons.all()) {
+                try (InputStream rows = addon.table(table)) {
+                    if (rows != null) read(rows, out);
+                }
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         return out;
+    }
+
+    private static void read(InputStream in, List<String[]> out) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+        for (String line; (line = reader.readLine()) != null; ) {
+            if (!line.isEmpty() && !line.startsWith("#")) out.add(line.split("\t"));
+        }
     }
 }

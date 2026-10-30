@@ -38,6 +38,11 @@ public final class Report {
         lines.add(text);
     }
 
+    /** Writes {@code text} to the report file at once, for what a crash before the run's end must not hide. */
+    public synchronized void lineNow(Path world, String text) throws IOException {
+        Files.write(world.resolve(FILE), List.of(text), StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    }
+
     public String summary() {
         StringBuilder out = new StringBuilder();
         synchronized (counts) {

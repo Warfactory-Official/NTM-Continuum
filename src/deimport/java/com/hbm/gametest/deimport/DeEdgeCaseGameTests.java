@@ -378,7 +378,7 @@ public final class DeEdgeCaseGameTests {
 
             ImportState done = ImportState.create(world, "1.0.0-beta.12", 7, "test");
             done.status("done");
-            for (Step step : Steps.ALL) done.markDone(step.id().substring(0, step.id().indexOf('@')) + "@0");
+            for (Step step : Steps.all()) done.markDone(step.id().substring(0, step.id().indexOf('@')) + "@0");
             helper.assertTrue(!DeImport.hasNewSteps(done), "new versions of known steps are not new steps");
         } catch (IOException e) {
             throw new IllegalStateException(e);

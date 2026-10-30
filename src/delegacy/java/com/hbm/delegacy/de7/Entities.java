@@ -1,5 +1,6 @@
 package com.hbm.delegacy.de7;
 
+import com.hbm.delegacy.DeAddons;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.nbt.CompoundTag;
@@ -17,7 +18,9 @@ public final class Entities {
             Map.entry("reputation", "reputation"), Map.entry("enableHUD", "enableHUD"),
             Map.entry("enableBackpack", "enableBackpack"), Map.entry("enableMagnet", "enableMagnet"),
             Map.entry("maskManTimer", "maskManTimer"), Map.entry("fbiMark", "fbiMark"), Map.entry("radMark", "radMark"),
-            Map.entry("contamination", "cont"));
+            Map.entry("contamination", "cont"),
+            // DE: Space's neutron activation, which it saves in DE's living props
+            Map.entry("activation", "neutrons"));
     private static final String[] CART_BASE = {"vanilla", "wood", "steel", "painted"};
     private static final String[] BOMBER_PAYLOAD = {"carpet", "napalm", "chlorine", "orange", "abomb", "stinger", "boxcar", "pc"};
     private static final String[] SOYUZ_SKIN = {"normal", "lunar", "post_war"};
@@ -92,8 +95,19 @@ public final class Entities {
         tag.remove(from);
     }
 
+    /** A player's dimensions, which name an addon's dimensions by its DE namespace. */
+    private static final List<String> DIMENSION_KEYS = List.of("Dimension", "SpawnDimension", "respawn_dimension");
+
+    public static void dimensions(CompoundTag tag) {
+        for (String key : DIMENSION_KEYS) if (tag.contains(key, Tag.TAG_STRING)) tag.putString(key, DeAddons.rename(tag.getString(key)));
+        CompoundTag death = tag.getCompound("LastDeathLocation");
+        if (death.contains("dimension", Tag.TAG_STRING)) death.putString("dimension", DeAddons.rename(death.getString("dimension")));
+    }
+
     /** Attachments and attribute modifiers that every living entity, player or mob, may carry. */
     public static void living(CompoundTag tag, StackContext ctx, String where) {
+        dimensions(tag);
+        for (DeAddons.Addon addon : DeAddons.all()) addon.living(tag, ctx, where);
         CompoundTag attachments = tag.getCompound("neoforge:attachments");
         CompoundTag living = attachments.getCompound("hbm:living_props");
         CompoundTag player = attachments.getCompound("hbm:player_props");
@@ -103,7 +117,9 @@ public final class Entities {
             for (CompoundTag source : List.of(living, player)) {
                 for (String key : source.getAllKeys()) {
                     String to = PROPS.get(key);
-                    if (to != null) out.put(to, source.get(key).copy());
+                    // DE: Space saves activation as a float; Continuum reads neutrons only as a double
+                    if (to != null && to.equals("neutrons")) out.putDouble(to, source.getDouble(key));
+                    else if (to != null) out.put(to, source.get(key).copy());
                 }
             }
             CompoundTag rest = living.copy();

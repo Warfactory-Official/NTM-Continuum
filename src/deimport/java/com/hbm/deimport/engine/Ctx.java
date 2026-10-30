@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.hbm.deimport.source.de7.BlockEntities;
 import com.hbm.deimport.source.de7.BlockStates;
 import com.hbm.delegacy.AtomicNbt;
+import com.hbm.delegacy.DeAddons;
 import com.hbm.delegacy.ContinuumStacks;
 import com.hbm.delegacy.de7.StackContext;
 import java.io.IOException;
@@ -13,9 +14,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -32,7 +37,7 @@ import org.jetbrains.annotations.Nullable;
 public final class Ctx implements StackContext {
     /** The single pending file an earlier importer wrote; read once more, then replaced by the shards. */
     public static final String PENDING = "data/hbm_de_pending.dat";
-    static final List<String> KINDS = List.of("cores", "plotcells", "radiation", "conductors", "piles", "entities", "loot");
+    static final List<String> KINDS = List.of("cores", "plotcells", "radiation", "conductors", "piles", "entities", "loot", "stale");
     /** The unit holding live work that waits for a dimension. */
     static final String WAITING = "live waiting";
     /** Where DE's power graph is kept once moved out of Continuum's way, relative to its dimension. */
@@ -43,6 +48,8 @@ public final class Ctx implements StackContext {
     public final Parking parking;
     public final Report report;
     public final Journal journal;
+    /** DE addons converted without their Continuum addon: their dimensions keep DE's stamps for when it is installed. */
+    public final Set<String> deferredAddons = ConcurrentHashMap.newKeySet();
     /** Multiblock cores to rebuild once the levels are loaded: {dim, pos, block}. */
     public final List<CompoundTag> cores = new ArrayList<>();
     /** An airship's multiblock cells, for the core index the cells find their machine through: {dim, pos, cells}. */
@@ -57,6 +64,8 @@ public final class Ctx implements StackContext {
     public final List<CompoundTag> entities = new ArrayList<>();
     /** Lazy loot on DE containers Continuum keeps none on, rolled into them once the levels are loaded: {dim, pos, table, seed}. */
     public final List<CompoundTag> loot = new ArrayList<>();
+    /** What an older importer put in a level for an airship at the airship's place in its plot: {dim, pos, cells or conductor}. */
+    public final List<CompoundTag> stale = new ArrayList<>();
 
     private final Map<String, Map<Long, String>> ductFluids = new ConcurrentHashMap<>();
     private final Map<String, Map<Long, long[]>> wires = new ConcurrentHashMap<>();
@@ -93,6 +102,7 @@ public final class Ctx implements StackContext {
             case "piles" -> piles;
             case "entities" -> entities;
             case "loot" -> loot;
+            case "stale" -> stale;
             default -> throw new IllegalArgumentException(kind);
         };
     }
@@ -149,6 +159,13 @@ public final class Ctx implements StackContext {
         Unit.set(null);
     }
 
+    /** Takes back a committed unit whose store could not be replaced after all, so that its work is done again later. */
+    public synchronized void retract(Unit unit) throws IOException {
+        for (String kind : KINDS) list(kind).removeIf(t -> unit.name.equals(t.getString("unit")));
+        parking.retract(unit);
+        Files.deleteIfExists(parking.shards().resolve(unit.file()));
+    }
+
     /** Writes the records no unit owns to their own shard, when they changed since the last write. */
     public synchronized void flushGlobal() throws IOException {
         boolean changed = parking.takeGlobalChange() | globalChanged;
@@ -195,6 +212,38 @@ public final class Ctx implements StackContext {
         if (!kept.pending.isEmpty()) parking.units.add(WAITING);
         waiting.forEach((kind, records) -> records.forEach(t -> add(kind, WAITING, t)));
         globalChanged = false;
+    }
+
+    /**
+     * Moves the records an earlier run left that {@code stale} matches (kind, record) to the leftovers: their store
+     * converts again. Their copies are kept before the shards holding them are written without them.
+     */
+    public synchronized int dropEarlier(BiPredicate<String, CompoundTag> stale) throws IOException {
+        Map<String, Unit> earlier = new HashMap<>();
+        for (Unit unit : parking.loaded) earlier.put(unit.name, unit);
+        Set<Unit> changed = new HashSet<>();
+        int dropped = 0;
+        for (String kind : KINDS) {
+            for (Iterator<CompoundTag> it = list(kind).iterator(); it.hasNext(); ) {
+                CompoundTag t = it.next();
+                Unit unit = earlier.get(t.getString("unit"));
+                if (unit == null || !stale.test(kind, t)) continue;
+                it.remove();
+                unit.pending(kind).remove(t);
+                parking.park("live_record", kind + " " + t.getString("dim"), "converted again", t);
+                if (unit.name.equals(Unit.GLOBAL)) globalChanged = true;
+                else changed.add(unit);
+                dropped++;
+            }
+        }
+        if (dropped == 0) return 0;
+        flushGlobal();
+        for (Unit unit : changed) {
+            Path file = parking.shards().resolve(unit.file());
+            if (unit.parked.isEmpty() && unit.pending.values().stream().allMatch(ListTag::isEmpty)) Files.deleteIfExists(file);
+            else AtomicNbt.write(unit.toTag(), file);
+        }
+        return dropped;
     }
 
     /** Where this thread is converting, for parks made deep in a mapper that knows only a key. */
@@ -399,7 +448,7 @@ public final class Ctx implements StackContext {
 
     /** A player file's HBM attachments, checked like an entity's. */
     public void playerConverted(CompoundTag player, String where) {
-        if (player.getCompound("neoforge:attachments").getAllKeys().stream().noneMatch(k -> k.startsWith("hbm:"))) return;
+        if (player.getCompound("neoforge:attachments").getAllKeys().stream().noneMatch(DeAddons::isTarget)) return;
         CompoundTag record = entityRecord(player, where);
         record.putBoolean("player", true);
         add("entities", record);

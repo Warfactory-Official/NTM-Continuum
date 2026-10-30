@@ -1,5 +1,6 @@
 package com.hbm.deimport.engine;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
@@ -71,6 +73,39 @@ public final class RegionIo {
     public static @Nullable CompoundTag read(RegionFile region, ChunkPos pos) throws IOException {
         try (DataInputStream in = region.getChunkDataInputStream(pos)) {
             return in == null ? null : NbtIo.read(in);
+        }
+    }
+
+    /** Each readable chunk until {@code each} returns false, the file only read: vanilla's {@link RegionFile} opens for writing. */
+    public static void readOnly(Path file, BiPredicate<ChunkPos, CompoundTag> each) throws IOException {
+        String[] parts = file.getFileName().toString().split("\\.");
+        int rx = Integer.parseInt(parts[1]), rz = Integer.parseInt(parts[2]);
+        try (RandomAccessFile raf = new RandomAccessFile(file.toFile(), "r")) {
+            if (raf.length() < 4096) return;
+            byte[] header = new byte[4096];
+            raf.readFully(header);
+            for (int i = 0; i < 1024; i++) {
+                int entry = ((header[i * 4] & 0xFF) << 24) | ((header[i * 4 + 1] & 0xFF) << 16) | ((header[i * 4 + 2] & 0xFF) << 8) | (header[i * 4 + 3] & 0xFF);
+                long start = (long) (entry >>> 8) * 4096;
+                if (entry == 0 || start + 5 > raf.length()) continue;
+                ChunkPos pos = new ChunkPos(rx * 32 + (i & 31), rz * 32 + (i >> 5));
+                raf.seek(start);
+                int length = raf.readInt(), type = raf.readUnsignedByte();
+                RegionFileVersion version = RegionFileVersion.fromId(type & 0x7F);
+                boolean external = (type & 0x80) != 0;
+                if (version == null || !external && (length < 1 || start + 4 + length > raf.length())) continue;
+                byte[] bytes = new byte[external ? 0 : length - 1];
+                raf.readFully(bytes);
+                CompoundTag tag;
+                try (InputStream data = external ? Files.newInputStream(file.resolveSibling("c." + pos.x + "." + pos.z + ".mcc"))
+                        : new ByteArrayInputStream(bytes); DataInputStream in = new DataInputStream(version.wrap(data))) {
+                    tag = NbtIo.read(in);
+                } catch (IOException | RuntimeException e) {
+                    // a chunk vanilla could not read either says nothing; the next one may
+                    continue;
+                }
+                if (!each.test(pos, tag)) return;
+            }
         }
     }
 

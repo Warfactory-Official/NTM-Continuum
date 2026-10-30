@@ -1,6 +1,7 @@
 package com.hbm.deimport.source.de7;
 
 import com.hbm.deimport.engine.Ctx;
+import com.hbm.delegacy.DeAddons;
 import com.hbm.delegacy.de7.Tables;
 import com.hbm.delegacy.de7.Walker;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.IntTag;
@@ -30,6 +32,16 @@ public final class BlockEntities {
     private static final String[] HIMARS = {"SMALL", "LARGE", "SMALL_HE", "SMALL_WP", "SMALL_TB", "LARGE_TB", "SMALL_MINI_NUKE",
             "SMALL_LAVA"};
 
+    /** Families whose stacks Continuum keeps elsewhere: run before {@link #MAPPERS}, and alone on a backup's copy. */
+    private static final Map<String, Consumer<CompoundTag>> LAYOUTS = Map.of(
+            "hbm:hydrotreater", tag -> remapSlots(tag, new int[]{0, 1, 2, 5, 6, 7, 8, 9, 10}),
+            "hbm:strand_caster", tag -> rename(tag, "items", "inventory"),
+            "hbm:foundry_mold", tag -> rename(tag, "items", "inventory"),
+            "hbm:foundry_basin", tag -> rename(tag, "items", "inventory"),
+            "hbm:piston_inserter", tag -> firstSlotTo(tag, "inventory", "stack"),
+            "hbm:pile_loader", tag -> firstSlotTo(tag, "inventory", "stack"),
+            "hbm:mass_storage", tag -> rename(tag, "stockpile", "stack"));
+
     private static final Map<String, BiConsumer<CompoundTag, Ctx>> MAPPERS = Map.ofEntries(
             Map.entry("hbm:crucible", (tag, ctx) -> {
                 materialPairs(tag, "rec", ctx);
@@ -45,7 +57,11 @@ public final class BlockEntities {
                 String[] names = {"input", "heavy", "naphtha", "light", "petroleum"};
                 for (int i = 0; i < names.length; i++) rename(tag, "tank" + i, names[i]);
             }),
-            Map.entry("hbm:assemblymachine", (tag, ctx) -> renames(tag, "tankIn", "i", "tankOut", "o")),
+            Map.entry("hbm:assemblymachine", (tag, ctx) -> {
+                renames(tag, "tankIn", "i", "tankOut", "o");
+                packRecipes(tag, ctx);
+            }),
+            Map.entry("hbm:assemblyfactory", BlockEntities::packRecipes),
             Map.entry("hbm:precass", (tag, ctx) -> renames(tag, "tankIn", "i", "tankOut", "o")),
             Map.entry("hbm:acidomatic", (tag, ctx) -> rename(tag, "tank", "tankNew")),
             Map.entry("hbm:launchpad_soyuz", (tag, ctx) -> {
@@ -66,8 +82,6 @@ public final class BlockEntities {
                 launchPad(tag, ctx);
                 flattenTriples(tag, "activatedBlocks");
             }),
-            Map.entry("hbm:hydrotreater", (tag, ctx) -> remapSlots(tag, new int[]{0, 1, 2, 5, 6, 7, 8, 9, 10})),
-            Map.entry("hbm:mass_storage", (tag, ctx) -> rename(tag, "stockpile", "stack")),
             Map.entry("hbm:battery_redd", (tag, ctx) -> {
                 rename(tag, "bigPower", "power");
                 ordinalToName(tag, "priority", PRIORITY);
@@ -115,17 +129,11 @@ public final class BlockEntities {
             Map.entry("hbm:pyrooven", (tag, ctx) -> rename(tag, "progress", "prog")),
             Map.entry("hbm:rotary_furnace", (tag, ctx) -> material(tag, "outType", ctx)),
             Map.entry("hbm:strand_caster", (tag, ctx) -> {
-                renames(tag, "items", "inventory", "water", "w", "steam", "s", "lastProgress", "t");
+                renames(tag, "water", "w", "steam", "s", "lastProgress", "t");
                 material(tag, "type", ctx);
             }),
-            Map.entry("hbm:foundry_mold", (tag, ctx) -> {
-                rename(tag, "items", "inventory");
-                material(tag, "type", ctx);
-            }),
-            Map.entry("hbm:foundry_basin", (tag, ctx) -> {
-                rename(tag, "items", "inventory");
-                material(tag, "type", ctx);
-            }),
+            Map.entry("hbm:foundry_mold", (tag, ctx) -> material(tag, "type", ctx)),
+            Map.entry("hbm:foundry_basin", (tag, ctx) -> material(tag, "type", ctx)),
             Map.entry("hbm:foundry_channel", (tag, ctx) -> {
                 material(tag, "type", ctx);
                 ordinalToName(tag, "flow", DIRECTIONS);
@@ -140,11 +148,7 @@ public final class BlockEntities {
             }),
             Map.entry("hbm:foundry_tank", (tag, ctx) -> material(tag, "type", ctx)),
             Map.entry("hbm:foundry_slag", (tag, ctx) -> material(tag, "mat", ctx)),
-            Map.entry("hbm:piston_inserter", (tag, ctx) -> firstSlotTo(tag, "inventory", "stack")),
-            Map.entry("hbm:pile_loader", (tag, ctx) -> {
-                firstSlotTo(tag, "inventory", "stack");
-                rename(tag, "wasRedstone", "redstone");
-            }),
+            Map.entry("hbm:pile_loader", (tag, ctx) -> rename(tag, "wasRedstone", "redstone")),
             Map.entry("hbm:pile_core", BlockEntities::pileCore),
             Map.entry("hbm:radgen", BlockEntities::radGen),
             Map.entry("hbm:radar", BlockEntities::radarMap),
@@ -229,19 +233,28 @@ public final class BlockEntities {
         String deId = de.getString("id");
         de.putString("id", type);
         BiConsumer<CompoundTag, Ctx> mapper = MAPPERS.get(deId);
+        LAYOUTS.getOrDefault(deId, tag -> {}).accept(de);
         ctx.at(where);
         try {
             if (mapper != null) mapper.accept(de, ctx);
         } finally {
             ctx.at(null);
         }
+        for (DeAddons.Addon addon : DeAddons.all()) addon.blockEntity(deId, de, ctx, where);
         flattenTanks(de);
         if (walker != null) walker.walk(de, where);
         ctx.report.count("block entities converted");
     }
 
+    /** A copy of {@code de} with its stacks where Continuum keeps them, still in DE's shape otherwise. */
+    public static CompoundTag layout(CompoundTag de) {
+        CompoundTag copy = de.copy();
+        LAYOUTS.getOrDefault(de.getString("id"), tag -> {}).accept(copy);
+        return copy;
+    }
+
     /** DE's {@code [id, amount, id, amount, ...]} to Continuum's {@code [{mat, amount}]}; an unknown material is parked. */
-    private static void materialPairs(CompoundTag tag, String key, Ctx ctx) {
+    public static void materialPairs(CompoundTag tag, String key, Ctx ctx) {
         if (!tag.contains(key, Tag.TAG_INT_ARRAY)) return;
         int[] pairs = tag.getIntArray(key);
         ListTag out = new ListTag();
@@ -353,6 +366,20 @@ public final class BlockEntities {
         }
         tag.remove("current");
         tag.remove("currentFluid");
+    }
+
+    /** DE names a fluid pack recipe after its file ({@code ass.package.air}), Continuum {@code ass.packagehbmfluid.air}. */
+    private static void packRecipes(CompoundTag tag, Ctx ctx) {
+        for (int i = 0; i < 4; i++) {
+            String recipe = tag.getString("recipe" + i);
+            boolean unpack = recipe.startsWith("ass.unpackage.");
+            if (!unpack && !recipe.startsWith("ass.package.")) continue;
+            String fluid = recipe.substring(recipe.indexOf('.', 4) + 1);
+            int dot = fluid.indexOf('.');
+            String id = dot < 0 ? "hbm:" + fluid : fluid.substring(0, dot) + ":" + fluid.substring(dot + 1);
+            String name = ctx.target.packRecipe(Tables.get().fluid(id), unpack);
+            if (name != null) tag.putString("recipe" + i, name);
+        }
     }
 
     /** DE saves the mixer's choice as an index into the recipes for its output fluid; Continuum by the recipe's name. */

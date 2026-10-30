@@ -132,6 +132,12 @@ public final class Parking {
         }
     }
 
+    synchronized void retract(Unit unit) {
+        records.removeIf(t -> unit.name.equals(((CompoundTag) t).getString("unit")));
+        units.remove(unit.name);
+        earlier.remove(unit.name);
+    }
+
     synchronized ListTag global() {
         ListTag out = new ListTag();
         for (Tag t : records) if (Unit.GLOBAL.equals(((CompoundTag) t).getString("unit"))) out.add(t.copy());

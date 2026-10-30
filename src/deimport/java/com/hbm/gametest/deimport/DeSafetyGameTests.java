@@ -3,6 +3,7 @@ package com.hbm.gametest.deimport;
 import com.hbm.Constants;
 import com.hbm.api.energymk2.PowerGraph;
 import com.hbm.blocks.multiblock.MultiblockCoreIndex;
+import com.hbm.deimport.DeImport;
 import com.hbm.deimport.engine.Ctx;
 import com.hbm.deimport.engine.RegionIo;
 import com.hbm.deimport.gate.ImportState;
@@ -13,6 +14,7 @@ import com.hbm.deimport.steps.LiveStep;
 import com.hbm.deimport.steps.RbmkDialsStep;
 import com.hbm.deimport.steps.SavedDataStep;
 import com.hbm.deimport.steps.SubLevelsStep;
+import com.hbm.delegacy.DeAddons;
 import com.hbm.delegacy.legacy.LegacyStacks;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import dev.golem.core.gametest.GameTests;
@@ -54,6 +56,7 @@ public final class DeSafetyGameTests {
         TESTS.function("deimport_foreign_block_entities_kept", 20, () -> DeSafetyGameTests::foreignKept);
         TESTS.function("deimport_region_scratch_per_file", 20, () -> DeSafetyGameTests::scratchPerFile);
         TESTS.function("deimport_gate_finds_de_files", 20, () -> DeSafetyGameTests::gateFindsDeFiles);
+        TESTS.function("deimport_gate_waits_for_addons", 20, () -> DeSafetyGameTests::gateWaitsForAddons);
         TESTS.function("deimport_airship_cells_indexed", 40, () -> DeSafetyGameTests::airshipCellsIndexed);
         TESTS.function("deimport_refunds_written_into_the_chunk", 20, () -> DeSafetyGameTests::refundsInChunk);
         TESTS.function("deimport_damaged_state_file", 20, () -> DeSafetyGameTests::damagedStateFile);
@@ -133,6 +136,29 @@ public final class DeSafetyGameTests {
         helper.succeed();
     }
 
+    /** A world with a DE addon's data and no Continuum addon to convert it is refused, unless the operator says so. */
+    private static void gateWaitsForAddons(GameTestHelper helper) {
+        Path world = DeImportGameTests.tempWorld();
+        try {
+            helper.assertTrue(DeImport.unconvertedAddon(world) == null, "a world without DE addon data imports");
+            Files.createDirectories(world.resolve("dimensions/hbmspace/mun/region"));
+            String why = DeImport.unconvertedAddon(world);
+            helper.assertTrue(DeAddons.has("hbmspace") ? why == null : why != null && why.contains("NTM: Space"),
+                    "DE: Space's planets wait for NTM: Space: " + why);
+            System.setProperty("hbm.deimport.without", "hbmspace");
+            try {
+                helper.assertTrue(DeImport.unconvertedAddon(world) == null, "-Dhbm.deimport.without=hbmspace converts anyway");
+            } finally {
+                System.clearProperty("hbm.deimport.without");
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            DeImportGameTests.delete(world);
+        }
+        helper.succeed();
+    }
+
     /** DE's doubly wrapped saved data, or a stamped spawn chunk behind unstamped ones, marks a world as DE's. */
     private static void gateFindsDeFiles(GameTestHelper helper) {
         Path wrapped = DeImportGameTests.tempWorld(), spawned = DeImportGameTests.tempWorld();
@@ -177,12 +203,16 @@ public final class DeSafetyGameTests {
         Ctx ctx = null;
         try {
             DeFixtures.writeKey(world);
-            BlockPos origin = new BlockPos(16_000_002, 70, 16_000_002);
-            CompoundTag chunk = DeFixtures.emptyChunk(1_000_000, 1_000_000);
+            // Sable keys the plot's first chunk 0, 0; in the level it lies at Sable's grid origin, plot 10000 of 128 chunks
+            BlockPos origin = new BlockPos((10000 << 7 << 4) + 2, 70, (10000 << 7 << 4) + 2);
+            CompoundTag chunk = DeFixtures.emptyChunk(0, 0);
             DeFixtures.standardContent(chunk, origin);
             CompoundTag chunks = new CompoundTag();
-            chunks.put(Long.toString(new ChunkPos(origin).toLong()), chunk);
+            chunks.put(Long.toString(ChunkPos.asLong(0, 0)), chunk);
             CompoundTag plot = new CompoundTag();
+            plot.putInt("plot_x", 0);
+            plot.putInt("plot_z", 0);
+            plot.putInt("log_size", 7);
             plot.put("chunks", chunks);
             CompoundTag ship = new CompoundTag();
             ship.put("plot", plot);
@@ -381,9 +411,14 @@ public final class DeSafetyGameTests {
         try {
             Path file = world.resolve("sublevels/r.0.0.0.slvls");
             Files.createDirectories(file);
+            Files.createDirectories(world.resolve("DIM-1/sublevels"));
+            Files.createDirectories(world.resolve("DIM1"));
             Ctx ctx = DeImportGameTests.ctx(world, helper.getLevel().getServer());
             new SubLevelsStep().run(ctx, helper.getLevel().getServer());
-            helper.assertTrue(!ctx.journal.done("sublevels@1", world, file), "the file is tried again on the next start");
+            helper.assertTrue(!ctx.journal.done("sublevels@1", world, file), "the file is left as it is");
+            helper.assertTrue(ctx.journal.done("sublevels@1", world, file.getParent()) && ctx.journal.done("sublevels@1", world, world.resolve("DIM-1/sublevels"))
+                    && ctx.journal.done("sublevels@1", world, world.resolve("DIM1/sublevels")),
+                    "every folder is done once passed, one with no airships too: what Sable saves there later is Continuum's own");
         } catch (IOException e) {
             throw new IllegalStateException(e);
         } finally {
