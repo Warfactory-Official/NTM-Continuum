@@ -57,7 +57,7 @@ public class ContainerFusionTorus extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(this.machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return ContainerFusionTorus.this.machine.canPlaceItem(index, stack);
+                return ContainerFusionTorus.this.machine.canPlaceItem(getContainerSlot(), stack);
             }
         };
     }

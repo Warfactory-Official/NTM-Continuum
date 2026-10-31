@@ -60,7 +60,7 @@ public class ContainerMachineMiningLaser extends AbstractContainerMenu {
 
     private Slot validated(int index, int x, int y) {
         return new Slot(this.machine, index, x, y) {
-            @Override public boolean mayPlace(ItemStack stack) { return ContainerMachineMiningLaser.this.machine.canPlaceItem(index, stack); }
+            @Override public boolean mayPlace(ItemStack stack) { return ContainerMachineMiningLaser.this.machine.canPlaceItem(getContainerSlot(), stack); }
         };
     }
 

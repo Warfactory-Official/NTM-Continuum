@@ -769,6 +769,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("fluid_identifier_stack_move", 20, () -> ElectrolyserGameTests::identifierStackMove);
     public static final GameTests.Function ELECTROLYSER_PAUSES =
             TESTS.function("electrolyser_pauses", 40, 8, () -> ElectrolyserGameTests::pausesAndResumes);
+    public static final GameTests.Function ELECTROLYSER_POURED_STACK_CLEARS =
+            TESTS.function("electrolyser_poured_stack_clears", 40, 8, () -> ElectrolyserGameTests::pouredStackClears);
     public static final GameTests.Function ELECTROLYSER_MOLTEN_POUR_RATE =
             TESTS.function("electrolyser_molten_pour_rate", 40, 8, () -> ElectrolyserGameTests::moltenPourRate);
     public static final GameTests.Function ELECTROLYSER_MENUS =
@@ -1367,6 +1369,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("armor_mod_revive", 40, () -> ArmorModGameTests::whiskeyRevivesThreeTimes);
     public static final GameTests.Function PT1012_ARMOR_VANILLA =
             TESTS.function("pt1012_armor_vanilla", 40, () -> Pt1012ArmorGameTests::vanillaArmorTakesModules);
+    public static final GameTests.Function PT1012_ARMOR_TAKEN_MODULE =
+            TESTS.function("pt1012_armor_taken_module", 40, () -> Pt1012ArmorGameTests::takenModuleLeavesArmor);
     public static final GameTests.Function PT1012_ARMOR_ELYTRA =
             TESTS.function("pt1012_armor_elytra", 40, () -> Pt1012ArmorGameTests::elytraModuleGlides);
     public static final GameTests.Function PT1012_TANK_FILLS_GLIDER =
@@ -1420,6 +1424,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("damage_types_keyed", 40, () -> DamageTypeGameTests::everyDamageTypeIsKeyedAndTagged);
     public static final GameTests.Function DAMAGE_ABSOLUTE_1_7 =
             TESTS.function("damage_absolute_1_7", 40, () -> DamageTypeGameTests::absoluteDamageFollows17);
+    public static final GameTests.Function DAMAGE_SOURCELESS_NO_KNOCKBACK =
+            TESTS.function("damage_sourceless_no_knockback", 40, () -> DamageTypeGameTests::sourcelessDamageDoesNotKnockBack);
 
     // --- creative wands + missile_test (implementations live in WandGameTests) ---
     public static final GameTests.Function WAND_K_FILLS_BOX =

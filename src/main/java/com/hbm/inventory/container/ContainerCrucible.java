@@ -48,7 +48,7 @@ public class ContainerCrucible extends AbstractContainerMenu {
     /** A grid slot: stack limit 1, gated by the machine's smeltability check. */
     private Slot oneItem(int index, int x, int y) {
         return new Slot(this.machine, index, x, y) {
-            @Override public boolean mayPlace(ItemStack stack) { return ContainerCrucible.this.machine.canPlaceItem(index, stack); }
+            @Override public boolean mayPlace(ItemStack stack) { return ContainerCrucible.this.machine.canPlaceItem(getContainerSlot(), stack); }
             @Override public int getMaxStackSize() { return 1; }
         };
     }

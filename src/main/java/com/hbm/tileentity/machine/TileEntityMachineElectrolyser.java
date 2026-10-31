@@ -203,7 +203,8 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         CrucibleUtil.pourFullStack(level, worldPosition.getX() + 0.5D + direction.offsetX * 5.875D,
                 worldPosition.getY() + 2D, worldPosition.getZ() + 0.5D + direction.offsetZ * 5.875D,
                 6D, true, stacks, getPourQuanta(), new Vec3[1]);
-        return stacks.isEmpty() ? null : stacks.get(0);
+        // a fully poured stack must clear, or its material blocks the next recipe's output (1.7 nulls at amount <= 0)
+        return stack.amount <= 0 ? null : stack;
     }
 
     public int getPourQuanta() {

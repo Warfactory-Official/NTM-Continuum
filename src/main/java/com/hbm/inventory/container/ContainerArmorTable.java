@@ -154,6 +154,13 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
             super.setByPlayer(stack);
             syncModules();
         }
+
+        @Override
+        public void onTake(Player player, ItemStack stack) {
+            super.onTake(player, stack);
+            ItemStack target = armor.getItem(0);
+            if (!target.isEmpty()) ArmorModHandler.removeMod(target, moduleIndex);
+        }
     }
 
     private final class ArmorTargetSlot extends Slot {

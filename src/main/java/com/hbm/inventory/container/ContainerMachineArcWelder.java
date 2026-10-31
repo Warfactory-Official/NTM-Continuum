@@ -58,7 +58,7 @@ public class ContainerMachineArcWelder extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return ContainerMachineArcWelder.this.machine.canPlaceItem(index, stack);
+                return ContainerMachineArcWelder.this.machine.canPlaceItem(getContainerSlot(), stack);
             }
         };
     }

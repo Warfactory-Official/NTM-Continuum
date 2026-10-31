@@ -172,6 +172,24 @@ public final class ElectrolyserGameTests {
         helper.succeed();
     }
 
+    /** A fully poured molten stack clears, so a crystal with other outputs runs next (1.7 nulls it at amount 0). */
+    public static void pouredStackClears(GameTestHelper helper) {
+        TileEntityMachineElectrolyser electrolyser = place(helper);
+        electrolyser.power = TileEntityMachineElectrolyser.MAX_POWER;
+        electrolyser.tanks[3].setFill(100);
+        electrolyser.leftStack = new Mats.MaterialStack(Mats.MAT_IRON, 0);
+        electrolyser.rightStack = new Mats.MaterialStack(Mats.MAT_TITANIUM, 0);
+        tick(helper, electrolyser);
+        helper.assertTrue(electrolyser.leftStack == null && electrolyser.rightStack == null,
+                "empty molten stacks stayed in the electrolyser: " + electrolyser.leftStack + ", " + electrolyser.rightStack);
+
+        electrolyser.inventory.setStackInSlot(14, new ItemStack(ModItems.crystal_copper.get()));
+        electrolyser.progressMetal = 0;
+        tick(helper, electrolyser);
+        helper.assertTrue(electrolyser.progressMetal == 1, "a copper crystal did not start after iron was poured out");
+        helper.succeed();
+    }
+
     public static void pausesAndResumes(GameTestHelper helper) {
         TileEntityMachineElectrolyser electrolyser = place(helper);
         electrolyser.tanks[0].setFill(2_000);

@@ -66,7 +66,7 @@ public class ContainerMachineShredder extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(this.machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return ContainerMachineShredder.this.machine.canPlaceItem(index, stack);
+                return ContainerMachineShredder.this.machine.canPlaceItem(getContainerSlot(), stack);
             }
         };
     }

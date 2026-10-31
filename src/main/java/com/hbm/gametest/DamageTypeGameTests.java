@@ -26,6 +26,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.Vec3;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -157,6 +158,22 @@ public final class DamageTypeGameTests {
         Effects.add(lunar, Effects.resistance(), 50 * 20, 9);
         Compat.hurt(lunar, helper.getLevel(), ModDamageSources.lunar(helper.getLevel()), 1000F);
         helper.assertTrue(lunar.getHealth() <= 0, "lunar damage is absolute and ignores Resistance X");
+        helper.succeed();
+    }
+
+    /** 1.7 knocked back only when an entity dealt the damage, so radiation and asbestos leave the victim standing. */
+    public static void sourcelessDamageDoesNotKnockBack(GameTestHelper helper) {
+        LivingEntity pig = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 2, 1));
+        for (DamageSource source : List.of(ModDamageSources.radiation(helper.getLevel()),
+                ModDamageSources.asbestos(helper.getLevel()), ModDamageSources.digamma(helper.getLevel()))) {
+            pig.setHealth(pig.getMaxHealth());
+            pig.invulnerableTime = 0;
+            pig.setDeltaMovement(Vec3.ZERO);
+            Compat.hurt(pig, helper.getLevel(), source, 1F);
+            helper.assertTrue(pig.getHealth() < pig.getMaxHealth(), source.getMsgId() + " did no damage");
+            helper.assertTrue(pig.getDeltaMovement().horizontalDistanceSqr() == 0,
+                    source.getMsgId() + " knocked the pig back: " + pig.getDeltaMovement());
+        }
         helper.succeed();
     }
 

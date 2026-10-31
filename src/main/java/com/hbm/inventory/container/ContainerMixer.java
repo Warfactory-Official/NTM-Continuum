@@ -53,7 +53,7 @@ public class ContainerMixer extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return ContainerMixer.this.machine.canPlaceItem(index, stack);
+                return ContainerMixer.this.machine.canPlaceItem(getContainerSlot(), stack);
             }
         };
     }

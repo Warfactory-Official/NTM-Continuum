@@ -70,7 +70,7 @@ public class ContainerWatz extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(this.machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return ContainerWatz.this.machine.canPlaceItem(index, stack);
+                return ContainerWatz.this.machine.canPlaceItem(getContainerSlot(), stack);
             }
         };
     }

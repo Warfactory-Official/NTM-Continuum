@@ -57,7 +57,7 @@ public final class ContainerMachineRotaryFurnace extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return furnace != null ? furnace.isItemValidForSlot(index, stack) || index == 3 : machine.canPlaceItem(index, stack);
+                return furnace != null ? furnace.isItemValidForSlot(getContainerSlot(), stack) || getContainerSlot() == 3 : machine.canPlaceItem(getContainerSlot(), stack);
             }
         };
     }

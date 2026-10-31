@@ -62,7 +62,7 @@ public class ContainerMachinePlasmaForge extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(this.machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return canPlaceInMachine(index, stack);
+                return canPlaceInMachine(getContainerSlot(), stack);
             }
         };
     }
@@ -70,7 +70,7 @@ public class ContainerMachinePlasmaForge extends AbstractContainerMenu {
     private Slot nonRetarded(int index, int x, int y) {
         return new Slot(this.machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return canPlaceInMachine(index, stack);
+                return canPlaceInMachine(getContainerSlot(), stack);
             }
 
             @Override public int getMaxStackSize() {

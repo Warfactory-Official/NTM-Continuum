@@ -62,7 +62,7 @@ public class ContainerMachineGasCent extends AbstractContainerMenu {
         return new Slot(machine, index, x, y) {
             @Override
             public boolean mayPlace(ItemStack stack) {
-                return machine.canPlaceItem(index, stack);
+                return machine.canPlaceItem(getContainerSlot(), stack);
             }
         };
     }

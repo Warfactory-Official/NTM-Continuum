@@ -9,6 +9,8 @@ import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModArmorModItems;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.gui.CompatContainerMenu;
+import dev.golem.core.gui.Menus;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Armors;
 import dev.golem.core.world.Gliders;
@@ -65,6 +67,20 @@ public final class Pt1012ArmorGameTests {
         ArmorModEvents.onLivingUpdate(player);
         double damage = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
         helper.assertTrue(Math.abs(damage - 1.5D) < 1.0E-6D, "servos on a diamond chestplate: attack damage " + damage);
+        helper.succeed();
+    }
+
+    /** Taking a module out of the table takes it off the armour too (1.7 {@code UpgradeSlot.onPickupFromSlot}). */
+    public static void takenModuleLeavesArmor(GameTestHelper helper) {
+        Player player = player(helper);
+        ContainerArmorTable menu = new ContainerArmorTable(0, player.getInventory(), player.blockPosition());
+        menu.getSlot(ContainerArmorTable.ARMOR_SLOT).setByPlayer(new ItemStack(Items.IRON_CHESTPLATE));
+        menu.getSlot(ArmorModHandler.servos).setByPlayer(new ItemStack(ModArmorModItems.servo_set.get()));
+        Menus.click(menu, ArmorModHandler.servos, 0, CompatContainerMenu.ClickAction.PICKUP, player);
+        helper.assertTrue(menu.getCarried().is(ModArmorModItems.servo_set.get()), "the servos were not picked up");
+        ItemStack armor = menu.getSlot(ContainerArmorTable.ARMOR_SLOT).getItem();
+        helper.assertTrue(ArmorModHandler.pryMod(armor, ArmorModHandler.servos).isEmpty(),
+                "the servos stayed on the chestplate after being taken out");
         helper.succeed();
     }
 

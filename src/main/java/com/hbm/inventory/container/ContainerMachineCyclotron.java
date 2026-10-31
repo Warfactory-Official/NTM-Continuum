@@ -65,7 +65,7 @@ public class ContainerMachineCyclotron extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return ContainerMachineCyclotron.this.machine.canPlaceItem(index, stack);
+                return ContainerMachineCyclotron.this.machine.canPlaceItem(getContainerSlot(), stack);
             }
         };
     }

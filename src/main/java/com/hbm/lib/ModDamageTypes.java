@@ -9,6 +9,7 @@ import static dev.golem.core.dejson.Damage.BY_LIVING_NON_PLAYER;
 import static dev.golem.core.dejson.Damage.IS_EXPLOSION;
 import static dev.golem.core.dejson.Damage.IS_FIRE;
 import static dev.golem.core.dejson.Damage.IS_PROJECTILE;
+import static dev.golem.core.dejson.Damage.NO_KNOCKBACK;
 import static dev.golem.core.dejson.Damage.type;
 
 /**
@@ -43,63 +44,64 @@ public final class ModDamageTypes {
         }
         declared = true;
 
+        // NO_KNOCKBACK on 1.7's attacker-less sources: 1.7 only knocked back when an entity dealt the damage
         // 1.7 setDamageIsAbsolute is BYPASSES_EFFECTS (it skips potions and enchantments), setDamageAllowedInCreativeMode
         // is BYPASSES_INVULNERABILITY
         Damage.declare(NS,
-                type("acid"),
-                type("ams").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("ams_core").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("asbestos").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("bang").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("blackhole").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("blacklung").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("blender").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("acid").tags(NO_KNOCKBACK),
+                type("ams").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("ams_core").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("asbestos").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("bang").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("blackhole").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("blacklung").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("blender").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 // 1.12.2 ModDamageSource crucible/slicer: setDamageIsAbsolute().setDamageBypassesArmor()
-                type("crucible").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("slicer").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("crucible").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("slicer").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 // 1.12.2 ModDamageSource gluon: absolute, bypasses armour, allowed in creative
-                type("gluon").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
-                type("broadcast").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("gluon").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
+                type("broadcast").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("boil").tags(IS_FIRE),
-                type("digamma").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
-                type("electricity").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("enervation").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("euthanized_self").message("euthanizedSelf").tags(BYPASSES_ARMOR),
-                type("euthanized_self2").message("euthanizedSelf2").tags(BYPASSES_ARMOR),
+                type("digamma").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
+                type("electricity").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("enervation").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("euthanized_self").message("euthanizedSelf").tags(NO_KNOCKBACK, BYPASSES_ARMOR),
+                type("euthanized_self2").message("euthanizedSelf2").tags(NO_KNOCKBACK, BYPASSES_ARMOR),
                 type("hard_landing").scaling(BY_LIVING_NON_PLAYER).tags(BYPASSES_ARMOR),
-                type("ice"),
-                type("lead").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("lunar").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("microwave").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("mku").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("monoxide").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("overdose").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("radiation").tags(BYPASSES_ARMOR),
-                type("spikes").tags(BYPASSES_ARMOR),
-                type("taint").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("ice").tags(NO_KNOCKBACK),
+                type("lead").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("lunar").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("microwave").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("mku").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("monoxide").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("overdose").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("radiation").tags(NO_KNOCKBACK, BYPASSES_ARMOR),
+                type("spikes").tags(NO_KNOCKBACK, BYPASSES_ARMOR),
+                type("taint").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
 
                 type("acid_player").message("acidPlayer").exhaustion(0.1),
-                type("boat").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("boxcar").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("building").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("boat").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("boxcar").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("building").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("combine").message("cmb").tags(BYPASSES_ARMOR, IS_PROJECTILE),
                 type("electric").exhaustion(0.1),
                 type("emplacer").message("chopperBullet").exhaustion(0.1).tags(IS_PROJECTILE),
-                type("exhaust").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("exhaust").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("explosive").exhaustion(0.1).tags(IS_EXPLOSION),
                 type("fire").exhaustion(0.1).tags(IS_FIRE),
                 type("flamethrower").exhaustion(0.1),
                 type("laser").exhaustion(0.1),
-                type("meteorite").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("mud_poisoning").message("mudPoisoning").tags(BYPASSES_ARMOR),
-                type("nuclear_blast").message("nuclearBlast").exhaustion(0.1).tags(IS_EXPLOSION),
+                type("meteorite").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("mud_poisoning").message("mudPoisoning").tags(NO_KNOCKBACK, BYPASSES_ARMOR),
+                type("nuclear_blast").message("nuclearBlast").exhaustion(0.1).tags(NO_KNOCKBACK, IS_EXPLOSION),
                 type("revolver_bullet").message("revolverBullet").exhaustion(0.1).tags(IS_PROJECTILE),
                 type("subatomic").exhaustion(0.1),
                 type("euthanized").tags(BYPASSES_ARMOR),
-                type("tau_blast").message("tauBlast").tags(BYPASSES_ARMOR, IS_EXPLOSION),
+                type("tau_blast").message("tauBlast").tags(NO_KNOCKBACK, BYPASSES_ARMOR, IS_EXPLOSION),
                 type("electrified"),
                 type("plasma"),
-                type("suicide").projectile(),
+                type("suicide").projectile().tags(NO_KNOCKBACK),
                 type("teleporter"),
                 type("subatomic_1").message("subAtomic1").projectile().tags(BYPASSES_ARMOR),
                 type("subatomic_2").message("subAtomic2").projectile().tags(BYPASSES_ARMOR),
@@ -111,8 +113,8 @@ public final class ModDamageTypes {
                 // "was slain by" player message
                 type("boltgun").message("player").tags(BYPASSES_ARMOR),
 
-                type("cloud").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
-                type("pink_cloud").message("pc").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("cloud").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("pink_cloud").message("pc").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
 
                 // 1.7 BulletConfig.getDamage marks only physical rounds as projectiles; energy rounds stay ENERGY
                 type("bullet_electric"),
@@ -125,7 +127,7 @@ public final class ModDamageTypes {
                 type("bullet_piercing").message("bullet_physical").projectile().tags(BYPASSES_ARMOR),
                 type("bullet_plasma"),
                 type("bullet_subatomic"),
-                type("rubble").projectile(),
-                type("shrapnel").projectile());
+                type("rubble").projectile().tags(NO_KNOCKBACK),
+                type("shrapnel").projectile().tags(NO_KNOCKBACK));
     }
 }

@@ -49,7 +49,7 @@ public class ContainerMachineF6Tank extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return ContainerMachineF6Tank.this.machine.canPlaceItem(index, stack);
+                return ContainerMachineF6Tank.this.machine.canPlaceItem(getContainerSlot(), stack);
             }
         };
     }

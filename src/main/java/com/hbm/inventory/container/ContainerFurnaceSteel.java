@@ -47,7 +47,7 @@ public class ContainerFurnaceSteel extends AbstractContainerMenu {
 
     private Slot validated(int index, int x, int y) {
         return new Slot(machine, index, x, y) {
-            @Override public boolean mayPlace(ItemStack stack) { return machine.canPlaceItem(index, stack); }
+            @Override public boolean mayPlace(ItemStack stack) { return machine.canPlaceItem(getContainerSlot(), stack); }
         };
     }
 

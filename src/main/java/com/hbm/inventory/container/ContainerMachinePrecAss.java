@@ -58,7 +58,7 @@ public final class ContainerMachinePrecAss extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) {
-                return ContainerMachinePrecAss.this.machine.canPlaceItem(index, stack);
+                return ContainerMachinePrecAss.this.machine.canPlaceItem(getContainerSlot(), stack);
             }
         };
     }

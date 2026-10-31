@@ -92,8 +92,10 @@ public final class ContainerMachineElectrolyser extends AbstractContainerMenu {
 
     private Slot validated(int index, int x, int y) {
         return new Slot(machine, index, x, y) {
+            // Slot.index is the menu index; the container slot differs in metal mode
             @Override public boolean mayPlace(ItemStack stack) {
-                return electrolyser != null ? electrolyser.isItemValidForSlot(index, stack) : machine.canPlaceItem(index, stack);
+                int slot = getContainerSlot();
+                return electrolyser != null ? electrolyser.isItemValidForSlot(slot, stack) : machine.canPlaceItem(slot, stack);
             }
         };
     }
