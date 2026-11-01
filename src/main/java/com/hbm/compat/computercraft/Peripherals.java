@@ -141,7 +141,7 @@ public final class Peripherals {
     }
 
     /** HBM blocks that hold a block entity or are a folded cell of one, and other mods' component blocks. */
-    private static boolean carries(Block block) {
+    public static boolean carries(Block block) {
         if (com.hbm.api.computer.ComputerComponents.carries(block)) return true;
         if (!(block instanceof EntityBlock) && !(block instanceof BlockMultiblockCore)
                 && !(block instanceof com.hbm.blocks.multiblock.BlockMultiblockCell)) return false;

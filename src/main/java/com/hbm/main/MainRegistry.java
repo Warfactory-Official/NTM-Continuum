@@ -403,6 +403,10 @@ public final class MainRegistry {
         ForeignItems.register();
         // 1.7's OpenComputers components as CC: Tweaked peripherals, when CC is loaded
         ComputerCraft.init();
+        // OpenComputers: Rebooted integration, when OpenComputers is loaded
+        //? if opencomputers {
+        /*com.hbm.compat.opencomputers.OpenComputersCompat.init();
+        *///?}
         // AE2 pattern providers push jobs into the recipe machines, when AE2 is loaded
         AE2CompatHandler.init();
         // Buffers, tanks and multiblock cores in a block-info overlay (Jade), when one is loaded
