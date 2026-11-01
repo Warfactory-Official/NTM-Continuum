@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import com.hbm.Constants;
 import com.hbm.items.ModDataComponents;
 import com.hbm.client.model.WavefrontObj;
+import dev.golem.core.data.CarriedState;
 import dev.golem.core.render.gem.Surface;
 import dev.golem.core.world.ItemModels;
 import net.minecraft.resources.Identifier;
@@ -48,6 +49,7 @@ public final class MachineItemModels {
     /^ Item id -> its OBJ model. Rebuilt on every resource reload; empty until the first one. ^/
 private static Map<Identifier, MachineItemModel> models = Map.of();
  private static Map<Identifier, Map<Integer, MachineItemModel>> variantModels = Map.of();
+    private static Map<Identifier, BlockStateChoice> blockStateModels = Map.of();
     private static Map<Identifier, com.hbm.client.jetpack.JetpackGliderItemModel> gliders = Map.of();
     private static Map<Identifier, RBMKColumnItemModel> rbmkColumns = Map.of();
     private static Map<Identifier, RBMKBlockColumnItemModel> blockColumns = Map.of();
@@ -60,6 +62,11 @@ public static MachineItemModel get(Identifier item) {
 
  /^ The selected OBJ model for an item-definition variant, falling back to its default branch. ^/
 public static MachineItemModel get(Identifier item, ItemStack stack) {
+    BlockStateChoice byState = blockStateModels.get(item);
+    if (byState != null && CarriedState.readItemFlag(stack, byState.property())) {
+        MachineItemModel chosen = byState.whenTrue();
+        if (chosen != null) return chosen;
+    }
     Map<Integer, MachineItemModel> choices = variantModels.get(item);
     if (choices == null) return models.get(item);
     int variant = com.hbm.items.ModelState.of(stack);
@@ -90,6 +97,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         reloadCustom(resources);
         Map<Identifier, MachineItemModel> built = new HashMap<>();
         Map<Identifier, Map<Integer, MachineItemModel>> builtVariants = new HashMap<>();
+        Map<Identifier, BlockStateChoice> builtStates = new HashMap<>();
         Map<Identifier, RBMKColumnItemModel> columns = new HashMap<>();
         Map<Identifier, RBMKBlockColumnItemModel> blocks = new HashMap<>();
         Map<Identifier, com.hbm.client.jetpack.JetpackGliderItemModel> gliderItems = new HashMap<>();
@@ -119,6 +127,8 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                     MachineItemModel fallback = parsed.get(-1);
                     if (fallback != null) built.put(item, fallback);
                 }
+                JsonObject byState = blockStateSelectOf(root);
+                if (byState != null) readBlockStateSelect(byState, item, built, builtStates);
                 JsonObject column = rbmkColumnOf(root);
                 if (column != null) columns.put(item, parseColumn(column));
                 JsonObject block = blockColumnOf(root);
@@ -129,6 +139,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         }
         models = Map.copyOf(built);
         variantModels = Map.copyOf(builtVariants);
+        blockStateModels = Map.copyOf(builtStates);
         rbmkColumns = Map.copyOf(columns);
         blockColumns = Map.copyOf(blocks);
         gliders = Map.copyOf(gliderItems);
@@ -219,6 +230,45 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         }
         return out;
     }
+
+    /^ A {@code minecraft:select} on {@code minecraft:block_state}, as NTM: Space's damaged machines use. ^/
+    private static JsonObject blockStateSelectOf(JsonElement root) {
+        if (!root.isJsonObject()) return null;
+        JsonElement model = root.getAsJsonObject().get("model");
+        if (model == null || !model.isJsonObject()) return null;
+        JsonObject select = model.getAsJsonObject();
+        return "minecraft:select".equals(string(select, "type", ""))
+                && "minecraft:block_state".equals(string(select, "property", "")) ? select : null;
+    }
+
+    /^ Carried block data is read as a boolean flag below 26.1, so only a "true" case is kept. ^/
+    private static void readBlockStateSelect(JsonObject select, Identifier item, Map<Identifier, MachineItemModel> built,
+                                             Map<Identifier, BlockStateChoice> states) {
+        JsonElement fallback = select.get("fallback");
+        if (fallback != null && fallback.isJsonObject()) {
+            MachineItemModel model = parseBranch(fallback.getAsJsonObject());
+            if (model != null) built.put(item, model);
+        }
+        MachineItemModel whenTrue = null;
+        JsonElement cases = select.get("cases");
+        if (cases != null && cases.isJsonArray()) {
+            for (JsonElement entry : cases.getAsJsonArray()) {
+                if (!entry.isJsonObject()) continue;
+                JsonObject caseObject = entry.getAsJsonObject();
+                JsonElement selected = caseObject.get("model");
+                if (!"true".equals(string(caseObject, "when", "")) || selected == null || !selected.isJsonObject()) continue;
+                whenTrue = parseBranch(selected.getAsJsonObject());
+            }
+        }
+        states.put(item, new BlockStateChoice(string(select, "block_state_property", ""), whenTrue));
+    }
+
+    private static MachineItemModel parseBranch(JsonObject branch) {
+        JsonObject machine = machineObjFromSpecial(branch);
+        return machine == null ? null : parse(machine, machine != branch);
+    }
+
+    private record BlockStateChoice(String property, MachineItemModel whenTrue) {}
 
     private static JsonObject machineObjFromSpecial(JsonObject special) {
         if ("hbm:machine_obj".equals(string(special, "type", ""))) return special;
