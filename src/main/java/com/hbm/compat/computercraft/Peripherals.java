@@ -114,10 +114,13 @@ public final class Peripherals {
     private static final ArrayList<SnapshotPeripheral<?>> LIVE = new ArrayList<>();
 
     private static final int PROXY_DOMAINS = BlockMultiblockCore.PASSIVE_POWER_IN | BlockMultiblockCore.PASSIVE_FLUID_IN;
+    private static boolean initialized = false;
 
     private Peripherals() {}
 
-    static void init() {
+    public static synchronized void ensureInitialized() {
+        if (initialized) return;
+        initialized = true;
         for (Family family : families()) {
             for (Row<?> row : family.rows()) {
                 if (BY_TYPE.put(row.type(), row) != null) {
@@ -125,16 +128,22 @@ public final class Peripherals {
                 }
             }
         }
-        PeripheralExposure.exposeBlocks(Peripherals::at, Peripherals::carries);
         Lifecycle.onServerTick(Peripherals::tick);
         Lifecycle.onServerStopping(server -> {
             BY_MACHINE.clear();
             LIVE.clear();
+            initialized = false;
         });
+    }
+
+    static void init() {
+        ensureInitialized();
+        PeripheralExposure.exposeBlocks(Peripherals::at, Peripherals::carries);
     }
 
     /** The rows, for the GameTest that checks the roster against the registered block entities. */
     public static List<Row<?>> rows() {
+        ensureInitialized();
         List<Row<?>> rows = new ArrayList<>();
         for (Family family : families()) rows.addAll(family.rows());
         return rows;
@@ -142,6 +151,7 @@ public final class Peripherals {
 
     /** HBM blocks that hold a block entity or are a folded cell of one, and other mods' component blocks. */
     public static boolean carries(Block block) {
+        ensureInitialized();
         if (com.hbm.api.computer.ComputerComponents.carries(block)) return true;
         if (!(block instanceof EntityBlock) && !(block instanceof BlockMultiblockCore)
                 && !(block instanceof com.hbm.blocks.multiblock.BlockMultiblockCell)) return false;
@@ -151,6 +161,7 @@ public final class Peripherals {
     /** The peripheral at {@code pos} through {@code side}, or null; what Core's lookup asks. Server thread. */
     public static @Nullable IPeripheral at(ServerLevel level, BlockPos pos, BlockState state, @Nullable BlockEntity be,
                                            @Nullable Direction side) {
+        ensureInitialized();
         if (be != null && !be.isRemoved()) {
             Row<?> row = rowOf(be);
             if (row != null) return opensAtBlock(row.reach(), side) ? of(row, be) : null;

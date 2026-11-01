@@ -42,14 +42,21 @@ public final class OpenComputersPeripherals {
     private static final Map<BlockEntity, OpenComputersEnvironment> BY_MACHINE = new IdentityHashMap<>();
     private static final List<OpenComputersEnvironment> LIVE = new ArrayList<>();
 
-    private static final SidedEnvironment CLIENT_SIDED_ENV = new SidedEnvironment() {
+    private static final class ClientEnv implements SidedEnvironment, Environment {
         @Override public @Nullable Node sidedNode(Direction side) { return null; }
         @Override public boolean canConnect(Direction side) { return true; }
-    };
+        @Override public @Nullable Node node() { return null; }
+        @Override public void onConnect(Node node) {}
+        @Override public void onDisconnect(Node node) {}
+        @Override public void onMessage(li.cil.oc.api.network.Message message) {}
+    }
+    private static final ClientEnv CLIENT_ENV = new ClientEnv();
 
     private OpenComputersPeripherals() {}
 
     static void init() {
+        Peripherals.ensureInitialized();
+
         // Register side-aware block driver for Adapter blocks
         Driver.add(new HbmDriverBlock());
 
@@ -65,14 +72,14 @@ public final class OpenComputersPeripherals {
                 if (level instanceof ServerLevel server) {
                     return at(server, pos, state, be, side);
                 }
-                return Peripherals.carries(state.getBlock()) ? CLIENT_SIDED_ENV : null;
+                return Peripherals.carries(state.getBlock()) ? CLIENT_ENV : null;
             }, blocks);
 
             event.registerBlock(ENVIRONMENT, (level, pos, state, be, side) -> {
                 if (level instanceof ServerLevel server) {
                     return (Environment) at(server, pos, state, be, side);
                 }
-                return Peripherals.carries(state.getBlock()) ? (Environment) CLIENT_SIDED_ENV : null;
+                return Peripherals.carries(state.getBlock()) ? CLIENT_ENV : null;
             }, blocks);
         });
         //?}

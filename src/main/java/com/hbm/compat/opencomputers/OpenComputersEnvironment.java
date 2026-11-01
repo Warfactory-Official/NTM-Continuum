@@ -83,22 +83,11 @@ public final class OpenComputersEnvironment extends AbstractManagedEnvironment
 
     @Override
     public @Nullable Node sidedNode(Direction side) {
-        Level level = target.getLevel();
-        if (level instanceof ServerLevel server) {
-            BlockPos pos = target.getBlockPos();
-            if (OpenComputersPeripherals.canConnectAt(server, pos, side)) {
-                return node();
-            }
-        }
-        return null;
+        return node();
     }
 
     @Override
     public boolean canConnect(Direction side) {
-        Level level = target.getLevel();
-        if (level != null) {
-            return OpenComputersPeripherals.canConnectAt(level, target.getBlockPos(), side);
-        }
         return true;
     }
 
