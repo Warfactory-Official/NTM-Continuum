@@ -95,8 +95,15 @@ neoForge {
 sourceSets["main"].resources.srcDir("src/generated/resources")
 
 repositories {
+    mavenLocal()
     mavenCentral()
-    maven("https://maven.blamejared.com") { name = "BlameJared" }
+    exclusiveContent {
+        forRepository { maven("https://maven.blamejared.com") { name = "BlameJared" } }
+        filter {
+            includeGroup("mezz.jei")
+            includeGroup("net.mezzdev.config")
+        }
+    }
     maven("https://maven.squiddev.cc") {
         name = "SquidDev"
         content { includeGroup("cc.tweaked") }
@@ -173,6 +180,7 @@ tasks.matching { it.name == "runClient" || it.name == "prepareClientRun" }.confi
 // copy task with no source files (NO-SOURCE) without running it, so an unflagged run used to leave the previous
 // flagged run's jars in place and run with them (seen with Sable, 2026-10-05).
 val ccServerMod: Configuration by configurations.creating
+val ocServerMod: Configuration by configurations.creating
 val sableServerMod: Configuration by configurations.creating
 val kubejsServerMod: Configuration by configurations.creating
 val ae2ServerMod: Configuration by configurations.creating
@@ -182,11 +190,12 @@ for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestSe
     val modsDir = layout.projectDirectory.dir("runs/$run/mods")
     val sync = tasks.register("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
         description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run, -Pkubejs.run, -Pae2.run, -Prefinedstorage.run, -Pstellarity.run)."
-        inputs.files(ccServerMod, sableServerMod, kubejsServerMod, ae2ServerMod, rsServerMod, stellarityServerMod)
+        inputs.files(ccServerMod, ocServerMod, sableServerMod, kubejsServerMod, ae2ServerMod, rsServerMod, stellarityServerMod)
         outputs.dir(modsDir)
         doLast {
             project.sync {
                 from(ccServerMod)
+                from(ocServerMod)
                 from(sableServerMod)
                 from(kubejsServerMod)
                 from(ae2ServerMod)
@@ -330,6 +339,16 @@ dependencies {
         if (propOrNull("computercraft.run") == "true") {
             devModJar("cc.tweaked:cc-tweaked-$ccMc-forge:$ccVer") { isTransitive = false }
             ccServerMod("cc.tweaked:cc-tweaked-$ccMc-forge:$ccVer") { isTransitive = false }
+        }
+    }
+    // OpenComputers: Rebooted (com.hbm.compat.opencomputers, guarded by the `opencomputers` constant). Compiled against
+    // where coordinates are declared, never shipped or required. `-Popencomputers.run=true` puts the mod in dev runs.
+    val ocVer = propOrNull("deps.oc")
+    if (ocVer != null) {
+        compileOnly("li.cil.oc:opencomputers:$ocVer:api") { isTransitive = false }
+        if (propOrNull("opencomputers.run") == "true") {
+            devModJar("li.cil.oc:opencomputers:$ocVer") { isTransitive = false }
+            ocServerMod("li.cil.oc:opencomputers:$ocVer") { isTransitive = false }
         }
     }
     // Sable (moving block sub-levels, the engine under Create Aeronautics) is an optional peer on the nodes that

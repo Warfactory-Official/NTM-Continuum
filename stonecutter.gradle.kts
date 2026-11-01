@@ -36,6 +36,8 @@ stonecutter parameters {
     constants["rei"] = !(node.project.findProperty("deps.rei") as String?).isNullOrBlank()
     // True only where the node declares CC: Tweaked coordinates (an optional peer, like JEI).
     constants["computercraft"] = !(node.project.findProperty("deps.cc") as String?).isNullOrBlank()
+    // True only where the node declares OpenComputers coordinates.
+    constants["opencomputers"] = !(node.project.findProperty("deps.oc") as String?).isNullOrBlank()
     // True only where the node declares KubeJS coordinates (an optional peer; dev.golem.core.kubejs in Golem Core).
     constants["kubejs"] = !(node.project.findProperty("deps.kubejs") as String?).isNullOrBlank()
 
