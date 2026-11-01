@@ -383,9 +383,18 @@ dependencies {
     val ccVer = propOrNull("deps.cc")
     if (ccMc != null && ccVer != null) {
         // HBM's peripherals need the peripheral API alone (core-api, no Minecraft types, so not remapped);
-        // registration is Core's.
+        // registration is Core's. Bundled into the mod jar so OpenComputers can access peripherals when CC: Tweaked is not installed.
         "compileOnly"("cc.tweaked:cc-tweaked-$ccMc-core-api:$ccVer") { isTransitive = false }
-        if (propOrNull("computercraft.run") == "true") {
+        "runtimeOnly"("cc.tweaked:cc-tweaked-$ccMc-core-api:$ccVer") { isTransitive = false }
+        val ccCoreApi = configurations.detachedConfiguration(dependencies.create("cc.tweaked:cc-tweaked-$ccMc-core-api:$ccVer")).apply {
+            isTransitive = false
+        }
+        tasks.jar.configure {
+            from(ccCoreApi.map { zipTree(it) }) {
+                exclude("META-INF/**")
+            }
+        }
+        if (propOrNull("computercraft.run") == "true" || propOrNull("opencomputers.run") == "true") {
             if (obfuscated) {
                 devRuntime(files(loomCompatibleComputerCraft(ccMc, ccVer)))
                 "runtimeOnly"(computerCraftLibraries())
