@@ -6,7 +6,9 @@ import com.hbm.compat.computercraft.SnapshotPeripheral;
 import dev.golem.core.platform.Lifecycle;
 import dev.golem.core.platform.NeoForgeEntrypoint;
 import li.cil.oc.api.Driver;
+import li.cil.oc.api.Network;
 import li.cil.oc.api.network.Environment;
+import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.SidedEnvironment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,6 +42,11 @@ public final class OpenComputersPeripherals {
     private static final Map<BlockEntity, OpenComputersEnvironment> BY_MACHINE = new IdentityHashMap<>();
     private static final List<OpenComputersEnvironment> LIVE = new ArrayList<>();
 
+    private static final SidedEnvironment CLIENT_SIDED_ENV = new SidedEnvironment() {
+        @Override public @Nullable Node sidedNode(Direction side) { return null; }
+        @Override public boolean canConnect(Direction side) { return true; }
+    };
+
     private OpenComputersPeripherals() {}
 
     static void init() {
@@ -54,11 +61,19 @@ public final class OpenComputersPeripherals {
                     .toArray(Block[]::new);
             if (blocks.length == 0) return;
 
-            event.registerBlock(SIDED_ENVIRONMENT, (level, pos, state, be, side) ->
-                    level instanceof ServerLevel server ? at(server, pos, state, be, side) : null, blocks);
+            event.registerBlock(SIDED_ENVIRONMENT, (level, pos, state, be, side) -> {
+                if (level instanceof ServerLevel server) {
+                    return at(server, pos, state, be, side);
+                }
+                return Peripherals.carries(state.getBlock()) ? CLIENT_SIDED_ENV : null;
+            }, blocks);
 
-            event.registerBlock(ENVIRONMENT, (level, pos, state, be, side) ->
-                    level instanceof ServerLevel server ? at(server, pos, state, be, side) : null, blocks);
+            event.registerBlock(ENVIRONMENT, (level, pos, state, be, side) -> {
+                if (level instanceof ServerLevel server) {
+                    return (Environment) at(server, pos, state, be, side);
+                }
+                return Peripherals.carries(state.getBlock()) ? (Environment) CLIENT_SIDED_ENV : null;
+            }, blocks);
         });
         //?}
 
@@ -112,6 +127,7 @@ public final class OpenComputersPeripherals {
         env = new OpenComputersEnvironment(owner, peripheral);
         BY_MACHINE.put(owner, env);
         LIVE.add(env);
+        Network.joinOrCreateNetwork(owner);
         return env;
     }
 }

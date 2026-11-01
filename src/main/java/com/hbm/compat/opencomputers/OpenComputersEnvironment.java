@@ -51,7 +51,11 @@ public final class OpenComputersEnvironment extends AbstractManagedEnvironment
         this.target = target;
         this.peripheral = peripheral;
         this.componentName = peripheral.getType();
-        setNode(Network.newNode(this, Visibility.Network).withComponent(this.componentName).create());
+        Node n = Network.newNode(this, Visibility.Network).withComponent(this.componentName).create();
+        setNode(n);
+        if (n != null) {
+            Network.joinNewNetwork(n);
+        }
 
         List<String> names = new ArrayList<>();
         for (Method method : peripheral.getClass().getMethods()) {
