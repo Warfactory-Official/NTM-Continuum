@@ -3,22 +3,22 @@ package com.hbm.gametest.computer;
 //? if computercraft {
 import com.hbm.Constants;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
-import com.hbm.compat.computercraft.rbmk.CraneConsolePeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKBoilerPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKConsolePeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKControlManualPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKControlPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKCoolerPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKGaugePeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKGraphPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKHeaterPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKIndicatorPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKKeyPadPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKLeverPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKNumitronPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKOutgasserPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKRodPeripheral;
-import com.hbm.compat.computercraft.rbmk.RBMKTerminalPeripheral;
+import com.hbm.compat.computer.rbmk.CraneConsolePeripheral;
+import com.hbm.compat.computer.rbmk.RBMKBoilerPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKConsolePeripheral;
+import com.hbm.compat.computer.rbmk.RBMKControlManualPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKControlPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKCoolerPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKGaugePeripheral;
+import com.hbm.compat.computer.rbmk.RBMKGraphPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKHeaterPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKIndicatorPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKKeyPadPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKLeverPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKNumitronPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKOutgasserPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKRodPeripheral;
+import com.hbm.compat.computer.rbmk.RBMKTerminalPeripheral;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModRBMKItems;
 import com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole;
@@ -38,8 +38,7 @@ import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKRod;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal;
 import com.hbm.tileentity.machine.rbmk.RBMKColor;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
-import dan200.computercraft.api.lua.LuaException;
-import dan200.computercraft.api.peripheral.IPeripheral;
+import dev.golem.core.computer.ComputerComponent;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -52,7 +51,7 @@ import net.minecraft.world.level.block.Block;
 import java.util.Arrays;
 import java.util.Map;
 
-/** Peripheral GameTests for {@link com.hbm.compat.computercraft.rbmk.RbmkRows}; registered only with CC: Tweaked loaded. */
+/** Peripheral GameTests for {@code RbmkRows}; registered only with CC: Tweaked loaded. */
 public final class RbmkPeripheralGameTests {
 
     private RbmkPeripheralGameTests() {}
@@ -323,7 +322,7 @@ public final class RbmkPeripheralGameTests {
         boolean threw = false;
         try {
             numitron.setDisplayActiveDigits(1, 128);
-        } catch (LuaException e) {
+        } catch (IllegalArgumentException e) {
             threw = true;
         }
         helper.assertTrue(threw, "setDisplayActiveDigits(1, 128) raises an error");
@@ -427,7 +426,7 @@ public final class RbmkPeripheralGameTests {
      * Places a full column at {@link #POS} as a player would and checks 1.7's reach: the core and the top answer
      * with the same peripheral, a middle segment does not.
      */
-    private static <P extends IPeripheral> P placeColumn(GameTestHelper helper, Block block, Class<P> type, String name) {
+    private static <P extends ComputerComponent> P placeColumn(GameTestHelper helper, Block block, Class<P> type, String name) {
         helper.setBlock(POS, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(POS), block.defaultBlockState(),
                 GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL), new ItemStack(block));

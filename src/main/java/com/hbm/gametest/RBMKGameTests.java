@@ -24,6 +24,10 @@ import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKRod;
 import com.hbm.tileentity.network.RTTYSystem;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.world.ItemStacks;
+import dev.golem.core.world.Recipes;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -123,6 +127,11 @@ public final class RBMKGameTests {
                         && ModDataComponents.RBMK_PELLET.getOr(pellets, null).depletion() == 2
                         && ModDataComponents.RBMK_PELLET.getOr(pellets, null).xenon(),
                 "60% depleted, xenon-poisoned fuel must disassemble into eight variant-7 pellets");
+        List<ItemStack> grid = new ArrayList<>(Collections.nCopies(9, ItemStack.EMPTY));
+        grid.set(4, depleted.copy());
+        ItemStack crafted = Recipes.craftingResult(helper.getLevel(), 3, 3, grid).orElse(ItemStack.EMPTY);
+        helper.assertTrue(ItemStacks.sameItemAndData(crafted, pellets) && crafted.getCount() == 8,
+                "A crafting grid must find the disassembly recipe through the recipe manager, got " + crafted);
         ItemRBMKRod.setHullHeat(depleted, 50D);
         helper.assertFalse(recipe.matchesItemStacks(List.of(depleted), helper.getLevel()),
                 "Fuel at the 50C safety boundary must not disassemble");

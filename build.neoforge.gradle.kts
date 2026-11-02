@@ -178,11 +178,12 @@ val kubejsServerMod: Configuration by configurations.creating
 val ae2ServerMod: Configuration by configurations.creating
 val rsServerMod: Configuration by configurations.creating
 val stellarityServerMod: Configuration by configurations.creating
+val vwServerMod: Configuration by configurations.creating
 for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestServer")) {
     val modsDir = layout.projectDirectory.dir("runs/$run/mods")
     val sync = tasks.register("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
-        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Psable.run, -Pkubejs.run, -Pae2.run, -Prefinedstorage.run, -Pstellarity.run)."
-        inputs.files(ccServerMod, sableServerMod, kubejsServerMod, ae2ServerMod, rsServerMod, stellarityServerMod)
+        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Popencomputers.run, -Psable.run, -Pkubejs.run, -Pae2.run, -Prefinedstorage.run, -Pstellarity.run, -Pvisualworkbench.run)."
+        inputs.files(ccServerMod, sableServerMod, kubejsServerMod, ae2ServerMod, rsServerMod, stellarityServerMod, vwServerMod)
         outputs.dir(modsDir)
         doLast {
             project.sync {
@@ -192,6 +193,7 @@ for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestSe
                 from(ae2ServerMod)
                 from(rsServerMod)
                 from(stellarityServerMod)
+                from(vwServerMod)
                 into(modsDir)
             }
         }
@@ -247,8 +249,21 @@ dependencies {
     if (propOrNull("stellarity.run") == "true") propOrNull("deps.stellarity")?.let {
         for (conf in listOf(devModJar, stellarityServerMod)) add(conf.name, "maven.modrinth:stellarity:$it")
     }
+    // C2ME, dev runs only (`-Pc2me.run=true`): runs worldgen features on its own worker threads. Only for the node a
+    // task names: its 1.21.1 Fabric jars need a newer Loom and would fail every other node's configuration.
+    if (propOrNull("c2me.run") == "true" && gradle.startParameter.taskNames.any { it.startsWith(":${project.name}:") }) propOrNull("deps.c2me")?.let {
+        for (conf in listOf(devModJar, stellarityServerMod)) add(conf.name, "maven.modrinth:c2me-neoforge:$it")
+    }
     // Just Enough Characters, dev runs only (`-Pjecharacters.run=true`): pinyin matching in HBM's search bars (Core TextSearch).
     if (propOrNull("jecharacters.run") == "true") propOrNull("deps.jecharacters")?.let { devModJar("maven.modrinth:justenoughcharacters:$it") }
+    // Visual Workbench and its required Puzzles Lib, dev runs only (`-Pvisualworkbench.run=true`): its crafting table
+    // menu replaces vanilla's, so HBM's custom crafting recipes go through it.
+    if (propOrNull("visualworkbench.run") == "true") {
+        for (conf in listOf(devModJar, vwServerMod)) {
+            propOrNull("deps.visualworkbench")?.let { add(conf.name, "maven.modrinth:visual-workbench:$it") { isTransitive = false } }
+            propOrNull("deps.puzzleslib")?.let { add(conf.name, "maven.modrinth:puzzles-lib:$it") { isTransitive = false } }
+        }
+    }
 
     // Applied Energistics 2 and its required GuideME, dev runs only (`-Pae2.run=true`): HBM's machines reach AE2's
     // pattern providers through Golem Core's dev.golem.core.autocraft, so HBM has no AE2 dependency. Both carry mixins.
@@ -316,8 +331,8 @@ dependencies {
         }
     }
 
-    // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components are served to it as peripherals
-    // (com.hbm.compat.computercraft, guarded by the `computercraft` constant). Compiled against on every node,
+    // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components (com.hbm.compat.computer) are served to it
+    // as peripherals through Golem Core's dev.golem.core.computer. Compiled against on every node (the CC GameTests),
     // never shipped or required. `-Pcomputercraft.run=true` puts the mod in the dev runs as well; it is off by
     // default so the recipe baselines stay CC-free.
     // It carries mixins and nested jars, so the run takes it as a mod file (`devModJar`, and `ccServerMod` for
@@ -331,6 +346,12 @@ dependencies {
             devModJar("cc.tweaked:cc-tweaked-$ccMc-forge:$ccVer") { isTransitive = false }
             ccServerMod("cc.tweaked:cc-tweaked-$ccMc-forge:$ccVer") { isTransitive = false }
         }
+    }
+    // OpenComputers: Rebooted (1.21.1), dev runs only (`-Popencomputers.run=true`): the same components reach it through
+    // Golem Core's dev.golem.core.opencomputers, so HBM never compiles against it. A mod file, like CC.
+    if (propOrNull("opencomputers.run") == "true") propOrNull("deps.oc_file")?.let {
+        devModJar("curse.maven:opencomputers-rebooted-1634364:$it") { isTransitive = false }
+        ccServerMod("curse.maven:opencomputers-rebooted-1634364:$it") { isTransitive = false }
     }
     // Sable (moving block sub-levels, the engine under Create Aeronautics) is an optional peer on the nodes that
     // declare it. HBM's side of it is its own source root, src/sable (com.hbm.compat.sable), added only here; the

@@ -221,7 +221,7 @@ dependencies {
     }
 
     // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components are served to it as peripherals
-    // (com.hbm.compat.computercraft, guarded by the `computercraft` constant). Compiled against on every node,
+    // (com.hbm.compat.computer, through Golem Core's dev.golem.core.computer). Compiled against on every node,
     // never shipped or required. `-Pcomputercraft.run=true` puts the mod in the dev runs as well; it is off by
     // default so the recipe baselines stay CC-free.
     val ccMc = propOrNull("deps.cc_mc")

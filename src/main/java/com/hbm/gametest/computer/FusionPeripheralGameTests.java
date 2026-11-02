@@ -3,11 +3,11 @@ package com.hbm.gametest.computer;
 //? if computercraft {
 import com.hbm.Constants;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.compat.computercraft.fusion.FusionBoilerPeripheral;
-import com.hbm.compat.computercraft.fusion.FusionBreederPeripheral;
-import com.hbm.compat.computercraft.fusion.FusionKlystronPeripheral;
-import com.hbm.compat.computercraft.fusion.FusionMHDTPeripheral;
-import com.hbm.compat.computercraft.fusion.FusionTorusPeripheral;
+import com.hbm.compat.computer.fusion.FusionBoilerPeripheral;
+import com.hbm.compat.computer.fusion.FusionBreederPeripheral;
+import com.hbm.compat.computer.fusion.FusionKlystronPeripheral;
+import com.hbm.compat.computer.fusion.FusionMHDTPeripheral;
+import com.hbm.compat.computer.fusion.FusionTorusPeripheral;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder;
@@ -24,7 +24,7 @@ import net.minecraft.world.item.Items;
 
 import java.util.Arrays;
 
-/** Peripheral GameTests for {@link com.hbm.compat.computercraft.fusion.FusionRows}; registered only with CC: Tweaked loaded. */
+/** Peripheral GameTests for {@code FusionRows}; registered only with CC: Tweaked loaded. */
 public final class FusionPeripheralGameTests {
 
     private FusionPeripheralGameTests() {}

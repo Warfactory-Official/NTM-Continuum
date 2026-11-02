@@ -12,8 +12,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Another mod's 1.7 OpenComputers components (a block entity's {@code getComponentName} and its
- * {@code @Callback} methods), served to computers the way HBM serves its own: as CC: Tweaked peripherals, on every
- * node that has CC (HBM's {@code compat.computercraft.Peripherals}). The registering mod needs no CC types: a method is
+ * {@code @Callback} methods), served to computers the way HBM serves its own ({@code compat.computer.Peripherals}): as
+ * CC: Tweaked peripherals and OpenComputers: Rebooted components. The registering mod needs neither's types: a method is
  * a plain function of the block entity and the Lua arguments, and its answer is an array of plain values (numbers,
  * strings, booleans, null, arrays, lists, maps), as 1.7's {@code Object[]} callbacks returned.
  *

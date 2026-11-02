@@ -11,12 +11,13 @@ import com.hbm.blocks.machine.storage.ModBatteryBlocks;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.compat.computercraft.storage.BarrelPeripheral;
-import com.hbm.compat.computercraft.storage.BatteryREDDPeripheral;
-import com.hbm.compat.computercraft.storage.BatterySocketPeripheral;
-import com.hbm.compat.computercraft.storage.MachineBatteryPeripheral;
-import com.hbm.compat.computercraft.storage.MachineFluidTankPeripheral;
-import com.hbm.compat.computercraft.storage.MassStoragePeripheral;
+import com.hbm.compat.computer.Peripherals;
+import com.hbm.compat.computer.storage.BarrelPeripheral;
+import com.hbm.compat.computer.storage.BatteryREDDPeripheral;
+import com.hbm.compat.computer.storage.BatterySocketPeripheral;
+import com.hbm.compat.computer.storage.MachineBatteryPeripheral;
+import com.hbm.compat.computer.storage.MachineFluidTankPeripheral;
+import com.hbm.compat.computer.storage.MassStoragePeripheral;
 import com.hbm.gametest.FoldedTestSupport;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModBatteryItems;
@@ -30,8 +31,7 @@ import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
 import com.hbm.tileentity.machine.storage.TileEntityMachineOrbus;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
-import dan200.computercraft.api.peripheral.IPeripheral;
-import dev.golem.core.computer.PeripheralExposure;
+import dev.golem.core.computer.ComputerComponent;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -42,7 +42,7 @@ import net.minecraft.world.item.Items;
 
 import java.math.BigInteger;
 
-/** Peripheral GameTests for {@link com.hbm.compat.computercraft.storage.StorageRows}; registered only with CC: Tweaked loaded. */
+/** Peripheral GameTests for {@code StorageRows}; registered only with CC: Tweaked loaded. */
 public final class StoragePeripheralGameTests {
 
     private StoragePeripheralGameTests() {}
@@ -238,7 +238,7 @@ public final class StoragePeripheralGameTests {
      * {@code Reach.CELLS}: a power/fluid proxy cell answers with the core's own peripheral through a face that leaves
      * the machine, and a cell without such a proxy answers nothing.
      */
-    private static void assertCells(GameTestHelper helper, BlockPos relativeCore, IPeripheral expected) {
+    private static void assertCells(GameTestHelper helper, BlockPos relativeCore, ComputerComponent expected) {
         BlockPos core = helper.absolutePos(relativeCore);
         int domains = BlockMultiblockCore.PASSIVE_POWER_IN | BlockMultiblockCore.PASSIVE_FLUID_IN;
         BlockPos proxy = null;
@@ -249,7 +249,7 @@ public final class StoragePeripheralGameTests {
                     BlockPos pos = core.offset(x, y, z);
                     if (pos.equals(core) || !MultiblockSurface.isFoldedCell(helper.getLevel().getBlockState(pos))
                             || !core.equals(MultiblockSurface.coreOfCell(helper.getLevel(), pos))) continue;
-                    if (com.hbm.compat.computercraft.Peripherals.isProxyCell(helper.getLevel(), pos)) {
+                    if (Peripherals.isProxyCell(helper.getLevel(), pos)) {
                         if (proxy == null) proxy = pos;
                     } else if (plain == null) {
                         plain = pos;
@@ -267,10 +267,10 @@ public final class StoragePeripheralGameTests {
             }
         }
         helper.assertTrue(outward != null, "proxy cell " + proxy + " has no face out of the machine");
-        IPeripheral atProxy = PeripheralExposure.find(helper.getLevel(), proxy, outward);
+        ComputerComponent atProxy = PeripheralTestSupport.at(helper.getLevel(), proxy, outward);
         helper.assertTrue(atProxy == expected, "proxy cell " + proxy + " answered " + atProxy
                 + " instead of the core's peripheral");
-        IPeripheral atPlain = PeripheralExposure.find(helper.getLevel(), plain, Direction.UP);
+        ComputerComponent atPlain = PeripheralTestSupport.at(helper.getLevel(), plain, Direction.UP);
         helper.assertTrue(atPlain == null, "plain cell " + plain + " answered " + atPlain);
     }
 }

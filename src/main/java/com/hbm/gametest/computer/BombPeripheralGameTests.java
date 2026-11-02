@@ -4,8 +4,8 @@ package com.hbm.gametest.computer;
 import com.hbm.Constants;
 import com.hbm.blocks.ModCustomMissileBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.compat.computercraft.bomb.LaunchPadPeripheral;
-import com.hbm.compat.computercraft.bomb.LaunchTablePeripheral;
+import com.hbm.compat.computer.bomb.LaunchPadPeripheral;
+import com.hbm.compat.computer.bomb.LaunchTablePeripheral;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMissileItems;
 import com.hbm.items.weapon.ItemMissileStandard;
@@ -23,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.Arrays;
 
 /**
- * Peripheral GameTests for {@link com.hbm.compat.computercraft.bomb.BombRows}; registered only with CC: Tweaked
+ * Peripheral GameTests for {@code BombRows}; registered only with CC: Tweaked
  * loaded. No test launches: each asserts the refusal path and the state the computer reads.
  */
 public final class BombPeripheralGameTests {

@@ -52,7 +52,7 @@ import org.jspecify.annotations.Nullable;
  * which can then be carried away full. Acts as a cable: all 8 connection ports share one network.
  *
  * <p>Port of 1.7's {@code TileEntityBatterySocket}; its OpenComputers component is served to CC: Tweaked by
- * {@code com.hbm.compat.computercraft.storage.BatterySocketPeripheral}. A loaded radiovoltaic battery
+ * {@code com.hbm.compat.computer.storage.BatterySocketPeripheral}. A loaded radiovoltaic battery
  * ({@code battery_sc_*}, not the empty one) fluctuates its output ({@code scPowerMult}, 0.1..1, drifting by up to 1% a
  * tick) and every 1 to 3 minutes discharges: electric beams at every living thing within 15 blocks, each ending in a
  * small electric explosion, plus one explosion at the socket.

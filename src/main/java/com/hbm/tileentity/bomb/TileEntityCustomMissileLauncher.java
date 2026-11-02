@@ -52,7 +52,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * <p>While a custom missile stands in the ten blocks above the pad, the client puffs fifteen {@code launchSmoke}
  * plumes a tick along one random horizontal axis ({@link #smokeSpread}: compact 0.5, table 0.65). The table's
  * OpenComputers component {@code ntm_custom_launch_pad} is served to CC: Tweaked by
- * {@code com.hbm.compat.computercraft.bomb.LaunchTablePeripheral}.
+ * {@code com.hbm.compat.computer.bomb.LaunchTablePeripheral}.
  */
 public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineBase
         implements IEnergyReceiverMK2, IFluidStandardReceiverMK2, IRadarCommandReceiver, IRORValueProvider,

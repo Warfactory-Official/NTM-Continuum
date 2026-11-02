@@ -3,9 +3,9 @@ package com.hbm.gametest.computer;
 //? if computercraft {
 import com.hbm.Constants;
 import com.hbm.blocks.turret.ModTurretBlocks;
-import com.hbm.compat.computercraft.turret.ArtyPeripheral;
-import com.hbm.compat.computercraft.turret.HimarsPeripheral;
-import com.hbm.compat.computercraft.turret.TurretPeripheral;
+import com.hbm.compat.computer.turret.ArtyPeripheral;
+import com.hbm.compat.computer.turret.HimarsPeripheral;
+import com.hbm.compat.computer.turret.TurretPeripheral;
 import com.hbm.items.ModMachineItems;
 import com.hbm.tileentity.turret.TileEntityTurretArty;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
@@ -20,7 +20,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Arrays;
 
-/** Peripheral GameTests for {@link com.hbm.compat.computercraft.turret.TurretRows}; registered only with CC: Tweaked loaded. */
+/** Peripheral GameTests for {@code TurretRows}; registered only with CC: Tweaked loaded. */
 public final class TurretPeripheralGameTests {
 
     private TurretPeripheralGameTests() {}

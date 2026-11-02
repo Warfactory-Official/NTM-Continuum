@@ -355,6 +355,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("power_diesel_automation", 40, 8, () -> PowerAuditGameTests::dieselAutomation);
     public static final GameTests.Function POWER_WOOD_BURNER_FULL =
             TESTS.function("power_wood_burner_full_buffer", 40, 8, () -> PowerAuditGameTests::woodBurnerFullBuffer);
+    public static final GameTests.Function METAL_ARC_FURNACE_POUR =
+            TESTS.function("metal_arc_furnace_pour", 140, 9, () -> MetalAuditGameTests::arcFurnacePoursIntoChannel);
     public static final GameTests.Function METAL_CHANNEL_CLOG =
             TESTS.function("metal_channel_clog", 40, 8, () -> MetalAuditGameTests::channelClog);
     public static final GameTests.Function METAL_CRUCIBLE_WASTE =

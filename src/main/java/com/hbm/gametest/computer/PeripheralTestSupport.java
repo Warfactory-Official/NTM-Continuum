@@ -1,40 +1,45 @@
 package com.hbm.gametest.computer;
 
 //? if computercraft {
-import dan200.computercraft.api.peripheral.IPeripheral;
+import dev.golem.core.computer.ComputerComponent;
 import dev.golem.core.computer.PeripheralExposure;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerLevel;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Asks for peripherals the way CC does: through Core's {@link PeripheralExposure#find}, the loader's own lookup
  * (NeoForge capability, Fabric {@code PeripheralLookup}), so a test covers the registration and not only HBM's
- * resolver.
+ * resolver. CC hands out Core's peripheral wrapper; these return the HBM component behind it.
  */
 public final class PeripheralTestSupport {
 
     private PeripheralTestSupport() {}
 
-    public static @Nullable IPeripheral find(GameTestHelper helper, BlockPos relative, @Nullable Direction side) {
-        return PeripheralExposure.find(helper.getLevel(), helper.absolutePos(relative), side);
+    public static @Nullable ComputerComponent find(GameTestHelper helper, BlockPos relative, @Nullable Direction side) {
+        return at(helper.getLevel(), helper.absolutePos(relative), side);
+    }
+
+    public static @Nullable ComputerComponent at(ServerLevel level, BlockPos pos, @Nullable Direction side) {
+        return PeripheralExposure.component(PeripheralExposure.find(level, pos, side));
     }
 
     /** The peripheral at {@code relative}, asserted to be a {@code type} with CC type name {@code name}. */
-    public static <P extends IPeripheral> P expect(GameTestHelper helper, BlockPos relative, @Nullable Direction side,
+    public static <P extends ComputerComponent> P expect(GameTestHelper helper, BlockPos relative, @Nullable Direction side,
                                                    Class<P> type, String name) {
-        IPeripheral found = find(helper, relative, side);
+        ComputerComponent found = find(helper, relative, side);
         helper.assertTrue(found != null, "no peripheral at " + relative + " side " + side + ", expected " + name);
         helper.assertTrue(type.isInstance(found), "peripheral at " + relative + " is "
                 + found.getClass().getSimpleName() + ", expected " + type.getSimpleName());
-        helper.assertTrue(name.equals(found.getType()), "peripheral type " + found.getType() + ", expected " + name);
+        helper.assertTrue(name.equals(found.type()), "peripheral type " + found.type() + ", expected " + name);
         return type.cast(found);
     }
 
     public static void expectNone(GameTestHelper helper, BlockPos relative, @Nullable Direction side) {
-        IPeripheral found = find(helper, relative, side);
-        helper.assertTrue(found == null, "unexpected peripheral " + (found == null ? "" : found.getType()) + " at "
+        ComputerComponent found = find(helper, relative, side);
+        helper.assertTrue(found == null, "unexpected peripheral " + (found == null ? "" : found.type()) + " at "
                 + relative + " side " + side);
     }
 

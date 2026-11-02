@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import com.hbm.blocks.machine.MachineArcFurnaceLarge;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
@@ -16,9 +17,13 @@ import com.hbm.tileentity.machine.TileEntityFireboxBase;
 import com.hbm.tileentity.machine.TileEntityFoundryChannel;
 import com.hbm.inventory.recipes.CombinationRecipes;
 import com.hbm.items.machine.ModMoldItems;
+import com.hbm.tileentity.MachineCore;
+import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
 import com.hbm.tileentity.machine.TileEntityMachineBlastFurnace;
 import com.hbm.tileentity.machine.TileEntityMachineStrandCaster;
+import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -28,6 +33,33 @@ import net.minecraft.world.level.Level;
 public final class MetalAuditGameTests {
 
     private MetalAuditGameTests() {}
+
+    /** The arc furnace pours straight down from its spout: a channel there fills, an outlet there refuses, as in 1.7. */
+    public static void arcFurnacePoursIntoChannel(GameTestHelper helper) {
+        BlockPos core = new BlockPos(4, 1, 4);
+        MachineArcFurnaceLarge block = ModMachineBlocks.machine_arc_furnace.get();
+        helper.setBlock(core, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
+        TileEntityMachineArcFurnaceLarge furnace = GameTestHelpers.blockEntity(helper, core,
+                TileEntityMachineArcFurnaceLarge.class);
+        ForgeDirection dir = MachineCore.facing(furnace.getBlockState());
+        BlockPos spout = core.offset(dir.offsetX * 3, 0, dir.offsetZ * 3);
+        helper.setBlock(spout, ModMachineBlocks.foundry_outlet.get().defaultBlockState());
+        furnace.setPower(furnace.getMaxPower());
+        furnace.liquids.add(new MaterialStack(Mats.MAT_IRON, MaterialShapes.INGOT.quantity * 4));
+        helper.runAfterDelay(80, () -> {
+            helper.assertTrue(furnace.lid > 0F, "A powered idle arc furnace must open its lid");
+            helper.assertTrue(furnace.liquids.get(0).amount == MaterialShapes.INGOT.quantity * 4,
+                    "An outlet under the spout must not take a pour");
+            helper.setBlock(spout, ModMachineBlocks.foundry_channel.get().defaultBlockState());
+        });
+        helper.runAfterDelay(100, () -> {
+            TileEntityFoundryChannel channel = GameTestHelpers.blockEntity(helper, spout, TileEntityFoundryChannel.class);
+            helper.assertTrue(channel.type == Mats.MAT_IRON && channel.amount > 0,
+                    "A channel under the spout must receive the pour, got " + channel.amount);
+            helper.succeed();
+        });
+    }
 
     public static void channelClog(GameTestHelper helper) {
         Level level = helper.getLevel();

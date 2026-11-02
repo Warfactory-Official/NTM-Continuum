@@ -7,16 +7,17 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.dfc.ModDFCBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.compat.computercraft.machine.ChungusPeripheral;
-import com.hbm.compat.computercraft.machine.CokerPeripheral;
-import com.hbm.compat.computercraft.machine.CombustionEnginePeripheral;
-import com.hbm.compat.computercraft.machine.CoreEmitterPeripheral;
-import com.hbm.compat.computercraft.machine.CoreInjectorPeripheral;
-import com.hbm.compat.computercraft.machine.CoreReceiverPeripheral;
-import com.hbm.compat.computercraft.machine.CoreStabilizerPeripheral;
-import com.hbm.compat.computercraft.machine.GasTurbinePeripheral;
-import com.hbm.compat.computercraft.machine.IndustrialTurbinePeripheral;
-import com.hbm.compat.computercraft.machine.LargeTurbinePeripheral;
+import com.hbm.compat.computer.Peripherals;
+import com.hbm.compat.computer.machine.ChungusPeripheral;
+import com.hbm.compat.computer.machine.CokerPeripheral;
+import com.hbm.compat.computer.machine.CombustionEnginePeripheral;
+import com.hbm.compat.computer.machine.CoreEmitterPeripheral;
+import com.hbm.compat.computer.machine.CoreInjectorPeripheral;
+import com.hbm.compat.computer.machine.CoreReceiverPeripheral;
+import com.hbm.compat.computer.machine.CoreStabilizerPeripheral;
+import com.hbm.compat.computer.machine.GasTurbinePeripheral;
+import com.hbm.compat.computer.machine.IndustrialTurbinePeripheral;
+import com.hbm.compat.computer.machine.LargeTurbinePeripheral;
 import com.hbm.gametest.FoldedTestSupport;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.Fluids;
@@ -33,7 +34,7 @@ import com.hbm.tileentity.machine.dfc.TileEntityCoreInjector;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCoker;
-import dan200.computercraft.api.peripheral.IPeripheral;
+import dev.golem.core.computer.ComputerComponent;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -44,7 +45,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Arrays;
 
-/** Peripheral GameTests for {@link com.hbm.compat.computercraft.machine.PowerRows}; registered only with CC: Tweaked loaded. */
+/** Peripheral GameTests for {@code PowerRows}; registered only with CC: Tweaked loaded. */
 public final class PowerPeripheralGameTests {
 
     private PowerPeripheralGameTests() {}
@@ -356,7 +357,7 @@ public final class PowerPeripheralGameTests {
      * 1.7 {@code TileEntityProxyCombo.canConnectNode}: a power/fluid proxy cell answers with the core's own
      * component through a face that leaves the machine; a plain cell answers nothing.
      */
-    private static void cells(GameTestHelper helper, BlockPos relativeCore, IPeripheral peripheral) {
+    private static void cells(GameTestHelper helper, BlockPos relativeCore, ComputerComponent peripheral) {
         ServerLevel level = helper.getLevel();
         BlockPos core = helper.absolutePos(relativeCore);
         BlockPos origin = helper.absolutePos(BlockPos.ZERO);
@@ -365,7 +366,7 @@ public final class PowerPeripheralGameTests {
         boolean plain = false;
         for (BlockPos cell : MultiblockSurface.rigidStructureBlocks(level, core)) {
             if (cell.equals(core)) continue;
-            if (com.hbm.compat.computercraft.Peripherals.isProxyCell(level, cell)) {
+            if (Peripherals.isProxyCell(level, cell)) {
                 if (proxy) continue;
                 Direction out = null;
                 for (Direction side : Direction.values()) {
@@ -375,9 +376,9 @@ public final class PowerPeripheralGameTests {
                     }
                 }
                 if (out == null) continue;
-                IPeripheral found = PeripheralTestSupport.find(helper, cell.subtract(origin), out);
+                ComputerComponent found = PeripheralTestSupport.find(helper, cell.subtract(origin), out);
                 helper.assertTrue(found == peripheral, "proxy cell " + cell + " side " + out + " answered "
-                        + (found == null ? "nothing" : found.getType()) + ", expected the core's peripheral");
+                        + (found == null ? "nothing" : found.type()) + ", expected the core's peripheral");
                 proxy = true;
             } else if (!plain) {
                 PeripheralTestSupport.expectNone(helper, cell.subtract(origin), Direction.UP);

@@ -318,6 +318,15 @@ dependencies {
     // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devRuntime("maven.modrinth:jade:$it") }
+    // C2ME, dev runs only (`-Pc2me.run=true`): runs worldgen features on its own worker threads. Only for the node a
+    // task names: its 1.21.1 Fabric jars need a newer Loom and would fail every other node's configuration.
+    if (propOrNull("c2me.run") == "true" && gradle.startParameter.taskNames.any { it.startsWith(":${project.name}:") }) propOrNull("deps.c2me")?.let {
+        // a dev run loads no nested jars, and C2ME is split into nested modules
+        val (mods, libraries) = runJarsWithNested(
+            "https://api.modrinth.com/maven/maven/modrinth/c2me-fabric/$it/c2me-fabric-$it.jar", "c2me-run/$it")
+        devRuntime(files(mods))
+        "runtimeOnly"(files(libraries))
+    }
     // Just Enough Characters, dev runs only (`-Pjecharacters.run=true`): pinyin matching in HBM's search bars (Core TextSearch).
     if (propOrNull("jecharacters.run") == "true") propOrNull("deps.jecharacters")?.let { devRuntime("maven.modrinth:justenoughcharacters:$it") }
     // Applied Energistics 2, dev runs only (`-Pae2.run=true`), through Golem Core's dev.golem.core.autocraft. 1.20.1 only.
@@ -376,7 +385,7 @@ dependencies {
     }
 
     // CC: Tweaked is an optional peer: HBM's 1.7 OpenComputers components are served to it as peripherals
-    // (com.hbm.compat.computercraft, guarded by the `computercraft` constant). Compiled against on every node,
+    // (com.hbm.compat.computer, through Golem Core's dev.golem.core.computer). Compiled against on every node,
     // never shipped or required. `-Pcomputercraft.run=true` puts the mod in the dev runs as well; it is off by
     // default so the recipe baselines stay CC-free.
     val ccMc = propOrNull("deps.cc_mc")

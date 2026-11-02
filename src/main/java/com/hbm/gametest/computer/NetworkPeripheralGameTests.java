@@ -5,14 +5,14 @@ import com.hbm.Constants;
 import com.hbm.blocks.ModEnergyNetBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.compat.computercraft.network.CableGaugePeripheral;
-import com.hbm.compat.computercraft.network.FluidCounterValvePeripheral;
-import com.hbm.compat.computercraft.network.PipeGaugePeripheral;
-import com.hbm.compat.computercraft.network.RadioAutocalPeripheral;
-import com.hbm.compat.computercraft.network.RadioControllerPeripheral;
-import com.hbm.compat.computercraft.network.RadioReaderPeripheral;
-import com.hbm.compat.computercraft.network.RadioTelexPeripheral;
-import com.hbm.compat.computercraft.network.RadioTorchPeripheral;
+import com.hbm.compat.computer.network.CableGaugePeripheral;
+import com.hbm.compat.computer.network.FluidCounterValvePeripheral;
+import com.hbm.compat.computer.network.PipeGaugePeripheral;
+import com.hbm.compat.computer.network.RadioAutocalPeripheral;
+import com.hbm.compat.computer.network.RadioControllerPeripheral;
+import com.hbm.compat.computer.network.RadioReaderPeripheral;
+import com.hbm.compat.computer.network.RadioTelexPeripheral;
+import com.hbm.compat.computer.network.RadioTorchPeripheral;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.network.TileEntityFluidCounterValve;
 import com.hbm.tileentity.network.TileEntityPipeGauge;
@@ -21,8 +21,6 @@ import com.hbm.tileentity.network.TileEntityRadioTelex;
 import com.hbm.tileentity.network.TileEntityRadioTorchController;
 import com.hbm.tileentity.network.TileEntityRadioTorchReader;
 import com.hbm.tileentity.network.TileEntityRadioTorchSender;
-import dan200.computercraft.api.lua.LuaException;
-import dan200.computercraft.api.lua.ObjectArguments;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -34,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import com.hbm.blocks.machine.ModMachineBlocks;
 
-/** Peripheral GameTests for {@link com.hbm.compat.computercraft.network.NetworkRows}; registered only with CC: Tweaked loaded. */
+/** Peripheral GameTests for {@code NetworkRows}; registered only with CC: Tweaked loaded. */
 public final class NetworkPeripheralGameTests {
 
     private NetworkPeripheralGameTests() {}
@@ -107,11 +105,11 @@ public final class NetworkPeripheralGameTests {
             boolean raised = false;
             try {
                 valve.setState(2);
-            } catch (LuaException expected) {
+            } catch (IllegalArgumentException expected) {
                 raised = true;
             }
             helper.assertTrue(raised && be.isOpen(), "setState(2) raises and changes nothing");
-        } catch (LuaException e) {
+        } catch (IllegalArgumentException e) {
             helper.fail("setState(1.4) raised " + e.getMessage());
         }
         valve.resetCounter();
@@ -140,8 +138,8 @@ public final class NetworkPeripheralGameTests {
         StringBuilder longLine = new StringBuilder();
         for (int i = 0; i < 40; i++) longLine.append('x');
         try {
-            telex.setSendingText(new ObjectArguments("hello", null, "", longLine.toString(), "end"));
-        } catch (LuaException e) {
+            telex.setSendingText(new Object[]{"hello", null, "", longLine.toString(), "end"});
+        } catch (IllegalArgumentException e) {
             helper.fail("setSendingText raised " + e.getMessage());
         }
         helper.assertTrue("hello".equals(be.txBuffer[0]) && "".equals(be.txBuffer[1])
@@ -149,8 +147,8 @@ public final class NetworkPeripheralGameTests {
                 "setSendingText lines, truncated to the line width");
         boolean raised = false;
         try {
-            telex.setSendingText(new ObjectArguments("first"));
-        } catch (LuaException expected) {
+            telex.setSendingText(new Object[]{"first"});
+        } catch (IllegalArgumentException expected) {
             raised = true;
         }
         helper.assertTrue(raised && "first".equals(be.txBuffer[0]),

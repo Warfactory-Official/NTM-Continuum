@@ -34,7 +34,7 @@ import dev.golem.core.data.DataOut;
  * ({@code machine_battery}) keeps its own standalone implementation, so this base is currently the
  * battery <em>socket</em>'s. The SC-battery discharge and the RoR hooks live in {@link TileEntityBatterySocket}.
  * 1.7's OpenComputers component {@code ntm_energy_storage} is served to CC: Tweaked by
- * {@code com.hbm.compat.computercraft.storage.EnergyStoragePeripheral} (socket and REDD).
+ * {@code com.hbm.compat.computer.storage.EnergyStoragePeripheral} (socket and REDD).
  */
 public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         implements IEnergyConductorMK2, IEnergyProviderMK2, IEnergyReceiverMK2 {

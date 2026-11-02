@@ -61,7 +61,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * must be cryogenically cool ({@link TileEntityCooledBase}) and lit.
  *
  * <p>The OpenComputers component {@code ntm_fusion_torus} is served to CC: Tweaked by
- * {@code com.hbm.compat.computercraft.fusion.FusionTorusPeripheral}.
+ * {@code com.hbm.compat.computer.fusion.FusionTorusPeripheral}.
  *
  * <p>Not ported: the redstone-over-radio provider, the tilt check (the
  * accelerator's structural-stress system, which no ported machine has yet), and the looping reactor

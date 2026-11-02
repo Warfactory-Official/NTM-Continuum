@@ -69,7 +69,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * the ordering, which is load-bearing: reaction flux propagates downward between segments.
  *
  * <p>1.7's OpenComputers component is served to CC: Tweaked by
- * {@code com.hbm.compat.computercraft.machine.WatzPeripheral}. Known deviation: the meltdown's shrapnel spray is currently the mud columns alone.
+ * {@code com.hbm.compat.computer.machine.WatzPeripheral}. Known deviation: the meltdown's shrapnel spray is currently the mud columns alone.
  */
 public class TileEntityWatz extends TileEntityMachineBase
         implements IFluidStandardTransceiverMK2, WorldlyContainer, MenuProvider, IControlReceiver, IRORValueProvider {

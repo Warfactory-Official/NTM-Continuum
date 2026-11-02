@@ -71,7 +71,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * ({@link #launchFromDesignator}); a radar or a detonator can launch at a coordinate or an entity.
  *
  * <p>The OpenComputers component {@code ntm_launch_pad} is served to CC: Tweaked by
- * {@code com.hbm.compat.computercraft.bomb.LaunchPadPeripheral}. Deferred: the {@code IFluidCopiable} /
+ * {@code com.hbm.compat.computer.bomb.LaunchPadPeripheral}. Deferred: the {@code IFluidCopiable} /
  * connection-anchor conveniences.
  */
 public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase

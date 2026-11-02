@@ -11,19 +11,20 @@ import com.hbm.blocks.machine.MachinePWRController;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.compat.computercraft.machine.BreedingReactorPeripheral;
-import com.hbm.compat.computercraft.machine.GeigerPeripheral;
-import com.hbm.compat.computercraft.machine.ICFPeripheral;
-import com.hbm.compat.computercraft.machine.MicrowavePeripheral;
-import com.hbm.compat.computercraft.machine.PWRControllerPeripheral;
-import com.hbm.compat.computercraft.machine.PileControlPeripheral;
-import com.hbm.compat.computercraft.machine.PileLoaderPeripheral;
-import com.hbm.compat.computercraft.machine.RadarPeripheral;
-import com.hbm.compat.computercraft.machine.ReactorControlPeripheral;
-import com.hbm.compat.computercraft.machine.ResearchReactorPeripheral;
-import com.hbm.compat.computercraft.machine.SatLinkPeripheral;
-import com.hbm.compat.computercraft.machine.WatzPeripheral;
-import com.hbm.compat.computercraft.machine.ZirnoxPeripheral;
+import com.hbm.compat.computer.Peripherals;
+import com.hbm.compat.computer.machine.BreedingReactorPeripheral;
+import com.hbm.compat.computer.machine.GeigerPeripheral;
+import com.hbm.compat.computer.machine.ICFPeripheral;
+import com.hbm.compat.computer.machine.MicrowavePeripheral;
+import com.hbm.compat.computer.machine.PWRControllerPeripheral;
+import com.hbm.compat.computer.machine.PileControlPeripheral;
+import com.hbm.compat.computer.machine.PileLoaderPeripheral;
+import com.hbm.compat.computer.machine.RadarPeripheral;
+import com.hbm.compat.computer.machine.ReactorControlPeripheral;
+import com.hbm.compat.computer.machine.ResearchReactorPeripheral;
+import com.hbm.compat.computer.machine.SatLinkPeripheral;
+import com.hbm.compat.computer.machine.WatzPeripheral;
+import com.hbm.compat.computer.machine.ZirnoxPeripheral;
 import com.hbm.items.machine.ItemICFPellet;
 import com.hbm.items.machine.ItemICFPellet.EnumICFFuel;
 import com.hbm.items.machine.ItemPileRodMK2.EnumPileRod;
@@ -42,7 +43,7 @@ import com.hbm.tileentity.machine.TileEntityPWRController;
 import com.hbm.tileentity.machine.TileEntityReactorControl;
 import com.hbm.tileentity.machine.TileEntityReactorResearch;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
-import dan200.computercraft.api.peripheral.IPeripheral;
+import dev.golem.core.computer.ComputerComponent;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -56,7 +57,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-/** Peripheral GameTests for {@link com.hbm.compat.computercraft.machine.ReactorRows}; registered only with CC: Tweaked loaded. */
+/** Peripheral GameTests for {@code ReactorRows}; registered only with CC: Tweaked loaded. */
 public final class ReactorPeripheralGameTests {
 
     private ReactorPeripheralGameTests() {}
@@ -401,11 +402,11 @@ public final class ReactorPeripheralGameTests {
     }
 
     /** A power/fluid proxy cell answers with the core's peripheral object; a plain cell answers none. */
-    private static void expectCells(GameTestHelper helper, BlockPos coreRel, IPeripheral expected, int reach) {
+    private static void expectCells(GameTestHelper helper, BlockPos coreRel, ComputerComponent expected, int reach) {
         Cell proxy = cell(helper, coreRel, reach, true);
-        IPeripheral found = PeripheralTestSupport.find(helper, proxy.rel(), proxy.side());
+        ComputerComponent found = PeripheralTestSupport.find(helper, proxy.rel(), proxy.side());
         helper.assertTrue(found == expected, "proxy cell " + proxy.rel() + " side " + proxy.side() + " answered "
-                + (found == null ? "none" : found.getType()) + ", expected the core's peripheral");
+                + (found == null ? "none" : found.type()) + ", expected the core's peripheral");
         Cell plain = cell(helper, coreRel, reach, false);
         PeripheralTestSupport.expectNone(helper, plain.rel(), plain.side());
     }
@@ -424,7 +425,7 @@ public final class ReactorPeripheralGameTests {
                     BlockPos pos = core.offset(dx, dy, dz);
                     if (!MultiblockSurface.isFoldedCell(level.getBlockState(pos))
                             || !core.equals(MultiblockSurface.coreOfCell(level, pos))
-                            || com.hbm.compat.computercraft.Peripherals.isProxyCell(level, pos) != proxy) continue;
+                            || Peripherals.isProxyCell(level, pos) != proxy) continue;
                     for (Direction side : Direction.values()) {
                         if (!core.equals(MultiblockSurface.coreOfAny(level, pos.relative(side)))) {
                             return new Cell(coreRel.offset(dx, dy, dz), side);

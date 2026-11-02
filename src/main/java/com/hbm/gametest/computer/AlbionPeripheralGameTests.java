@@ -5,11 +5,12 @@ import com.hbm.Constants;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.compat.computercraft.albion.PADetectorPeripheral;
-import com.hbm.compat.computercraft.albion.PADipolePeripheral;
-import com.hbm.compat.computercraft.albion.PAQuadrupolePeripheral;
-import com.hbm.compat.computercraft.albion.PARFCPeripheral;
-import com.hbm.compat.computercraft.albion.PASourcePeripheral;
+import com.hbm.compat.computer.Peripherals;
+import com.hbm.compat.computer.albion.PADetectorPeripheral;
+import com.hbm.compat.computer.albion.PADipolePeripheral;
+import com.hbm.compat.computer.albion.PAQuadrupolePeripheral;
+import com.hbm.compat.computer.albion.PARFCPeripheral;
+import com.hbm.compat.computer.albion.PASourcePeripheral;
 import com.hbm.gametest.FoldedTestSupport;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
@@ -18,8 +19,7 @@ import com.hbm.tileentity.machine.albion.TileEntityPADipole;
 import com.hbm.tileentity.machine.albion.TileEntityPAQuadrupole;
 import com.hbm.tileentity.machine.albion.TileEntityPARFC;
 import com.hbm.tileentity.machine.albion.TileEntityPASource;
-import dan200.computercraft.api.peripheral.IPeripheral;
-import dev.golem.core.computer.PeripheralExposure;
+import dev.golem.core.computer.ComputerComponent;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -30,7 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
-/** Peripheral GameTests for {@link com.hbm.compat.computercraft.albion.AlbionRows}; registered only with CC: Tweaked loaded. */
+/** Peripheral GameTests for {@code AlbionRows}; registered only with CC: Tweaked loaded. */
 public final class AlbionPeripheralGameTests {
 
     private AlbionPeripheralGameTests() {}
@@ -63,7 +63,7 @@ public final class AlbionPeripheralGameTests {
      * A {@code CELLS} row: one power/fluid proxy cell answers, through a face that leaves the machine, with the core's
      * own peripheral object; one cell without such a proxy answers nothing.
      */
-    static void assertCells(GameTestHelper helper, BlockPos relativeCore, IPeripheral expected) {
+    static void assertCells(GameTestHelper helper, BlockPos relativeCore, ComputerComponent expected) {
         ServerLevel level = helper.getLevel();
         BlockPos core = helper.absolutePos(relativeCore);
         BlockPos proxy = null;
@@ -71,19 +71,19 @@ public final class AlbionPeripheralGameTests {
         BlockPos plain = null;
         for (BlockPos cell : MultiblockSurface.rigidStructureBlocks(level, core)) {
             if (cell.equals(core)) continue;
-            boolean carries = com.hbm.compat.computercraft.Peripherals.isProxyCell(level, cell);
+            boolean carries = Peripherals.isProxyCell(level, cell);
             if (carries && proxy == null) {
                 outward = outward(level, cell, core);
                 if (outward != null) proxy = cell;
             }
             if (!carries && plain == null) plain = cell;
         }
-        helper.assertTrue(proxy != null, expected.getType() + " has no power/fluid proxy cell on its surface");
-        helper.assertTrue(PeripheralExposure.find(level, proxy, outward) == expected,
-                "proxy cell " + proxy + " side " + outward + " does not answer with the core's " + expected.getType());
-        helper.assertTrue(plain != null, expected.getType() + " has no plain cell");
-        helper.assertTrue(PeripheralExposure.find(level, plain, null) == null,
-                "plain cell " + plain + " answers as " + expected.getType());
+        helper.assertTrue(proxy != null, expected.type() + " has no power/fluid proxy cell on its surface");
+        helper.assertTrue(PeripheralTestSupport.at(level, proxy, outward) == expected,
+                "proxy cell " + proxy + " side " + outward + " does not answer with the core's " + expected.type());
+        helper.assertTrue(plain != null, expected.type() + " has no plain cell");
+        helper.assertTrue(PeripheralTestSupport.at(level, plain, null) == null,
+                "plain cell " + plain + " answers as " + expected.type());
     }
 
     /** Assert no cell of the machine answers, as for a {@code BLOCK} or {@code DOWN} row. */
@@ -94,8 +94,8 @@ public final class AlbionPeripheralGameTests {
         for (BlockPos cell : MultiblockSurface.rigidStructureBlocks(level, core)) {
             if (cell.equals(core)) continue;
             cells++;
-            IPeripheral found = PeripheralExposure.find(level, cell, side);
-            helper.assertTrue(found == null, "cell " + cell + " answers as " + (found == null ? "" : found.getType()));
+            ComputerComponent found = PeripheralTestSupport.at(level, cell, side);
+            helper.assertTrue(found == null, "cell " + cell + " answers as " + (found == null ? "" : found.type()));
         }
         helper.assertTrue(cells > 0, "the machine at " + relativeCore + " placed no cells");
     }

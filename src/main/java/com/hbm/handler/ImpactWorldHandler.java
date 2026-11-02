@@ -44,35 +44,39 @@ public final class ImpactWorldHandler {
 
         if (data.dust <= 0 && data.fire <= 0) return;
 
-        int listSize = loaded.size();
         RandomSource rand = world.getRandom();
 
-        if (listSize > 0) {
-            for (int i = 0; i < 3; i++) {
+        // A block update below can load a neighbouring chunk synchronously, and the server runs queued chunk
+        // unloads while it waits (always under C2ME), so the list can shrink and the current chunk unload mid-pick.
+        for (int i = 0; i < 3; i++) {
+            int listSize = loaded.size();
+            if (listSize == 0) break;
 
-                LevelChunk chunk = loaded.get(rand.nextInt(listSize));
-                int chunkX = chunk.getPos().getMinBlockX();
-                int chunkZ = chunk.getPos().getMinBlockZ();
+            LevelChunk chunk = loaded.get(rand.nextInt(listSize));
+            int chunkX = chunk.getPos().getMinBlockX();
+            int chunkZ = chunk.getPos().getMinBlockZ();
 
-                for (int x = 0; x < 16; x++) {
-                    for (int z = 0; z < 16; z++) {
+            columns:
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
 
-                        if (rand.nextBoolean()) continue;
+                    if (rand.nextBoolean()) continue;
+                    // an unloaded chunk would be loaded again by getHeight
+                    if (world.getChunkSource().getChunkNow(chunkX >> 4, chunkZ >> 4) != chunk) break columns;
 
-                        int X = chunkX + x;
-                        int Z = chunkZ + z;
-                        int height = world.getHeight(Heightmap.Types.MOTION_BLOCKING, X, Z);
-                        // 1.7: getHeightValue - rand(max(1, getHeightValue)), a y between 1 and the surface measured
-                        // from 1.7's floor at 0; kept absolute so a surface block is hit as often as in 1.7.
-                        int Y = height - rand.nextInt(Math.max(1, height));
-                        BlockPos pos = new BlockPos(X, Y, Z);
+                    int X = chunkX + x;
+                    int Z = chunkZ + z;
+                    int height = world.getHeight(Heightmap.Types.MOTION_BLOCKING, X, Z);
+                    // 1.7: getHeightValue - rand(max(1, getHeightValue)), a y between 1 and the surface measured
+                    // from 1.7's floor at 0; kept absolute so a surface block is hit as often as in 1.7.
+                    int Y = height - rand.nextInt(Math.max(1, height));
+                    BlockPos pos = new BlockPos(X, Y, Z);
 
-                        if (data.dust > 0) {
-                            die(world, pos, data);
-                        }
-                        if (data.fire > 0) {
-                            burn(world, pos);
-                        }
+                    if (data.dust > 0) {
+                        die(world, pos, data);
+                    }
+                    if (data.fire > 0) {
+                        burn(world, pos);
                     }
                 }
             }

@@ -47,7 +47,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * the heat per tick (scaled by the fluid's ICF efficiency), and the rest decays by 0.1 %.
  *
  * <p>1.7's OpenComputers component is served to CC: Tweaked by
- * {@code com.hbm.compat.computercraft.machine.ICFPeripheral}; its Energy Control readout has no target here.
+ * {@code com.hbm.compat.computer.machine.ICFPeripheral}; its Energy Control readout has no target here.
  */
 public class TileEntityICF extends TileEntityMachineBase
         implements MenuProvider, IFluidStandardTransceiverMK2, WorldlyContainer, IRORValueProvider {
