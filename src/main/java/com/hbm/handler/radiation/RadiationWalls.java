@@ -38,6 +38,11 @@ public final class RadiationWalls {
         });
     }
 
+    /** False for a state that can never be a wall, wherever it stands. */
+    static boolean mayBeWall(BlockState state) {
+        return state.is(HbmBlockTags.RADIATION_RESISTANT) || state.getBlock() instanceof IRadResistantBlock;
+    }
+
     /** Whether the block at section-local {@code x, y, z} of section {@code cx, sy, cz} seals radiation. */
     static boolean isWall(ServerLevel level, BlockState state, int cx, int sy, int cz, int x, int y, int z) {
         if (state.is(HbmBlockTags.RADIATION_RESISTANT)) return true;

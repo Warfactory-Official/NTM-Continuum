@@ -60,15 +60,22 @@ public final class ModBiomes {
         return holder.is(crater);
     }
 
+    /** Map renderers ask for every block column, from several threads, so the lookups are done once per world. */
+    private record CraterBiomes(RegistryAccess registries, Biome inner, Biome crater, Biome outer) {}
+
+    private static volatile CraterBiomes craterBiomes;
+
     /** Returns the old per-position grass colour, or {@code null} for an ordinary biome. */
     public static Integer grassColor(RegistryAccess registries, Biome biome, double x, double z) {
-        Type type = null;
-        for (Type candidate : Type.values()) {
-            if (holder(registries, candidate).value() == biome) {
-                type = candidate;
-                break;
-            }
+        CraterBiomes known = craterBiomes;
+        if (known == null || known.registries() != registries) {
+            known = new CraterBiomes(registries, holder(registries, Type.INNER).value(),
+                    holder(registries, Type.CRATER).value(), holder(registries, Type.OUTER).value());
+            craterBiomes = known;
         }
+        Type type = biome == known.inner() ? Type.INNER
+                : biome == known.crater() ? Type.CRATER
+                : biome == known.outer() ? Type.OUTER : null;
         if (type == null) return null;
 
         boolean alternate = Biomes.legacyGrassColorNoise(x, z);

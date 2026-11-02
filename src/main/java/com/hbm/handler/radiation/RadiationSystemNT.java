@@ -450,9 +450,9 @@ public final class RadiationSystemNT {
                     if (sr == null || sr.maxDensity <= RAD_EPSILON) continue;
                     // build this section + its 6 neighbours (in loaded chunks) so the parallel sweep can
                     // push radiation into them without any block-state access off-thread.
-                    ensureBuilt(cr.cx, cr.cz, i);
-                    ensureBuilt(cr.cx, cr.cz, i + 1);
-                    ensureBuilt(cr.cx, cr.cz, i - 1);
+                    ensureBuilt(cr, i);
+                    ensureBuilt(cr, i + 1);
+                    ensureBuilt(cr, i - 1);
                     ensureBuilt(cr.cx + 1, cr.cz, i);
                     ensureBuilt(cr.cx - 1, cr.cz, i);
                     ensureBuilt(cr.cx, cr.cz + 1, i);
@@ -463,8 +463,19 @@ public final class RadiationSystemNT {
             snapshot = new ArrayList<>(chunks.values());
         }
 
+        private void ensureBuilt(ChunkRad cr, int sectionIndex) {
+            if (sectionIndex < 0 || sectionIndex >= cr.sections.length) return;
+            SectionRad sr = cr.sections[sectionIndex];
+            if (sr == null || !sr.built || sr.dirty) ensureBuilt(cr.cx, cr.cz, sectionIndex);
+        }
+
         private void ensureBuilt(int cx, int cz, int sectionIndex) {
             if (sectionIndex < 0 || sectionIndex >= level.getSectionsCount()) return;
+            ChunkRad known = chunks.get(ChunkPos.pack(cx, cz));
+            if (known != null) {
+                SectionRad built = known.sections[sectionIndex];
+                if (built != null && built.built && !built.dirty) return;
+            }
             if (level.getChunkSource().getChunkNow(cx, cz) == null) return;
             ChunkRad cr = chunkAt(cx, cz, true);
             SectionRad sr = cr.section(sectionIndex, true);
@@ -486,14 +497,8 @@ public final class RadiationSystemNT {
             // A worker can fail after earlier disjoint passes have already changed densities. Keep the
             // whole simulation step transactional so the next gate retries the old state, not a partial
             // step with a misleadingly successful result.
-            List<double[][]> before = new ArrayList<>(all.size());
             for (ChunkRad cr : all) {
-                double[][] sections = new double[cr.sections.length][];
-                for (int i = 0; i < cr.sections.length; i++) {
-                    SectionRad sr = cr.sections[i];
-                    if (sr != null && sr.density != null) sections[i] = sr.density.clone();
-                }
-                before.add(sections);
+                for (SectionRad sr : cr.sections) if (sr != null) sr.backUp(epoch);
             }
             List<int[]> queuedBefore = new ArrayList<>(destructionQueue);
 
@@ -518,16 +523,8 @@ public final class RadiationSystemNT {
                 submitJoin(() -> all.parallelStream().forEach(cr -> cr.decay(retention)));
                 return true;
             } catch (RuntimeException | Error failure) {
-                for (int c = 0; c < all.size(); c++) {
-                    ChunkRad cr = all.get(c);
-                    double[][] sections = before.get(c);
-                    for (int i = 0; i < cr.sections.length; i++) {
-                        SectionRad sr = cr.sections[i];
-                        if (sr != null && sections[i] != null) {
-                            sr.density = sections[i];
-                            sr.recomputeMax();
-                        }
-                    }
+                for (ChunkRad cr : all) {
+                    for (SectionRad sr : cr.sections) if (sr != null) sr.restore(epoch);
                 }
                 destructionQueue.clear();
                 destructionQueue.addAll(queuedBefore);
@@ -698,35 +695,44 @@ public final class RadiationSystemNT {
             default -> { faceA = 3; faceB = 2; }  // A's SOUTH ↔ B's NORTH
         }
 
-        // Collect (pa, pb) pairs with their contact areas, in first-discovery face-scan order.
-        int[] pairKeys = new int[64];
-        int[] pairAreas = new int[64];
+        // Collect (pa, pb) pairs with their contact areas, in first-discovery face-scan order. Two uniform
+        // sections meet in one pair over the whole face, which is what the scan would find.
+        int[] pairKeys;
+        int[] pairAreas;
         int pairCount = 0;
-        for (int u = 0; u < 16; u++) {
-            for (int v = 0; v < 16; v++) {
-                int ia, ib;
-                switch (axis) {
-                    case X -> { ia = idx(15, u, v); ib = idx(0, u, v); }
-                    case Y -> { ia = idx(u, 15, v); ib = idx(u, 0, v); }
-                    default -> { ia = idx(u, v, 15); ib = idx(u, v, 0); }
-                }
-                short pa = a.pocketOf[ia], pb = b.pocketOf[ib];
-                if (pa == WALL || pb == WALL) continue;
-                int key = (pa << 11) | pb;
-                int found = -1;
-                for (int i = 0; i < pairCount; i++) {
-                    if (pairKeys[i] == key) { found = i; break; }
-                }
-                if (found >= 0) {
-                    pairAreas[found]++;
-                } else {
-                    if (pairCount == pairKeys.length) {
-                        pairKeys = Arrays.copyOf(pairKeys, pairCount * 2);
-                        pairAreas = Arrays.copyOf(pairAreas, pairCount * 2);
+        if (a.uniform && b.uniform) {
+            pairKeys = UNIFORM_PAIR;
+            pairAreas = UNIFORM_AREA;
+            pairCount = 1;
+        } else {
+            pairKeys = new int[64];
+            pairAreas = new int[64];
+            for (int u = 0; u < 16; u++) {
+                for (int v = 0; v < 16; v++) {
+                    int ia, ib;
+                    switch (axis) {
+                        case X -> { ia = idx(15, u, v); ib = idx(0, u, v); }
+                        case Y -> { ia = idx(u, 15, v); ib = idx(u, 0, v); }
+                        default -> { ia = idx(u, v, 15); ib = idx(u, v, 0); }
                     }
-                    pairKeys[pairCount] = key;
-                    pairAreas[pairCount] = 1;
-                    pairCount++;
+                    short pa = a.pocketOf[ia], pb = b.pocketOf[ib];
+                    if (pa == WALL || pb == WALL) continue;
+                    int key = (pa << 11) | pb;
+                    int found = -1;
+                    for (int i = 0; i < pairCount; i++) {
+                        if (pairKeys[i] == key) { found = i; break; }
+                    }
+                    if (found >= 0) {
+                        pairAreas[found]++;
+                    } else {
+                        if (pairCount == pairKeys.length) {
+                            pairKeys = Arrays.copyOf(pairKeys, pairCount * 2);
+                            pairAreas = Arrays.copyOf(pairAreas, pairCount * 2);
+                        }
+                        pairKeys[pairCount] = key;
+                        pairAreas[pairCount] = 1;
+                        pairCount++;
+                    }
                 }
             }
         }
@@ -758,6 +764,9 @@ public final class RadiationSystemNT {
         }
     }
 
+    private static final int[] UNIFORM_PAIR = {0};
+    private static final int[] UNIFORM_AREA = {256};
+
     static int idx(int x, int y, int z) {
         return (y << 8) | (z << 4) | x;
     }
@@ -770,12 +779,17 @@ public final class RadiationSystemNT {
 
         boolean built;
         boolean dirty;
+        /** No wall in the section, so one pocket of all 4096 blocks with every face distance 8. */
+        boolean uniform;
         short[] pocketOf;   // 4096, pocket index per block, WALL for rad-resistant
         int pocketCount;
         double[] density;   // per pocket
         int[] volume;       // per pocket
         float[] faceDist;   // per pocket × 6 faces: centre-of-mass distance to the face (old SectionRef)
         double maxDensity;
+        /** The densities at the start of step {@link #backupEpoch}, kept between steps to spare the allocation. */
+        private double[] backup;
+        private long backupEpoch = -1;
 
         SectionRad(WorldRadiationData world, int cx, int sy, int cz) {
             this.world = world;
@@ -809,23 +823,29 @@ public final class RadiationSystemNT {
         private void build() {
             LevelChunkSection sec = world.section(cx, sy, cz);
             pocketOf = new short[SECTION_BLOCKS];
-            if (sec == null || sec.hasOnlyAir()) {
-                // one pocket covering the whole section (fast path for sky/air). Centre of mass is the
-                // exact section centre (7.5), so every face distance is 8.0 (the old code's uniform 8.0d).
+            if (sec == null || sec.hasOnlyAir() || !sec.maybeHas(RadiationWalls::mayBeWall)) {
+                // one pocket covering the whole section (no block in the palette can be a wall). Centre of
+                // mass is the exact section centre (7.5), so every face distance is 8.0 (the old code's 8.0d).
                 Arrays.fill(pocketOf, (short) 0);
                 pocketCount = 1;
                 density = density != null && density.length == 1 ? density : new double[] {0D};
                 volume = new int[] {SECTION_BLOCKS};
                 faceDist = new float[] {8f, 8f, 8f, 8f, 8f, 8f};
+                uniform = true;
                 built = true;
                 return;
             }
             // mark walls
             boolean[] wall = new boolean[SECTION_BLOCKS];
+            boolean anyWall = false;
             for (int y = 0; y < 16; y++) for (int z = 0; z < 16; z++) for (int x = 0; x < 16; x++) {
                 BlockState state = sec.getBlockState(x, y, z);
-                if (RadiationWalls.isWall(world.level, state, cx, sy, cz, x, y, z)) wall[idx(x, y, z)] = true;
+                if (RadiationWalls.isWall(world.level, state, cx, sy, cz, x, y, z)) {
+                    wall[idx(x, y, z)] = true;
+                    anyWall = true;
+                }
             }
+            uniform = !anyWall;
             // flood fill non-wall blocks into pockets, accumulating each pocket's centre-of-mass sums
             Arrays.fill(pocketOf, WALL);
             int[] stack = new int[SECTION_BLOCKS];
@@ -933,6 +953,19 @@ public final class RadiationSystemNT {
                 }
             }
             maxDensity = max;
+        }
+
+        void backUp(long epoch) {
+            if (density == null) return;
+            if (backup == null || backup.length != density.length) backup = new double[density.length];
+            System.arraycopy(density, 0, backup, 0, density.length);
+            backupEpoch = epoch;
+        }
+
+        void restore(long epoch) {
+            if (backupEpoch != epoch) return;
+            density = backup.clone();
+            recomputeMax();
         }
 
         void recomputeMax() {
