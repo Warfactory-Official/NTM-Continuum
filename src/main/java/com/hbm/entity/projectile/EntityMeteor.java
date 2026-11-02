@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.blocks.ModFalloutBlocks;
@@ -165,7 +166,7 @@ public class EntityMeteor extends CompatEntity implements IRadarDetectableNT {
     }
 
     private void damageOrDestroyBlock(ServerLevel level, BlockPos pos) {
-        if (safe) return;
+        if (safe || !Protection.mayAlter(level, pos, Protection.Source.NONE, Protection.Cause.EXPLOSION)) return;
 
         BlockState state = level.getBlockState(pos);
         // 1.12.2: air short-circuit; 1.7's null test was never true

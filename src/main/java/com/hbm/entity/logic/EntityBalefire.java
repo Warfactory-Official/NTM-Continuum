@@ -1,5 +1,6 @@
 package com.hbm.entity.logic;
 
+import com.hbm.util.Owners;
 import com.hbm.Constants;
 import dev.golem.core.Ids;
 import dev.golem.core.data.Tags;
@@ -91,7 +92,7 @@ public class EntityBalefire extends EntityExplosionChunkloading {
 
         // 1.7 does not break out on finish; damage is skipped on the finishing tick only
         if (!flag) {
-            ExplosionNukeGeneric.dealDamage(level(), getX(), getY(), getZ(), this.destructionRange * 2);
+            ExplosionNukeGeneric.dealDamage(level(), Owners.sourceOf(this), getX(), getY(), getZ(), this.destructionRange * 2);
         }
 
         age++;

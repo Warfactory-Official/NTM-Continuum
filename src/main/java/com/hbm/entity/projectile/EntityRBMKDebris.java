@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import com.hbm.util.SavedIds;
 import dev.golem.core.data.Tags;
 
@@ -109,9 +110,13 @@ public class EntityRBMKDebris extends CompatEntity {
                         ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
                 if (hit.getType() == HitResult.Type.BLOCK) {
                     BlockPos impact = hit.getBlockPos();
+                    Protection.Gate gate = Protection.gate(level, Protection.Source.NONE, Protection.Cause.EXPLOSION);
                     for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++) for (int z = -1; z <= 1; z++) {
                         int distance = Math.abs(x) + Math.abs(y) + Math.abs(z);
-                        if (distance <= 1 || random.nextInt(distance) == 0) level.removeBlock(impact.offset(x, y, z), false);
+                        if (distance <= 1 || random.nextInt(distance) == 0) {
+                            BlockPos target = impact.offset(x, y, z);
+                            if (gate.mayAlter(target)) level.removeBlock(target, false);
+                        }
                     }
                     discard();
                     return;

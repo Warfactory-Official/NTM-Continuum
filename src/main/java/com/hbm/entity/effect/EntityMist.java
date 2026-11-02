@@ -1,5 +1,6 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.world.Protection;
 import org.jspecify.annotations.Nullable;
 import java.util.UUID;
 import com.hbm.util.Owners;
@@ -204,6 +205,7 @@ public class EntityMist extends CompatEntity implements Owners.Carrier {
     }
 
     private void affect(ServerLevel server, Entity e, FluidType type, double intensity) {
+        if (!Protection.mayHarm(server, e, Owners.sourceOf(this), Protection.Hazard.GAS)) return;
         LivingEntity living = e instanceof LivingEntity ? (LivingEntity) e : null;
         int temperature = type.getTemperature();
 

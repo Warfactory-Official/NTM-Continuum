@@ -1,5 +1,6 @@
 package com.hbm.blocks.fluid;
 
+import dev.golem.core.world.Protection;
 import com.hbm.lib.ModDamageSources;
 import dev.golem.core.fluid.FluidBlock;
 import net.minecraft.core.BlockPos;
@@ -48,7 +49,7 @@ public class BlockAcid extends FluidBlock {
         for (Direction dir : Direction.values()) {
             BlockPos at = pos.relative(dir);
             BlockState there = level.getBlockState(at);
-            if (!there.is(this) && !there.isAir()) level.setBlock(at, Blocks.AIR.defaultBlockState(), 3);
+            if (!there.is(this) && !there.isAir() && Protection.mayAlter(level, at, Protection.Source.NONE, Protection.Cause.FLUID)) level.setBlock(at, Blocks.AIR.defaultBlockState(), 3);
         }
     }
 

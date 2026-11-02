@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModNuclearBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,7 +23,8 @@ public class BlockNuclearWaste extends BlockHazard {
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource rand) {
         Direction dir = Direction.values()[rand.nextInt(6)];
         BlockPos at = pos.relative(dir);
-        if (rand.nextInt(2) == 0 && level.getBlockState(at).isAir()) {
+        if (rand.nextInt(2) == 0 && level.getBlockState(at).isAir()
+                && Protection.mayAlter(level, at, Protection.Source.NONE, Protection.Cause.FLUID)) {
             level.setBlockAndUpdate(at, ModNuclearBlocks.gas_radon_dense.get().defaultBlockState());
         }
         super.randomTick(state, level, pos, rand);

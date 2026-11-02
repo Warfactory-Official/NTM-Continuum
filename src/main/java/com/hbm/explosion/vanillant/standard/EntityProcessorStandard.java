@@ -57,7 +57,7 @@ public class EntityProcessorStandard implements IEntityProcessor {
             double distanceScaled = entity.distanceToSqr(x, y, z);
             distanceScaled = Math.sqrt(distanceScaled) / size;
 
-            if (distanceScaled <= 1.0D) {
+            if (distanceScaled <= 1.0D && explosion.mayHarm(entity)) {
 
                 double deltaX = entity.getX() - x;
                 double deltaY = entity.getY() + entity.getEyeHeight() - y;

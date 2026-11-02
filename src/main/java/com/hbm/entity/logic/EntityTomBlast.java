@@ -1,5 +1,6 @@
 package com.hbm.entity.logic;
 
+import com.hbm.util.Owners;
 import com.hbm.Constants;
 import com.hbm.api.environment.Environment;
 import dev.golem.core.data.Tags;
@@ -118,7 +119,7 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
             if (!flag) {
                 level().playSound(null, getX(), getY(), getZ(), SoundEvents.LIGHTNING_BOLT_THUNDER,
                         SoundSource.WEATHER, 10000.0F, 0.8F + this.random.nextFloat() * 0.2F);
-                ExplosionNukeGeneric.dealDamage(level(), getX(), getY(), getZ(), this.destructionRange * 2);
+                ExplosionNukeGeneric.dealDamage(level(), Owners.sourceOf(this), getX(), getY(), getZ(), this.destructionRange * 2);
             }
         }
 

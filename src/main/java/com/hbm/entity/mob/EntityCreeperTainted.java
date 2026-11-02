@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import com.hbm.advancement.AwardRegions;
 import com.hbm.advancement.HbmCriteria;
@@ -70,6 +71,7 @@ public class EntityCreeperTainted extends EntityCreeperBase implements IRadiatio
     }
 
     private void scatter(ServerLevel level, int count, int spread, int offset, int ageBase, int ageSpread) {
+        Protection.Gate gate = Protection.gate(level, Protection.Source.NONE, Protection.Cause.FLUID);
         for (int i = 0; i < count; i++) {
             BlockPos pos = new BlockPos(
                     random.nextInt(spread) + (int) getX() - offset,
@@ -77,7 +79,7 @@ public class EntityCreeperTainted extends EntityCreeperBase implements IRadiatio
                     random.nextInt(spread) + (int) getZ() - offset);
 
             BlockState state = level.getBlockState(pos);
-            if (!Compat.isSolidRender(state) || state.isAir()) continue;
+            if (!Compat.isSolidRender(state) || state.isAir() || !gate.mayAlter(pos)) continue;
 
             level.setBlock(pos, ModBombBlocks.taint.get().defaultBlockState()
                     .setValue(BlockTaint.TAINTAGE, random.nextInt(ageSpread) + ageBase), Block.UPDATE_CLIENTS);

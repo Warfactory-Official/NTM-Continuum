@@ -173,7 +173,7 @@ public class EntityNukeExplosionMK5 extends CompatEntity implements Owners.Carri
             radiate(list, 2_500_000F / (tickCount * 5 + 1));
         }
 
-        ExplosionNukeGeneric.dealDamage(level(), list, getX(), getY(), getZ(), r2);
+        ExplosionNukeGeneric.dealDamage(level(), Owners.sourceOf(this), list, getX(), getY(), getZ(), r2, 250F);
 
         if (fallout && tickCount == 42) {
             // TODO(mobs): EntityGlowingOne.convertInRadiusToGlow(level, x, y, z, radius * 1.5) once the mob lands
@@ -244,7 +244,8 @@ public class EntityNukeExplosionMK5 extends CompatEntity implements Owners.Carri
             double eRads = rads;
             eRads /= res;
             eRads /= len * len;
-            ContaminationUtil.contaminate(living, HazardType.RADIATION, ContaminationType.RAD_BYPASS, eRads);
+            ContaminationUtil.contaminate(living, HazardType.RADIATION, ContaminationType.RAD_BYPASS, eRads,
+                    Owners.sourceOf(this));
         }
     }
 

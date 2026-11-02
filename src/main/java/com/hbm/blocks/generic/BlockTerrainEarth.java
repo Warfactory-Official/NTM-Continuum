@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModBombs2Blocks;
 import dev.golem.core.world.Compat;
@@ -77,7 +78,7 @@ public class BlockTerrainEarth extends CompatBlock {
                 for (int j = -1; j < 2; j++) {
                     for (int k = -1; k < 2; k++) {
                         BlockPos at = pos.offset(i, j, k);
-                        if (!level.isLoaded(at)) continue;
+                        if (!level.isLoaded(at) || !Protection.mayAlter(level, at, Protection.Source.NONE, Protection.Cause.FIRE)) continue;
 
                         BlockState b0 = level.getBlockState(at);
                         BlockState b1 = level.getBlockState(at.above());
@@ -94,7 +95,8 @@ public class BlockTerrainEarth extends CompatBlock {
                         }
                         // 1.7 tests the neighbour's flammability but lights the fire over the core block
                         if (Fires.isFlammable(level, at.above(), b1, Direction.UP) && !isLeavesOrBush(b1)
-                                && level.getBlockState(pos.above()).isAir()) {
+                                && level.getBlockState(pos.above()).isAir()
+                                && Protection.mayAlter(level, pos.above(), Protection.Source.NONE, Protection.Cause.FIRE)) {
                             level.setBlockAndUpdate(pos.above(), Blocks.FIRE.defaultBlockState());
                         }
                     }

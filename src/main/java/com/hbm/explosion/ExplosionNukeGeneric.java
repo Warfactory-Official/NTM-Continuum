@@ -67,6 +67,11 @@ public final class ExplosionNukeGeneric {
      * blast killed is gibbed by {@code ConfettiUtil}. Server-side only.
      */
     public static void dealDamage(Level world, List<Entity> list, double x, double y, double z, double radius, float maxDamage) {
+        dealDamage(world, Protection.Source.NONE, list, x, y, z, radius, maxDamage);
+    }
+
+    public static void dealDamage(Level world, Protection.Source responsible, List<Entity> list, double x, double y,
+                                  double z, double radius, float maxDamage) {
         if (!(world instanceof ServerLevel server)) return;
         DamageSource source = ModDamageSources.source(world, ModDamageSources.NUCLEAR_BLAST); // 1.7: ModDamageSource.nuclearBlast
 
@@ -78,7 +83,8 @@ public final class ExplosionNukeGeneric {
             double entY = e.getY() + e.getEyeHeight();
             double entZ = e.getZ();
 
-            if (isExplosionExempt(e) || isObstructed(world, x, y, z, entX, entY, entZ, e)) continue;
+            if (isExplosionExempt(e) || !Protection.mayHarm(world, e, responsible, Protection.Hazard.BLAST)
+                    || isObstructed(world, x, y, z, entX, entY, entZ, e)) continue;
 
             boolean doKnockback = true;
             double damage = maxDamage * (radius - dist) / radius;
@@ -414,8 +420,18 @@ public final class ExplosionNukeGeneric {
 
 
     public static void dealDamage(Level world, double x, double y, double z, double radius, float maxDamage) {
+        dealDamage(world, Protection.Source.NONE, x, y, z, radius, maxDamage);
+    }
+
+    public static void dealDamage(Level world, Protection.Source responsible, double x, double y, double z,
+                                  double radius) {
+        dealDamage(world, responsible, x, y, z, radius, 250F);
+    }
+
+    public static void dealDamage(Level world, Protection.Source responsible, double x, double y, double z,
+                                  double radius, float maxDamage) {
         AABB box = new AABB(x, y, z, x, y, z).inflate(radius);
         // 1.7: not just LivingEntity.
-        dealDamage(world, world.getEntities(null, box), x, y, z, radius, maxDamage);
+        dealDamage(world, responsible, world.getEntities(null, box), x, y, z, radius, maxDamage);
     }
 }

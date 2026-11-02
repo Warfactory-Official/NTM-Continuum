@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.config.GeneralConfig;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -114,7 +115,8 @@ public class BlockGasFlammable extends CompatBlock {
 
     private boolean tryMove(ServerLevel level, BlockPos pos, Direction dir) {
         BlockPos target = pos.relative(dir);
-        if (!level.isLoaded(target) || !level.getBlockState(target).isAir()) return false;
+        if (!level.isLoaded(target) || !level.getBlockState(target).isAir()
+                || !Protection.mayAlter(level, target, Protection.Source.NONE, Protection.Cause.FLUID)) return false;
         BlockState state = level.getBlockState(pos);
         level.removeBlock(pos, false);
         level.setBlock(target, state, 2);
@@ -148,6 +150,7 @@ public class BlockGasFlammable extends CompatBlock {
 
     /** Turn this cell into fire and pulse the adjacent gas cells 2 ticks out (the chain reaction). */
     protected void combust(Level level, BlockPos pos) {
+        if (!Protection.mayAlter(level, pos, Protection.Source.NONE, Protection.Cause.FIRE)) return;
         level.setBlock(pos, Blocks.FIRE.defaultBlockState(), 2);
         for (Direction dir : Direction.values()) {
             BlockPos neighbour = pos.relative(dir);

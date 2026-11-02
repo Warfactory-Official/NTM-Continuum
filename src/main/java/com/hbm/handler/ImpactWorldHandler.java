@@ -1,5 +1,6 @@
 package com.hbm.handler;
 
+import dev.golem.core.world.Protection;
 import java.util.List;
 
 import com.hbm.blocks.ModBombs2Blocks;
@@ -85,6 +86,7 @@ public final class ImpactWorldHandler {
 
     /** Plants die without sufficient light. */
     public static void die(ServerLevel world, BlockPos pos, TomSaveData data) {
+        if (!Protection.mayAlter(world, pos, Protection.Source.NONE, Protection.Cause.TERRAFORM)) return;
         BlockPos above = pos.above();
         int light = Math.max(world.getBrightness(LightLayer.BLOCK, above),
                 (int) (world.getMaxLocalRawBrightness(above) * (1 - data.dust)));
@@ -105,6 +107,8 @@ public final class ImpactWorldHandler {
 
     /** Burn the world. */
     public static void burn(ServerLevel world, BlockPos pos) {
+        if (!Protection.mayAlter(world, pos.above(), Protection.Source.NONE, Protection.Cause.FIRE)
+                || !Protection.mayAlter(world, pos, Protection.Source.NONE, Protection.Cause.FIRE)) return;
         BlockState state = world.getBlockState(pos);
         BlockPos above = pos.above();
         int sky = world.getBrightness(LightLayer.SKY, above);

@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import com.hbm.config.GeneralConfig;
 import net.minecraft.core.BlockPos;
@@ -52,6 +53,7 @@ public class BlockGasExplosive extends BlockGasFlammable {
             while (!queue.isEmpty() && processed < MAX_CELLS) {
                 BlockPos pos = queue.poll();
                 processed++;
+                if (!Protection.mayAlter(level, pos, Protection.Source.NONE, Protection.Cause.FIRE)) continue;
                 level.setBlock(pos, Blocks.FIRE.defaultBlockState(), 2);
                 Explosions.explode(level, null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 3.0F,
                         Level.ExplosionInteraction.BLOCK);

@@ -1,5 +1,6 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.world.Protection;
 import org.jspecify.annotations.Nullable;
 import java.util.UUID;
 import com.hbm.util.Owners;
@@ -122,7 +123,9 @@ public class EntityFireLingering extends CompatEntity implements Owners.Carrier 
                 new AABB(getX() - width / 2, getY(), getZ() - width / 2,
                         getX() + width / 2, getY() + height, getZ() + width / 2));
 
+        Protection.Source source = Owners.sourceOf(this);
         for (Entity e : affected) {
+            if (!Protection.mayHarm(level(), e, source, Protection.Hazard.FIRE)) continue;
             if (!(e instanceof LivingEntity living)) {
                 Effects.ignite(e, 4);
                 continue;
