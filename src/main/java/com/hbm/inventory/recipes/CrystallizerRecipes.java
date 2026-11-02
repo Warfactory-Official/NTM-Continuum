@@ -184,8 +184,9 @@ public final class CrystallizerRecipes {
 
     /** Ensures the rows are loaded and indexed (the table fills itself from the datapack). */
     public static synchronized void register() {
-        var entries = new ArrayList<>(TABLE.entries());
+        var rows = TABLE.entries();
         if (!stale) return;
+        var entries = new ArrayList<>(rows);
         stale = false;
         List<CrystallizerRecipe> next = new ArrayList<>();
         entries.sort(Comparator.comparingInt(entry -> entry.value().order()));

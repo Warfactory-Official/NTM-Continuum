@@ -14,6 +14,7 @@ import com.hbm.tileentity.bomb.TileEntityLandmine;
 import com.hbm.tileentity.deco.TileEntityLanternBehemoth;
 import com.hbm.tileentity.machine.storage.TileEntityCrateBase;
 import com.hbm.util.LootGenerator;
+import com.hbm.world.gen.ConfigPlacement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.golem.core.world.GenerationOptions;
@@ -48,11 +49,17 @@ import static com.hbm.world.feature.FeatureCodecs.lazy;
  * column and the {@code getHeightValue} height are placement ({@code rarity_filter}, {@code in_square},
  * {@code heightmap MOTION_BLOCKING}; see {@code LegacyDungeonDeclarations}); the origin is that surface position, and
  * everything after it is here. 1.7's {@code canPlaceTorchOnTop} is vanilla's torch rule, {@link Block#canSupportCenter}.
+ * Each feature also checks its own {@code hbm.cfg} keys, since mods that boost features near water place them again
+ * without their placement.
  */
 public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extends Feature<C> {
 
-    protected DungeonBlockFeature(Codec<C> codec) {
+    /** The {@code WorldgenKeys} that must all be above 0 for the feature to place anything. */
+    private final String[] keys;
+
+    protected DungeonBlockFeature(Codec<C> codec, String... keys) {
         super(codec);
+        this.keys = keys;
     }
 
     /** 1.7 {@code enableDungeons}: 1 always, 0 never, 2 the world's Generate Structures option. */
@@ -72,6 +79,7 @@ public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extend
     public boolean place(FeaturePlaceContext<C> context) {
         WorldGenLevel level = context.level();
         if (!dungeonsEnabled(level)) return false;
+        for (String key : keys) if (ConfigPlacement.value(key) <= 0) return false;
         return generate(context.config(), level, context.random(), context.origin());
     }
 
@@ -110,8 +118,8 @@ public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extend
             ).apply(i, Config::new));
         }
 
-        public LockedSafe() {
-            super(Config.CODEC);
+        public LockedSafe(String... keys) {
+            super(Config.CODEC, keys);
         }
 
         @Override
@@ -165,8 +173,8 @@ public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extend
         public static final Codec<Config> AP_CODEC = Config.codec(() -> ModExplosivesBlocks.mine_ap.get(), 2);
         public static final Codec<Config> HE_CODEC = Config.codec(() -> ModExplosivesBlocks.mine_he.get(), 0);
 
-        public Landmine(Codec<Config> codec) {
-            super(codec);
+        public Landmine(Codec<Config> codec, String... keys) {
+            super(codec, keys);
         }
 
         @Override
@@ -240,8 +248,8 @@ public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extend
             ).apply(i, Config::new));
         }
 
-        public LandedCapsule() {
-            super(Config.CODEC);
+        public LandedCapsule(String... keys) {
+            super(Config.CODEC, keys);
         }
 
         @Override
@@ -267,8 +275,8 @@ public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extend
             ).apply(i, Config::new));
         }
 
-        public Broadcaster() {
-            super(Config.CODEC);
+        public Broadcaster(String... keys) {
+            super(Config.CODEC, keys);
         }
 
         @Override

@@ -1841,6 +1841,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("wg_config_override", 20, () -> WorldgenConfigGameTests::override);
     public static final GameTests.Function WG_CONFIG_BOUNDS =
             TESTS.function("wg_config_bounds", 20, () -> WorldgenConfigGameTests::bounds);
+    public static final GameTests.Function WG_CONFIG_FEATURE_GATES =
+            TESTS.function("wg_config_feature_gates", 20, () -> WorldgenConfigGameTests::featureGates);
 
     // --- 1.7 fluid traits: vent radiation, poison, pheromone, simple tags, tooltip order (FluidTraitGameTests) ---
     public static final GameTests.Function FLUID_TRAIT_VENT_RADIATION =

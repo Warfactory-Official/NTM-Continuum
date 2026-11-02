@@ -23,6 +23,7 @@ import net.minecraft.world.item.BucketItem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -46,7 +47,11 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
     public static final FluidContainerRegistry INSTANCE = new FluidContainerRegistry();
 
     /** One fixed item that always holds {@code amount} of {@code fluid}; {@code container} is what crafting leaves. */
-    private record Fixed(String full, String container, String fluid, int amount) {}
+    private record Fixed(String full, String container, String fluid, int amount, Item containerItem) {}
+
+    private record FixedCache(Map<String, FluidDataMaps.Container> map, int fluids, List<Fixed> rows) {}
+
+    private static volatile FixedCache fixedCache;
 
     /**
      * A component-backed container item full at {@code capacity}; {@code container} is what crafting leaves.
@@ -71,14 +76,21 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
      * 1.7's {@code FluidContainerRegistry.registerContainer} calls), read per use. An addon's bucket or drink is one entry.
      */
     private static List<Fixed> fixed() {
-        List<Fixed> rows = new ArrayList<>();
         var map = FluidDataMaps.FLUID_CONTAINER.byId();
+        int fluids = Fluids.count();
+        FixedCache cache = fixedCache;
+        if (cache != null && cache.map() == map && cache.fluids() == fluids) return cache.rows();
+        List<Fixed> rows = new ArrayList<>();
         for (String full : new TreeSet<>(map.keySet())) {
             FluidDataMaps.Container c = map.get(full);
             FluidType type = Fluids.byRegistryNameExact(c.fluid());
             if (type == Fluids.NONE) continue;
-            rows.add(new Fixed(full, c.empty().orElse(""), type.getName(), c.amount()));
+            String container = c.empty().orElse("");
+            ItemStack empty = item(container);
+            rows.add(new Fixed(full, container, type.getName(), c.amount(), empty.isEmpty() ? null : empty.getItem()));
         }
+        rows = List.copyOf(rows);
+        fixedCache = new FixedCache(map, fluids, rows);
         return rows;
     }
 
@@ -255,8 +267,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
     public ItemStack fullOf(ItemStack stack, FluidType type) {
         if (stack.isEmpty() || type == null || type == Fluids.NONE) return ItemStack.EMPTY;
         for (Fixed fixed : fixed()) {
-            ItemStack empty = item(fixed.container);
-            if (!empty.isEmpty() && fixed.fluid.equals(type.getName()) && stack.is(empty.getItem())) return item(fixed.full);
+            if (fixed.containerItem != null && fixed.fluid.equals(type.getName()) && stack.is(fixed.containerItem)) return item(fixed.full);
         }
         if (type == Fluids.WATER && stack.is(Items.GLASS_BOTTLE)) return Ingredients.potionStack("minecraft:potion", "minecraft:water");
         if (ItemCell.isEmptyCell(stack)) return ItemCell.getFullCell(type);

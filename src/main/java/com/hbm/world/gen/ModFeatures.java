@@ -126,17 +126,18 @@ public final class ModFeatures {
     // 1.7 HbmWorldGen.generateSurface: scattered dungeon blocks
 
     public static final RegistryObject<Feature<DungeonBlockFeature.LockedSafe.Config>> LOCKED_SAFE =
-            REG.register(Registries.FEATURE, "locked_safe", DungeonBlockFeature.LockedSafe::new);
+            REG.register(Registries.FEATURE, "locked_safe", () -> new DungeonBlockFeature.LockedSafe(WorldgenKeys.VAULTS, WorldgenKeys.VAULT));
     public static final RegistryObject<Feature<DungeonBlockFeature.Landmine.Config>> LANDMINE_AP =
-            REG.register(Registries.FEATURE, "landmine_ap", () -> new DungeonBlockFeature.Landmine(DungeonBlockFeature.Landmine.AP_CODEC));
+            REG.register(Registries.FEATURE, "landmine_ap", () -> new DungeonBlockFeature.Landmine(DungeonBlockFeature.Landmine.AP_CODEC,
+                    WorldgenKeys.MINES, WorldgenKeys.LANDMINE));
     public static final RegistryObject<Feature<DungeonBlockFeature.Landmine.Config>> LANDMINE_HE =
-            REG.register(Registries.FEATURE, "landmine_he", () -> new DungeonBlockFeature.Landmine(DungeonBlockFeature.Landmine.HE_CODEC));
+            REG.register(Registries.FEATURE, "landmine_he", () -> new DungeonBlockFeature.Landmine(DungeonBlockFeature.Landmine.HE_CODEC, WorldgenKeys.BOSNIA));
     public static final RegistryObject<Feature<DungeonBlockFeature.BrokenLantern.Config>> BROKEN_LANTERN =
             REG.register(Registries.FEATURE, "broken_lantern", DungeonBlockFeature.BrokenLantern::new);
     public static final RegistryObject<Feature<DungeonBlockFeature.LandedCapsule.Config>> LANDED_CAPSULE =
-            REG.register(Registries.FEATURE, "landed_capsule", DungeonBlockFeature.LandedCapsule::new);
+            REG.register(Registries.FEATURE, "landed_capsule", () -> new DungeonBlockFeature.LandedCapsule(WorldgenKeys.CAPSULE));
     public static final RegistryObject<Feature<DungeonBlockFeature.Broadcaster.Config>> CORRUPTED_BROADCASTER =
-            REG.register(Registries.FEATURE, "corrupted_broadcaster", DungeonBlockFeature.Broadcaster::new);
+            REG.register(Registries.FEATURE, "corrupted_broadcaster", () -> new DungeonBlockFeature.Broadcaster(WorldgenKeys.BROADCASTER));
     public static final RegistryObject<Feature<DungeonBlockFeature.BlueprintChest.Config>> BLUEPRINT_CHEST =
             REG.register(Registries.FEATURE, "blueprint_chest", DungeonBlockFeature.BlueprintChest::new);
 

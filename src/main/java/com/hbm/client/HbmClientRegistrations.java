@@ -378,7 +378,6 @@ public final class HbmClientRegistrations {
 
     public static void registerHud(HudSink sink) {
         GunFactoryClient.init();
-        // final armor B: goggles blur first, as Forge drew helmet overlays beneath the rest of the HUD
         ArmorSetBClient.registerHud(sink);
         sink.register("look_overlay", HbmLookOverlay::render);
         sink.register("boss_status", BossStatus::render); // 1.7 BossStatus: render-pushed boss bar
@@ -516,6 +515,7 @@ public final class HbmClientRegistrations {
      */
     public static void installArmorLayers() {
         ArmorRenderers.init();
+        ArmorSetBClient.installHelmetOverlay();
         installJetpackBridge();
         HeatDistortionRenderType.configure(
                 "hbm:pipeline/heat_distortion", "hbm:heat_distortion");

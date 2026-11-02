@@ -12,6 +12,7 @@ import com.hbm.items.armor.ArmorFSBFueled;
 import com.hbm.items.armor.ArmorFSBPowered;
 import com.hbm.util.EnchantmentUtil;
 import dev.golem.core.Ids;
+import dev.golem.core.client.Hud;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.harness.HarnessQueryRegistry;
 import net.minecraft.client.Minecraft;
@@ -23,11 +24,12 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Client half of armour set B: the goggles' blur overlay (1.7 {@code ArmorModel.renderHelmetOverlay})
- * and the {@code hbm_armor_set_b} harness query.
+ * Client half of armour set B: the helmet overlays (1.7 {@code renderHelmetOverlay}) and the
+ * {@code hbm_armor_set_b} harness query.
  */
 public final class ArmorSetBClient {
 
@@ -42,36 +44,47 @@ public final class ArmorSetBClient {
         for (int i = 0; i < 6; i++) MASK_BLURS[i] = Ids.of("hbm", "textures/misc/overlay_gasmask_" + i + ".png");
     }
 
+    private static final Identifier HAZMAT = Ids.of("hbm", "textures/misc/overlay_hazmat.png");
+
     public static void registerHud(HbmClientRegistrations.HudSink sink) {
-        sink.register("goggles_blur", ArmorSetBClient::renderGogglesBlur);
         HarnessQueryRegistry.register("hbm_armor_set_b", (mc, params) -> query(mc));
     }
 
+    /** Forge drew helmet overlays first, so the crosshair and hotbar lie on top of them. */
+    public static void installHelmetOverlay() {
+        Hud.addCameraOverlay("hbm", "helmet_overlay", ArmorSetBClient::renderHelmetOverlay);
+    }
+
     /**
-     * The goggles' fullscreen blur, one of six textures chosen by wear: {@code (int) (damage / maxDamage * 6)},
-     * 5 when out of range. Forge ran helmet overlays in first person only.
-     *
-     * <p>1.7 {@code ArmorGasMask.renderHelmetOverlay} draws the same goggles blur for the M65 mask and its own
-     * {@code overlay_gasmask_<n>} set for the plain gas mask, with the same wear formula; the mono and olde masks
-     * draw none.
+     * The helmet's fullscreen overlay, first person only. The goggles, M65 mask, advanced and high-performance hazmat
+     * hoods and the plain gas mask pick one of six textures by wear, {@code (int) (damage / maxDamage * 6)}, 5 when out
+     * of range; the mono and olde masks draw none, as in 1.7.
      */
-    public static void renderGogglesBlur(GuiGraphicsExtractor graphics) {
+    public static void renderHelmetOverlay(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.options.hideGui || !mc.options.getCameraType().isFirstPerson()) return;
         ItemStack helmet = mc.player.getItemBySlot(EquipmentSlot.HEAD);
+        Identifier overlay = overlay(helmet);
+        if (overlay != null) GuiDraw.blitUvFullscreen(graphics, overlay, 0F, 0F, 1F, 1F);
+    }
+
+    private static Identifier overlay(ItemStack helmet) {
+        Item item = helmet.getItem();
+        if (item instanceof ArmorFSB fsb && fsb.overlay() != null) return fsb.overlay();
+        if (item == ModGearItems.hazmat_helmet.get()) return HAZMAT;
         Identifier[] blurs;
-        if (helmet.getItem() == ModArmorSetBItems.goggles.get()
-                || helmet.getItem() == ModGearItems.gas_mask_m65.get()) {
+        if (item == ModArmorSetBItems.goggles.get() || item == ModGearItems.gas_mask_m65.get()
+                || item == ModGearItems.hazmat_helmet_red.get() || item == ModGearItems.hazmat_helmet_grey.get()) {
             blurs = BLURS;
-        } else if (helmet.getItem() == ModGearItems.gas_mask.get()) {
+        } else if (item == ModGearItems.gas_mask.get()) {
             blurs = MASK_BLURS;
         } else {
-            return;
+            return null;
         }
         int max = helmet.getMaxDamage();
         int index = max <= 0 ? 0 : (int) ((double) helmet.getDamageValue() / (double) max * 6D);
         if (index < 0 || index > 5) index = 5;
-        GuiDraw.blitUvFullscreen(graphics, blurs[index], 0F, 0F, 1F, 1F);
+        return blurs[index];
     }
 
     private static JsonObject query(Minecraft mc) {

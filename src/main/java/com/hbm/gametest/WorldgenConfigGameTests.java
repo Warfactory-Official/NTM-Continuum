@@ -275,4 +275,41 @@ public final class WorldgenConfigGameTests {
                 .result().isPresent(), "australium attempts 1 was refused");
         helper.succeed();
     }
+
+    /** Placing the scattered blocks without their placed feature (as near-water boosts do) still honours hbm.cfg. */
+    public static void featureGates(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos mine = helper.absolutePos(new BlockPos(1, 2, 1));
+        BlockPos broadcaster = helper.absolutePos(new BlockPos(3, 2, 1));
+        level.setBlock(mine.below(), Blocks.STONE.defaultBlockState(), 3);
+        level.setBlock(broadcaster.below(), Blocks.STONE.defaultBlockState(), 3);
+        int dungeons = DungeonConfig.enableDungeons, minefreq = DungeonConfig.minefreq, broadcasterFreq = DungeonConfig.broadcaster;
+        try {
+            DungeonConfig.enableDungeons = 1;
+            DungeonConfig.minefreq = 0;
+            DungeonConfig.broadcaster = 0;
+            helper.assertFalse(placeMine(level, mine) || placeBroadcaster(level, broadcaster), "placed with frequency 0");
+            helper.assertTrue(level.getBlockState(mine).isAir() && level.getBlockState(broadcaster).isAir(), "block set with frequency 0");
+            DungeonConfig.minefreq = 64;
+            DungeonConfig.broadcaster = 5000;
+            helper.assertTrue(placeMine(level, mine) && placeBroadcaster(level, broadcaster), "not placed while enabled");
+            helper.assertTrue(level.getBlockState(mine).is(ModExplosivesBlocks.mine_ap.get())
+                    && level.getBlockState(broadcaster).is(ModDecoCrateBlocks.broadcaster_pc.get()), "wrong blocks placed");
+        } finally {
+            DungeonConfig.enableDungeons = dungeons;
+            DungeonConfig.minefreq = minefreq;
+            DungeonConfig.broadcaster = broadcasterFreq;
+        }
+        helper.succeed();
+    }
+
+    private static boolean placeMine(ServerLevel level, BlockPos pos) {
+        return ModFeatures.LANDMINE_AP.get().place(d(DungeonBlockFeature.Landmine.AP_CODEC), level,
+                level.getChunkSource().getGenerator(), RandomSource.create(1L), pos);
+    }
+
+    private static boolean placeBroadcaster(ServerLevel level, BlockPos pos) {
+        return ModFeatures.CORRUPTED_BROADCASTER.get().place(d(DungeonBlockFeature.Broadcaster.Config.CODEC), level,
+                level.getChunkSource().getGenerator(), RandomSource.create(1L), pos);
+    }
 }

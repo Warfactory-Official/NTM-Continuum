@@ -796,6 +796,11 @@ public class Fluids {
         return registerOrder.toArray(new FluidType[0]);
     }
 
+    /** How many fluids are registered, without copying them. */
+    public static int count() {
+        return registerOrder.size();
+    }
+
     /** Places an existing fluid in selector order; its registration and network identity stay fixed. */
     public static synchronized void orderAfter(FluidType fluid, FluidType anchor) {
         displayOrder.insertAfter(anchor, List.of(fluid));

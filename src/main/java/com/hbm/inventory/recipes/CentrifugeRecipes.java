@@ -107,9 +107,10 @@ public final class CentrifugeRecipes {
      * since the last index (1.7 read the config while registering). Rows whose {@code requires} fail are left out.
      */
     public static synchronized void register() {
-        var entries = new ArrayList<>(TABLE.entries());
+        var rows = TABLE.entries();
         String flags = RecipeConditions.fingerprint();
         if (!stale && flags.equals(builtFlags)) return;
+        var entries = new ArrayList<>(rows);
         stale = false;
         builtFlags = flags;
         List<CentrifugeRecipe> next = new ArrayList<>();

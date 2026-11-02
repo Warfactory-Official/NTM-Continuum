@@ -66,8 +66,10 @@ public final class ArcFurnaceRecipes {
 
     public static final DataRecipeTable<Row> TABLE = new DataRecipeTable<>("arc_furnace", () -> CODEC);
 
-    /** The rows and rule recipes in lookup order; null until first use after a reload. */
-    private static volatile List<ArcFurnaceRecipe> recipes;
+    /** The rows and rule recipes in lookup order, all and per mode; null until first use after a reload. */
+    private static volatile Index recipes;
+
+    private record Index(List<ArcFurnaceRecipe> all, List<ArcFurnaceRecipe> solid, List<ArcFurnaceRecipe> liquid) {}
 
     static {
         TABLE.changed.register(() -> recipes = null);
@@ -94,8 +96,12 @@ public final class ArcFurnaceRecipes {
         recipes();
     }
 
-    private static synchronized List<ArcFurnaceRecipe> recipes() {
-        List<ArcFurnaceRecipe> current = recipes;
+    private static List<ArcFurnaceRecipe> recipes() {
+        return index().all();
+    }
+
+    private static synchronized Index index() {
+        Index current = recipes;
         if (current != null) return current;
         Builder builder = new Builder();
         for (Row row : RecipeText.ordered(TABLE.rows(), Row::order)) {
@@ -104,7 +110,12 @@ public final class ArcFurnaceRecipes {
         }
         builder.registerMaterialShapes();
         builder.registerExplicitMaterialItems();
-        current = List.copyOf(builder.recipes);
+        List<ArcFurnaceRecipe> solid = new ArrayList<>(), liquid = new ArrayList<>();
+        for (ArcFurnaceRecipe recipe : builder.recipes) {
+            if (recipe.solidOutput != null) solid.add(recipe);
+            if (recipe.fluidOutput.length > 0) liquid.add(recipe);
+        }
+        current = new Index(List.copyOf(builder.recipes), List.copyOf(solid), List.copyOf(liquid));
         recipes = current;
         return current;
     }
@@ -119,6 +130,10 @@ public final class ArcFurnaceRecipes {
         final List<ArcFurnaceRecipe> recipes = new ArrayList<>();
         private final Set<String> solidInputs = new HashSet<>();
         private final Set<String> liquidInputs = new HashSet<>();
+        /** The liquid rows' inputs by plain item and by tag; any other input is tested directly. */
+        private final Set<Item> liquidItems = new HashSet<>();
+        private final Set<TagKey<Item>> liquidTags = new HashSet<>();
+        private final List<RecipesCommon.AStack> liquidOther = new ArrayList<>();
 
         void register(RecipesCommon.AStack input, ItemStack solidOutput, Mats.MaterialStack... fluidOutput) {
             String key = inputKey(input);
@@ -129,6 +144,22 @@ public final class ArcFurnaceRecipes {
             if (!solid && !liquid) return;
             recipes.add(new ArcFurnaceRecipe(input, solid ? solidOutput : null,
                     liquid ? fluidOutput : new Mats.MaterialStack[0]));
+            if (!liquid) return;
+            if (input.getClass() == RecipesCommon.ComparableStack.class && !((RecipesCommon.ComparableStack) input).exactData()) {
+                liquidItems.add(((RecipesCommon.ComparableStack) input).item);
+            } else if (input.getClass() == RecipesCommon.TagStack.class || input.getClass() == RecipesCommon.MaterialStack.class) {
+                liquidTags.add(((RecipesCommon.TagIngredient) input).tag);
+            } else {
+                liquidOther.add(input);
+            }
+        }
+
+        /** Whether a liquid row already takes {@code stack}, without walking every row. */
+        boolean hasLiquidRecipe(ItemStack stack) {
+            if (liquidItems.contains(stack.getItem())) return true;
+            if (stack.getItem().builtInRegistryHolder().tags().anyMatch(liquidTags::contains)) return true;
+            for (RecipesCommon.AStack input : liquidOther) if (input.matchesRecipe(stack, true)) return true;
+            return false;
         }
 
         void registerMaterialShapes() {
@@ -160,28 +191,24 @@ public final class ArcFurnaceRecipes {
                                 (int) ((long) material.amount * material.material.convOut / material.material.convIn)));
                     }
                 }
-                if (!fluid.isEmpty() && !hasMatchingRecipe(recipes, singular, true)) register(new RecipesCommon.ComparableStack(item), null,
+                if (!fluid.isEmpty() && !hasLiquidRecipe(singular)) register(new RecipesCommon.ComparableStack(item), null,
                         fluid.toArray(new Mats.MaterialStack[0]));
             }
         }
     }
 
     private static boolean hasTagMember(TagKey<Item> tag) {
-        for (Item item : BuiltInRegistries.ITEM) if (new ItemStack(item).is(tag)) return true;
-        return false;
+        return BuiltInRegistries.ITEM.getTagOrEmpty(tag).iterator().hasNext();
     }
 
-    private static boolean hasMatchingRecipe(List<ArcFurnaceRecipe> recipes, ItemStack stack, boolean liquid) {
-        for (ArcFurnaceRecipe recipe : recipes) {
-            if (recipe.input.matchesRecipe(stack, true)
-                    && (liquid ? recipe.fluidOutput.length > 0 : recipe.solidOutput != null)) return true;
-        }
+    private static boolean hasRecipe(List<ArcFurnaceRecipe> recipes, ItemStack stack) {
+        for (ArcFurnaceRecipe recipe : recipes) if (recipe.input.matchesRecipe(stack, true)) return true;
         return false;
     }
 
     public static @org.jspecify.annotations.Nullable ArcFurnaceRecipe getOutput(ItemStack stack, boolean liquid) {
         if (stack.isEmpty()) return null;
-        List<ArcFurnaceRecipe> recipes = recipes();
+        Index index = index();
 
         if (liquid && stack.getItem() == ModMachineItems.scraps.get()) {
             Mats.MaterialStack material = ItemScraps.getMats(stack);
@@ -190,9 +217,8 @@ public final class ArcFurnaceRecipes {
             }
         }
 
-        for (ArcFurnaceRecipe recipe : recipes) {
-            if (recipe.input.matchesRecipe(stack, true)
-                    && (liquid ? recipe.fluidOutput.length > 0 : recipe.solidOutput != null)) return recipe;
+        for (ArcFurnaceRecipe recipe : liquid ? index.liquid() : index.solid()) {
+            if (recipe.input.matchesRecipe(stack, true)) return recipe;
         }
         return null;
     }
@@ -221,7 +247,7 @@ public final class ArcFurnaceRecipes {
      * JEI furnace-pass page feeds it the furnace recipes JEI knows.
      */
     public static List<ArcFurnaceRecipe> furnacePass(List<Map.Entry<ItemStack, ItemStack>> smelting) {
-        List<ArcFurnaceRecipe> recipes = recipes();
+        List<ArcFurnaceRecipe> solid = index().solid();
         Set<Item> smeltable = arcSmeltable();
         Set<Item> occupied = new HashSet<>();
         List<ArcFurnaceRecipe> out = new ArrayList<>();
@@ -229,7 +255,7 @@ public final class ArcFurnaceRecipes {
             ItemStack in = entry.getKey(), result = entry.getValue();
             if (in.isEmpty() || result.isEmpty()) continue;
             if (!smeltable.contains(in.getItem()) && !smeltable.contains(result.getItem())) continue;
-            if (hasMatchingRecipe(recipes, in, false) || !occupied.add(in.getItem())) continue;
+            if (hasRecipe(solid, in) || !occupied.add(in.getItem())) continue;
             out.add(new ArcFurnaceRecipe(new RecipesCommon.ComparableStack(in.getItem()), result.copy(), new Mats.MaterialStack[0]));
         }
         return out;
@@ -261,11 +287,11 @@ public final class ArcFurnaceRecipes {
     }
 
     public static List<ArcFurnaceRecipe> solidRecipes() {
-        return recipes().stream().filter(r -> r.solidOutput != null).toList();
+        return index().solid();
     }
 
     public static List<ArcFurnaceRecipe> liquidRecipes() {
-        return recipes().stream().filter(r -> r.fluidOutput.length > 0).toList();
+        return index().liquid();
     }
 
     private static String inputKey(RecipesCommon.AStack input) {

@@ -142,7 +142,7 @@ public final class ShredderRecipes {
     }
 
     private static void set(Map<Item, ShredderRecipe> recipes, Item in, ItemStack out, float chance) {
-        if (in != null && !out.isEmpty()) recipes.putIfAbsent(in,
+        if (in != null && !out.isEmpty() && !recipes.containsKey(in)) recipes.put(in,
                 new ShredderRecipe(BuiltInRegistries.ITEM.getKey(in).toString(), in, out, chance));
     }
 

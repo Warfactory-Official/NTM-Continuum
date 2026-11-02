@@ -58,9 +58,10 @@ public final class QMAWLoader {
         int files = 0;
 
         // ResourceManager.listResources has already applied pack priority: one highest-priority Resource
-        // is returned for each path. Do not walk jars directly, or pack overrides would be lost.
-        List<Map.Entry<Identifier, Resource>> resourcesToRead = new ArrayList<>(
-                resources.listResources("manual", path -> path.getPath().endsWith(".json")).entrySet());
+        // is returned for each path. Do not walk jars directly, or pack overrides would be lost. 1.7 read only
+        // assets/hbm/manual; other mods' manual folders (Immersive Engineering's) are not QMAW pages.
+        List<Map.Entry<Identifier, Resource>> resourcesToRead = new ArrayList<>(resources.listResources("manual",
+                path -> path.getNamespace().equals(Constants.MOD_ID) && path.getPath().endsWith(".json")).entrySet());
         resourcesToRead.sort(Comparator.comparing(entry -> entry.getKey().toString()));
 
         for (Map.Entry<Identifier, Resource> entry : resourcesToRead) {
