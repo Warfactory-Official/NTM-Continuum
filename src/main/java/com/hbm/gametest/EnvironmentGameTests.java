@@ -688,8 +688,8 @@ public final class EnvironmentGameTests {
         BlockPos waste = helper.absolutePos(wasteRel);
         BARREN.add(dirt);
         try {
-            EntityChemical.seedSlurry(helper.getLevel(), dirt);
-            EntityChemical.seedSlurry(helper.getLevel(), waste);
+            EntityChemical.seedSlurry(helper.getLevel(), dev.golem.core.world.Protection.Source.NONE, dirt);
+            EntityChemical.seedSlurry(helper.getLevel(), dev.golem.core.world.Protection.Source.NONE, waste);
             helper.assertBlockPresent(Blocks.DIRT, dirtRel);
             helper.assertBlockPresent(Blocks.GRASS_BLOCK, wasteRel); // 1.7's unconditional waste-earth conversion
         } finally {

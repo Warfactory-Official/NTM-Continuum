@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.util.Owners;
 import com.hbm.config.BombConfig;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.world.CompatBlock;
@@ -18,13 +19,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -82,14 +80,6 @@ public class NukeMan extends CompatBlock implements TickingBlock, IBomb {
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(level, pos, state, placer, stack);
-        if (placer instanceof Player player && level.getBlockEntity(pos) instanceof TileEntityNukeMan nuke) {
-            nuke.placerID = player.getUUID();
-        }
-    }
-
-    @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
         if (!level.isClientSide() && !player.isShiftKeyDown() && player instanceof ServerPlayer serverPlayer) {
@@ -110,7 +100,7 @@ public class NukeMan extends CompatBlock implements TickingBlock, IBomb {
 
     @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
-        return explode(level, pos, detonator, detonator == null ? null : detonator.getUUID());
+        return explode(level, pos, detonator, Owners.of(detonator));
     }
 
     @Override
@@ -120,7 +110,7 @@ public class NukeMan extends CompatBlock implements TickingBlock, IBomb {
         if (!(level.getBlockEntity(pos) instanceof TileEntityNukeMan entity)) return BombReturnCode.UNDEFINED;
 
         if (entity.isReady()) {
-            UUID placer = entity.placerID;
+            UUID placer = entity.placer();
             entity.clearSlots();
             level.removeBlock(pos, false);
             ignite(level, detonatorId, pos, placer);

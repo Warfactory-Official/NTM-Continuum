@@ -1,5 +1,6 @@
 package com.hbm.entity.explosive;
 
+import com.hbm.util.Owners;
 import com.hbm.entity.ModEntities;
 import com.hbm.blocks.ModExplosivesBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
@@ -28,7 +29,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /** Custom primed explosive carrying the HBM block kind, fuse, and owner. */
-public class EntityPrimedExplosive extends CompatEntity {
+public class EntityPrimedExplosive extends CompatEntity implements Owners.Carrier {
 
     private static final EntityDataAccessor<Integer> FUSE =
             SynchedEntityData.defineId(EntityPrimedExplosive.class,
@@ -42,6 +43,16 @@ public class EntityPrimedExplosive extends CompatEntity {
 
     private int fuse = 80;
     private @Nullable UUID ownerId;
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return ownerId;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.ownerId = owner;
+    }
     public boolean detonateOnCollision;
 
     public EntityPrimedExplosive(EntityType<?> type, Level level) {

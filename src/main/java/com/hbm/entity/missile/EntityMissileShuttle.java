@@ -1,5 +1,6 @@
 package com.hbm.entity.missile;
 
+import dev.golem.core.world.Protection;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.items.ModMissileItems;
 import com.hbm.sound.ModSounds;
@@ -37,6 +38,7 @@ public class EntityMissileShuttle extends EntityMissileBaseNT {
         // 1.7: ExplosionNT strength 20F / overrideResolution(64), ExAttrib.NOSOUND | NOPARTICLE -
         // vanilla FX suppressed, the robin burst below carries all feedback
         new ExplosionVNT(level(), getX() + 0.5F, getY() + 0.5F, getZ() + 0.5F, 20.0F)
+                .setSource(Protection.Source.of(this))
                 .setBlockAllocator(new BlockAllocatorStandard(64))
                 .setBlockProcessor(new BlockProcessorStandard())
                 .setEntityProcessor(new EntityProcessorStandard()) // 1.7 ExplosionNT: vanilla entity damage

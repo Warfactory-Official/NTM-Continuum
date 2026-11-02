@@ -1,5 +1,6 @@
 package com.hbm.entity.grenade;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.generic.BlockFallout;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.blocks.ModNuclearBlocks;
@@ -47,11 +48,14 @@ public class EntityWastePearl extends EntityGrenadeBase {
         Block radon = ModNuclearBlocks.gas_radon.get();
         Block radonDense = ModNuclearBlocks.gas_radon_dense.get();
 
+        Protection.Gate gate = Protection.gate(level(), Protection.Source.of(this),
+                Protection.Cause.RADIATION_BLOCK_CONVERSION);
         for (int ix = x - 3; ix <= x + 3; ix++) {
             for (int iy = y - 3; iy <= y + 3; iy++) {
                 for (int iz = z - 3; iz <= z + 3; iz++) {
 
                     BlockPos pos = new BlockPos(ix, iy, iz);
+                    if (!gate.mayAlter(pos)) continue;
                     BlockState state = level().getBlockState(pos);
                     BlockState falloutState = fallout.defaultBlockState();
 

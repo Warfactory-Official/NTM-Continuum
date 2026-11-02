@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.api.data.FluidDataMaps;
 import com.hbm.sound.ModProductionSounds;
 import dev.golem.core.data.Tags;
@@ -301,7 +303,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
 
     private void tryInteract(ServerLevel level, BlockPos target) {
         BlockState blockState = loadedState(level, target);
-        if (blockState == null) return;
+        if (blockState == null || !Protection.mayAlter(level, target, Owners.source(this), Protection.Cause.TERRAFORM)) return;
 
         if (!shouldIgnore(level, target, blockState)) {
             if (isLeaves(blockState) || isPlant(blockState)) {

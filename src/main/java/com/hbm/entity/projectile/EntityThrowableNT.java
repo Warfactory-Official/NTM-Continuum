@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import java.util.UUID;
+import com.hbm.util.Owners;
 import dev.golem.core.data.Tags;
 
 import dev.golem.core.data.CompatEntity;
@@ -44,7 +46,7 @@ import org.jspecify.annotations.Nullable;
  * upstream's teleport packet has no pre-26.1 spelling, and a stuck projectile is already where the
  * client last saw it.
  */
-public abstract class EntityThrowableNT extends CompatEntity {
+public abstract class EntityThrowableNT extends CompatEntity implements Owners.Carrier {
 
     private static final EntityDataAccessor<Byte> STUCK_IN =
             SynchedEntityData.defineId(EntityThrowableNT.class, EntityDataSerializers.BYTE);
@@ -53,6 +55,7 @@ public abstract class EntityThrowableNT extends CompatEntity {
     public int ticksInGround;
     public int ticksInAir;
     public @Nullable LivingEntity thrower;
+    private @Nullable UUID ownerId;
 
     protected boolean inGround;
     private BlockPos stuckBlockPos = BlockPos.ZERO;
@@ -133,6 +136,17 @@ public abstract class EntityThrowableNT extends CompatEntity {
 
     public void setThrower(@Nullable LivingEntity thrower) {
         this.thrower = thrower;
+        this.ownerId = Owners.of(thrower);
+    }
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return thrower != null ? Owners.of(thrower) : ownerId;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.ownerId = owner;
     }
 
     /** ntm-next's owner spelling of the same field. */
@@ -327,6 +341,7 @@ public abstract class EntityThrowableNT extends CompatEntity {
         output.putBoolean("inGround", this.inGround);
         output.putInt("ticksInGround", this.ticksInGround);
         output.putInt("ticksInAir", this.ticksInAir);
+        Owners.save(output, protectionOwner());
     }
 
     @Override
@@ -338,5 +353,6 @@ public abstract class EntityThrowableNT extends CompatEntity {
         this.inGround = input.getBooleanOr("inGround", false);
         this.ticksInGround = input.getIntOr("ticksInGround", 0);
         this.ticksInAir = input.getIntOr("ticksInAir", 0);
+        this.ownerId = Owners.load(input);
     }
 }

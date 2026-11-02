@@ -1,5 +1,7 @@
 package com.hbm.entity.missile;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import com.hbm.blocks.ModBombs2Blocks;
 import com.hbm.blocks.ModFalloutBlocks;
@@ -68,7 +70,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
         @Override
         public void onMissileImpact(HitResult hit) {
             if (!level().isClientSide()) {
-                ExplosionNukeSmall.explode(level(), getX(), getY() + 0.5D, getZ(), ExplosionNukeSmall.PARAMS_HIGH);
+                ExplosionNukeSmall.explode(level(), Protection.Source.of(this), getX(), getY() + 0.5D, getZ(), ExplosionNukeSmall.PARAMS_HIGH);
             }
         }
 
@@ -100,13 +102,14 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
                     ? blockHit.getBlockPos() : BlockPos.containing(at);
             Explosions.explode(level(), this, at.x, at.y, at.z, 5.0F, Level.ExplosionInteraction.TNT);
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            Protection.Gate gate = Protection.gate(level(), Protection.Source.of(this), Protection.Cause.FLUID);
             for (int i = 0; i < 100; i++) {
                 int x = random.nextInt(11) + block.getX() - 5;
                 int y = random.nextInt(11) + block.getY() - 5;
                 int z = random.nextInt(11) + block.getZ() - 5;
                 pos.set(x, y, z);
                 BlockState state = level().getBlockState(pos);
-                if (state.isCollisionShapeFullBlock(level(), pos) && !state.isAir()) {
+                if (state.isCollisionShapeFullBlock(level(), pos) && !state.isAir() && gate.mayAlter(pos)) {
                     level().setBlock(pos, ModBombBlocks.taint.get().defaultBlockState(), 2);
                 }
             }
@@ -136,6 +139,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
             int y = (int) Math.floor(getY());
             int z = (int) Math.floor(getZ());
             int range = 50;
+            Protection.Gate gate = Protection.gate(level(), Protection.Source.of(this), Protection.Cause.EXPLOSION);
 
             for (int iX = -range; iX <= range; iX++) {
                 for (int iY = -range; iY <= range; iY++) {
@@ -143,6 +147,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
                         double dist = Math.sqrt(iX * iX + iY * iY + iZ * iZ);
                         if (dist > range) continue;
                         BlockPos pos = new BlockPos(x + iX, y + iY, z + iZ);
+                        if (!gate.mayAlter(pos)) continue;
                         BlockState state = level().getBlockState(pos);
                         boolean slaked = state.getBlock() == ModFalloutBlocks.sellafield_slaked.get();
                         // 1.7: getBlockMetadata on sellafield_slaked == SHADE (0 otherwise)
@@ -182,7 +187,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
             EntityNukeExplosionMK3 ex =
                     EntityNukeExplosionMK3.statFacFleija(level(), getX(), getY(), getZ(), radius);
             if (!ex.isRemoved()) { // 1.7: !ex.isDead
-                level().addFreshEntity(ex); // 1.7: WorldUtil.loadAndSpawnEntityInWorld(ex)
+                level().addFreshEntity(Owners.inherit(ex, this)); // 1.7: WorldUtil.loadAndSpawnEntityInWorld(ex)
                 level().addFreshEntity(
                         EntityCloudFleija.statFac(level(), radius, getX(), getY(), getZ()));
             }
@@ -206,7 +211,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
             EntityBlackHole hole = new EntityBlackHole(
                     ModEntities.BLACK_HOLE.get(), level(), 1.5F);
             hole.setPos(getX(), getY(), getZ());
-            level().addFreshEntity(hole);
+            level().addFreshEntity(Owners.inherit(hole, this));
         }
 
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModSingularityItems.black_hole.get()); }
@@ -222,7 +227,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
 
         @Override
         public void onMissileImpact(HitResult mop) {
-            ExplosionNukeGeneric.empBlast(level(),
+            ExplosionNukeGeneric.empBlast(level(), Protection.Source.of(this),
                     new BlockPos((int) getX(), (int) getY(), (int) getZ()), 50);
 
             EntityEMPBlast wave = new EntityEMPBlast(

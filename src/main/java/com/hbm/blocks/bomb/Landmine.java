@@ -1,5 +1,7 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Protection;
+import com.hbm.util.Owners;
 import com.hbm.api.block.IToolable;
 
 import com.hbm.explosion.ExplosionLarge;
@@ -168,6 +170,8 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
         int y = pos.getY();
         int z = pos.getZ();
 
+        Protection.Source source = Owners.source(level.getBlockEntity(pos));
+        if (source.player() == null) source = Protection.Source.of(detonator);
         safeMode = true;
         level.destroyBlock(pos, false);
         safeMode = false;
@@ -175,6 +179,7 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
         switch (type) {
             case AP -> {
                 ExplosionVNT vnt = new ExplosionVNT(level, x + 0.5, y + 0.5, z + 0.5, 3F);
+                vnt.setSource(source);
                 vnt.setEntityProcessor(new EntityProcessorCrossSmooth(0.5, MineConfig.MINE_AP_DAMAGE).setupPiercing(5F, 0.2F));
                 vnt.setPlayerProcessor(new PlayerProcessorStandard());
                 vnt.setSFX(new ExplosionEffectWeapon(5, 1F, 0.5F));
@@ -182,6 +187,7 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
             }
             case HE -> {
                 ExplosionVNT vnt = new ExplosionVNT(level, x + 0.5, y + 0.5, z + 0.5, 4F);
+                vnt.setSource(source);
                 vnt.setBlockAllocator(new BlockAllocatorStandard());
                 vnt.setBlockProcessor(new BlockProcessorStandard());
                 vnt.setEntityProcessor(new EntityProcessorCrossSmooth(1, MineConfig.MINE_HE_DAMAGE).setupPiercing(15F, 0.2F));
@@ -191,6 +197,7 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
             }
             case SHRAP -> {
                 ExplosionVNT vnt = new ExplosionVNT(level, x + 0.5, y + 0.5, z + 0.5, 3F);
+                vnt.setSource(source);
                 vnt.setEntityProcessor(new EntityProcessorCrossSmooth(0.5, MineConfig.MINE_SHRAP_DAMAGE));
                 vnt.setPlayerProcessor(new PlayerProcessorStandard());
                 vnt.setSFX(new ExplosionEffectWeapon(5, 1F, 0.5F));
@@ -202,6 +209,7 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
             case NAVAL -> {
                 // 1.7 centres this blast at x + 5 / y + 5 / z + 5 (not + 0.5); load-bearing oddity kept.
                 ExplosionVNT vnt = new ExplosionVNT(level, x + 5, y + 5, z + 5, 25F);
+                vnt.setSource(source);
                 vnt.setBlockAllocator(new BlockAllocatorWater(32));
                 vnt.setBlockProcessor(new BlockProcessorStandard());
                 vnt.setEntityProcessor(new EntityProcessorCrossSmooth(0.5, MineConfig.MINE_NAVAL_DAMAGE).setupPiercing(5F, 0.2F));
@@ -217,6 +225,7 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
             }
             case FAT -> {
                 ExplosionVNT vnt = new ExplosionVNT(level, x + 0.5, y + 0.5, z + 0.5, 10);
+                vnt.setSource(source);
                 vnt.setBlockAllocator(new BlockAllocatorStandard(64));
                 vnt.setBlockProcessor(new BlockProcessorStandard());
                 vnt.setEntityProcessor(new EntityProcessorCrossSmooth(2, MineConfig.MINE_NUKE_DAMAGE).withRangeMod(1.5F));

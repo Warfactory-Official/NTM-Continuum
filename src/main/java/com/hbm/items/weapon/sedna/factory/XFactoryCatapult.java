@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import dev.golem.core.world.Protection;
 import com.hbm.config.RunningConfig.ConfigWrapper;
 import com.hbm.config.ServerConfig;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
@@ -113,6 +114,7 @@ public final class XFactoryCatapult {
             var pos = hit.getLocation();
             ExplosionVNT vnt = new ExplosionVNT(bullet.level(), pos.x, pos.y, pos.z, radius,
                     blocks ? bullet.getThrower() : null);
+            vnt.setSource(Protection.Source.of(bullet));
             if (blocks) {
                 vnt.setBlockAllocator(new BlockAllocatorStandard());
                 vnt.setBlockProcessor(new BlockProcessorStandard());

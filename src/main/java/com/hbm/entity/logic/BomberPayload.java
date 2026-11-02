@@ -1,5 +1,6 @@
 package com.hbm.entity.logic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.api.registry.NamedRegistry;
 import com.hbm.entity.projectile.EntityBombletZeta;
 import com.hbm.explosion.ExplosionChaos;
@@ -50,7 +51,7 @@ public record BomberPayload(String name, Factory factory, Drop drop) {
             (level, x, y, z) -> EntityBomber.create(level, x, y, z, 75, 125, 1, "orange"),
             bomber -> {
                 bomber.fizz();
-                ExplosionChaos.spawnPoisonCloud(bomber.level(), bomber.getX(), bomber.getY() - 1F, bomber.getZ(), 10, 0.5D, 3);
+                ExplosionChaos.spawnPoisonCloud(bomber.level(), Protection.Source.NONE, bomber.getX(), bomber.getY() - 1F, bomber.getZ(), 10, 0.5D, 3);
             });
     // 1.7: these four overwrite the style fac() rolled: the payload picks the airframe, not the random table
     public static final BomberPayload ABOMB = register("abomb",
@@ -83,7 +84,7 @@ public record BomberPayload(String name, Factory factory, Drop drop) {
             bomber -> {
                 bomber.fizz();
                 Level level = bomber.level();
-                ExplosionChaos.spawnPoisonCloud(level, bomber.getX(),
+                ExplosionChaos.spawnPoisonCloud(level, Protection.Source.NONE, bomber.getX(),
                         level.getHeight(Heightmap.Types.WORLD_SURFACE, Mth.floor(bomber.getX()), Mth.floor(bomber.getZ())) + 2,
                         bomber.getZ(), 10, 1D, 2);
             });

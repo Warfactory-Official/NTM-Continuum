@@ -1,5 +1,6 @@
 package com.hbm.items.special;
 
+import dev.golem.core.world.Protection;
 import com.hbm.config.WeaponConfig;
 import com.hbm.explosion.ExplosionChaos;
 import dev.golem.core.world.CompatItem;
@@ -51,7 +52,7 @@ public class ItemDrop extends CompatItem {
         if (WeaponConfig.dropCrys && !entity.level().isClientSide()) {
             // 1.7 casts the position with (int): truncation toward zero, not floor
             BlockPos at = new BlockPos((int) entity.getX(), (int) entity.getY(), (int) entity.getZ());
-            ExplosionChaos.floater(entity.level(), at, 25, 75);
+            ExplosionChaos.floater(entity.level(), Protection.Source.NONE, at, 25, 75);
             ExplosionChaos.move(entity.level(), at, 25, 0, 75, 0);
         }
         entity.discard();

@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Protection;
 import com.hbm.api.block.IFuckingExplode;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.item.EntityTntNtm;
@@ -86,6 +87,7 @@ public class BlockPlasticExplosive extends CompatBlock implements IBomb, IFuckin
         if (level.isClientSide()) return BombReturnCode.DETONATED;
         // 1.7 does not remove the block itself; the 20-strength blast eats it (and drops nothing).
         new ExplosionVNT(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 20).makeStandard()
+                .setSource(Protection.Source.of(detonator))
                 .setBlockProcessor(new BlockProcessorStandard().setNoDrop()).explode();
         return BombReturnCode.DETONATED;
     }

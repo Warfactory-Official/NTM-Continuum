@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import java.util.UUID;
+import com.hbm.util.Owners;
 import com.hbm.Constants;
 import com.hbm.packet.ProjectileStatePayload;
 import dev.golem.core.data.Tags;
@@ -35,7 +37,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /** The MK4 hitscan projectile. Its impact callback is separate from ordinary bullets. */
-public class EntityBulletBeamBase extends CompatEntity {
+public class EntityBulletBeamBase extends CompatEntity implements Owners.Carrier {
 
     private static final double MIN_BEAM_LENGTH = 1.0E-6D;
     private static final double DEFAULT_BEAM_RANGE = 250D;
@@ -102,6 +104,14 @@ public class EntityBulletBeamBase extends CompatEntity {
     }
 
     public LivingEntity getThrower() { return thrower; }
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return Owners.of(thrower);
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {}
 
     public void setRotationsFromVector(Vec3 delta) {
         Vec3 normalized = delta.lengthSqr() > MIN_BEAM_LENGTH

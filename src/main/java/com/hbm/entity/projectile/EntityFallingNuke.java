@@ -1,5 +1,8 @@
 package com.hbm.entity.projectile;
 
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import com.hbm.util.Owners;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatThrowableProjectile;
@@ -21,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
  * out as this bomb, free-falls from where the block stood and detonates NukeCustom.explodeCustom with the stored yields
  * the moment its own block position stops being air. 1.7 registered as "entity_falling_bomb", tracking range 1000.
  */
-public class EntityFallingNuke extends CompatThrowableProjectile {
+public class EntityFallingNuke extends CompatThrowableProjectile implements Owners.Carrier {
 
     // 1.7: dataWatcher id 20 - block metadata of the spawning NukeCustom block; the spawner writes it before
     // spawnEntityInWorld and RenderFallingNuke switches on it to pick the model
@@ -35,6 +38,17 @@ public class EntityFallingNuke extends CompatThrowableProjectile {
     float dirty;
     float schrab;
     float euph;
+    private @Nullable UUID owner;
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
 
     public EntityFallingNuke(EntityType<? extends EntityFallingNuke> type, Level level) {
         super(type, level);
@@ -97,7 +111,7 @@ public class EntityFallingNuke extends CompatThrowableProjectile {
         // the base's raytrace impact path was bypassed along with super.onUpdate)
         if (!level().getBlockState(BlockPos.containing(getX(), getY(), getZ())).isAir()) {
             if (!level().isClientSide()) {
-                ExplosionNukeCustom.explodeCustom(level(), getX(), getY(), getZ(), tnt, nuke, hydro, amat, dirty,
+                ExplosionNukeCustom.explodeCustom(level(), owner, getX(), getY(), getZ(), tnt, nuke, hydro, amat, dirty,
                         schrab, euph);
                 discard();
             }
@@ -126,6 +140,7 @@ public class EntityFallingNuke extends CompatThrowableProjectile {
         dirty = input.getFloatOr("dirty", 0F);
         schrab = input.getFloatOr("schrab", 0F);
         euph = input.getFloatOr("euph", 0F);
+        owner = Owners.load(input);
     }
 
     @Override
@@ -138,5 +153,6 @@ public class EntityFallingNuke extends CompatThrowableProjectile {
         output.putFloat("dirty", dirty);
         output.putFloat("schrab", schrab);
         output.putFloat("euph", euph);
+        Owners.save(output, owner);
     }
 }

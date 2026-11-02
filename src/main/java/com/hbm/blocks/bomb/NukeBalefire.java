@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.util.Owners;
 import com.hbm.tileentity.bomb.TileEntityNukeBomb;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -27,7 +28,7 @@ public class NukeBalefire extends NukeBomb2Block {
 
     @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
-        return explode(level, pos, detonator, detonator == null ? null : detonator.getUUID());
+        return explode(level, pos, detonator, Owners.of(detonator));
     }
 
     @Override
@@ -35,7 +36,7 @@ public class NukeBalefire extends NukeBomb2Block {
         if (level.isClientSide()) return BombReturnCode.UNDEFINED;
         if (!(level.getBlockEntity(pos) instanceof TileEntityNukeBalefire bomb)) return BombReturnCode.UNDEFINED;
         if (!bomb.isLoaded()) return BombReturnCode.ERROR_MISSING_COMPONENT;
-        bomb.explode();
+        bomb.explode(detonatorId != null ? detonatorId : bomb.placer());
         return BombReturnCode.DETONATED;
     }
 }

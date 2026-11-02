@@ -1,5 +1,7 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Protection;
+import com.hbm.util.Owners;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
 import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
@@ -25,10 +27,12 @@ public class BlockChargeDynamite extends BlockChargeBase {
     @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
         if (level.isClientSide()) return BombReturnCode.UNDEFINED;
+        Protection.Source source = Owners.source(detonator, level, pos);
         removeSafely(level, pos);
         double x = pos.getX(), y = pos.getY(), z = pos.getZ();
 
         ExplosionVNT exp = new ExplosionVNT(level, x + 0.5, y + 0.5, z + 0.5, 4F);
+        exp.setSource(source);
         exp.setBlockAllocator(new BlockAllocatorStandard());
         exp.setBlockProcessor(new BlockProcessorStandard());
         exp.setEntityProcessor(new EntityProcessorStandard());

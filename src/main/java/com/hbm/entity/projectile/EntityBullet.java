@@ -1,5 +1,9 @@
 package com.hbm.entity.projectile;
 
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModNtmEntities;
@@ -66,7 +70,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 // 26.1: getBrightnessForRender fullbright is renderer-side - the bullet renderer must force max light for
 // critical/chopper shots.
 @Deprecated // ancient ass fucking bullet entity from pre ItemGunBase days
-public class EntityBullet extends CompatEntity {
+public class EntityBullet extends CompatEntity implements Owners.Carrier {
 
     // 1.7 dataWatcher ids 16/17/18 - crit / tau / chopper flag bytes
     private static final EntityDataAccessor<Byte> CRITICAL =
@@ -89,6 +93,14 @@ public class EntityBullet extends CompatEntity {
     public int arrowShake;
     /** The owner of this bullet. */
     public Entity shootingEntity;
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return Owners.of(shootingEntity);
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {}
     private int ticksInGround;
     private int ticksInAir;
     public double damage;
@@ -307,9 +319,11 @@ public class EntityBullet extends CompatEntity {
             // 1.7: glass, stained_glass, glass_pane, stained_glass_pane
             if (state.is(Blocks.GLASS) || state.getBlock() instanceof StainedGlassBlock
                     || state.is(Blocks.GLASS_PANE) || state.getBlock() instanceof StainedGlassPaneBlock) {
-                level().removeBlock(stuckPos, false);
-                level().playSound(null, stuckPos.getX(), stuckPos.getY(), stuckPos.getZ(),
-                        SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F); // 1.7 "dig.glass"
+                if (Protection.mayAlter(level(), stuckPos, Protection.Source.of(this), Protection.Cause.TERRAFORM)) {
+                    level().removeBlock(stuckPos, false);
+                    level().playSound(null, stuckPos.getX(), stuckPos.getY(), stuckPos.getZ(),
+                            SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F); // 1.7 "dig.glass"
+                }
             }
         }
 

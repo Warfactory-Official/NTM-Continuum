@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.data.MachinePartDataMaps;
@@ -509,7 +511,7 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
         if (p.getZ() < minZ) minZ = p.getZ();
         if (p.getZ() > maxZ) maxZ = p.getZ();
 
-        if (this.enableWalling) {
+        if (this.enableWalling && Protection.mayAlter(level, p, Owners.source(this), Protection.Cause.PLACEMENT)) {
             level.setBlock(p, ModSecurityBlocks.barricade.get().defaultBlockState(), 3);
         }
     }
@@ -567,12 +569,13 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
 
                 if (x == xCoord - ring || x == xCoord + ring || z == zCoord - ring || z == zCoord + ring) {
 
-                    if (b.canBeReplaced() && (wallEverything || b.liquid())) {
+                    if (b.canBeReplaced() && (wallEverything || b.liquid())
+                            && Protection.mayAlter(level, p, Owners.source(this), Protection.Cause.PLACEMENT)) {
                         level.setBlock(p, ModSecurityBlocks.barricade.get().defaultBlockState(), 3);
                     }
                 } else {
 
-                    if (b.liquid()) {
+                    if (b.liquid() && Protection.mayAlter(level, p, Owners.source(this), Protection.Cause.TERRAFORM)) {
                         level.setBlock(p, Blocks.AIR.defaultBlockState(), 3);
                     }
                 }
@@ -759,7 +762,8 @@ public class TileEntityMachineExcavator extends TileEntityMachineBase
 
     public boolean shouldIgnoreBlock(BlockState block, BlockPos pos) {
         return block.isAir() || block.getBlock() instanceof BlockGasBase || block.getDestroySpeed(level, pos) < 0
-                || block.liquid() || block.is(Blocks.BEDROCK);
+                || block.liquid() || block.is(Blocks.BEDROCK)
+                || !Protection.mayAlter(level, pos, Owners.source(this), Protection.Cause.TERRAFORM);
     }
 
     @Override

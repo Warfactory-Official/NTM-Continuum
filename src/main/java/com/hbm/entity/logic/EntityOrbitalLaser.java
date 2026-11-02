@@ -1,5 +1,6 @@
 package com.hbm.entity.logic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.entity.ModSatelliteEntities;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
@@ -57,6 +58,7 @@ public class EntityOrbitalLaser extends CompatEntity {
 
     public void explode() {
         ExplosionVNT vnt = new ExplosionVNT(level(), getX(), getY(), getZ(), 5F);
+        vnt.setSource(Protection.Source.of(this));
         vnt.setBlockAllocator(new BlockAllocatorStandard());
         vnt.setBlockProcessor(new BlockProcessorStandard());
         vnt.setEntityProcessor(new EntityProcessorCrossSmooth(1, 1_000F).setupPiercing(50F, 0.5F)

@@ -95,7 +95,7 @@ public final class ScriptHookGameTests {
 
         BlockPos large = helper.absolutePos(new BlockPos(3, 2, 3));
         WATCHED.add(large);
-        ExplosionLarge.explode(helper.getLevel(), large.getX() + 0.5D, large.getY() + 0.5D, large.getZ() + 0.5D, 0.5F,
+        ExplosionLarge.explode(helper.getLevel(), null, large.getX() + 0.5D, large.getY() + 0.5D, large.getZ() + 0.5D, 0.5F,
                 false, false, false);
         HbmEvents.Explosion seenLarge = EXPLOSION_AT.remove(large);
         WATCHED.remove(large);

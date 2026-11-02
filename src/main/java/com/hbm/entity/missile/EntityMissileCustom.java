@@ -1,5 +1,7 @@
 package com.hbm.entity.missile;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.items.ModCustomMissileItems;
@@ -184,7 +186,7 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
     }
 
     private void spawnBlast(EntityNukeExplosionMK5 blast) {
-        if (level().addFreshEntity(blast)) blast.startChunkLoading();
+        if (level().addFreshEntity(Owners.inherit(blast, this))) blast.startChunkLoading();
     }
 
     // 1.7 EntityMissileCustom:165, verbatim:
@@ -202,15 +204,15 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
         }
 
         if (type == WarheadType.HE) {
-            ExplosionLarge.explode(level(), getX(), getY(), getZ(), strength, true, false, true);
-            ExplosionLarge.jolt(level(), getX(), getY(), getZ(), strength, (int) (strength * 50), 0.25);
+            ExplosionLarge.explode(level(), this, getX(), getY(), getZ(), strength, true, false, true);
+            ExplosionLarge.jolt(level(), Protection.Source.of(this), getX(), getY(), getZ(), strength, (int) (strength * 50), 0.25);
         } else if (type == WarheadType.INC) {
-            ExplosionLarge.explodeFire(level(), getX(), getY(), getZ(), strength, true, false, true);
-            ExplosionLarge.jolt(level(), getX(), getY(), getZ(), strength * 1.5, (int) (strength * 50), 0.25);
+            ExplosionLarge.explodeFire(level(), this, getX(), getY(), getZ(), strength, true, false, true);
+            ExplosionLarge.jolt(level(), Protection.Source.of(this), getX(), getY(), getZ(), strength * 1.5, (int) (strength * 50), 0.25);
         } else if (type == WarheadType.CLUSTER) {
             // 1.7: no impact effect
         } else if (type == WarheadType.BUSTER) {
-            ExplosionLarge.buster(level(), getX(), getY(), getZ(),
+            ExplosionLarge.buster(level(), this, getX(), getY(), getZ(),
                     new Vec3(getDeltaMovement().x, getDeltaMovement().y, getDeltaMovement().z),
                     strength, (int) (strength * 4));
         } else if (type == WarheadType.NUCLEAR || type == WarheadType.TX) {
@@ -220,13 +222,14 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
             EntityBalefire bf = new EntityBalefire(ModNtmEntities.BALEFIRE.get(), level());
             bf.setPos(getX(), getY(), getZ());
             bf.destructionRange = (int) strength;
-            level().addFreshEntity(bf);
+            level().addFreshEntity(Owners.inherit(bf, this));
             spawnCloud(EntityNukeTorex.statFacBale(level(), getX(), getY(), getZ(), strength));
         } else if (type == WarheadType.N2) {
             spawnBlast(EntityNukeExplosionMK5.statFacNoRad(level(), (int) strength, getX(), getY(), getZ()));
             spawnCloud(EntityNukeTorex.statFac(level(), getX(), getY(), getZ(), strength));
         } else if (type == WarheadType.TAINT) {
             int r = (int) strength;
+            Protection.Gate gate = Protection.gate(level(), Protection.Source.of(this), Protection.Cause.FLUID);
             // 1.7: nextInt(r) - (r/2 - 1) on (int)-truncated coords - a window r wide, centered half a radius out
             for (int i = 0; i < r * 10; i++) {
                 BlockPos pos = new BlockPos(
@@ -234,28 +237,28 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
                         random.nextInt(r) + (int) getY() - (r / 2 - 1),
                         random.nextInt(r) + (int) getZ() - (r / 2 - 1));
                 BlockState hit = level().getBlockState(pos);
-                if (!Compat.isSolidRender(hit) || hit.isAir()) continue;
+                if (!Compat.isSolidRender(hit) || hit.isAir() || !gate.mayAlter(pos)) continue;
                 level().setBlock(pos, ModBombBlocks.taint.get().defaultBlockState()
                         .setValue(BlockTaint.TAINTAGE, random.nextInt(3) + 4), Block.UPDATE_CLIENTS);
             }
         } else if (type == WarheadType.CLOUD) {
             // 1.7 playAuxSFX(2002): splash-potion break FX
             level().levelEvent(2002, BlockPos.containing(getX(), getY(), getZ()), 0);
-            ExplosionChaos.spawnPoisonCloud(level(), getX() - getDeltaMovement().x, getY() - getDeltaMovement().y,
+            ExplosionChaos.spawnPoisonCloud(level(), Protection.Source.of(this), getX() - getDeltaMovement().x, getY() - getDeltaMovement().y,
                     getZ() - getDeltaMovement().z, 750, 2.5, 2);
         } else if (type == WarheadType.TURBINE) {
-            ExplosionLarge.explode(level(), getX(), getY(), getZ(), 10, true, false, true);
+            ExplosionLarge.explode(level(), this, getX(), getY(), getZ(), 10, true, false, true);
             int count = (int) strength;
             // 1.7 fanned the blades out on a rotating 0.5-radius vector, one motion step behind the missile.
             // The legacy BulletConfigSyncingUtil.TURBINE config is re-expressed on sedna as XFactoryWarhead.
             Vec3 fan = new Vec3(0.5D, 0D, 0D);
             for(int i = 0; i < count; i++) {
-                level().addFreshEntity(new EntityBulletBaseMK4(level(), null, XFactoryWarhead.warhead_turbine,
+                level().addFreshEntity(Owners.inherit(new EntityBulletBaseMK4(level(), null, XFactoryWarhead.warhead_turbine,
                         XFactoryWarhead.TURBINE_BLADE_DAMAGE, 0F,
                         getX() - getDeltaMovement().x,
                         getY() - getDeltaMovement().y + random.nextGaussian(),
                         getZ() - getDeltaMovement().z,
-                        fan.x, 0D, fan.z));
+                        fan.x, 0D, fan.z), this));
                 fan = fan.yRot((float) (Math.PI * 2F / count));
             }
         }

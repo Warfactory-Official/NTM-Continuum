@@ -91,7 +91,7 @@ public final class RcBombGameTests {
         helper.setBlock(centre.offset(-5, -5, 5), ModOreBlocks.ore_bedrock_block.get().defaultBlockState());
         helper.setBlock(centre.offset(0, 3, 0), ModBlocks.ore_bedrock_oil.get().defaultBlockState());
         helper.setBlock(centre.offset(6, 0, 0), ModOreBlocks.ore_bedrock_block.get().defaultBlockState());
-        BlockFissureBomb.convertBedrockOres(helper.getLevel(), helper.absolutePos(centre).getX() + 0.5,
+        BlockFissureBomb.convertBedrockOres(helper.getLevel(), dev.golem.core.world.Protection.Source.NONE, helper.absolutePos(centre).getX() + 0.5,
                 helper.absolutePos(centre).getY() + 0.5, helper.absolutePos(centre).getZ() + 0.5);
         helper.assertTrue(helper.getBlockState(centre.offset(2, 0, 0)).is(ModTerrainBlocks.ore_volcano.get()),
                 "bedrock ore in range did not become ore_volcano");

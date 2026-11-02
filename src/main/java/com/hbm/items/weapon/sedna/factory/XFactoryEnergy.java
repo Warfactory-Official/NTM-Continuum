@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.util.Owners;
 import com.hbm.config.RunningConfig.ConfigWrapper;
 import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
@@ -147,7 +148,7 @@ public final class XFactoryEnergy {
             EntityFireLingering fire = new EntityFireLingering(world).setArea(2, 1).setDuration(100)
                     .setFireType(EntityFireLingering.TYPE_DIESEL);
             fire.setPos(mop.getLocation());
-            world.addFreshEntity(fire);
+            world.addFreshEntity(Owners.inherit(fire, beam));
         }
     };
 

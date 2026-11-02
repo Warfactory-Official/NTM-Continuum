@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.util.Owners;
 import com.hbm.config.BombConfig;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.bomb.TileEntityNukeBomb;
@@ -40,7 +41,7 @@ public class NukePrototype extends NukeBomb2Block {
             if (level.getBlockEntity(pos) instanceof TileEntityNukeBomb bomb && bomb.isReady()) {
                 bomb.clearSlots();
                 level.removeBlock(pos, false);
-                NukeFleija.igniteTestBomb(level, pos, BombConfig.prototypeRadius);
+                NukeFleija.igniteTestBomb(level, pos, BombConfig.prototypeRadius, player.getUUID());
             }
             return InteractionResult.SUCCESS;
         }
@@ -49,7 +50,7 @@ public class NukePrototype extends NukeBomb2Block {
 
     @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
-        return explode(level, pos, detonator, detonator == null ? null : detonator.getUUID());
+        return explode(level, pos, detonator, Owners.of(detonator));
     }
 
     @Override
@@ -60,7 +61,8 @@ public class NukePrototype extends NukeBomb2Block {
 
         bomb.clearSlots();
         level.removeBlock(pos, false);
-        NukeFleija.igniteTestBomb(level, pos, BombConfig.prototypeRadius);
+        NukeFleija.igniteTestBomb(level, pos, BombConfig.prototypeRadius,
+                detonatorId != null ? detonatorId : bomb.placer());
         return BombReturnCode.DETONATED;
     }
 }

@@ -1,5 +1,6 @@
 package com.hbm.hazard.type;
 
+import dev.golem.core.world.Protection;
 import java.util.List;
 
 import com.hbm.blocks.ModBlocks;
@@ -55,7 +56,7 @@ public class HazardTypeContaminating implements IHazardType {
             if (radius > 1) {
                 // The fallout rain has no biome change for this path, so keep the old direct radiation pulse.
                 ChunkRadiationManager.proxy.incrementRad(world, pos, level);
-                ExplosionNukeGeneric.transformWaste(world, pos, radius);
+                ExplosionNukeGeneric.transformWaste(world, Protection.Source.NONE, pos, radius);
             }
             item.discard();
         }
@@ -80,6 +81,7 @@ public class HazardTypeContaminating implements IHazardType {
     }
 
     private static void getUsed(Block block, BlockPos pos, Level world) {
+        if (!Protection.mayAlter(world, pos, Protection.Source.NONE, Protection.Cause.RADIATION_BLOCK_CONVERSION)) return;
         if (block == ModBlocks.tile_lab.get() && world.getRandom().nextInt(2000) == 0) {
             world.setBlock(pos, ModBlocks.tile_lab_cracked.get().defaultBlockState(), Block.UPDATE_ALL);
         } else if (block == ModBlocks.tile_lab_cracked.get() && world.getRandom().nextInt(10000) == 0) {

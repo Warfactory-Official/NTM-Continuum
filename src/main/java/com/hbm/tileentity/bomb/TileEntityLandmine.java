@@ -1,5 +1,9 @@
 package com.hbm.tileentity.bomb;
 
+import org.jspecify.annotations.Nullable;
+import net.minecraft.core.UUIDUtil;
+import java.util.UUID;
+import com.hbm.util.Owners;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.data.CompatBlockEntity;
 import dev.golem.core.data.DataIn;
@@ -22,7 +26,20 @@ import com.hbm.tileentity.ModExplosivesBlockEntities;
  * left twice its trigger radius (so it does not kill the placer); a worldgen mine additionally waits
  * for a player within 25 blocks before it starts looking at mobs at all.
  */
-public class TileEntityLandmine extends CompatBlockEntity {
+public class TileEntityLandmine extends CompatBlockEntity implements Owners.Placed {
+
+    private @Nullable UUID placerId;
+
+    @Override
+    public @Nullable UUID placer() {
+        return placerId;
+    }
+
+    @Override
+    public void setPlacer(@Nullable UUID placer) {
+        placerId = placer;
+        setChanged();
+    }
 
     private boolean isPrimed = false;
     public boolean waitingForPlayer = false;
@@ -90,11 +107,13 @@ public class TileEntityLandmine extends CompatBlockEntity {
     protected void loadData(DataIn input) {
         isPrimed = input.getBooleanOr("primed", false);
         waitingForPlayer = input.getBooleanOr("waiting", false);
+        placerId = input.read("placer", UUIDUtil.CODEC).orElse(null);
     }
 
     @Override
     protected void saveData(DataOut output) {
         output.putBoolean("primed", isPrimed);
         output.putBoolean("waiting", waitingForPlayer);
+        if (placerId != null) output.store("placer", UUIDUtil.CODEC, placerId);
     }
 }

@@ -21,6 +21,8 @@ public interface IBlockExplodedVNT {
     static @Nullable LivingEntity igniter(ExplosionVNT explosion) {
         Entity exploder = explosion.exploder;
         if (exploder instanceof EntityPrimedExplosive primed) return primed.getOwnerEntity();
-        return exploder instanceof LivingEntity living ? living : null;
+        if (exploder instanceof LivingEntity living) return living;
+        java.util.UUID owner = explosion.source.player();
+        return owner == null ? null : explosion.level().getPlayerByUUID(owner);
     }
 }

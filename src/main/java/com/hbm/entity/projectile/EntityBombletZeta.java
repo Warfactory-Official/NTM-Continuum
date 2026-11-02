@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import com.hbm.util.Owners;
 import com.hbm.api.registry.NamedRegistry;
 import com.hbm.particle.helper.EntityEffects;
 import com.hbm.util.SavedIds;
@@ -127,12 +128,12 @@ public class EntityBombletZeta extends CompatEntity {
                 5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F);
         EntityMist mist = new EntityMist(level()).setType(Fluids.CHLORINE).setArea(15, 7.5F);
         mist.setPos(getX() - getDeltaMovement().x, getY() - getDeltaMovement().y, getZ() - getDeltaMovement().z);
-        level().addFreshEntity(mist);
+        level().addFreshEntity(Owners.inherit(mist, this));
     }
 
     private void nuke() {
-        level().addFreshEntity(EntityNukeExplosionMK5.statFac(level(),
-                (int) (BombConfig.fatmanRadius * 1.5F), getX(), getY(), getZ()));
+        level().addFreshEntity(Owners.inherit(EntityNukeExplosionMK5.statFac(level(),
+                (int) (BombConfig.fatmanRadius * 1.5F), getX(), getY(), getZ()), this));
         if (level() instanceof ServerLevel server) {
             EntityEffects.muke(server, getX(), getY() + 0.5D, getZ(), false, random.nextInt(100) == 0, 250);
         }

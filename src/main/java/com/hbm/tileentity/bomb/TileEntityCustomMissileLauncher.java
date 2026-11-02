@@ -1,5 +1,6 @@
 package com.hbm.tileentity.bomb;
 
+import com.hbm.util.Owners;
 import com.hbm.api.block.IRadarCommandReceiver;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.event.HbmEvents;
@@ -204,7 +205,7 @@ public abstract class TileEntityCustomMissileLauncher extends TileEntityMachineB
                 tX + (int) target.x, tZ + (int) target.z,
                 stack(parts == null ? null : parts.warhead()), stack(parts == null ? null : parts.fuselage()),
                 stack(parts == null ? null : parts.stability()), stack(parts == null ? null : parts.thruster()));
-        level.addFreshEntity(missile);
+        level.addFreshEntity(Owners.give(missile, placer()));
         HbmEvents.missileLaunched(level, worldPosition, missile, missile.targetX, missile.targetZ, null);
 
         subtractFuel();

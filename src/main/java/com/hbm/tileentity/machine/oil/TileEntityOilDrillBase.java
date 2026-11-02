@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.oil;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.data.DepositDataMaps;
@@ -156,7 +158,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         BlockPos posD = new BlockPos(worldPosition.getX(), y, worldPosition.getZ());
         Block b = level.getBlockState(posD).getBlock();
 
-        if (b.getExplosionResistance() < 1000) {
+        if (b.getExplosionResistance() < 1000 && Protection.mayAlter(level, posD, Owners.source(this), Protection.Cause.TERRAFORM)) {
             onDrill(y);
             level.setBlockAndUpdate(posD, ModOilBlocks.oil_pipe.get().defaultBlockState());
         } else {
@@ -278,7 +280,8 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
             tanks[1].setFill(Math.min(tanks[1].getFill() + min + level.getRandom().nextInt(max - min + 1), tanks[1].getMaxFill()));
         }
         Block empty = deposit.emptyBlock();
-        if (empty != null && level.getRandom().nextDouble() < drainChance * deposit.drain()) {
+        if (empty != null && level.getRandom().nextDouble() < drainChance * deposit.drain()
+                && Protection.mayAlter(level, pos, Owners.source(this), Protection.Cause.TERRAFORM)) {
             level.setBlock(pos, DepositDataMaps.emptyState(level.getBlockState(pos), empty), 3);
         }
     }

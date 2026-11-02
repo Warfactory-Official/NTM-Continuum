@@ -125,14 +125,14 @@ public final class LegacyGapGameTests {
         level.setBlockAndUpdate(planks, ModBlocks.waste_planks.get().defaultBlockState());
         level.setBlockAndUpdate(log, ModFalloutBlocks.waste_log.get().defaultBlockState());
         level.setBlockAndUpdate(pink, block("pink_planks").defaultBlockState());
-        for (BlockPos pos : new BlockPos[] {planks, log, pink}) ExplosionNukeGeneric.solinium(level, pos);
+        for (BlockPos pos : new BlockPos[] {planks, log, pink}) ExplosionNukeGeneric.solinium(level, dev.golem.core.world.Protection.Source.NONE, pos);
         helper.assertTrue(level.getBlockState(planks).isAir() && level.getBlockState(log).isAir()
                 && level.getBlockState(pink).isAir(), "solinium's wood arm left waste planks, a waste log or pink planks");
 
         level.setBlockAndUpdate(log, ModFalloutBlocks.waste_log.get().defaultBlockState());
         level.setBlockAndUpdate(pink, block("pink_planks").defaultBlockState());
         level.setBlockAndUpdate(planks, block("frozen_planks").defaultBlockState());
-        for (BlockPos pos : new BlockPos[] {planks, log, pink}) ExplosionNukeGeneric.wasteDest(level, pos);
+        for (BlockPos pos : new BlockPos[] {planks, log, pink}) ExplosionNukeGeneric.wasteDest(level, dev.golem.core.world.Protection.Source.NONE, pos);
         helper.assertTrue(level.getBlockState(planks).is(ModBlocks.waste_planks.get())
                         && level.getBlockState(pink).is(ModBlocks.waste_planks.get())
                         && level.getBlockState(log).is(ModFalloutBlocks.waste_log.get()),

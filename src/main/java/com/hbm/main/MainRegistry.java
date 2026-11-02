@@ -376,6 +376,7 @@ public final class MainRegistry {
         ModEventHandlerMobs.init();     // 1.7 ModEventHandler mob death drops, decorateMob, addAITasks
         ModEventHandlerImpact.init();   // Tom impact aftermath: dust/fire decay, burning, spawns
         ModEventHandlerHooks.init();    // food eaten, block break, sleep, potential spawns
+        com.hbm.util.Owners.init();     // placer UUID on placed block entities
         ImpactSky.register();         // Tom impact sky darkening (1.7 WorldProviderNTM)
         RadiationFog.init(); // 1.7 radFog, read from the chunk radiation
         RadiationWalls.init(); // the hbm:radiation_resistant tag as radiation walls

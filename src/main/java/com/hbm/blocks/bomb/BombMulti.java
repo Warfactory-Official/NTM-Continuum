@@ -1,5 +1,7 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Protection;
+import com.hbm.util.Owners;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityMist;
 import com.hbm.explosion.ExplosionChaos;
@@ -111,6 +113,7 @@ public class BombMulti extends CompatBlock implements TickingBlock, IBomb {
             return BombReturnCode.ERROR_MISSING_COMPONENT;
         }
 
+        Protection.Source source = Owners.source(detonator, level, pos);
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
         float explosionValue = this.explosionBaseValue;
         int clusterCount = 0;
@@ -132,24 +135,24 @@ public class BombMulti extends CompatBlock implements TickingBlock, IBomb {
 
         entity.clearSlots();
         level.removeBlock(pos, false);
-        ExplosionLarge.explode(level, x, y, z, explosionValue, true, true, true);
+        ExplosionLarge.explodeBy(level, source, x, y, z, explosionValue, true, true, true);
 
         if (clusterCount > 0) {
-            ExplosionChaos.cluster(level, x + 0.5, y + 0.5, z + 0.5, clusterCount, 0, (float) Math.PI * 0.5F,
+            ExplosionChaos.cluster(level, source, x + 0.5, y + 0.5, z + 0.5, clusterCount, 0, (float) Math.PI * 0.5F,
                     (float) Math.PI * 2F, (float) Math.PI * 0.125F, 0.375F);
         }
         if (fireRadius > 0 && level instanceof ServerLevel server) {
-            ExplosionChaos.igniteAllBlocks(server, x, y, z, fireRadius);
+            ExplosionChaos.igniteAllBlocks(server, source, x, y, z, fireRadius);
         }
         if (poisonRadius > 0) {
-            ExplosionNukeGeneric.wasteNoSchrab(level, pos, poisonRadius); // 1.7 BombMulti:170
+            ExplosionNukeGeneric.wasteNoSchrab(level, source, pos, poisonRadius); // 1.7 BombMulti:170
         }
         if (gasCloud > 0) {
             EntityMist mist = new EntityMist(ModEntities.MIST.get(), level);
             mist.setType(Fluids.CHLORINE);
             mist.setPos(x + 0.5, y + 0.5, z + 0.5);
             mist.setArea(gasCloud * 15F / 50F, gasCloud * 7.5F / 50F);
-            level.addFreshEntity(mist);
+            level.addFreshEntity(Owners.give(mist, source.player()));
         }
         return BombReturnCode.DETONATED;
     }

@@ -1,5 +1,7 @@
 package com.hbm.entity.missile;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModTerrainBlocks;
 import com.hbm.config.BombConfig;
@@ -70,7 +72,7 @@ public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
                 ? EntityNukeExplosionMK5.statFac(level(), radius, getX(), getY(), getZ())
                 : EntityNukeExplosionMK5.statFacNoRad(level(), radius, getX(), getY(), getZ());
         if (falloutAdd > 0) mk5.moreFallout(falloutAdd);
-        if (thrower != null) mk5.setDetonator(thrower);
+        Owners.inherit(mk5, this);
         if (level().addFreshEntity(mk5)) mk5.startChunkLoading();
 
         if (BombConfig.enableNukeClouds) {
@@ -167,25 +169,26 @@ public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
 
         @Override
         public void onMissileImpact(HitResult mop) {
-            ExplosionLarge.explode(level(), getX(), getY(), getZ(), 10.0F, true, true, true);
+            ExplosionLarge.explode(level(), this, getX(), getY(), getZ(), 10.0F, true, true, true);
 
             // 1.7 then fills a 3x3x3 with volcanic lava (plain setBlock, meta 0, flags 3) and puts the volcano core
             // (meta 0 = the bare, static-active "volcano_core") in the centre cell. Positions use floor(pos + offset).
             BlockState lava =
                     ModFluidNetBlocks.volcanic_lava_block.get().defaultBlockState();
+            Protection.Gate gate = Protection.gate(level(), Protection.Source.of(this), Protection.Cause.TERRAFORM);
             for (int x = -1; x <= 1; x++) {
                 for (int y = -1; y <= 1; y++) {
                     for (int z = -1; z <= 1; z++) {
-                        level().setBlock(new BlockPos(
-                                (int) Math.floor(getX() + x), (int) Math.floor(getY() + y), (int) Math.floor(getZ() + z)),
-                                lava, Block.UPDATE_ALL);
+                        BlockPos cell = new BlockPos(
+                                (int) Math.floor(getX() + x), (int) Math.floor(getY() + y), (int) Math.floor(getZ() + z));
+                        if (gate.mayAlter(cell)) level().setBlock(cell, lava, Block.UPDATE_ALL);
                     }
                 }
             }
-            level().setBlock(new BlockPos(
-                    (int) Math.floor(getX()), (int) Math.floor(getY()), (int) Math.floor(getZ())),
-                    ModTerrainBlocks.volcanoCore("volcano_core").defaultBlockState(),
-                    Block.UPDATE_ALL);
+            BlockPos core = new BlockPos((int) Math.floor(getX()), (int) Math.floor(getY()), (int) Math.floor(getZ()));
+            if (gate.mayAlter(core)) {
+                level().setBlock(core, ModTerrainBlocks.volcanoCore("volcano_core").defaultBlockState(), Block.UPDATE_ALL);
+            }
         }
 
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_volcano.get()); }

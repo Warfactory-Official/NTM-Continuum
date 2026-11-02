@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
 import com.hbm.explosion.vanillant.ExplosionVNT;
@@ -81,6 +82,7 @@ public class EntityTorpedo extends CompatEntity {
             discard();
             ExplosionCreator.composeEffectStandard(level(), getX(), getY() + 1, getZ());
             ExplosionVNT vnt = new ExplosionVNT(level(), getX(), getY(), getZ(), 20F);
+            vnt.setSource(Protection.Source.of(this));
             vnt.makeStandard();
             vnt.explode();
         }

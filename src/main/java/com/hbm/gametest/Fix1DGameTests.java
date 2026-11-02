@@ -102,7 +102,7 @@ public final class Fix1DGameTests {
         level.setBlockAndUpdate(planks, Blocks.OAK_PLANKS.defaultBlockState());
         level.setBlockAndUpdate(mossy, Blocks.MOSSY_COBBLESTONE.defaultBlockState());
         level.setBlockAndUpdate(clay, Blocks.CLAY.defaultBlockState());
-        for (BlockPos pos : new BlockPos[] {grass, log, planks, mossy, clay}) ExplosionNukeGeneric.wasteDest(level, pos);
+        for (BlockPos pos : new BlockPos[] {grass, log, planks, mossy, clay}) ExplosionNukeGeneric.wasteDest(level, dev.golem.core.world.Protection.Source.NONE, pos);
         helper.assertTrue(level.getBlockState(grass).is(ModFalloutBlocks.waste_earth.get())
                         && level.getBlockState(log).is(ModFalloutBlocks.waste_log.get())
                         && level.getBlockState(planks).is(ModBlocks.waste_planks.get())
@@ -114,8 +114,8 @@ public final class Fix1DGameTests {
         BlockPos planks2 = helper.absolutePos(new BlockPos(2, 1, 3));
         level.setBlockAndUpdate(glass, Blocks.GLASS.defaultBlockState());
         level.setBlockAndUpdate(planks2, Blocks.BIRCH_PLANKS.defaultBlockState());
-        ExplosionNukeGeneric.wasteDestNoSchrab(level, glass);
-        ExplosionNukeGeneric.wasteDestNoSchrab(level, planks2);
+        ExplosionNukeGeneric.wasteDestNoSchrab(level, dev.golem.core.world.Protection.Source.NONE, glass);
+        ExplosionNukeGeneric.wasteDestNoSchrab(level, dev.golem.core.world.Protection.Source.NONE, planks2);
         helper.assertTrue(level.getBlockState(glass).isAir() && level.getBlockState(planks2).is(ModBlocks.waste_planks.get()),
                 "wasteDestNoSchrab did not clear glass and turn planks into waste planks");
         helper.succeed();

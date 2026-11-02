@@ -1,5 +1,7 @@
 package com.hbm.items.weapon;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
@@ -177,7 +179,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 standardExplosion(shell, hit, 10F, 3F, false);
                 ExplosionLarge.spawnShrapnels(level, where.x, where.y, where.z, 15);
                 if (level instanceof ServerLevel server) // 1.7: (int)-truncated hit vector
-                    ExplosionChaos.igniteAllBlocks(server, (int) where.x, (int) where.y, (int) where.z, 12);
+                    ExplosionChaos.igniteAllBlocks(server, Protection.Source.of(shell), (int) where.x, (int) where.y, (int) where.z, 12);
 
                 int radius = 15;
                 for (Entity e : level.getEntities((Entity) null,
@@ -243,7 +245,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 mist.setType(Fluids.CHLORINE);
                 mist.setPos(impact.x, impact.y - 3D, impact.z);
                 mist.setArea(15F, 7.5F);
-                level.addFreshEntity(mist);
+                level.addFreshEntity(Owners.inherit(mist, shell));
                 PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.HEAVYMETAL, 5F);
             }
         },
@@ -315,7 +317,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
     private static void gasCloud(EntityArtilleryShell shell, Vec3 impact, FluidType fluid, int count,
             double spread, float width, float height) {
         for (int i = 0; i < count; i++) {
-            EntityMist mist = new EntityMist(shell.level());
+            EntityMist mist = Owners.inherit(new EntityMist(shell.level()), shell);
             mist.setType(fluid);
             double x = impact.x;
             double z = impact.z;
@@ -333,6 +335,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
             boolean breaksBlocks) {
         Vec3 impact = behindImpact(shell, hit);
         ExplosionVNT xnt = new ExplosionVNT(shell.level(), impact.x, impact.y, impact.z, size);
+        xnt.setSource(Protection.Source.of(shell));
         if (breaksBlocks) {
             xnt.setBlockAllocator(new BlockAllocatorStandard(48));
             xnt.setBlockProcessor(new BlockProcessorStandard().setNoDrop()

@@ -1,5 +1,9 @@
 package com.hbm.entity.particle;
 
+import dev.golem.core.world.Protection;
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import com.hbm.util.Owners;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
@@ -20,7 +24,19 @@ import dev.golem.core.data.DataOut;
  * because the tick carries server-side gameplay - see {@link EntityOrangeFX}, the same shape. The purely
  * cosmetic members of that 1.7 family are real particles in 26.1 instead.
  */
-public class EntityPinkCloudFX extends CompatEntity {
+public class EntityPinkCloudFX extends CompatEntity implements Owners.Carrier {
+
+    private @Nullable UUID owner;
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
 
     private int particleAge;
     private int maxAge;
@@ -77,7 +93,7 @@ public class EntityPinkCloudFX extends CompatEntity {
         if (maxAge < 900) maxAge = random.nextInt(301) + 900;
 
         if (!level().isClientSide() && random.nextInt(50) == 0)
-            ExplosionChaos.pinkCloud(level(), getX(), getY(), getZ(), 2D);
+            ExplosionChaos.pinkCloud(level(), Protection.Source.ofPlayer(owner), getX(), getY(), getZ(), 2D);
 
         if (++particleAge >= maxAge) {
             discard();

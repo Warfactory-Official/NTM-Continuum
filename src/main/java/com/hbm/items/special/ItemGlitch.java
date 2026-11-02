@@ -1,5 +1,6 @@
 package com.hbm.items.special;
 
+import dev.golem.core.world.Protection;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.ModEntities;
@@ -103,7 +104,7 @@ public class ItemGlitch extends CompatItem implements IBatteryItem {
             }
             case 14 -> {
                 inventory.dropAll();
-                ExplosionChaos.igniteAllBlocks(level, (int) player.getX(), (int) player.getY(), (int) player.getZ(), 5);
+                ExplosionChaos.igniteAllBlocks(level, Protection.Source.of(player), (int) player.getX(), (int) player.getY(), (int) player.getZ(), 5);
             }
             case 15 -> {
                 for (int i = 0; i < 36; i++) inventory.add(new ItemStack(Items.DIRT, 64));

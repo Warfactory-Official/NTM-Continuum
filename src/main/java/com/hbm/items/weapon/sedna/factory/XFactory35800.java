@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.util.Owners;
 import com.hbm.config.RunningConfig.ConfigWrapper;
 import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
@@ -48,7 +49,7 @@ public final class XFactory35800 {
             EntityFireLingering fire = new EntityFireLingering(beam.level()).setArea(7.5F, 2F).setDuration(200)
                     .setFireType(EntityFireLingering.TYPE_BLACK);
             fire.setPos(hit.getLocation());
-            beam.level().addFreshEntity(fire);
+            beam.level().addFreshEntity(Owners.inherit(fire, beam));
         }
         BulletImpact.standardBeamHit(beam, hit);
     };

@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
@@ -79,7 +80,7 @@ public class YellowBarrel extends BlockBarrelDeco {
         } else {
             Explosions.explode(level, primed, x, y, z, 12.0F, Level.ExplosionInteraction.TNT);
         }
-        ExplosionNukeGeneric.waste(level, center, 35); // 1.7 YellowBarrel:103
+        ExplosionNukeGeneric.waste(level, Protection.Source.NONE, center, 35); // 1.7 YellowBarrel:103
         for (int i = -5; i <= 5; i++) {
             for (int j = -5; j <= 5; j++) {
                 for (int k = -5; k <= 5; k++) {

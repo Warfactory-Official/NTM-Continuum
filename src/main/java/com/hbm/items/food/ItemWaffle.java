@@ -1,5 +1,6 @@
 package com.hbm.items.food;
 
+import dev.golem.core.world.Protection;
 import com.hbm.explosion.ExplosionNukeSmall;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +15,6 @@ public class ItemWaffle extends ItemModFood {
 
     @Override
     protected void onFoodEaten(ItemStack stack, ServerLevel level, Player player) {
-        ExplosionNukeSmall.explode(level, player.getX(), player.getY() + 0.5, player.getZ(), ExplosionNukeSmall.PARAMS_MEDIUM);
+        ExplosionNukeSmall.explode(level, Protection.Source.of(player), player.getX(), player.getY() + 0.5, player.getZ(), ExplosionNukeSmall.PARAMS_MEDIUM);
     }
 }

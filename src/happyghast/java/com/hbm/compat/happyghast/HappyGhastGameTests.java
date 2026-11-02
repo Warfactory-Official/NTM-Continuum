@@ -62,7 +62,7 @@ final class HappyGhastGameTests {
         nuke.setItem(0, new ItemStack(ModBombItems.man_igniter.get()));
         for (int i = 1; i <= 4; i++) nuke.setItem(i, new ItemStack(ModBombItems.early_explosive_lenses.get()));
         nuke.setItem(5, new ItemStack(ModBombItems.man_core.get()));
-        nuke.placerID = placer.getUUID();
+        nuke.setPlacer(placer.getUUID());
         return nuke;
     }
 
@@ -161,7 +161,7 @@ final class HappyGhastGameTests {
         helper.assertTrue(state.getValue(NukeMan.FACING) == 3, "facing 3 came back as " + state.getValue(NukeMan.FACING));
         TileEntityNukeMan back = (TileEntityNukeMan) helper.getBlockEntity(rel, TileEntityNukeMan.class);
         helper.assertTrue(back.isReady(), "the parts did not come back");
-        helper.assertTrue(player.getUUID().equals(back.placerID), "the placer was lost");
+        helper.assertTrue(player.getUUID().equals(back.placer()), "the placer was lost");
         helper.succeed();
     }
 

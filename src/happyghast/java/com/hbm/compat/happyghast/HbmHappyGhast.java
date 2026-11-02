@@ -89,7 +89,7 @@ public final class HbmHappyGhast {
     static EntityRiggedFatMan rig(Level level, BlockPos pos, BlockState state, TileEntityNukeMan nuke) {
         List<ItemStack> parts = new ArrayList<>(EntityRiggedFatMan.SLOTS);
         for (int i = 0; i < EntityRiggedFatMan.SLOTS; i++) parts.add(nuke.getItem(i).copy());
-        UUID placer = nuke.placerID;
+        UUID placer = nuke.placer();
         float yaw = EntityRiggedFatMan.yawForFacing(state.getValue(NukeMan.FACING));
 
         // as NukeMan.explode: empty it first so removing the block drops nothing

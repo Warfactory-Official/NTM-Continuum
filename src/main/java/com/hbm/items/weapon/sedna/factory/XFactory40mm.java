@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.config.RunningConfig.ConfigWrapper;
 import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
@@ -78,6 +80,7 @@ public final class XFactory40mm {
         var location = hit.getLocation();
         ExplosionVNT explosion = new ExplosionVNT(bullet.level(), location.x, location.y, location.z,
                 5F, bullet.getThrower());
+        explosion.setSource(Protection.Source.of(bullet));
         explosion.setBlockAllocator(new BlockAllocatorStandard());
         explosion.setBlockProcessor(new BlockProcessorStandard());
         explosion.setEntityProcessor(new EntityProcessorCrossSmooth(1, bullet.damage));
@@ -121,7 +124,7 @@ public final class XFactory40mm {
                 .setArea(5F, 2F).setDuration(duration)
                 .setFireType(phosphorus ? EntityFireLingering.TYPE_PHOSPHORUS : EntityFireLingering.TYPE_DIESEL);
         fire.setPos(hit.getLocation());
-        level.addFreshEntity(fire);
+        level.addFreshEntity(Owners.inherit(fire, bullet));
         bullet.discard();
 
         BlockPos centre = BlockPos.containing(hit.getLocation());

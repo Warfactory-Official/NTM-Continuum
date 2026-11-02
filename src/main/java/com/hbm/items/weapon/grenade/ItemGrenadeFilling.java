@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.grenade;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.entity.effect.EntityCloudFleija;
 import com.hbm.entity.effect.EntityFireLingering;
 import com.hbm.entity.grenade.EntityGrenadeUniversal;
@@ -92,6 +94,7 @@ public class ItemGrenadeFilling extends Item {
     private static void explodeDemo(EntityGrenadeUniversal grenade) {
         ExplosionVNT vnt = new ExplosionVNT(grenade.level(), grenade.getX(), grenade.getY(), grenade.getZ(), 5F,
                 grenade.getThrower());
+        vnt.setSource(Protection.Source.of(grenade));
         vnt.setBlockAllocator(new BlockAllocatorStandard());
         vnt.setBlockProcessor(new BlockProcessorStandard());
         vnt.setEntityProcessor(new EntityProcessorCrossSmooth(1, 10F));
@@ -134,7 +137,7 @@ public class ItemGrenadeFilling extends Item {
                                                                  .setDuration(200)
                                                                  .setFireType(EntityFireLingering.TYPE_DIESEL);
         fire.setPos(grenade.getX(), grenade.getY(), grenade.getZ());
-        level.addFreshEntity(fire);
+        level.addFreshEntity(Owners.inherit(fire, grenade));
         igniteAround(grenade, 2);
     }
 
@@ -145,7 +148,7 @@ public class ItemGrenadeFilling extends Item {
                                                                  .setDuration(600)
                                                                  .setFireType(EntityFireLingering.TYPE_PHOSPHORUS);
         fire.setPos(grenade.getX(), grenade.getY(), grenade.getZ());
-        level.addFreshEntity(fire);
+        level.addFreshEntity(Owners.inherit(fire, grenade));
         igniteAround(grenade, 3);
         if (!(level instanceof ServerLevel server)) return;
         for (int i = 0; i < 3; i++) {
@@ -161,11 +164,12 @@ public class ItemGrenadeFilling extends Item {
         if (!(grenade.level() instanceof ServerLevel server)) return;
         BlockPos origin = BlockPos.containing(grenade.getX(), grenade.getY(), grenade.getZ());
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        Protection.Gate gate = Protection.gate(server, Protection.Source.of(grenade), Protection.Cause.FIRE);
         for (int dx = -radius; dx <= radius; dx++)
             for (int dy = -radius; dy <= radius; dy++)
                 for (int dz = -radius; dz <= radius; dz++) {
                     pos.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
-                    if (!server.getBlockState(pos).isAir()) continue;
+                    if (!server.getBlockState(pos).isAir() || !gate.mayAlter(pos)) continue;
                     for (Direction direction : Direction.values()) {
                         BlockPos neighbor = pos.relative(direction);
                         if (Fires.isFlammable(server, neighbor, server.getBlockState(neighbor),
@@ -179,7 +183,7 @@ public class ItemGrenadeFilling extends Item {
 
     private static void explodeEmp(EntityGrenadeUniversal grenade) {
         explodeStandardEnergy(grenade, 15F, 3F, DamageClass.ELECTRIC, 0.5F, 0.5F, 1F, 3F);
-        ExplosionNukeGeneric.empBlast(grenade.level(),
+        ExplosionNukeGeneric.empBlast(grenade.level(), Protection.Source.of(grenade),
                 BlockPos.containing(grenade.getX(), grenade.getY(), grenade.getZ()), 5);
     }
 
@@ -211,6 +215,7 @@ public class ItemGrenadeFilling extends Item {
 
     private static void explodeNuclear(EntityGrenadeUniversal grenade) {
         ExplosionVNT vnt = new ExplosionVNT(grenade.level(), grenade.getX(), grenade.getY(), grenade.getZ(), 10F);
+        vnt.setSource(Protection.Source.of(grenade));
         vnt.setEntityProcessor(new EntityProcessorCrossSmooth(2, 100).withRangeMod(1.5F));
         vnt.setPlayerProcessor(new PlayerProcessorStandard());
         vnt.explode();
@@ -220,6 +225,7 @@ public class ItemGrenadeFilling extends Item {
 
     private static void explodeNuclearDemo(EntityGrenadeUniversal grenade) {
         ExplosionVNT vnt = new ExplosionVNT(grenade.level(), grenade.getX(), grenade.getY(), grenade.getZ(), 10F);
+        vnt.setSource(Protection.Source.of(grenade));
         vnt.setBlockAllocator(new BlockAllocatorStandard(64));
         vnt.setBlockProcessor(new BlockProcessorStandard().withBlockEffect(new BlockMutatorFire()));
         vnt.setEntityProcessor(new EntityProcessorCrossSmooth(2, 50).withRangeMod(1.5F));
@@ -260,6 +266,7 @@ public class ItemGrenadeFilling extends Item {
                                              float r, float g, float b, float scale) {
         ExplosionVNT vnt = new ExplosionVNT(grenade.level(), grenade.getX(), grenade.getY(), grenade.getZ(), range,
                 grenade.getThrower());
+        vnt.setSource(Protection.Source.of(grenade));
         vnt.setEntityProcessor(new EntityProcessorCrossSmooth(1, damage).setDamageClass(damageClass));
         vnt.setPlayerProcessor(new PlayerProcessorStandard());
         vnt.explode();
@@ -282,6 +289,7 @@ public class ItemGrenadeFilling extends Item {
                                        float resistance) {
         ExplosionVNT vnt = new ExplosionVNT(grenade.level(), grenade.getX(), grenade.getY(), grenade.getZ(), range,
                 grenade.getThrower());
+        vnt.setSource(Protection.Source.of(grenade));
         vnt.setEntityProcessor(new EntityProcessorCrossSmooth(1, damage).setupPiercing(threshold, resistance));
         vnt.setPlayerProcessor(new PlayerProcessorStandard());
         vnt.setSFX(new ExplosionEffectWeapon(10, 2.5F, 1F));
@@ -291,6 +299,7 @@ public class ItemGrenadeFilling extends Item {
     public static void tinyExplode(EntityGrenadeUniversal grenade, float range, float damage) {
         ExplosionVNT vnt = new ExplosionVNT(grenade.level(), grenade.getX(), grenade.getY(), grenade.getZ(), range,
                 grenade.getThrower());
+        vnt.setSource(Protection.Source.of(grenade));
         vnt.setEntityProcessor(new EntityProcessorCrossSmooth(0.5, damage).setKnockback(0.25D));
         vnt.setPlayerProcessor(new PlayerProcessorStandard());
         vnt.setSFX(new ExplosionEffectTiny());

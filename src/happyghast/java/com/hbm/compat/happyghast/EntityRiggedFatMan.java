@@ -151,7 +151,7 @@ public class EntityRiggedFatMan extends Entity implements Leashable {
         if (!level().setBlock(pos, state, 3)) return false;
         if (level().getBlockEntity(pos) instanceof TileEntityNukeMan nuke) {
             for (int i = 0; i < SLOTS; i++) nuke.setItem(i, parts.get(i).copy());
-            nuke.placerID = placer;
+            nuke.setPlacer(placer);
             nuke.setChanged();
         }
         parts.clear();

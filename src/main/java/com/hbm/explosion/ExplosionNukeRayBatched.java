@@ -7,6 +7,7 @@ import com.hbm.interfaces.IExplosionRay;
 import com.hbm.util.ChunkCarver;
 import dev.golem.core.world.Chunks;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.Protection;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -102,6 +103,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     private volatile boolean isAusf3Complete = false;
     private volatile boolean cancelled = false;
     private UUID detonator;
+    private Protection.Gate gate = Protection.Gate.OPEN;
 
     // Prefetch state (server thread only)
     private final AtomicReferenceArray<LevelChunk> chunkCache;
@@ -907,6 +909,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 
     public void destructionTick(int time) {
         long start = System.currentTimeMillis();
+        gate = Protection.gate(world, Protection.Source.ofPlayer(detonator), Protection.Cause.EXPLOSION);
         destructionTicks++;
         while (System.currentTimeMillis() < start + time) {
             if (perChunk.isEmpty()) break;
@@ -954,6 +957,34 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      */
     private ChunkCarver carver;
 
+    /**
+     * Strips claim-denied blocks from the chunk's bitset the first time the chunk is reached; true when nothing is left
+     * and the chunk was retired.
+     */
+    private boolean retireIfProtected(long chunk) {
+        if (gate.isOpen()) return false;
+        int cx = ChunkPos.getX(chunk);
+        int cz = ChunkPos.getZ(chunk);
+        Protection.Coverage coverage = gate.coverage(cx, cz);
+        if (coverage == Protection.Coverage.OPEN) return false;
+        BitSet bits = perChunk.get(chunk);
+        if (coverage == Protection.Coverage.CLOSED) {
+            bits.clear();
+        } else {
+            int baseX = cx << 4;
+            int baseZ = cz << 4;
+            for (int i = bits.nextSetBit(0); i >= 0; i = bits.nextSetBit(i + 1)) {
+                if (!gate.mayAlter(baseX + ((i >> 4) & 15), maxY - (i >> 8), baseZ + (i & 15))) bits.clear(i);
+            }
+        }
+        if (!bits.isEmpty()) return false;
+        perChunk.remove(chunk);
+        releaseChunk(chunk);
+        orderedIndex++;
+        needsNewHitArray = true;
+        return true;
+    }
+
     private boolean processChunkBlocks(long start, int time) {
         if (this.perChunk.isEmpty() || orderedIndex >= orderedChunks.length) return false;
 
@@ -967,6 +998,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                     && server.getChunkSource().getChunkNow(ChunkPos.getX(destChunk), ChunkPos.getZ(destChunk)) == null) {
                 return false;
             }
+            if (retireIfProtected(destChunk)) return true;
             hitArray = perChunk.get(destChunk);
             index = hitArray.nextSetBit(0);
             needsNewHitArray = false;
@@ -1021,6 +1053,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
             int cz = ChunkPos.getZ(destChunk);
             LevelChunk chunk = server.getChunkSource().getChunkNow(cx, cz);
             if (chunk == null) return false;
+            if (retireIfProtected(destChunk)) return true;
             carver = new ChunkCarver(server, chunk, perChunk.get(destChunk), cx, cz, maxY);
         }
 

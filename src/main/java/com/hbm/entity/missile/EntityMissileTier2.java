@@ -1,5 +1,7 @@
 package com.hbm.entity.missile;
 
+import dev.golem.core.world.Protection;
+import com.hbm.util.Owners;
 import dev.golem.core.world.Explosions;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.explosion.ExplosionChaos;
@@ -58,7 +60,7 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
             this.explodeStandard(30F, 32, true);
             ExplosionCreator.composeEffectStandard(level(), getX(), getY(), getZ());
             // 1.7 Tier2:57 - the float-truncated centre is 1.7's
-            if (level() instanceof ServerLevel server) ExplosionChaos.igniteFlammableBlocks(server,
+            if (level() instanceof ServerLevel server) ExplosionChaos.igniteFlammableBlocks(server, Protection.Source.of(this),
                     (int) ((float) getX() + 0.5F), (int) ((float) getY() + 0.5F), (int) ((float) getZ() + 0.5F), 25);
         }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_incendiary_medium.get()); }
@@ -112,7 +114,7 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
         @Override
         public void onMissileImpact(HitResult mop) {
             Explosions.explode(level(), this, getX(), getY(), getZ(), 15F, Level.ExplosionInteraction.TNT);
-            ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 50, getYRot(), getXRot(),
+            ExplosionChaos.cluster(level(), Protection.Source.of(this), getX(), getY(), getZ(), 50, getYRot(), getXRot(),
                     (float) Math.PI * 0.25F, (float) Math.PI * 0.25F, 1F);
         }
 

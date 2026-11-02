@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import dev.golem.core.world.Protection;
 import com.hbm.config.RunningConfig.ConfigWrapper;
 import com.hbm.config.ServerConfig;
 import com.hbm.explosion.vanillant.ExplosionVNT;
@@ -82,6 +83,7 @@ public final class XFactoryTurret {
 
         Vec3 hit = mop.getLocation();
         ExplosionVNT vnt = new ExplosionVNT(bullet.level(), hit.x, hit.y, hit.z, 10);
+        vnt.setSource(Protection.Source.of(bullet));
         vnt.setEntityProcessor(new EntityProcessorCrossSmooth(2, bullet.damage).withRangeMod(1.5F));
         vnt.setPlayerProcessor(new PlayerProcessorStandard());
         vnt.explode();
@@ -131,6 +133,7 @@ public final class XFactoryTurret {
                 .setOnImpact((bullet, mop) -> {
                     Vec3 hit = mop.getLocation();
                     ExplosionVNT vnt = new ExplosionVNT(bullet.level(), hit.x, hit.y, hit.z, 10F);
+                    vnt.setSource(Protection.Source.of(bullet));
                     vnt.setBlockAllocator(new BlockAllocatorStandard());
                     vnt.setBlockProcessor(new BlockProcessorStandard());
                     vnt.setEntityProcessor(new EntityProcessorCrossSmooth(1, bullet.damage));

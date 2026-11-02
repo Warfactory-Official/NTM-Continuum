@@ -1,5 +1,6 @@
 package com.hbm.entity.grenade;
 
+import com.hbm.util.Owners;
 import dev.golem.core.data.Tags;
 
 import com.hbm.items.ModEntityItems;
@@ -81,7 +82,7 @@ public class EntityDisperserCanister extends EntityGrenadeBase {
             mist.setPos(getX(), getY(), getZ());
             mist.setArea(10, 5);
             mist.setDuration(80);
-            level().addFreshEntity(mist);
+            level().addFreshEntity(Owners.inherit(mist, this));
             discard();
         }
     }

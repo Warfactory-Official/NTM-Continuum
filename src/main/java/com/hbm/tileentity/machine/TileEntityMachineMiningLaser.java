@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.data.Tags;
@@ -175,7 +177,9 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                 BlockState block = level.getBlockState(targetPos);
 
                 if (block.liquid()) {
-                    level.setBlockAndUpdate(targetPos, Blocks.AIR.defaultBlockState());
+                    if (Protection.mayAlter(level, targetPos, Owners.source(te), Protection.Cause.TERRAFORM)) {
+                        level.setBlockAndUpdate(targetPos, Blocks.AIR.defaultBlockState());
+                    }
                     te.buildDam();
                     continue;
                 }
@@ -239,6 +243,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
     private boolean canBreak(BlockState state, BlockPos p) {
         if (state.isAir()) return false;
         if (state.is(Blocks.BEDROCK)) return false;
+        if (!Protection.mayAlter(level, p, Owners.source(this), Protection.Cause.TERRAFORM)) return false;
         float hardness = state.getDestroySpeed(level, p);
         if (hardness < 0 || hardness > 3_500_000) return false;
         return !state.liquid();
@@ -400,7 +405,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
 
     private void placeBags(BlockPos wallPos) {
         BlockState state = level.getBlockState(wallPos);
-        if (state.canBeReplaced() && state.liquid())
+        if (state.canBeReplaced() && state.liquid() && Protection.mayAlter(level, wallPos, Owners.source(this), Protection.Cause.PLACEMENT))
             level.setBlockAndUpdate(wallPos, ModMachineBlocks.sandbags.get().defaultBlockState());
     }
 

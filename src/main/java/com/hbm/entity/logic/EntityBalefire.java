@@ -67,6 +67,7 @@ public class EntityBalefire extends EntityExplosionChunkloading {
 
             exp = createExplosion();
             exp.variant = ExplosionBalefire.variant(this.variant);
+            exp.detonator = protectionOwner();
             SubLevelBlasts.crater(level(), position(), destructionRange);
 
             this.did = true;
@@ -113,6 +114,7 @@ public class EntityBalefire extends EntityExplosionChunkloading {
 
         exp = createExplosion();
         exp.variant = ExplosionBalefire.variant(this.variant);
+        exp.detonator = protectionOwner();
         exp.readFromNbt(input, "exp_");
 
         this.did = true;

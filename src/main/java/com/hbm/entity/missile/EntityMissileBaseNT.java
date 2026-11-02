@@ -1,5 +1,9 @@
 package com.hbm.entity.missile;
 
+import net.minecraft.world.entity.Entity;
+import dev.golem.core.world.Protection;
+import java.util.UUID;
+import com.hbm.util.Owners;
 import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.api.event.HbmEvents;
 import com.hbm.items.weapon.ItemMissileStandard;
@@ -70,7 +74,7 @@ import org.jspecify.annotations.Nullable;
  * that scans for missiles, and in smart mode drives the redstone only once it is coming down.
  */
 public abstract class EntityMissileBaseNT extends CompatEntity implements IChunkLoader, IMissilePitch,
-        IRadarDetectableNT {
+        IRadarDetectableNT, Owners.Carrier {
 
     public int startX;
     public int startZ;
@@ -83,6 +87,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
     public int health = 50;
 
     public @Nullable LivingEntity thrower;
+    private @Nullable UUID owner;
 
     /**
      * The missile's pitch in upstream's convention: 0° straight up, −90° horizontal, −180° straight
@@ -398,7 +403,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
     protected void killMissile() {
         if (isRemoved()) return;
         discard();
-        ExplosionLarge.explode(level(), thrower, getX(), getY(), getZ(), 5, true, false, true);
+        ExplosionLarge.explode(level(), exploder(), getX(), getY(), getZ(), 5, true, false, true);
         Vec3 motion = getDeltaMovement();
         ExplosionLarge.spawnShrapnelShower(level(), getX(), getY(), getZ(), motion.x, motion.y, motion.z, 15, 0.075);
         ExplosionLarge.spawnMissileDebris(level(), getX(), getY(), getZ(), motion.x, motion.y, motion.z, 0.25,
@@ -410,7 +415,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
      * cross entity processor at node distance 7.5 and double entity range.
      */
     public void explodeStandard(float strength, int resolution, boolean fire) {
-        ExplosionVNT xnt = new ExplosionVNT(level(), getX(), getY(), getZ(), strength);
+        ExplosionVNT xnt = new ExplosionVNT(level(), getX(), getY(), getZ(), strength).setSource(Protection.Source.of(this));
         xnt.setBlockAllocator(new BlockAllocatorStandard(resolution));
         xnt.setBlockProcessor(new BlockProcessorStandard().setNoDrop().withBlockEffect(fire ? new BlockMutatorFire() : null));
         xnt.setEntityProcessor(new EntityProcessorCross(7.5D).withRangeMod(2));
@@ -420,6 +425,22 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
 
     public void setThrower(@Nullable LivingEntity thrower) {
         this.thrower = thrower;
+        this.owner = Owners.of(thrower);
+    }
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
+
+    /** Blast source entity: the live thrower for damage credit, else this missile when an offline owner survives. */
+    protected @Nullable Entity exploder() {
+        return thrower != null ? thrower : owner != null ? this : null;
     }
 
     @Override
@@ -458,6 +479,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
         startX = input.getIntOr("sX", 0);
         startZ = input.getIntOr("sZ", 0);
         velocity = input.getDoubleOr("veloc", 0);
+        owner = Owners.load(input);
     }
 
     @Override
@@ -476,5 +498,6 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
         output.putInt("sX", startX);
         output.putInt("sZ", startZ);
         output.putDouble("veloc", velocity);
+        Owners.save(output, owner);
     }
 }

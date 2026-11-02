@@ -12,6 +12,7 @@ import com.hbm.explosion.ExplosionNukeRayBatched;
 import com.hbm.util.ChunkCarver;
 import com.hbm.world.chunk.ChunkLoadingManager;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.Protection;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayList;
@@ -1272,5 +1273,95 @@ public final class NukePerfGameTests {
                 }
             }
         }
+    }
+
+    private static final int PROT_RADIUS = 48;
+    private static final int PROT_X = -3 * OFFSET, PROT_Z = 0;
+
+    /**
+     * The same blast four times over one dirt block: warm-up, no provider, a provider that objects to nothing, and a
+     * provider that closes the chunk east of the centre and halves the one west of it. The last run asserts no
+     * denied block changed and logs wall time next to the others.
+     */
+    public static void craterProtection(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(PROT_X, PROT_RADIUS + 2, PROT_Z);
+        ChunkLoadingManager.requestTicket(level, "crater_protection").force(origin.getX() >> 4, origin.getZ() >> 4);
+        protectionPhase(helper, level, origin, 0);
+    }
+
+    private static Protection.Provider protectionStub(int phase, int originChunkX) {
+        if (phase < 2) return null;
+        return new Protection.Provider() {
+            @Override
+            public Protection.Coverage coverage(net.minecraft.world.level.Level l, int cx, int cz,
+                                                Protection.Source source, Protection.Cause cause) {
+                if (phase == 2) return Protection.Coverage.OPEN;
+                return cx == originChunkX + 1 ? Protection.Coverage.CLOSED
+                        : cx == originChunkX - 1 ? Protection.Coverage.PARTIAL : Protection.Coverage.OPEN;
+            }
+
+            @Override
+            public boolean mayAlter(net.minecraft.world.level.Level l, BlockPos pos, Protection.Source source,
+                                    Protection.Cause cause) {
+                return (pos.getX() & 1) != 0;
+            }
+        };
+    }
+
+    private static void protectionPhase(GameTestHelper helper, ServerLevel level, BlockPos origin, int phase) {
+        int half = PROT_RADIUS;
+        BlockState dirt = Blocks.DIRT.defaultBlockState();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int dx = -half; dx <= half; dx++) {
+            for (int dz = -half; dz <= half; dz++) {
+                int x = origin.getX() + dx, z = origin.getZ() + dz;
+                LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
+                for (int dy = -half; dy <= 0; dy++) {
+                    int fy = origin.getY() + dy;
+                    chunk.getSection(chunk.getSectionIndex(fy)).setBlockState(x & 15, fy & 15, z & 15, dirt, false);
+                }
+            }
+        }
+        int originChunkX = origin.getX() >> 4;
+        Protection.Provider stub = protectionStub(phase == 3 ? 3 : phase, originChunkX);
+        if (stub != null) Protection.register(stub);
+        EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFacNoRad(
+                level, PROT_RADIUS, origin.getX(), origin.getY(), origin.getZ());
+        level.addFreshEntity(blast);
+        long start = System.currentTimeMillis();
+        BlastDriver driver = new BlastDriver(blast);
+        pollUntilWithCleanup(helper, BLAST_POLL_TRIES, driver::isComplete,
+                "the protected blast did not finish", () -> {
+                    if (stub != null) Protection.unregister(stub);
+                    Constants.LOG.info("[NUKE-PROT] phase {} r={} wall {} ms, {} ticks, {} blocks destroyed",
+                            phase, PROT_RADIUS, System.currentTimeMillis() - start, blast.tickCount,
+                            blast.getBlocksDestroyed());
+                    if (phase == 3) {
+                        int eastChanged = 0, westEvenChanged = 0, westOddChanged = 0;
+                        for (int dx = -half; dx <= half; dx++) {
+                            for (int dz = -half; dz <= half; dz++) {
+                                int x = origin.getX() + dx, z = origin.getZ() + dz;
+                                int cx = x >> 4;
+                                if (cx != originChunkX + 1 && cx != originChunkX - 1) continue;
+                                for (int dy = -half; dy <= 0; dy++) {
+                                    pos.set(x, origin.getY() + dy, z);
+                                    if (!level.getBlockState(pos).isAir()) continue;
+                                    if (cx == originChunkX + 1) eastChanged++;
+                                    else if ((x & 1) == 0) westEvenChanged++;
+                                    else westOddChanged++;
+                                }
+                            }
+                        }
+                        helper.assertTrue(eastChanged == 0, "closed chunk lost " + eastChanged + " blocks");
+                        helper.assertTrue(westEvenChanged == 0, "denied columns lost " + westEvenChanged + " blocks");
+                        helper.assertTrue(westOddChanged > 0, "allowed columns of the partial chunk were never cleared");
+                        helper.succeed();
+                    } else {
+                        protectionPhase(helper, level, origin, phase + 1);
+                    }
+                }, () -> {
+                    if (stub != null) Protection.unregister(stub);
+                });
     }
 }

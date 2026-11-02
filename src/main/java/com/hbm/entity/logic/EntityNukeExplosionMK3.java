@@ -172,6 +172,8 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
             expl = new ExplosionFleija(x, y, z, level(), this.destructionRange, this.coefficient, this.coefficient2);
         if (extType == 1)
             sol = new ExplosionSolinium(x, y, z, level(), this.destructionRange, this.coefficient, this.coefficient2);
+        if (expl != null) expl.detonator = protectionOwner();
+        if (sol != null) sol.detonator = protectionOwner();
     }
 
     public EntityNukeExplosionMK3 makeSol() {

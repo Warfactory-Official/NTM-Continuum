@@ -1,5 +1,8 @@
 package com.hbm.entity.logic;
 
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import com.hbm.util.Owners;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
 import com.hbm.util.ChunkUtil;
@@ -12,7 +15,9 @@ import net.minecraft.world.level.Level;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
-public abstract class EntityExplosionChunkloading extends CompatEntity {
+public abstract class EntityExplosionChunkloading extends CompatEntity implements Owners.Carrier {
+
+    private @Nullable UUID owner;
 
     private final LongOpenHashSet forcedChunks = new LongOpenHashSet();
     private boolean released = false;
@@ -71,11 +76,22 @@ public abstract class EntityExplosionChunkloading extends CompatEntity {
     }
 
     @Override
+    public @Nullable UUID protectionOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
+
+    @Override
     protected void defineData(SynchedData builder) {
     }
 
     @Override
     protected void loadData(DataIn input) {
+        owner = Owners.load(input);
         int[] packed = input.getIntArray("forcedChunks").orElse(null);
         if (packed != null)
             for (int i = 0; i + 1 < packed.length; i += 2) forcedChunks.add(ChunkPos.pack(packed[i], packed[i + 1]));
@@ -83,6 +99,7 @@ public abstract class EntityExplosionChunkloading extends CompatEntity {
 
     @Override
     protected void saveData(DataOut output) {
+        Owners.save(output, owner);
         if (forcedChunks.isEmpty()) return;
         int[] packed = new int[forcedChunks.size() * 2];
         int i = 0;

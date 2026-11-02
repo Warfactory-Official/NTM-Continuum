@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import dev.golem.core.world.Protection;
 import com.hbm.config.RunningConfig.ConfigWrapper;
 import com.hbm.config.ServerConfig;
 import com.hbm.items.weapon.sedna.BulletConfig;
@@ -199,6 +200,7 @@ public final class XFactoryTool {
             Block full) {
         BlockState state = level.getBlockState(pos);
         if (!state.is(layer) && !state.canBeReplaced()) return false;
+        if (!Protection.mayAlter(level, pos, Protection.Source.NONE, Protection.Cause.FLUID)) return false;
         if (!layer.defaultBlockState().canSurvive(level, pos)) return false;
         if (!state.is(layer)) {
             level.setBlockAndUpdate(pos, layer.defaultBlockState());
@@ -238,6 +240,7 @@ public final class XFactoryTool {
         Vec3 location = hit.getLocation();
         ExplosionVNT explosion = new ExplosionVNT(bullet.level(), location.x, location.y, location.z,
                 5F, bullet.getThrower());
+        explosion.setSource(Protection.Source.of(bullet));
         explosion.setBlockAllocator(new BlockAllocatorBulkie(60, 8));
         explosion.setBlockProcessor(new BlockProcessorStandard());
         explosion.setEntityProcessor(new EntityProcessorCrossSmooth(1, bullet.damage)
@@ -254,6 +257,7 @@ public final class XFactoryTool {
         Vec3 location = hit.getLocation();
         ExplosionVNT explosion = new ExplosionVNT(bullet.level(), location.x, location.y, location.z,
                 15F, bullet.getThrower());
+        explosion.setSource(Protection.Source.of(bullet));
         explosion.setBlockAllocator(new BlockAllocatorStandard());
         explosion.setBlockProcessor(new BlockProcessorStandard().setNoDrop()
                 .withBlockEffect(new BlockMutatorDebris(() -> ModBlocks.block_slag.get().defaultBlockState())));

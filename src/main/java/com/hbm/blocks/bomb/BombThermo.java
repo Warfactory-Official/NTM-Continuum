@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import com.hbm.explosion.ExplosionThermo;
 import com.hbm.interfaces.IBomb;
@@ -40,14 +41,15 @@ public class BombThermo extends CompatBlock implements IBomb {
         // 1.7 ran the sweep on both sides; the block writes are the server's alone here.
         if (level.isClientSide()) return BombReturnCode.DETONATED;
         level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        Protection.Source source = Protection.Source.of(detonator);
         if (endothermic) {
-            ExplosionThermo.freeze(level, pos, 15);
-            ExplosionThermo.freezer(level, pos, 20);
+            ExplosionThermo.freeze(level, source, pos, 15);
+            ExplosionThermo.freezer(level, source, pos, 20);
         } else {
-            ExplosionThermo.scorch(level, pos, 15);
-            ExplosionThermo.setEntitiesOnFire(level, pos.getX(), pos.getY(), pos.getZ(), 20);
+            ExplosionThermo.scorch(level, source, pos, 15);
+            ExplosionThermo.setEntitiesOnFire(level, source, pos.getX(), pos.getY(), pos.getZ(), 20);
         }
-        Explosions.explode(level, null, pos.getX(), pos.getY(), pos.getZ(), 5.0F, Level.ExplosionInteraction.TNT);
+        Explosions.explode(level, detonator, pos.getX(), pos.getY(), pos.getZ(), 5.0F, Level.ExplosionInteraction.TNT);
         return BombReturnCode.DETONATED;
     }
 }

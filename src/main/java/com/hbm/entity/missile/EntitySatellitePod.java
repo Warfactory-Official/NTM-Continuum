@@ -1,5 +1,6 @@
 package com.hbm.entity.missile;
 
+import dev.golem.core.world.Protection;
 import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.client.ClientEffects;
 import com.hbm.entity.ModNtmEntities;
@@ -94,6 +95,7 @@ public class EntitySatellitePod extends EntityThrowableInterp implements IRadarD
             discard();
 
             ExplosionVNT xnt = new ExplosionVNT(level(), getX(), getY() + 1.5, getZ(), 15F);
+            xnt.setSource(Protection.Source.of(this));
             xnt.setEntityProcessor(new EntityProcessorCrossSmooth(1D, 50));
             xnt.setPlayerProcessor(new PlayerProcessorStandard());
             xnt.setSFX(new ExplosionEffectWeapon(10, 2.5F, 1F));

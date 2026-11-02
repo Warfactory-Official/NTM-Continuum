@@ -1,5 +1,8 @@
 package com.hbm.entity.effect;
 
+import java.util.UUID;
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.Constants;
 import com.hbm.blocks.ModTerrainBlocks;
 import com.hbm.blocks.bomb.BlockVolcano;
@@ -78,7 +81,7 @@ import org.jspecify.annotations.Nullable;
  * chunks leave the lists only once their writes are fully applied, so an interrupted sweep resumes
  * (in-flight scans are redone).
  */
-public class EntityFalloutRain extends CompatEntity {
+public class EntityFalloutRain extends CompatEntity implements Owners.Carrier {
 
     private static final int MAX_SOLID_DEPTH = 3;
     private static final int MIN_ANGLE_STEPS = 18;
@@ -87,6 +90,8 @@ public class EntityFalloutRain extends CompatEntity {
     private static final int MAX_SCAN_FAILURE_RETRIES = 3;
 
     private int scale = 1;
+    private @Nullable UUID owner;
+    private Protection.@Nullable Gate claimGate;
     /** Lays this block in place of {@code hbm:fallout}; set before the rain is added, saved with it. */
     private @Nullable Block layer;
     /** 1.7 {@code tickDelay}, initialised from {@code BombConfig.fDelay} and not saved (1.7 did not save it either). */
@@ -678,7 +683,10 @@ public class EntityFalloutRain extends CompatEntity {
             return false;
         }
 
-        if (scan.touched == null) scan.touched = new boolean[chunk.getSections().length];
+        if (scan.touched == null) {
+            scan.touched = new boolean[chunk.getSections().length];
+            dropClaimed(server, scan, cx, cz);
+        }
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
         if (!scan.stateWritesDone && !writePass(server, chunk, scan, pos, deadline)) return false;
@@ -701,6 +709,26 @@ public class EntityFalloutRain extends CompatEntity {
             return false;
         }
         return notifyPass(server, chunk, scan, pos, deadline, cx, cz);
+    }
+
+    /** Removes writes the claim provider denies, once per chunk before its first write. */
+    private void dropClaimed(ServerLevel server, ChunkScan scan, int cx, int cz) {
+        if (claimGate == null) {
+            claimGate = Protection.gate(server, Protection.Source.ofPlayer(owner), Protection.Cause.RADIATION_BLOCK_CONVERSION);
+        }
+        Protection.Coverage coverage = claimGate.coverage(cx, cz);
+        if (coverage == Protection.Coverage.OPEN) return;
+        if (coverage == Protection.Coverage.CLOSED) {
+            scan.stateWrites.clear();
+            scan.fallingWrites.clear();
+            scan.biomes.clear();
+            return;
+        }
+        scan.biomes.clear();
+        scan.stateWrites.removeIf(write -> !claimGate.mayAlter(
+                BlockPos.getX(write.pos()), BlockPos.getY(write.pos()), BlockPos.getZ(write.pos())));
+        scan.fallingWrites.removeIf(write -> !claimGate.mayAlter(
+                BlockPos.getX(write.pos()), BlockPos.getY(write.pos()), BlockPos.getZ(write.pos())));
     }
 
     /** True when all eight neighbours of a chunk are in memory, so a border read cannot generate one. */
@@ -1130,6 +1158,17 @@ public class EntityFalloutRain extends CompatEntity {
         chunksToProcess = fromPairs(input.getIntArray("chunks").orElse(new int[0]));
         outerChunksToProcess = fromPairs(input.getIntArray("outerChunks").orElse(new int[0]));
         gathered = input.getBooleanOr("gathered", !chunksToProcess.isEmpty() || !outerChunksToProcess.isEmpty());
+        owner = Owners.load(input);
+    }
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
     }
 
     @Override
@@ -1139,6 +1178,7 @@ public class EntityFalloutRain extends CompatEntity {
         output.putIntArray("chunks", toPairs(chunksToProcess));
         output.putIntArray("outerChunks", toPairs(outerChunksToProcess));
         output.putBoolean("gathered", gathered);
+        Owners.save(output, owner);
     }
 
     private static LongArrayList fromPairs(int[] data) {

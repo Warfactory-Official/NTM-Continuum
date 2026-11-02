@@ -1,5 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.config.RunningConfig.ConfigWrapper;
 import com.hbm.config.ServerConfig;
 import com.hbm.capability.HbmLivingProps;
@@ -128,7 +130,8 @@ public final class XFactoryFlamer {
 
         if (((FireBlockAccessor) Blocks.FIRE).hbm$getBurnOdds(state) > 0) {
             BlockPos target = pos.relative(dir);
-            if (world.getBlockState(target).isAir()) {
+            if (world.getBlockState(target).isAir()
+                    && Protection.mayAlter(world, target, Protection.Source.of(bullet), Protection.Cause.FIRE)) {
                 world.setBlockAndUpdate(target, Blocks.FIRE.defaultBlockState());
                 return true;
             }
@@ -152,7 +155,7 @@ public final class XFactoryFlamer {
             EntityFireLingering fire = new EntityFireLingering(bullet.level())
                     .setArea(width, height).setDuration(duration).setFireType(type);
             fire.setPos(hit);
-            bullet.level().addFreshEntity(fire);
+            bullet.level().addFreshEntity(Owners.inherit(fire, bullet));
         }
 
         bullet.discard();

@@ -40,6 +40,7 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
 
         exp = new ExplosionTom((int) this.getX(), (int) this.getY(), (int) this.getZ(), level(),
                 this.destructionRange);
+        exp.detonator = protectionOwner();
         exp.readFromNbt(input, "exp_");
 
         this.did = true;
@@ -76,6 +77,7 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
 
             exp = new ExplosionTom((int) this.getX(), (int) this.getY(), (int) this.getZ(), level(),
                     this.destructionRange);
+            exp.detonator = protectionOwner();
             SubLevelBlasts.crater(level(), position(), destructionRange);
 
             // hbm-space marked the body as impacted here (CBT_Impact); addons listen on Environment.IMPACT
