@@ -1,5 +1,7 @@
 package com.hbm.explosion;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.potion.ModEffects;
 import dev.golem.core.world.Compat;
 import com.hbm.entity.particle.EntityCloudFX;
@@ -42,9 +44,10 @@ public final class ExplosionChaos {
     // --- ntm-next entity port (merge_explosion_helpers.py) ---
 
 /** 1.7 floater:224-253 - lifts every block in the sphere straight up by {@code height}, leaving air behind. */
-    public static void floater(Level level, BlockPos center, int radius, int height) {
+    public static void floater(Level level, Protection.Source source, BlockPos center, int radius, int height) {
         int r2 = radius * radius;
         int threshold = r2 / 2;
+        Protection.Gate gate = Protection.gate(level, source, Protection.Cause.TERRAFORM);
         BlockPos.MutableBlockPos from = new BlockPos.MutableBlockPos();
         BlockPos.MutableBlockPos to = new BlockPos.MutableBlockPos();
         for (int xx = -radius; xx < radius; xx++) {
@@ -54,10 +57,11 @@ public final class ExplosionChaos {
                 for (int zz = -radius; zz < radius; zz++) {
                     if (yySq + zz * zz >= threshold) continue;
                     from.set(center.getX() + xx, center.getY() + yy, center.getZ() + zz);
+                    to.set(from.getX(), from.getY() + height, from.getZ());
+                    if (!gate.mayAlter(from) || !gate.mayAlter(to)) continue;
                     BlockState save = level.getBlockState(from);
                     level.setBlockAndUpdate(from, Blocks.AIR.defaultBlockState());
                     if (save.isAir()) continue;
-                    to.set(from.getX(), from.getY() + height, from.getZ());
                     level.setBlockAndUpdate(to, save);
                 }
             }
@@ -97,7 +101,8 @@ public final class ExplosionChaos {
     }
 
 
-    public static void igniteFlammableBlocks(ServerLevel level, int x, int y, int z, int bound) {
+    public static void igniteFlammableBlocks(ServerLevel level, Protection.Source source, int x, int y, int z, int bound) {
+        Protection.Gate gate = Protection.gate(level, source, Protection.Cause.FIRE);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int threshold = bound * bound / 2;
         for (int xx = -bound; xx < bound; xx++) {
@@ -110,7 +115,7 @@ public final class ExplosionChaos {
                     // 1.7: ExplosionChaos:78 passes the squared offsets as isFlammable's coordinates; the cell's own is meant
                     if (!Fires.isFlammable(level, pos, level.getBlockState(pos), Direction.UP)) continue;
                     BlockPos above = pos.above();
-                    if (level.getBlockState(above).isAir()) {
+                    if (level.getBlockState(above).isAir() && gate.mayAlter(above)) {
                         level.setBlock(above, Blocks.FIRE.defaultBlockState(), 3); // 1.7 setBlock(fire)
                     }
                 }
@@ -119,7 +124,7 @@ public final class ExplosionChaos {
     }
 
 
-    public static void spawnPoisonCloud(Level level, double x, double y, double z, int count, double speed, int type) {
+    public static void spawnPoisonCloud(Level level, Protection.Source source, double x, double y, double z, int count, double speed, int type) {
         for (int i = 0; i < count; i++) {
             Entity fx = switch (type) {
                 case 1 -> new EntityCloudFX(level, x, y, z, 0D, 0D, 0D);
@@ -128,7 +133,7 @@ public final class ExplosionChaos {
             };
             fx.setDeltaMovement(level.getRandom().nextGaussian() * speed, level.getRandom().nextGaussian() * speed,
                     level.getRandom().nextGaussian() * speed);
-            level.addFreshEntity(fx);
+            level.addFreshEntity(Owners.give(fx, source.player()));
         }
     }
 
@@ -136,7 +141,7 @@ public final class ExplosionChaos {
      * 1.7 ExplosionChaos.cluster: the cluster warhead's submunition spray, thrown along the missile's own
      * heading with a gaussian cone.
      */
-    public static void cluster(Level level, double x, double y, double z, int count, float yaw, float pitch,
+    public static void cluster(Level level, Protection.Source source, double x, double y, double z, int count, float yaw, float pitch,
                                float yawRand, float pitchRand, float speed) {
 
         for (int i = 0; i < count; i++) {
@@ -146,7 +151,7 @@ public final class ExplosionChaos {
                     pitch + (float) (pitchRand * level.getRandom().nextGaussian()));
             bullet.setPos(x, y, z);
             bullet.setDeltaMovement(bullet.getDeltaMovement().scale(speed));
-            level.addFreshEntity(bullet);
+            level.addFreshEntity(Owners.give(bullet, source.player()));
         }
     }
 
@@ -154,10 +159,11 @@ public final class ExplosionChaos {
      * 1.7 ExplosionChaos.pc: the pink cloud. Eats the victim's whole suit whether or not it protects, then
      * hits for a flat 5 through armour.
      */
-    public static void pinkCloud(Level level, double x, double y, double z, double range) {
+    public static void pinkCloud(Level level, Protection.Source source, double x, double y, double z, double range) {
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class,
                 new AABB(x - range, y - range, z - range, x + range, y + range, z + range))) {
-            if (entity.distanceToSqr(x, y, z) > range * range) continue;
+            if (entity.distanceToSqr(x, y, z) > range * range
+                    || !Protection.mayHarm(level, entity, source, Protection.Hazard.GAS)) continue;
 
             ArmorUtil.damageWholeSuit(entity, 25);
 
@@ -171,10 +177,11 @@ public final class ExplosionChaos {
      * 1.7 ExplosionChaos.c: the chlorine cloud. Same suit damage, but a hazmat wearer is spared the hit -
      * and any taint already on them is converted into the (inert) mutation marker.
      */
-    public static void chlorine(Level level, double x, double y, double z, double range) {
+    public static void chlorine(Level level, Protection.Source source, double x, double y, double z, double range) {
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class,
                 new AABB(x - range, y - range, z - range, x + range, y + range, z + range))) {
-            if (entity.distanceToSqr(x, y, z) > range * range) continue;
+            if (entity.distanceToSqr(x, y, z) > range * range
+                    || !Protection.mayHarm(level, entity, source, Protection.Hazard.GAS)) continue;
 
             ArmorUtil.damageWholeSuit(entity, 25);
 
@@ -195,10 +202,11 @@ public final class ExplosionChaos {
 /**
      * 1.7 ExplosionChaos.poison, invoked by EntityOrangeFX once per 50 server ticks.
      */
-    public static void poison(Level level, double x, double y, double z, double range) {
+    public static void poison(Level level, Protection.Source source, double x, double y, double z, double range) {
         for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class,
                 new AABB(x - range, y - range, z - range, x + range, y + range, z + range))) {
-            if (entity.distanceToSqr(x, y, z) > range * range) continue;
+            if (entity.distanceToSqr(x, y, z) > range * range
+                    || !Protection.mayHarm(level, entity, source, Protection.Hazard.GAS)) continue;
             boolean protectedFromGas = ArmorRegistry.hasProtection(entity, EquipmentSlot.HEAD, HazardClass.GAS_LUNG)
                     || ArmorRegistry.hasProtection(entity, EquipmentSlot.HEAD, HazardClass.GAS_BLISTERING);
             // 1.7: protection turns the hit into filter wear instead
@@ -214,7 +222,8 @@ public final class ExplosionChaos {
         }
     }
 
-    public static void igniteAllBlocks(ServerLevel level, int x, int y, int z, int bound) {
+    public static void igniteAllBlocks(ServerLevel level, Protection.Source source, int x, int y, int z, int bound) {
+        Protection.Gate gate = Protection.gate(level, source, Protection.Cause.FIRE);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int threshold = bound * bound / 2;
         for (int xx = -bound; xx < bound; xx++) {
@@ -227,7 +236,7 @@ public final class ExplosionChaos {
                     if (level.getBlockState(pos).isAir()) continue;
                     BlockPos above = pos.above();
                     BlockState aboveState = level.getBlockState(above);
-                    if (aboveState.isAir() || aboveState.is(Blocks.SNOW)) {
+                    if ((aboveState.isAir() || aboveState.is(Blocks.SNOW)) && gate.mayAlter(above)) {
                         level.setBlock(above, Blocks.FIRE.defaultBlockState(), 3); // 1.7 setBlock(fire)
                     }
                 }

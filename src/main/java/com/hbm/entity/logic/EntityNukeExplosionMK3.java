@@ -1,5 +1,6 @@
 package com.hbm.entity.logic;
 
+import com.hbm.util.Owners;
 import com.hbm.Constants;
 import com.hbm.packet.PlasmaBlastPayload;
 import com.hbm.saveddata.satellites.SatelliteDetector;
@@ -155,7 +156,7 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
                     10000.0F, 0.8F + this.random.nextFloat() * 0.2F);
 
             if (extType != 1) {
-                ExplosionNukeGeneric.dealDamage(level(), getX(), getY(), getZ(), this.destructionRange * 2);
+                ExplosionNukeGeneric.dealDamage(level(), Owners.sourceOf(this), getX(), getY(), getZ(), this.destructionRange * 2);
             } else {
                 ExplosionHurtUtil.doRadiation(level(), getX(), getY(), getZ(), 15000, 250000, this.destructionRange);
             }
@@ -172,6 +173,8 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
             expl = new ExplosionFleija(x, y, z, level(), this.destructionRange, this.coefficient, this.coefficient2);
         if (extType == 1)
             sol = new ExplosionSolinium(x, y, z, level(), this.destructionRange, this.coefficient, this.coefficient2);
+        if (expl != null) expl.detonator = protectionOwner();
+        if (sol != null) sol.detonator = protectionOwner();
     }
 
     public EntityNukeExplosionMK3 makeSol() {

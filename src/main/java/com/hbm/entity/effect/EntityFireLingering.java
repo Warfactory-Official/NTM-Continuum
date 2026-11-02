@@ -1,5 +1,9 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.world.Protection;
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import com.hbm.util.Owners;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.client.FireLingeringClientEffects;
 import com.hbm.client.particle.FlameCreator;
@@ -34,7 +38,19 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Upstream's black-fire type is absent, since nothing that fires it is ported.
  */
-public class EntityFireLingering extends CompatEntity {
+public class EntityFireLingering extends CompatEntity implements Owners.Carrier {
+
+    private @Nullable UUID owner;
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
 
     public static final int TYPE_DIESEL = 0;
     public static final int TYPE_BALEFIRE = 1;
@@ -107,7 +123,9 @@ public class EntityFireLingering extends CompatEntity {
                 new AABB(getX() - width / 2, getY(), getZ() - width / 2,
                         getX() + width / 2, getY() + height, getZ() + width / 2));
 
+        Protection.Source source = Owners.sourceOf(this);
         for (Entity e : affected) {
+            if (!Protection.mayHarm(level(), e, source, Protection.Hazard.FIRE)) continue;
             if (!(e instanceof LivingEntity living)) {
                 Effects.ignite(e, 4);
                 continue;

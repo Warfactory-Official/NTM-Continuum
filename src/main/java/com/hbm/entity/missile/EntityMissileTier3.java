@@ -1,5 +1,6 @@
 package com.hbm.entity.missile;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.explosion.ExplosionChaos;
@@ -88,8 +89,8 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
             ExplosionCreator.composeEffectLarge(level(), getX(), getY(), getZ());
             // 1.7 Tier3:76-77, (int)-truncated centre
             if (level() instanceof ServerLevel server) {
-                ExplosionChaos.igniteAllBlocks(server, (int) getX(), (int) getY(), (int) getZ(), 10);
-                ExplosionChaos.igniteFlammableBlocks(server, (int) getX(), (int) getY(), (int) getZ(), 25);
+                ExplosionChaos.igniteAllBlocks(server, Protection.Source.of(this), (int) getX(), (int) getY(), (int) getZ(), 10);
+                ExplosionChaos.igniteFlammableBlocks(server, Protection.Source.of(this), (int) getX(), (int) getY(), (int) getZ(), 25);
             }
         }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_incendiary_large.get()); }
@@ -110,7 +111,7 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
         @Override
         public void onMissileImpact(HitResult mop) {
             Explosions.explode(level(), this, getX(), getY(), getZ(), 25F, Level.ExplosionInteraction.TNT);
-            ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 100, getYRot(), getXRot(),
+            ExplosionChaos.cluster(level(), Protection.Source.of(this), getX(), getY(), getZ(), 100, getYRot(), getXRot(),
                     (float) Math.PI * 0.25F, (float) Math.PI * 0.25F, 1F);
         }
 
@@ -140,7 +141,7 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
             }
             ExplosionLarge.spawnParticles(level(), getX(), getY(), getZ(), 25);
             ExplosionLarge.spawnShrapnels(level(), getX(), getY(), getZ(), 12);
-            ExplosionLarge.jolt(level(), getX(), getY(), getZ(), 10, 50, 1);
+            ExplosionLarge.jolt(level(), Protection.Source.of(this), getX(), getY(), getZ(), 10, 50, 1);
         }
 
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_buster_large.get()); }

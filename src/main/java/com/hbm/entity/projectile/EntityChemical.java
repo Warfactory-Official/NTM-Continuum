@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import com.hbm.api.environment.Environment;
 import dev.golem.core.data.Tags;
 
@@ -407,9 +408,13 @@ public class EntityChemical extends EntityThrowableNT {
         if (style == ChemicalStyle.BURNING || style == ChemicalStyle.GASFLAME) {
             BlockState fire = type == Fluids.BALEFIRE ? ModBombBlocks.balefire.get().defaultBlockState()
                     : Blocks.FIRE.defaultBlockState();
+            Protection.Source source = Protection.Source.of(this);
             for (Direction dir : Direction.values()) {
                 BlockPos adjacent = pos.relative(dir);
-                if (level.getBlockState(adjacent).isAir()) level.setBlockAndUpdate(adjacent, fire);
+                if (level.getBlockState(adjacent).isAir()
+                        && Protection.mayAlter(level, adjacent, source, Protection.Cause.FIRE)) {
+                    level.setBlockAndUpdate(adjacent, fire);
+                }
             }
         }
         if (isExtinguishing()) {
@@ -432,7 +437,7 @@ public class EntityChemical extends EntityThrowableNT {
             }
         }
 
-        if (type == Fluids.SEEDSLURRY) seedSlurry(level, pos);
+        if (type == Fluids.SEEDSLURRY) seedSlurry(level, Protection.Source.of(this), pos);
         if (level instanceof ServerLevel server) Environment.chemicalImpact(server, pos, type);
     }
 
@@ -451,10 +456,12 @@ public class EntityChemical extends EntityThrowableNT {
      * and their slab and stairs become the mossy variants. 1.7's double slab was a separate block it did not
      * touch, so a double slab is left alone here too.
      */
-    public static void seedSlurry(Level level, BlockPos centre) {
+    public static void seedSlurry(Level level, Protection.Source source, BlockPos centre) {
         var radius = seedSlurrySingleBlock ? 0 : 1;
+        Protection.Gate gate = Protection.gate(level, source, Protection.Cause.FLUID);
         for (BlockPos p : BlockPos.betweenClosed(centre.offset(-radius, -radius, -radius), centre.offset(radius, radius, radius))) {
             BlockPos at = p.immutable();
+            if (!gate.mayAlter(at)) continue;
             BlockState state = level.getBlockState(at);
             boolean wasteEarth = state.is(ModFalloutBlocks.waste_earth.get());
             if (state.is(Blocks.DIRT) || state.is(Blocks.COARSE_DIRT) || state.is(Blocks.PODZOL) || wasteEarth

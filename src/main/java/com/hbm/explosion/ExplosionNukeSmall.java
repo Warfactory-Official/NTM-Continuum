@@ -1,5 +1,7 @@
 package com.hbm.explosion;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.api.environment.Environment;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
@@ -28,7 +30,8 @@ public final class ExplosionNukeSmall {
     private ExplosionNukeSmall() {}
 
     /** Keeps the old effect/sound/damage/entity ordering used by all small-nuke presets. */
-    public static void explode(Level world, double x, double y, double z, MukeParams params) {
+    public static void explode(Level world, Protection.Source source, double x, double y, double z,
+                               MukeParams params) {
         if (params.particle != null) {
             CompoundTag data = new CompoundTag();
             if (params.particle == HbmEffectNT.Muke
@@ -47,6 +50,7 @@ public final class ExplosionNukeSmall {
 
         if (params.miniNuke && !params.safe) {
             new ExplosionVNT(world, x, y, z, params.blastRadius)
+                    .setSource(source)
                     .setBlockAllocator(new BlockAllocatorStandard(params.resolution))
                     .setBlockProcessor(new BlockProcessorStandard().setNoDrop().withBlockEffect(new BlockMutatorFire()))
                     .explode();
@@ -62,7 +66,7 @@ public final class ExplosionNukeSmall {
         if (!params.miniNuke && world instanceof ServerLevel server) {
             EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFac(
                     server, (int) params.blastRadius, x, y, z);
-            if (server.addFreshEntity(blast)) blast.startChunkLoading();
+            if (server.addFreshEntity(Owners.give(blast, source.player()))) blast.startChunkLoading();
         }
 
         // hbm-space: CelestialNukeShockHandler.trigger for a mini nuke

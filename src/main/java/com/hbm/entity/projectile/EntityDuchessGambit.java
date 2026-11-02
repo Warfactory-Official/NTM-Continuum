@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModDecoBlocks;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
@@ -96,14 +97,16 @@ public class EntityDuchessGambit extends CompatEntity {
                 for (Entity e : list) Compat.hurt(e, server, ModDamageSources.source(level(), ModDamageSources.BOAT), 1000);
             }
 
-            ExplosionLarge.explode(level(), getX(), getY(), getZ() - 6, 2, true, false, false);
-            ExplosionLarge.explode(level(), getX(), getY(), getZ() - 3, 2, true, false, false);
-            ExplosionLarge.explode(level(), getX(), getY(), getZ(), 2, true, false, false);
-            ExplosionLarge.explode(level(), getX(), getY(), getZ() + 3, 2, true, false, false);
-            ExplosionLarge.explode(level(), getX(), getY(), getZ() + 6, 2, true, false, false);
+            ExplosionLarge.explodeBy(level(), Protection.Source.of(this), getX(), getY(), getZ() - 6, 2, true, false, false);
+            ExplosionLarge.explodeBy(level(), Protection.Source.of(this), getX(), getY(), getZ() - 3, 2, true, false, false);
+            ExplosionLarge.explodeBy(level(), Protection.Source.of(this), getX(), getY(), getZ(), 2, true, false, false);
+            ExplosionLarge.explodeBy(level(), Protection.Source.of(this), getX(), getY(), getZ() + 3, 2, true, false, false);
+            ExplosionLarge.explodeBy(level(), Protection.Source.of(this), getX(), getY(), getZ() + 6, 2, true, false, false);
 
-            level().setBlockAndUpdate(new BlockPos((int) (getX() - 0.5), (int) (getY() + 0.5), (int) (getZ() - 0.5)),
-                    ModDecoBlocks.boat.get().defaultBlockState());
+            BlockPos boat = new BlockPos((int) (getX() - 0.5), (int) (getY() + 0.5), (int) (getZ() - 0.5));
+            if (Protection.mayAlter(level(), boat, Protection.Source.of(this), Protection.Cause.PLACEMENT)) {
+                level().setBlockAndUpdate(boat, ModDecoBlocks.boat.get().defaultBlockState());
+            }
 
             ExplosionLarge.spawnShock(level(), getX(), getY() + 1, getZ(), 24, 3);
             ExplosionLarge.spawnShock(level(), getX(), getY() + 1, getZ(), 24, 2.5);

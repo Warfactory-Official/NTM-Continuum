@@ -2,7 +2,6 @@ package com.hbm.tileentity.bomb;
 
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -13,17 +12,10 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import dev.golem.core.data.DataIn;
-import dev.golem.core.data.DataOut;
-import org.jspecify.annotations.Nullable;
 
-import java.util.UUID;
 
 /** Shared inventory, persistence, and tracking sync for the old component-built bomb blocks. */
 public abstract class TileEntityNukeBomb extends TileEntityMachineBase implements MenuProvider {
-
-    /** The player who placed the bomb, used when redstone supplies no detonator entity. */
-    public @Nullable UUID placerID;
 
     protected TileEntityNukeBomb(BlockEntityType<?> type, BlockPos pos, BlockState state, int slots) {
         super(type, pos, state, slots);
@@ -40,18 +32,6 @@ public abstract class TileEntityNukeBomb extends TileEntityMachineBase implement
         super.onSlotContentsChanged(slot, stack);
         // Menus receive ordinary slot changes, while this also keeps observers and already-open clients in sync.
         networkPackNT();
-    }
-
-    @Override
-    protected void saveData(DataOut output) {
-        super.saveData(output);
-        if (placerID != null) output.store("placer", UUIDUtil.CODEC, placerID);
-    }
-
-    @Override
-    protected void loadData(DataIn input) {
-        super.loadData(input);
-        placerID = input.read("placer", UUIDUtil.CODEC).orElse(null);
     }
 
     /** The BufPacket replacement carries component identities/counts for live GUI updates. */

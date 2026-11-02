@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import java.util.UUID;
+import com.hbm.util.Owners;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModEntities;
@@ -48,7 +50,7 @@ import net.minecraft.world.phys.Vec3;
  * <p>The config is synched by its <em>runtime</em> registry index, not its id: the client reads it every frame
  * and the index never leaves this session (see {@link BulletConfigs}).
  */
-public class EntityBulletBaseMK4 extends CompatEntity {
+public class EntityBulletBaseMK4 extends CompatEntity implements Owners.Carrier {
 
     private static final EntityDataAccessor<Integer> BULLET_CONFIG =
             SynchedEntityData.defineId(EntityBulletBaseMK4.class, EntityDataSerializers.INT);
@@ -58,6 +60,8 @@ public class EntityBulletBaseMK4 extends CompatEntity {
 
     public BulletConfig config;
     public LivingEntity thrower;
+    /** Owner of a round fired with no live shooter (submunitions); a live thrower wins. */
+    private @Nullable UUID owner;
     public float damage;
     /** A per-round life shorter than the config's, 1.12.2 {@code EntityBulletBase.overrideMaxAge}; -1 for none. */
     public int expiresOverride = -1;
@@ -180,6 +184,7 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         setBulletConfig(BulletConfigs.get(input.getStringOr("config", "")));
         damage = input.getFloatOr("damage", 0F);
         ricochets = input.getIntOr("ricochets", 0);
+        owner = Owners.load(input);
     }
 
     @Override
@@ -189,6 +194,7 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         output.putString("config", config != null && config.id != null ? config.id.toString() : "");
         output.putFloat("damage", damage);
         output.putInt("ricochets", ricochets);
+        Owners.save(output, protectionOwner());
     }
 
     @Override
@@ -235,6 +241,16 @@ public class EntityBulletBaseMK4 extends CompatEntity {
     /** Whoever fired this round, if they are still around. */
     public LivingEntity getThrower() {
         return thrower;
+    }
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return owner != null ? owner : Owners.of(thrower);
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
     }
 
     /** Keeps a hook embedded in its block rather than launching it again on the next tick. */

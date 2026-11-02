@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.util.Owners;
 import com.hbm.entity.projectile.EntityFallingNuke;
 import com.hbm.explosion.ExplosionNukeCustom;
 import com.hbm.tileentity.bomb.TileEntityNukeBomb;
@@ -32,7 +33,7 @@ public class NukeCustom extends NukeBomb2Block {
 
     @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
-        return explode(level, pos, detonator, detonator == null ? null : detonator.getUUID());
+        return explode(level, pos, detonator, Owners.of(detonator));
     }
 
     @Override
@@ -40,19 +41,21 @@ public class NukeCustom extends NukeBomb2Block {
         if (level.isClientSide()) return BombReturnCode.UNDEFINED;
         if (!(level.getBlockEntity(pos) instanceof TileEntityNukeCustom entity)) return BombReturnCode.UNDEFINED;
 
+        UUID owner = detonatorId != null ? detonatorId : entity.placer();
         if (!entity.isFalling()) {
             float tnt = entity.tnt, nuke = entity.nuke, hydro = entity.hydro, amat = entity.amat;
             float dirty = entity.dirty, schrab = entity.schrab, euph = entity.euph;
             entity.clearSlots();
             level.removeBlock(pos, false);
             // 1.7 passed the block centre here even though several stages add another half block inside.
-            ExplosionNukeCustom.explodeCustom(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+            ExplosionNukeCustom.explodeCustom(level, owner, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                     tnt, nuke, hydro, amat, dirty, schrab, euph);
             return BombReturnCode.DETONATED;
         }
 
         EntityFallingNuke bomb = new EntityFallingNuke(level, entity.tnt, entity.nuke, entity.hydro, entity.amat,
                 entity.dirty, entity.schrab, entity.euph);
+        bomb.setProtectionOwner(owner);
         bomb.setNukeMeta(level.getBlockState(pos).getValue(NukeBombBlock.FACING));
         bomb.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
         entity.clearSlots();

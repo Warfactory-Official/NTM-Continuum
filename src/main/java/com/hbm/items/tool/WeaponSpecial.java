@@ -1,5 +1,6 @@
 package com.hbm.items.tool;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.explosion.vanillant.ExplosionVNT;
@@ -160,7 +161,8 @@ public class WeaponSpecial extends CompatSwordItem {
 
         if (kind == Kind.SHIMMER_SLEDGE) {
             BlockState state = world.getBlockState(pos);
-            if (!state.isAir() && state.getBlock().getExplosionResistance() < 6000 && player != null) {
+            if (!state.isAir() && state.getBlock().getExplosionResistance() < 6000 && player != null
+                    && Protection.mayAlter(world, pos, Protection.Source.of(player), Protection.Cause.TERRAFORM)) {
                 if (!world.isClientSide()) {
                     EntityRubble rubble = new EntityRubble(world, pos.getX() + 0.5F, pos.getY(), pos.getZ() + 0.5F);
                     rubble.setBlockState(state);
@@ -178,9 +180,10 @@ public class WeaponSpecial extends CompatSwordItem {
             world.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, ModMeleeKitItems.KAPENG.get(),
                     SoundSource.PLAYERS, 3.0F, 1.0F);
             if (!world.isClientSide()) {
-                timber(world, pos);
-                timber(world, pos.above());
-                timber(world, pos.below());
+                Protection.Source source = Protection.Source.of(player);
+                timber(world, pos, source);
+                timber(world, pos.above(), source);
+                timber(world, pos.below(), source);
             }
             return InteractionResult.SUCCESS;
         }
@@ -188,9 +191,12 @@ public class WeaponSpecial extends CompatSwordItem {
         return super.useOn(context);
     }
 
-    private static void timber(Level world, BlockPos pos) {
+    private static void timber(Level world, BlockPos pos, Protection.Source source) {
         BlockState state = world.getBlockState(pos);
-        if (!state.isAir() && state.getBlock().getExplosionResistance() < 6000) world.destroyBlock(pos, false);
+        if (!state.isAir() && state.getBlock().getExplosionResistance() < 6000
+                && Protection.mayAlter(world, pos, source, Protection.Cause.TERRAFORM)) {
+            world.destroyBlock(pos, false);
+        }
     }
 
     @Override

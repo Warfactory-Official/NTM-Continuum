@@ -115,7 +115,7 @@ public final class ExplosiveContentGameTests {
         try {
             fillPrimary(testDevice);
             UUID owner = UUID.randomUUID();
-            testDevice.placerID = owner;
+            testDevice.setPlacer(owner);
             IBomb.BombReturnCode result = ModBombBlocks.nuke_mike.get().explode(
                     helper.getLevel(), testOrigin, null, null);
             EntityNukeExplosionMK5 testBlast = onlyBlast(helper, testOrigin);

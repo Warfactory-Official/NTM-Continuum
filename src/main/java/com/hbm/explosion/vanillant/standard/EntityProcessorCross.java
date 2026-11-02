@@ -105,7 +105,7 @@ public class EntityProcessorCross implements IEntityProcessor {
 
         for (Entity entity : list) {
             double distanceScaled = scaledDistance(entity, x, y, z, size);
-            if (distanceScaled > 1.0D) continue;
+            if (distanceScaled > 1.0D || !explosion.mayHarm(entity)) continue;
 
             double deltaX = entity.getX() - x;
             double deltaY = entity.getY() + entity.getEyeHeight() - y;

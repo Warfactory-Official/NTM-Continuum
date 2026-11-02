@@ -1,5 +1,8 @@
 package com.hbm.tileentity.bomb;
 
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import com.hbm.util.Owners;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityBalefire;
@@ -55,7 +58,7 @@ public class TileEntityNukeBalefire extends TileEntityNukeBomb implements IContr
             }
 
             if (timer <= 0) {
-                explode();
+                explode(placer());
                 return;
             }
         }
@@ -115,7 +118,7 @@ public class TileEntityNukeBalefire extends TileEntityNukeBomb implements IContr
         return 0;
     }
 
-    public void explode() {
+    public void explode(@Nullable UUID owner) {
         if (level == null || level.isClientSide()) return;
         clearSlots();
         level.destroyBlock(worldPosition, false);
@@ -124,7 +127,7 @@ public class TileEntityNukeBalefire extends TileEntityNukeBomb implements IContr
         EntityBalefire bf = new EntityBalefire(ModNtmEntities.BALEFIRE.get(), level);
         bf.setPos(x, y, z);
         bf.destructionRange = 250;
-        level.addFreshEntity(bf);
+        level.addFreshEntity(Owners.give(bf, owner));
         EntityNukeTorex torex = EntityNukeTorex.statFacBale(level, x, y, z, 250);
         if (level.addFreshEntity(torex)) torex.startChunkLoading();
     }

@@ -1,5 +1,6 @@
 package com.hbm.blocks.fluid;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModTerrainBlocks;
@@ -62,7 +63,9 @@ public class BlockVolcanicLava extends FluidBlock {
         for (Direction dir : Direction.values()) {
             BlockPos at = pos.relative(dir);
             BlockState reaction = getReaction(level, at);
-            if (reaction != null) level.setBlock(at, reaction, 3);
+            if (reaction != null && Protection.mayAlter(level, at, Protection.Source.NONE, Protection.Cause.FLUID)) {
+                level.setBlock(at, reaction, 3);
+            }
         }
     }
 

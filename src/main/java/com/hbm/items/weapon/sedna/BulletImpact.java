@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna;
 
+import dev.golem.core.world.Protection;
 import com.hbm.Constants;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.entity.projectile.EntityBulletBeamBase;
@@ -67,7 +68,8 @@ public final class BulletImpact {
         BlockState state = level.getBlockState(pos);
 
         if (state.is(SHATTERS_WHEN_SHOT)
-                && state.getBlock().getExplosionResistance() < SHATTER_RESISTANCE_LIMIT) {
+                && state.getBlock().getExplosionResistance() < SHATTER_RESISTANCE_LIMIT
+                && Protection.mayAlter(level, pos, Protection.Source.of(bullet), Protection.Cause.TERRAFORM)) {
             level.destroyBlock(pos, false);
             bullet.setPos(hit.getLocation());
             return;

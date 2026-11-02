@@ -1,5 +1,9 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.world.Protection;
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import com.hbm.util.Owners;
 import dev.golem.core.world.Explosions;
 import dev.golem.core.data.Tags;
 
@@ -57,7 +61,19 @@ import net.minecraft.world.phys.AABB;
  * {@link FT_Toxin}, then {@link FT_Pheromone}. A radioactive cloud also adds {@code radPerMB * 2} to its
  * chunk every tick. Ender juice teleports a living thing at random, as 1.7 (between toxin and pheromone).
  */
-public class EntityMist extends CompatEntity {
+public class EntityMist extends CompatEntity implements Owners.Carrier {
+
+    private @Nullable UUID owner;
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
 
     private static final EntityDataAccessor<Integer> TYPE =
             SynchedEntityData.defineId(EntityMist.class, EntityDataSerializers.INT);
@@ -189,6 +205,7 @@ public class EntityMist extends CompatEntity {
     }
 
     private void affect(ServerLevel server, Entity e, FluidType type, double intensity) {
+        if (!Protection.mayHarm(server, e, Owners.sourceOf(this), Protection.Hazard.GAS)) return;
         LivingEntity living = e instanceof LivingEntity ? (LivingEntity) e : null;
         int temperature = type.getTemperature();
 
@@ -298,11 +315,13 @@ public class EntityMist extends CompatEntity {
         Fluids.write(output, "type", getFluid()); // registry name; the synched int is session-only
         output.putFloat("width", this.entityData.get(WIDTH));
         output.putFloat("height", this.entityData.get(HEIGHT));
+        Owners.save(output, owner);
     }
 
     @Override
     protected void loadData(DataIn input) {
         this.entityData.set(TYPE, Fluids.networkId(Fluids.read(input, "type")));
         setArea(input.getFloatOr("width", 0F), input.getFloatOr("height", 0F));
+        owner = Owners.load(input);
     }
 }

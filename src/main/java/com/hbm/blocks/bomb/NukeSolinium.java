@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.util.Owners;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityCloudSolinium;
 import com.hbm.entity.logic.EntityNukeExplosionMK3;
@@ -29,7 +30,7 @@ public class NukeSolinium extends NukeBomb2Block {
 
     @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
-        return explode(level, pos, detonator, detonator == null ? null : detonator.getUUID());
+        return explode(level, pos, detonator, Owners.of(detonator));
     }
 
     @Override
@@ -40,18 +41,18 @@ public class NukeSolinium extends NukeBomb2Block {
 
         bomb.clearSlots();
         level.removeBlock(pos, false);
-        igniteTestBomb(level, pos, BombConfig.soliniumRadius);
+        igniteTestBomb(level, pos, BombConfig.soliniumRadius, detonatorId != null ? detonatorId : bomb.placer());
         return BombReturnCode.DETONATED;
     }
 
-    public static void igniteTestBomb(Level level, BlockPos pos, int radius) {
+    public static void igniteTestBomb(Level level, BlockPos pos, int radius, @Nullable UUID owner) {
         if (level.isClientSide()) return;
         EntityNukeExplosionMK3 ex = EntityNukeExplosionMK3.statFacFleija(level,
                 pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, radius).makeSol();
         if (!ex.isRemoved()) {
             level.playSound(null, pos, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS,
                     1.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
-            level.addFreshEntity(ex);
+            level.addFreshEntity(Owners.give(ex, owner));
             level.addFreshEntity(EntityCloudSolinium.statFac(level, radius, pos.getX(), pos.getY(), pos.getZ()));
         }
     }

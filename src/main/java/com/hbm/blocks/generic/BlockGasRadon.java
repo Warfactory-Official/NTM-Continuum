@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.handler.ArmorUtil;
@@ -47,7 +48,8 @@ public class BlockGasRadon extends BlockGasBase {
             level.removeBlock(pos, false);
             return;
         }
-        if (dense && random.nextInt(10) == 0 && level.getBlockState(pos.below()).is(Blocks.GRASS_BLOCK)) {
+        if (dense && random.nextInt(10) == 0 && level.getBlockState(pos.below()).is(Blocks.GRASS_BLOCK)
+                && Protection.mayAlter(level, pos.below(), Protection.Source.NONE, Protection.Cause.RADIATION_BLOCK_CONVERSION)) {
             level.setBlock(pos.below(), ModFalloutBlocks.waste_earth.get().defaultBlockState(), 2);
         }
         if (random.nextInt(Math.max(1, GeneralConfig.radonDecayChance)) == 0) {

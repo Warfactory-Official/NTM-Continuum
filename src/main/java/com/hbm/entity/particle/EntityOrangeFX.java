@@ -1,5 +1,9 @@
 package com.hbm.entity.particle;
 
+import dev.golem.core.world.Protection;
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import com.hbm.util.Owners;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
@@ -17,7 +21,19 @@ import dev.golem.core.data.DataOut;
 /**
  * 1.7 EntityOrangeFX - the physically falling Agent Orange cloudlet.
  */
-public class EntityOrangeFX extends CompatEntity {
+public class EntityOrangeFX extends CompatEntity implements Owners.Carrier {
+
+    private @Nullable UUID owner;
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
 
     private int particleAge;
     private int maxAge;
@@ -72,7 +88,7 @@ public class EntityOrangeFX extends CompatEntity {
         super.tick();
         if (maxAge < 900) maxAge = random.nextInt(301) + 900;
         if (!level().isClientSide() && random.nextInt(50) == 0)
-            ExplosionChaos.poison(level(), getX(), getY(), getZ(), 2D);
+            ExplosionChaos.poison(level(), Protection.Source.ofPlayer(owner), getX(), getY(), getZ(), 2D);
         if (++particleAge >= maxAge) {
             discard();
             return;
@@ -91,9 +107,12 @@ public class EntityOrangeFX extends CompatEntity {
                     for (int z = -1; z < 2; z++) {
                         BlockPos affected = pos.offset(x, y, z);
                         if (level().getBlockState(affected).is(Blocks.GRASS_BLOCK)) {
-                            level().setBlock(affected, Blocks.COARSE_DIRT.defaultBlockState(), 3);
+                            if (Protection.mayAlter(level(), affected, Protection.Source.ofPlayer(owner),
+                                    Protection.Cause.RADIATION_BLOCK_CONVERSION)) {
+                                level().setBlock(affected, Blocks.COARSE_DIRT.defaultBlockState(), 3);
+                            }
                         } else {
-                            ExplosionNukeGeneric.solinium(level(), affected);
+                            ExplosionNukeGeneric.solinium(level(), Protection.Source.ofPlayer(owner), affected);
                         }
                     }
         }

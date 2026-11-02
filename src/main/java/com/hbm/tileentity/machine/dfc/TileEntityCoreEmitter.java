@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.dfc;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
@@ -143,6 +145,7 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase
             }
 
             if (!state.isAir()) {
+                if (!Protection.mayAlter(level, target, Owners.source(this), Protection.Cause.FIRE)) break;
                 if (!state.getFluidState().isEmpty()) {
                     level.playSound(null, target, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 1.0F);
                     level.removeBlock(target, false);

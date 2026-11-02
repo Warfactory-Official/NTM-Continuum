@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.blocks.ModTerrainBlocks;
@@ -34,11 +35,12 @@ public class BlockFissureBomb extends BlockTNTBase {
 
     @Override
     public void detonate(Level level, double x, double y, double z, EntityPrimedExplosive primed) {
-        ExplosionNukeSmall.explode(level, x, y, z, ExplosionNukeSmall.PARAMS_MEDIUM);
-        convertBedrockOres(level, x, y, z);
+        Protection.Source source = Protection.Source.of(primed);
+        ExplosionNukeSmall.explode(level, source, x, y, z, ExplosionNukeSmall.PARAMS_MEDIUM);
+        convertBedrockOres(level, source, x, y, z);
     }
 
-    public static void convertBedrockOres(Level level, double x, double y, double z) {
+    public static void convertBedrockOres(Level level, Protection.Source source, double x, double y, double z) {
         Holder<Biome> biome = level.getBiome(BlockPos.containing(x, y, z));
         boolean crater = biome.is(ModBiomes.crater) || biome.is(ModBiomes.crater_inner) || biome.is(ModBiomes.crater_outer);
         BlockState volcano = ModTerrainBlocks.ore_volcano.get().defaultBlockState().setValue(BlockFissure.CRATER, crater);
@@ -47,6 +49,7 @@ public class BlockFissureBomb extends BlockTNTBase {
                 for (int k = -RANGE; k <= RANGE; k++) {
                     BlockPos pos = BlockPos.containing(x + i, y + j, z + k);
                     BlockState state = level.getBlockState(pos);
+                    if (!Protection.mayAlter(level, pos, source, Protection.Cause.TERRAFORM)) continue;
                     if (state.is(ModOreBlocks.ore_bedrock_block.get())) {
                         level.setBlock(pos, volcano, 3);
                     } else if (state.is(ModBlocks.ore_bedrock_oil.get())) {

@@ -19,6 +19,7 @@ import com.hbm.explosion.ExplosionNukeRayBatched;
 import com.hbm.explosion.SubLevelBlasts;
 import com.hbm.interfaces.IExplosionRay;
 import com.hbm.util.ContaminationUtil;
+import com.hbm.util.Owners;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
 import net.minecraft.core.BlockPos;
@@ -28,7 +29,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import dev.golem.core.data.DataIn;
@@ -61,7 +61,7 @@ import java.util.UUID;
  * the Manhattan advancement, and the threaded explosion algorithms. The detonator is
  * tracked for those future hooks but otherwise unused.
  */
-public class EntityNukeExplosionMK5 extends CompatEntity {
+public class EntityNukeExplosionMK5 extends CompatEntity implements Owners.Carrier {
 
     private int strength;
     private int radius;
@@ -75,7 +75,17 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
     /** {@link com.hbm.api.environment.Environment#NUCLEAR_BLAST} told (not saved: 1.7's ticksExisted was not either). */
     private boolean announced = false;
 
-    public UUID detonator;
+    public @Nullable UUID detonator;
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return detonator;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        detonator = owner;
+    }
 
     /** Radius 0: upstream's explosion base claims only the chunk it sits in. */
     private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 0);
@@ -162,7 +172,7 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
             radiate(list, 2_500_000F / (tickCount * 5 + 1));
         }
 
-        ExplosionNukeGeneric.dealDamage(level(), list, getX(), getY(), getZ(), r2);
+        ExplosionNukeGeneric.dealDamage(level(), Owners.sourceOf(this), list, getX(), getY(), getZ(), r2, 250F);
 
         if (fallout && tickCount == 42) {
             // TODO(mobs): EntityGlowingOne.convertInRadiusToGlow(level, x, y, z, radius * 1.5) once the mob lands
@@ -199,6 +209,7 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         rain.setPos(getX(), getY(), getZ());
         rain.setScale((int) (this.radius * 2.5 + falloutAdd) * BombConfig.falloutRange / 100);
         if (falloutLayer != null) rain.falloutLayer(falloutLayer);
+        Owners.give(rain, detonator);
         if (level().addFreshEntity(rain)) rain.startChunkLoading();
     }
 
@@ -232,14 +243,13 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
             double eRads = rads;
             eRads /= res;
             eRads /= len * len;
-            ContaminationUtil.contaminate(living, HazardType.RADIATION, ContaminationType.RAD_BYPASS, eRads);
+            ContaminationUtil.contaminate(living, HazardType.RADIATION, ContaminationType.RAD_BYPASS, eRads,
+                    Owners.sourceOf(this));
         }
     }
 
     public EntityNukeExplosionMK5 setDetonator(Entity detonator) {
-        if (detonator instanceof Player) {
-            this.detonator = detonator.getUUID();
-        }
+        this.detonator = Owners.of(detonator);
         return this;
     }
 

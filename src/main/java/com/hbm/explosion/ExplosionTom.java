@@ -1,5 +1,8 @@
 package com.hbm.explosion;
 
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import dev.golem.core.world.Protection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.ModBlocks;
@@ -38,6 +41,8 @@ public class ExplosionTom {
     public int radius;
     public int radius2;
     public Level level;
+    public @Nullable UUID detonator;
+    private Protection.Gate gate;
     private int n = 1;
     private int nlimit;
     private int shell;
@@ -99,6 +104,15 @@ public class ExplosionTom {
         return this.n > this.nlimit;
     }
 
+    private Protection.Gate gate() {
+        if (gate == null) gate = Protection.gate(level, Protection.Source.ofPlayer(detonator), Protection.Cause.EXPLOSION);
+        return gate;
+    }
+
+    private void put(BlockPos pos, BlockState state, int flags) {
+        if (gate().mayAlter(pos)) level.setBlock(pos, state, flags);
+    }
+
     private void breakColumn(int x, int z) {
         int dist = this.radius2 - (x * x + z * z);
 
@@ -144,10 +158,10 @@ public class ExplosionTom {
 
                 BlockPos pos = new BlockPos(pX, y, pZ);
                 if (level.getRandom().nextInt(200) == 0) {
-                    level.setBlock(pos, ModBlocks.ore_tektite_osmiridium.get().defaultBlockState(),
+                    put(pos, ModBlocks.ore_tektite_osmiridium.get().defaultBlockState(),
                             Block.UPDATE_CLIENTS);
                 } else {
-                    level.setBlock(pos, ModBlocks.tektite.get().defaultBlockState(), Block.UPDATE_CLIENTS);
+                    put(pos, ModBlocks.tektite.get().defaultBlockState(), Block.UPDATE_CLIENTS);
                 }
 
             } else if (y > terrain + 1) {
@@ -159,19 +173,21 @@ public class ExplosionTom {
                             for (int k = -2; k < 3; k++) {
                                 BlockPos near = new BlockPos(pX + i, y + j, pZ + k);
                                 if (isWashedAway(level.getBlockState(near))) {
-                                    level.setBlock(near, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-                                    level.setBlock(new BlockPos(pX, y, pZ), Blocks.AIR.defaultBlockState(),
+                                    put(near, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+                                    put(new BlockPos(pX, y, pZ), Blocks.AIR.defaultBlockState(),
                                             Block.UPDATE_ALL);
                                 }
                             }
                         }
                     }
                     // 1.7 flag 2, but its breakBlock still ran: keep the removal hook on 26.1
-                    if (level instanceof ServerLevel server) {
-                        Compat.setBlockWithRemoval(server, new BlockPos(pX, y, pZ),
-                                Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
-                    } else {
-                        level.setBlock(new BlockPos(pX, y, pZ), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                    if (gate().mayAlter(pX, y, pZ)) {
+                        if (level instanceof ServerLevel server) {
+                            Compat.setBlockWithRemoval(server, new BlockPos(pX, y, pZ),
+                                    Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                        } else {
+                            level.setBlock(new BlockPos(pX, y, pZ), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                        }
                     }
                 }
             } else if (distance < lavaRadius) {
@@ -184,15 +200,15 @@ public class ExplosionTom {
                             boolean air = level.getBlockState(new BlockPos(pX + i, y, pZ + k)).isAir();
 
                             if (liquid || air) {
-                                level.setBlock(new BlockPos(pX + i, y, pZ + k),
+                                put(new BlockPos(pX + i, y, pZ + k),
                                         Blocks.LAVA.defaultBlockState(), Block.UPDATE_CLIENTS);
-                                level.setBlock(new BlockPos(pX, y, pZ),
+                                put(new BlockPos(pX, y, pZ),
                                         Blocks.LAVA.defaultBlockState(), Block.UPDATE_CLIENTS);
                             }
                         }
                     }
                 }
-                level.setBlock(new BlockPos(pX, y, pZ), Blocks.LAVA.defaultBlockState(), Block.UPDATE_CLIENTS);
+                put(new BlockPos(pX, y, pZ), Blocks.LAVA.defaultBlockState(), Block.UPDATE_CLIENTS);
             }
 
             y--;

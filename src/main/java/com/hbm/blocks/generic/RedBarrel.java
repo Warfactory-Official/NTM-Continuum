@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import com.hbm.blocks.bomb.BlockTaint;
 import com.hbm.blocks.bomb.ModBombBlocks;
@@ -55,7 +56,8 @@ public class RedBarrel extends BlockBarrelDeco {
                     int c = rand.nextInt(9) - 4 + iz;
                     BlockPos at = new BlockPos(a, b, c);
                     BlockState block = level.getBlockState(at);
-                    if (block.isCollisionShapeFullBlock(level, at) && !block.isAir()) {
+                    if (block.isCollisionShapeFullBlock(level, at) && !block.isAir()
+                            && Protection.mayAlter(level, at, Protection.Source.NONE, Protection.Cause.FLUID)) {
                         level.setBlock(at, ModBombBlocks.taint.get().defaultBlockState()
                                 .setValue(BlockTaint.TAINTAGE, rand.nextInt(3) + 4), 2);
                     }
@@ -82,7 +84,10 @@ public class RedBarrel extends BlockBarrelDeco {
                 for (int a = (int) entity.getX() - 2; a < (int) entity.getX() + 1; a++) {
                     for (int b = (int) entity.getY(); b < (int) entity.getY() + 3; b++) {
                         for (int c = (int) entity.getZ() - 1; c < (int) entity.getZ() + 2; c++) {
-                            level.setBlock(new BlockPos(a, b, c), Blocks.ICE.defaultBlockState(), 3);
+                            BlockPos ice = new BlockPos(a, b, c);
+                            if (Protection.mayAlter(level, ice, Protection.Source.NONE, Protection.Cause.FLUID)) {
+                                level.setBlock(ice, Blocks.ICE.defaultBlockState(), 3);
+                            }
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
@@ -74,17 +75,18 @@ public class YellowBarrel extends BlockBarrelDeco {
         int ix = Mth.floor(x), iy = Mth.floor(y), iz = Mth.floor(z);
         BlockPos center = new BlockPos(ix, iy, iz);
         RandomSource rand = level.getRandom();
+        Protection.Gate gate = Protection.gate(level, Protection.Source.of(primed), Protection.Cause.EXPLOSION);
         if (rand.nextInt(3) == 0) {
-            level.setBlock(center, ModFluidNetBlocks.toxic_block.get().defaultBlockState(), 3);
+            if (gate.mayAlter(center)) level.setBlock(center, ModFluidNetBlocks.toxic_block.get().defaultBlockState(), 3);
         } else {
             Explosions.explode(level, primed, x, y, z, 12.0F, Level.ExplosionInteraction.TNT);
         }
-        ExplosionNukeGeneric.waste(level, center, 35); // 1.7 YellowBarrel:103
+        ExplosionNukeGeneric.waste(level, Protection.Source.of(primed), center, 35); // 1.7 YellowBarrel:103
         for (int i = -5; i <= 5; i++) {
             for (int j = -5; j <= 5; j++) {
                 for (int k = -5; k <= 5; k++) {
                     BlockPos at = center.offset(i, j, k);
-                    if (rand.nextInt(5) == 0 && level.getBlockState(at).isAir()) {
+                    if (rand.nextInt(5) == 0 && level.getBlockState(at).isAir() && gate.mayAlter(at)) {
                         level.setBlock(at, ModNuclearBlocks.gas_radon_dense.get().defaultBlockState(), 3);
                     }
                 }

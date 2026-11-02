@@ -66,6 +66,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import dev.golem.core.world.Protection;
 
 /**
  * The {@link Environment} hooks at the places hbm-space (NTM: Space for 1.7.10) changed HBM: with no listener every
@@ -688,8 +689,8 @@ public final class EnvironmentGameTests {
         BlockPos waste = helper.absolutePos(wasteRel);
         BARREN.add(dirt);
         try {
-            EntityChemical.seedSlurry(helper.getLevel(), dirt);
-            EntityChemical.seedSlurry(helper.getLevel(), waste);
+            EntityChemical.seedSlurry(helper.getLevel(), Protection.Source.NONE, dirt);
+            EntityChemical.seedSlurry(helper.getLevel(), Protection.Source.NONE, waste);
             helper.assertBlockPresent(Blocks.DIRT, dirtRel);
             helper.assertBlockPresent(Blocks.GRASS_BLOCK, wasteRel); // 1.7's unconditional waste-earth conversion
         } finally {

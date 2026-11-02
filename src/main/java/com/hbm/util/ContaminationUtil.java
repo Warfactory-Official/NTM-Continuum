@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import dev.golem.core.world.Protection;
 import java.util.Objects;
 import com.hbm.entity.mob.EntityDuck;
 import dev.golem.core.hook.Hook;
@@ -349,6 +350,9 @@ public class ContaminationUtil {
         if (!(e instanceof LivingEntity entity))
             return;
 
+        if (!Protection.mayHarm(e.level(), e, Protection.Source.NONE, Protection.Hazard.GAS))
+            return;
+
         if (entity instanceof Player player && (player.isCreative() || player.isSpectator()))
             return;
 
@@ -372,6 +376,9 @@ public class ContaminationUtil {
     public static void applyCoal(Entity e, int i, int dmg, int chance) {
 
         if (!(e instanceof LivingEntity entity))
+            return;
+
+        if (!Protection.mayHarm(e.level(), e, Protection.Source.NONE, Protection.Hazard.GAS))
             return;
 
         if (entity instanceof Player player && (player.isCreative() || player.isSpectator()))
@@ -400,6 +407,9 @@ public class ContaminationUtil {
             return;
 
         if (e instanceof EntityDuck || e instanceof Ocelot || e instanceof Cat)
+            return;
+
+        if (!Protection.mayHarm(e.level(), e, Protection.Source.NONE, Protection.Hazard.CONTAMINATION))
             return;
 
         if (entity instanceof Player player && (player.isCreative() || player.isSpectator()))
@@ -473,7 +483,8 @@ public class ContaminationUtil {
                 contaminate((LivingEntity) e, HazardType.DIGAMMA, ContaminationType.DIGAMMA, eDig);
             }
 
-            if (fire3d > 0.025 && level instanceof ServerLevel serverLevel) {
+            if (fire3d > 0.025 && level instanceof ServerLevel serverLevel
+                    && Protection.mayHarm(level, e, Protection.Source.NONE, Protection.Hazard.FIRE)) {
                 float fireDmg = fire3d;
                 fireDmg /= (float) (dmgLen * dmgLen * res * res);
                 if (fireDmg > 0.025) {
@@ -482,7 +493,8 @@ public class ContaminationUtil {
                 }
             }
 
-            if (len < blastRange && blast3d > 0.025 && level instanceof ServerLevel serverLevel) {
+            if (len < blastRange && blast3d > 0.025 && level instanceof ServerLevel serverLevel
+                    && Protection.mayHarm(level, e, Protection.Source.NONE, Protection.Hazard.BLAST)) {
                 float blastDmg = blast3d;
                 blastDmg /= (float) (dmgLen * dmgLen * res);
                 if (blastDmg > 0.025) {
@@ -521,6 +533,19 @@ public class ContaminationUtil {
     }
 
     public static boolean contaminate(LivingEntity entity, HazardType hazard, ContaminationType cont, double amount) {
+        return contaminate(entity, hazard, cont, amount, Protection.Source.NONE);
+    }
+
+    public static boolean contaminate(LivingEntity entity, HazardType hazard, ContaminationType cont, double amount,
+                                      Protection.Source source) {
+
+        if (!Protection.mayHarm(entity.level(), entity, source, switch (hazard) {
+            case MONOXIDE -> Protection.Hazard.GAS;
+            case RADIATION, NEUTRON -> Protection.Hazard.RADIATION;
+            case DIGAMMA -> Protection.Hazard.CONTAMINATION;
+        })) {
+            return false;
+        }
 
         if (hazard == HazardType.NEUTRON && neutronSystem != null) {
             return neutronSystem.contaminate(entity, cont, amount);

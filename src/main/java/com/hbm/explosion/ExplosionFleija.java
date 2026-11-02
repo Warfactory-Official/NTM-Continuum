@@ -1,5 +1,6 @@
 package com.hbm.explosion;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.lib.HbmBlockTags;
@@ -26,6 +27,7 @@ public class ExplosionFleija {
     public float explosionCoefficient = 1.0F;
     public float explosionCoefficient2 = 1.0F;
     public UUID detonator;
+    private Protection.Gate gate;
     private int n = 1;
     private int nlimit;
     private int shell;
@@ -57,6 +59,11 @@ public class ExplosionFleija {
         return this.n > this.nlimit;
     }
 
+    private Protection.Gate gate() {
+        if (gate == null) gate = Protection.gate(worldObj, Protection.Source.ofPlayer(detonator), Protection.Cause.EXPLOSION);
+        return gate;
+    }
+
     private void breakColumn(int x, int z) {
         int dist = this.radius2 - (x * x + z * z);
         if (dist > 0) {
@@ -65,7 +72,7 @@ public class ExplosionFleija {
             for (int y = (int) (dist / this.explosionCoefficient2); y > -dist / this.explosionCoefficient; y--) {
                 pos.set(this.posX + x, this.posY + y, this.posZ + z);
                 BlockState state = this.worldObj.getBlockState(pos);
-                if (state.is(HbmBlockTags.FLEIJA_IMMUNE)) continue;
+                if (state.is(HbmBlockTags.FLEIJA_IMMUNE) || !gate().mayAlter(pos)) continue;
                 // 26.1: y>0 leaves a 64-block shell; spare floor.
                 if (this.posY + y <= 0
                         && state.getBlock().getExplosionResistance() > 2_000_000F) continue;

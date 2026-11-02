@@ -1,5 +1,6 @@
 package com.hbm.items.weapon;
 
+import dev.golem.core.world.Protection;
 import com.hbm.Constants;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
@@ -121,7 +122,7 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
                 standardExplosion(rocket, hit, 20F, 3F, false, SLAG_CRACKED);
                 ExplosionLarge.spawnShrapnels(level, where.x, where.y, where.z, 30);
                 if (level instanceof ServerLevel server) // 1.7: (int)-truncated hit vector
-                    ExplosionChaos.igniteAllBlocks(server, (int) where.x, (int) where.y, (int) where.z, 20);
+                    ExplosionChaos.igniteAllBlocks(server, Protection.Source.of(rocket), (int) where.x, (int) where.y, (int) where.z, 20);
 
                 int radius = 30;
                 for (Entity e : level.getEntities((Entity) null,
@@ -238,6 +239,7 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
             boolean breaksBlocks, Supplier<BlockState> slag) {
         Vec3 impact = behindImpact(rocket, hit);
         ExplosionVNT xnt = new ExplosionVNT(rocket.level(), impact.x, impact.y, impact.z, size);
+        xnt.setSource(Protection.Source.of(rocket));
         if (breaksBlocks) {
             xnt.setBlockAllocator(new BlockAllocatorStandard(48));
             xnt.setBlockProcessor(new BlockProcessorStandard().setNoDrop()

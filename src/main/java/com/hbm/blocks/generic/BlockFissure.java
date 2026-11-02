@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.capability.ICapabilityBlock;
 import com.hbm.capability.MachineCaps;
 import net.minecraft.core.Direction;
@@ -57,7 +58,7 @@ public class BlockFissure extends CompatBlock implements TickingBlock, ICapabili
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         BlockPos above = pos.above();
-        if (level.getBlockState(above).canBeReplaced()) {
+        if (level.getBlockState(above).canBeReplaced() && Protection.mayAlter(level, above, Protection.Source.NONE, Protection.Cause.TERRAFORM)) {
             Block lava = state.getValue(CRATER) ? ModFluidNetBlocks.rad_lava_block.get() : ModFluidNetBlocks.volcanic_lava_block.get();
             level.setBlockAndUpdate(above, lava.defaultBlockState());
         }

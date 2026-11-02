@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import dev.golem.core.world.Protection;
 
 /** Explosives audit: the figures and rules of 1.7 that no other test pins. */
 public final class RcBombGameTests {
@@ -91,7 +92,7 @@ public final class RcBombGameTests {
         helper.setBlock(centre.offset(-5, -5, 5), ModOreBlocks.ore_bedrock_block.get().defaultBlockState());
         helper.setBlock(centre.offset(0, 3, 0), ModBlocks.ore_bedrock_oil.get().defaultBlockState());
         helper.setBlock(centre.offset(6, 0, 0), ModOreBlocks.ore_bedrock_block.get().defaultBlockState());
-        BlockFissureBomb.convertBedrockOres(helper.getLevel(), helper.absolutePos(centre).getX() + 0.5,
+        BlockFissureBomb.convertBedrockOres(helper.getLevel(), Protection.Source.NONE, helper.absolutePos(centre).getX() + 0.5,
                 helper.absolutePos(centre).getY() + 0.5, helper.absolutePos(centre).getZ() + 0.5);
         helper.assertTrue(helper.getBlockState(centre.offset(2, 0, 0)).is(ModTerrainBlocks.ore_volcano.get()),
                 "bedrock ore in range did not become ore_volcano");

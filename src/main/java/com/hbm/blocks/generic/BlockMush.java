@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModFalloutBlocks;
 import dev.golem.core.world.CompatBonemealableBlock;
 import net.minecraft.core.BlockPos;
@@ -115,7 +116,8 @@ public class BlockMush extends BlockTerrainPlant implements CompatBonemealableBl
 
             for (int l1 = 0; l1 < 4; ++l1) {
                 BlockPos at = new BlockPos(ix, iy, iz);
-                if (level.getBlockState(at).isAir() && canMushGrowOn(level.getBlockState(at.below()))) {
+                if (level.getBlockState(at).isAir() && canMushGrowOn(level.getBlockState(at.below()))
+                    && Protection.mayAlter(level, at, Protection.Source.NONE, Protection.Cause.TERRAFORM)) {
                     x = ix;
                     z = iy;
                     y = iz;
@@ -126,7 +128,8 @@ public class BlockMush extends BlockTerrainPlant implements CompatBonemealableBl
             }
 
             BlockPos at = new BlockPos(ix, iy, iz);
-            if (level.getBlockState(at).isAir() && canMushGrowOn(level.getBlockState(at.below()))) {
+            if (level.getBlockState(at).isAir() && canMushGrowOn(level.getBlockState(at.below()))
+                    && Protection.mayAlter(level, at, Protection.Source.NONE, Protection.Cause.TERRAFORM)) {
                 level.setBlock(at, defaultBlockState(), 2);
             }
         }

@@ -1,5 +1,7 @@
 package com.hbm.tileentity.bomb;
 
+import java.util.UUID;
+import com.hbm.util.Owners;
 import com.hbm.Constants;
 import com.hbm.api.block.IRadarCommandReceiver;
 import com.hbm.api.event.HbmEvents;
@@ -353,6 +355,8 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     public void finalizeLaunch(Entity missile) {
         if (missile instanceof EntityMissileBaseNT ballistic) ballistic.setThrower(detonator);
         if (missile instanceof EntityMissileAntiBallistic abm) abm.setThrower(detonator);
+        UUID owner = Owners.detonator(detonator);
+        Owners.give(missile, owner != null ? owner : placer());
 
         level.addFreshEntity(missile);
         if (missile instanceof EntityMissileBaseNT ballistic) {
@@ -476,7 +480,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     @Override
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "launch").equals(name)) {
-            // a radio launch credits no one, not whoever last used a detonator on the pad
+            // radio launch: no detonator, the pad's placer answers for it
             detonator = null;
             switch (params.length) {
                 case 0 -> launchFromDesignator();

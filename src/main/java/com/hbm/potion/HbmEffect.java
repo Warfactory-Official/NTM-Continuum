@@ -1,5 +1,6 @@
 package com.hbm.potion;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.bomb.BlockTaint;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.capability.HbmLivingProps;
@@ -58,7 +59,8 @@ public final class HbmEffect extends CompatMobEffect {
                     BlockPos below = BlockPos.containing(
                             Math.floor(entity.getX()), Math.floor(entity.getY()) - 1, Math.floor(entity.getZ()));
                     BlockState b = level.getBlockState(below);
-                    if (below.getY() + 1 > level.getMinY() + 1 && Compat.isSolidRender(b) && !b.isAir()) { // 1.7 y > 1: the world floor
+                    if (below.getY() + 1 > level.getMinY() + 1 && Compat.isSolidRender(b) && !b.isAir()
+                            && Protection.mayAlter(level, below, Protection.Source.NONE, Protection.Cause.FLUID)) { // 1.7 y > 1: the world floor
                         level.setBlock(below, ModBombBlocks.taint.get().defaultBlockState()
                                 .setValue(BlockTaint.TAINTAGE, 14), Block.UPDATE_CLIENTS);
                     }

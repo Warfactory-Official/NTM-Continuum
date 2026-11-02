@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.potion.ModEffects;
@@ -42,7 +43,7 @@ public class BlockGasMeltdown extends BlockGasBase {
         }
         BlockPos target = pos.relative(random.nextInt(5) == 0 ? Direction.UP
                 : Direction.Plane.HORIZONTAL.getRandomDirection(random));
-        if (level.getBlockState(target).isAir()) {
+        if (level.getBlockState(target).isAir() && Protection.mayAlter(level, target, Protection.Source.NONE, Protection.Cause.FLUID)) {
             level.setBlock(target, state, 2);
             level.removeBlock(pos, false);
         }

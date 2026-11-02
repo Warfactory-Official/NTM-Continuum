@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModDecoBlocks;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
@@ -100,9 +101,10 @@ public class EntityBoxcar extends CompatEntity {
                 for (Entity e : list) Compat.hurt(e, server, ModDamageSources.source(level(), ModDamageSources.BOXCAR), 1000);
             }
 
-            level().setBlockAndUpdate(
-                    new BlockPos((int) Math.floor(getX()), (int) Math.floor(getY() + 0.5), (int) Math.floor(getZ())),
-                    ModDecoBlocks.boxcar.get().defaultBlockState());
+            BlockPos landing = new BlockPos((int) Math.floor(getX()), (int) Math.floor(getY() + 0.5), (int) Math.floor(getZ()));
+            if (Protection.mayAlter(level(), landing, Protection.Source.of(this), Protection.Cause.PLACEMENT)) {
+                level().setBlockAndUpdate(landing, ModDecoBlocks.boxcar.get().defaultBlockState());
+            }
         }
     }
 }

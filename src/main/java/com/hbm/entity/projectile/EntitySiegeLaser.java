@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import dev.golem.core.data.Tags;
 
@@ -135,12 +136,14 @@ public class EntitySiegeLaser extends EntityThrowableNT {
                 // 1.7: ForgeDirection off mop.sideHit
                 BlockPos target = pos.relative(blockHit.getDirection());
 
-                if (server.getBlockState(target).canBeReplaced()) {
+                if (server.getBlockState(target).canBeReplaced()
+                        && Protection.mayAlter(server, target, Protection.Source.of(this), Protection.Cause.FIRE)) {
                     server.setBlockAndUpdate(target, Blocks.FIRE.defaultBlockState());
                 }
             }
 
-            if (this.random.nextFloat() < this.breakChance) {
+            if (this.random.nextFloat() < this.breakChance
+                    && Protection.mayAlter(server, pos, Protection.Source.of(this), Protection.Cause.EXPLOSION)) {
                 server.destroyBlock(pos, false); // 1.7 func_147480_a(pos, drop=false)
             }
 

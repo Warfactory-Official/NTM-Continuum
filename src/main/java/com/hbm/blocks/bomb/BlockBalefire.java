@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Protection;
 import com.hbm.mixin.FireBlockAccessor;
 import com.hbm.potion.ModEffects;
 import dev.golem.core.world.Effects;
@@ -106,7 +107,7 @@ public class BlockBalefire extends CompatFireBlock {
                     // Existing balefire gets its age pulled DOWN toward ours, refreshing the fire.
                     if (s.is(this)) {
                         int theirAge = s.getValue(AGE);
-                        if (theirAge > age + 1) {
+                        if (theirAge > age + 1 && Protection.mayAlter(level, mpos, Protection.Source.NONE, Protection.Cause.FIRE)) {
                             level.setBlock(mpos, s.setValue(AGE, Math.min(age + 1, 15)), 3);
                         }
                         continue;
@@ -123,7 +124,8 @@ public class BlockBalefire extends CompatFireBlock {
                     int fireLimit = 100;
                     if (dy > 1) fireLimit += (dy - 1) * 100;
                     int adjusted = (neighbourSpread + 40 + level.getDifficulty().getId() * 7) / (age + 30);
-                    if (adjusted > 0 && random.nextInt(fireLimit) <= adjusted) {
+                    if (adjusted > 0 && random.nextInt(fireLimit) <= adjusted
+                            && Protection.mayAlter(level, mpos, Protection.Source.NONE, Protection.Cause.FIRE)) {
                         level.setBlock(mpos, defaultBlockState().setValue(AGE, Math.min(age + 1, 15)), 3);
                     }
                 }
@@ -136,6 +138,7 @@ public class BlockBalefire extends CompatFireBlock {
         int flammability = flammability(target);
         if (flammability <= 0) return;
         if (random.nextInt(chance) >= flammability) return;
+        if (!Protection.mayAlter(level, pos, Protection.Source.NONE, Protection.Cause.FIRE)) return;
 
         level.setBlock(pos, defaultBlockState().setValue(AGE, Math.min(age + 1, 15)), 3);
         if (target.is(Blocks.TNT)) {

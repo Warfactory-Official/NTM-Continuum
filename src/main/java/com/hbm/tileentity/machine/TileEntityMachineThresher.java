@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
@@ -313,7 +315,7 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
         for (int i = 2 + offset; i > offset; i--) {
             BlockPos at = base.above(i);
             BlockState b = level.getBlockState(at);
-            if (b.isAir()) continue;
+            if (b.isAir() || !Protection.mayAlter(level, at, Owners.source(this), Protection.Cause.TERRAFORM)) continue;
             level.levelEvent(2001, at, Block.getId(b));
             for (ItemStack drop : Block.getDrops(b, level, at, level.getBlockEntity(at), null, ItemStack.EMPTY)) dropItem(level, drop);
             level.setBlock(at, Blocks.AIR.defaultBlockState(), 3);
@@ -322,6 +324,7 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
 
     /** Harvests and re-plants crops like wheat. */
     protected void cutCrop(ServerLevel level, BlockState b, BlockPos at) {
+        if (!Protection.mayAlter(level, at, Owners.source(this), Protection.Cause.TERRAFORM)) return;
         level.levelEvent(2001, at, Block.getId(b));
 
         BlockState replacement = Blocks.AIR.defaultBlockState();

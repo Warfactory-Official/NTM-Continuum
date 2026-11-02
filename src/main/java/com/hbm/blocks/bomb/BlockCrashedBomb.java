@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.util.Owners;
 import com.hbm.api.block.IToolable;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.ModNtmEntities;
@@ -97,11 +98,12 @@ public class BlockCrashedBomb extends CompatBlock implements TickingBlock, IBomb
                 EntityBalefire bf = new EntityBalefire(ModNtmEntities.BALEFIRE.get(), level);
                 bf.setPos(x, y, z);
                 bf.destructionRange = (int) (BombConfig.fatmanRadius * 1.25);
-                level.addFreshEntity(bf);
+                level.addFreshEntity(Owners.give(bf, Owners.detonator(detonator)));
                 spawnMush(level, x, y, z, true);
             }
             case CONVENTIONAL -> {
                 ExplosionVNT xnt = new ExplosionVNT(level, x + 0.5, y + 0.5, z + 0.5, 35F);
+                xnt.setSource(Owners.sourceOf(detonator));
                 xnt.setBlockAllocator(new BlockAllocatorStandard(24));
                 xnt.setBlockProcessor(new BlockProcessorStandard().setNoDrop());
                 xnt.setEntityProcessor(new EntityProcessorCross(5D).withRangeMod(1.5F));
@@ -111,13 +113,13 @@ public class BlockCrashedBomb extends CompatBlock implements TickingBlock, IBomb
             }
             case NUKE -> {
                 EntityNukeExplosionMK5 mk5 = EntityNukeExplosionMK5.statFac(level, 35, x + 0.5, y + 0.5, z + 0.5);
-                if (detonator != null) mk5.detonator = detonator.getUUID();
+                mk5.detonator = Owners.detonator(detonator);
                 if (level.addFreshEntity(mk5)) mk5.startChunkLoading();
                 spawnMush(level, x, y, z, MainRegistry.polaroidID == 11 || level.getRandom().nextInt(100) == 0);
             }
             case SALTED -> {
                 EntityNukeExplosionMK5 mk5 = EntityNukeExplosionMK5.statFac(level, 25, x + 0.5, y + 0.5, z + 0.5).moreFallout(25);
-                if (detonator != null) mk5.detonator = detonator.getUUID();
+                mk5.detonator = Owners.detonator(detonator);
                 if (level.addFreshEntity(mk5)) mk5.startChunkLoading();
                 spawnMush(level, x, y, z, MainRegistry.polaroidID == 11 || level.getRandom().nextInt(100) == 0);
             }

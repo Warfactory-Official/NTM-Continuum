@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.ModNuclearBlocks;
@@ -129,7 +130,8 @@ public final class EntityShrapnel extends CompatEntity {
         if (trail == TRAIL_VOLCANO || trail == TRAIL_RAD_VOLCANO) {
             if (hit != null) erupt(server, hit, trail == TRAIL_RAD_VOLCANO);
         } else if (trail == TRAIL_WATZ) {
-            if (hit != null && server.getBlockState(hit.above()).canBeReplaced()) {
+            if (hit != null && server.getBlockState(hit.above()).canBeReplaced()
+                    && Protection.mayAlter(server, hit.above(), Protection.Source.NONE, Protection.Cause.FLUID)) {
                 server.setBlockAndUpdate(hit.above(), ModHazardBlocks.mud_block.get().defaultBlockState());
             }
         } else {
@@ -149,8 +151,9 @@ public final class EntityShrapnel extends CompatEntity {
         Block lava = radioactive ? ModFluidNetBlocks.rad_lava_block.get() : ModFluidNetBlocks.volcanic_lava_block.get();
         double motionY = getDeltaMovement().y;
 
+        Protection.Gate gate = Protection.gate(server, Protection.Source.NONE, Protection.Cause.FIRE);
         if (motionY < -0.2D) {
-            if (server.getBlockState(hit.above()).canBeReplaced()) {
+            if (server.getBlockState(hit.above()).canBeReplaced() && gate.mayAlter(hit.above())) {
                 server.setBlockAndUpdate(hit.above(), lava.defaultBlockState());
             }
             BlockState monoxide = ModNuclearBlocks.gas_monoxide.get().defaultBlockState();
@@ -158,7 +161,7 @@ public final class EntityShrapnel extends CompatEntity {
                 for (int y = hit.getY(); y <= hit.getY() + 2; y++) {
                     for (int z = hit.getZ() - 1; z <= hit.getZ() + 1; z++) {
                         BlockPos pos = new BlockPos(x, y, z);
-                        if (server.getBlockState(pos).isAir()) server.setBlockAndUpdate(pos, monoxide);
+                        if (server.getBlockState(pos).isAir() && gate.mayAlter(pos)) server.setBlockAndUpdate(pos, monoxide);
                     }
                 }
             }

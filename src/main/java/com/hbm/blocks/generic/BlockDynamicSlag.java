@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -76,7 +77,8 @@ public class BlockDynamicSlag extends CompatBlock implements TickingBlock {
         BlockPos below = pos.below();
 
         /* flow down: move the whole pile */
-        if (world.getBlockState(below).canBeReplaced() && y > world.getMinY()) {
+        if (world.getBlockState(below).canBeReplaced() && y > world.getMinY()
+                && Protection.mayAlter(world, below, Protection.Source.NONE, Protection.Cause.FLUID)) {
             world.setBlockAndUpdate(below, this.defaultBlockState());
             if (world.getBlockEntity(below) instanceof TileEntitySlag tile) {
                 tile.mat = self.mat;
@@ -115,7 +117,8 @@ public class BlockDynamicSlag extends CompatBlock implements TickingBlock {
 
             for (ForgeDirection dir : sides) {
                 BlockPos side = pos.offset(dir.offsetX, 0, dir.offsetZ);
-                if (world.getBlockState(side).canBeReplaced()) {
+                if (world.getBlockState(side).canBeReplaced()
+                        && Protection.mayAlter(world, side, Protection.Source.NONE, Protection.Cause.FLUID)) {
                     world.setBlockAndUpdate(side, this.defaultBlockState());
                     if (world.getBlockEntity(side) instanceof TileEntitySlag tile) {
                         tile.mat = self.mat;

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.util.Owners;
 import dev.golem.core.world.Explosions;
 import com.hbm.advancement.DetonationTrigger;
 import com.hbm.advancement.HbmCriteria;
@@ -224,7 +225,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         spawnDebris(level, pos, DebrisType.ELEMENT, 10);
         spawnDebris(level, pos, DebrisType.GRAPHITE, 10);
         spawnDebris(level, pos, DebrisType.SHRAPNEL, 10);
-        ExplosionNukeGeneric.waste(level, pos, 35); // 1.7 TileEntityReactorZirnox.meltdown:398
+        ExplosionNukeGeneric.waste(level, Owners.source(this), pos, 35); // 1.7 TileEntityReactorZirnox.meltdown:398
         grantMeltdownAdvancement(level, pos);
     }
 

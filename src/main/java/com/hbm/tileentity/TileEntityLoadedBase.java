@@ -1,6 +1,11 @@
 package com.hbm.tileentity;
 
+import dev.golem.core.world.Protection;
 import io.netty.buffer.ByteBuf;
+import com.hbm.util.Owners;
+import java.util.UUID;
+import net.minecraft.core.UUIDUtil;
+import org.jspecify.annotations.Nullable;
 import dev.golem.core.data.CompatBlockEntity;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -47,10 +52,13 @@ import net.minecraft.core.BlockPos;
  * no cross-loader equivalent and was a frequent source of CMEs), and the chunk-load path uses vanilla
  * NBT rather than the {@code hbmSync} byte[] trick (which can't survive {@code DataOut}).
  */
-public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTile, IBufPacketReceiver, GraphResident {
+public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTile, IBufPacketReceiver, GraphResident,
+        Owners.Placed {
 
     public boolean isLoaded = true;
     public boolean muffled = false;
+    private @Nullable UUID placerId;
+    private Protection.Source placerSource = Protection.Source.NONE;
 
     /** Set by subclasses when a synced field changes; gates {@link #networkPackMK2()}. */
     protected boolean hasDataChanged = true;
@@ -201,18 +209,38 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
         dataChanged();
     }
 
+    @Override
+    public @Nullable UUID placer() {
+        return placerId;
+    }
+
+    @Override
+    public void setPlacer(@Nullable UUID placer) {
+        this.placerId = placer;
+        this.placerSource = Protection.Source.ofPlayer(placer);
+        setChanged();
+    }
+
+    @Override
+    public Protection.Source placerSource() {
+        return placerSource;
+    }
+
     // --- persistence ---
 
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
         output.putBoolean("muffled", muffled);
+        if (placerId != null) output.store("placer", UUIDUtil.CODEC, placerId);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
         muffled = input.getBooleanOr("muffled", false);
+        placerId = input.read("placer", UUIDUtil.CODEC).orElse(null);
+        placerSource = Protection.Source.ofPlayer(placerId);
         hasDataChanged = true;
     }
 

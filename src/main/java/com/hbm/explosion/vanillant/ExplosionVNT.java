@@ -17,6 +17,7 @@ import com.hbm.explosion.vanillant.standard.ExplosionEffectAmat;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectStandard;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import dev.golem.core.world.Explosions;
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.SubLevels;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.HashMap;
@@ -57,6 +58,10 @@ public class ExplosionVNT extends Explosions.Context {
     /** 1.7 {@code compat.affectedBlockPositions}: a copy of the allocation, as the world sees it, read by the SFX. */
     public List<BlockPos> affectedBlockPositions = List.of();
 
+    /** Responsible player for claim checks; defaults to the exploder's. */
+    public Protection.Source source;
+    private Protection.@Nullable Gate gate;
+
     public ExplosionVNT(Level world, double x, double y, double z, float size) {
         this(world, x, y, z, size, null);
     }
@@ -73,6 +78,16 @@ public class ExplosionVNT extends Explosions.Context {
         this.posZ = z;
         this.size = size;
         this.exploder = exploder;
+        this.source = Protection.Source.of(exploder);
+    }
+
+    public ExplosionVNT setSource(Protection.Source source) {
+        this.source = source;
+        return this;
+    }
+
+    public boolean mayHarm(Entity victim) {
+        return Protection.mayHarm(world, victim, source, Protection.Hazard.BLAST);
     }
 
     @Override public ServerLevel level() { return (ServerLevel) world; }
@@ -87,6 +102,7 @@ public class ExplosionVNT extends Explosions.Context {
 
     public void explode() {
 
+        gate = Protection.gate(world, source, Protection.Cause.EXPLOSION);
         boolean processBlocks = blockAllocator != null && blockProcessor != null;
         boolean processEntities = entityProcessor != null && playerProcessor != null;
 
@@ -98,7 +114,7 @@ public class ExplosionVNT extends Explosions.Context {
         ObjectOpenHashSet<BlockPos> affectedBlocks = null;
         if (processBlocks) {
             // Exposure must be calculated against the pre-blast world, as in 1.12.2.
-            affectedBlocks = blockAllocator.allocate(this, world, posX, posY, posZ, size);
+            affectedBlocks = allocate(posX, posY, posZ);
             affectedBlockPositions = carried
                     ? affectedBlocks.stream().map(pos -> SubLevels.toWorldBlock(world, pos)).toList()
                     : List.copyOf(affectedBlocks);
@@ -136,10 +152,16 @@ public class ExplosionVNT extends Explosions.Context {
 
     /** port: the block half of the blast around {@code at}, the centre as the world or one sub-level sees it. */
     private void blastAt(Vec3 at, boolean push) {
-        ObjectOpenHashSet<BlockPos> blocks = blockAllocator.allocate(this, world, at.x, at.y, at.z, size);
+        ObjectOpenHashSet<BlockPos> blocks = allocate(at.x, at.y, at.z);
         List<BlockPos> solid = push ? solid(blocks) : List.of();
         blockProcessor.process(this, world, at.x, at.y, at.z, blocks);
         if (push) SubLevelBlasts.push(world, at, solid);
+    }
+
+    private ObjectOpenHashSet<BlockPos> allocate(double x, double y, double z) {
+        ObjectOpenHashSet<BlockPos> blocks = blockAllocator.allocate(this, world, x, y, z, size);
+        gate.removeDenied(blocks);
+        return blocks;
     }
 
     private List<BlockPos> solid(ObjectOpenHashSet<BlockPos> blocks) {

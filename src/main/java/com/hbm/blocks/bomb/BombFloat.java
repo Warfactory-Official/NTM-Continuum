@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.util.Owners;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.effect.EntityEMPBlast;
 import com.hbm.explosion.ExplosionChaos;
@@ -48,10 +49,10 @@ public class BombFloat extends CompatBlock implements IBomb {
         if (!level.isClientSide()) {
             level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
             if (!emp) {
-                ExplosionChaos.floater(level, pos, 15, 50);
+                ExplosionChaos.floater(level, Owners.sourceOf(detonator), pos, 15, 50);
                 ExplosionChaos.move(level, pos, 15, 0, 50, 0);
             } else {
-                ExplosionNukeGeneric.empBlast(level, pos, 50);
+                ExplosionNukeGeneric.empBlast(level, Owners.sourceOf(detonator), pos, 50);
                 EntityEMPBlast wave = new EntityEMPBlast(ModNtmEntities.EMP_BLAST.get(), level);
                 wave.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
                 wave.setMaxAge(50);

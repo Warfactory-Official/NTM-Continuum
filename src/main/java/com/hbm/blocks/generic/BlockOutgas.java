@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.ModOreBlocks;
@@ -83,7 +84,10 @@ public class BlockOutgas extends CompatBlock {
         Block gas = getGas();
         if (gas == Blocks.AIR) return;
         BlockPos target = pos.relative(Direction.getRandom(random));
-        if (BlockGasBase.isAirLike(level.getBlockState(target))) level.setBlock(target, gas.defaultBlockState(), 3);
+        if (BlockGasBase.isAirLike(level.getBlockState(target))
+                && Protection.mayAlter(level, target, Protection.Source.NONE, Protection.Cause.FLUID)) {
+            level.setBlock(target, gas.defaultBlockState(), 3);
+        }
     }
 
     @Override
@@ -93,7 +97,7 @@ public class BlockOutgas extends CompatBlock {
         BlockPos above = pos.above();
         if (!BlockGasBase.isAirLike(level.getBlockState(above))) return;
         ServerLevel server = (ServerLevel) level;
-        if (server.getRandom().nextInt(10) == 0) {
+        if (server.getRandom().nextInt(10) == 0 && Protection.mayAlter(server, above, Protection.Source.NONE, Protection.Cause.FLUID)) {
             server.setBlock(above, ModNuclearBlocks.gas_asbestos.get().defaultBlockState(), 3);
         }
         // TOWN_AURA was removed; MYCELIUM is the existing harmless dust-particle stand-in.
@@ -124,7 +128,10 @@ public class BlockOutgas extends CompatBlock {
             // 1.7 tests the sum, not a distance
             int sum = Math.abs(x + y + z);
             BlockPos target = pos.offset(x, y, z);
-            if (sum > 0 && sum < 5 && level.getBlockState(target).isAir()) level.setBlock(target, gas.defaultBlockState(), 3);
+            if (sum > 0 && sum < 5 && level.getBlockState(target).isAir()
+                    && Protection.mayAlter(level, target, Protection.Source.NONE, Protection.Cause.FLUID)) {
+                level.setBlock(target, gas.defaultBlockState(), 3);
+            }
         }
     }
 
@@ -143,7 +150,8 @@ public class BlockOutgas extends CompatBlock {
         if (onNeighbour) {
             for (Direction direction : Direction.values()) {
                 BlockPos target = pos.relative(direction);
-                if (BlockGasBase.isAirLike(level.getBlockState(target)))
+                if (BlockGasBase.isAirLike(level.getBlockState(target))
+                        && Protection.mayAlter(level, target, Protection.Source.NONE, Protection.Cause.FLUID))
                     level.setBlock(target, gas.defaultBlockState(), 3);
             }
         } else if (BlockGasBase.isAirLike(level.getBlockState(pos))) {

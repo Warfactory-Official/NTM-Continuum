@@ -1,5 +1,9 @@
 package com.hbm.explosion;
 
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import dev.golem.core.world.Protection;
+import com.hbm.util.Owners;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityCloudFleija;
@@ -40,7 +44,7 @@ public final class ExplosionNukeCustom {
     /** The first listener that answers true replaces 1.7's balefire; HBM registers none. NTM: Space's is antimatter. */
     public static final Hook<AntimatterStage> ANTIMATTER = Hook.notifying();
 
-    public static void explodeCustom(Level level, double x, double y, double z, float tnt, float nuke, float hydro,
+    public static void explodeCustom(Level level, @Nullable UUID owner, double x, double y, double z, float tnt, float nuke, float hydro,
                                      float amat, float dirty, float schrab, float euph) {
 
         dirty = Math.min(dirty, MAX_DIRTY);
@@ -55,7 +59,7 @@ public final class ExplosionNukeCustom {
             ex.coefficient = 1.0F;
             // 1.7 also set waste = false here. The ported MK3 only implements the Fleija/Solinium half of that
             // flag (the waste=true ExplosionNukeAdvanced path is unported), so it already behaves as waste=false.
-            level.addFreshEntity(ex);
+            level.addFreshEntity(Owners.give(ex, owner));
 
             level.playSound(null, x, y, z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 100000.0F, 1.0F);
 
@@ -70,7 +74,7 @@ public final class ExplosionNukeCustom {
             EntityNukeExplosionMK3 ex = EntityNukeExplosionMK3.statFacFleija(level, x + 0.5, y + 0.5, z + 0.5,
                     (int) schrab);
             if(!ex.isRemoved()) {
-                level.addFreshEntity(ex);
+                level.addFreshEntity(Owners.give(ex, owner));
                 level.addFreshEntity(EntityCloudFleija.statFac(level, (int) schrab, x + 0.5, y + 0.5, z + 0.5));
             }
 
@@ -87,7 +91,7 @@ public final class ExplosionNukeCustom {
             EntityBalefire bf = new EntityBalefire(ModNtmEntities.BALEFIRE.get(), level);
             bf.setPos(x + 0.5, y + 0.5, z + 0.5);
             bf.destructionRange = (int) amat;
-            level.addFreshEntity(bf);
+            level.addFreshEntity(Owners.give(bf, owner));
             spawnCloud(level, EntityNukeTorex.statFacBale(level, x + 0.5, y + 5, z + 0.5, amat));
 
         /// HYDROGEN ///
@@ -97,8 +101,8 @@ public final class ExplosionNukeCustom {
             hydro = Math.min(hydro, MAX_HYDRO);
             dirty *= 0.25F;
 
-            level.addFreshEntity(EntityNukeExplosionMK5.statFac(level, (int) hydro, x + 0.5, y + 0.5, z + 0.5)
-                                                       .moreFallout((int) dirty));
+            level.addFreshEntity(Owners.give(EntityNukeExplosionMK5.statFac(level, (int) hydro, x + 0.5, y + 0.5, z + 0.5)
+                                                       .moreFallout((int) dirty), owner));
             spawnCloud(level, EntityNukeTorex.statFac(level, x + 0.5, y + 5, z + 0.5, hydro));
 
         /// NUCLEAR ///
@@ -108,8 +112,8 @@ public final class ExplosionNukeCustom {
             nuke = Math.min(nuke, MAX_NUKE);
 
             // 1.7 spawns the nuclear blast five blocks up where hydrogen spawns it at the bomb
-            level.addFreshEntity(EntityNukeExplosionMK5.statFac(level, (int) nuke, x + 0.5, y + 5, z + 0.5)
-                                                       .moreFallout((int) dirty));
+            level.addFreshEntity(Owners.give(EntityNukeExplosionMK5.statFac(level, (int) nuke, x + 0.5, y + 5, z + 0.5)
+                                                       .moreFallout((int) dirty), owner));
             spawnCloud(level, EntityNukeTorex.statFac(level, x + 0.5, y + 5, z + 0.5, nuke));
 
         /// NON-NUCLEAR ///
@@ -117,12 +121,12 @@ public final class ExplosionNukeCustom {
 
             tnt = Math.min(tnt, MAX_TNT);
 
-            level.addFreshEntity(EntityNukeExplosionMK5.statFacNoRad(level, (int) tnt, x + 0.5, y + 0.5, z + 0.5));
+            level.addFreshEntity(Owners.give(EntityNukeExplosionMK5.statFacNoRad(level, (int) tnt, x + 0.5, y + 0.5, z + 0.5), owner));
             spawnCloud(level, EntityNukeTorex.statFac(level, x + 0.5, y + 5, z + 0.5, tnt));
 
         } else if(tnt > 0) {
 
-            ExplosionLarge.explode(level, x + 0.5, y + 0.5, z + 0.5, tnt, true, true, true);
+            ExplosionLarge.explodeBy(level, Protection.Source.ofPlayer(owner), x + 0.5, y + 0.5, z + 0.5, tnt, true, true, true);
         }
     }
 

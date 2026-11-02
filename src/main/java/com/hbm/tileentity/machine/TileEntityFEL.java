@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import com.hbm.client.sound.FELSoundHandler;
 import dev.golem.core.data.Tags;
 
@@ -272,6 +274,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
      * <b>explosion resistance</b>, matching the old {@code getExplosionResistance(null)}.
      */
     private void burn(Level level, BlockPos pos, BlockState b) {
+        if (!Protection.mayAlter(level, pos, Owners.source(this), Protection.Cause.FIRE)) return;
         if (!b.getFluidState().isEmpty() && b.getBlock() instanceof LiquidBlock) {
             lavaHiss(level, pos);
             level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());

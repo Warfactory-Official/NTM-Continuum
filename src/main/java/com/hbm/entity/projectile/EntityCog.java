@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModNtmEntities;
@@ -137,7 +138,8 @@ public class EntityCog extends EntityThrowableInterp {
                             Level.ExplosionInteraction.NONE);
 
                     if (server.getBlockState(hit.getBlockPos()).getBlock().getExplosionResistance()
-                            < BREAKABLE_RESISTANCE) {
+                            < BREAKABLE_RESISTANCE && Protection.mayAlter(server, hit.getBlockPos(),
+                            Protection.Source.of(this), Protection.Cause.EXPLOSION)) {
                         server.destroyBlock(hit.getBlockPos(), false);
                     }
                 }

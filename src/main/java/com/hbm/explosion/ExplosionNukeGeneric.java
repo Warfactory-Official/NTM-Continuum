@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import dev.golem.core.world.Effects;
+import dev.golem.core.world.Protection;
 
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.Raycasts;
@@ -66,6 +67,11 @@ public final class ExplosionNukeGeneric {
      * blast killed is gibbed by {@code ConfettiUtil}. Server-side only.
      */
     public static void dealDamage(Level world, List<Entity> list, double x, double y, double z, double radius, float maxDamage) {
+        dealDamage(world, Protection.Source.NONE, list, x, y, z, radius, maxDamage);
+    }
+
+    public static void dealDamage(Level world, Protection.Source responsible, List<Entity> list, double x, double y,
+                                  double z, double radius, float maxDamage) {
         if (!(world instanceof ServerLevel server)) return;
         DamageSource source = ModDamageSources.source(world, ModDamageSources.NUCLEAR_BLAST); // 1.7: ModDamageSource.nuclearBlast
 
@@ -77,7 +83,8 @@ public final class ExplosionNukeGeneric {
             double entY = e.getY() + e.getEyeHeight();
             double entZ = e.getZ();
 
-            if (isExplosionExempt(e) || isObstructed(world, x, y, z, entX, entY, entZ, e)) continue;
+            if (isExplosionExempt(e) || !Protection.mayHarm(world, e, responsible, Protection.Hazard.BLAST)
+                    || isObstructed(world, x, y, z, entX, entY, entZ, e)) continue;
 
             boolean doKnockback = true;
             double damage = maxDamage * (radius - dist) / radius;
@@ -126,8 +133,9 @@ public final class ExplosionNukeGeneric {
      * Port-only reduced terrain sweep, used solely by the dropped-item contamination hazard (which has no
      * 1.7 counterpart). Every 1.7 caller uses {@link #waste} or {@link #wasteNoSchrab}.
      */
-    public static void transformWaste(Level level, BlockPos center, int radius) {
+    public static void transformWaste(Level level, Protection.Source source, BlockPos center, int radius) {
         if (!(level instanceof ServerLevel) || radius <= 0) return;
+        Protection.Gate gate = Protection.gate(level, source, Protection.Cause.RADIATION_BLOCK_CONVERSION);
 
         int radiusSquared = radius * radius;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -138,6 +146,7 @@ public final class ExplosionNukeGeneric {
                     if (x * x + y * y + z * z > radiusSquared) continue;
                     pos.set(center.getX() + x, center.getY() + y, center.getZ() + z);
                     BlockState state = level.getBlockState(pos);
+                    if (!gate.mayAlter(pos)) continue;
                     if (state.is(Blocks.GRASS_BLOCK)) {
                         level.setBlock(pos, ModFalloutBlocks.waste_earth.get().defaultBlockState(), 2);
                     } else if (state.is(Blocks.MYCELIUM)) {
@@ -160,17 +169,18 @@ public final class ExplosionNukeGeneric {
      * the half-open loop bounds ({@code -r <= d < r}) are 1.7's. 1.7 threw for radius below 4
      * ({@code nextInt(0)}); the jitter bound is clamped to 1 there instead.
      */
-    public static void waste(Level world, BlockPos center, int radius) {
-        sweep(world, center, radius, false);
+    public static void waste(Level world, Protection.Source source, BlockPos center, int radius) {
+        sweep(world, source, center, radius, false);
     }
 
     /** 1.7 ExplosionNukeGeneric.wasteNoSchrab (:336), the multi-bomb's poison sweep. */
-    public static void wasteNoSchrab(Level world, BlockPos center, int radius) {
-        sweep(world, center, radius, true);
+    public static void wasteNoSchrab(Level world, Protection.Source source, BlockPos center, int radius) {
+        sweep(world, source, center, radius, true);
     }
 
-    private static void sweep(Level world, BlockPos center, int radius, boolean noSchrab) {
+    private static void sweep(Level world, Protection.Source source, BlockPos center, int radius, boolean noSchrab) {
         if (!(world instanceof ServerLevel)) return;
+        Protection.Gate gate = Protection.gate(world, source, Protection.Cause.RADIATION_BLOCK_CONVERSION);
         int r = radius;
         int r22 = r * r / 2;
         int jitter = Math.max(1, r22 / 5);
@@ -185,19 +195,21 @@ public final class ExplosionNukeGeneric {
                     if (zs < r22 + rand.nextInt(jitter)) {
                         pos.set(center.getX() + xx, center.getY() + yy, center.getZ() + zz);
                         if (world.getBlockState(pos).isAir()) continue;
-                        if (noSchrab) wasteDestNoSchrab(world, pos);
-                        else wasteDest(world, pos);
+                        if (noSchrab) wasteDestNoSchrab(world, pos, gate);
+                        else wasteDest(world, pos, gate);
                     }
                 }
             }
         }
     }
 
-    private static void set(Level world, BlockPos pos, Block block) {
+    private static void set(Protection.Gate gate, Level world, BlockPos pos, Block block) {
+        if (!gate.mayAlter(pos)) return;
         world.setBlock(pos, block.defaultBlockState(), Block.UPDATE_ALL); // 1.7 setBlock(x, y, z, b) is flag 3
     }
 
-    private static void clear(Level world, BlockPos pos) {
+    private static void clear(Protection.Gate gate, Level world, BlockPos pos) {
+        if (!gate.mayAlter(pos)) return;
         // 1.7 setBlock(..., air, 0, 2); its breakBlock ran regardless of the flag, so keep the removal hook on 26.1
         if (world instanceof ServerLevel server) {
             Compat.setBlockWithRemoval(server, pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
@@ -207,84 +219,92 @@ public final class ExplosionNukeGeneric {
     }
 
     /** 1.7 wasteDest (:238). 1.7's sand meta 0/1 are sand and red sand; meta-10 mushroom blocks are stems. */
-    public static void wasteDest(Level world, BlockPos pos) {
+    public static void wasteDest(Level world, Protection.Source source, BlockPos pos) {
+        wasteDest(world, pos, Protection.gate(world, source, Protection.Cause.RADIATION_BLOCK_CONVERSION));
+    }
+
+    private static void wasteDest(Level world, BlockPos pos, Protection.Gate gate) {
         if (world.isClientSide()) return;
         BlockState state = world.getBlockState(pos);
         Block b = state.getBlock();
         RandomSource random = world.getRandom();
         if (state.is(BlockTags.WOODEN_DOORS) || b == Blocks.IRON_DOOR) {
-            clear(world, pos);
+            clear(gate, world, pos);
         } else if (b == Blocks.GRASS_BLOCK) {
-            set(world, pos, ModFalloutBlocks.waste_earth.get());
+            set(gate, world, pos, ModFalloutBlocks.waste_earth.get());
         } else if (b == Blocks.MYCELIUM) {
-            set(world, pos, ModFalloutBlocks.waste_mycelium.get());
+            set(gate, world, pos, ModFalloutBlocks.waste_mycelium.get());
         } else if (b == Blocks.SAND || b == Blocks.RED_SAND) {
             if (random.nextInt(20) == 1) {
-                set(world, pos, b == Blocks.SAND ? ModFalloutBlocks.waste_trinitite.get() : ModFalloutBlocks.waste_trinitite_red.get());
+                set(gate, world, pos, b == Blocks.SAND ? ModFalloutBlocks.waste_trinitite.get() : ModFalloutBlocks.waste_trinitite_red.get());
             }
         } else if (b == Blocks.CLAY) {
-            set(world, pos, Blocks.TERRACOTTA);
+            set(gate, world, pos, Blocks.TERRACOTTA);
         } else if (b == Blocks.MOSSY_COBBLESTONE) {
-            set(world, pos, Blocks.COAL_ORE);
+            set(gate, world, pos, Blocks.COAL_ORE);
         } else if (b == Blocks.COAL_ORE) {
             int rand = random.nextInt(10);
-            if (rand == 1 || rand == 2 || rand == 3) set(world, pos, Blocks.DIAMOND_ORE);
-            if (rand == 9) set(world, pos, Blocks.EMERALD_ORE);
+            if (rand == 1 || rand == 2 || rand == 3) set(gate, world, pos, Blocks.DIAMOND_ORE);
+            if (rand == 9) set(gate, world, pos, Blocks.EMERALD_ORE);
         } else if (isLegacyLog(state)) {
-            set(world, pos, ModFalloutBlocks.waste_log.get());
+            set(gate, world, pos, ModFalloutBlocks.waste_log.get());
         } else if (b == Blocks.MUSHROOM_STEM) {
-            set(world, pos, ModFalloutBlocks.waste_log.get());
+            set(gate, world, pos, ModFalloutBlocks.waste_log.get());
         } else if (b == Blocks.BROWN_MUSHROOM_BLOCK || b == Blocks.RED_MUSHROOM_BLOCK) {
-            clear(world, pos);
+            clear(gate, world, pos);
         } else if (state.instrument() == NoteBlockInstrument.BASS && Compat.isSolidRender(state)
                 && b != ModFalloutBlocks.waste_log.get()) {
             // 1.7 Material.wood and isOpaqueCube; the bass instrument is the modern wood marker (as in solinium)
-            set(world, pos, ModBlocks.waste_planks.get());
+            set(gate, world, pos, ModBlocks.waste_planks.get());
         } else if (b == ModNuclearBlocks.ore_uranium.get()) {
-            set(world, pos, random.nextInt(getSchrabOreChance()) == 1
+            set(gate, world, pos, random.nextInt(getSchrabOreChance()) == 1
                     ? ModBlocks.ore_schrabidium.get() : ModNuclearBlocks.ore_uranium_scorched.get());
         } else if (b == ModNuclearBlocks.ore_nether_uranium.get()) {
-            set(world, pos, random.nextInt(getSchrabOreChance()) == 1
+            set(gate, world, pos, random.nextInt(getSchrabOreChance()) == 1
                     ? ModBlocks.ore_nether_schrabidium.get() : ModNuclearBlocks.ore_nether_uranium_scorched.get());
         } else if (b == ModNuclearBlocks.ore_gneiss_uranium.get()) {
-            set(world, pos, random.nextInt(getSchrabOreChance()) == 1
+            set(gate, world, pos, random.nextInt(getSchrabOreChance()) == 1
                     ? ModBlocks.ore_gneiss_schrabidium.get() : ModNuclearBlocks.ore_gneiss_uranium_scorched.get());
         }
     }
 
     /** 1.7 wasteDestNoSchrab (:358). */
-    public static void wasteDestNoSchrab(Level world, BlockPos pos) {
+    public static void wasteDestNoSchrab(Level world, Protection.Source source, BlockPos pos) {
+        wasteDestNoSchrab(world, pos, Protection.gate(world, source, Protection.Cause.RADIATION_BLOCK_CONVERSION));
+    }
+
+    private static void wasteDestNoSchrab(Level world, BlockPos pos, Protection.Gate gate) {
         if (world.isClientSide()) return;
         BlockState state = world.getBlockState(pos);
         Block b = state.getBlock();
         RandomSource random = world.getRandom();
         if (b == Blocks.GLASS || b instanceof StainedGlassBlock || state.is(BlockTags.WOODEN_DOORS)
                 || b == Blocks.IRON_DOOR || state.is(BlockTags.LEAVES)) {
-            set(world, pos, Blocks.AIR); // 1.7 setBlock(x, y, z, air) is flag 3 in this branch
+            set(gate, world, pos, Blocks.AIR); // 1.7 setBlock(x, y, z, air) is flag 3 in this branch
         } else if (b == Blocks.GRASS_BLOCK) {
-            set(world, pos, ModFalloutBlocks.waste_earth.get());
+            set(gate, world, pos, ModFalloutBlocks.waste_earth.get());
         } else if (b == Blocks.MYCELIUM) {
-            set(world, pos, ModFalloutBlocks.waste_mycelium.get());
+            set(gate, world, pos, ModFalloutBlocks.waste_mycelium.get());
         } else if (b == Blocks.SAND || b == Blocks.RED_SAND) {
             if (random.nextInt(20) == 1) {
-                set(world, pos, b == Blocks.SAND ? ModFalloutBlocks.waste_trinitite.get() : ModFalloutBlocks.waste_trinitite_red.get());
+                set(gate, world, pos, b == Blocks.SAND ? ModFalloutBlocks.waste_trinitite.get() : ModFalloutBlocks.waste_trinitite_red.get());
             }
         } else if (b == Blocks.CLAY) {
-            set(world, pos, Blocks.TERRACOTTA);
+            set(gate, world, pos, Blocks.TERRACOTTA);
         } else if (b == Blocks.MOSSY_COBBLESTONE) {
-            set(world, pos, Blocks.COAL_ORE);
+            set(gate, world, pos, Blocks.COAL_ORE);
         } else if (b == Blocks.COAL_ORE) {
             int rand = random.nextInt(30);
-            if (rand == 1 || rand == 2 || rand == 3) set(world, pos, Blocks.DIAMOND_ORE);
-            if (rand == 29) set(world, pos, Blocks.EMERALD_ORE);
+            if (rand == 1 || rand == 2 || rand == 3) set(gate, world, pos, Blocks.DIAMOND_ORE);
+            if (rand == 29) set(gate, world, pos, Blocks.EMERALD_ORE);
         } else if (isLegacyLog(state)) {
-            set(world, pos, ModFalloutBlocks.waste_log.get());
+            set(gate, world, pos, ModFalloutBlocks.waste_log.get());
         } else if (state.is(BlockTags.PLANKS)) {
-            set(world, pos, ModBlocks.waste_planks.get());
+            set(gate, world, pos, ModBlocks.waste_planks.get());
         } else if (b == Blocks.MUSHROOM_STEM) {
-            set(world, pos, ModFalloutBlocks.waste_log.get());
+            set(gate, world, pos, ModFalloutBlocks.waste_log.get());
         } else if (b == Blocks.BROWN_MUSHROOM_BLOCK || b == Blocks.RED_MUSHROOM_BLOCK) {
-            clear(world, pos);
+            clear(gate, world, pos);
         }
     }
 
@@ -299,17 +319,18 @@ public final class ExplosionNukeGeneric {
         return 250;
     }
 
-    public static void empBlast(Level world, BlockPos center, int bombStartStrength) {
+    public static void empBlast(Level world, Protection.Source source, BlockPos center, int bombStartStrength) {
         if (world.isClientSide()) return;
         int radius = bombStartStrength;
         int threshold = radius * radius / 2;
+        Protection.Gate gate = Protection.gate(world, source, Protection.Cause.EXPLOSION);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int xx = -radius; xx < radius; xx++)
             for (int yy = -radius; yy < radius; yy++)
                 for (int zz = -radius; zz < radius; zz++) {
                     if (xx * xx + yy * yy + zz * zz >= threshold) continue;
                     pos.set(center.getX() + xx, center.getY() + yy, center.getZ() + zz);
-                    emp(world, pos);
+                    emp(world, pos, gate);
                 }
     }
 
@@ -318,8 +339,12 @@ public final class ExplosionNukeGeneric {
      * {@code nextInt(5) < 1}, the foreign one on {@code <= 1} - and both are kept.
      * 26.1: 1.7's foreign branch was CoFH {@code IEnergyProvider}; FE is its multiloader successor.
      */
-    public static void emp(Level world, BlockPos pos) {
-        if (world.isClientSide()) return;
+    public static void emp(Level world, Protection.Source source, BlockPos pos) {
+        emp(world, pos, Protection.gate(world, source, Protection.Cause.EXPLOSION));
+    }
+
+    private static void emp(Level world, BlockPos pos, Protection.Gate gate) {
+        if (world.isClientSide() || !gate.mayAlter(pos)) return;
 
         BlockEntity entity = world.getBlockEntity(pos);
         if (entity instanceof IEnergyHandlerMK2 power) {
@@ -366,8 +391,9 @@ public final class ExplosionNukeGeneric {
 /**
      * 1.7 ExplosionNukeGeneric.solinium, the terrain side effect of EntityOrangeFX collisions.
      */
-    public static void solinium(Level world, BlockPos pos) {
-        if (world.isClientSide()) return;
+    public static void solinium(Level world, Protection.Source source, BlockPos pos) {
+        if (world.isClientSide()
+                || !Protection.mayAlter(world, pos, source, Protection.Cause.FLUID)) return;
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
         if (state.is(Blocks.GRASS_BLOCK) || state.is(
@@ -394,8 +420,18 @@ public final class ExplosionNukeGeneric {
 
 
     public static void dealDamage(Level world, double x, double y, double z, double radius, float maxDamage) {
+        dealDamage(world, Protection.Source.NONE, x, y, z, radius, maxDamage);
+    }
+
+    public static void dealDamage(Level world, Protection.Source responsible, double x, double y, double z,
+                                  double radius) {
+        dealDamage(world, responsible, x, y, z, radius, 250F);
+    }
+
+    public static void dealDamage(Level world, Protection.Source responsible, double x, double y, double z,
+                                  double radius, float maxDamage) {
         AABB box = new AABB(x, y, z, x, y, z).inflate(radius);
         // 1.7: not just LivingEntity.
-        dealDamage(world, world.getEntities(null, box), x, y, z, radius, maxDamage);
+        dealDamage(world, responsible, world.getEntities(null, box), x, y, z, radius, maxDamage);
     }
 }

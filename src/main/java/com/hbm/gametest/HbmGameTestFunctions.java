@@ -1634,6 +1634,14 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function NUKE_CRATER_BENCHMARK =
             TESTS.function("nuke_crater_benchmark", 20 * 90, () -> NukePerfGameTests::craterBenchmark);
 
+    /** Real WarForge in the mods folder: a safe-zone chunk survives a blast. Skips without WarForge. */
+    public static final GameTests.Function WARFORGE_SAFE_ZONE_BLAST =
+            TESTS.function("warforge_safe_zone_blast", 20 * 180, () -> WarforgeProtectionGameTests::safeZoneSurvivesBlast);
+
+    /** Claim provider closing and halving chunks of a crater; timed against none and an all-open provider. */
+    public static final GameTests.Function NUKE_CRATER_PROTECTION =
+            TESTS.function("nuke_crater_protection", 20 * 180, () -> NukePerfGameTests::craterProtection);
+
     /** Complete per-chunk hit-set parity between resident rays and event-driven chunk resumes. */
     public static final GameTests.Function NUKE_RAY_RESUME_EQUIVALENCE =
             TESTS.function("nuke_ray_resume_equivalence", 20 * 90,

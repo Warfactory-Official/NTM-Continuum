@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import com.hbm.potion.ModEffects;
 import com.hbm.tileentity.machine.rbmk.RBMKDials;
 import com.hbm.util.SavedIds;
@@ -140,12 +141,14 @@ public class EntityZirnoxDebris extends CompatEntity {
                     ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             if (hit.getType() == HitResult.Type.BLOCK) {
                 BlockPos centre = hit.getBlockPos();
+                Protection.Gate gate = Protection.gate(level(), Protection.Source.NONE, Protection.Cause.EXPLOSION);
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
                         for (int k = -1; k <= 1; k++) {
                             int rn = Math.abs(i) + Math.abs(j) + Math.abs(k);
                             if (rn <= 1 || random.nextInt(rn) == 0) {
-                                level().setBlock(centre.offset(i, j, k), Blocks.AIR.defaultBlockState(), 3);
+                                BlockPos target = centre.offset(i, j, k);
+                                if (gate.mayAlter(target)) level().setBlock(target, Blocks.AIR.defaultBlockState(), 3);
                             }
                         }
                     }

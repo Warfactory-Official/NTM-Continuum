@@ -5,7 +5,6 @@ import com.hbm.items.ModBombItems;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -13,11 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import dev.golem.core.data.DataIn;
-import dev.golem.core.data.DataOut;
-import org.jspecify.annotations.Nullable;
 
-import java.util.UUID;
 
 /**
  * The Fat Man ({@code nuke_man}) BlockEntity. Six slots, ported from 1.12.2: slot 0 = igniter, slots
@@ -26,9 +21,6 @@ import java.util.UUID;
  * gets the inventory + chunk-load sync for free.
  */
 public class TileEntityNukeMan extends TileEntityMachineBase implements MenuProvider {
-
-    /** The player who placed the bomb, attributed as the detonator when triggered by redstone. */
-    public @Nullable UUID placerID;
 
     public TileEntityNukeMan(BlockPos pos, BlockState state) {
         super(ModBlockEntities.NUKE_MAN.get(), pos, state, 6);
@@ -73,18 +65,6 @@ public class TileEntityNukeMan extends TileEntityMachineBase implements MenuProv
 
     public void clearSlots() {
         clearContent();
-    }
-
-    @Override
-    protected void saveData(DataOut output) {
-        super.saveData(output);
-        if (placerID != null) output.store("placer", UUIDUtil.CODEC, placerID);
-    }
-
-    @Override
-    protected void loadData(DataIn input) {
-        super.loadData(input);
-        placerID = input.read("placer", UUIDUtil.CODEC).orElse(null);
     }
 
     @Override

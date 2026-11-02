@@ -1,5 +1,6 @@
 package com.hbm.handler.radiation;
 
+import dev.golem.core.world.Protection;
 import com.hbm.api.data.WorldDataMaps;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.config.RadiationConfig;
@@ -68,6 +69,8 @@ final class RadiationWorldHandler {
         ServerLevel level = data.level;
         LevelChunk chunk = level.getChunkSource().getChunkNow(cx, cz);
         if (chunk == null) return true;
+        Protection.Gate gate = Protection.gate(level, Protection.Source.NONE, Protection.Cause.RADIATION_BLOCK_CONVERSION);
+        if (gate.coverage(cx, cz) == Protection.Coverage.CLOSED) return true;
 
         int baseX = cx << 4;
         int baseY = sy << 4;
@@ -90,7 +93,7 @@ final class RadiationWorldHandler {
 
             pos.set(baseX + lx, myY, baseZ + lz);
             BlockState state = level.getBlockState(pos);
-            if (state.isAir()) continue;
+            if (state.isAir() || !gate.mayAlter(pos)) continue;
             decayBlock(level, pos, state);
         }
         return true;

@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.util.Owners;
 import com.hbm.config.BombConfig;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.world.CompatBlock;
@@ -18,13 +19,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -75,14 +73,6 @@ public abstract class NukeBombBlock extends CompatBlock implements TickingBlock,
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(level, pos, state, placer, stack);
-        if (placer instanceof Player player && level.getBlockEntity(pos) instanceof TileEntityNukeBomb bomb) {
-            bomb.placerID = player.getUUID();
-        }
-    }
-
-    @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
@@ -101,7 +91,7 @@ public abstract class NukeBombBlock extends CompatBlock implements TickingBlock,
 
     @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
-        return explode(level, pos, detonator, detonator == null ? null : detonator.getUUID());
+        return explode(level, pos, detonator, Owners.of(detonator));
     }
 
     @Override
@@ -113,7 +103,7 @@ public abstract class NukeBombBlock extends CompatBlock implements TickingBlock,
         }
 
         int radius = radiusFor(bomb);
-        UUID placer = bomb.placerID;
+        UUID placer = bomb.placer();
         bomb.clearSlots();
         level.removeBlock(pos, false);
         ignite(level, pos, radius, detonatorId, placer);

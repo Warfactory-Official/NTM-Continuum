@@ -1,5 +1,6 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatThrowableProjectile;
 import com.hbm.explosion.ExplosionLarge;
@@ -51,10 +52,10 @@ public class EntityBurningFOEQ extends CompatThrowableProjectile {
         if (!level().getBlockState(pos).isAir()) {
             if (!level().isClientSide()) {
                 for (int i = 0; i < 25; i++)
-                    ExplosionLarge.explode(level(), getX() + 0.5F + random.nextGaussian() * 5,
+                    ExplosionLarge.explode(level(), null, getX() + 0.5F + random.nextGaussian() * 5,
                             getY() + 0.5F + random.nextGaussian() * 5, getZ() + 0.5F + random.nextGaussian() * 5,
                             10.0F, random.nextBoolean(), false, false);
-                ExplosionNukeGeneric.waste(level(), pos, 35); // 1.7 EntityBurningFOEQ:48
+                ExplosionNukeGeneric.waste(level(), Protection.Source.NONE, pos, 35); // 1.7 EntityBurningFOEQ:48
             }
             this.discard();
         }

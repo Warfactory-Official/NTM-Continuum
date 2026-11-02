@@ -1,5 +1,6 @@
 package com.hbm.explosion;
 
+import dev.golem.core.world.Protection;
 import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.api.event.HbmEvents;
 import dev.golem.core.world.Explosions;
@@ -46,7 +47,19 @@ public final class ExplosionLarge {
      */
     public static void explode(Level world, @Nullable Entity detonator, double x, double y, double z,
                                float strength, boolean cloud, boolean rubble, boolean shrapnel) {
-        explode(world, detonator, x, y, z, strength, false, cloud, rubble, shrapnel);
+        explode(world, detonator, null, x, y, z, strength, false, cloud, rubble, shrapnel);
+    }
+
+    /** {@code responsible} is who the protection gates see; {@code detonator} stays the vanilla blast source. */
+    public static void explode(Level world, @Nullable Entity detonator, Protection.Source responsible, double x,
+                               double y, double z, float strength, boolean cloud, boolean rubble, boolean shrapnel) {
+        explode(world, detonator, responsible, x, y, z, strength, false, cloud, rubble, shrapnel);
+    }
+
+    /** {@link #explode} for a blast owned by a bare player id (block entities), no live entity. */
+    public static void explodeBy(Level world, Protection.Source responsible, double x, double y, double z,
+                                 float strength, boolean cloud, boolean rubble, boolean shrapnel) {
+        explode(world, null, responsible, x, y, z, strength, false, cloud, rubble, shrapnel);
     }
 
     /**
@@ -196,6 +209,7 @@ public final class ExplosionLarge {
                             double strength, int count, double vel) {
         if (!CompatibilityConfig.isWarDim(world)) return;
         var random = world.getRandom();
+        Protection.Gate gate = Protection.gate(world, Protection.Source.of(detonator), Protection.Cause.EXPLOSION);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int j = 0; j < count; j++) {
             double phi = random.nextDouble() * (Math.PI * 2D);
@@ -208,6 +222,7 @@ public final class ExplosionLarge {
                 double x0 = x + vx * i, y0 = y + vy * i, z0 = z + vz * i;
                 pos.set((int) x0, (int) y0, (int) z0);
                 if (world.isClientSide()) continue;
+                if (!gate.mayAlter(pos)) break;
                 BlockState state = world.getBlockState(pos);
                 if (!state.getFluidState().isEmpty()) world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
                 if (state.isAir() || state.getBlock().getExplosionResistance() > 70F) continue;
@@ -244,15 +259,9 @@ public final class ExplosionLarge {
     // ntm-next entity port (merge_explosion_helpers.py)
 
 
-    public static void explode(Level level, double x, double y, double z, float strength, boolean cloud, boolean rubble,
-                               boolean shrapnel) {
-        explode(level, null, x, y, z, strength, false, cloud, rubble, shrapnel);
-    }
-
-
-    public static void explodeFire(Level level, double x, double y, double z, float strength, boolean cloud,
-                                   boolean rubble, boolean shrapnel) {
-        explode(level, null, x, y, z, strength, true, cloud, rubble, shrapnel);
+    public static void explodeFire(Level level, Protection.Source responsible, double x, double y, double z,
+                                   float strength, boolean cloud, boolean rubble, boolean shrapnel) {
+        explode(level, null, responsible, x, y, z, strength, true, cloud, rubble, shrapnel);
     }
 
 
@@ -261,9 +270,11 @@ public final class ExplosionLarge {
      * incendiary form), then the legacy smoke cloud, rubble and shrapnel counted by the 1.7 functions,
      * all at the blast centre. 1.12.2 moved the garnish two blocks up and swapped in composeEffect.
      */
-    private static void explode(Level level, @Nullable Entity detonator, double x, double y, double z, float strength,
-                                boolean fire, boolean cloud, boolean rubble, boolean shrapnel) {
-        Explosions.explode(level, detonator, x, y, z, strength, fire, Level.ExplosionInteraction.TNT);
+    private static void explode(Level level, @Nullable Entity detonator, Protection.@Nullable Source responsible,
+                                double x, double y, double z, float strength, boolean fire, boolean cloud,
+                                boolean rubble, boolean shrapnel) {
+        Explosions.explode(level, detonator, null, responsible, x, y, z, strength, fire,
+                Level.ExplosionInteraction.TNT);
         if (cloud) spawnParticles(level, x, y, z, cloudFunction((int) strength));
         if (rubble) spawnRubble(level, x, y, z, rubbleFunction((int) strength));
         if (shrapnel) spawnShrapnels(level, x, y, z, shrapnelFunction((int) strength));
@@ -278,18 +289,22 @@ public final class ExplosionLarge {
 /**
      * Bunker-buster 'drill' - a chained line of vanilla explosions along the flight vector.
      */
-    public static void buster(Level level, double x, double y, double z, Vec3 vector, float strength, int depth) {
+    public static void buster(Level level, Protection.Source responsible, double x, double y, double z, Vec3 vector,
+                              float strength, int depth) {
         Vec3 dir = vector.normalize();
         for (int i = 0; i < depth; i += 2) {
-            Explosions.explode(level, null, x + dir.x * i, y + dir.y * i, z + dir.z * i, strength, Level.ExplosionInteraction.TNT);
+            Explosions.explode(level, null, null, responsible, x + dir.x * i, y + dir.y * i, z + dir.z * i, strength,
+                    false, Level.ExplosionInteraction.TNT);
         }
     }
 
 /**
      * Uniform-sphere-sampled rays that yank the first low-resistance block on each ray into a flying EntityRubble.
      */
-    public static void jolt(Level level, double x, double y, double z, double strength, int count, double vel) {
+    public static void jolt(Level level, Protection.Source source, double x, double y, double z, double strength,
+                            int count, double vel) {
         RandomSource rand = level.getRandom();
+        Protection.Gate gate = Protection.gate(level, source, Protection.Cause.EXPLOSION);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int n = 0; n < count; n++) {
             double phi = rand.nextDouble() * Math.PI * 2;
@@ -304,6 +319,7 @@ public final class ExplosionLarge {
                 int by = (int) (y + dy * i);
                 int bz = (int) (z + dz * i);
                 pos.set(bx, by, bz);
+                if (!gate.mayAlter(pos)) break;
                 BlockState state = level.getBlockState(pos);
                 if (state.liquid()) {
                     level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);

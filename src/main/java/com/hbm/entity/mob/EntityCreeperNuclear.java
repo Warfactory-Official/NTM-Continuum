@@ -1,5 +1,6 @@
 package com.hbm.entity.mob;
 
+import dev.golem.core.world.Protection;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.particle.helper.EntityEffects;
 import dev.golem.core.world.Compat;
@@ -114,7 +115,7 @@ public class EntityCreeperNuclear extends EntityCreeperBase {
                 ExplosionNukeGeneric.dealDamage(level, getX(), getY() + 0.5D, getZ(), 100);
             }
         } else {
-            ExplosionNukeSmall.explode(level, getX(), getY() + 0.5D, getZ(),
+            ExplosionNukeSmall.explode(level, Protection.Source.NONE, getX(), getY() + 0.5D, getZ(),
                     griefing ? ExplosionNukeSmall.PARAMS_MEDIUM : ExplosionNukeSmall.PARAMS_SAFE);
         }
     }

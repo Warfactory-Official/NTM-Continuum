@@ -1,5 +1,6 @@
 package com.hbm.handler.pollution;
 
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Vegetation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,7 @@ public final class PollutionWorldHandler {
     private PollutionWorldHandler() {}
 
     public static void destroyBlock(ServerLevel level, BlockPos pos) {
+        if (!Protection.mayAlter(level, pos, Protection.Source.NONE, Protection.Cause.FLUID)) return;
         BlockState state = level.getBlockState(pos);
         Block block = state.getBlock();
 

@@ -1,5 +1,7 @@
 package com.hbm.explosion;
 
+import java.util.UUID;
+import dev.golem.core.world.Protection;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.bomb.ModBombBlocks;
@@ -35,6 +37,8 @@ public class ExplosionBalefire {
     public int radius;
     public int radius2;
     public Level level;
+    public @Nullable UUID detonator;
+    private Protection.Gate gate;
     private int n = 1;
     private int nlimit;
     private int shell;
@@ -142,6 +146,11 @@ public class ExplosionBalefire {
         return this.n > this.nlimit;
     }
 
+    private void put(BlockPos pos, BlockState state, int flags) {
+        if (gate == null) gate = Protection.gate(level, Protection.Source.ofPlayer(detonator), Protection.Cause.EXPLOSION);
+        if (gate.mayAlter(pos)) level.setBlock(pos, state, flags);
+    }
+
     private void breakColumn(int x, int z) {
         int dist = (int) (radius - Math.sqrt(x * x + z * z));
 
@@ -167,8 +176,8 @@ public class ExplosionBalefire {
             // a schrabidium cluster stops the column dead and may transmute instead
             if (balefire && isSchrabidiumCluster(state)) {
                 if (level.getRandom().nextInt(10) == 0) {
-                    level.setBlockAndUpdate(pos.above(), ModBombBlocks.balefire.get().defaultBlockState());
-                    level.setBlock(pos, euphemiumClusterOf(state),
+                    put(pos.above(), ModBombBlocks.balefire.get().defaultBlockState(), Block.UPDATE_ALL);
+                    put(pos, euphemiumClusterOf(state),
                             Block.UPDATE_ALL);
                 }
                 return;
@@ -179,19 +188,19 @@ public class ExplosionBalefire {
                 continue;
             }
 
-            level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            put(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
 
             y--;
         }
 
         if (balefire && level.getRandom().nextInt(10) == 0) {
-            level.setBlockAndUpdate(new BlockPos(pX, depth + 1, pZ),
-                    ModBombBlocks.balefire.get().defaultBlockState());
+            put(new BlockPos(pX, depth + 1, pZ),
+                    ModBombBlocks.balefire.get().defaultBlockState(), Block.UPDATE_ALL);
 
             BlockPos floor = new BlockPos(pX, y, pZ);
             BlockState state = level.getBlockState(floor);
             if (isSchrabidiumCluster(state)) {
-                level.setBlock(floor, euphemiumClusterOf(state),
+                put(floor, euphemiumClusterOf(state),
                         Block.UPDATE_ALL);
             }
         }
@@ -200,7 +209,7 @@ public class ExplosionBalefire {
             if (variant != null) variant.floor(this, pX, depth, pZ, dist, i);
             BlockPos pos = new BlockPos(pX, i, pZ);
             if (level.getBlockState(pos).is(Blocks.STONE)) {
-                level.setBlock(pos, ModFalloutBlocks.sellafield_slaked.get().defaultBlockState(), Block.UPDATE_ALL);
+                put(pos, ModFalloutBlocks.sellafield_slaked.get().defaultBlockState(), Block.UPDATE_ALL);
             }
         }
     }

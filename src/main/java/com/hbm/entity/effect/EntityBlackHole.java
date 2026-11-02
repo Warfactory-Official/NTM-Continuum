@@ -1,5 +1,9 @@
 package com.hbm.entity.effect;
 
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import com.hbm.util.Owners;
+import dev.golem.core.world.Protection;
 import dev.golem.core.world.Explosions;
 import dev.golem.core.world.SubLevels;
 import com.hbm.config.CompatibilityConfig;
@@ -33,7 +37,20 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 /** The legacy black-hole field: block extraction, entity pull, absolute damage, and antimatter detonation. */
-public class EntityBlackHole extends CompatEntity {
+public class EntityBlackHole extends CompatEntity implements Owners.Carrier {
+
+    private @Nullable UUID owner;
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
+
     public static final EntityDataAccessor<Float> SIZE =
             SynchedEntityData.defineId(EntityBlackHole.class, EntityDataSerializers.FLOAT);
 
@@ -72,12 +89,14 @@ public class EntityBlackHole extends CompatEntity {
     protected void loadData(DataIn input) {
         setSize(input.getFloatOr("size", 0.5F));
         breaksBlocks = input.getBooleanOr("breaksBlocks", true);
+        owner = Owners.load(input);
     }
 
     @Override
     protected void saveData(DataOut output) {
         output.putFloat("size", getSize());
         output.putBoolean("breaksBlocks", breaksBlocks);
+        Owners.save(output, owner);
     }
 
     @Override
@@ -136,14 +155,15 @@ public class EntityBlackHole extends CompatEntity {
             entity.setDeltaMovement(entity.getDeltaMovement().add(pull.x * 0.1D, pull.y * 0.2D, pull.z * 0.1D));
             if (entity instanceof EntityBlackHole) continue;
 
-            if (distance < size * 1.5F && level() instanceof ServerLevel server) {
+            if (distance < size * 1.5F && level() instanceof ServerLevel server
+                    && Protection.mayHarm(server, entity, Protection.Source.ofPlayer(owner), Protection.Hazard.BLAST)) {
                 Compat.hurt(entity, server, ModDamageSources.blackhole(server), 1000F);
                 if (!(entity instanceof LivingEntity)) entity.discard();
                 if (entity instanceof ItemEntity item && (item.getItem().is(ModItems.flame_pony.get())
                         || item.getItem().is(ModSingularityItems.pellet_antimatter.get()))) {
                     discard();
-                    Explosions.explode(server, null, getX(), getY(), getZ(), 5F, true,
-                            Level.ExplosionInteraction.TNT);
+                    Explosions.explode(server, null, null, Protection.Source.ofPlayer(owner), getX(), getY(), getZ(), 5F,
+                            true, Level.ExplosionInteraction.TNT);
                     return;
                 }
             }
@@ -168,6 +188,7 @@ public class EntityBlackHole extends CompatEntity {
 
     private void pullBlocks(float size, double centreX, double centreY, double centreZ) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        Protection.Gate gate = Protection.gate(level(), Protection.Source.ofPlayer(owner), Protection.Cause.TERRAFORM);
         for (int k = 0; k < size * 2F; k++) {
             double phi = level().getRandom().nextDouble() * (Math.PI * 2D);
             double cosTheta = level().getRandom().nextDouble() * 2D - 1D;
@@ -182,6 +203,7 @@ public class EntityBlackHole extends CompatEntity {
                 int y0 = (int) (centreY + y * i);
                 int z0 = (int) (centreZ + z * i);
                 pos.set(x0, y0, z0);
+                if (!gate.mayAlter(pos)) break;
                 BlockState state = level().getBlockState(pos);
                 if (!state.getFluidState().isEmpty()) {
                     level().setBlock(pos, Blocks.AIR.defaultBlockState(), 3);

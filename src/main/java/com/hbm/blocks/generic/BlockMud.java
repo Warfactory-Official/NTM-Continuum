@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.fluid.ModWorldFluids;
 import com.hbm.handler.ArmorUtil;
 import dev.golem.core.fluid.FluidBlock;
@@ -53,7 +54,7 @@ public class BlockMud extends FluidBlock {
         for (Direction dir : Direction.values()) {
             BlockPos at = pos.relative(dir);
             BlockState there = level.getBlockState(at);
-            if (!there.is(this) && isLiquid(there)) level.setBlock(at, Blocks.AIR.defaultBlockState(), 3);
+            if (!there.is(this) && isLiquid(there) && Protection.mayAlter(level, at, Protection.Source.NONE, Protection.Cause.FLUID)) level.setBlock(at, Blocks.AIR.defaultBlockState(), 3);
         }
     }
 
@@ -65,7 +66,7 @@ public class BlockMud extends FluidBlock {
 
     private void erode(ServerLevel level, BlockPos pos, RandomSource rand) {
         BlockState b = level.getBlockState(pos);
-        if (b.is(this) || b.isAir()) return;
+        if (b.is(this) || b.isAir() || !Protection.mayAlter(level, pos, Protection.Source.NONE, Protection.Cause.FLUID)) return;
         // 1.7 stone, stonebrick (every variant), stone_brick_stairs and stone_slab (every 1.7 slab variant)
         if (b.is(Blocks.STONE) || b.is(Blocks.STONE_BRICKS) || b.is(Blocks.MOSSY_STONE_BRICKS) || b.is(Blocks.CRACKED_STONE_BRICKS)
                 || b.is(Blocks.CHISELED_STONE_BRICKS) || b.is(Blocks.STONE_BRICK_STAIRS) || b.is(Blocks.SMOOTH_STONE_SLAB)

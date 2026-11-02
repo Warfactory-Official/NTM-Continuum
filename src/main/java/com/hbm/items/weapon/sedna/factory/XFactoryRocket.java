@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.util.Owners;
 import com.hbm.config.RunningConfig.ConfigWrapper;
 import com.hbm.config.ServerConfig;
 import com.hbm.entity.effect.EntityFireLingering;
@@ -198,7 +199,7 @@ public final class XFactoryRocket {
         EntityFireLingering fire = new EntityFireLingering(world).setArea(6, 2).setDuration(duration)
                 .setFireType(phosphorus ? EntityFireLingering.TYPE_PHOSPHORUS : EntityFireLingering.TYPE_DIESEL);
         fire.setPos(mop.getLocation());
-        world.addFreshEntity(fire);
+        world.addFreshEntity(Owners.inherit(fire, bullet));
         bullet.discard();
 
         Vec3 hit = mop.getLocation();

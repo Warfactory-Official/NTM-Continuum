@@ -1,5 +1,8 @@
 package com.hbm.entity.missile;
 
+import dev.golem.core.world.Protection;
+import java.util.UUID;
+import com.hbm.util.Owners;
 import com.hbm.api.entity.IRadarDetectableNT;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.Tags;
@@ -51,7 +54,7 @@ import org.jspecify.annotations.Nullable;
  * {@code ExplosionLarge.spawnShock}'s lock-on ring (its particle family is unported).
  */
 public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLoader, IMissilePitch,
-        IRadarDetectableNT {
+        IRadarDetectableNT, Owners.Carrier {
 
     /** See {@link IMissilePitch}: the interceptor dives, so its pitch runs past −90 too. */
     public static final EntityDataAccessor<Float> PITCH =
@@ -71,6 +74,7 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
     private int activationTimer;
 
     public @Nullable LivingEntity thrower;
+    private @Nullable UUID owner;
 
     private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 1);
 
@@ -135,7 +139,7 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
                     }
 
                     discard();
-                    ExplosionLarge.explode(level(), thrower, getX(), getY(), getZ(), 20F, true, false, false);
+                    ExplosionLarge.explode(level(), thrower, Protection.Source.of(this), getX(), getY(), getZ(), 20F, true, false, false);
                     return;
                 }
 
@@ -202,7 +206,7 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
 
         if (delta.length() < 10 && activationTimer >= 40) {
             discard();
-            ExplosionLarge.explode(level(), thrower, getX(), getY(), getZ(), 15F, true, false, false);
+            ExplosionLarge.explode(level(), thrower, Protection.Source.of(this), getX(), getY(), getZ(), 15F, true, false, false);
             return;
         }
 
@@ -220,7 +224,7 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
         if (hit.getType() != HitResult.Type.MISS) {
             if (this.activationTimer >= 10) {
                 discard();
-                ExplosionLarge.explode(level(), thrower, getX(), getY(), getZ(), 20F, true, false, false);
+                ExplosionLarge.explode(level(), thrower, Protection.Source.of(this), getX(), getY(), getZ(), 20F, true, false, false);
             }
             return;
         }
@@ -230,6 +234,17 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
 
     public void setThrower(@Nullable LivingEntity thrower) {
         this.thrower = thrower;
+        this.owner = Owners.of(thrower);
+    }
+
+    @Override
+    public @Nullable UUID protectionOwner() {
+        return owner;
+    }
+
+    @Override
+    public void setProtectionOwner(@Nullable UUID owner) {
+        this.owner = owner;
     }
 
     @Override
@@ -258,11 +273,13 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
     protected void loadData(DataIn input) {
         chunkLoader.markRestoredFromNbt();
         this.velocity = input.getDoubleOr("veloc", 0);
+        owner = Owners.load(input);
     }
 
     @Override
     protected void saveData(DataOut output) {
         output.putDouble("veloc", this.velocity);
+        Owners.save(output, owner);
     }
 
     // --- 1.7 IRadarDetectableNT ---

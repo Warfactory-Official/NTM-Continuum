@@ -1,5 +1,8 @@
 package com.hbm.explosion;
 
+import org.jspecify.annotations.Nullable;
+import java.util.UUID;
+import dev.golem.core.world.Protection;
 import dev.golem.core.data.Tags;
 
 import net.minecraft.core.BlockPos;
@@ -20,6 +23,9 @@ public class ExplosionSolinium {
     public int radius;
     public int radius2;
     public Level worldObj;
+    public @Nullable UUID detonator;
+    private Protection.Source source;
+    private Protection.Gate gate;
     public float explosionCoefficient = 1.0F;
     public float explosionCoefficient2 = 1.0F;
     private int n = 1;
@@ -52,6 +58,14 @@ public class ExplosionSolinium {
         return this.n > this.nlimit;
     }
 
+    private Protection.Gate gate() {
+        if (gate == null) {
+            source = Protection.Source.ofPlayer(detonator);
+            gate = Protection.gate(worldObj, source, Protection.Cause.FLUID);
+        }
+        return gate;
+    }
+
     private void breakColumn(int x, int z) {
         int dist = this.radius2 - (x * x + z * z);
         if (dist > 0) {
@@ -59,7 +73,7 @@ public class ExplosionSolinium {
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int y = (int) (dist / this.explosionCoefficient2); y > -dist / this.explosionCoefficient; y--) {
                 pos.set(this.posX + x, this.posY + y, this.posZ + z);
-                ExplosionNukeGeneric.solinium(this.worldObj, pos);
+                if (gate().mayAlter(pos)) ExplosionNukeGeneric.solinium(this.worldObj, source, pos);
             }
         }
     }

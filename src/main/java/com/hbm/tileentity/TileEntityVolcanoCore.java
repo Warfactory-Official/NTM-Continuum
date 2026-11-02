@@ -1,5 +1,6 @@
 package com.hbm.tileentity;
 
+import dev.golem.core.world.Protection;
 import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.explosion.vanillant.ExplosionVNT;
@@ -98,8 +99,10 @@ public class TileEntityVolcanoCore extends CompatBlockEntity {
             core.volcanoTimer = 0;
 
             if (core.shouldGrow()) {
-                world.setBlock(pos.above(), state, 3);
-                world.setBlockAndUpdate(pos, core.getLava().defaultBlockState());
+                if (Protection.mayAlter(world, pos.above(), Protection.Source.NONE, Protection.Cause.TERRAFORM)) {
+                    world.setBlock(pos.above(), state, 3);
+                    world.setBlockAndUpdate(pos, core.getLava().defaultBlockState());
+                }
             } else if (core.mode().extinguishing) {
                 world.setBlockAndUpdate(pos, core.getLava().defaultBlockState());
             }
@@ -166,7 +169,7 @@ public class TileEntityVolcanoCore extends CompatBlockEntity {
             int y = world.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) + 1 - (int) Math.floor(Math.abs(rand.nextGaussian() * depth));
             BlockPos at = new BlockPos(x, y, z);
             BlockState b = world.getBlockState(at);
-            if (!b.isAir() && b.getBlock().getExplosionResistance() < obsidian) {
+            if (!b.isAir() && b.getBlock().getExplosionResistance() < obsidian && Protection.mayAlter(world, at, Protection.Source.NONE, Protection.Cause.TERRAFORM)) {
                 world.setBlockAndUpdate(at, Compat.isSolidRender(b, world, at) ? getLava().defaultBlockState() : Blocks.AIR.defaultBlockState());
             }
         }
@@ -177,7 +180,8 @@ public class TileEntityVolcanoCore extends CompatBlockEntity {
         RandomSource rand = world.getRandom();
         BlockPos at = new BlockPos(worldPosition.getX() - 10 + rand.nextInt(21),
                 worldPosition.getY() + rand.nextInt(11), worldPosition.getZ() - 10 + rand.nextInt(21));
-        if (world.getBlockState(at).isAir() && world.getBlockState(at.below()).is(getLava())) {
+        if (world.getBlockState(at).isAir() && world.getBlockState(at.below()).is(getLava())
+                && Protection.mayAlter(world, at, Protection.Source.NONE, Protection.Cause.TERRAFORM)) {
             world.setBlockAndUpdate(at, getLava().defaultBlockState());
         }
     }
@@ -186,7 +190,9 @@ public class TileEntityVolcanoCore extends CompatBlockEntity {
     private void surroundLava(ServerLevel world) {
         BlockState lava = getLava().defaultBlockState();
         for (int i = -1; i <= 1; i++) for (int j = -1; j <= 1; j++) for (int k = -1; k <= 1; k++) {
-            if (i != 0 || j != 0 || k != 0) world.setBlockAndUpdate(worldPosition.offset(i, j, k), lava);
+            if ((i != 0 || j != 0 || k != 0) && Protection.mayAlter(world, worldPosition.offset(i, j, k), Protection.Source.NONE, Protection.Cause.TERRAFORM)) {
+                world.setBlockAndUpdate(worldPosition.offset(i, j, k), lava);
+            }
         }
     }
 
