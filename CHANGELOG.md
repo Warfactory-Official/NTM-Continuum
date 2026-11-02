@@ -3,6 +3,36 @@
 Each release has a `## <version>` section; the release workflow uploads only the section matching
 `mod.version` in gradle.properties.
 
+## 1.0.4
+
+Requires Golem Core 1.0.4. Use GemRender 0.1.20; older versions are refused.
+
+### Added
+- OpenComputers: Rebooted support on 1.21.1 NeoForge: every block CC: Tweaked can reach is an OpenComputers component,
+  through cables and Adapters, with 1.7's methods.
+- Land-protection support: explosions, bombs, missiles, fallout, hazard blocks and clouds, and spreading effects ask
+  protection mods (WarForge claims and safe zones) before changing blocks or hurting entities, and carry the player
+  who set them off.
+- The advanced and high-performance hazmat hoods blur by wear, as in 1.7.
+
+### Fixed
+- Landmines, AT mines, broadcasters, safes, capsules, the chlorine geyser and the radiation hotspot crater generated
+  with their `hbm.cfg` spawn setting at 0 next to mods that re-place features near water, such as Streams Reflowing
+  (GitHub issue 102).
+- Helmet and gas mask overlays covered the hotbar and crosshair (GitHub issue 106).
+- JEI recipe registration took many seconds in large packs (18 s in All the Mods 10, now 0.2 s) (GitHub issue 107).
+- The electrolyser refused crystals placed by hand, and a second crystal type did nothing after the first; taking a
+  module out of the armor table left it on the armor (GitHub issue 101). 63 more menus checked placed items against
+  the menu's slot number instead of the container's.
+- The geiger counter HUD barely moved; it is 1.7's accumulated radiation bar again (GitHub issue 99).
+- Radiation, asbestos, digamma and other damage with no attacker knocked players in a random direction.
+- The condenser and Leviathan item icons were invisible below 26.1 with NTM: Space installed (GitHub issue 98).
+- A crash ("Index out of bounds") after a Tom impact with C2ME installed.
+- Chunk radiation cost up to 10 ms per server tick once the field spread over the loaded area; it is about 2 ms, with
+  the same results.
+- Map mods such as Xaero's minimap spent time looking up the crater biomes' grass colour.
+- QMAW logged a warning for every other mod's manual file; it reads only HBM's manuals.
+
 ## 1.0.3
 
 Requires Golem Core 1.0.3. Use GemRender 0.1.20; older versions are refused.
