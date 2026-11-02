@@ -47,7 +47,7 @@ public final class WarforgeProtectionGameTests {
             }
         }
 
-        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        ServerPlayer player = GameTestHelpers.detachedServerPlayer(helper);
         player.setPos(origin.getX() + 0.5D, origin.getY() - 5, origin.getZ() + 0.5D);
         run(level, player, "f zone safe");
         int safeChunkX = origin.getX() >> 4, safeChunkZ = origin.getZ() >> 4;
@@ -85,11 +85,19 @@ public final class WarforgeProtectionGameTests {
         });
     }
 
-    /** The server's own source, which has every permission, acting as the player at the player's position. */
+    /**
+     * The server's source acting as the player, who is opped for the call because WarForge checks the player. Its
+     * reply to the unconnected player throws after the command took effect; Brigadier logs that and carries on.
+     */
     private static void run(ServerLevel level, ServerPlayer player, String command) {
         MinecraftServer server = level.getServer();
-        server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withEntity(player)
-                .withLevel(level).withPosition(player.position()).withSuppressedOutput(), command);
+        GameTestHelpers.setOp(player, true);
+        try {
+            server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withEntity(player)
+                    .withLevel(level).withPosition(player.position()).withSuppressedOutput(), command);
+        } finally {
+            GameTestHelpers.setOp(player, false);
+        }
     }
 
     private static void poll(GameTestHelper helper, int tries, EntityNukeExplosionMK5 blast, Runnable then) {
