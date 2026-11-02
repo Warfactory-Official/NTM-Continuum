@@ -51,6 +51,7 @@ public final class BallisticWeaponRenderers {
         out.put("autoshotgun_sexy", new SexyWeaponRenderer("sexy_real_no_fake"));
         out.put("autoshotgun_heretic", new SexyWeaponRenderer("sexy_heretic"));
         out.put("quadro", new QuadroWeaponRenderer());
+        out.put("fliegerfaust", new FliegerfaustWeaponRenderer());
         out.put("minigun", new MinigunWeaponRenderer("minigun"));
         out.put("minigun_lacunae", new MinigunWeaponRenderer("minigun_lacunae"));
         out.put("minigun_dual", new MinigunDualWeaponRenderer());

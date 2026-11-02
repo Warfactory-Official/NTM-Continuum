@@ -862,6 +862,13 @@ public final class Orchestras {
             cue(GunAnimation.INSPECT, 50, ModGunSounds.PLAYER_GROAN, 1F, 1F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_QUADRO =
             timeline(Muzzle.CYCLE, null, cue(GunAnimation.RELOAD, 30, ModGunSounds.CANISTER_INSERT, 1F, 1F));
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_FLIEGERFAUST = timeline(Muzzle.CYCLE,
+            null,
+            cue(GunAnimation.RELOAD, 20, ModGunSounds.BOLT_OPEN, 1F, 0.85F),
+            cue(GunAnimation.RELOAD, 62, ModGunSounds.CANISTER_INSERT, 1F, 1F),
+            cue(GunAnimation.RELOAD, 64, ModGunSounds.BOLT_CLOSE, 1F, 0.85F),
+            cue(GunAnimation.JAMMED, 25, ModGunSounds.BOLT_OPEN, 1F, 0.85F),
+            cue(GunAnimation.JAMMED, 32, ModGunSounds.BOLT_CLOSE, 1F, 0.85F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_MINIGUN = timeline(Muzzle.CYCLE,
             MINIGUN_CASINGS,
             cue(GunAnimation.CYCLE, 1, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F),

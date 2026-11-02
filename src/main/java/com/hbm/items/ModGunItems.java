@@ -224,6 +224,7 @@ public final class ModGunItems {
     public static final RegistryObject<ItemGunBaseNT> gun_panzerschreck = SpecialGunCatalog.gun_panzerschreck;
     public static final RegistryObject<ItemGunBaseNT> gun_stinger = SpecialGunCatalog.gun_stinger;
     public static final RegistryObject<ItemGunBaseNT> gun_quadro = SpecialGunCatalog.gun_quadro;
+    public static final RegistryObject<ItemGunBaseNT> gun_fliegerfaust = SpecialGunCatalog.gun_fliegerfaust;
     public static final RegistryObject<ItemGunBaseNT> gun_missile_launcher = SpecialGunCatalog.gun_missile_launcher;
     public static final RegistryObject<ItemGunBaseNT> gun_fatman = SpecialGunCatalog.gun_fatman;
     public static final RegistryObject<ItemGunBaseNT> gun_flamer = SpecialGunCatalog.gun_flamer;
@@ -518,6 +519,7 @@ public final class ModGunItems {
          ModTabs.addTo(HbmTab.WEAPONS, gun_aberrator_eott);
          ModTabs.addTo(HbmTab.WEAPONS, gun_panzerschreck);
          ModTabs.addTo(HbmTab.WEAPONS, gun_stinger);
+         ModTabs.addTo(HbmTab.WEAPONS, gun_fliegerfaust);
          ModTabs.addTo(HbmTab.WEAPONS, gun_quadro);
          ModTabs.addTo(HbmTab.WEAPONS, gun_missile_launcher);
          ModTabs.addTo(HbmTab.WEAPONS, gun_fatman);

@@ -180,6 +180,7 @@ public final class ItemIds {
     public static final String ammo_standard_rocket_he = "hbm:ammo_standard_rocket_he";
     public static final String ammo_standard_rocket_heat = "hbm:ammo_standard_rocket_heat";
     public static final String ammo_standard_rocket_inc = "hbm:ammo_standard_rocket_inc";
+    public static final String ammo_standard_rocket_micro = "hbm:ammo_standard_rocket_micro";
     public static final String ammo_standard_rocket_phosphorus = "hbm:ammo_standard_rocket_phosphorus";
     public static final String ammo_standard_stone = "hbm:ammo_standard_stone";
     public static final String ammo_standard_stone_ap = "hbm:ammo_standard_stone_ap";
@@ -1829,6 +1830,7 @@ public final class ItemIds {
     public static final String gun_flamer_daybreaker = "hbm:gun_flamer_daybreaker";
     public static final String gun_flamer_topaz = "hbm:gun_flamer_topaz";
     public static final String gun_flaregun = "hbm:gun_flaregun";
+    public static final String gun_fliegerfaust = "hbm:gun_fliegerfaust";
     public static final String gun_folly = "hbm:gun_folly";
     public static final String gun_g3 = "hbm:gun_g3";
     public static final String gun_g3_zebra = "hbm:gun_g3_zebra";

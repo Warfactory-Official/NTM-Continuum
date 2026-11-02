@@ -62,6 +62,7 @@ public final class GunFactoryClient {
         hud(ModGunItems.gun_autoshotgun_sexy, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_autoshotgun_heretic, 0, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_quadro, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
+        hud(ModGunItems.gun_fliegerfaust, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_lag, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_minigun, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_minigun_lacunae, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);

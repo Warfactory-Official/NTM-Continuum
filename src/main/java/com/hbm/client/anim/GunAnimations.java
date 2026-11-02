@@ -103,6 +103,7 @@ public final class GunAnimations {
         registerById("gun_panzerschreck", GunAnimations::panzerschreck);
         registerById("gun_stinger", GunAnimations::panzerschreck);
         registerById("gun_quadro", GunAnimations::quadro);
+        registerById("gun_fliegerfaust", GunAnimations::fliegerfaust);
         registerById("gun_missile_launcher", GunAnimations::missileLauncher);
         registerById("gun_fatman", GunAnimations::fatman);
         registerById("gun_maresleg", GunAnimations::maresleg);
@@ -807,6 +808,32 @@ public final class GunAnimations {
                             .addPos(-1, 0, 0, 350).addPos(0, 0, 0, 1000));
             case JAMMED, INSPECT -> new BusAnimation().addBus("RELOAD_ROTATE", seq().addPos(0, 0, 60, 750, IType.SIN_FULL)
                     .addPos(0, 0, 60, 500).addPos(0, 0, 0, 750, IType.SIN_FULL));
+            default -> null;
+        };
+    }
+
+    private static BusAnimation fliegerfaust(ItemStack stack, GunAnimation type, int rail) {
+        boolean empty = loaded(stack, rail) <= 0;
+        return switch (type) {
+            case EQUIP -> new BusAnimation().addBus("EQUIP", seq().addPos(60, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_DOWN));
+            case CYCLE -> new BusAnimation().addBus("RECOIL", seq().addPos(0, 0, -0.125, 50, IType.SIN_DOWN)
+                    .addPos(0, 0, 0, 150, IType.SIN_FULL));
+            case RELOAD -> new BusAnimation()
+                    .addBus("RELOAD", seq().addPos(75, 0, 0, 750, IType.SIN_FULL).hold(2750).addPos(0, 0, 0, 750, IType.SIN_FULL))
+                    .addBus("DRUM", seq().hold(1000).addPos(0, 0, -1, 500, IType.SIN_FULL).addPos(0, -4, -1, 500, IType.SIN_UP)
+                            .hold(500).addPos(0, 0, -1, 500, IType.SIN_DOWN).addPos(0, 0, 0, 250, IType.SIN_UP))
+                    .addBus("DRUMROT", seq().hold(1500).addPos(-90, 0, 0, 500, IType.SIN_UP).hold(500)
+                            .addPos(0, 0, 0, 500, IType.SIN_DOWN))
+                    .addBus("RECOIL", seq().hold(3250).addPos(0, 0, 0.25, 150, IType.SIN_DOWN).addPos(0, 0, 0, 100, IType.SIN_FULL))
+                    .addBus("UNLOADING", seq().setPos(1, 0, 0).hold(2500).setPos(0, 0, 0));
+            case JAMMED -> new BusAnimation()
+                    .addBus("RELOAD", seq().hold(500).addPos(75, 0, 0, 500, IType.SIN_FULL).hold(1500).addPos(0, 0, 0, 500, IType.SIN_FULL))
+                    .addBus("DRUM", seq().hold(1250).addPos(0, 0, -1, 250, IType.SIN_FULL).addPos(0, 0, 0, 250, IType.SIN_UP))
+                    .addBus("RECOIL", seq().hold(1750).addPos(0, 0, 0.25, 150, IType.SIN_DOWN).addPos(0, 0, 0, 100, IType.SIN_FULL))
+                    .addBus("UNLOADING", seq().setPos(1, 0, 0).hold(1750).setPos(0, 0, 0));
+            case INSPECT -> new BusAnimation()
+                    .addBus("RELOAD", seq().addPos(75, 0, 0, 750, IType.SIN_FULL).hold(500).addPos(0, 0, 0, 750, IType.SIN_FULL))
+                    .addBus("ROCKET", seq().addPos(0, empty ? -3 : 0, 0, 0));
             default -> null;
         };
     }

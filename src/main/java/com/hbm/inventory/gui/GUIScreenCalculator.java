@@ -166,10 +166,13 @@ public final class GUIScreenCalculator extends CompatScreen {
         if (selectedHist >= 0) CALC_HISTORY.remove(selectedHist);
     }
 
+    /** Results and history hold page names; they sort and show by title. */
     private static void sortQMAWResults(String search, List<String> results) {
+        LanguageManager lang = Minecraft.getInstance().getLanguageManager();
         results.sort((s1, s2) -> {
-            boolean starts1 = s1.toLowerCase(Locale.ROOT).startsWith(search), starts2 = s2.toLowerCase(Locale.ROOT).startsWith(search);
-            return starts1 && !starts2 ? -1 : !starts1 && starts2 ? 1 : s1.compareTo(s2);
+            String title1 = QMAWLoader.qmaw.get(s1).getTitle(lang), title2 = QMAWLoader.qmaw.get(s2).getTitle(lang);
+            boolean starts1 = title1.toLowerCase(Locale.ROOT).startsWith(search), starts2 = title2.toLowerCase(Locale.ROOT).startsWith(search);
+            return starts1 && !starts2 ? -1 : !starts1 && starts2 ? 1 : title1.compareTo(title2);
         });
     }
 
@@ -182,7 +185,7 @@ public final class GUIScreenCalculator extends CompatScreen {
 
             LanguageManager lang = Minecraft.getInstance().getLanguageManager();
             for (QuickManualAndWiki page : QMAWLoader.sortedPages) {
-                if (TextSearch.contains(page.getTitle(lang).toLowerCase(Locale.ROOT), query)) qmawResults.add(page.getTitle(lang));
+                if (TextSearch.contains(page.getTitle(lang).toLowerCase(Locale.ROOT), query)) qmawResults.add(page.name);
             }
         }
 
@@ -199,29 +202,17 @@ public final class GUIScreenCalculator extends CompatScreen {
         if (selectedHist < 0) return;
 
         String key = (historyMode ? QMAW_HISTORY : qmawResults).get(selectedHist);
+        QuickManualAndWiki page = QMAWLoader.qmaw.get(key);
         QMAW_HISTORY.remove(key);
         QMAW_HISTORY.add(0, key);
         if (QMAW_HISTORY.size() > MAX_HISTORY) QMAW_HISTORY.remove(QMAW_HISTORY.size() - 1);
-        inputField.setValue(key);
+        inputField.setValue(page.getTitle(Minecraft.getInstance().getLanguageManager()));
         selectedHist = -1;
 
-        QuickManualAndWiki page = pageByTitle(key);
-        if (page != null) {
-            GuiUtil.playClickSound();
-            Minecraft.getInstance().setScreen(new GuiQMAW(page));
-        }
+        GuiUtil.playClickSound();
+        Minecraft.getInstance().setScreen(new GuiQMAW(page));
     }
 
-    // port: 1.7 looks a title up as a page name, which misses pages whose title is not their name
-    private static QuickManualAndWiki pageByTitle(String title) {
-        LanguageManager lang = Minecraft.getInstance().getLanguageManager();
-        for (QuickManualAndWiki page : QMAWLoader.sortedPages) {
-            if (page.getTitle(lang).equals(title)) return page;
-        }
-        return QMAWLoader.qmaw.get(title);
-    }
-
-    /** A middle click on a search result removes the history entry in the same row, as in 1.7. */
     private void deleteQMAWHistoryEntry() {
         selectedHistSanityCheck();
         if (selectedHist >= 0 && selectedHist < QMAW_HISTORY.size()) QMAW_HISTORY.remove(selectedHist);
@@ -249,7 +240,6 @@ public final class GUIScreenCalculator extends CompatScreen {
     }
 
     private void selectedHistSanityCheck() {
-        // port: clamped to the last row; 1.7 allows one past it, which a delete or Enter then indexes out of range
         selectedHist = Mth.clamp(selectedHist, -1, listSize() - 1);
     }
 
@@ -284,6 +274,7 @@ public final class GUIScreenCalculator extends CompatScreen {
     }
 
     private void drawQMAW(GuiGraphicsExtractor g, int mouseX, int mouseY, int x, int y) {
+        LanguageManager lang = Minecraft.getInstance().getLanguageManager();
         int hover = mouseEntrySelected(mouseX, mouseY);
         int i = 0;
         for (String r : isInputEmpty() ? QMAW_HISTORY : qmawResults) {
@@ -294,10 +285,10 @@ public final class GUIScreenCalculator extends CompatScreen {
                 GuiDraw.fill(g, x + 4, hy - QMAW_ENTRY_Y_SPACING / 2, x + 4 + X_SIZE - 9,
                         hy + font.lineHeight + QMAW_ENTRY_Y_SPACING / 2, SELECT_COLOR);
             }
-            GuiDraw.text(g, font, r, x + 25, hy, hover == i ? 0xffff00 : -1, false);
+            QuickManualAndWiki page = QMAWLoader.qmaw.get(r);
+            GuiDraw.text(g, font, page.getTitle(lang), x + 25, hy, hover == i ? 0xffff00 : -1, false);
 
-            QuickManualAndWiki page = pageByTitle(r);
-            if (page != null && page.icon != null && !page.icon.isEmpty()) {
+            if (page.icon != null && !page.icon.isEmpty()) {
                 GuiDraw.item(g, page.icon, x + 5, hy - QMAW_ENTRY_Y_SPACING + 2);
                 GuiDraw.itemDecorations(g, font, page.icon, x + 5, hy - QMAW_ENTRY_Y_SPACING + 2);
             }
@@ -347,7 +338,7 @@ public final class GUIScreenCalculator extends CompatScreen {
 
         if (qmawMode) {
             if (event.button() == MOUSE_LEFT) executeQMAW(isInputEmpty());
-            else if (event.button() == MOUSE_MIDDLE) deleteQMAWHistoryEntry();
+            else if (event.button() == MOUSE_MIDDLE && isInputEmpty()) deleteQMAWHistoryEntry();
         } else {
             if (event.button() == MOUSE_LEFT) handleCalculator(GLFW.GLFW_KEY_ENTER);
             else if (event.button() == MOUSE_MIDDLE) deleteCalcHistoryEntry();

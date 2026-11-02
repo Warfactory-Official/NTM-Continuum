@@ -26,6 +26,7 @@ public final class SpecialGunCatalog {
     public static RegistryObject<ItemGunBaseNT> gun_panzerschreck;
     public static RegistryObject<ItemGunBaseNT> gun_stinger;
     public static RegistryObject<ItemGunBaseNT> gun_quadro;
+    public static RegistryObject<ItemGunBaseNT> gun_fliegerfaust;
     public static RegistryObject<ItemGunBaseNT> gun_missile_launcher;
     public static RegistryObject<ItemGunBaseNT> gun_fatman;
     public static RegistryObject<ItemGunBaseNT> gun_flamer;
@@ -69,6 +70,9 @@ public final class SpecialGunCatalog {
         gun_quadro = REG.item("gun_quadro", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
                 XFactoryRocket.quadroConfig().orchestra(Orchestras.ORCHESTRA_QUADRO))
                 .setDefaultAmmo(ModAmmoItems.rocket_he, 4), p -> p);
+        gun_fliegerfaust = REG.item("gun_fliegerfaust", p -> new ItemGunBaseNT(p, WeaponQuality.SPECIAL,
+                XFactoryRocket.fliegerfaustConfig().orchestra(Orchestras.ORCHESTRA_FLIEGERFAUST))
+                .setDefaultAmmo(ModAmmoItems.rocket_micro, 9), p -> p);
         gun_missile_launcher = REG.item("gun_missile_launcher", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
                 XFactoryRocket.missileLauncherConfig()
                         .orchestra(Orchestras.ORCHESTRA_MISSILE_LAUNCHER))

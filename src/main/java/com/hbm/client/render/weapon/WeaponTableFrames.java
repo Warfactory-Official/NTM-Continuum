@@ -84,6 +84,7 @@ public final class WeaponTableFrames {
         put(m, "gun_autoshotgun_sexy", 9.5, 90, 0, 0, 0); // ItemRenderSexy
         put(m, "gun_autoshotgun_heretic", 9.5, 90, 0, 0, 0); // ItemRenderSexy
         put(m, "gun_quadro", 30, 90, 0, -1.125, 0); // ItemRenderQuadro
+        put(m, "gun_fliegerfaust", 8.5, 90, 0, 0, 0); // ItemRenderFliegerfaust
         put(m, "gun_minigun", 6.25, 90, 0, 0, 0); // ItemRenderMinigun
         put(m, "gun_minigun_lacunae", 6.25, 90, 0, 0, 0); // ItemRenderMinigun
         put(m, "gun_minigun_dual", 6.25, 90, 0, 0, 0); // ItemRenderMinigunDual

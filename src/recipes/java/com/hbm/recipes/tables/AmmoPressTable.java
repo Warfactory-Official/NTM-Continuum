@@ -373,6 +373,11 @@ public final class AmmoPressTable extends RecipeSource<Row> {
                 null,    cBig,    null,
                 null,    rocket,    null));
 
+        add(new AmmoPressRecipe(standard(EnumAmmo.ROCKET_MICRO, 9),
+                null,    dyn,                null,
+                null,    cBig,                null,
+                null,    copy(smokeless, 2),    null));
+
         AStack sPlate = STEEL.plate();
         AStack napalm = new ComparableStack(ModItems.canister_napalm.get());
         AStack gas = getDict(Fluids.GAS, 1000);

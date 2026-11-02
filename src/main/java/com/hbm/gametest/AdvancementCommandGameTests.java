@@ -154,7 +154,7 @@ public final class AdvancementCommandGameTests {
             MineConfig.MINE_AP_DAMAGE = before;
         }
         // 19 ServerConfig keys plus 92 distinct GunValues keys
-        helper.assertTrue(ServerConfig.configMap.size() == 111, "1.7 ServerConfig has 111 variables, not "
+        helper.assertTrue(ServerConfig.configMap.size() == 112, "1.7 ServerConfig has 112 variables, not "
                 + ServerConfig.configMap.size());
         helper.succeed();
     }

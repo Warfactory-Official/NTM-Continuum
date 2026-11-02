@@ -14,6 +14,13 @@ Requires Golem Core 1.0.4. Use GemRender 0.1.20; older versions are refused.
   protection mods (WarForge claims and safe zones) before changing blocks or hurting entities, and carry the player
   who set them off.
 - The advanced and high-performance hazmat hoods blur by wear, as in 1.7.
+- Upstream 1.7 X5863: the HIMRAAL, a nine-barrel micro rocket launcher (full auto, or the whole drum at once with the
+  secondary trigger), and micro rockets from the ammo press. The HIMRAAL is found in weapon crates and C-130 supply
+  drops.
+
+### Changed
+- Upstream 1.7 X5863: the Panzerschreck reloads in 85 ticks instead of 50; mobs no longer spawn wearing legacy alloy
+  armor; updated Russian localization and manual pages.
 
 ### Fixed
 - Landmines, AT mines, broadcasters, safes, capsules, the chlorine geyser and the radiation hotspot crater generated
@@ -32,6 +39,8 @@ Requires Golem Core 1.0.4. Use GemRender 0.1.20; older versions are refused.
   the same results.
 - Map mods such as Xaero's minimap spent time looking up the crater biomes' grass colour.
 - QMAW logged a warning for every other mod's manual file; it reads only HBM's manuals.
+- The calculator's QMAW search listed template pages, and a middle click on a search result deleted a history entry
+  (upstream 1.7 X5863).
 
 ## 1.0.3
 

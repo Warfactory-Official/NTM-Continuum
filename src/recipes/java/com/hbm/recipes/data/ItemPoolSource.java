@@ -634,6 +634,7 @@ public final class ItemPoolSource extends DataSource<PoolFile> {
                 weighted("hbm:gun_carbine", 1, 1, 50),
                 weighted("hbm:gun_heavy_revolver", 1, 1, 50),
                 weighted("hbm:gun_panzerschreck", 1, 1, 20),
+                weighted("hbm:gun_fliegerfaust", 1, 1, 20),
                 weighted("hbm:gun_double_barrel", 1, 1, 10),
                 weighted("hbm:gun_n_i_4_n_i", 1, 1, 1));
         pool(POOL_AMMO,

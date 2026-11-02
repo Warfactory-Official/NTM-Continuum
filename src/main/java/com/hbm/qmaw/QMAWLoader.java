@@ -96,7 +96,10 @@ public final class QMAWLoader {
         }
 
         qmaw = Map.copyOf(pages);
-        List<QuickManualAndWiki> sorted = new ArrayList<>(pages.values());
+        List<QuickManualAndWiki> sorted = new ArrayList<>();
+        for (QuickManualAndWiki page : pages.values()) {
+            if (!page.noIndex) sorted.add(page);
+        }
         sorted.sort(COMPARATOR);
         sortedPages = List.copyOf(sorted);
         exactTriggers = List.copyOf(exact);
@@ -190,7 +193,8 @@ public final class QMAWLoader {
                 }
             }
         }
-        return new QuickManualAndWiki(name, icon, titles, contents, triggers);
+        boolean noIndex = json.has("noindex") && json.get("noindex").getAsBoolean();
+        return new QuickManualAndWiki(name, icon, titles, contents, triggers, noIndex);
     }
 
     private static Map<String, String> strings(JsonElement element) {
@@ -323,7 +327,7 @@ public final class QMAWLoader {
             "coil_ferrouranium", "nuke_standard", "nuke_demo", "nuke_high", "nuke_tots", "nuke_hive",
             "g10", "g10_shrapnel", "g10_du", "g10_slug", "r762_he", "bmg50_he",
             "g10_explosive", "p45_sp", "p45_fmj", "p45_jhp", "p45_ap", "p45_du",
-            "ct_hook", "ct_mortar", "ct_mortar_charge", "nuke_balefire", "bmg50_sm"
+            "ct_hook", "ct_mortar", "ct_mortar_charge", "nuke_balefire", "bmg50_sm", "rocket_micro"
     };
 
     private static Identifier flattenedId(Identifier oldId, int metadata) {

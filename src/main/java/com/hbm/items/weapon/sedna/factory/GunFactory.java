@@ -112,7 +112,8 @@ public class GunFactory {
         G10, G10_SHRAPNEL, G10_DU, G10_SLUG,
         R762_HE, BMG50_HE, G10_EXPLOSIVE,
         P45_SP, P45_FMJ, P45_JHP, P45_AP, P45_DU,
-        CT_HOOK, CT_MORTAR, CT_MORTAR_CHARGE, NUKE_BALEFIRE, BMG50_SM;
+        CT_HOOK, CT_MORTAR, CT_MORTAR_CHARGE, NUKE_BALEFIRE, BMG50_SM,
+        ROCKET_MICRO;
         public static final EnumAmmo[] VALUES = values();
         /** Creative/reload presentation order from 1.7; omitted secret and unsupported entries stay registered. */
         public static final EnumAmmo[] order = {
@@ -130,6 +131,7 @@ public class GunFactory {
             G10, G10_SHRAPNEL, G10_DU, G10_SLUG, G10_EXPLOSIVE,
             G26_FLARE, G26_FLARE_SUPPLY, G26_FLARE_WEAPON,
             G40_HE, G40_HEAT, G40_DEMO, G40_INC, G40_PHOSPHORUS,
+            ROCKET_MICRO,
             ROCKET_HE, ROCKET_HEAT, ROCKET_DEMO, ROCKET_INC, ROCKET_PHOSPHORUS,
             FLAME_DIESEL, FLAME_GAS, FLAME_NAPALM, FLAME_BALEFIRE,
             CAPACITOR, CAPACITOR_OVERCHARGE, CAPACITOR_IR, TAU_URANIUM,

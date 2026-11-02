@@ -60,26 +60,25 @@ public final class MobUtil {
     static {
         // soot mobs
         slotPoolCommonS.put(4, pool(8000, "gas_mask_m65", 16, "gas_mask_olde", 12, "mask_of_infamy", 8, "gas_mask_mono", 8,
-                "robes_helmet", 32, "no9", 16, "cobalt_helmet", 2, "rag_piss", 1, "nossy_hat", 1, "alloy_helmet", 2,
+                "robes_helmet", 32, "no9", 16, "cobalt_helmet", 2, "rag_piss", 1, "nossy_hat", 1,
                 "titanium_helmet", 4, "steel_helmet", 8));
         slotPoolCommonS.put(3, pool(7000, "starmetal_plate", 1, "cobalt_plate", 2, "robes_plate", 32, "jackt", 32,
-                "jackt2", 32, "alloy_plate", 2, "steel_plate", 2));
+                "jackt2", 32, "steel_plate", 2));
         slotPoolCommonS.put(2, pool(7000, "zirconium_legs", 1, "cobalt_legs", 2, "steel_legs", 16, "titanium_legs", 8,
-                "robes_legs", 32, "alloy_legs", 2));
-        slotPoolCommonS.put(1, pool(7000, "robes_boots", 32, "steel_boots", 16, "cobalt_boots", 2, "alloy_boots", 2));
+                "robes_legs", 32));
+        slotPoolCommonS.put(1, pool(7000, "robes_boots", 32, "steel_boots", 16, "cobalt_boots", 2));
         slotPoolCommonS.put(0, pool(10000, "weapon_pipe_lead", 30, "crowbar", 25, "geiger_counter", 20, "reer_graar", 16,
                 "steel_pickaxe", 12, "stopsign", 10, "sopsign", 8, "chernobylsign", 6, "steel_sword", 15,
                 "titanium_sword", 8, "lead_gavel", 4, "wrench_flipped", 2, "wrench", 20));
 
         slotPoolRangedS.put(4, pool(8000, "gas_mask_m65", 16, "gas_mask_olde", 12, "mask_of_infamy", 8, "gas_mask_mono", 8,
-                "robes_helmet", 32, "no9", 16, "rag_piss", 1, "goggles", 1, "alloy_helmet", 2, "titanium_helmet", 4,
+                "robes_helmet", 32, "no9", 16, "rag_piss", 1, "goggles", 1, "titanium_helmet", 4,
                 "steel_helmet", 8));
-        slotPoolRangedS.put(3, pool(7000, "starmetal_plate", 1, "cobalt_plate", 2, "alloy_plate", 2, "steel_plate", 8,
+        slotPoolRangedS.put(3, pool(7000, "starmetal_plate", 1, "cobalt_plate", 2, "steel_plate", 8,
                 "titanium_plate", 4));
         slotPoolRangedS.put(2, pool(7000, "zirconium_legs", 1, "cobalt_legs", 2, "steel_legs", 16, "titanium_legs", 8,
-                "robes_legs", 32, "alloy_legs", 2));
-        slotPoolRangedS.put(1, pool(10000, "robes_boots", 32, "steel_boots", 16, "cobalt_boots", 2, "alloy_boots", 2,
-                "titanium_boots", 6));
+                "robes_legs", 32));
+        slotPoolRangedS.put(1, pool(10000, "robes_boots", 32, "steel_boots", 16, "cobalt_boots", 2, "titanium_boots", 6));
 
         // soot guns (1.7 createSlotPool(Object[][]): no null entry)
         slotPoolGuns.put(0.3, pool(-1, "gun_light_revolver", 16, "gun_greasegun", 8, "gun_maresleg", 2));
@@ -91,26 +90,25 @@ public final class MobUtil {
 
         // gob block
         slotPoolCommon.put(4, pool(0, "gas_mask_m65", 16, "gas_mask_olde", 12, "mask_of_infamy", 8, "gas_mask_mono", 8,
-                "robes_helmet", 32, "no9", 16, "cobalt_helmet", 2, "rag_piss", 1, "nossy_hat", 1, "alloy_helmet", 2,
+                "robes_helmet", 32, "no9", 16, "cobalt_helmet", 2, "rag_piss", 1, "nossy_hat", 1,
                 "titanium_helmet", 4, "steel_helmet", 8));
         slotPoolCommon.put(3, pool(10, "starmetal_plate", 1, "cobalt_plate", 2, "robes_plate", 32, "jackt", 32,
-                "jackt2", 32, "alloy_plate", 2, "steel_plate", 2));
+                "jackt2", 32, "steel_plate", 2));
         slotPoolCommon.put(2, pool(20, "zirconium_legs", 1, "cobalt_legs", 2, "steel_legs", 16, "titanium_legs", 8,
-                "robes_legs", 32, "alloy_legs", 2));
-        slotPoolCommon.put(1, pool(10, "robes_boots", 32, "steel_boots", 16, "cobalt_boots", 2, "alloy_boots", 2));
+                "robes_legs", 32));
+        slotPoolCommon.put(1, pool(10, "robes_boots", 32, "steel_boots", 16, "cobalt_boots", 2));
         slotPoolCommon.put(0, pool(1000, "weapon_pipe_lead", 30, "crowbar", 25, "geiger_counter", 20, "reer_graar", 16,
                 "steel_pickaxe", 12, "stopsign", 10, "sopsign", 8, "chernobylsign", 6, "steel_sword", 15,
                 "titanium_sword", 8, "lead_gavel", 4, "wrench_flipped", 2, "wrench", 20));
 
         slotPoolRanged.put(4, pool(0, "gas_mask_m65", 16, "gas_mask_olde", 12, "mask_of_infamy", 8, "gas_mask_mono", 8,
-                "robes_helmet", 32, "no9", 16, "rag_piss", 1, "goggles", 1, "alloy_helmet", 2, "titanium_helmet", 4,
+                "robes_helmet", 32, "no9", 16, "rag_piss", 1, "goggles", 1, "titanium_helmet", 4,
                 "steel_helmet", 8));
-        slotPoolRanged.put(3, pool(10, "starmetal_plate", 1, "cobalt_plate", 2, "alloy_plate", 2, "steel_plate", 8,
+        slotPoolRanged.put(3, pool(10, "starmetal_plate", 1, "cobalt_plate", 2, "steel_plate", 8,
                 "titanium_plate", 4));
         slotPoolRanged.put(2, pool(10, "zirconium_legs", 1, "cobalt_legs", 2, "steel_legs", 16, "titanium_legs", 8,
-                "robes_legs", 32, "alloy_legs", 2));
-        slotPoolRanged.put(1, pool(10, "robes_boots", 32, "steel_boots", 16, "cobalt_boots", 2, "alloy_boots", 2,
-                "titanium_boots", 6));
+                "robes_legs", 32));
+        slotPoolRanged.put(1, pool(10, "robes_boots", 32, "steel_boots", 16, "cobalt_boots", 2, "titanium_boots", 6));
 
         // 1.7 createSlotPool(Object[][]) without a null weight
         slotPoolAdv.put(4, pool(-1, "security_helmet", 10, "t51_helmet", 4, "asbestos_helmet", 12,

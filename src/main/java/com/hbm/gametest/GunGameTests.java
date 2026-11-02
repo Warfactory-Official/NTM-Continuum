@@ -227,7 +227,7 @@ public final class GunGameTests {
                 }
             }
         }
-        helper.assertTrue(gunCount == 72, "source gun registry must expose 72 guns, found " + gunCount);
+        helper.assertTrue(gunCount == 73, "source gun registry must expose 73 guns, found " + gunCount);
         helper.succeed();
     }
 
@@ -1040,7 +1040,7 @@ public final class GunGameTests {
                 .filter(k -> k.startsWith("GUN_") || k.startsWith("MELEE_") || k.startsWith("RANGED_")
                         || k.startsWith("TURRET_"))
                 .count();
-        helper.assertTrue(keys == 92, "1.7 puts 92 weapon damage keys into /ntmserver, found " + keys);
+        helper.assertTrue(keys == 93, "1.7 puts 93 weapon damage keys into /ntmserver, found " + keys);
         helper.assertTrue(ServerConfig.configMap.get("GUN_DOUBLE_BARREL_DAMAGE") == XFactoryDrill.GUN_DRILL_DAMAGE,
                 "GUN_DOUBLE_BARREL_DAMAGE must hold the drill's value, as in 1.7");
         helper.assertTrue(!ServerConfig.configMap.containsValue(XFactoryFolly.GUN_FOLLY_DAMAGE),

@@ -13,10 +13,13 @@ public final class QuickManualAndWiki {
     public final Map<String, String> title;
     public final Map<String, String> contents;
     public final List<Trigger> triggers;
+    /** Template pages: reachable through links, absent from the search. */
+    public final boolean noIndex;
 
     public QuickManualAndWiki(String name, ItemStack icon, Map<String, String> title,
-                              Map<String, String> contents, List<Trigger> triggers) {
+                              Map<String, String> contents, List<Trigger> triggers, boolean noIndex) {
         this.name = name;
+        this.noIndex = noIndex;
         this.icon = icon;
         this.title = Map.copyOf(title);
         this.contents = Map.copyOf(contents);

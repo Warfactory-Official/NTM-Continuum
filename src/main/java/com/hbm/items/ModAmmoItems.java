@@ -117,6 +117,7 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> g40_demo = REG.item("ammo_standard_g40_demo").transform(Presets.sprite());
     public static final RegistryObject<Item> g40_inc = REG.item("ammo_standard_g40_inc").transform(Presets.sprite());
     public static final RegistryObject<Item> g40_phosphorus = REG.item("ammo_standard_g40_phosphorus").transform(Presets.sprite());
+    public static final RegistryObject<Item> rocket_micro = REG.item("ammo_standard_rocket_micro").transform(Presets.sprite());
     public static final RegistryObject<Item> rocket_he = REG.item("ammo_standard_rocket_he").transform(Presets.sprite());
     public static final RegistryObject<Item> rocket_heat = REG.item("ammo_standard_rocket_heat").transform(Presets.sprite());
     public static final RegistryObject<Item> rocket_demo = REG.item("ammo_standard_rocket_demo").transform(Presets.sprite());
@@ -217,7 +218,7 @@ public final class ModAmmoItems {
                 g12_explosive, g12_phosphorus,
                 g26_flare, g26_flare_supply, g26_flare_weapon,
                 g40_he, g40_heat, g40_demo, g40_inc, g40_phosphorus,
-                rocket_he, rocket_heat, rocket_demo, rocket_inc, rocket_phosphorus,
+                rocket_micro, rocket_he, rocket_heat, rocket_demo, rocket_inc, rocket_phosphorus,
                 flame_diesel, flame_gas, flame_napalm, flame_balefire,
                 capacitor, capacitor_overcharge, capacitor_ir, tau_uranium,
                 coil_tungsten, coil_ferrouranium,

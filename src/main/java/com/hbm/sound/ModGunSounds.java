@@ -89,6 +89,7 @@ public final class ModGunSounds {
     public static final RegistryObject<SoundEvent> TESLA_BLAST = register("entity.ufoblast");
     public static final RegistryObject<SoundEvent> FIRE_MK108 = register("weapon.fire.mk108");
     public static final RegistryObject<SoundEvent> FIRE_ROCKET = register("weapon.rpgshoot");
+    public static final RegistryObject<SoundEvent> FIRE_ROCKET_FLAME = register("weapon.rocketflame");
     public static final RegistryObject<SoundEvent> FIRE_EXTINGUISHER = register("weapon.extinguisher");
     public static final RegistryObject<SoundEvent> FIRE_FOLLY = register("weapon.fire.loudestnoiseonearth");
     public static final RegistryObject<SoundEvent> FIRE_VSTAR = register("weapon.fire.vstar");

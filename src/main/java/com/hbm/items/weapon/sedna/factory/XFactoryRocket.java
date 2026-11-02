@@ -15,8 +15,10 @@ import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.Crosshair;
+import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.impl.ItemGunStinger;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
@@ -59,12 +61,14 @@ public final class XFactoryRocket {
     public static final ConfigWrapper<Float> GUN_PANZERSCHRECK_DAMAGE = new ConfigWrapper<>(25F);
     public static final ConfigWrapper<Float> GUN_STINGER_DAMAGE = new ConfigWrapper<>(35F);
     public static final ConfigWrapper<Float> GUN_QUADRO_DAMAGE = new ConfigWrapper<>(40F);
+    public static final ConfigWrapper<Float> GUN_FLIEGERFAUST_DAMAGE = new ConfigWrapper<>(15F);
     public static final ConfigWrapper<Float> GUN_MISSILE_LAUNCHER_DAMAGE = new ConfigWrapper<>(50F);
 
     public static void initConfig() {
         ServerConfig.configMap.put("GUN_PANZERSCHRECK_DAMAGE", GUN_PANZERSCHRECK_DAMAGE);
         ServerConfig.configMap.put("GUN_STINGER_DAMAGE", GUN_STINGER_DAMAGE);
         ServerConfig.configMap.put("GUN_QUADRO_DAMAGE", GUN_QUADRO_DAMAGE);
+        ServerConfig.configMap.put("GUN_FLIEGERFAUST_DAMAGE", GUN_FLIEGERFAUST_DAMAGE);
         ServerConfig.configMap.put("GUN_MISSILE_LAUNCHER_DAMAGE", GUN_MISSILE_LAUNCHER_DAMAGE);
     }
 
@@ -74,6 +78,8 @@ public final class XFactoryRocket {
     public static BulletConfig[] rocket_ml;
     public static BulletConfig[] rocket_ncrpa;
     public static BulletConfig[] rocket_ncrpa_steer;
+
+    public static BulletConfig rocket_ff;
 
     /** The motor: a rocket adds to its step every tick until it tops out. */
     public static final Consumer<Entity> LAMBDA_STANDARD_ACCELERATE = entity -> {
@@ -136,6 +142,13 @@ public final class XFactoryRocket {
     public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_STANDARD_EXPLODE = (bullet, mop) -> {
         if (mop instanceof EntityHitResult && bullet.tickCount < 3) return;
         Lego.standardExplode(bullet, mop, 5F);
+        bullet.discard();
+    };
+
+    /** Unlike the 84 mm rounds, a micro rocket may hit another entity on its first ticks, only not its shooter. */
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_MICRO_EXPLODE = (bullet, mop) -> {
+        if (mop instanceof EntityHitResult hit && bullet.tickCount < 3 && hit.getEntity() == bullet.getThrower()) return;
+        Lego.tinyExplode(bullet, mop, 1.5F);
         bullet.discard();
     };
 
@@ -254,6 +267,9 @@ public final class XFactoryRocket {
             rocket_ncrpa[i] = copyRocket("rocket_ncrpa", rocket_template[i], false);
             rocket_ncrpa_steer[i] = copyRocket("rocket_ncrpa_steer", rocket_template[i], true);
         }
+
+        rocket_ff = BulletConfigs.register("rocket_ff", baseRocket()
+                .setItem(ModAmmoItems.rocket_micro).setOnUpdate(null).setVel(7F).setOnImpact(LAMBDA_MICRO_EXPLODE));
     }
 
     private static BulletConfig copyRocket(String family, BulletConfig original, boolean guided) {
@@ -278,7 +294,7 @@ public final class XFactoryRocket {
     /** 1.7 {@code XFactoryRocket} gun_panzerschreck. */
     public static GunConfig panzerschreckConfig() {
         return new GunConfig().dura(300).draw(7).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX)
-                .rec(rocketReceiver(GUN_PANZERSCHRECK_DAMAGE, 5, 50, 40, new MagazineSingleReload(0, 1).addConfigs(rocket_rpzb))
+                .rec(rocketReceiver(GUN_PANZERSCHRECK_DAMAGE, 5, 85, 40, new MagazineSingleReload(0, 1).addConfigs(rocket_rpzb))
                         .setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration();
     }
@@ -299,6 +315,47 @@ public final class XFactoryRocket {
                         .spreadHipfire(0F).setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
                 .setupStandardConfiguration();
     }
+
+    /** 1.7 gun_fliegerfaust: a nine-round drum on full auto; the secondary trigger empties the drum at once. */
+    public static GunConfig fliegerfaustConfig() {
+        return new GunConfig().dura(9 * 25).draw(7).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX)
+                .rec(new Receiver(0).dmg(GUN_FLIEGERFAUST_DAMAGE).spread(0.015F).spreadHipfire(0.015F).auto(true)
+                        .delay(4).reload(85).jam(60).sound(ModGunSounds.FIRE_ROCKET_FLAME::get, 1F, 1F)
+                        .mag(new MagazineFullReload(0, 9).addConfigs(rocket_ff))
+                        .offset(1, -0.0625 * 1.5, -0.1875D).offsetScoped(1, -0.0625 * 1.5, -0.125D)
+                        .setupStandardFire().recoil(LAMBDA_RECOIL_ROCKET))
+                .setupStandardConfiguration().ps(LAMBDA_FLIEGERFAUST_SECONDARY);
+    }
+
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_FLIEGERFAUST_SECONDARY = (stack, ctx) -> {
+        LivingEntity entity = ctx.entity;
+        Receiver rec = ctx.config.getReceivers(stack)[0];
+        int index = ctx.configIndex;
+        GunState state = ItemGunBaseNT.getState(stack, index);
+
+        if (state == GunState.IDLE) {
+            boolean soundPlayed = false;
+            for (int i = 0; i < 9; i++) {
+                if (rec.getCanFire(stack).apply(stack, ctx)) {
+                    rec.getOnFire(stack).accept(stack, ctx);
+                    if (rec.getFireSound(stack) != null && !soundPlayed) {
+                        Lego.playFireSound(entity, rec, stack);
+                        soundPlayed = true;
+                    }
+                } else if (rec.getDoesDryFire(stack)) {
+                    ItemGunBaseNT.playAnimation(ctx.getPlayer(), stack, GunAnimation.CYCLE_DRY, index);
+                    ItemGunBaseNT.setState(stack, index, rec.getRefireAfterDry(stack) ? GunState.COOLDOWN : GunState.DRAWING);
+                    ItemGunBaseNT.setTimer(stack, index, rec.getDelayAfterDryFire(stack));
+                }
+            }
+            if (soundPlayed) {
+                ItemGunBaseNT.setState(stack, index, GunState.COOLDOWN);
+                ItemGunBaseNT.setTimer(stack, index, rec.getDelayAfterFire(stack));
+            }
+        }
+
+        if (state == GunState.RELOADING) ItemGunBaseNT.setReloadCancel(stack, true);
+    };
 
     /** 1.7 gun_missile_launcher: durability 500, draw 20, visible crosshair, no hipfire spread. */
     public static GunConfig missileLauncherConfig() {

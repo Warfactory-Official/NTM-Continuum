@@ -87,6 +87,7 @@ public final class WeaponEffects {
             case "gun_missile_launcher" -> missileLauncher(state, base, sink, light, overlay);
             case "gun_panzerschreck" -> panzerschreck(state, base, sink, light, overlay);
             case "gun_quadro" -> quadro(state, base, sink, light, overlay);
+            case "gun_fliegerfaust" -> fliegerfaust(state, base, sink, light, overlay);
             case "gun_stinger" -> stinger(state, base, sink, light, overlay);
             case "gun_flaregun" -> flaregun(state, base, sink, light, overlay);
             case "gun_double_barrel", "gun_double_barrel_sacred_dragon" ->
@@ -170,6 +171,7 @@ public final class WeaponEffects {
             case "gun_missile_launcher" -> staticNormal(state, pose, sink, 0, 1, 6.75, .75F, 75, 7.5);
             case "gun_panzerschreck" -> staticNormal(state, pose, sink, 0, 0, 6.5, .75F, 150, 7.5);
             case "gun_quadro" -> staticNormal(state, pose, sink, 0, .75, 2, .75F, 150, 7.5);
+            case "gun_fliegerfaust" -> staticNormal(state, pose, sink, 0, 0, 10, .75F, 150, 7.5); // after the drum's z 2
             case "gun_stinger" -> staticNormal(state, pose, sink, 0, 3.5, -10.3795, .75F, 150, 10);
             case "gun_double_barrel", "gun_double_barrel_sacred_dragon" -> {
                 pose.translate(0, 0, 8); pose.mulPose(Axis.YP.rotationDegrees(90));
@@ -582,6 +584,12 @@ public final class WeaponEffects {
             p.pushPose(); p.translate(-.375, 2.25, .875); p.mulPose(Axis.YN.rotationDegrees(180F + System.currentTimeMillis() / 2 % 360)); p.translate(-labelWidth(QUADRO_LABEL) / 2F * .04F, 0, 0); p.scale(.04F, -.04F, .04F); label(c, p, QUADRO_LABEL, 0xFF00FFFF); p.popPose();
         }
         p.pushPose(); p.translate(-1, .75, 6.5); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, 0), 150, 7.5, 1); p.popPose();
+    }
+
+    private static void fliegerfaust(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
+        p.scale(1.25F, 1.25F, 1.25F); p.mulPose(Axis.ZP.rotationDegrees((float) aimLerp(s, 0, -45))); equip(p, s, 0, 0, 1, 1);
+        p.translate(0, -6, -1); p.mulPose(Axis.XP.rotationDegrees((float) s.bus("RELOAD")[0])); p.translate(0, 6, 1); p.translate(0, 0, s.bus("RECOIL")[2]);
+        p.pushPose(); p.translate(0, 0, 8); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, 0), 75, 5, 1); p.popPose();
     }
 
     private static void stinger(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {

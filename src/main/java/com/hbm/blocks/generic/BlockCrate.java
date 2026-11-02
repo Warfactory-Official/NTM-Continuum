@@ -119,6 +119,7 @@ public class BlockCrate extends CompatBlock {
         add(WEAPON, "gun_liberator", 2);
         add(WEAPON, "gun_flaregun", 8);
         add(WEAPON, "gun_panzerschreck", 1);
+        add(WEAPON, "gun_fliegerfaust", 2);
         // Lead Crate
         add(LEAD, "ingot_uranium", 10);
         add(LEAD, "ingot_u238", 8);

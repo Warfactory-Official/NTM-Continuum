@@ -8,13 +8,13 @@ import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 /** The single common bootstrap boundary for the 1.7 weapon catalogue. */
 public final class GunCatalogue {
     // Includes 1.12.2's gluon gun and occult shotgun.
-    public static final int EXPECTED_GUN_ITEMS = 72;
+    public static final int EXPECTED_GUN_ITEMS = 73;
     // Ammo items, one per ammo type: ammo_arty (12), ammo_himars (8) and ammo_container (2) are one item each.
-    public static final int EXPECTED_AMMO_ITEMS = 137;
-    // 1.7's complete GunFactory chain constructs 180 configs, including secret and helper rounds, plus
+    public static final int EXPECTED_AMMO_ITEMS = 138;
+    // 1.7's complete GunFactory chain constructs 181 configs, including secret and helper rounds, plus
     // 1.7's TileEntityBatterySocket.discharge (a static BulletConfig of the battery socket, registered beside the gun configs),
     // plus the 1.12.2 occult shotgun's g10_jade.
-    public static final int EXPECTED_BULLET_CONFIGS = 183;
+    public static final int EXPECTED_BULLET_CONFIGS = 184;
 
     private static boolean initialized;
 

@@ -370,7 +370,6 @@ public final class Fix5GameTests {
                     out.put(rq + "autoAfterDry", Boolean.toString(r.getRefireAfterDry(stack)));
                     out.put(rq + "dryfire", Boolean.toString(r.getDoesDryFire(stack)));
                     out.put(rq + "dryfireAfterAuto", Boolean.toString(r.getDoesDryFireAfterAuto(stack)));
-                    out.put(rq + "ejectOnFire", Boolean.toString(r.getEjectOnFire(stack)));
                     out.put(rq + "reloadOnEmpty", Boolean.toString(r.getReloadOnEmpty(stack)));
                     out.put(rq + "reloadBegin", Integer.toString(r.getReloadBeginDuration(stack)));
                     out.put(rq + "reloadCycle", Integer.toString(r.getReloadCycleDuration(stack)));

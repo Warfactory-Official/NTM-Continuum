@@ -158,6 +158,7 @@ public final class TracerRegistry {
         register(rocketModel("models/projectiles/projectiles.obj", "textures/models/projectiles/rocket.png", "Rocket", 1F,
                 pose -> pose.mulPose(Axis.ZP.rotationDegrees(90F))), "rocket_qd_he", "rocket_qd_heat",
                 "rocket_qd_demo", "rocket_qd_inc", "rocket_qd_phosphorus");
+        register(microRocket(), "rocket_ff");
         register(model("models/projectiles/deb_graphite.obj", "textures/entity/rbmk_debris/graphite.png",
                 "Cube_Cube.001", 2F, pose -> { }), "pile_debris");
         BulletTracer flare = flare(1F, 0.5F, 0.5F);
@@ -296,6 +297,25 @@ public final class TracerRegistry {
             state.length = oldLength * 2D;
             exhaust.draw(state, pose, sink);
             state.length = oldLength;
+            pose.popPose();
+        };
+    }
+
+    /** 1.7 {@code RENDER_FLIEGERFAUST}: a stretched grenade and a small yellow flare that faces the camera. */
+    private static BulletTracer microRocket() {
+        BulletTracer body = model("models/projectiles/projectiles.obj", "textures/models/projectiles/grenade.png", "Grenade", 1F,
+                pose -> { pose.scale(1F, 0.125F, 0.125F); pose.mulPose(Axis.ZP.rotationDegrees(90F)); pose.translate(0F, 0.25F, 0F); });
+        return (state, pose, sink) -> {
+            body.draw(state, pose, sink);
+            if (state.cameraOrientation == null) return;
+            pose.pushPose();
+            pose.mulPose(Axis.ZN.rotationDegrees(state.pitch + 180F));
+            pose.mulPose(Axis.YN.rotationDegrees(state.yaw - 90F));
+            pose.mulPose(state.cameraOrientation);
+            sink.submitCustomGeometry(pose, CompatRenderTypes.flare(FLARE), (p, buffer) -> {
+                flareQuad(p, buffer, 0.375F, 1F, 0.875F, 0.25F, 0.125F);
+                flareQuad(p, buffer, 0.1875F, 1F, 1F, 1F, 0.25F);
+            });
             pose.popPose();
         };
     }

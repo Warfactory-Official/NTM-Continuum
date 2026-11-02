@@ -769,7 +769,7 @@ public final class WeaponTableGameTests {
                 + "those 1.7 drew without an ItemRenderWeaponBase " + NO_TABLE_PREVIEW + ", got " + unframed);
         helper.assertTrue(framed.equals(frames.keySet()), "every frame must belong to a registered Sedna gun: "
                 + framed.size() + " guns, " + frames.size() + " frames");
-        helper.assertTrue(frames.size() == 68, "1.7 GunFactoryClient registers 68 table-framed guns, got " + frames.size());
+        helper.assertTrue(frames.size() == 69, "1.7 GunFactoryClient registers 69 table-framed guns, got " + frames.size());
         assertFrame(helper, "gun_debug", 5, 90, 0, 0, 0);
         assertFrame(helper, "gun_stinger", 7.5, -90, 0, -4, 0);
         assertFrame(helper, "gun_quadro", 30, 90, 0, -1.125, 0);

@@ -160,6 +160,8 @@ public final class GunItemDeclarations {
     private static void part2() {
         Dejson.item(NS, "gun_quadro")
                 .definition(gun("hbm:item/gun_obj_base", "quadro")).oversizedInGui().register();
+        Dejson.item(NS, "gun_fliegerfaust")
+                .definition(gun("hbm:item/gun_obj_base", "fliegerfaust")).oversizedInGui().register();
         Dejson.item(NS, "gun_spas12")
                 .definition(gun("hbm:item/gun_obj_base", "spas12")).oversizedInGui().register();
         Dejson.item(NS, "gun_star_f")

@@ -89,7 +89,7 @@ public final class ItemRecipeTableGameTests {
      * Material, wire, shell and pipe rows follow 1.7's Mats.orderedList declaration order.
      */
     static final Map<String, String> EXPECTED = Map.ofEntries(
-            Map.entry("ammo_press", "90 f3b1dc99e5c2d40f1a32b812ecbea4bc44e7075459ad59ddc2b77734e84c3f0f"),
+            Map.entry("ammo_press", "91 c6e97171f58c66a81a519ec8c6a5b1e36a7416379a801d0d8a3ae759f4343f66"),
             Map.entry("annihilator", "16 a2044a6681862dd49d8faba5337d651bb5a51172410b85b2082c32f3daab89cf"),
             Map.entry("anvil_construction", "257 af43b890b355cd087f8db0da946891c2c89c7d3bd4098d91a63cefd733efbfdf"),
             Map.entry("anvil_smithing", "58 5655dfc0e8f89caeec8e0bfc8cd0ce463ef4ea6f218c31f082db49fa3d9076f4"),

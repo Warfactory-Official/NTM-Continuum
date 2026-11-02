@@ -75,7 +75,6 @@ public class Receiver {
     protected boolean refireAfterDry_DNA = false;
     protected boolean doesDryFire_DNA = true;
     protected boolean doesDryFireAfterAuto_DNA = false;
-    protected boolean ejectOnFire_DNA = true;
     protected boolean reloadOnEmpty_DNA = false;
     protected int reloadBeginDuration_DNA;
     protected int reloadCycleDuration_DNA;
@@ -115,7 +114,6 @@ public class Receiver {
     public boolean getRefireAfterDry(ItemStack s) { return XWeaponModManager.eval(refireAfterDry_DNA, s, B_REFIREAFTERDRY, this, parent.index); }
     public boolean getDoesDryFire(ItemStack s) { return XWeaponModManager.eval(doesDryFire_DNA, s, B_DOESDRYFIRE, this, parent.index); }
     public boolean getDoesDryFireAfterAuto(ItemStack s) { return XWeaponModManager.eval(doesDryFireAfterAuto_DNA, s, B_DOESDRYFIREAFTERAUTO, this, parent.index); }
-    public boolean getEjectOnFire(ItemStack s) { return XWeaponModManager.eval(ejectOnFire_DNA, s, B_EJECTONFIRE, this, parent.index); }
     public boolean getReloadOnEmpty(ItemStack s) { return XWeaponModManager.eval(reloadOnEmpty_DNA, s, B_RELOADONEMPTY, this, parent.index); }
     public int getReloadBeginDuration(ItemStack s) { return XWeaponModManager.eval(reloadBeginDuration_DNA, s, I_RELOADBEGINDURATION, this, parent.index); }
     public int getReloadCycleDuration(ItemStack s) { return XWeaponModManager.eval(reloadCycleDuration_DNA, s, I_RELOADCYCLEDURATION, this, parent.index); }
@@ -150,7 +148,6 @@ public class Receiver {
     public Receiver autoAfterDry(boolean auto) { this.refireAfterDry_DNA = auto; return this; }
     public Receiver dryfire(boolean dryfire) { this.doesDryFire_DNA = dryfire; return this; }
     public Receiver dryfireAfterAuto(boolean dryfire) { this.doesDryFireAfterAuto_DNA = dryfire; return this; }
-    public Receiver ejectOnFire(boolean eject) { this.ejectOnFire_DNA = eject; return this; }
     public Receiver reloadOnEmpty(boolean reload) { this.reloadOnEmpty_DNA = reload; return this; }
     public Receiver mag(IMagazine<?> magazine) { this.magazine_DNA = magazine; return this; }
     public Receiver jam(int jam) { this.jamDuration_DNA = jam; return this; }
