@@ -1,5 +1,6 @@
 package com.hbm.tileentity.bomb;
 
+import java.util.UUID;
 import com.hbm.util.Owners;
 import com.hbm.Constants;
 import com.hbm.api.block.IRadarCommandReceiver;
@@ -354,7 +355,8 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     public void finalizeLaunch(Entity missile) {
         if (missile instanceof EntityMissileBaseNT ballistic) ballistic.setThrower(detonator);
         if (missile instanceof EntityMissileAntiBallistic abm) abm.setThrower(detonator);
-        Owners.give(missile, Owners.of(detonator) != null ? Owners.of(detonator) : placer());
+        UUID owner = Owners.detonator(detonator);
+        Owners.give(missile, owner != null ? owner : placer());
 
         level.addFreshEntity(missile);
         if (missile instanceof EntityMissileBaseNT ballistic) {

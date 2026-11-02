@@ -171,7 +171,7 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
         int z = pos.getZ();
 
         Protection.Source source = Owners.source(level.getBlockEntity(pos));
-        if (source.player() == null) source = Protection.Source.of(detonator);
+        if (source.player() == null) source = Owners.sourceOf(detonator);
         safeMode = true;
         level.destroyBlock(pos, false);
         safeMode = false;

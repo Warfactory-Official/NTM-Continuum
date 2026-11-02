@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import com.hbm.util.Owners;
 import dev.golem.core.world.Protection;
 import com.hbm.api.block.IFuckingExplode;
 import com.hbm.entity.ModNtmEntities;
@@ -52,7 +53,7 @@ public class DetMiner extends CompatBlock implements IBomb, IFuckingExplode, IBl
         double x = pos.getX() + 0.5, y = pos.getY() + 0.5, z = pos.getZ() + 0.5;
 
         ExplosionVNT explosion = new ExplosionVNT(level, x, y, z, 4F);
-        explosion.setSource(Protection.Source.of(detonator));
+        explosion.setSource(Owners.sourceOf(detonator));
         explosion.setBlockAllocator(new BlockAllocatorStandard());
         explosion.setBlockProcessor(new BlockProcessorStandard().setAllDrop());
         explosion.explode();

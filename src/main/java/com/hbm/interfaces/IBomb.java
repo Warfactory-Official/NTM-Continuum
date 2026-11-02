@@ -1,5 +1,6 @@
 package com.hbm.interfaces;
 
+import com.hbm.util.Owners;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +19,9 @@ public interface IBomb {
     /** Allows deferred triggers to retain attribution when the originating entity is offline. */
     default BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator,
                                    @Nullable UUID detonatorId) {
-        return explode(level, pos, detonator);
+        try (Owners.Scope scope = Owners.scope(detonatorId)) {
+            return explode(level, pos, detonator);
+        }
     }
 
     enum BombReturnCode {

@@ -65,7 +65,7 @@ public class ExplosiveCharge extends CompatBlock implements IBomb, IDetConnectib
                 // 1.7: ExplosionNT(15).overrideResolution(64) - the vanilla algorithm at 64 rays, with
                 // drops and damage. ExplosionNT is not ported; this is the same blast on the VNT seam.
                 ExplosionVNT vnt = new ExplosionVNT(level, x, y, z, 15F);
-                vnt.setSource(Protection.Source.of(detonator));
+                vnt.setSource(Owners.sourceOf(detonator));
                 vnt.setBlockAllocator(new BlockAllocatorStandard(64));
                 vnt.setBlockProcessor(new BlockProcessorStandard());
                 vnt.setEntityProcessor(new EntityProcessorStandard());
@@ -75,7 +75,7 @@ public class ExplosiveCharge extends CompatBlock implements IBomb, IDetConnectib
             }
             case NUKE -> {
                 EntityNukeExplosionMK5 mk5 = EntityNukeExplosionMK5.statFac(level, BombConfig.missileRadius, x, y, z);
-                mk5.detonator = Owners.of(detonator);
+                mk5.detonator = Owners.detonator(detonator);
                 if (level.addFreshEntity(mk5)) mk5.startChunkLoading();
                 if (BombConfig.enableNukeClouds) {
                     EntityNukeTorex torex = EntityNukeTorex.statFac(level, x, y, z, BombConfig.missileRadius);

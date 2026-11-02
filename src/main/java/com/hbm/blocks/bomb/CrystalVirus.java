@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Protection;
 import com.hbm.blocks.ModBlocks;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -34,7 +35,9 @@ public class CrystalVirus extends CompatBlock {
         if (!TerrainConfig.enableVirus) return;
         for (Direction dir : Direction.values()) {
             BlockPos at = pos.relative(dir);
-            if (!isInert(level.getBlockState(at))) level.setBlockAndUpdate(at, defaultBlockState());
+            if (!isInert(level.getBlockState(at)) && Protection.mayAlter(level, at, Protection.Source.NONE, Protection.Cause.FLUID)) {
+                level.setBlockAndUpdate(at, defaultBlockState());
+            }
         }
         level.setBlockAndUpdate(pos, ModBlocks.crystal_hardened.get().defaultBlockState());
     }

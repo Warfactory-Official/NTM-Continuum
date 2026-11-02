@@ -1,5 +1,6 @@
 package com.hbm.blocks.bomb;
 
+import dev.golem.core.world.Protection;
 import com.hbm.potion.ModEffects;
 import dev.golem.core.world.CompatBlock;
 import dev.golem.core.world.Effects;
@@ -59,7 +60,8 @@ public class BlockTaint extends CompatBlock {
                     int z = pos.getZ() + dz;
                     targetPos.set(x, y, z);
                     BlockState targetState = level.getBlockState(targetPos);
-                    if (targetState.isAir() || targetState.is(Blocks.BEDROCK)) continue;
+                    if (targetState.isAir() || targetState.is(Blocks.BEDROCK)
+                            || !Protection.mayAlter(level, targetPos, Protection.Source.NONE, Protection.Cause.FLUID)) continue;
 
                     int targetAge = age + 1;
                     boolean hasAir = false;

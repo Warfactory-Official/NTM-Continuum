@@ -50,6 +50,34 @@ public final class Owners {
         });
     }
 
+    private static final ThreadLocal<@Nullable UUID> SCOPE = new ThreadLocal<>();
+
+    /** Owner of the bomb being detonated on this thread; {@code null} keeps the enclosing one. Close restores it. */
+    public static Scope scope(@Nullable UUID owner) {
+        UUID previous = SCOPE.get();
+        if (owner != null) SCOPE.set(owner);
+        return () -> {
+            if (previous == null) SCOPE.remove();
+            else SCOPE.set(previous);
+        };
+    }
+
+    @FunctionalInterface
+    public interface Scope extends AutoCloseable {
+        @Override
+        void close();
+    }
+
+    /** The detonating player, else the scoped owner of a deferred detonation. Bomb blocks resolve through this. */
+    public static @Nullable UUID detonator(@Nullable Entity detonator) {
+        UUID id = of(detonator);
+        return id != null ? id : SCOPE.get();
+    }
+
+    public static Protection.Source sourceOf(@Nullable Entity detonator) {
+        return Protection.Source.ofPlayer(detonator(detonator));
+    }
+
     public static @Nullable UUID of(@Nullable Entity entity) {
         return Protection.Source.of(entity).player();
     }
@@ -61,7 +89,7 @@ public final class Owners {
     /** The detonating player, else the placer of the block entity at {@code pos}; read before the block is removed. */
     public static Protection.Source source(@Nullable Entity detonator, Level level,
                                            BlockPos pos) {
-        Protection.Source source = Protection.Source.of(detonator);
+        Protection.Source source = sourceOf(detonator);
         return source.player() != null ? source : source(level.getBlockEntity(pos));
     }
 
