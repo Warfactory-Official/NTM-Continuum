@@ -3,6 +3,7 @@ package com.hbm.world.gen.terrain;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.world.feature.FeatureCodecs;
 import com.hbm.world.gen.ConfigInt;
+import com.hbm.world.gen.ConfigPlacement;
 import com.hbm.world.gen.WorldgenKeys;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -74,6 +75,7 @@ public class MapGenCrater extends MapGenFeature<MapGenCrater.Config> {
     @Override
     protected boolean generate(Config c, WorldGenLevel level, ChunkGenerator generator, Random rand, long originSeed, int seaLevel,
                                int originX, int originZ, int chunkX, int chunkZ, boolean forced) {
+        if (!forced && ConfigPlacement.value(WorldgenKeys.RAD_HOTSPOT) <= 0) return false;
         int frequency = c.frequency().get();
         if (frequency <= 0) return false;
         boolean roll = rand.nextInt(frequency) == 0;

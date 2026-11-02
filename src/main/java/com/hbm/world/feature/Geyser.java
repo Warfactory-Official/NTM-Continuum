@@ -1,6 +1,8 @@
 package com.hbm.world.feature;
 
 import com.hbm.blocks.ModTerrainBlocks;
+import com.hbm.world.gen.ConfigPlacement;
+import com.hbm.world.gen.WorldgenKeys;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -59,6 +61,8 @@ public class Geyser extends Feature<Geyser.Config> {
         WorldGenLevel level = context.level();
         // 1.7 HbmWorldGen: the chlorine geyser sits inside the enableDungeons block
         if (!DungeonBlockFeature.dungeonsEnabled(level)) return false;
+        // checked here too: mods that boost features near water place them again without their placement
+        if (ConfigPlacement.value(WorldgenKeys.GEYSER_CHLORINE) <= 0) return false;
         Config c = context.config();
         BlockPos top = context.origin();
         if (!c.surface().test(level.getBlockState(top.below()), context.random())) return false;
