@@ -193,6 +193,7 @@ public final class CrystallizerRecipes {
         for (var entry : entries) {
             var row = entry.value();
             if (row.requires().isPresent() && firstInTag(row.requires().get()) == null) continue;
+            if (row.input().getDisplayStacks().isEmpty()) continue; // an ore tag no installed mod fills
             ItemStack output = row.output().stack();
             if (output.isEmpty()) continue;
             next.add(new CrystallizerRecipe(entry.id(), row.input(), row.acid().type, row.acid().fill, row.duration(), row.productivity(), output,

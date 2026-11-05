@@ -95,9 +95,10 @@ import dev.golem.core.viewer.ViewerCategory;
 import dev.golem.core.viewer.ViewerPlugin;
 
 /**
- * HBM's recipe-viewer integration, declared once for JEI and REI: the modern equivalent of the old {@code JEIConfig}.
+ * HBM's recipe-viewer integration, declared once for JEI, REI and EMI: the modern equivalent of the old {@code JEIConfig}.
  * The JEI plugins ({@link HbmJeiPluginForgelike}, {@link HbmJeiPluginFabric}) hand it to Golem Core's
- * {@code JeiViewer}, the REI plugins ({@code com.hbm.handler.rei}) to Golem Core's {@code ReiClientPlugin}; the item
+ * {@code JeiViewer}, the REI plugins ({@code com.hbm.handler.rei}) to Golem Core's {@code ReiClientPlugin}, the EMI plugin
+ * ({@code com.hbm.handler.emi}) to {@code EmiViewerPlugin}; the item
  * subtypes are {@link HbmViewerSubtypes}. Adding a machine is a one-liner in each of the methods below, exactly as it
  * was in the old plugin.
  */

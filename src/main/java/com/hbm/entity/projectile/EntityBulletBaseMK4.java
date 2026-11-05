@@ -158,14 +158,13 @@ public class EntityBulletBaseMK4 extends CompatEntity implements Owners.Carrier 
 
     /**
      * Aims this bullet along {@code (x, y, z)} with {@code spread} of inaccuracy, storing the result as a
-     * unit heading. The gaussian-per-axis scatter and its 0.0075 scale are vanilla's own {@code shoot}
-     * maths, which upstream relies on for every round's spread to mean what its config says.
+     * unit heading plus gaussian scatter. 1.7 {@code headingForceMult} is 1 here, not the throwable 0.0075.
      */
     public void shoot(double x, double y, double z, float spread) {
         Vec3 heading = new Vec3(x, y, z).normalize().add(
-                random.nextGaussian() * 0.0075D * spread,
-                random.nextGaussian() * 0.0075D * spread,
-                random.nextGaussian() * 0.0075D * spread);
+                random.nextGaussian() * spread,
+                random.nextGaussian() * spread,
+                random.nextGaussian() * spread);
         setDeltaMovement(heading);
         alignRotationWithMotion();
         // The source keeps the spawn angle as both previous and current; subsequent movement updates

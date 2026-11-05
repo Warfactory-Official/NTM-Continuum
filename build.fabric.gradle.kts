@@ -304,6 +304,12 @@ dependencies {
         }
     }
 
+    // EMI is an optional peer like REI, fed by the thin plugin in com.hbm.handler.emi (`-Pemi.run=true` for dev runs).
+    propOrNull("deps.emi")?.let { emi ->
+        (if (obfuscated) "modCompileOnly" else "compileOnly")("maven.modrinth:emi:$emi") { isTransitive = false }
+        if (propOrNull("emi.run") == "true") devRuntime("maven.modrinth:emi:$emi") { isTransitive = false }
+    }
+
     // GemRender instances gem-declared machines through Golem Core; every machine keeps its vanilla BER, which draws
     // whenever GemRender is absent or `/flywheel backend off`. `-Pgemrender.run=false` launches without it, as a
     // player without GemRender would. Its 1.x Fabric jars nest Flywheel, but a Loom dev run does not load a dependency's

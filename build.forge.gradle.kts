@@ -145,6 +145,12 @@ dependencies {
         modRuntimeOnly("mezz.jei:jei-$jei-forge:$jeiVer")
     }
 
+    // EMI is an optional peer like REI, fed by the thin plugin in com.hbm.handler.emi (`-Pemi.run=true` for dev runs).
+    propOrNull("deps.emi")?.let { emi ->
+        modCompileOnly("maven.modrinth:emi:$emi")
+        if (propOrNull("emi.run") == "true") modRuntimeOnly("maven.modrinth:emi:$emi")
+    }
+
     // REI (Roughly Enough Items) is an optional peer like JEI: HBM's recipe-viewer declarations
     // (com.hbm.handler.jei.HbmRecipeViewer) feed it through Golem Core's dev.golem.core.rei, from the thin plugins in
     // com.hbm.handler.rei (guarded by the `rei` constant). Compiled against on every node, never shipped or required.

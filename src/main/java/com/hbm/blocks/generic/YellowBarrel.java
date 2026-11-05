@@ -42,6 +42,17 @@ public class YellowBarrel extends BlockBarrelDeco {
         if (!level.isClientSide()) level.scheduleTick(pos, this, 20);
     }
 
+    @Override
+    public boolean isRandomlyTicking(BlockState state) {
+        return true;
+    }
+
+    /** Starts the 20-tick cycle of a barrel saved without one: worldgen runs no {@link #onPlace}. */
+    @Override
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (!level.getBlockTicks().hasScheduledTick(pos, this)) level.scheduleTick(pos, this, 20);
+    }
+
     /** 1.7 updateTick: the chunk gets its dose and the block re-schedules itself every 20 ticks. */
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {

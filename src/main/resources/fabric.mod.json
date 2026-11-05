@@ -33,6 +33,9 @@
         "rei_common": [
             "com.hbm.handler.rei.HbmReiCommonPlugin"
         ],
+        "emi": [
+            "com.hbm.handler.emi.HbmEmiPlugin"
+        ],
         "fabric-gametest": [
             "com.hbm.platform.fabric.FabricGameTests"
         ]

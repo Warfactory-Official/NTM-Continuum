@@ -50,6 +50,10 @@ public final class ModTagDeclarations {
                         "minecraft:armor_stand")
                 .optional("minecraft:bogged", "minecraft:parched")
                 .register();
+        // 1.7 EntityChicken.fall did nothing; vanilla's chicken is in this tag by its own id
+        Tags.of("entity_type", "minecraft", "fall_damage_immune")
+                .values("hbm:entity_fucc_a_ducc", "hbm:entity_elder_one")
+                .register();
         Tags.of("item", "hbm", "certus_quartz_clusters")
                 .optional("ae2:quartz_cluster")
                 .register();

@@ -2,6 +2,7 @@ package com.hbm.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.minecraft.locale.Language;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -41,9 +42,21 @@ public final class ReleaseHarnessQueries {
         HarnessQueryRegistry.register("hbm_release", ReleaseHarnessQueries::query);
     }
 
+    /** What the client's language says for each of {@code keys}. */
+    private static JsonObject translate(JsonObject params) {
+        JsonObject translated = new JsonObject();
+        for (var key : params.getAsJsonArray("keys")) {
+            translated.addProperty(key.getAsString(), Language.getInstance().getOrDefault(key.getAsString()));
+        }
+        JsonObject json = new JsonObject();
+        json.add("translated", translated);
+        return json;
+    }
+
     private static JsonObject query(Minecraft mc, JsonObject params) {
         String mode = params.has("mode") ? params.get("mode").getAsString() : "tooltip";
         if (mode.equals("tooltip")) return tooltip(mc, params);
+        if (mode.equals("translate")) return translate(params);
         return ServerQueries.answer(mc, "hbm_release", params.deepCopy(), (level, p) -> {
             JsonObject json = new JsonObject();
             try {

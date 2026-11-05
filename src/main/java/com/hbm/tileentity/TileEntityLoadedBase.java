@@ -14,6 +14,7 @@ import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.api.fluidmk2.IFluidUserMK2;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.TilePort.PortDef;
+import com.hbm.uninos.PortNodes;
 import com.hbm.uninos.networkproviders.FluidNetProvider;
 import com.hbm.uninos.networkproviders.PowerNetProvider;
 import com.hbm.api.tile.ILoadedTile;
@@ -180,7 +181,10 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     @Override
     public void clearRemoved() {
         super.clearRemoved();
-        if (this instanceof IFluidUserMK2 user) for (var tank : user.getAllTanks()) tank.bindOwner(this);
+        // A delegate answers with its core's tanks, which the core owns.
+        if (this instanceof IFluidUserMK2 user && !(this instanceof PortNodes.Delegate)) {
+            for (var tank : user.getAllTanks()) tank.bindOwner(this);
+        }
         GraphResident.onLoad(this);
     }
 

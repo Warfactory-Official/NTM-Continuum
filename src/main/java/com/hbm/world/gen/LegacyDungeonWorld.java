@@ -2,6 +2,7 @@ package com.hbm.world.gen;
 
 import com.hbm.blocks.generic.TrappedBrick;
 import com.hbm.blocks.generic.Waterlogging;
+import com.hbm.blocks.generic.YellowBarrel;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.itempool.PoolLoot;
 import com.hbm.lib.Library;
@@ -407,6 +408,8 @@ public final class LegacyDungeonWorld {
                         level.setBlock(pos, Waterlogging.inWorld(r.state(), level, pos),
                                 Block.UPDATE_CLIENTS);
                         placed.add(pos);
+                        // 1.7's setBlock ran onBlockAdded, which a chunk being generated does not
+                        if (r.state().getBlock() instanceof YellowBarrel barrel) level.scheduleTick(pos, barrel, 20);
                         Tile tile = tiles.get(key);
                         if (tile != null) applyTile(level, pos, tile);
                     }

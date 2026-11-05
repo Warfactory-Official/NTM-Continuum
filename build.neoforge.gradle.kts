@@ -240,6 +240,13 @@ dependencies {
         if (propOrNull("rei.run") == "true") devModJar("me.shedaniel:RoughlyEnoughItems-neoforge:$rei")
     }
 
+    // EMI is an optional peer like REI, fed by the thin plugin in com.hbm.handler.emi. `-Pemi.run=true` puts it in the
+    // client run beside JEI, so a run with it also shows EMI's JEI layer skipping HBM's categories. It carries mixins.
+    propOrNull("deps.emi")?.let { emi ->
+        compileOnly("maven.modrinth:emi:$emi")
+        if (propOrNull("emi.run") == "true") devModJar("maven.modrinth:emi:$emi")
+    }
+
     // Jade, dev runs only (`-Pjade.run=true`): HBM's overlay declarations (com.hbm.compat.HbmBlockInfo) reach it
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency. Jade carries mixins, hence `devModJar`.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devModJar("maven.modrinth:jade:$it") }

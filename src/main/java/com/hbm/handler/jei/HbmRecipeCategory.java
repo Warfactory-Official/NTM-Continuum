@@ -1,6 +1,9 @@
 package com.hbm.handler.jei;
 
+import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
+import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.lib.Library;
+import dev.golem.core.Ids;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.viewer.Drawable;
 import dev.golem.core.viewer.ViewerCategory;
@@ -52,6 +55,13 @@ public abstract class HbmRecipeCategory<T> extends ViewerCategory<T> {
     @Override
     public void draw(T recipe, GuiGraphicsExtractor g, double mouseX, double mouseY) {
         background.draw(g, 0, 0);
+    }
+
+    @Override
+    public String recipeId(T recipe) {
+        if (recipe instanceof GenericRecipe generic && generic.recipeId() != null) return Ids.keyId(generic.recipeId()).toString();
+        if (recipe instanceof AnvilConstructionRecipe anvil && !anvil.id.isEmpty()) return anvil.id;
+        return null;
     }
 
     /** Draws a dark stat string exactly like the old handlers' {@code fontRenderer.drawString(s, x, y, 0x404040)}. */

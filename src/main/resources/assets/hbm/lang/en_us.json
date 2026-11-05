@@ -1,4 +1,7 @@
 {
+  "biome.hbm.crater": "Crater",
+  "biome.hbm.crater_inner": "Inner Crater",
+  "biome.hbm.crater_outer": "Outer Crater",
   "desc.hbm.repair.with": "Repair with:",
   "desc.hbm.repair.tool": "Tool: Blowtorch",
   "item.hbm.structure_custommachine": "Custom Machine Structure Output Wand",

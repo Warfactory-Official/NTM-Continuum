@@ -118,6 +118,7 @@ public final class CentrifugeRecipes {
         for (var entry : entries) {
             var row = entry.value();
             if (!TableCodecs.holds(row.requires())) continue;
+            if (row.input().getDisplayStacks().isEmpty()) continue; // an ore tag no installed mod fills
             ItemStack[] output = row.outputs().stream().map(Output::stack).toArray(ItemStack[]::new);
             boolean empty = false;
             for (ItemStack stack : output) empty |= stack.isEmpty();
