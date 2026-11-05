@@ -75,6 +75,8 @@ crashed_balefire	hbm:crashed_bomb_balefire
 crashed_conventional	hbm:crashed_bomb_conventional
 crashed_nuke	hbm:crashed_bomb_nuke
 crashed_salted	hbm:crashed_bomb_salted
+create_motor	park
+create_motor_desh	park
 deco_computer	hbm:deco_computer_ibm_300pl
 dirt	hbm:ntm_dirt
 early_explosive_lenses	hbm:gadget_explosive8

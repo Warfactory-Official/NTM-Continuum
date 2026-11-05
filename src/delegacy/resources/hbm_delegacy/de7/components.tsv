@@ -90,6 +90,7 @@ hbm:tool_presets
 hbm:toolbox_open
 hbm:turret_whitelist
 hbm:unstable_at
+hbm:unstable_timer
 hbm:watz_yield
 hbm:wire_target
 hbm:wrench_target

@@ -113,6 +113,7 @@ public final class DeImportGameTests {
         TESTS.function("deimport_saved_data_shapes", 20, () -> DeImportGameTests::savedDataShapes);
         TESTS.function("deimport_airship_plot", 20, () -> DeImportGameTests::airshipPlot);
         TESTS.function("deimport_nothing_lost_silently", 20, () -> DeImportGameTests::nothingLostSilently);
+        TESTS.function("deimport_beta14_shapes", 20, () -> DeImportGameTests::beta14Shapes);
         TESTS.function("deimport_audited_mappings", 20, () -> DeImportGameTests::auditedMappings);
         TESTS.function("deimport_loot_and_references", 20, () -> DeImportGameTests::lootAndReferences);
         TESTS.function("deimport_satellites_and_pack_recipes", 20, () -> DeImportGameTests::satellitesAndPackRecipes);
@@ -1254,6 +1255,63 @@ public final class DeImportGameTests {
             de.put("neoforge:cures", cures);
             out2.put("neoforge:cures", reordered);
             helper.assertTrue(NbtDiff.lost(de, out2, Set.of()).isEmpty(), "reordered cures are not a loss");
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            delete(world);
+        }
+        helper.succeed();
+    }
+
+    /** What DE beta.14 added to its saves: the fuse's tick count, the turbofan's control mode, the Create motors. */
+    private static void beta14Shapes(GameTestHelper helper) {
+        Path world = tempWorld();
+        try {
+            CompoundTag chunk = DeFixtures.emptyChunk(0, 0);
+            BlockPos classic = new BlockPos(2, 70, 2), throttle = new BlockPos(9, 70, 2), motor = new BlockPos(2, 70, 9), store = new BlockPos(9, 70, 9);
+            for (BlockPos fan : List.of(classic, throttle)) {
+                DeFixtures.setBlock(chunk, fan, DeFixtures.block("hbm:machine_turbofan", "facing", "north"));
+                CompoundTag be = DeFixtures.blockEntity("hbm:machine_turbofan", fan);
+                be.putInt("controlMode", fan.equals(throttle) ? 1 : 0);
+                DeFixtures.addBlockEntity(chunk, be);
+            }
+            DeFixtures.setBlock(chunk, motor, DeFixtures.block("hbm:create_motor", "facing", "north"));
+            CompoundTag motorBe = DeFixtures.blockEntity("hbm:create_motor", motor);
+            motorBe.putLong("hbm_power", 200);
+            DeFixtures.addBlockEntity(chunk, motorBe);
+
+            CompoundTag ticking = DeFixtures.stack("hbm:ingot_u238m2", 1);
+            CompoundTag timer = new CompoundTag();
+            timer.putInt("hbm:unstable_timer", 42);
+            ticking.put("components", timer);
+            CompoundTag armed = DeFixtures.stack("hbm:ingot_u238m2", 1);
+            CompoundTag fuse = new CompoundTag();
+            fuse.putLong("hbm:unstable_at", 1000);
+            armed.put("components", fuse);
+            DeFixtures.setBlock(chunk, store, DeFixtures.block("hbm:machine_centrifuge", "facing", "north"));
+            CompoundTag centrifuge = DeFixtures.blockEntity("hbm:centrifuge", store);
+            centrifuge.put("inventory", DeFixtures.inventory(DeFixtures.slot(0, ticking), DeFixtures.slot(1, armed),
+                    DeFixtures.slot(2, DeFixtures.stack("hbm:create_motor_desh", 3))));
+            DeFixtures.addBlockEntity(chunk, centrifuge);
+
+            Ctx ctx = ctx(world, helper.getLevel().getServer());
+            String out = new ChunkConverter(ctx, "minecraft:overworld").convert(chunk).toString();
+            List<String> parked = new ArrayList<>();
+            for (Tag t : ctx.parking.records()) {
+                CompoundTag r = (CompoundTag) t;
+                parked.add(r.getString("kind") + " " + r.getString("where") + " " + r.getString("id"));
+            }
+            helper.assertTrue(parked.stream().filter(p -> p.contains("controlMode")).count() == 1
+                            && parked.stream().anyMatch(p -> p.contains("controlMode") && p.contains(throttle.toShortString())),
+                    "only the throttled fan's mode is parked, classic is what Continuum runs: " + parked);
+            helper.assertTrue(parked.stream().anyMatch(p -> p.startsWith("block_entity ") && p.contains("hbm:create_motor")),
+                    "the motor's block entity is parked: " + parked);
+            helper.assertTrue(parked.stream().anyMatch(p -> p.startsWith("item ") && p.contains("hbm:create_motor_desh")),
+                    "a stack of motors is parked: " + parked);
+            helper.assertTrue(ctx.report.get("blocks refunded") == 1, "the motor's block is refunded once");
+            helper.assertTrue(!out.contains("create_motor"), "no motor stays in the chunk: " + out);
+            helper.assertTrue(out.contains("\"hbm:unstable_timer\":42"), "the fuse's tick count stays: " + out);
+            helper.assertTrue(!out.contains("unstable_at"), "the old deadline converts: " + out);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         } finally {

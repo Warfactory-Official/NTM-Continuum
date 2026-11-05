@@ -30,6 +30,8 @@ crashed_balefire	hbm:crashed_bomb_balefire
 crashed_conventional	hbm:crashed_bomb_conventional
 crashed_nuke	hbm:crashed_bomb_nuke
 crashed_salted	hbm:crashed_bomb_salted
+create_motor	refund
+create_motor_desh	refund
 deco_computer	hbm:deco_computer_ibm_300pl
 dirt	hbm:ntm_dirt
 filing_cabinet_green	hbm:filing_cabinet[type=green]

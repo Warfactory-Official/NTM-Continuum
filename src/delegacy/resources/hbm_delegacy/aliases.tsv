@@ -2,7 +2,6 @@
 item	hbm:apple_lead_nugget	hbm:apple_lead
 item	hbm:apple_schrabidium_nugget	hbm:apple_schrabidium
 item	hbm:arc_electrode_burnt_graphite	hbm:arc_electrode_burnt
-item	hbm:arc_electrode_graphite	hbm:arc_electrode
 item	hbm:battery_pack_battery_lead	hbm:battery_lead
 item	hbm:battery_pack_battery_lithium	hbm:battery_lithium
 item	hbm:battery_pack_battery_quantum	hbm:battery_quantum

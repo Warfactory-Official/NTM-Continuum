@@ -35,12 +35,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
 /**
- * Writes NTM: Decentralized Edition saves as DE 1.0.0-beta.12 writes them (shapes from DE's source: nested tanks,
+ * Writes NTM: Decentralized Edition saves as DE 1.0.0-beta.14 writes them (shapes from DE's source: nested tanks,
  * {@code battery_pack_} items, multiblock cell blocks, per-chunk duct fluids, sealed crates, its chunk stamp), for the
  * importer's GameTests and harness scenario. Dev builds only.
  */
 public final class DeFixtures {
-    public static final String DE_VERSION = "1.0.0-beta.12";
+    public static final String DE_VERSION = "1.0.0-beta.14";
     /** The fixture world's AES key for DE's sealed crates. */
     static final byte[] KEY = new byte[32];
 
