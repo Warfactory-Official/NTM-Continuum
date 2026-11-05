@@ -226,24 +226,23 @@ public final class TurretGameTests {
     }
 
     /**
-     * A linked radar hands the CIWS its nearest blip. In player mode the Howard sees 48 blocks and keeps a target up
-     * to 48 x 1.1 = 52.8; a zombie 58 blocks out is out of its sight until the radar designates it (within 4 x 48).
+     * A linked radar hands the CIWS its nearest blip. The damaged Howard sees 16 blocks and keeps a target up to
+     * 16 x 1.1 = 17.6; a zombie 20 blocks out is out of its sight until the radar designates it (within 4 x 16).
      */
     public static void ciwsRadar(GameTestHelper helper) {
-        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_howard.get());
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_howard_damaged.get());
         TileEntityTurretHoward howard = (TileEntityTurretHoward) helper.getLevel().getBlockEntity(core);
         BlockState state = helper.getLevel().getBlockState(core);
         howard.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST, new ItemStack(ModItems.ammo_dgk.get(), 2));
         howard.isOn = true;
-        howard.targetPlayers = true;
-        helper.assertTrue(howard.getDetectorRange() == 48D, "Player mode must use the 48-block range");
+        helper.assertTrue(howard.getDetectorRange() == 16D, "The damaged CIWS must use its 16-block range");
         helper.assertTrue(new ItemStack(ModItems.ammo_dgk.get()).getMaxStackSize() == 4, "CIWS belts stack to 4");
 
-        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(60, 2, 2));
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(22, 2, 2));
         zombie.setNoGravity(true);
         zombie.setNoAi(true);
         double distance = howard.getTurretPos().distanceTo(howard.getEntityPos(zombie));
-        helper.assertTrue(distance > 52.8D && distance < 192D, "Fixture distance out of band: " + distance);
+        helper.assertTrue(distance > 17.6D && distance < 64D, "Fixture distance out of band: " + distance);
         helper.assertTrue(!howard.entityInLOS(zombie), "Without a radar the zombie is beyond sight at " + distance);
         for (int i = 0; i < 20; i++) {
             howard.setPower(howard.getMaxPower());
@@ -266,7 +265,7 @@ public final class TurretGameTests {
 
         howard.setPower(howard.getMaxPower());
         TileEntityTurretHoward.serverTick(helper.getLevel(), core, state, howard);
-        helper.assertTrue(howard.target == zombie, "A radar-designated target must stay locked beyond 52.8 blocks");
+        helper.assertTrue(howard.target == zombie, "A radar-designated target must stay locked beyond 17.6 blocks");
 
         zombie.discard();
         howard.setPower(howard.getMaxPower());
@@ -728,11 +727,9 @@ public final class TurretGameTests {
         BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_howard.get());
         TileEntityTurretHoward howard = (TileEntityTurretHoward) helper.getLevel().getBlockEntity(core);
 
-        helper.assertTrue(howard.getDetectorRange() == 300D,
-                "The Howard must use 1.12.2's 300-block machine range");
+        helper.assertTrue(howard.getDetectorRange() == 250D, "The Howard sees 1.7's 250 blocks");
         howard.targetPlayers = true;
-        helper.assertTrue(howard.getDetectorRange() == 48D,
-                "The Howard's player-target mode must use 1.12.2's 48-block range");
+        helper.assertTrue(howard.getDetectorRange() == 250D, "Targeting players must not shrink the Howard's range");
         howard.targetPlayers = false;
 
         helper.assertTrue(howard.getFirstConfigLoaded() == null, "An empty CIWS must report no belt");

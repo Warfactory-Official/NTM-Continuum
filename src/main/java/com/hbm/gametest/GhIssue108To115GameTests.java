@@ -6,7 +6,10 @@ import com.hbm.Constants;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModPwrBlocks;
 import com.hbm.blocks.machine.BlockPWR;
+import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.entity.ModNtmEntities;
+import com.hbm.entity.missile.EntityMissileAntiBallistic;
+import com.hbm.entity.missile.EntityMissileTier1.EntityMissileGeneric;
 import com.hbm.entity.mob.EntityDuck;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.handler.radiation.ChunkRadiationManager;
@@ -14,7 +17,9 @@ import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.items.weapon.sedna.factory.XFactoryCatapult;
 import com.hbm.tileentity.machine.TileEntityBlockPWR;
+import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import com.hbm.tileentity.machine.TileEntityPWRController;
+import com.hbm.tileentity.turret.TileEntityTurretHoward;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.Entities;
 import java.io.IOException;
@@ -30,7 +35,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
-/** GitHub issues 108 to 115: each test states the 1.7 value or the crash it guards against. */
+/** GitHub issues 108 to 119: each test states the 1.7 value or the crash it guards against. */
 public final class GhIssue108To115GameTests {
 
     private GhIssue108To115GameTests() {}
@@ -49,6 +54,10 @@ public final class GhIssue108To115GameTests {
             TESTS.function("gh114_no_rows_with_an_empty_input", 20, () -> GhIssue108To115GameTests::noEmptyInputRows);
     public static final GameTests.Function BULLET_SPREAD =
             TESTS.function("gh115_bullet_scatter_is_the_config_spread", 20, () -> GhIssue108To115GameTests::bulletSpread);
+    public static final GameTests.Function CIWS_MISSILE =
+            TESTS.function("gh117_ciws_tracks_a_descending_missile", 20, () -> GhIssue108To115GameTests::ciwsTracksMissile);
+    public static final GameTests.Function ABM_ACTIVATION =
+            TESTS.function("gh119_abm_climbs_40_ticks_then_locks_from_the_radar_list", 20, () -> GhIssue108To115GameTests::abmActivation);
 
     public static void init() {}
 
@@ -149,6 +158,38 @@ public final class GhIssue108To115GameTests {
         }
         double deviation = Math.sqrt(sum / shots);
         helper.assertTrue(deviation > 0.09D && deviation < 0.11D, "sideways scatter " + deviation + ", expected 0.1");
+        helper.succeed();
+    }
+
+    /** 1.7's flat 250 blocks with players on or off; a missile is a target only on its way down. */
+    private static void ciwsTracksMissile(GameTestHelper helper) {
+        TileEntityTurretHoward howard = new TileEntityTurretHoward(helper.absolutePos(new BlockPos(1, 1, 1)),
+                ModTurretBlocks.turret_howard.get().defaultBlockState());
+        howard.targetPlayers = true;
+        helper.assertTrue(howard.getDetectorRange() == 250D, "range with players on " + howard.getDetectorRange());
+        EntityMissileGeneric missile = new EntityMissileGeneric(helper.getLevel(), 0F, 100F, 0F, 300, 0);
+        helper.assertTrue(!howard.entityAcceptableTarget(missile), "a climbing missile is not a target");
+        missile.setDeltaMovement(0, -1, 0);
+        helper.assertTrue(howard.entityAcceptableTarget(missile), "a descending missile is a target");
+        helper.succeed();
+    }
+
+    /** The missile sits below the ABM, which a box from the ABM's height upward cannot see. */
+    private static void abmActivation(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1));
+        EntityMissileGeneric missile = new EntityMissileGeneric(level, at.getX(), at.getY(), at.getZ(), at.getX() + 300, at.getZ());
+        level.addFreshEntity(missile);
+        TileEntityMachineRadarNT.updateSystem(level.getServer());
+        EntityMissileAntiBallistic abm = new EntityMissileAntiBallistic(level);
+        abm.setPos(at.getX(), at.getY() + 3, at.getZ());
+        for (int i = 0; i < 40; i++) abm.tick();
+        helper.assertTrue(abm.tracking == null && abm.getDeltaMovement().x == 0D, "steered inside the 40-tick climb");
+        helper.assertTrue(abm.getY() > at.getY() + 100, "climbed to " + (abm.getY() - at.getY()));
+        abm.tick();
+        helper.assertTrue(abm.tracking == missile, "must lock onto the radar list's missile, has " + abm.tracking);
+        abm.discard();
+        missile.discard();
         helper.succeed();
     }
 }

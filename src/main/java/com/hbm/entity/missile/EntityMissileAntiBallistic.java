@@ -10,10 +10,10 @@ import dev.golem.core.data.Tags;
 import com.hbm.entity.logic.EntityChunkLoader;
 import com.hbm.entity.logic.IChunkLoader;
 import com.hbm.explosion.ExplosionLarge;
+import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import dev.golem.core.data.CompatEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
-import java.util.List;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -23,35 +23,15 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The anti-ballistic missile, 1.12.2's {@code EntityMissileAntiBallistic}, the only missile that
- * steers.
- *
- * <p>It launches straight up for ten ticks (so it clears the pad), then hunts: every tick without a
- * target it re-scans for the nearest {@link EntityMissileBaseNT} within radar range, and with one it
- * aims at a <em>predicted</em> position, the target's own last-tick displacement extrapolated over the
- * closing time, which is what lets a 1.5-blocks-per-tick interceptor meet a missile moving four times
- * that fast.
- *
- * <p>The kill is a proximity burst, not a collision: inside 15 blocks it takes 51 health off every
- * missile in a 30-block cube, which is one more than a missile's 50 and so guarantees the kill even
- * against several at once.
- *
- * <p>Stealth missiles are skipped by the scan; that is the coating's purpose.
- *
- * <p>Radius 1: like ballistic missiles on the modern nonblocking ticket layer, the ABM claims the 3×3
- * around itself. Its turning path makes that full envelope necessary rather than directional lookahead.
- *
- * <p>Radar: an ABM blip, seen by any radar scanning for missiles, never driving its redstone.
- *
- * <p>Deferred: the {@code particleControl} exhaust trail, and
- * {@code ExplosionLarge.spawnShock}'s lock-on ring (its particle family is unported).
+ * The anti-ballistic missile, the only missile that steers. It climbs for 40 ticks, then picks a missile off the radar
+ * system's list and flies at its predicted position. Stealth missiles are not on offer. The kill is its own blast
+ * within 10 blocks, which also takes out anything flying alongside.
  */
 public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLoader, IMissilePitch,
         IRadarDetectableNT, Owners.Carrier {
@@ -66,8 +46,8 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
 
     /** The base step length. {@code velocity} scales it, ramping from 0 to 6 at 0.1 per tick. */
     private static final double BASE_SPEED = 1.5D;
-    /** Upstream reads this off the radar block; the radar is unported, so its value is inlined. */
-    private static final int RADAR_RANGE = 1000;
+    /** Ticks of straight climb before it steers or can be stopped by a block: about 123 blocks. */
+    private static final int ACTIVATION_TICKS = 40;
 
     public @Nullable Entity tracking;
     public double velocity;
@@ -114,7 +94,7 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
 
         if (velocity < 6) velocity += 0.1;
 
-        if (activationTimer < 10) {
+        if (activationTimer < ACTIVATION_TICKS) {
             activationTimer++;
             setDeltaMovement(getDeltaMovement().x, BASE_SPEED, getDeltaMovement().z);
         } else {
@@ -126,24 +106,9 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
                 ExplosionLarge.spawnShock(level(), getX(), getY(), getZ(), 24, 3F);
             }
 
-            if (this.tracking != null) {
-                double distance = Math.sqrt(this.tracking.distanceToSqr(getX(), getY(), getZ()));
-
-                if (distance < 15) {
-                    // 51 damage: one more than a missile's 50 health, applied to everything in the
-                    // burst radius, so a salvo flying in formation goes down together.
-                    List<Entity> caught = level().getEntities(this,
-                            new AABB(getX() - 15, getY() - 15, getZ() - 15, getX() + 15, getY() + 15, getZ() + 15));
-                    for (Entity entity : caught) {
-                        if (entity instanceof EntityMissileBaseNT target) target.health -= 51;
-                    }
-
-                    discard();
-                    ExplosionLarge.explode(level(), thrower, Protection.Source.of(this), getX(), getY(), getZ(), 20F, true, false, false);
-                    return;
-                }
-
+            if (this.tracking != null && this.tracking.isAlive()) {
                 this.aimAtTarget();
+                if (isRemoved()) return;
             } else if (this.tickCount > 600) {
                 discard();
                 return;
@@ -166,21 +131,13 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
         this.setXRot(pitch);
     }
 
-    /**
-     * Nearest live missile within radar range, ignoring stealth airframes.
-     *
-     * <p>Upstream never updates {@code dist} inside the loop, so this actually picks the <em>last</em>
-     * candidate under 1000 blocks rather than the nearest. Kept as upstream has it: fixing it would change
-     * interception behaviour that players have tuned batteries around.
-     */
+    /** 1.7 never updates {@code dist} in the loop, so the last missile under 1000 blocks wins, not the nearest. */
     private void targetMissile() {
         Entity closest = null;
         double dist = 1_000;
 
-        AABB box = new AABB(getX() - RADAR_RANGE, getY(), getZ() - RADAR_RANGE,
-                getX() + RADAR_RANGE, getY() + RADAR_RANGE, getZ() + RADAR_RANGE);
-
-        for (Entity e : level().getEntities(this, box)) {
+        for (Entity e : TileEntityMachineRadarNT.matchingEntities) {
+            if (e.level() != level()) continue;
             if (!(e instanceof EntityMissileBaseNT)) continue;
             if (e instanceof EntityMissileStealth) continue;
 
@@ -204,7 +161,7 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
                 target.getZ() + (target.getZ() - target.zOld) * intercept);
         Vec3 heading = new Vec3(predicted.x - getX(), predicted.y - getY(), predicted.z - getZ()).normalize();
 
-        if (delta.length() < 10 && activationTimer >= 40) {
+        if (delta.length() < 10) {
             discard();
             ExplosionLarge.explode(level(), thrower, Protection.Source.of(this), getX(), getY(), getZ(), 15F, true, false, false);
             return;
@@ -222,7 +179,7 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
 
         if (hit.getType() != HitResult.Type.MISS) {
-            if (this.activationTimer >= 10) {
+            if (this.activationTimer >= ACTIVATION_TICKS) {
                 discard();
                 ExplosionLarge.explode(level(), thrower, Protection.Source.of(this), getX(), getY(), getZ(), 20F, true, false, false);
             }

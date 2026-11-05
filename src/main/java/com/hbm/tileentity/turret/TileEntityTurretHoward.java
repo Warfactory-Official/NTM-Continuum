@@ -96,7 +96,7 @@ public class TileEntityTurretHoward extends TileEntityTurretRadarCommandBase {
 
     @Override
     public double getDetectorRange() {
-        return targetPlayers ? 48D : 300D;
+        return 250D;
     }
 
     @Override
