@@ -1,5 +1,9 @@
 package com.hbm.handler.ability;
 
+import com.hbm.blocks.bomb.DetCord;
+import com.hbm.blocks.generic.BlockMetalFence;
+import com.hbm.blocks.network.BlockCable;
+import com.hbm.blocks.network.PneumoTube;
 import dev.golem.core.world.Explosions;
 import com.hbm.api.registry.NamedRegistry;
 import com.hbm.config.ToolConfig;
@@ -16,6 +20,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CrossCollisionBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -137,7 +143,12 @@ public interface IToolAreaAbility extends IBaseAbility {
         }
 
         private boolean sameMeta(BlockState a, BlockState b) {
-            if (a.getBlock() == Blocks.REDSTONE_ORE || a.getBlock() == Blocks.DEEPSLATE_REDSTONE_ORE) return true;
+            Block block = a.getBlock();
+            if (block == Blocks.REDSTONE_ORE || block == Blocks.DEEPSLATE_REDSTONE_ORE) return true;
+            // these take their shape from their neighbours: no 1.7 metadata, but one state per set of arms
+            if (block instanceof BlockCable || block instanceof PneumoTube || block instanceof DetCord
+                    || block instanceof BlockMetalFence || block instanceof CrossCollisionBlock
+                    || block instanceof WallBlock) return true;
             return a.equals(b);
         }
     };

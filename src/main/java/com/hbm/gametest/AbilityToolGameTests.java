@@ -1,6 +1,10 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.blocks.ModExplosivesBlocks;
+import com.hbm.blocks.ModPneumaticBlocks;
+import com.hbm.blocks.ModSecurityBlocks;
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.handler.ability.IToolAreaAbility;
 import com.hbm.handler.ability.IToolHarvestAbility;
 import com.hbm.handler.ability.IWeaponAbility;
@@ -36,6 +40,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.phys.AABB;
 
 import java.util.List;
@@ -189,6 +194,10 @@ public final class AbilityToolGameTests {
             TESTS.function("rc_tool_hammer_flat", 120, 14, () -> AbilityToolGameTests::rcHammerFlat);
     public static final GameTests.Function RC_VEIN =
             TESTS.function("rc_tool_vein_radius", 60, 14, () -> AbilityToolGameTests::rcVeinRadius);
+    public static final GameTests.Function VEIN_SHAPES =
+            TESTS.function("gh120_vein_miner_follows_neighbour_shapes", 60, 14, () -> AbilityToolGameTests::veinFollowsShapes);
+    public static final GameTests.Function VEIN_LOGS =
+            TESTS.function("gh120_vein_miner_keeps_log_axis", 60, 14, () -> AbilityToolGameTests::veinKeepsLogAxis);
     public static final GameTests.Function RC_HARVEST =
             TESTS.function("rc_tool_harvest_abilities", 120, 14, () -> AbilityToolGameTests::rcHarvest);
     public static final GameTests.Function RC_EXPLOSION =
@@ -297,6 +306,44 @@ public final class AbilityToolGameTests {
             }
             helper.assertTrue(removed == 25, face + ": the plane is 25 blocks, was " + removed);
         }
+        helper.succeed();
+    }
+
+    /** 1.7 metadata is 0 on these whatever their arms, so a T of mixed shapes goes as one vein, with silk touch on. */
+    public static void veinFollowsShapes(GameTestHelper helper) {
+        ServerPlayer player = survivor(helper);
+        holding(player, ModAbilityToolItems.cobalt_pickaxe.get(),
+                new ToolPreset(IToolAreaAbility.RECURSION, 1, IToolHarvestAbility.SILK, 0));
+        List<Block> blocks = List.of(ModMachineBlocks.red_cable.get(), ModPneumaticBlocks.PNEUMATIC_TUBE.get(),
+                ModExplosivesBlocks.det_cord.get(), ModSecurityBlocks.fence_metal.get(), Blocks.OAK_FENCE, Blocks.COBBLESTONE_WALL);
+        int z = 2;
+        for (Block block : blocks) {
+            BlockPos centre = helper.absolutePos(new BlockPos(5, 3, z));
+            List<BlockPos> shape = List.of(centre, centre.east(), centre.east(2), centre.west(), centre.west(2), centre.above());
+            for (BlockPos p : shape) helper.getLevel().setBlock(p, block.defaultBlockState(), 3);
+            helper.assertTrue(helper.getLevel().getBlockState(centre) != helper.getLevel().getBlockState(centre.east(2)),
+                    block + ": the fixture must hold different shapes");
+            player.gameMode.destroyBlock(centre.west(2));
+            for (BlockPos p : shape) {
+                helper.assertTrue(helper.getLevel().getBlockState(p).isAir(), block + " at " + p + " survived the vein");
+            }
+            z += 2;
+        }
+        helper.succeed();
+    }
+
+    /** 1.7's log metadata holds the axis, so a rotated log is another block to the vein miner. */
+    public static void veinKeepsLogAxis(GameTestHelper helper) {
+        ServerPlayer player = survivor(helper);
+        holding(player, ModAbilityToolItems.cobalt_axe.get(),
+                new ToolPreset(IToolAreaAbility.RECURSION, 1, IToolHarvestAbility.NONE, 0));
+        BlockPos start = helper.absolutePos(new BlockPos(5, 3, 5));
+        helper.getLevel().setBlock(start, Blocks.OAK_LOG.defaultBlockState(), 3);
+        helper.getLevel().setBlock(start.above(), Blocks.OAK_LOG.defaultBlockState(), 3);
+        helper.getLevel().setBlock(start.east(), Blocks.OAK_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X), 3);
+        player.gameMode.destroyBlock(start);
+        helper.assertTrue(helper.getLevel().getBlockState(start.above()).isAir(), "a log on the same axis follows");
+        helper.assertTrue(helper.getLevel().getBlockState(start.east()).is(Blocks.OAK_LOG), "a rotated log does not");
         helper.succeed();
     }
 

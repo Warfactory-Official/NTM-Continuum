@@ -1,5 +1,7 @@
 package com.hbm.items.tool;
 
+import java.util.ArrayList;
+import java.util.List;
 import com.hbm.items.ModEntityItems;
 import com.hbm.entity.cart.EntityMinecartCrate;
 import com.hbm.entity.cart.EntityMinecartDestroyer;
@@ -40,6 +42,17 @@ public class ItemModMinecart extends Item {
         ItemStack stack = ModEntityItems.cart.stack(cart);
         ModDataComponents.CART_BASE.set(stack, base);
         return stack;
+    }
+
+    /** 1.7 getSubItems: every cart on every chassis it supports. */
+    public static List<ItemStack> subItems() {
+        List<ItemStack> list = new ArrayList<>();
+        for (EnumMinecart cart : EnumMinecart.VALUES) {
+            for (EnumCartBase base : EnumCartBase.VALUES) {
+                if (cart.supportsBase(base)) list.add(createCartItem(base, cart));
+            }
+        }
+        return list;
     }
 
     public static EnumMinecart getCartType(ItemStack stack) {

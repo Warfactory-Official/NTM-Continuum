@@ -7,6 +7,8 @@ import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModPwrBlocks;
 import com.hbm.blocks.machine.BlockPWR;
 import com.hbm.blocks.turret.ModTurretBlocks;
+import com.hbm.creativetabs.HbmTab;
+import com.hbm.creativetabs.ModTabs;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.missile.EntityMissileAntiBallistic;
 import com.hbm.entity.missile.EntityMissileTier1.EntityMissileGeneric;
@@ -15,6 +17,16 @@ import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
+import com.hbm.items.ModEntityItems;
+import com.hbm.items.ModFoodItems;
+import com.hbm.items.ModMachineItems;
+import com.hbm.items.ModNuclearMiscItems;
+import com.hbm.items.tool.ItemDrone;
+import com.hbm.items.tool.ItemModMinecart;
+import com.hbm.items.weapon.grenade.ItemGrenadeExtra;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling;
+import com.hbm.items.weapon.grenade.ItemGrenadeFuze;
+import com.hbm.items.weapon.grenade.ItemGrenadeShell;
 import com.hbm.items.weapon.sedna.factory.XFactoryCatapult;
 import com.hbm.tileentity.machine.TileEntityBlockPWR;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
@@ -32,6 +44,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
@@ -54,6 +68,10 @@ public final class GhIssue108To115GameTests {
             TESTS.function("gh114_no_rows_with_an_empty_input", 20, () -> GhIssue108To115GameTests::noEmptyInputRows);
     public static final GameTests.Function BULLET_SPREAD =
             TESTS.function("gh115_bullet_scatter_is_the_config_spread", 20, () -> GhIssue108To115GameTests::bulletSpread);
+    public static final GameTests.Function CHIP_TAB =
+            TESTS.function("gh117_turret_chip_is_in_the_weapons_tab", 20, () -> GhIssue108To115GameTests::chipInTab);
+    public static final GameTests.Function TAB_AUDIT =
+            TESTS.function("gh117_items_1_7_lists_are_in_a_tab", 20, () -> GhIssue108To115GameTests::tabAudit);
     public static final GameTests.Function CIWS_MISSILE =
             TESTS.function("gh117_ciws_tracks_a_descending_missile", 20, () -> GhIssue108To115GameTests::ciwsTracksMissile);
     public static final GameTests.Function ABM_ACTIVATION =
@@ -159,6 +177,38 @@ public final class GhIssue108To115GameTests {
         double deviation = Math.sqrt(sum / shots);
         helper.assertTrue(deviation > 0.09D && deviation < 0.11D, "sideways scatter " + deviation + ", expected 0.1");
         helper.succeed();
+    }
+
+    /** JEI lists what the creative tabs show, so an item in no tab cannot be found in either. */
+    private static void chipInTab(GameTestHelper helper) {
+        boolean weapons = false;
+        for (ItemStack stack : ModTabs.displayStacks(ModTabs.get(HbmTab.WEAPONS).getKey())) {
+            weapons |= stack.is(ModMachineItems.turret_chip.get());
+        }
+        helper.assertTrue(weapons, "the turret chip is in 1.7's weapon tab");
+        helper.succeed();
+    }
+
+    /** Items 1.7's creative tabs show, each family through its {@code getSubItems}. */
+    private static void tabAudit(GameTestHelper helper) {
+        List<ItemStack> weapons = ModTabs.displayStacks(ModTabs.get(HbmTab.WEAPONS).getKey());
+        List<ItemStack> machines = ModTabs.displayStacks(ModTabs.get(HbmTab.MACHINES).getKey());
+        List<ItemStack> consumables = ModTabs.displayStacks(ModTabs.get(HbmTab.CONSUMABLES).getKey());
+        for (var shell : ItemGrenadeShell.EnumGrenadeShell.values()) assertListed(helper, weapons, ModEntityItems.grenade_shell.get(shell));
+        for (var filling : ItemGrenadeFilling.EnumGrenadeFilling.values()) assertListed(helper, weapons, ModEntityItems.grenade_filling.get(filling));
+        for (var fuze : ItemGrenadeFuze.EnumGrenadeFuze.values()) assertListed(helper, weapons, ModEntityItems.grenade_fuze.get(fuze));
+        for (var extra : ItemGrenadeExtra.EnumGrenadeExtra.values()) assertListed(helper, weapons, ModEntityItems.grenade_extra.get(extra));
+        for (var drone : ItemDrone.EnumDroneType.values()) assertListed(helper, machines, ModEntityItems.drone.get(drone));
+        assertListed(helper, consumables, ModFoodItems.fooditem.get());
+        assertListed(helper, consumables, ModFoodItems.med_schizophrenia.get());
+        assertListed(helper, consumables, ModNuclearMiscItems.QUARTZ_PLUTONIUM.get());
+        int carts = ItemModMinecart.subItems().size();
+        helper.assertTrue(carts == 12, "1.7 lists 12 cart and chassis pairs, here " + carts);
+        helper.succeed();
+    }
+
+    private static void assertListed(GameTestHelper helper, List<ItemStack> tab, Item item) {
+        helper.assertTrue(tab.stream().anyMatch(stack -> stack.is(item)), item + " is in no tab 1.7 lists it in");
     }
 
     /** 1.7's flat 250 blocks with players on or off; a missile is a target only on its way down. */

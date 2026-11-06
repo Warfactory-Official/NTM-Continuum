@@ -82,7 +82,7 @@ public final class ModNuclearMiscItems {
             .tab(HbmTab.BOMBS);
     /** 1.7: no creative tab. */
     public static final RegistryObject<ItemModQuartz> QUARTZ_PLUTONIUM = REG.item("quartz_plutonium", ItemModQuartz::new)
-            .transform(Presets.sprite());
+            .transform(Presets.sprite()).tab(HbmTab.CONSUMABLES);
     public static final RegistryObject<ItemReactorSensor> REACTOR_SENSOR = REG.item("reactor_sensor",
                     ItemReactorSensor::new, p -> p.stacksTo(1))
             .transform(Presets.sprite())

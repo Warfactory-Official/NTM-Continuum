@@ -1,5 +1,9 @@
 package com.hbm.items;
 
+import dev.golem.core.Ids;
+import dev.golem.core.registry.Tabs;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import java.util.function.Function;
@@ -92,7 +96,8 @@ public final class ModEntityItems {
     public static final ItemFamily<ItemDrone.EnumDroneType, ItemDrone> drone = ItemFamily.of(
             ItemDrone.EnumDroneType.class, d -> REG.item("drone_" + d.name().toLowerCase(Locale.ROOT),
                             p -> new ItemDrone(p, d), p -> p)
-                    .transform(Presets.sprite("hbm:items/drone." + d.name().toLowerCase(Locale.ROOT))));
+                    .transform(Presets.sprite("hbm:items/drone." + d.name().toLowerCase(Locale.ROOT)))
+                    .tab(HbmTab.MACHINES));
 
     // Grenades (1.7 ModItems:3590 and the universal grenade parts)
     public static final RegistryObject<ItemGrenadeDynamite> stick_dynamite = REG.item("stick_dynamite",
@@ -121,7 +126,8 @@ public final class ModEntityItems {
     private static <I extends Item> RegistryObject<I> grenadePart(String base, Enum<?> constant,
                                                                   Function<Item.Properties, I> factory) {
         String name = constant.name().toLowerCase(Locale.ROOT);
-        return REG.item(base + "_" + name, factory, p -> p).transform(Presets.sprite("hbm:items/" + base + "." + name));
+        return REG.item(base + "_" + name, factory, p -> p).transform(Presets.sprite("hbm:items/" + base + "." + name))
+                .tab(HbmTab.WEAPONS);
     }
 
     // Dispersers (1.7 ModItems:3881; the empty canister/gland items already exist in ModItems)
@@ -148,5 +154,9 @@ public final class ModEntityItems {
                     "battery_creative", ItemBatteryCreative::new, p -> p.stacksTo(1))
             .transform(Presets.sprite("hbm:items/battery_creative_new")).tab(HbmTab.CONTROL);
 
-    public static void init() {}
+    public static void init() {
+        // 1.7's tabTransport beside vanilla's minecarts, which live in this tab now. By id, as ModSpawnEggs.
+        Tabs.modifyEntries(ResourceKey.create(Registries.CREATIVE_MODE_TAB, Ids.of("minecraft", "tools_and_utilities")),
+                entries -> ItemModMinecart.subItems().forEach(entries::accept));
+    }
 }

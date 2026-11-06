@@ -53,7 +53,8 @@ public final class ModMachineItems {
     /** Turret targeting chip: the biometry card a turret accepts in its chip slot. */
     public static final RegistryObject<ItemTurretChip> turret_chip = REG.<ItemTurretChip>item(
             "turret_chip", ItemTurretChip::new, p -> p.stacksTo(1))
-            .transform(Presets.sprite());
+            .transform(Presets.sprite())
+            .tab(HbmTab.WEAPONS);
 
     /** Handheld biometric scanner: writes the holder's name onto a turret whitelist. */
     public static final RegistryObject<ItemTurretBiometry> turret_biometry = REG.<ItemTurretBiometry>item(

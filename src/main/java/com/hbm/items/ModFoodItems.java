@@ -58,7 +58,7 @@ public final class ModFoodItems {
     public static final RegistryObject<ItemLemon> med_ptsd = food("med_ptsd", 0, 0F, false, HbmTab.CONSUMABLES,
             () -> List.of(Effects.instance(MobEffects.HUNGER, 50, 49)), false, false)
             .transform(Presets.sprite());
-    public static final RegistryObject<ItemLemon> med_schizophrenia = food("med_schizophrenia", 0, 0F, false, null)
+    public static final RegistryObject<ItemLemon> med_schizophrenia = food("med_schizophrenia", 0, 0F, false, HbmTab.CONSUMABLES)
             .transform(Presets.sprite());
     public static final RegistryObject<ItemLemon> loops = food("loops", 4, 5F, false, HbmTab.CONSUMABLES)
             .transform(Presets.sprite());
@@ -70,7 +70,7 @@ public final class ModFoodItems {
                     Effects.instance(Effects.strength(), 20 * 20, 2)),
             true, true)
             .transform(Presets.sprite());
-    public static final RegistryObject<ItemLemon> fooditem = food("fooditem", 2, 5F, false, null)
+    public static final RegistryObject<ItemLemon> fooditem = food("fooditem", 2, 5F, false, HbmTab.CONSUMABLES)
             .transform(Presets.sprite());
     public static final RegistryObject<ItemLemon> twinkie = food("twinkie", 3, 5F, false, HbmTab.CONSUMABLES)
             .transform(Presets.sprite());
