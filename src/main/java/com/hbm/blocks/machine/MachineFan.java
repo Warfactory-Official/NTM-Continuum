@@ -84,14 +84,6 @@ public class MachineFan extends CompatBlock implements TickingBlock, IToolable, 
     }
 
     @Override
-    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
-                                     boolean movedByPiston) {
-        if (level.getBlockEntity(pos) instanceof TileEntityFan fan) {
-            fan.setIndirectlyPowered(level.hasNeighborSignal(pos));
-        }
-    }
-
-    @Override
     public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, Vec3 hit,
                            InteractionHand hand, ToolType tool) {
         if (tool == ToolType.SCREWDRIVER) {
@@ -141,33 +133,23 @@ public class MachineFan extends CompatBlock implements TickingBlock, IToolable, 
          * {@link com.hbm.api.environment.Environment#pressure}). Decided by the server and synced; always true on Earth.
          */
         public boolean hasAtmosphere = true;
-        private boolean indirectlyPowered;
-        private boolean powerStateInitialized;
 
         public TileEntityFan(BlockEntityType<?> type, BlockPos pos, BlockState state) {
             super(type, pos, state);
         }
 
-        private void setIndirectlyPowered(boolean powered) {
-            indirectlyPowered = powered;
-            powerStateInitialized = true;
-        }
-
-        private void refreshPowerState(Level level) {
-            if (!powerStateInitialized) setIndirectlyPowered(level.hasNeighborSignal(worldPosition));
-        }
-
         public static void tick(Level level, BlockPos pos, BlockState state, TileEntityFan fan) {
-            fan.refreshPowerState(level);
             fan.prevSpin = fan.spin;
 
-            if (fan.indirectlyPowered) {
+            // Read every tick on both sides, as 1.7: a client gets no neighbour updates, and the player moves there.
+            boolean powered = level.hasNeighborSignal(pos);
+            if (powered) {
                 if (!level.isClientSide()) {
                     fan.hasAtmosphere = Environment.pressure(level, pos) > 0.01D;
                 }
             }
 
-            if (fan.indirectlyPowered && fan.hasAtmosphere) {
+            if (powered && fan.hasAtmosphere) {
                 // The legacy TE read metadata from the world on every update; do not trust a cached BE state.
                 // A client may still tick the block entity for a tick while its chunk is being dropped (the world
                 // answers void air there): 1.7 metadata read 0 off an unloaded chunk; here the fan just skips the tick.
@@ -214,7 +196,7 @@ public class MachineFan extends CompatBlock implements TickingBlock, IToolable, 
 
             }
 
-            if (fan.indirectlyPowered) fan.spin += 30F;
+            if (powered) fan.spin += 30F;
 
             if (fan.spin >= 360F) {
                 fan.prevSpin -= 360F;

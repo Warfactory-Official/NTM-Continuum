@@ -40,9 +40,6 @@ import org.jspecify.annotations.Nullable;
  */
 public class Watz extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
-    /** Suppresses the component drop while the reactor is tearing itself apart in a meltdown. */
-    public static boolean drop = true;
-
     public Watz(Properties properties) {
         super(properties);
     }
@@ -77,7 +74,7 @@ public class Watz extends BlockMultiblockMachine implements IFluidConnectorBlock
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         // Not while a sub-level system carries the reactor: it lives on at the new position and must not drop its kit.
-        if (!level.isClientSide() && !state.getValue(CELL) && drop && !isSafeRem() && !SubLevels.isMoving(level)) {
+        if (!level.isClientSide() && !state.getValue(CELL) && !isSafeRem() && !SubLevels.isMoving(level)) {
             drop(level, pos, new ItemStack(ModMachineBlocks.watz_casing_tooled.get(), 48));
             for (int i = 0; i < 3; i++) {
                 drop(level, pos, new ItemStack(ModAutogenItems.get(MaterialShapes.BOLT, Mats.MAT_DURA), 64));

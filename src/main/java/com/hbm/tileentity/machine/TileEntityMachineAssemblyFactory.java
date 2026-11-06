@@ -394,6 +394,12 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     @Override public FluidTankNTM[] getAllTanks() { return allTanks; }
 
     @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof ContainerMachineAssemblyFactory menu
+                && menu.getFactory() == this && menu.stillValid(player);
+    }
+
+    @Override
     public void receiveControl(CompoundTag data) {
         if (!data.contains("index") || !data.contains("selection")) return;
         int index = Tags.getIntOr(data, "index", -1);

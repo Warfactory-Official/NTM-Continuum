@@ -277,11 +277,16 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements M
     }
 
     @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof ContainerMachinePrecAss menu
+                && menu.getAssembler() == this && menu.stillValid(player);
+    }
+
+    @Override
     public void receiveControl(CompoundTag data) {
         if (data.contains("index") && data.contains("selection") && Tags.getIntOr(data, "index", 0) == 0) {
-            assemblerModule.recipe = Tags.getStringOr(data, "selection", "null");
-            assemblerModule.progress = 0D;
-            setChanged();
+            assemblerModule.setRecipe(Tags.getStringOr(data, "selection", "null"), false);
+            markChanged();
         }
     }
 

@@ -12,7 +12,6 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.machine.Watz;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerWatz;
@@ -69,7 +68,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * the ordering, which is load-bearing: reaction flux propagates downward between segments.
  *
  * <p>1.7's OpenComputers component is served to CC: Tweaked by
- * {@code com.hbm.compat.computer.machine.WatzPeripheral}. Known deviation: the meltdown's shrapnel spray is currently the mud columns alone.
+ * {@code com.hbm.compat.computer.machine.WatzPeripheral}.
  */
 public class TileEntityWatz extends TileEntityMachineBase
         implements IFluidStandardTransceiverMK2, WorldlyContainer, MenuProvider, IControlReceiver, IRORValueProvider {
@@ -186,9 +185,9 @@ public class TileEntityWatz extends TileEntityMachineBase
         // Cooling runs bottom to top, the reaction top to bottom.
         for (int i = segments.size() - 1; i >= 0; i--) segments.get(i).updateCoolant(te.sharedTanks);
 
-        te.updateReaction(null, te.sharedTanks, turnedOn);
+        int mudOverflow = te.updateReaction(null, te.sharedTanks, turnedOn);
         for (int i = 1; i < segments.size(); i++) {
-            segments.get(i).updateReaction(segments.get(i - 1), te.sharedTanks, turnedOn);
+            mudOverflow += segments.get(i).updateReaction(segments.get(i - 1), te.sharedTanks, turnedOn);
         }
 
         for (TileEntityWatz segment : segments) {
@@ -214,9 +213,16 @@ public class TileEntityWatz extends TileEntityMachineBase
         }
 
         // Mud that no tank could absorb has nowhere to go: the column ruptures.
-        if (te.sharedTanks[2].getFill() > 0) {
+        if (mudOverflow > 0) {
             te.meltdown(level, pos);
         }
+    }
+
+    /** Adds reaction mud, answering what did not fit: 1.7's unclamped setFill left that in the shared tank. */
+    private static int addMud(FluidTankNTM mud, double amount) {
+        int total = mud.getFill() + (int) Math.round(amount);
+        mud.setFill(total);
+        return Math.max(total - mud.getMaxFill(), 0);
     }
 
     /** Basic sanity checking; usually a no-op except when NBT loading borks. */
@@ -248,8 +254,10 @@ public class TileEntityWatz extends TileEntityMachineBase
      * way every tick instead of following whatever order the segments happened to be placed in.
      *
      * @param above the segment directly above, or null for the topmost one
+     * @return the mud this segment made that the shared tank could not hold
      */
-    private void updateReaction(TileEntityWatz above, FluidTankNTM[] shared, boolean turnedOn) {
+    private int updateReaction(TileEntityWatz above, FluidTankNTM[] shared, boolean turnedOn) {
+        int mudOverflow = 0;
         if (turnedOn) {
             List<ItemStack> pellets = new ArrayList<>();
             for (int i = 0; i < SLOTS; i++) {
@@ -272,7 +280,7 @@ public class TileEntityWatz extends TileEntityMachineBase
                 ItemWatzPellet.setYield(stack, ItemWatzPellet.getYield(stack) - burn);
                 addedFlux += burn;
                 addedHeat += type.heat() * burn;
-                shared[2].setFill(shared[2].getFill() + (int) Math.round(type.mud() * burn));
+                mudOverflow += addMud(shared[2], type.mud() * burn);
             }
 
             for (ItemStack stack : pellets) {
@@ -281,7 +289,7 @@ public class TileEntityWatz extends TileEntityMachineBase
                 double absorb = type.absorb().get().effonix(baseFlux + fluxLastReaction);
                 addedHeat += absorb;
                 ItemWatzPellet.setYield(stack, ItemWatzPellet.getYield(stack) - absorb);
-                shared[2].setFill(shared[2].getFill() + (int) Math.round(type.mud() * absorb));
+                mudOverflow += addMud(shared[2], type.mud() * absorb);
             }
 
             this.heat += (int) addedHeat;
@@ -319,6 +327,7 @@ public class TileEntityWatz extends TileEntityMachineBase
                 }
             }
         }
+        return mudOverflow;
     }
 
     private static boolean isFreshPellet(ItemStack stack) {
@@ -399,8 +408,7 @@ public class TileEntityWatz extends TileEntityMachineBase
     }
 
     private void disassemble(Level level, BlockPos pos) {
-        // The reactor is being destroyed, not mined: no component drop.
-        Watz.drop = false;
+        // 1.7 overwrites the core with mud through setBlock, which runs its breakBlock: the kit and the fuel drop.
         BlockMultiblockCore.withoutTeardown(() -> {
             Block mud = ModHazardBlocks.mud_block.get();
             for (int i = 0; i < 3; i++) level.setBlock(pos.above(i), mud.defaultBlockState(), 3);
@@ -427,7 +435,6 @@ public class TileEntityWatz extends TileEntityMachineBase
             setBrokenColumn(level, pos, 1, casing, -2, 2);
             setBrokenColumn(level, pos, 1, casing, -2, -2);
         });
-        Watz.drop = true;
 
         // 1.7 achWatzBoom (TileEntityWatz:529): every player in the core's box grown by 50
         if (level instanceof ServerLevel server) {
