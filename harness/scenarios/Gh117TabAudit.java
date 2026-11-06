@@ -6,7 +6,7 @@ import dev.golem.harness.api.Scenario;
 public final class Gh117TabAudit implements Scenario {
 
     private static final String[][] SEARCHES = {
-            {"Cart", "carts"}, {"Transport Drone", "drones"}, {"Grenade", "grenade-parts"}, {"Plutonic Quartz", "quartz"}};
+            {"Cart", "carts"}, {"Transport Drone", "drones"}, {"Grenade Shell", "grenade-parts"}, {"Plutonic Quartz", "quartz"}};
 
     @Override
     public void run(Client c) throws Exception {
@@ -23,9 +23,13 @@ public final class Gh117TabAudit implements Scenario {
         double w = 2 * screen.get("left").getAsDouble() + screen.get("image_width").getAsDouble();
         double h = 2 * screen.get("top").getAsDouble() + screen.get("image_height").getAsDouble();
         for (String[] search : SEARCHES) {
-            c.click(w - 85, h - 16);
+            c.click(w - 40, h - 16);
             c.waitTicks(5);
-            for (int i = 0; i < 20; i++) c.key("backspace");
+            for (int i = 0; i < 20; i++) {
+                c.key("backspace");
+                c.waitTicks(2);
+            }
+            c.waitTicks(10);
             c.type(search[0]);
             c.waitTicks(20);
             c.mouseMove(2, 2);
