@@ -66,7 +66,6 @@ public final class ModIngredientItems {
                     (Item.Properties p) -> new ItemPlateFuel(p.stacksTo(1), type.lifeTime, type.function, type.reactivity))
                     .transform(Presets.sprite());
             PLATE_FUELS.put(type, item);
-            ModTabs.addTo(HbmTab.CONTROL, item);
         }
     }
 

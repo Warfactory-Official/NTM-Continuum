@@ -254,7 +254,7 @@ public final class ModItems {
     public static final RegistryObject<Item> magnet_circular = item("magnet_circular", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> centrifuge_element = item("centrifuge_element", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> reactor_core = item("reactor_core", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<Item> coal_eternal = item("coal_eternal", HbmTab.CONTROL).transform(Presets.sprite());
+    public static final RegistryObject<Item> coal_eternal = REG.item("coal_eternal").transform(Presets.sprite());
     public static final RegistryObject<Item> solid_fuel_bf = item("solid_fuel_bf", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> solid_fuel_presto_bf = item("solid_fuel_presto_bf", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> solid_fuel_presto_triplet_bf = item("solid_fuel_presto_triplet_bf", HbmTab.MATERIALS).transform(Presets.sprite());
@@ -274,8 +274,8 @@ public final class ModItems {
     public static final RegistryObject<Item> cap_korl = item("cap_korl", HbmTab.CONSUMABLES).transform(Presets.sprite());
     public static final RegistryObject<Item> cap_fritz = item("cap_fritz", HbmTab.CONSUMABLES).transform(Presets.sprite());
     public static final RegistryObject<Item> ring_pull = item("ring_pull", HbmTab.CONSUMABLES).transform(Presets.sprite());
-    public static final RegistryObject<Item> bottle_empty = item("bottle_empty", HbmTab.CONSUMABLES).transform(Presets.sprite());
-    public static final RegistryObject<Item> bottle2_empty = item("bottle2_empty", HbmTab.CONSUMABLES).transform(Presets.sprite());
+    public static final RegistryObject<Item> bottle_empty = REG.item("bottle_empty").transform(Presets.sprite());
+    public static final RegistryObject<Item> bottle2_empty = REG.item("bottle2_empty").transform(Presets.sprite());
     public static final RegistryObject<Item> egg_glyphid = item("egg_glyphid", HbmTab.CONSUMABLES).transform(Presets.sprite());
     public static final RegistryObject<Item> can_key = item("can_key", HbmTab.CONSUMABLES).transform(Presets.sprite());
     public static final RegistryObject<Item> coin_token = item("coin_token", HbmTab.CONSUMABLES).transform(Presets.sprite());
@@ -304,7 +304,7 @@ public final class ModItems {
     public static final RegistryObject<Item> plate_dura_steel = item("plate_dura_steel", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> plate_gunmetal = item("plate_gunmetal", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> plate_weaponsteel = item("plate_weaponsteel", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<Item> template_folder = item("template_folder", HbmTab.TEMPLATES, p -> p.stacksTo(1)).transform(Presets.sprite());
+    public static final RegistryObject<Item> template_folder = REG.simpleItem("template_folder", p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<Item> journal_pip = item("journal_pip", HbmTab.TEMPLATES, p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<Item> journal_bj = item("journal_bj", HbmTab.TEMPLATES, p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<Item> journal_silver = item("journal_silver", HbmTab.TEMPLATES, p -> p.stacksTo(1)).transform(Presets.sprite());
@@ -353,7 +353,7 @@ public final class ModItems {
     public static final RegistryObject<Item> coil_copper = item("coil_copper", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> coil_copper_torus = item("coil_copper_torus", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> assembly_nuke = item("assembly_nuke", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<Item> holotape_damaged = item("holotape_damaged", HbmTab.CONTROL).transform(Presets.sprite());
+    public static final RegistryObject<Item> holotape_damaged = REG.item("holotape_damaged").transform(Presets.sprite());
     public static final RegistryObject<Item> debris_graphite = item("debris_graphite", HbmTab.CONTROL).transform(Presets.sprite());
     public static final RegistryObject<Item> debris_metal = item("debris_metal", HbmTab.CONTROL).transform(Presets.sprite());
     public static final RegistryObject<Item> debris_fuel = item("debris_fuel", HbmTab.CONTROL).transform(Presets.sprite());
@@ -740,7 +740,7 @@ public final class ModItems {
     public static final RegistryObject<ItemCustomLore> gem_volcanic = lore("gem_volcanic", HbmTab.MATERIALS, p -> p.rarity(Rarity.UNCOMMON)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> gem_sodalite = lore("gem_sodalite", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> upgrade_template = lore("upgrade_template", HbmTab.MATERIALS, p -> p.stacksTo(1)).transform(Presets.sprite());
-    public static final RegistryObject<ItemCustomLore> circuit_star = lore("circuit_star", HbmTab.CONTROL, p -> p.rarity(Rarity.UNCOMMON)).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> circuit_star = REG.item("circuit_star", ItemCustomLore::new, p -> p.rarity(Rarity.UNCOMMON)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> coil_magnetized_tungsten = lore("coil_magnetized_tungsten", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> ammo_dgk = lore("ammo_dgk", HbmTab.WEAPONS, p -> p.stacksTo(4)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> charge_railgun = lore("charge_railgun", HbmTab.WEAPONS, p -> p.stacksTo(1)).transform(Presets.sprite());
@@ -751,10 +751,10 @@ public final class ModItems {
     public static final RegistryObject<ItemCustomLore> rune_jera = rune("rune_jera").transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> rune_thurisaz = rune("rune_thurisaz").transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> crystal_energy = lore("crystal_energy", HbmTab.CONTROL, p -> p.stacksTo(1)).transform(Presets.sprite());
-    public static final RegistryObject<ItemCustomLore> key_red = lore("key_red", HbmTab.CONTROL, p -> p.stacksTo(1)).transform(Presets.sprite());
-    public static final RegistryObject<ItemCustomLore> key_red_cracked = lore("key_red_cracked", HbmTab.CONTROL, p -> p.stacksTo(1)).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> key_red = REG.item("key_red", ItemCustomLore::new, p -> p.stacksTo(1)).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> key_red_cracked = REG.item("key_red_cracked", ItemCustomLore::new, p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> pin = lore("pin", HbmTab.CONSUMABLES, p -> p.stacksTo(8)).transform(Presets.sprite());
-    public static final RegistryObject<ItemCustomLore> mech_key = lore("mech_key", HbmTab.CONSUMABLES, p -> p.stacksTo(1)).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> mech_key = REG.item("mech_key", ItemCustomLore::new, p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> ams_muzzle = lore("ams_muzzle", HbmTab.CONTROL, p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> egg_balefire_shard = lore("egg_balefire_shard", HbmTab.BOMBS, p -> p.stacksTo(16)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> egg_balefire = lore("egg_balefire", HbmTab.BOMBS, p -> p.stacksTo(1)).transform(Presets.sprite());
@@ -781,11 +781,11 @@ public final class ModItems {
     public static final RegistryObject<ItemCustomLore> flame_conspiracy = lore("flame_conspiracy", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> flame_politics = lore("flame_politics", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> flame_opinion = lore("flame_opinion", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<ItemCustomLore> burnt_bark = lore("burnt_bark", HbmTab.CONSUMABLES).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> burnt_bark = REG.item("burnt_bark", (Item.Properties p) -> new ItemCustomLore(p)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> book_secret = lore("book_secret", HbmTab.CONTROL).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> crystal_horn = lore("crystal_horn", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> crystal_charred = lore("crystal_charred", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<ItemCustomLore> watch = lore("watch", HbmTab.CONSUMABLES, p -> p.rarity(Rarity.EPIC).stacksTo(1)).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> watch = REG.item("watch", ItemCustomLore::new, p -> p.rarity(Rarity.EPIC).stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> entanglement_kit = lore("entanglement_kit", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomLore> undefined = lore("undefined", HbmTab.MATERIALS).transform(Presets.sprite());
 

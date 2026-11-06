@@ -144,8 +144,7 @@ public final class ModBombBlocks {
         REG.blockItem(balefire, Compat::blockDescription);
         REG.blockItem(fire_digamma, Compat::blockDescription).transform(Presets.sprite("hbm:blocks/fire_digamma"));
         REG.blockItem(digamma_matter, Compat::blockDescription);
-        // BlockTaint's old constructor put its item in the control tab, unlike the missile item itself.
-        REG.blockItem(taint, ItemBlockTaint::new, Compat::blockDescription).tab(HbmTab.CONTROL);
+        REG.blockItem(taint, ItemBlockTaint::new, Compat::blockDescription);
         REG.blockItem(nuke_man, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.FAT_MAN),
                 Compat::blockDescription).tab(HbmTab.BOMBS);
         REG.blockItem(nuke_n2, (b, p) -> new ItemNukeBlock(b, p, BlastInfo.N2),

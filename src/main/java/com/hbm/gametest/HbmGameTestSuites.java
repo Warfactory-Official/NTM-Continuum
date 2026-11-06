@@ -56,7 +56,7 @@ public final class HbmGameTestSuites {
             list.add(Fix7BossGameTests.TESTS);
             list.add(Fix7MobGameTests.TESTS);
             list.add(GhIssue108To115GameTests.TESTS);
-            list.add(GhIssue123To125GameTests.TESTS);
+            list.add(GhIssue122To125GameTests.TESTS);
             list.add(RecipeContentGameTests.TESTS);
             list.add(RecipeViewerGameTests.TESTS);
             list.add(RecipeGapIssueGameTests.TESTS);
@@ -165,7 +165,7 @@ public final class HbmGameTestSuites {
         Fix7BossGameTests.init();
         Fix7MobGameTests.init();
         GhIssue108To115GameTests.init();
-        GhIssue123To125GameTests.init();
+        GhIssue122To125GameTests.init();
         RecipeContentGameTests.init();
         RecipeViewerGameTests.init();
         RecipeGapIssueGameTests.init();

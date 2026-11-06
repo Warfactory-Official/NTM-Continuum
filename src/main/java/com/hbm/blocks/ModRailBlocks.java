@@ -19,7 +19,6 @@ import com.hbm.blocks.rail.RailStandardStraight;
 import com.hbm.blocks.rail.RailStandardStraightShort;
 import com.hbm.blocks.rail.RailStandardSwitch;
 import com.hbm.blocks.rail.RailStandardSwitchFlipped;
-import com.hbm.creativetabs.HbmTab;
 import com.hbm.tileentity.BlockEntityRail;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
@@ -74,7 +73,7 @@ public final class ModRailBlocks {
                 // drops the block itself once per break, whichever part was mined (pickaxe needed).
                 .loot(Loot.self())
                 .tag(BlockTag.PICKAXE);
-        REG.blockItem(block).tab(HbmTab.MACHINES);
+        REG.blockItem(block);
         RAILS.add(block);
         return block;
     }

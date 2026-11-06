@@ -93,7 +93,7 @@ public final class ModDFCBlocks {
             .transform(Presets.sprite()).tab(HbmTab.CONTROL);
     public static final RegistryObject<ItemAMSCore> ams_core_thingy = REG.item("ams_core_thingy",
             p -> new ItemAMSCore(2500, 0.7F, 0.7F, true, p), p -> p.stacksTo(1).rarity(Rarity.EPIC))
-            .transform(Presets.sprite()).tab(HbmTab.CONSUMABLES);
+            .transform(Presets.sprite());
 
     private static BlockBehaviour.Properties machine(
             BlockBehaviour.Properties p) {

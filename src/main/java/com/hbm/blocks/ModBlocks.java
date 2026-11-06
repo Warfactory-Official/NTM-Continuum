@@ -96,9 +96,9 @@ public final class ModBlocks {
     // --- simple full-cube blocks (Wave 1) ---
     public static final RegistryObject<Block> fatduck = block("fatduck", HbmTab.BLOCKS, p -> p)
             .transform(Presets.cubeAll()).loot(Loot.self());
-    public static final RegistryObject<Block> structure_anchor = block("structure_anchor", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(2.5F, 6.0F))
+    public static final RegistryObject<Block> structure_anchor = block("structure_anchor", null, p -> p.requiresCorrectToolForDrops().strength(2.5F, 6.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> crystal_hardened = block("crystal_hardened", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, Float.POSITIVE_INFINITY))
+    public static final RegistryObject<Block> crystal_hardened = block("crystal_hardened", null, p -> p.requiresCorrectToolForDrops().strength(15.0F, Float.POSITIVE_INFINITY))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> reinforced_stone = block("reinforced_stone", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(15.0F, 60.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
@@ -245,9 +245,9 @@ public final class ModBlocks {
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> struct_scaffold = block("struct_scaffold", HbmTab.MISSILES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> fusion_heater = block("fusion_heater", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
+    public static final RegistryObject<Block> fusion_heater = block("fusion_heater", null, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
             .transform(Presets.column("hbm:blocks/fusion_heater_top", "hbm:blocks/fusion_heater_side")).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> fusion_hatch = block("fusion_hatch", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
+    public static final RegistryObject<Block> fusion_hatch = block("fusion_hatch", null, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
             .transform(Presets.shape(Models.parented("minecraft:block/cube", Slots.of("particle", "hbm:blocks/fusion_hatch").and("north", "hbm:blocks/fusion_hatch").and("south", "hbm:blocks/fusion_heater_side").and("east", "hbm:blocks/fusion_heater_side").and("west", "hbm:blocks/fusion_heater_side").and("up", "hbm:blocks/block_tungsten").and("down", "hbm:blocks/block_tungsten")))).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> fusion_core_block = block("fusion_core_block", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
             .transform(Presets.column("hbm:blocks/fusion_core_side_alt", "hbm:blocks/fusion_core_side_alt")).loot(Loot.self()).tag(BlockTag.PICKAXE);
@@ -255,7 +255,7 @@ public final class ModBlocks {
             .transform(Presets.column("hbm:blocks/watz_element_top", "hbm:blocks/watz_element_side")).loot(Loot.self()).tag(BlockTag.PICKAXE);
     public static final RegistryObject<Block> watz_cooler = block("watz_cooler", HbmTab.MACHINES, p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F))
             .transform(Presets.column("hbm:blocks/watz_cooler_top", "hbm:blocks/watz_cooler_side")).loot(Loot.self()).tag(BlockTag.PICKAXE);
-    public static final RegistryObject<Block> pink_planks = block("pink_planks", HbmTab.BLOCKS, p -> p.sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava())
+    public static final RegistryObject<Block> pink_planks = block("pink_planks", null, p -> p.sound(SoundType.WOOD).instrument(NoteBlockInstrument.BASS).ignitedByLava())
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.AXE);
     public static final RegistryObject<Block> brick_fire = block("brick_fire", HbmTab.BLOCKS, p -> p.requiresCorrectToolForDrops().strength(10.0F, 21.0F))
             .transform(Presets.cubeAll()).loot(Loot.self()).tag(BlockTag.PICKAXE);

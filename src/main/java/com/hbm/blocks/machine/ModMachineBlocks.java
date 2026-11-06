@@ -1305,8 +1305,8 @@ public final class ModMachineBlocks {
                         (block, p) -> new EnergyNetBlockItem(block, p, stack -> CarriedTankInfo.lines(stack, "tank")),
                         p -> Compat.blockDescription(p))
                 .tab(HbmTab.MACHINES);
-         tabItem(machine_uf6_tank);
-         tabItem(machine_puf6_tank);
+         REG.blockItem(machine_uf6_tank);
+         REG.blockItem(machine_puf6_tank);
          tabItem(machine_bigasstank);
          tabItem(machine_bat9000);
         tabItem(fluid_valve);

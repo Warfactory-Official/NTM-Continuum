@@ -99,7 +99,7 @@ public final class ModMedicineItems {
 
     public static final RegistryObject<ItemConsumable> jetpack_tank = consumable("jetpack_tank", HbmTab.CONSUMABLES, true)
             .transform(Presets.sprite());
-    public static final RegistryObject<ItemConsumable> cbt_device = consumable("cbt_device", HbmTab.CONSUMABLES, true)
+    public static final RegistryObject<ItemConsumable> cbt_device = consumable("cbt_device", null, true)
             .transform(Presets.sprite());
     public static final RegistryObject<ItemConsumable> euphemium_stopper = consumable("euphemium_stopper", null, true)
             .transform(Presets.sprite());
