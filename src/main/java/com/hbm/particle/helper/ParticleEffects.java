@@ -122,9 +122,15 @@ public final class ParticleEffects {
 
     /** Source meat/slime/metal giblet burst, including the entity id used by the client hide gate. */
     public static void giblets(Level level, Entity entity, int gibType) {
+        giblets(level, entity, gibType, 0);
+    }
+
+    /** {@code countDivisor} is 1.7's {@code cDiv}: the count is divided by it, rounded up. 0 keeps the full count. */
+    public static void giblets(Level level, Entity entity, int gibType, int countDivisor) {
         CompoundTag data = new CompoundTag();
         data.putInt("ent", entity.getId());
         data.putInt("gibType", gibType);
+        if (countDivisor > 0) data.putInt("cDiv", countDivisor);
         HbmEffectNT.Giblets.send(level, entity.getX(), entity.getY() + entity.getBbHeight() * 0.5D,
                 entity.getZ(), data, 150D);
     }

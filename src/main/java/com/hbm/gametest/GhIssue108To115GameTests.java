@@ -31,6 +31,7 @@ import com.hbm.items.weapon.grenade.ItemGrenadeExtra;
 import com.hbm.items.weapon.grenade.ItemGrenadeFilling;
 import com.hbm.items.weapon.grenade.ItemGrenadeFuze;
 import com.hbm.items.weapon.grenade.ItemGrenadeShell;
+import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.factory.XFactoryCatapult;
 import com.hbm.tileentity.machine.TileEntityBlockPWR;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
@@ -81,6 +82,8 @@ public final class GhIssue108To115GameTests {
             TESTS.function("gh115_bullet_scatter_is_the_config_spread", 20, () -> GhIssue108To115GameTests::bulletSpread);
     public static final GameTests.Function ARMOR_DRAIN =
             TESTS.function("gh140_suits_drain_through_1_7_armor_wear", 20, () -> GhIssue108To115GameTests::suitDrain);
+    public static final GameTests.Function GRENADE_ROUNDS =
+            TESTS.function("gh137_grenade_rounds_reach_clients", 20, () -> GhIssue108To115GameTests::grenadeRounds);
     public static final GameTests.Function CHIP_TAB =
             TESTS.function("gh117_turret_chip_is_in_the_weapons_tab", 20, () -> GhIssue108To115GameTests::chipInTab);
     public static final GameTests.Function TAB_AUDIT =
@@ -189,6 +192,15 @@ public final class GhIssue108To115GameTests {
         }
         double deviation = Math.sqrt(sum / shots);
         helper.assertTrue(deviation > 0.09D && deviation < 0.11D, "sideways scatter " + deviation + ", expected 0.1");
+        helper.succeed();
+    }
+
+    /** A round whose config has no index reaches the client with none, and the client discards it. */
+    private static void grenadeRounds(GameTestHelper helper) {
+        helper.assertTrue(BulletConfigs.indexOf(ItemGrenadeFilling.fragmentation) >= 0, "fragmentation is not registered");
+        helper.assertTrue(BulletConfigs.indexOf(ItemGrenadeFilling.pellets) >= 0, "pellets are not registered");
+        helper.assertTrue(BulletConfigs.indexOf(ItemGrenadeFilling.pellets_heavy) >= 0, "heavy pellets are not registered");
+        helper.assertTrue(BulletConfigs.indexOf(ItemGrenadeFilling.laser) >= 0, "the grenade's laser is not registered");
         helper.succeed();
     }
 

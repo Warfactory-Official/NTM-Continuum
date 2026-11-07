@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.particle.ParticleGiblet;
+import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.environment.Environment;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -192,6 +194,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
             if (Compat.hurt(entity, (ServerLevel) level, ModDamageSources.turbofan(level), 1000F)
                     && !entity.isAlive()
                     && entity instanceof LivingEntity) {
+                ParticleEffects.giblets(level, entity, ParticleGiblet.TYPE_MEAT, 5);
                 level.playSound(null, entity.blockPosition(), SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.BLOCKS,
                         2F, 0.95F + level.getRandom().nextFloat() * 0.2F);
                 blood.setFill(Math.min(blood.getMaxFill(), blood.getFill() + 50));

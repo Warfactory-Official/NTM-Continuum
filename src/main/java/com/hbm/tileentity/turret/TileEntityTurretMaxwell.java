@@ -1,5 +1,7 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.particle.ParticleGiblet;
+import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -206,6 +208,7 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
         if (afterburn > 0) Effects.ignite(target, afterburn * 3);
 
         if (!target.isAlive() && target instanceof LivingEntity living) {
+            ParticleEffects.giblets(server, living, ParticleGiblet.TYPE_MEAT);
             if (screm) {
                 server.playSound(null, living.getX(), living.getY(), living.getZ(),
                         ModSounds.SCREM.get(), SoundSource.HOSTILE, 20.0F, 1.0F);

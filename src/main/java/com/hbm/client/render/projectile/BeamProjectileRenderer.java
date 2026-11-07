@@ -10,7 +10,6 @@ import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemEntityRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 
 /** Renders the old beam entity along its measured hitscan length. */
@@ -26,27 +25,14 @@ public final class BeamProjectileRenderer extends GemEntityRenderer<EntityBullet
         // The custom payload can arrive before or after the vanilla entity spawn. Resolve the pending
         // copy here as well as in tick so the first render after spawn does not lose the beam.
         ProjectileStatePayload.applyPending(entity);
-        state.origin = entity.position();
-        state.heading = new Vec3(entity.headingX, entity.headingY, entity.headingZ);
-        if (entity.hasRenderState()) {
-            state.endpoint = new Vec3(entity.beamEndX, entity.beamEndY, entity.beamEndZ);
-            state.length = entity.beamLength;
-            state.direction = state.endpoint.subtract(state.origin);
-            if (state.direction.lengthSqr() <= 1.0E-12D && state.heading.lengthSqr() > 1.0E-12D)
-                state.direction = state.heading.normalize().scale(state.length);
-        } else {
-            // Entity spawning and the state payload are separate network streams. Keep one visible,
-            // correctly directed frame instead of constructing a zero-length/zero-direction mesh;
-            // the measured endpoint replaces this fallback as soon as the payload is applied.
-            state.direction = entity.getViewVector(1F).scale(250D);
-            state.endpoint = state.origin.add(state.direction);
-            state.length = state.direction.length();
-        }
+        // Entity spawning and the state payload are separate streams: until the payload lands, keep the source's range.
+        state.length = entity.hasRenderState() ? entity.beamLength : 250D;
         if (entity.config == null) entity.config = entity.getBulletConfig();
         state.config = entity.config;
         state.yaw = entity.getYRot();
         state.pitch = entity.getXRot();
         state.age = entity.tickCount + partialTicks;
+        state.entityId = entity.getId();
         state.partialTicks = partialTicks;
     }
 
@@ -59,17 +45,13 @@ public final class BeamProjectileRenderer extends GemEntityRenderer<EntityBullet
     }
 
     public static final class State extends CompatEntityRenderState {
-        public Vec3 heading = Vec3.ZERO;
-        /** Authoritative spawn point and endpoint, not a yaw/pitch reconstruction. */
-        public Vec3 origin = Vec3.ZERO;
-        public Vec3 endpoint = Vec3.ZERO;
-        public Vec3 direction = Vec3.ZERO;
         public double length;
         public BulletConfig config;
         public float yaw;
         public float pitch;
         public float age;
         public float partialTicks;
+        public int entityId;
         public Quaternionf cameraOrientation;
     }
 }

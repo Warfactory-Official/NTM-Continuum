@@ -7,6 +7,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Supplier;
+import dev.golem.core.world.GenerationOptions;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.placement.PlacementContext;
@@ -30,6 +32,8 @@ import java.util.stream.Stream;
  *   <li>{@code chance}: kept with probability {@code 1/value} (1.7 {@code rand.nextInt(value) == 0}, drawn as vanilla's
  *       {@code rarity_filter} draws it); 0 or less turns the feature off, as 1.7's {@code > 0} guards did.</li>
  *   <li>{@code switch}: kept while the value is non-zero (a boolean key reads 1/0).</li>
+ *   <li>{@code unstructured}: kept only in a world with Generate Structures off, where a feature with a structure form
+ *       ({@link ScatteredStructure}) has to stand in for it; the key is not read.</li>
  * </ul>
  *
  * <p>The values come from {@link WorldgenKeys}; an unknown key keeps nothing and logs once, so a typo cannot silently
@@ -38,7 +42,7 @@ import java.util.stream.Stream;
 public final class ConfigPlacement extends PlacementModifier {
 
     public enum Mode {
-        COUNT, CHANCE, SWITCH;
+        COUNT, CHANCE, SWITCH, UNSTRUCTURED;
 
         static Mode parse(String s) {
             return valueOf(s.toUpperCase(Locale.ROOT));
@@ -78,6 +82,10 @@ public final class ConfigPlacement extends PlacementModifier {
 
     @Override
     public Stream<BlockPos> getPositions(PlacementContext context, RandomSource random, BlockPos pos) {
+        if (mode == Mode.UNSTRUCTURED) {
+            MinecraftServer server = context.getLevel().getLevel().getServer();
+            return server != null && GenerationOptions.structures(server) ? Stream.empty() : Stream.of(pos);
+        }
         int v = value(key);
         switch (mode) {
             case COUNT -> {

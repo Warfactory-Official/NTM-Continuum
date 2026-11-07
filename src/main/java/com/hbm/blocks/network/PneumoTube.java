@@ -213,10 +213,8 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        // 1.7: the screwdriver is handled by onScrew, not by the GUI arm
-        if (ToolType.getType(stack) == ToolType.SCREWDRIVER) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (useGasIdentifier(level, pos, player, stack)) return InteractionResult.SUCCESS;
-        return openTubeMenu(level, pos, player);
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     /** Both tube forms use the same identifier action and compressor gate. */
@@ -254,6 +252,8 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
+        // 1.7: the screwdriver is handled by onScrew, not by the GUI arm
+        if (ToolType.getType(player.getMainHandItem()) == ToolType.SCREWDRIVER) return InteractionResult.TRY_WITH_EMPTY_HAND;
         return openTubeMenu(level, pos, player);
     }
 

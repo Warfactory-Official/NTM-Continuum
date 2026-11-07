@@ -13,6 +13,7 @@ import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.*;
 import com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell;
 import com.hbm.items.weapon.sedna.BulletConfig;
+import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.factory.Lego;
 import com.hbm.items.weapon.sedna.factory.XFactoryCatapult;
 import com.hbm.items.weapon.sedna.factory.XFactoryEnergy;
@@ -58,19 +59,23 @@ public class ItemGrenadeFilling extends Item {
         this.type = type;
         // 1.7 built these in the ctor; BulletConfig is a wire-synched index. One set for the whole family.
         if (fragmentation != null) return;
-        fragmentation = new BulletConfig().setLife(3).setThresholdNegation(5F).setRicochetAngle(90).setRicochetCount(2);
-        pellets = new BulletConfig().setLife(100).setGrav(0.04F).setVel(1.5F).setOnImpact((bullet, impact) -> {
-            if (bullet.tickCount < 2) return;
-            Lego.tinyExplode(bullet, impact, 1.5F);
-            bullet.discard();
-        });
-        pellets_heavy = new BulletConfig().setLife(100).setGrav(0.04F).setVel(1.5F).setOnImpact((bullet, impact) -> {
-            if (bullet.tickCount < 2) return;
-            Lego.standardExplode(bullet, impact, 5F);
-            bullet.discard();
-        });
-        laser = new BulletConfig().setBeam().setupDamageClass(DamageClass.LASER).setLife(3).setRenderRotations(false)
-                                  .setThresholdNegation(10F).setOnBeamImpact(XFactoryEnergy.LAMBDA_STANDARD_BEAM_HIT);
+        fragmentation = BulletConfigs.register("grenade_fragmentation", new BulletConfig().setLife(3)
+                .setThresholdNegation(5F).setRicochetAngle(90).setRicochetCount(2));
+        pellets = BulletConfigs.register("grenade_pellets", new BulletConfig().setLife(100).setGrav(0.04F).setVel(1.5F)
+                .setOnImpact((bullet, impact) -> {
+                    if (bullet.tickCount < 2) return;
+                    Lego.tinyExplode(bullet, impact, 1.5F);
+                    bullet.discard();
+                }));
+        pellets_heavy = BulletConfigs.register("grenade_pellets_heavy", new BulletConfig().setLife(100).setGrav(0.04F)
+                .setVel(1.5F).setOnImpact((bullet, impact) -> {
+                    if (bullet.tickCount < 2) return;
+                    Lego.standardExplode(bullet, impact, 5F);
+                    bullet.discard();
+                }));
+        laser = BulletConfigs.register("grenade_laser", new BulletConfig().setBeam().setupDamageClass(DamageClass.LASER)
+                .setLife(3).setRenderRotations(false).setThresholdNegation(10F)
+                .setOnBeamImpact(XFactoryEnergy.LAMBDA_STANDARD_BEAM_HIT));
     }
 
     public static void explode(EntityGrenadeUniversal grenade) {

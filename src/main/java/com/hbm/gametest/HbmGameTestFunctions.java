@@ -559,6 +559,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("fusion_recipes", 20, () -> HbmGameTestFunctions::fusionRecipes);
     public static final GameTests.Function FUSION_CHAIN =
             TESTS.function("fusion_chain", 100, 24, () -> HbmGameTestFunctions::fusionChain);
+    public static final GameTests.Function FUSION_PLASMA_FORGE_BEAM =
+            TESTS.function("fusion_plasma_forge_beam", 100, 40, () -> HbmGameTestFunctions::fusionPlasmaForgeBeam);
     public static final GameTests.Function FUSION_PORTS =
             TESTS.function("fusion_ports", 100, 24, () -> HbmGameTestFunctions::fusionPorts);
     public static final GameTests.Function FUSION_PLASMA_FORGE_RECIPES =
@@ -773,6 +775,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("electrolyser_pauses", 40, 8, () -> ElectrolyserGameTests::pausesAndResumes);
     public static final GameTests.Function ELECTROLYSER_POURED_STACK_CLEARS =
             TESTS.function("electrolyser_poured_stack_clears", 40, 8, () -> ElectrolyserGameTests::pouredStackClears);
+    public static final GameTests.Function ELECTROLYSER_POUR_STREAM =
+            TESTS.function("electrolyser_pour_stream", 40, 15, () -> ElectrolyserGameTests::pourStream);
     public static final GameTests.Function ELECTROLYSER_MOLTEN_POUR_RATE =
             TESTS.function("electrolyser_molten_pour_rate", 40, 8, () -> ElectrolyserGameTests::moltenPourRate);
     public static final GameTests.Function ELECTROLYSER_MENUS =
@@ -2697,6 +2701,39 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(set.maxInput == highest && highest == 10_000_000L,
                 "maxInput must be the highest ignition (10M), was " + set.maxInput);
         helper.succeed();
+    }
+
+    /**
+     * 1.7 connects the forge on its sides, 13 blocks from a torus core: a south-facing forge takes the beam from the west
+     * (getRotation(UP) is clockwise) and sends it east.
+     * D-D with one receiver is 1,000,000 TU; the forge passes on ceil(0.75 x that) = 750,000.
+     */
+    private static void fusionPlasmaForgeBeam(GameTestHelper helper) {
+        BlockPos torusCore = new BlockPos(9, 1, 9);
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.fusion_torus.get(), torusCore);
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.fusion_klystron_creative.get(), new BlockPos(9, 1, 21), Direction.SOUTH);
+        BlockPos forgeCore = new BlockPos(22, 1, 9);
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.fusion_plasma_forge.get(), forgeCore, Direction.SOUTH);
+        BlockPos boilerCore = new BlockPos(32, 1, 9);
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.fusion_boiler.get(), boilerCore, Direction.EAST);
+
+        TileEntityFusionTorus torus = GameTestHelpers.blockEntity(helper, torusCore, TileEntityFusionTorus.class);
+        FusionRecipes.INSTANCE.registerRecipes();
+        torus.fusionModule.recipe = "fus.dd";
+        torus.fusionModule.setupTanks(torus.fusionModule.getRecipe());
+        torus.tanks[0].setFill(torus.tanks[0].getMaxFill());
+        torus.power = torus.getMaxPower();
+        torus.coolantTanks[0].setFill(torus.coolantTanks[0].getMaxFill());
+        torus.temperature = TileEntityCooledBase.temperature_target;
+
+        TileEntityFusionPlasmaForge forge = GameTestHelpers.blockEntity(helper, forgeCore, TileEntityFusionPlasmaForge.class);
+        TileEntityFusionBoiler boiler = GameTestHelpers.blockEntity(helper, boilerCore, TileEntityFusionBoiler.class);
+        boiler.tanks[0].setFill(boiler.tanks[0].getMaxFill());
+        helper.succeedWhen(() -> {
+            helper.assertTrue(forge.plasmaEnergySync == 1_000_000L, "forge plasma " + forge.plasmaEnergySync);
+            helper.assertTrue(forge.connected, "forge sees the boiler on its far side");
+            helper.assertTrue(boiler.plasmaEnergySync() == 750_000L, "boiler plasma " + boiler.plasmaEnergySync());
+        });
     }
 
     /**

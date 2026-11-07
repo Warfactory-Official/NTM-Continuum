@@ -15,6 +15,7 @@ import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes.CrucibleRecipe;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.world.Effects;
@@ -115,6 +116,17 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     @Override
     public String getDefaultName() {
         return "container.machineCrucible";
+    }
+
+    public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityCrucible te) {
+        if ((te.recipeStack.isEmpty() && te.wasteStack.isEmpty()) || !TickPhase.every(level, pos, 10)) return;
+        CompoundTag fx = new CompoundTag();
+        fx.putFloat("lift", 10F);
+        fx.putFloat("base", 0.75F);
+        fx.putFloat("max", 3.5F);
+        fx.putInt("life", 100 + level.getRandom().nextInt(20));
+        fx.putInt("color", 0x202020);
+        HbmEffectNT.Tower.summonParticle(level, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D, fx);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCrucible te) {

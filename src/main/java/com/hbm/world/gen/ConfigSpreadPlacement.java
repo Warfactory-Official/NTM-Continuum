@@ -1,7 +1,9 @@
 package com.hbm.world.gen;
 
 import com.hbm.config.DungeonConfig;
+import com.hbm.config.MobConfig;
 import com.hbm.config.StructureConfig;
+import com.hbm.config.WorldConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -30,7 +32,10 @@ import java.util.function.Supplier;
  *       {@code 5.01_structureMinChunks} - 1.7's {@code x += rand.nextInt(max - min)} is exactly the linear spread;</li>
  *   <li>{@code dungeon:<id>}: a legacy dungeon's 1.7 {@code rand.nextInt(n) == 0} per chunk, as spacing
  *       {@code floor(sqrt(n))}, separation 0 and keep chance {@code spacing^2 / n} (see {@code LegacyDungeonDeclarations});
- *       {@code n <= 0} turns it off.</li>
+ *       {@code n <= 0} turns it off;</li>
+ *   <li>{@code grid:<id>}: 1.7 {@code genBlueprintChest}: the one chunk per {@code 4.26_blueprintChestGrid} blocks of each
+ *       axis where {@code abs(i) % grid < 16}; {@code grid <= 0} turns it off. The feature's distance test and roll run
+ *       in {@link ScatteredStructure}.</li>
  * </ul>
  * The keep chance is drawn as vanilla's {@code frequency_reduction_method: default} draws it, so with the default config
  * every candidate is the same as the fixed data.
@@ -68,6 +73,13 @@ public class ConfigSpreadPlacement extends RandomSpreadStructurePlacement {
             case "jungle_dungeon" -> DungeonConfig.jungleStructure;
             case "arctic_vault" -> DungeonConfig.arcticStructure;
             case "ancient_tomb" -> DungeonConfig.pyramidStructure;
+            case LegacyDungeonDeclarations.LOCKED_SAFE -> DungeonConfig.enableVaults ? DungeonConfig.vaultfreq : 0;
+            case LegacyDungeonDeclarations.LANTERN -> DungeonConfig.lanternStructure;
+            case LegacyDungeonDeclarations.BROADCASTER -> DungeonConfig.broadcaster;
+            case LegacyDungeonDeclarations.CAPSULE -> DungeonConfig.capsuleStructure;
+            case LegacyDungeonDeclarations.HIVE -> MobConfig.enableHives ? MobConfig.hiveSpawn : 0;
+            case LegacyDungeonDeclarations.METEORITE -> WorldConfig.meteoriteSpawn;
+            case LegacyDungeonDeclarations.BLUEPRINT_CHEST -> DungeonConfig.blueprintGrid;
             default -> 0;
         };
     }
@@ -76,15 +88,32 @@ public class ConfigSpreadPlacement extends RandomSpreadStructurePlacement {
         return key.startsWith("dungeon:") ? dungeonChance(key.substring(8)) : 1;
     }
 
+    private boolean grid() {
+        return key.startsWith("grid:");
+    }
+
+    /** The grid in blocks; 1.7's test finds one chunk per cell only from a chunk's width up. */
+    private int gridSize() {
+        return Math.max(16, dungeonChance(key.substring(5)));
+    }
+
+    /** 1.7 {@code Math.abs(i) % grid < 16}: the one chunk of a cell passing it, mirrored about 0 as {@code abs} does. */
+    private int gridChunk(int chunk) {
+        int grid = gridSize();
+        int line = (Math.abs(chunk) * 16 / grid * grid + 15) / 16;
+        return chunk < 0 ? -line : line;
+    }
+
     @Override
     public int spacing() {
+        if (grid()) return gridSize() / 16;
         if (key.startsWith("dungeon:")) return LegacyDungeonDeclarations.spacing(Math.max(1, chance()));
         return Math.max(2, StructureConfig.structureMaxChunks);
     }
 
     @Override
     public int separation() {
-        if (key.startsWith("dungeon:")) return 0;
+        if (grid() || key.startsWith("dungeon:")) return 0;
         // 1.7 nextInt(max - min) needs max > min; clamp what 1.7 would have crashed on
         return Math.max(0, Math.min(StructureConfig.structureMinChunks, spacing() - 1));
     }
@@ -97,6 +126,7 @@ public class ConfigSpreadPlacement extends RandomSpreadStructurePlacement {
 
     @Override
     public ChunkPos getPotentialStructureChunk(long seed, int sourceX, int sourceZ) {
+        if (grid()) return new ChunkPos(gridChunk(sourceX), gridChunk(sourceZ));
         int spacing = spacing();
         int spacedGridX = Math.floorDiv(sourceX, spacing);
         int spacedGridZ = Math.floorDiv(sourceZ, spacing);
@@ -111,6 +141,7 @@ public class ConfigSpreadPlacement extends RandomSpreadStructurePlacement {
     /** Whether chunk (x, z) is this placement's candidate and survives the keep chance. */
     public boolean isCandidate(long seed, int sourceX, int sourceZ) {
         if (key.startsWith("dungeon:") && chance() <= 0) return false; // 1.7: 0 turns the spawn off
+        if (grid() && dungeonChance(key.substring(5)) <= 0) return false;
         ChunkPos pos = getPotentialStructureChunk(seed, sourceX, sourceZ);
         if (pos.getMinBlockX() != sourceX << 4 || pos.getMinBlockZ() != sourceZ << 4) return false;
         return keeps(seed, sourceX, sourceZ);

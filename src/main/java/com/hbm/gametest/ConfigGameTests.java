@@ -56,12 +56,18 @@ public final class ConfigGameTests {
     public static final GameTests.Function PLACEMENT = TESTS.function(
             "fix8_config_placement_reads_cfg", 20, () -> ConfigGameTests::placement);
 
-    /** Port-only keys: category, key, default. Cables exchange HE with other mods' FE; ores drop ntm-next's raw items. */
+    /** Port-only keys: category, key, default. Cables exchange HE with other mods' FE; ores drop ntm-next's raw items; worldgen 1.7 hardcoded. */
     private static final String[][] PORT_KEYS = {
             {"01_general", "1.90_enableRawOres", "true"},
             {"09_machines", "9.50_energyRatioHE", "5"},
             {"09_machines", "9.51_energyRatioFE", "1"},
             {"09_machines", "9.52_foreignExportReserve", "0.0"},
+            {"04_dungeons", "4.25_lanternSpawn", "2000"},
+            {"04_dungeons", "4.26_blueprintChestGrid", "5000"},
+            {"04_dungeons", "4.27_pinkTreeSpawn", "1000"},
+            {"04_dungeons", "4.28_keyholeStoneSpawn", "4"},
+            {"15_structures", "5.50_meteorDungeonSpawnWeight", "1"},
+            {"15_structures", "5.51_siloChance", "10"},
     };
 
     public static void init() {}

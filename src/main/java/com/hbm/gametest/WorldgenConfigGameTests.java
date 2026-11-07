@@ -224,7 +224,7 @@ public final class WorldgenConfigGameTests {
         helper.assertTrue(is(d(DungeonBlockFeature.Broadcaster.Config.CODEC).state(), ModDecoCrateBlocks.broadcaster_pc.get()),
                 "corrupted_broadcaster");
         var chest = d(DungeonBlockFeature.BlueprintChest.Config.CODEC);
-        helper.assertTrue(chest.grid() == DungeonConfig.blueprintGrid && chest.minDistance() == 100 && chest.roll() == 20
+        helper.assertTrue(chest.minDistance() == 100 && chest.roll() == 20
                 && chest.skip() == 10 && chest.pool().equals(ItemPools.POOL_BLUEPRINTS) && chest.rolls() == 50
                 && chest.container() == Blocks.CHEST.defaultBlockState() && chest.shell() == Blocks.OBSIDIAN.defaultBlockState(),
                 "blueprint_chest " + chest);

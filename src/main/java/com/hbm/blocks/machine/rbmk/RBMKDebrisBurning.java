@@ -6,6 +6,7 @@ import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.particle.helper.HbmEffectNT;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -47,6 +48,11 @@ public class RBMKDebrisBurning extends RBMKDebrisBlock {
     protected void quench(ServerLevel level, BlockPos pos) { level.setBlockAndUpdate(pos, ModRBMKBlocks.rbmk_debris.get().defaultBlockState()); }
     protected static void flame(ServerLevel level, BlockPos pos) {
         RandomSource rand = level.getRandom();
-        HbmEffectNT.Ashes.send(level, pos.getX() + .25D + rand.nextDouble() * .5D, pos.getY() + 1.75D, pos.getZ() + .25D + rand.nextDouble() * .5D, null);
+        flame(level, pos.getX() + .25D + rand.nextDouble() * .5D, pos.getY() + 1.75D, pos.getZ() + .25D + rand.nextDouble() * .5D);
+    }
+    protected static void flame(ServerLevel level, double x, double y, double z) {
+        CompoundTag data = new CompoundTag();
+        data.putInt("maxAge", 300);
+        HbmEffectNT.RBMKFlame.send(level, x, y, z, data, 75D);
     }
 }

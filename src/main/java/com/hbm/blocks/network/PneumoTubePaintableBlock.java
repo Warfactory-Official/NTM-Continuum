@@ -78,19 +78,18 @@ public class PneumoTubePaintableBlock extends CompatBlock
                 if (!level.isClientSide()) tube.setCamo(ItemStateBlock.of(blockItem, stack));
                 return InteractionResult.SUCCESS;
             }
-        } else {
-            ToolType tool = ToolType.getType(stack);
-            if (tool == ToolType.SCREWDRIVER || tool == ToolType.HAND_DRILL || tool == ToolType.DEFUSER) {
-                return InteractionResult.TRY_WITH_EMPTY_HAND;
-            }
         }
         if (PneumoTube.useGasIdentifier(level, pos, player, stack)) return InteractionResult.SUCCESS;
-        return PneumoTube.openTubeMenu(level, pos, player);
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
+        ToolType tool = ToolType.getType(player.getMainHandItem());
+        if (tool == ToolType.SCREWDRIVER || tool == ToolType.HAND_DRILL || tool == ToolType.DEFUSER) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
         return PneumoTube.openTubeMenu(level, pos, player);
     }
 

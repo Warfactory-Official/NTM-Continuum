@@ -14,7 +14,6 @@ import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -52,15 +51,9 @@ public class CraneRouter extends CompatBlock implements TickingBlock, IEnterable
     }
 
     @Override
-    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
-                                            InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (stack.getItem() instanceof ItemConveyorWand) return InteractionResult.TRY_WITH_EMPTY_HAND;
-        return onUseWithoutItem(state, level, pos, player, hit);
-    }
-
-    @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
+        if (player.getMainHandItem().getItem() instanceof ItemConveyorWand) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!(level.getBlockEntity(pos) instanceof MenuProvider provider)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {

@@ -8,6 +8,7 @@ import static dev.golem.core.dejson.Crafting.blast;
 import static dev.golem.core.dejson.Crafting.compress;
 import static dev.golem.core.dejson.Crafting.decompress;
 import static dev.golem.core.dejson.Crafting.smelt;
+import static dev.golem.core.dejson.Crafting.smoke;
 
 /**
  * The hbm recipes whose shape carries no decision, declared through Golem Core's {@code dejson}
@@ -350,6 +351,8 @@ public final class ModCraftingRecipes {
         smelt(NS, "glass_trinitite", ItemIds.waste_trinitite, ItemIds.glass_trinitite, 0.25);
         smelt(NS, "glass_trinitite_1", ItemIds.waste_trinitite_red, ItemIds.glass_trinitite, 0.25);
         smelt(NS, "glyphid_meat_grilled", ItemIds.glyphid_meat, ItemIds.glyphid_meat_grilled, 1.0);
+        // port: the smoker comes from Et Futurum on 1.7; this is the only food in 1.7's furnace table
+        smoke(NS, "smoking/glyphid_meat_grilled", ItemIds.glyphid_meat, ItemIds.glyphid_meat_grilled, 1.0);
         smelt(NS, "gold_ingot_1", ItemIds.ore_gneiss_gold, VanillaIds.gold_ingot, 5.0);
         smelt(NS, "gold_ingot_2", ItemIds.powder_gold, VanillaIds.gold_ingot, 1.0);
         smelt(NS, "gold_ingot_3", ItemIds.crystal_gold, VanillaIds.gold_ingot, 2.0, 2);

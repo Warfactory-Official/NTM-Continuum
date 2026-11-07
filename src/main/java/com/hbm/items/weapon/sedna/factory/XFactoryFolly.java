@@ -17,6 +17,7 @@ import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.lib.ModDamageSources.DamageClass;
+import com.hbm.packet.PlasmaBlastPayload;
 import com.hbm.sound.ModGunSounds;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.DamageResistanceHandler;
@@ -54,6 +55,15 @@ public final class XFactoryFolly {
     public static final Consumer<Entity> LAMBDA_SM_UPDATE = entity -> {
         if (!(entity.level() instanceof ServerLevel server) || !(entity instanceof EntityBulletBeamBase beam)) return;
         Vec3 dir = new Vec3(beam.headingX, beam.headingY, beam.headingZ).normalize();
+
+        if (beam.tickCount < 50) {
+            double spacing = 10D;
+            double dist = beam.tickCount * spacing;
+            PlasmaBlastPayload.sendAround(server, beam.getX(), beam.getY(), beam.getZ(), 250D,
+                    new PlasmaBlastPayload(beam.getX() + dir.x * dist, beam.getY() + dir.y * dist,
+                            beam.getZ() + dir.z * dist, 0.75F, 0.75F, 0.75F, beam.getXRot() + 90F, -beam.getYRot(),
+                            2F + beam.tickCount / (float) (beam.beamLength / spacing) * 3F));
+        }
 
         if (beam.tickCount != 2) return;
 

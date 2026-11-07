@@ -105,6 +105,7 @@ public final class TracerRegistry {
         BulletTracer smoke = ribbon(0x42A8DD, 0xFFFFFF, true);
         BulletTracer black = ribbon(0x000000, 0x7F006E, true);
         BulletTracer legendary = ribbon(0x7F006E, 0xFF7FED, true);
+        BulletTracer fragmentation = ribbon(0xFF6A00, 0xFFE28D, true);
 
         // Keep these groups explicit. The old GunFactoryClient assigns the renderer per config;
         // overlapping colour groups silently changed material and geometry in the previous table.
@@ -124,6 +125,7 @@ public final class TracerRegistry {
         register(streak(), "g10_jade");
         register(smoke, "bmg50_sm");
         register(black, "bmg50_black");
+        register(fragmentation, "grenade_fragmentation", "grenade_pellets", "grenade_pellets_heavy");
         register(legendary, "m44_equestrian_pip", "m44_equestrian_mn7", "g12_equestrian_bj", "g12_equestrian_tkr",
                 "bmg50_equestrian");
         // 1.7 LegoClient.RENDER_BIG_NUKE (GunFactoryClient: folly_nuke): scale 0.5, rotate 90 on Z, rocket_mirv skin.
@@ -170,18 +172,17 @@ public final class TracerRegistry {
         BeamTracer purple = laser(0x60, 0x15, 0x80);
         BeamTracer red = laser(0x80, 0x15, 0x15);
         BeamTracer emerald = laser(0x15, 0x80, 0x15);
-        BeamTracer ni4ni = ni4niBolt();
         registerBeam(cyan, "g12_shredder", "g12_shredder_slug", "g12_shredder_flechette", "g12_shredder_magnum",
                 "g12_shredder_explosive", "g12_shredder_phosphorus");
         registerBeam(purple, "energy_lacunae", "energy_lacunae_overcharge", "energy_lacunae_ir");
-        registerBeam(red, "energy_las", "energy_las_overcharge", "energy_las_ir");
+        registerBeam(red, "energy_las", "energy_las_overcharge", "energy_las_ir", "grenade_laser");
         registerBeam(emerald, "energy_emerald", "energy_emerald_overcharge", "energy_emerald_ir");
-        registerBeam(ni4ni, "ni4ni_arc");
+        registerBeam(fadingBolt(0xAAD2E5, 0xFFFFFF), "ni4ni_arc");
         registerBeam(tesla(false), "energy_tesla", "energy_tesla_overcharge", "energy_tesla_ir");
         // 1.7 GunFactoryClient: setRendererBulkBeam(RENDER_LIGHTNING_SUB, energy_tesla_ir_sub, TileEntityBatterySocket.discharge)
         registerBeam(tesla(true), "energy_tesla_ir_sub", "battery_socket_discharge");
-        registerBeam(endpointMaterial(0xE3D692, 0xFFFFFF), "p35800");
-        registerBeam(endpointMaterial(0x4C3093, 0x000000), "p35800_bl");
+        registerBeam(fadingBolt(0xE3D692, 0xFFFFFF), "p35800");
+        registerBeam(fadingBolt(0x4C3093, 0x000000), "p35800_bl");
         registerBeam(tau(false), "tau_uranium");
         registerBeam(tau(true), "tau_uranium_charge");
         registerBeam(folly(), "folly_sm");
@@ -389,39 +390,41 @@ public final class TracerRegistry {
     public static BulletTracer ribbon(int dark, int light, boolean fullbright) {
         return (state, pose, sink) -> {
             if (state.length <= 0D) return;
-            float end = (float) state.length;
-            int packed = fullbright ? 0xF000F0 : state.lightCoords;
-            sink.submitCustomGeometry(pose, fullbright ? CompatRenderTypes.entityTranslucentEmissive(WHITE)
-                    : CompatRenderTypes.entityTranslucent(WHITE), (p, buffer) -> {
-                // LegoClient.renderBulletStandard is authored along +X. The entity renderer's
-                // yaw/pitch transform supplies the flight direction; +Y made every tracer crosswise.
-                ribbonVertex(buffer, p, end, 0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
-                ribbonVertex(buffer, p, end, 0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
-                ribbonVertex(buffer, p, 0F, 0.03125F, 0.03125F, 1F, 0F, light, packed);
-                ribbonVertex(buffer, p, 0F, 0.03125F, -0.03125F, 1F, 1F, light, packed);
-                ribbonVertex(buffer, p, end, -0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
-                ribbonVertex(buffer, p, end, -0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
-                ribbonVertex(buffer, p, 0F, -0.03125F, 0.03125F, 1F, 0F, light, packed);
-                ribbonVertex(buffer, p, 0F, -0.03125F, -0.03125F, 1F, 1F, light, packed);
-                ribbonVertex(buffer, p, end, -0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
-                ribbonVertex(buffer, p, end, 0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
-                ribbonVertex(buffer, p, 0F, 0.03125F, 0.03125F, 1F, 0F, light, packed);
-                ribbonVertex(buffer, p, 0F, -0.03125F, 0.03125F, 1F, 1F, light, packed);
-                ribbonVertex(buffer, p, end, -0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
-                ribbonVertex(buffer, p, end, 0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
-                ribbonVertex(buffer, p, 0F, 0.03125F, -0.03125F, 1F, 0F, light, packed);
-                ribbonVertex(buffer, p, 0F, -0.03125F, -0.03125F, 1F, 1F, light, packed);
-                // The source pass also closes both ends of the prism.
-                ribbonVertex(buffer, p, end, 0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
-                ribbonVertex(buffer, p, end, 0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
-                ribbonVertex(buffer, p, end, -0.0078125F, -0.0078125F, 1F, 1F, dark, packed);
-                ribbonVertex(buffer, p, end, -0.0078125F, 0.0078125F, 1F, 0F, dark, packed);
-                ribbonVertex(buffer, p, 0F, 0.03125F, 0.03125F, 0F, 0F, light, packed);
-                ribbonVertex(buffer, p, 0F, 0.03125F, -0.03125F, 0F, 1F, light, packed);
-                ribbonVertex(buffer, p, 0F, -0.03125F, -0.03125F, 1F, 1F, light, packed);
-                ribbonVertex(buffer, p, 0F, -0.03125F, 0.03125F, 1F, 0F, light, packed);
-            });
+            bulletStandard(pose, sink, (float) state.length, dark, light, fullbright ? 0xF000F0 : state.lightCoords,
+                    fullbright);
         };
+    }
+
+    /** 1.7 {@code LegoClient.renderBulletStandard}: a prism along +X, the light end at the origin. */
+    private static void bulletStandard(PoseStack pose, SubmitSink sink, float end, int dark, int light, int packed,
+            boolean fullbright) {
+        sink.submitCustomGeometry(pose, fullbright ? CompatRenderTypes.entityTranslucentEmissive(WHITE)
+                : CompatRenderTypes.entityTranslucent(WHITE), (p, buffer) -> {
+            ribbonVertex(buffer, p, end, 0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
+            ribbonVertex(buffer, p, end, 0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
+            ribbonVertex(buffer, p, 0F, 0.03125F, 0.03125F, 1F, 0F, light, packed);
+            ribbonVertex(buffer, p, 0F, 0.03125F, -0.03125F, 1F, 1F, light, packed);
+            ribbonVertex(buffer, p, end, -0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
+            ribbonVertex(buffer, p, end, -0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
+            ribbonVertex(buffer, p, 0F, -0.03125F, 0.03125F, 1F, 0F, light, packed);
+            ribbonVertex(buffer, p, 0F, -0.03125F, -0.03125F, 1F, 1F, light, packed);
+            ribbonVertex(buffer, p, end, -0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
+            ribbonVertex(buffer, p, end, 0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
+            ribbonVertex(buffer, p, 0F, 0.03125F, 0.03125F, 1F, 0F, light, packed);
+            ribbonVertex(buffer, p, 0F, -0.03125F, 0.03125F, 1F, 1F, light, packed);
+            ribbonVertex(buffer, p, end, -0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
+            ribbonVertex(buffer, p, end, 0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
+            ribbonVertex(buffer, p, 0F, 0.03125F, -0.03125F, 1F, 0F, light, packed);
+            ribbonVertex(buffer, p, 0F, -0.03125F, -0.03125F, 1F, 1F, light, packed);
+            ribbonVertex(buffer, p, end, 0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
+            ribbonVertex(buffer, p, end, 0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
+            ribbonVertex(buffer, p, end, -0.0078125F, -0.0078125F, 1F, 1F, dark, packed);
+            ribbonVertex(buffer, p, end, -0.0078125F, 0.0078125F, 1F, 0F, dark, packed);
+            ribbonVertex(buffer, p, 0F, 0.03125F, 0.03125F, 0F, 0F, light, packed);
+            ribbonVertex(buffer, p, 0F, 0.03125F, -0.03125F, 0F, 1F, light, packed);
+            ribbonVertex(buffer, p, 0F, -0.03125F, -0.03125F, 1F, 1F, light, packed);
+            ribbonVertex(buffer, p, 0F, -0.03125F, 0.03125F, 1F, 0F, light, packed);
+        });
     }
 
     private static void ribbonVertex(VertexConsumer buffer, PoseStack.Pose pose,
@@ -431,24 +434,41 @@ public final class TracerRegistry {
                 OverlayTexture.NO_OVERLAY, light, 0F, 1F, 0F);
     }
 
+    /** 1.7's beam frame: +Y runs along the beam, so a radial scale only widens it. */
+    private static void alongBeam(BeamProjectileRenderer.State state, PoseStack pose) {
+        pose.mulPose(Axis.YP.rotationDegrees(180F - state.yaw));
+        pose.mulPose(Axis.XP.rotationDegrees(-state.pitch - 90F));
+    }
+
+    private static void beam(BeamProjectileRenderer.State state, PoseStack pose, SubmitSink sink, int start, float size,
+            int color, int layers, float thickness) {
+        BeamPronter.prontBeamWithoutFog(pose, sink, new Vec3(0D, state.length, 0D), BeamPronter.EnumWaveType.RANDOM,
+                BeamPronter.EnumBeamType.SOLID, start, (int) (state.length / 2D + 1D), size, color, color, layers,
+                thickness);
+    }
+
+    /** 1.7 draws these bolts opaque and fullbright, from the far end back, the light colour at the far end. */
+    private static void bolt(BeamProjectileRenderer.State state, PoseStack pose, SubmitSink sink, float radial, int dark,
+            int light) {
+        pose.scale(radial, 1F, radial);
+        pose.translate(0F, (float) state.length, 0F);
+        pose.mulPose(Axis.ZN.rotationDegrees(90F));
+        bulletStandard(pose, sink, (float) state.length, dark, light, 0xF000F0, true);
+    }
+
     private static BeamTracer tesla(boolean infraredSub) {
         return (state, pose, sink) -> {
             if (state.length <= 0D) return;
             pose.pushPose();
+            alongBeam(state, pose);
             float age = fade(state);
-            float radialScale = infraredSub ? age / 2F + 0.15F : age / 2F + 0.5F;
+            float radial = infraredSub ? age / 2F + 0.15F : age / 2F + 0.5F;
             int inner = rgb((int) (0x20 * age), (int) (0x20 * age), (int) (0x40 * age));
             int outer = rgb((int) (0x40 * age), (int) (0x40 * age), (int) (0x80 * age));
-            pose.scale(radialScale, 1F, radialScale);
-            BeamPronter.prontBeam(pose, sink, state.direction, BeamPronter.EnumWaveType.RANDOM,
-                    BeamPronter.EnumBeamType.SOLID, (int) (state.age / 3F),
-                    Math.max(1, (int) (state.length / 2D + 1D)), 0.075F, inner, inner, 4, 0.25F);
-            BeamPronter.prontBeam(pose, sink, state.direction, BeamPronter.EnumWaveType.RANDOM,
-                    BeamPronter.EnumBeamType.SOLID, (int) state.age,
-                    Math.max(1, (int) (state.length / 2D + 1D)), 0.525F, outer, outer, 2, 0.0625F);
-            BeamPronter.prontBeam(pose, sink, state.direction, BeamPronter.EnumWaveType.RANDOM,
-                    BeamPronter.EnumBeamType.SOLID, (int) (state.age / 2F),
-                    Math.max(1, (int) (state.length / 2D + 1D)), 0.525F, outer, outer, 2, 0.0625F);
+            pose.scale(radial, 1F, radial);
+            beam(state, pose, sink, (int) (state.age / 3F), 0.075F, inner, 4, 0.25F);
+            beam(state, pose, sink, (int) state.age, 0.525F, outer, 2, 0.0625F);
+            beam(state, pose, sink, (int) (state.age / 2F), 0.525F, outer, 2, 0.0625F);
             pose.popPose();
         };
     }
@@ -460,41 +480,23 @@ public final class TracerRegistry {
             int color = charged ? rgb((int) (0x60 * age), (int) (0x50 * age), (int) (0x30 * age))
                     : rgb((int) (0x30 * age), (int) (0x25 * age), (int) (0x10 * age));
             pose.pushPose();
+            alongBeam(state, pose);
+            pose.pushPose();
             pose.scale(age / 2F + 0.5F, 1F, age / 2F + 0.5F);
-            BeamPronter.prontBeam(pose, sink, state.direction, BeamPronter.EnumWaveType.RANDOM,
-                    BeamPronter.EnumBeamType.SOLID, (int) ((state.age + 1F) / 2F),
-                    Math.max(1, (int) (state.length / 2D + 1D)), 0.3F, color, color, 2, 0.0625F);
-            BeamPronter.prontBeamGradient(pose, sink, state.direction,
-                    charged ? 0xFFF0A0 : 0xFFBF00, 0xFFFFFF, 0.03125F);
+            beam(state, pose, sink, ((int) state.age + state.entityId) / 2, 0.3F, color, 2, 0.0625F);
+            pose.popPose();
+            bolt(state, pose, sink, age * 2F, charged ? 0xFFF0A0 : 0xFFBF00, 0xFFFFFF);
             pose.popPose();
         };
     }
 
-    private static BeamTracer endpointMaterial(int dark, int light) {
+    /** 1.7 {@code RENDER_CRACKLE}, {@code RENDER_BLACK_LIGHTNING} and {@code RENDER_NI4NI_BOLT}. */
+    private static BeamTracer fadingBolt(int dark, int light) {
         return (state, pose, sink) -> {
             if (state.length <= 0D) return;
             pose.pushPose();
-            pose.scale(fade(state) * 5F, 1F, fade(state) * 5F);
-            BeamPronter.prontBulletGradient(pose, sink, state.direction, dark, light,
-                    0.03125F, 0.0078125F);
-            pose.popPose();
-        };
-    }
-
-    /** Exact source {@code LegoClient.RENDER_NI4NI_BOLT}: endpoint-first tapered cyan/white bolt. */
-    private static BeamTracer ni4niBolt() {
-        return (state, pose, sink) -> {
-            if (state.length <= 0D || state.direction.lengthSqr() <= 1.0E-12D) return;
-            float age = fade(state);
-            pose.pushPose();
-            // LegoClient.bolt owns the orientation because ni4ni_arc disables the generic beam
-            // rotation pass. It draws from the measured endpoint back toward the entity origin.
-            pose.mulPose(Axis.YP.rotationDegrees(180F - state.yaw));
-            pose.mulPose(Axis.XP.rotationDegrees(-state.pitch - 90F));
-            pose.scale(age * 5F, 1F, age * 5F);
-            pose.translate(0F, state.length, 0F);
-            pose.mulPose(Axis.ZN.rotationDegrees(90F));
-            BeamPronter.prontBulletStandard(pose, sink, state.length, 0xAAD2E5, 0xFFFFFF);
+            alongBeam(state, pose);
+            bolt(state, pose, sink, fade(state) * 5F, dark, light);
             pose.popPose();
         };
     }
@@ -505,10 +507,9 @@ public final class TracerRegistry {
             float age = fade(state);
             int color = rgb((int) (r * age), (int) (g * age), (int) (b * age));
             pose.pushPose();
+            alongBeam(state, pose);
             pose.scale(age / 2F + 0.5F, 1F, age / 2F + 0.5F);
-            BeamPronter.prontBeam(pose, sink, state.direction,
-                    BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID, (int) state.age,
-                    Math.max(1, (int) (state.length / 2D + 1D)), 0F, color, color, 8, 0.0625F);
+            beam(state, pose, sink, (int) (state.age / 3F), 0F, color, 4, 0.025F);
             pose.popPose();
         };
     }
@@ -516,21 +517,23 @@ public final class TracerRegistry {
     private static BeamTracer folly() {
         return (state, pose, sink) -> {
             if (state.length <= 0D) return;
-            double age = fade(state);
-            pose.pushPose();
-            if (state.cameraOrientation != null) pose.mulPose(state.cameraOrientation);
-            sink.submitCustomGeometry(pose, CompatRenderTypes.entityTranslucentEmissive(FLARE), (p, buffer) -> {
-                flareQuad(p, buffer, (float) ((1D - age) * 7.5D + 1.5D), 1F, 1F, 1F, 0.5F * (float) age);
-                flareQuad(p, buffer, (float) ((1D - age) * 3.75D + 0.75D), 1F, 1F, 1F, 0.75F * (float) age);
-            });
-            pose.popPose();
-            pose.pushPose();
-            pose.scale((float) ((1D - age) * 25D + 2.5D), 1F, (float) ((1D - age) * 25D + 2.5D));
+            float age = fade(state);
+            if (state.cameraOrientation != null) {
+                float scale = (1F - age) * 7.5F + 1.5F;
+                pose.pushPose();
+                pose.mulPose(state.cameraOrientation);
+                sink.submitCustomGeometry(pose, CompatRenderTypes.flare(FLARE), (p, buffer) -> {
+                    flareQuad(p, buffer, scale, 1F, 1F, 1F, 0.5F * age);
+                    flareQuad(p, buffer, scale * 0.5F, 1F, 1F, 1F, 0.75F * age);
+                });
+                pose.popPose();
+            }
+            float radial = (1F - age) * 25F + 2.5F;
             int shade = (int) (0x20 * age);
-            int color = (shade << 16) | (shade << 8) | shade;
-            BeamPronter.prontBeam(pose, sink, state.direction,
-                    BeamPronter.EnumWaveType.RANDOM, BeamPronter.EnumBeamType.SOLID, (int) state.age / 3,
-                    Math.max(1, (int) (state.length / 2D + 1D)), 0F, color, color, 8, 0.0625F);
+            pose.pushPose();
+            alongBeam(state, pose);
+            pose.scale(radial, 1F, radial);
+            beam(state, pose, sink, (int) (state.age / 3F), 0F, rgb(shade, shade, shade), 8, 0.0625F);
             pose.popPose();
         };
     }

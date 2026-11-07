@@ -50,11 +50,22 @@ import static dev.golem.core.dejson.Features.rarity;
  * each ({@code rarity_filter} = the 1.7 chance, {@code in_square}, {@code heightmap MOTION_BLOCKING} = 1.7's
  * {@code getHeightValue}, {@code biome}), added to the overworld (the capsule to 1.7's {@code BiomeGenBase.beach} only)
  * at {@code vegetal_decoration}, after vanilla's trees and plants, as 1.7 ran after the biome decorator. Features a
- * config switch turns off (the 528 HE mines) are declared for {@code /place feature} but not added to any biome.
+ * config switch turns off (the 528 HE mines) are declared for {@code /place feature} but not added to any biome. The
+ * ones a player hunts for are built by {@link ScatteredStructure} instead, so {@code /locate} finds them.
  */
 public final class LegacyDungeonDeclarations {
 
     private static final String NS = "hbm";
+
+    // The features with a ScatteredStructure form, named here because Dejson reads them in a plain JVM.
+    public static final String LOCKED_SAFE = "locked_safe";
+    public static final String LANTERN = "broken_lantern";
+    public static final String BROADCASTER = "corrupted_broadcaster";
+    public static final String CAPSULE = "landed_capsule";
+    public static final String HIVE = "glyphid_hive";
+    public static final String METEORITE = "fallen_meteorite";
+    public static final String BLUEPRINT_CHEST = "blueprint_chest";
+    public static final List<String> SCATTERED = List.of(LOCKED_SAFE, LANTERN, BROADCASTER, CAPSULE, HIVE, METEORITE, BLUEPRINT_CHEST);
 
     private static boolean declared;
 
@@ -258,6 +269,55 @@ public final class LegacyDungeonDeclarations {
         Data.declare("data/" + NS + "/tags/worldgen/structure/legacy_dungeons.json", structureTag);
 
         features();
+        scattered();
+    }
+
+    /** The {@link ScatteredStructure} forms: {@code hbm:<feature>} with a {@code config_spread} set, tag {@code #hbm:scattered}. */
+    private static void scattered() {
+        JsonArray all = new JsonArray();
+        int salt = 1_700_010;
+        for (String id : SCATTERED) {
+            String biomes = OVERWORLD;
+            if (id.equals(CAPSULE)) {
+                // 1.7: biome == BiomeGenBase.beach (not the cold or stone beach)
+                JsonArray values = new JsonArray();
+                values.add("minecraft:beach");
+                JsonObject tag = new JsonObject();
+                tag.addProperty("replace", false);
+                tag.add("values", values);
+                Data.declare("data/" + NS + "/tags/worldgen/biome/has_structure/" + id + ".json", tag);
+                biomes = "#" + NS + ":has_structure/" + id;
+            }
+
+            JsonObject structure = new JsonObject();
+            structure.addProperty("type", NS + ":scattered");
+            structure.addProperty("biomes", biomes);
+            structure.add("spawn_overrides", new JsonObject());
+            structure.addProperty("step", "top_layer_modification");
+            structure.addProperty("terrain_adaptation", "none");
+            structure.addProperty("feature", id);
+            Data.declare("data/" + NS + "/worldgen/structure/" + id + ".json", structure);
+
+            JsonObject placement = new JsonObject();
+            placement.addProperty("type", NS + ":config_spread");
+            placement.addProperty("salt", salt++);
+            placement.addProperty("key", (id.equals(BLUEPRINT_CHEST) ? "grid:" : "dungeon:") + id);
+            JsonObject member = new JsonObject();
+            member.addProperty("structure", NS + ":" + id);
+            member.addProperty("weight", 1);
+            JsonArray members = new JsonArray();
+            members.add(member);
+            JsonObject set = new JsonObject();
+            set.add("structures", members);
+            set.add("placement", placement);
+            Data.declare("data/" + NS + "/worldgen/structure_set/" + id + ".json", set);
+
+            all.add(NS + ":" + id);
+        }
+        JsonObject structureTag = new JsonObject();
+        structureTag.addProperty("replace", false);
+        structureTag.add("values", all);
+        Data.declare("data/" + NS + "/tags/worldgen/structure/scattered.json", structureTag);
     }
 
     /** The scattered world blocks. */
@@ -266,21 +326,22 @@ public final class LegacyDungeonDeclarations {
         List<String> overworld = new ArrayList<>();
 
         // every feature is listed; hbm:config reads the hbm.cfg switch and chance when the chunk generates
-        overworld.add(gated("locked_safe", onSurface, ModBiomeModifiers.cfgSwitch(WorldgenKeys.VAULTS),
+        JsonObject unstructured = ModBiomeModifiers.unstructured();
+        overworld.add(gated("locked_safe", onSurface, unstructured, ModBiomeModifiers.cfgSwitch(WorldgenKeys.VAULTS),
                 ModBiomeModifiers.cfgChance(WorldgenKeys.VAULT)));
         overworld.add(gated("landmine_ap", onSurface, ModBiomeModifiers.cfgSwitch(WorldgenKeys.MINES),
                 ModBiomeModifiers.cfgChance(WorldgenKeys.LANDMINE)));
-        overworld.add(gated("broken_lantern", onSurface, rarity(Math.max(1, DungeonConfig.lanternStructure))));
+        overworld.add(gated("broken_lantern", onSurface, unstructured, ModBiomeModifiers.cfgChance(WorldgenKeys.LANTERN)));
         overworld.add(gated("landmine_he", onSurface, ModBiomeModifiers.cfgSwitch(WorldgenKeys.BOSNIA), rarity(16)));
-        overworld.add(gated("corrupted_broadcaster", onSurface, ModBiomeModifiers.cfgChance(WorldgenKeys.BROADCASTER)));
+        overworld.add(gated("corrupted_broadcaster", onSurface, unstructured, ModBiomeModifiers.cfgChance(WorldgenKeys.BROADCASTER)));
         // 1.7 genBlueprintChest ran in every chunk; the grid test is the feature's (origin: the chunk corner)
         Features.configured(NS, "blueprint_chest", NS + ":blueprint_chest", null);
-        Features.placed(NS, "blueprint_chest", NS + ":blueprint_chest", biome());
+        Features.placed(NS, "blueprint_chest", NS + ":blueprint_chest", unstructured, biome());
         overworld.add(NS + ":blueprint_chest");
         addFeatures(NS, "legacy_dungeon_blocks", "#minecraft:is_overworld", overworld, VEGETAL_DECORATION);
 
         // 1.7: biome == BiomeGenBase.beach (not the cold or stone beach)
-        String capsule = gated("landed_capsule", onSurface, ModBiomeModifiers.cfgChance(WorldgenKeys.CAPSULE));
+        String capsule = gated("landed_capsule", onSurface, unstructured, ModBiomeModifiers.cfgChance(WorldgenKeys.CAPSULE));
         addFeatures(NS, "landed_capsule", "minecraft:beach", List.of(capsule), VEGETAL_DECORATION);
     }
 

@@ -18,6 +18,8 @@ import com.hbm.config.StructureConfig;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.util.SavedIds;
 import com.hbm.world.gen.LegacyBiomes;
+import com.hbm.world.gen.MapGenNTMFeatures;
+import com.hbm.world.gen.NTMComponentStructures;
 import com.hbm.world.gen.NTMStructureDeclarations;
 import com.hbm.world.gen.NTMWorldGenerator;
 import com.mojang.serialization.Codec;
@@ -1396,7 +1398,12 @@ public class NBTStructure {
                 var biome = LegacyBiomes.biomeAt(context.biomeSource(), context.randomState(), cx, surface, cz);
                 if (!LegacyBiomes.accepts(spawnName, biome, context)) return Optional.empty();
                 // 1.7 picked one spawn per region by the hbm.cfg weights (5.05..5.43); only that one generates here
-                if (!wins(spawnName, biome, context)) return Optional.empty();
+                boolean silo = NTMStructureDeclarations.SILO.equals(spawnName);
+                if (!wins(silo ? NTMComponentStructures.FEATURES : spawnName, biome, context)) return Optional.empty();
+                // features or silo: the start's own draw decides which of the two this site is
+                if ((silo || NTMComponentStructures.FEATURES.equals(spawnName)) && MapGenNTMFeatures.rollsSilo(context) != silo) {
+                    return Optional.empty();
+                }
             }
 
             return Optional.of(new GenerationStub(center, builder -> {

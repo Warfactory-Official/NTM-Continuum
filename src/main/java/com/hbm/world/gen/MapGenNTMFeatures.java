@@ -1,5 +1,6 @@
 package com.hbm.world.gen;
 
+import com.hbm.config.StructureConfig;
 import com.hbm.world.gen.component.CivilianFeatures.NTMHouse1;
 import com.hbm.world.gen.component.CivilianFeatures.NTMHouse2;
 import com.hbm.world.gen.component.CivilianFeatures.NTMLab1;
@@ -15,6 +16,8 @@ import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
@@ -51,7 +54,7 @@ public final class MapGenNTMFeatures {
 
         Component component;
 
-        if (heightVariation(biome, context) <= 0.25F && rand.nextInt(10) == 0) { //for now our only restriction is kinda-flat biomes. that and chance might change idk
+        if (heightVariation(biome, context) <= 0.25F && drawsSilo(rand)) { //for now our only restriction is kinda-flat biomes. that and chance might change idk
             component = new SiloComponent(rand, i, j);
         } else if (hotAndDry(biome)) { //Desert & Savannah
             if (rand.nextBoolean()) {
@@ -71,6 +74,29 @@ public final class MapGenNTMFeatures {
 
         component.assembleHeight(context);
         builder.addPiece(component);
+    }
+
+    /** The {@code silo} spawn's start, the first branch of {@link #start} with the same draws. */
+    public static void startSilo(StructurePiecesBuilder builder, Structure.GenerationContext context) {
+        RandomSource rand = context.random();
+        drawsSilo(rand);
+        Component component = new SiloComponent(rand, context.chunkPos().getMinBlockX() + 8, context.chunkPos().getMinBlockZ() + 8);
+        component.assembleHeight(context);
+        builder.addPiece(component);
+    }
+
+    /** Whether {@link #start} would build the silo here, from a copy of the context's random. */
+    public static boolean rollsSilo(Structure.GenerationContext context) {
+        Holder<Biome> biome = biomeAt(context, context.chunkPos().getMinBlockX() + 8, context.chunkPos().getMinBlockZ() + 8);
+        if (heightVariation(biome, context) > 0.25F) return false;
+        WorldgenRandom rand = new WorldgenRandom(new LegacyRandomSource(0L));
+        rand.setLargeFeatureSeed(context.seed(), context.chunkPos().getMinBlockX() >> 4, context.chunkPos().getMinBlockZ() >> 4);
+        return drawsSilo(rand);
+    }
+
+    /** 1.7 {@code rand.nextInt(10) == 0}, the 10 being {@code 5.51_siloChance}; 0 or less draws nothing. */
+    private static boolean drawsSilo(RandomSource rand) {
+        return StructureConfig.siloChance > 0 && rand.nextInt(StructureConfig.siloChance) == 0;
     }
 
     /** The biome where 1.7 read it: the chunk's centre column, at the surface (an ocean at its water, not a cave below). */

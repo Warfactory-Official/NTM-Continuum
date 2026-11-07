@@ -225,7 +225,7 @@ public final class ModBiomeModifiers {
         }
         keyhole.add("targets", targets);
         Features.configured(NS, "stone_keyhole", "minecraft:replace_single_block", keyhole);
-        Features.placed(NS, "stone_keyhole", NS + ":stone_keyhole", rarity(4), inSquare(),
+        Features.placed(NS, "stone_keyhole", NS + ":stone_keyhole", cfgChance(WorldgenKeys.KEYHOLE), inSquare(),
                 uniformHeight(absolute(6), absolute(18)), biome());
         out.add(NS + ":stone_keyhole");
         return out;
@@ -329,6 +329,15 @@ public final class ModBiomeModifiers {
         return cfg(key, "chance", 1);
     }
 
+    /** Kept in a world with Generate Structures off: the feature's {@link ScatteredStructure} form builds it otherwise. */
+    static JsonObject unstructured() {
+        JsonObject json = new JsonObject();
+        json.addProperty("type", NS + ":config");
+        json.addProperty("key", "generate_structures");
+        json.addProperty("mode", "unstructured");
+        return json;
+    }
+
     /** Kept while the value is non-zero (a boolean key, or 1.7's {@code > 0} guard). */
     static JsonObject cfgSwitch(String key) {
         return cfg(key, "switch", 1);
@@ -396,9 +405,9 @@ public final class ModBiomeModifiers {
 
         List<String> surface = new ArrayList<>();
         // glyphid hive: MobConfig.enableHives && rand.nextInt(hiveSpawn) == 0
-        surface.add(gated("glyphid_hive", "glyphid_hive", List.of(cfgSwitch(WorldgenKeys.HIVES), cfgChance(WorldgenKeys.HIVE_SPAWN)), onSurface));
+        surface.add(gated("glyphid_hive", "glyphid_hive", List.of(unstructured(), cfgSwitch(WorldgenKeys.HIVES), cfgChance(WorldgenKeys.HIVE_SPAWN)), onSurface));
         // fallen meteorite: rand.nextInt(meteoriteSpawn) == 0
-        surface.add(gated("fallen_meteorite", "fallen_meteorite", List.of(cfgChance(WorldgenKeys.METEORITE)), onSurface));
+        surface.add(gated("fallen_meteorite", "fallen_meteorite", List.of(unstructured(), cfgChance(WorldgenKeys.METEORITE)), onSurface));
         addFeatures(NS, "surface", "#minecraft:is_overworld", surface, VEGETAL_DECORATION);
 
         // chlorine geyser: biome == BiomeGenBase.plains (not its sunflower mutation), on grass
@@ -407,7 +416,7 @@ public final class ModBiomeModifiers {
 
         // pink tree: rand.nextInt(1000) == 0, a random column (no heightmap: the whole column is scanned)
         Features.configured(NS, "pink_tree", NS + ":pink_tree", null);
-        Features.placed(NS, "pink_tree", NS + ":pink_tree", rarity(1000), inSquare(), biome());
+        Features.placed(NS, "pink_tree", NS + ":pink_tree", cfgChance(WorldgenKeys.PINK_TREE), inSquare(), biome());
         addFeatures(NS, "pink_tree", "#minecraft:is_overworld", List.of(NS + ":pink_tree"), TOP_LAYER_MODIFICATION);
 
         // 1.7 ModEventHandlerImpact: after Tom's impact, new chunks lose their grass and decorations (does nothing

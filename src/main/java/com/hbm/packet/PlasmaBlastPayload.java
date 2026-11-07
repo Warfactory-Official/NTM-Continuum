@@ -38,11 +38,16 @@ public record PlasmaBlastPayload(double x, double y, double z, float r, float g,
 
     public static void send(Level level, double x, double y, double z, float r, float g, float b,
             float pitch, float yaw, float scale, double range) {
+        sendAround(level, x, y, z, range, new PlasmaBlastPayload(x, y, z, r, g, b, pitch, yaw, scale));
+    }
+
+    /** 1.7's {@code TargetPoint}: every player within {@code range} of the centre, wherever the blast itself is. */
+    public static void sendAround(Level level, double centerX, double centerY, double centerZ, double range,
+            PlasmaBlastPayload payload) {
         if (!(level instanceof ServerLevel server)) return;
-        PlasmaBlastPayload payload = new PlasmaBlastPayload(x, y, z, r, g, b, pitch, yaw, scale);
         double radiusSquared = range * range;
         for (var player : server.players()) {
-            if (player.distanceToSqr(x, y, z) <= radiusSquared) {
+            if (player.distanceToSqr(centerX, centerY, centerZ) <= radiusSquared) {
                 GolemNetwork.sendToPlayer(player, CODEC, payload);
             }
         }

@@ -13,7 +13,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -85,19 +85,15 @@ public abstract class BlockCraneBase extends CompatBlock implements TickingBlock
         return outputSide(level.getBlockState(pos));
     }
 
-    /** 1.7 {@code onBlockActivated}: a tool or the wand acts instead, sneaking does nothing, anything else opens the GUI. */
-    @Override
-    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
-                                            InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (stack.getItem() instanceof ItemTooling || stack.getItem() instanceof ItemConveyorWand) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
-        }
-        return onUseWithoutItem(state, level, pos, player, hit);
-    }
-
+    /**
+     * 1.7 {@code onBlockActivated}: a tool or the wand acts instead, sneaking does nothing, anything else opens the GUI.
+     * Every held item arrives here, so this is where the tool has to pass to reach its own {@code useOn}.
+     */
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
+        Item held = player.getMainHandItem().getItem();
+        if (held instanceof ItemTooling || held instanceof ItemConveyorWand) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!(level.getBlockEntity(pos) instanceof MenuProvider provider)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {

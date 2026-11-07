@@ -32,7 +32,7 @@ public class RBMKDebrisRadiating extends RBMKDebrisBurning {
     @Override public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource rand) {
         radiate(level, pos);
         if (rand.nextInt(FLAME_CHANCE) == 0) {
-            flame(level, pos);
+            flame(level, pos.getX() + rand.nextDouble(), pos.getY() + 1.75D, pos.getZ() + rand.nextDouble());
             level.playSound(null, pos, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 1F + rand.nextFloat(), rand.nextFloat() * .7F + .3F);
         }
         BlockPos side = pos.relative(Direction.values()[rand.nextInt(6)]);

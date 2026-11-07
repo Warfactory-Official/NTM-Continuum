@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.particle.helper.HbmEffectNT;
+import net.minecraft.nbt.CompoundTag;
 import com.hbm.api.environment.Environment;
 import dev.golem.core.data.Tags;
 
@@ -131,6 +133,15 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
         level.addParticle(ParticleTypes.LAVA,
                 pos.getX() + 0.25D + level.getRandom().nextDouble() * 0.5D, pos.getY() + 7.25D,
                 pos.getZ() + 0.25D + level.getRandom().nextDouble() * 0.5D, 0D, 0D, 0D);
+        if (furnace.tanks[1].getFill() < 1_000 || level.players().stream().noneMatch(player -> player.distanceToSqr(
+                pos.getX() + 0.5D, pos.getY() + 7D, pos.getZ() + 0.5D) < 100D * 100D)) return;
+        CompoundTag fx = new CompoundTag();
+        fx.putFloat("lift", 10F);
+        fx.putFloat("base", 0.25F);
+        fx.putFloat("max", 2.5F);
+        fx.putInt("life", 100 + level.getRandom().nextInt(20));
+        fx.putInt("color", 0x202020);
+        HbmEffectNT.Tower.summonParticle(level, pos.getX() + 0.5D, pos.getY() + 7D, pos.getZ() + 0.5D, fx);
     }
 
     protected PortDef[] cachedPorts;

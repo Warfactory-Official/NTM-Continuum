@@ -124,9 +124,9 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         te.plasmaEnergySync = te.plasmaEnergy;
         te.plasmaEnergy = 0;
 
-        ForgeDirection facing = FusionNodes.facing(state);
-        FusionLink.claim(level, te, intake(pos, facing), MachineCaps.PLASMA_IN);
-        FusionLink.claim(level, te, outlet(pos, facing), MachineCaps.PLASMA_OUT);
+        ForgeDirection rot = FusionNodes.facing(state).getRotation(ForgeDirection.UP);
+        FusionLink.claim(level, te, node(pos, rot), MachineCaps.PLASMA_IN);
+        FusionLink.claim(level, te, node(pos, rot.getOpposite()), MachineCaps.PLASMA_OUT);
 
         PlasmaForgeRecipe recipe = te.plasmaModule.getRecipe() instanceof PlasmaForgeRecipe plasma ? plasma : null;
         if (recipe != null) te.maxPower = recipe.power * 100L;
@@ -152,9 +152,7 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         if (te.plasmaModule.markDirty) te.setChanged();
 
         long powerReceived = (long) Math.ceil(te.plasmaEnergySync * 0.75D);
-        ForgeDirection out = FusionNodes.facing(te.getBlockState());
-        BlockEntity downstream =
-                FusionLink.at(level, beam(pos, out), MachineCaps.PLASMA_IN);
+        BlockEntity downstream = FusionLink.at(level, beam(pos, rot.getOpposite()), MachineCaps.PLASMA_IN);
         te.connected = downstream != null;
         if (powerReceived > 0 && downstream instanceof IFusionPowerReceiver receiver) {
             receiver.receiveFusionPower(powerReceived, te.neutronEnergy, te.plasmaRed, te.plasmaGreen, te.plasmaBlue);
@@ -309,8 +307,8 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
 
     @Override
     public void setRemoved() {
-        ForgeDirection facing = FusionNodes.facing(getBlockState());
-        FusionLink.release(level, intake(worldPosition, facing), outlet(worldPosition, facing));
+        ForgeDirection rot = FusionNodes.facing(getBlockState()).getRotation(ForgeDirection.UP);
+        FusionLink.release(level, node(worldPosition, rot), node(worldPosition, rot.getOpposite()));
         super.setRemoved();
     }
 
@@ -389,17 +387,13 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
 
     private enum ArmState { REPOSITION, EXTEND1, RETRACT1, EXTEND2, RETRACT2, RETIRE }
 
-    /** Where an upstream torus's beam lands, five blocks out the front at +2. */
-    private static BlockPos intake(BlockPos pos, ForgeDirection facing) {
-        return pos.offset(facing.offsetX * 5, 2, facing.offsetZ * 5);
+    /** A plasma node, five out at +2 on a side: 1.7 takes the beam across the forge, not through the port ends. */
+    private static BlockPos node(BlockPos pos, ForgeDirection side) {
+        return pos.offset(side.offsetX * 5, 2, side.offsetZ * 5);
     }
 
-    /** Where this forge emits, five blocks out the back, and one further, where its own beam lands. */
-    private static BlockPos outlet(BlockPos pos, ForgeDirection facing) {
-        return pos.offset(-facing.offsetX * 5, 2, -facing.offsetZ * 5);
-    }
-
-    private static BlockPos beam(BlockPos pos, ForgeDirection facing) {
-        return pos.offset(-facing.offsetX * 6, 2, -facing.offsetZ * 6);
+    /** Where this forge's outgoing beam lands, one further out than its node. */
+    private static BlockPos beam(BlockPos pos, ForgeDirection side) {
+        return pos.offset(side.offsetX * 6, 2, side.offsetZ * 6);
     }
 }

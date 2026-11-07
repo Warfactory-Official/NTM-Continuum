@@ -2,21 +2,36 @@ package com.hbm.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.Constants;
 import com.hbm.config.WorldConfig;
 import com.hbm.entity.projectile.EntityMeteor;
 import com.hbm.handler.BossSpawnHandler;
+import com.hbm.world.gen.ConfigSpreadPlacement;
+import com.hbm.world.gen.LegacyDungeonBlocks;
+import com.hbm.world.gen.LegacyDungeonWorld;
+import com.hbm.world.gen.ScatteredStructure;
 import dev.golem.core.Ids;
 import dev.golem.core.harness.HarnessQueryRegistry;
+import dev.golem.core.world.RegistryLookups;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.QuartPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.AABB;
 
 import java.util.HashSet;
@@ -36,7 +51,9 @@ import java.util.concurrent.TimeUnit;
  *       {@code MOTION_BLOCKING} surface y there, the block under it and the biome;</li>
  *   <li>{@code mode=meteor}: the meteor scheduler, with optional {@code strikeChance} (sets
  *       {@code WorldConfig.meteorStrikeChance}), {@code shower} (sets the shower ticks), {@code strike=true} (one
- *       strike roll's charm check + meteor on the player); returns the settings and the falling meteors.</li>
+ *       strike roll's charm check + meteor on the player); returns the settings and the falling meteors;</li>
+ *   <li>{@code mode=scattered}, {@code feature}, {@code radius} in chunks: every candidate of that {@link ScatteredStructure}
+ *       in its biomes, per water depth of the column: {@code offered}, {@code buildable}, and the nearest water sites.</li>
  * </ul>
  */
 public final class WorldFeatureHarnessQueries {
@@ -169,8 +186,61 @@ public final class WorldFeatureHarnessQueries {
                 }
                 json.add("meteors", meteors);
             }
+            case "scattered" -> scattered(level, p, json);
             default -> json.addProperty("error", "unknown mode " + mode);
         }
         return json;
+    }
+
+    private static void scattered(ServerLevel level, JsonObject p, JsonObject json) {
+        String feature = p.get("feature").getAsString();
+        int radius = i(p, "radius", 500);
+        var registries = level.registryAccess();
+        ScatteredStructure structure = (ScatteredStructure) RegistryLookups.holder(registries, Registries.STRUCTURE,
+                ResourceKey.create(Registries.STRUCTURE, Ids.of(Constants.MOD_ID, feature))).value();
+        var placement = (ConfigSpreadPlacement) RegistryLookups.holder(registries, Registries.STRUCTURE_SET,
+                ResourceKey.create(Registries.STRUCTURE_SET, Ids.of(Constants.MOD_ID, feature))).value().placement();
+        ChunkGenerator generator = level.getChunkSource().getGenerator();
+        RandomState state = level.getChunkSource().randomState();
+        LegacyDungeonWorld.Terrain terrain = LegacyDungeonWorld.terrain(generator, state, level);
+        long seed = level.getSeed();
+        Map<Integer, Integer> offered = new TreeMap<>(), buildable = new TreeMap<>();
+        List<int[]> water = new ArrayList<>();
+        WorldgenRandom rand = new WorldgenRandom(new LegacyRandomSource(0L));
+        for (int cx = -radius; cx <= radius; cx++) {
+            for (int cz = -radius; cz <= radius; cz++) {
+                if (!placement.isCandidate(seed, cx, cz)) continue;
+                rand.setLargeFeatureSeed(seed, cx, cz);
+                var found = structure.site(registries, rand, new ChunkPos(cx, cz), terrain);
+                if (found.isEmpty()) continue;
+                ScatteredStructure.Site site = found.get();
+                var biome = generator.getBiomeSource().getNoiseBiome(QuartPos.fromBlock(site.x()), QuartPos.fromBlock(site.y()),
+                        QuartPos.fromBlock(site.z()), state.sampler());
+                if (!structure.biomes().contains(biome)) continue;
+                int depth = 0;
+                while (terrain.block(site.x(), site.y() - 1 - depth, site.z()) == LegacyDungeonBlocks.Blocks.water) depth++;
+                offered.merge(depth, 1, Integer::sum);
+                if (site.buildable()) {
+                    buildable.merge(depth, 1, Integer::sum);
+                    if (depth > 0) water.add(new int[] {site.x(), site.z(), depth});
+                }
+            }
+        }
+        water.sort(Comparator.comparingInt(a -> a[0] * a[0] + a[1] * a[1]));
+        json.add("offered", depths(offered));
+        json.add("buildable", depths(buildable));
+        JsonArray sites = new JsonArray();
+        for (int[] site : water.subList(0, Math.min(8, water.size()))) {
+            JsonArray at = new JsonArray();
+            for (int v : site) at.add(v);
+            sites.add(at);
+        }
+        json.add("water", sites);
+    }
+
+    private static JsonObject depths(Map<Integer, Integer> counts) {
+        JsonObject o = new JsonObject();
+        counts.forEach((depth, count) -> o.addProperty(String.valueOf(depth), count));
+        return o;
     }
 }

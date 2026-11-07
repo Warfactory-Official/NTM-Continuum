@@ -25,6 +25,8 @@ import com.hbm.inventory.recipes.SolderingRecipes.SolderingRecipe;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.core.BlockPos;
@@ -130,6 +132,15 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
                         te.inventory.getStackInSlot(6).grow(te.recipe.output.getCount());
                     }
                     te.setChanged();
+                }
+
+                if (level.getGameTime() % 20 == 0) {
+                    ForgeDirection dir = MachineCore.facing(state);
+                    ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+                    CompoundTag data = new CompoundTag();
+                    data.putByte("count", (byte) 3);
+                    HbmEffectNT.Tau.sendAround(level, pos.getX() + 0.5 - dir.offsetX * 0.5 + rot.offsetX * 0.5, pos.getY() + 1.125,
+                            pos.getZ() + 0.5 - dir.offsetZ * 0.5 + rot.offsetZ * 0.5, data, pos.getX(), pos.getY(), pos.getZ(), 25);
                 }
             } else {
                 te.progress = 0;

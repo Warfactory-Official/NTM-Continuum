@@ -2,7 +2,6 @@ package com.hbm.client.particle;
 
 import dev.golem.core.Ids;
 import dev.golem.core.render.CompatParticle;
-import dev.golem.core.render.ParticleLayer;
 import dev.golem.core.render.Particles;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.Identifier;
@@ -23,7 +22,7 @@ public final class ParticlePlasmaBlast extends CompatParticle {
         this.blue = blue;
         this.scale = scale;
         this.lifetime = 20;
-        this.setLayer(ParticleLayer.ADDITIVE);
+        this.drawAdditiveWithoutFog();
         this.setPlaneOrientation(yaw, pitch);
         this.setColor(red, green, blue);
     }

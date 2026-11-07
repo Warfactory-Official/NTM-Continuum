@@ -61,7 +61,7 @@ public final class HbmParticleHandlers {
         HbmEffectNT.Giblets.setHandler((level, x, y, z, data) -> {
             if (level instanceof ClientLevel client) DisintegrationParticles.giblets(client,
                     client.getRandom(), x, y, z, Tags.getIntOr(data, "ent", -1),
-                    Tags.getIntOr(data, "gibType", 0));
+                    Tags.getIntOr(data, "gibType", 0), Tags.getIntOr(data, "cDiv", 0));
         });
         HbmEffectNT.MissileContrail.setHandler(HbmParticleHandlers::spawnContrail);
         HbmEffectNT.SawmillDamage.setHandler(HbmParticleHandlers::spawnSawmillDamage);
@@ -93,6 +93,9 @@ public final class HbmParticleHandlers {
                     Tags.getDoubleOr(data, "mY", 0D), Tags.getDoubleOr(data, "mZ", 0D), color));
         });
         AmatFlashParticles.register();
+        RBMKFlameParticles.register();
+        HbmEffectNT.RBMKFlame.setHandler((level, x, y, z, data) -> RBMKFlameParticles.spawn(level, x, y, z,
+                Tags.getIntOr(data, "maxAge", 0)));
         HbmEffectNT.AmatFlash.setHandler((level, x, y, z, data) -> AmatFlashParticles.spawn(level, x, y, z,
                 Tags.getFloatOr(data, "scale", 1F)));
         HbmEffectNT.ProperJolt.setHandler((level, x, y, z, data) -> properJolt(

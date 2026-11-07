@@ -294,16 +294,15 @@ public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extend
     }
 
     /**
-     * {@code hbm:blueprint_chest}, 1.7 {@code genBlueprintChest}: one chest of blueprints in an obsidian shell per
-     * {@code grid} x {@code grid} cell, skipped when {@code rand.nextInt(roll) < skip}, never within {@code min_distance}
-     * of the origin. The origin is the chunk corner.
+     * {@code hbm:blueprint_chest}, 1.7 {@code genBlueprintChest}: one chest of blueprints in an obsidian shell per cell of
+     * the {@code 4.26_blueprintChestGrid} grid, skipped when {@code rand.nextInt(roll) < skip}, never within
+     * {@code min_distance} of the origin. The origin is the chunk corner.
      */
     public static class BlueprintChest extends DungeonBlockFeature<BlueprintChest.Config> {
 
-        public record Config(int grid, int minDistance, int roll, int skip, String pool, int rolls, BlockState container,
+        public record Config(int minDistance, int roll, int skip, String pool, int rolls, BlockState container,
                              BlockState shell) implements FeatureConfiguration {
             public static final Codec<Config> CODEC = RecordCodecBuilder.create(i -> i.group(
-                    field(Codec.intRange(1, Integer.MAX_VALUE), "grid", DungeonConfig.blueprintGrid).forGetter(Config::grid),
                     field(Codec.INT, "min_distance", 100).forGetter(Config::minDistance),
                     FeatureCodecs.positive("roll", 20).forGetter(Config::roll),
                     field(Codec.INT, "skip", 10).forGetter(Config::skip),
@@ -318,19 +317,35 @@ public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extend
             super(Config.CODEC);
         }
 
+        // 1.7 called genBlueprintChest outside its enableDungeons block
+        @Override
+        public boolean place(FeaturePlaceContext<Config> context) {
+            return generate(context.config(), context.level(), context.random(), context.origin());
+        }
+
+        /** The distance test and the roll of the chunk corner (i, j), in 1.7's order; the grid is the caller's. */
+        public static boolean passes(Config c, int i, int j, RandomSource rand) {
+            if (Math.abs(i) < c.minDistance() && Math.abs(j) < c.minDistance()) return false;
+            // nextBoolean would have weird periodicity to it, hoping that a larger int range has more variance
+            return rand.nextInt(c.roll()) >= c.skip();
+        }
+
         @Override
         protected boolean generate(Config c, WorldGenLevel level, RandomSource rand, BlockPos origin) {
             int i = origin.getX(), j = origin.getZ();
-            if (Math.abs(i) < c.minDistance() && Math.abs(j) < c.minDistance()) return false;
-            // nextBoolean would have weird periodicity to it, hoping that a larger int range has more variance
-            if (rand.nextInt(c.roll()) < c.skip()) return false;
+            int grid = DungeonConfig.blueprintGrid;
+            if (grid <= 0 || !passes(c, i, j, rand)) return false;
 
-            int cX = Math.abs(i) % c.grid();
-            int cZ = Math.abs(j) % c.grid();
+            int cX = Math.abs(i) % grid;
+            int cZ = Math.abs(j) % grid;
             if (cX >= 16 || cZ >= 16) return false;
 
-            int x = i + 8;
-            int z = j + 8;
+            build(c, level, rand, i + 8, j + 8);
+            return true;
+        }
+
+        /** The chest and its shell at a column that passed the grid and the roll. */
+        public void build(Config c, WorldGenLevel level, RandomSource rand, int x, int z) {
             int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) - rand.nextInt(2);
 
             BlockPos chest = new BlockPos(x, y, z);
@@ -342,7 +357,6 @@ public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extend
             if (level.getBlockEntity(chest) instanceof Container inventory) {
                 PoolLoot.fill(level, chest, inventory, c.pool(), rand, c.rolls());
             }
-            return true;
         }
     }
 }

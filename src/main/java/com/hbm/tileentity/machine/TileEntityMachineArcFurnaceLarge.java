@@ -217,6 +217,16 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
                         pos.getZ() + 0.5D + level.getRandom().nextGaussian() * 0.5D, data);
             }
         }
+        if (furnace.lid < furnace.prevLid && furnace.lid > 0.5F && furnace.hasMaterial
+                && level.getRandom().nextInt(5) == 0
+                && level.players().stream().anyMatch(player -> player.distanceToSqr(
+                pos.getX() + 0.5D, pos.getY() + 4D, pos.getZ() + 0.5D) < 2_500D)) {
+            CompoundTag flame = new CompoundTag();
+            flame.putInt("maxAge", 50);
+            double x = pos.getX() + 0.5D + level.getRandom().nextGaussian() * 0.5D;
+            double z = pos.getZ() + 0.5D + level.getRandom().nextGaussian() * 0.5D;
+            for (int i = 0; i < 2; i++) HbmEffectNT.RBMKFlame.summonParticle(level, x, pos.getY() + 2.75D, z, flame);
+        }
         furnace.audioLid = MachineAudio.tick(furnace.audioLid, furnace.lid != furnace.prevLid,
                 ModDoorSounds.WGH_START.get(), SoundSource.BLOCKS, pos, furnace.getVolume(0.75F), 15F, 1.0F, 5);
 

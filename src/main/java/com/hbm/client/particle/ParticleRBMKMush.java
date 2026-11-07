@@ -3,7 +3,6 @@ package com.hbm.client.particle;
 import com.hbm.Constants;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CompatParticle;
-import dev.golem.core.render.ParticleLayer;
 import dev.golem.core.render.Particles;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -20,7 +19,7 @@ public final class ParticleRBMKMush extends CompatParticle {
         friction = 1F;
         hasPhysics = false;
         rCol = gCol = bCol = 1F;
-        setLayer(ParticleLayer.ADDITIVE);
+        drawAdditiveWithoutFog();
     }
 
     @Override public void tick() {

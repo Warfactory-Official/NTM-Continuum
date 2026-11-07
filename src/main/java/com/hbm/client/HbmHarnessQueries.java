@@ -28,5 +28,6 @@ public final class HbmHarnessQueries {
         AdvancementHarnessQueries.register();
         AnvilHarnessQueries.register();
         FxCablesHarnessQueries.register();
+        MachineEffectHarnessQueries.register();
     }
 }

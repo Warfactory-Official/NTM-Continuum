@@ -79,6 +79,10 @@ public final class StructureConfig {
     public static int abandonedArcticStationSpawnWeight = 5;
     public static int militaryBaseSpawnWeight = 1;
     public static int submarineSpawnWeight = 2;
+    /** {@code 5.50_meteorDungeonSpawnWeight}: 1.7 left the dungeon at SpawnCondition's default weight. */
+    public static int meteorDungeonSpawnWeight = 1;
+    /** {@code 5.51_siloChance}: one in n flat {@code features} sites is the silo, hardcoded in 1.7. 0 = none. */
+    public static int siloChance = 10;
 
     /** 1.7 {@code 5.04_debugStructures}: written by 1.7, read by nothing there (ServerConfig.STRUCTURE_DEBUG is live). */
     public static boolean debugStructures = false;
@@ -144,6 +148,9 @@ public final class StructureConfig {
         abandonedArcticStationSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.45_abandonedArcticStationSpawnWeight", "Spawn weight for abandoned arctic station.", 5);
         militaryBaseSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.46_militaryBaseSpawnWeight", "Spawn weight for military base.", 1);
         submarineSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.49_submarineSpawnWeight", "Spawn weight for submarine.", 2);
+
+        meteorDungeonSpawnWeight = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.50_meteorDungeonSpawnWeight", "Spawn weight for the meteor dungeon.", 1);
+        siloChance = CommonConfig.createConfigInt(config, CATEGORY_STRUCTURES, "5.51_siloChance", "One in this many misc structures in flat biomes is the missile silo. 0 turns it off, and those sites build the other misc structures", 10);
 
         structureMinChunks = CommonConfig.setDef(structureMinChunks, 4);
         structureMaxChunks = CommonConfig.setDef(structureMaxChunks, 12);

@@ -88,6 +88,10 @@ public final class NTMComponentStructures {
         features.start = MapGenNTMFeatures::start;
         NBTStructure.registerStructure(features);
 
+        SpawnCondition silo = new SpawnCondition(NTMStructureDeclarations.SILO);
+        silo.start = MapGenNTMFeatures::startSilo;
+        NBTStructure.registerStructure(silo);
+
         SpawnCondition bunker = new SpawnCondition(BUNKER);
         bunker.start = (builder, context) -> new BunkerComponents.BunkerStart(context.random(),
                 context.chunkPos().getMinBlockX() >> 4, context.chunkPos().getMinBlockZ() >> 4).addTo(builder);

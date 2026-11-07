@@ -56,10 +56,11 @@ public final class NTMStructureDeclarations {
     public static final String NULL_PLAINS = "null_plains";
     public static final String NULL_OCEAN = "null_ocean";
     public static final String SUBMARINE = "submarine";
+    public static final String SILO = "silo";
 
     /** 1.7 {@code StructureConfig}: region salt, {@code 996996996 - dimension} for the overworld. */
     public static final int SALT = 996996996;
-    /** 1.7 left the meteor dungeon at the default weight of 1; NTM: Space sets 0, as hbm-space generates none. */
+    /** NTM: Space sets 0, as hbm-space generates none; otherwise {@code 5.50_meteorDungeonSpawnWeight} decides. */
     public static int meteorDungeonWeight = 1;
 
     private static boolean declared;
@@ -186,6 +187,8 @@ public final class NTMStructureDeclarations {
     static {
         add("spire", "spire", StructureConfig.spireSpawnWeight, b -> b.heightVariation() <= 0.05F && !b.water());
         add("features", "features", StructureConfig.featuresSpawnWeight, b -> !b.water()); // WG-C: MapGenNTMFeatures.start
+        // the flat half of 1.7's features start: no weight of its own, a features site decides (runtimeWeight)
+        add(SILO, SILO, 1, b -> !b.water() && b.heightVariation() <= 0.25F);
         add("bunker", "bunker", StructureConfig.bunkerSpawnWeight, b -> !b.water()); // WG-C: BunkerComponents.BunkerStart
         add("vertibird", "vertibird", StructureConfig.vertibirdSpawnWeight, b -> !b.water() && b.is(Type.SANDY), Type.SANDY);
         add("crashed_vertibird", "crashed_vertibird", StructureConfig.vertibirdCrashedSpawnWeight, b -> !b.water() && b.is(Type.SANDY), Type.SANDY);
@@ -279,7 +282,7 @@ public final class NTMStructureDeclarations {
             case "abandoned_arcticstation" -> StructureConfig.abandonedArcticStationSpawnWeight;
             case "military_base" -> StructureConfig.militaryBaseSpawnWeight;
             case SUBMARINE -> StructureConfig.submarineSpawnWeight;
-            case "meteor_dungeon" -> meteorDungeonWeight;
+            case "meteor_dungeon" -> meteorDungeonWeight > 0 ? StructureConfig.meteorDungeonSpawnWeight : 0;
             case NULL_PLAINS -> StructureConfig.plainsNullWeight;
             case NULL_OCEAN -> StructureConfig.oceanNullWeight;
             default -> 0;

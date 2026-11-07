@@ -22,11 +22,14 @@ import com.hbm.items.ModBatteryItems;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import com.hbm.items.ModUtilityToolItems;
+import com.hbm.items.machine.ModMoldItems;
 import com.hbm.items.machine.ItemFluidIDMulti;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.items.special.BedrockOreType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
+import com.hbm.tileentity.machine.TileEntityFoundryBasin;
 import com.hbm.tileentity.machine.TileEntityMachineAnnihilator;
 import com.hbm.tileentity.machine.TileEntityMachineElectrolyser;
 import com.hbm.tileentity.machine.TileEntityMachineExcavator;
@@ -187,6 +190,34 @@ public final class ElectrolyserGameTests {
         electrolyser.progressMetal = 0;
         tick(helper, electrolyser);
         helper.assertTrue(electrolyser.progressMetal == 1, "a copper crystal did not start after iron was poured out");
+        helper.succeed();
+    }
+
+    /** 1.7 sends its stream only when metal really poured, with len = y - (ceil(impact) - 0.875) + 2. */
+    public static void pourStream(GameTestHelper helper) {
+        BlockPos corePos = new BlockPos(7, 1, 7);
+        helper.setBlock(corePos, ModMachineBlocks.machine_electrolyser.get().defaultBlockState());
+        TileEntityMachineElectrolyser electrolyser =
+                (TileEntityMachineElectrolyser) helper.getLevel().getBlockEntity(helper.absolutePos(corePos));
+        ForgeDirection facing = MachineCore.facing(electrolyser.getBlockState());
+        BlockPos basinPos = corePos.offset(facing.offsetX * 6, 0, facing.offsetZ * 6);
+        helper.setBlock(basinPos, ModMachineBlocks.foundry_basin.get().defaultBlockState());
+        TileEntityFoundryBasin basin = (TileEntityFoundryBasin) helper.getLevel().getBlockEntity(helper.absolutePos(basinPos));
+        basin.inventory.setStackInSlot(0, new ItemStack(ModMoldItems.mold_block.get()));
+
+        int quanta = electrolyser.getPourQuanta();
+        electrolyser.rightStack = new Mats.MaterialStack(Mats.MAT_IRON, quanta);
+        electrolyser.leftStack = new Mats.MaterialStack(Mats.MAT_IRON, quanta);
+        tick(helper, electrolyser);
+        helper.assertTrue(basin.amount == quanta, "the right outlet did not fill the basin: " + basin.amount);
+        helper.assertTrue(electrolyser.rightPourColor == Mats.MAT_IRON.moltenColor,
+                "a real pour shows no stream: " + electrolyser.rightPourColor);
+        // The basin's top is inside block y + 0, so ceil(impact) = y + 1 and len = -0.125 + 2.
+        helper.assertTrue(electrolyser.rightPourLen == 1.875F, "stream length is not 1.7's: " + electrolyser.rightPourLen);
+        helper.assertTrue(electrolyser.leftPourColor == -1, "an outlet with no target shows a stream");
+
+        for (int i = 0; i < 16; i++) tick(helper, electrolyser);
+        helper.assertTrue(electrolyser.rightPourColor == -1, "the stream outlasted its pour");
         helper.succeed();
     }
 

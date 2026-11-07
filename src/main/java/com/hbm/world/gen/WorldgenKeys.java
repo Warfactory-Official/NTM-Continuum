@@ -99,6 +99,9 @@ public final class WorldgenKeys {
 
     // 04_dungeons: one per n chunks (0 = off)
     public static final String BROADCASTER = bind("4.13_broadcasterSpawn", () -> DungeonConfig.broadcaster);
+    public static final String LANTERN = bind("4.25_lanternSpawn", () -> DungeonConfig.lanternStructure);
+    public static final String PINK_TREE = bind("4.27_pinkTreeSpawn", () -> DungeonConfig.pinkTreeStructure);
+    public static final String KEYHOLE = bind("4.28_keyholeStoneSpawn", () -> DungeonConfig.keyholeStone);
     public static final String LANDMINE = bind("4.14_landmineSpawn", () -> DungeonConfig.minefreq);
     public static final String RAD_HOTSPOT_RATE = bind("4.15_radHotspotSpawn", () -> WorldConfig.radfreq);
     public static final String VAULT = bind("4.16_vaultSpawn", () -> DungeonConfig.vaultfreq);

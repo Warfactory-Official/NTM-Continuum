@@ -5,16 +5,19 @@ import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactoryAccelerator;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.world.Compat;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -139,6 +142,11 @@ public class TileEntityTurretTauon extends TileEntityTurretBaseNT {
         shot = true;
         networkPackNT();
         shot = false;
+
+        Vec3 tip = barrelTip();
+        CompoundTag data = new CompoundTag();
+        data.putByte("count", (byte) 5);
+        HbmEffectNT.Tau.sendAround(level, tip.x, tip.y, tip.z, data, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), 50);
     }
 
     /**

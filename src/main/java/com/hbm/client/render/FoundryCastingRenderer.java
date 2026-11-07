@@ -88,13 +88,16 @@ public class FoundryCastingRenderer<T extends TileEntityFoundryCastingBase> exte
                 declaration.part(body.material(material.getKey()), material.getValue());
             }
         }
+        // Ordered so both passes stay on one backend: instanced, the melt's depth differs from the glare's on the same plane.
         declaration.part(MELT, melt)
+                .order(1)
                 .visibleIf(state -> state.hasMelt)
                 .slide(Gem.Axes.Y, state -> state.meltY)
                 .tint(state -> 0xFF000000 | (state.meltColor & 0xFFFFFF))
                 .light(state -> FoundryRenderHelper.FULLBRIGHT);
         // 1.7 lays a 30% white additive pass over the tinted surface
         declaration.part(MELT, meltGlare)
+                .order(2)
                 .visibleIf(state -> state.hasMelt)
                 .slide(Gem.Axes.Y, state -> state.meltY)
                 .tint(state -> 0x4DFFFFFF)

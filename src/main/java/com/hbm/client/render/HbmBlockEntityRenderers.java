@@ -193,8 +193,7 @@ public final class HbmBlockEntityRenderers {
            // Gas centrifuge: old yaw map N270/S90/W0/E180 = built-in facing map + 270 degrees.
           reg(sink, ModBlockEntities.MACHINE_GAS_CENT.get(), 270F, 1F,
                    new ModelDef(obj("machines/centrifuge_gas.obj"), tex("machines/centrifuge_gas.png")));
-           reg(sink, ModBlockEntities.MACHINE_ELECTROLYSER.get(), 180F, 1F,
-                   new ModelDef(obj("machines/electrolyser.obj"), tex("machines/electrolyser.png")));
+           regGem(sink, ModBlockEntities.MACHINE_ELECTROLYSER.get(), RenderElectrolyser::new);
          regGem(sink, ModBlockEntities.MACHINE_MINING_LASER.get(), MiningLaserRenderer::new);
 
         // Watz: upstream had no TESR for it, only a StaticTesrBakedModels entry whose yaw map

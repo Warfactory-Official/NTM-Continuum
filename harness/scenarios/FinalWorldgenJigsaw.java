@@ -144,6 +144,7 @@ public final class FinalWorldgenJigsaw implements Scenario {
     /** Checks one start (pieces, blocks, loot) and screenshots it; {@code where} is "seeded" or "flat". */
     void inspect(Client c, String id, int x, int z, String where) {
         boolean rebuild = where.equals("flat");
+        c.cmd("forceload add " + x + " " + z); // the start query never loads a chunk itself
         JsonObject s = start(c, id, x, z, rebuild);
         int[] b = box(s);
         // count first: it generates every chunk of the box, so the pieces are built by the time the screenshot is taken
@@ -286,6 +287,7 @@ public final class FinalWorldgenJigsaw implements Scenario {
         int px = 8192;
         for (String id : IDS) {
             // /place needs every chunk of the start's box loaded: assemble the start first (no placing) to learn its box
+            c.cmd("forceload add " + px + " 0");
             int[] pb = box(start(c, id, px, 0, true));
             List<String> loads = new ArrayList<>();
             for (int x0 = pb[0] >> 4; x0 <= pb[3] >> 4; x0 += 15) {

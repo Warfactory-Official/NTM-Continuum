@@ -90,17 +90,23 @@ public final class DisintegrationParticles {
     }
 
     public static void giblets(ClientLevel level, RandomSource rand, double x, double y, double z,
-            int entityId, int gibType) {
+            int entityId, int gibType, int countDivisor) {
         Entity entity = level.getEntity(entityId);
         if (!(entity instanceof LivingEntity living) || living.getType() == EntityType.OCELOT) return;
         vanish(living);
-        int count = (int) ((living.getBbWidth() / 0.25F) * 1.5F * (living.getBbHeight() / 0.25F));
+        int count = (int) ((int) (living.getBbWidth() / 0.25F) * 1.5D * (int) (living.getBbHeight() / 0.25F));
+        if (countDivisor > 0) count = (int) Math.ceil(count / (double) countDivisor);
         boolean launch = rand.nextInt(15) == 0;
         double mult = launch ? 10D : 1D;
         for (int i = 0; i < count; i++) {
             GIBLETS.add(new Giblet(x, y, z, rand.nextGaussian() * 0.25D * mult, rand.nextDouble() * mult,
                     rand.nextGaussian() * 0.25D * mult, gibType, rand));
         }
+    }
+
+    /** Live giblets, for the harness. */
+    public static int gibletCount() {
+        return GIBLETS.size();
     }
 
     /** Hides the source entity for the same two-second client presentation window as ClientProxy. */

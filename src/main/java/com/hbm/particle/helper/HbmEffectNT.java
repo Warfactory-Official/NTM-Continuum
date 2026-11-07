@@ -168,6 +168,8 @@ public final class HbmEffectNT {
     public static final HbmEffectNT Network = hbm("network");
     /** 1.7 {@code vanillaburst} mode {@code reddust}: {@code count} red dust, each moving {@code gaussian * motion}. */
     public static final HbmEffectNT VanillaBurst_RedDust = hbm("VanillaBurst_RedDust");
+    /** 1.7 {@code rbmkflame}: an upright additive fire quad. Tag: {@code maxAge}. */
+    public static final HbmEffectNT RBMKFlame = hbm("RBMKFlame");
 
     private final String name;
 

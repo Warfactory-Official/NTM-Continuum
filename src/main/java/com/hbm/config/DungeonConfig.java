@@ -58,8 +58,12 @@ public final class DungeonConfig {
     public static int jungleStructure = 2000;
     /** 1.7 {@code 4.24_pyramidSpawn}: the ancient tomb. */
     public static int pyramidStructure = 4000;
-    /** 1.7 hardcoded: the broken behemoth lantern, {@code rand.nextInt(2000) == 0}. */
+    /** {@code 4.25_lanternSpawn}, hardcoded in 1.7: the broken behemoth lantern, {@code rand.nextInt(2000) == 0}. */
     public static int lanternStructure = 2000;
-    /** 1.7 hardcoded: {@code genBlueprintChest(world, rand, i, j, 5000, 5000)}. */
+    /** {@code 4.26_blueprintChestGrid}, hardcoded in 1.7: {@code genBlueprintChest(world, rand, i, j, 5000, 5000)}. */
     public static int blueprintGrid = 5000;
+    /** {@code 4.27_pinkTreeSpawn}, hardcoded in 1.7: {@code rand.nextInt(1000) == 0}. */
+    public static int pinkTreeStructure = 1000;
+    /** {@code 4.28_keyholeStoneSpawn}, hardcoded in 1.7: {@code rand.nextInt(4) == 0}. */
+    public static int keyholeStone = 4;
 }

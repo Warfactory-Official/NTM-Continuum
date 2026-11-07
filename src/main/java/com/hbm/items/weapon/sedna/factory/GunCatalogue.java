@@ -13,8 +13,8 @@ public final class GunCatalogue {
     public static final int EXPECTED_AMMO_ITEMS = 138;
     // 1.7's complete GunFactory chain constructs 181 configs, including secret and helper rounds, plus
     // 1.7's TileEntityBatterySocket.discharge (a static BulletConfig of the battery socket, registered beside the gun configs),
-    // plus the 1.12.2 occult shotgun's g10_jade.
-    public static final int EXPECTED_BULLET_CONFIGS = 184;
+    // the 1.12.2 occult shotgun's g10_jade and the four rounds of 1.7's grenade fillings.
+    public static final int EXPECTED_BULLET_CONFIGS = 188;
 
     private static boolean initialized;
 

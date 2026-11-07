@@ -300,6 +300,11 @@ public final class WorldConfig {
         DungeonConfig.jungleStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.23_jungleDungeonSpawn", "Spawn jungle dungeon on every nTH chunk", 2000);
         DungeonConfig.pyramidStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.24_pyramidSpawn", "Spawn pyramid on every nTH chunk", 4000);
 
+        DungeonConfig.lanternStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.25_lanternSpawn", "Spawn broken behemoth lantern on every nTH chunk", 2000);
+        DungeonConfig.blueprintGrid = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.26_blueprintChestGrid", "Grid in blocks of the obsidian-encased blueprint chests, half of whose sites hold one. 0 turns them off", 5000);
+        DungeonConfig.pinkTreeStructure = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.27_pinkTreeSpawn", "Turn a tree pink on every nTH chunk", 1000);
+        DungeonConfig.keyholeStone = CommonConfig.createConfigInt(config, CATEGORY_DUNGEON, "4.28_keyholeStoneSpawn", "Place one keyhole stone on every nTH chunk", 4);
+
         final String CATEGORY_METEOR = CommonConfig.CATEGORY_METEORS;
         enableMeteorStrikes = CommonConfig.createConfigBool(config, CATEGORY_METEOR, "5.00_enableMeteorStrikes", "Toggles the spawning of meteors", true);
         enableMeteorShowers = CommonConfig.createConfigBool(config, CATEGORY_METEOR, "5.01_enableMeteorShowers", "Toggles meteor showers, which start with a 1% chance for every spawned meteor", true);

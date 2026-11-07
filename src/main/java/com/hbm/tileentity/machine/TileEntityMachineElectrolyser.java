@@ -81,6 +81,15 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
     public Mats.@Nullable MaterialStack rightStack;
     public int lastSelectedGUI;
 
+    /** Synced stream state (-1 colour = none); each lapses a while after its last pour, as 1.7's particle did. */
+    public int leftPourColor = -1;
+    public float leftPourLen;
+    public int rightPourColor = -1;
+    public float rightPourLen;
+    private int leftPourTimer;
+    private int rightPourTimer;
+    private static final int STREAM_LIFETIME = 15;
+
     public final FluidTankNTM[] tanks = {
             new FluidTankNTM(Fluids.WATER, 16_000),
             new FluidTankNTM(Fluids.HYDROGEN, 16_000),
@@ -194,17 +203,41 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
     private void pourMaterial(Level level, boolean left, boolean right) {
         ForgeDirection facing = MachineCore.facing(getBlockState());
         ForgeDirection leftDirection = facing.getOpposite();
-        if (left && leftStack != null) leftStack = pour(level, leftStack, leftDirection);
-        if (right && rightStack != null) rightStack = pour(level, rightStack, facing);
+
+        if (leftPourTimer > 0) leftPourTimer--; else leftPourColor = -1;
+        if (left && leftStack != null) {
+            Vec3[] impact = new Vec3[1];
+            Mats.MaterialStack poured = pour(level, leftStack, leftDirection, impact);
+            if (poured != null && impact[0] != null) {
+                leftPourColor = poured.material.moltenColor;
+                leftPourLen = pourLength(impact[0]);
+                leftPourTimer = STREAM_LIFETIME;
+            }
+            if (leftStack.amount <= 0) leftStack = null;
+        }
+
+        if (rightPourTimer > 0) rightPourTimer--; else rightPourColor = -1;
+        if (right && rightStack != null) {
+            Vec3[] impact = new Vec3[1];
+            Mats.MaterialStack poured = pour(level, rightStack, facing, impact);
+            if (poured != null && impact[0] != null) {
+                rightPourColor = poured.material.moltenColor;
+                rightPourLen = pourLength(impact[0]);
+                rightPourTimer = STREAM_LIFETIME;
+            }
+            if (rightStack.amount <= 0) rightStack = null;
+        }
     }
 
-    private Mats.@Nullable MaterialStack pour(Level level, Mats.MaterialStack stack, ForgeDirection direction) {
+    private Mats.@Nullable MaterialStack pour(Level level, Mats.MaterialStack stack, ForgeDirection direction, Vec3[] impact) {
         List<Mats.MaterialStack> stacks = new ArrayList<>(List.of(stack));
-        CrucibleUtil.pourFullStack(level, worldPosition.getX() + 0.5D + direction.offsetX * 5.875D,
+        return CrucibleUtil.pourFullStack(level, worldPosition.getX() + 0.5D + direction.offsetX * 5.875D,
                 worldPosition.getY() + 2D, worldPosition.getZ() + 0.5D + direction.offsetZ * 5.875D,
-                6D, true, stacks, getPourQuanta(), new Vec3[1]);
-        // a fully poured stack must clear, or its material blocks the next recipe's output (1.7 nulls at amount <= 0)
-        return stack.amount <= 0 ? null : stack;
+                6D, true, stacks, getPourQuanta(), impact);
+    }
+
+    private float pourLength(Vec3 impact) {
+        return Math.max(1F, worldPosition.getY() - (float) (Math.ceil(impact.y) - 0.875D) + 2F);
     }
 
     public int getPourQuanta() {
@@ -367,6 +400,8 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         buf.writeInt(fluidDuration); buf.writeInt(metalDuration);
         buf.writeInt(usageFluid); buf.writeInt(usageMetal); buf.writeInt(lastSelectedGUI);
         writeMaterial(buf, leftStack); writeMaterial(buf, rightStack);
+        buf.writeInt(leftPourColor); buf.writeFloat(leftPourLen);
+        buf.writeInt(rightPourColor); buf.writeFloat(rightPourLen);
     }
     @Override public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
@@ -375,6 +410,8 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
         fluidDuration = buf.readInt(); metalDuration = buf.readInt();
         usageFluid = buf.readInt(); usageMetal = buf.readInt(); lastSelectedGUI = buf.readInt();
         leftStack = readMaterial(buf); rightStack = readMaterial(buf);
+        leftPourColor = buf.readInt(); leftPourLen = buf.readFloat();
+        rightPourColor = buf.readInt(); rightPourLen = buf.readFloat();
     }
     private static void writeMaterial(RegistryFriendlyByteBuf buf, Mats.@Nullable MaterialStack stack) {
         buf.writeBoolean(stack != null); if (stack != null) { buf.writeInt(stack.material.id); buf.writeInt(stack.amount); }

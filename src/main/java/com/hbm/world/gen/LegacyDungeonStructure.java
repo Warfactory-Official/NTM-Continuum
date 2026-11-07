@@ -120,7 +120,9 @@ public class LegacyDungeonStructure extends Structure {
     public static final RegistryObject<StructurePieceType> PIECE =
             REG.register(Registries.STRUCTURE_PIECE, "legacy_dungeon_piece", () -> (StructurePieceType) Piece::new);
 
-    public static void init() {}
+    public static void init() {
+        ScatteredStructure.init();
+    }
 
     // Structure
 
@@ -142,7 +144,7 @@ public class LegacyDungeonStructure extends Structure {
 
     @Override
     protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
-        if (DungeonConfig.enableDungeons == 0) return Optional.empty();
+        if (DungeonConfig.enableDungeons == 0 || ConfigSpreadPlacement.dungeonChance(kind.id) <= 0) return Optional.empty();
 
         int i = context.chunkPos().getMinBlockX();
         int j = context.chunkPos().getMinBlockZ();

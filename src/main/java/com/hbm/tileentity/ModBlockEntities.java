@@ -883,7 +883,7 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<TileEntityCrucible>> MACHINE_CRUCIBLE =
             REG.blockEntity("machine_crucible",
-                    () -> BlockEntities.serverTicking(TileEntityCrucible::new, TileEntityCrucible::serverTick, ModMachineBlocks.machine_crucible.get()));
+                    () -> BlockEntities.ticking(TileEntityCrucible::new, TileEntityCrucible::clientTick, TileEntityCrucible::serverTick, ModMachineBlocks.machine_crucible.get()));
 
     // Foundry transport / casting
 

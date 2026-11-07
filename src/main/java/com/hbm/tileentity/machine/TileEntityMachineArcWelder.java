@@ -19,6 +19,8 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
+import com.hbm.particle.helper.HbmEffectNT;
+import net.minecraft.nbt.CompoundTag;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -107,6 +109,18 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
                         te.inventory.getStackInSlot(3).grow(te.recipe.output.getCount());
                     }
                     te.setChanged();
+                }
+
+                if (level.getGameTime() % 2 == 0) {
+                    ForgeDirection dir = MachineCore.facing(state);
+                    double x = pos.getX() + 0.5 - dir.offsetX * 0.5, y = pos.getY() + 1.25, z = pos.getZ() + 0.5 - dir.offsetZ * 0.5;
+                    if (level.getGameTime() % 20 == 0) {
+                        CompoundTag data = new CompoundTag();
+                        data.putByte("count", (byte) 5);
+                        HbmEffectNT.Tau.sendAround(level, x, y, z, data, pos.getX(), pos.getY(), pos.getZ(), 25);
+                    } else {
+                        HbmEffectNT.Hadron.sendAround(level, x, y, z, null, pos.getX(), pos.getY(), pos.getZ(), 25);
+                    }
                 }
             } else {
                 te.progress = 0;
