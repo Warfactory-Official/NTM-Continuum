@@ -204,7 +204,7 @@ public final class DamageResistanceHandler {
         float amount = calculateDamage(event.entity(), event.source(), event.amount(),
                 event.piercingThreshold(), event.piercingResistance());
         event.setAmount(amount);
-        dischargePoweredArmor(event.entity(), amount);
+        dischargePoweredArmor(event.entity(), event.source(), amount);
         if (event.entity() instanceof IResistanceProvider provider) {
             provider.onDamageDealt(event.source(), amount);
         }
@@ -221,13 +221,13 @@ public final class DamageResistanceHandler {
         }
     }
 
-    /** Replaces vanilla durability wear for powered suits with their configured HE drain. */
-    private static void dischargePoweredArmor(LivingEntity entity, float amount) {
-        if (amount <= 0F || entity instanceof Player player && player.isCreative()) return;
-        int damage = (int) amount;
-        if (damage <= 0) return;
+    /** 1.7 spends suits through {@code InventoryPlayer.damageArmor}: players only, damage / 4, at least 1, per piece. */
+    private static void dischargePoweredArmor(LivingEntity entity, DamageSource source, float amount) {
+        if (amount <= 0F || !(entity instanceof Player player) || player.isCreative()
+                || source.is(DamageTypeTags.BYPASSES_ARMOR)) return;
+        int damage = Math.max(1, (int) (amount / 4F));
         for (EquipmentSlot slot : ARMOR_SLOTS) {
-            ItemStack stack = entity.getItemBySlot(slot);
+            ItemStack stack = player.getItemBySlot(slot);
             if (stack.getItem() instanceof ArmorFSBPowered powered) {
                 powered.dischargeBattery(stack, (long) damage * powered.consumption);
                 stack.setDamageValue(0);

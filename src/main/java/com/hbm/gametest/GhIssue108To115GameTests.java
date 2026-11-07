@@ -17,10 +17,14 @@ import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
+import com.hbm.items.ModArmorItems;
+import com.hbm.items.ModArmorSetBItems;
 import com.hbm.items.ModEntityItems;
 import com.hbm.items.ModFoodItems;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.ModNuclearMiscItems;
+import com.hbm.items.armor.ArmorFSBFueled;
+import com.hbm.items.armor.ArmorFSBPowered;
 import com.hbm.items.tool.ItemDrone;
 import com.hbm.items.tool.ItemModMinecart;
 import com.hbm.items.weapon.grenade.ItemGrenadeExtra;
@@ -32,8 +36,10 @@ import com.hbm.tileentity.machine.TileEntityBlockPWR;
 import com.hbm.tileentity.machine.TileEntityMachineRadarNT;
 import com.hbm.tileentity.machine.TileEntityPWRController;
 import com.hbm.tileentity.turret.TileEntityTurretHoward;
+import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.Entities;
+import dev.golem.core.world.Compat;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -41,11 +47,16 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
@@ -68,6 +79,8 @@ public final class GhIssue108To115GameTests {
             TESTS.function("gh114_no_rows_with_an_empty_input", 20, () -> GhIssue108To115GameTests::noEmptyInputRows);
     public static final GameTests.Function BULLET_SPREAD =
             TESTS.function("gh115_bullet_scatter_is_the_config_spread", 20, () -> GhIssue108To115GameTests::bulletSpread);
+    public static final GameTests.Function ARMOR_DRAIN =
+            TESTS.function("gh140_suits_drain_through_1_7_armor_wear", 20, () -> GhIssue108To115GameTests::suitDrain);
     public static final GameTests.Function CHIP_TAB =
             TESTS.function("gh117_turret_chip_is_in_the_weapons_tab", 20, () -> GhIssue108To115GameTests::chipInTab);
     public static final GameTests.Function TAB_AUDIT =
@@ -177,6 +190,45 @@ public final class GhIssue108To115GameTests {
         double deviation = Math.sqrt(sum / shots);
         helper.assertTrue(deviation > 0.09D && deviation < 0.11D, "sideways scatter " + deviation + ", expected 0.1");
         helper.succeed();
+    }
+
+    /** 1.7 spends suits through vanilla armor wear: a player's damage / 4 (at least 1) times consumption, per piece. */
+    private static void suitDrain(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        ItemStack suit = new ItemStack(ModArmorItems.t51_plate.get());
+        ArmorFSBPowered powered = (ArmorFSBPowered) suit.getItem();
+        player.setItemSlot(EquipmentSlot.CHEST, suit);
+        helper.assertTrue(chargeLost(player, level, player.damageSources().mobAttack(zombie), 8F, powered, suit) == 2_000L, "an 8 damage hit costs 2 x consumption");
+        helper.assertTrue(chargeLost(player, level, player.damageSources().mobAttack(zombie), 2F, powered, suit) == 1_000L, "a small hit costs at least 1 x consumption");
+        helper.assertTrue(chargeLost(player, level, player.damageSources().generic(), 8F, powered, suit) == 0L, "damage that bypasses armor costs nothing");
+
+        ItemStack steam = new ItemStack(ModArmorSetBItems.steamsuit_plate.get());
+        ArmorFSBFueled fueled = (ArmorFSBFueled) steam.getItem();
+        player.setItemSlot(EquipmentSlot.CHEST, steam);
+        int fill = fueled.getFill(steam);
+        player.setHealth(player.getMaxHealth());
+        player.invulnerableTime = 0;
+        Compat.hurt(player, level, player.damageSources().mobAttack(zombie), 8F);
+        helper.assertTrue(fill - fueled.getFill(steam) == 2 * fueled.consumption, "fuel suits burn the same way, lost " + (fill - fueled.getFill(steam)));
+
+        LivingEntity wearer = helper.spawn(EntityType.ZOMBIE, new BlockPos(3, 2, 1));
+        ItemStack worn = new ItemStack(ModArmorItems.t51_plate.get());
+        wearer.setItemSlot(EquipmentSlot.CHEST, worn);
+        long full = powered.getCharge(worn);
+        Compat.hurt(wearer, level, wearer.damageSources().generic(), 1F);
+        Compat.hurt(wearer, level, wearer.damageSources().mobAttack(zombie), 8F);
+        helper.assertTrue(powered.getCharge(worn) == full, "only a player's armor wears in 1.7");
+        helper.succeed();
+    }
+
+    private static long chargeLost(Player player, ServerLevel level, DamageSource source, float amount, ArmorFSBPowered suit, ItemStack stack) {
+        long before = suit.getCharge(stack);
+        player.setHealth(player.getMaxHealth());
+        player.invulnerableTime = 0;
+        Compat.hurt(player, level, source, amount);
+        return before - suit.getCharge(stack);
     }
 
     /** JEI lists what the creative tabs show, so an item in no tab cannot be found in either. */

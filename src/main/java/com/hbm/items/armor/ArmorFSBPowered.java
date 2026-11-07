@@ -24,9 +24,8 @@ import net.minecraft.world.level.Level;
  *     {@link #getMaxCharge}. Upstream implemented this by <i>writing</i> the tag inside the getter; here
  *     it is a read-side default, because a component write marks the stack dirty and resyncs it, and
  *     doing that from a getter would resync every frame the tooltip is drawn.
- * <li><b>Damage drains power, not durability.</b> {@code setDamage} is redirected into
- *     {@link #dischargeBattery} at {@code consumption} HE per point, and the item has no real
- *     durability. This is why a power suit never breaks: it goes flat instead.
+ * <li><b>Damage drains power, not durability.</b> {@code DamageResistanceHandler} spends the charge and
+ *     resets the stack's durability, so a power suit goes flat instead of breaking.
  * <li><b>The drain only runs while the set is complete.</b> A lone helmet costs nothing, and neither
  *     does anything in creative.
  * </ul>
