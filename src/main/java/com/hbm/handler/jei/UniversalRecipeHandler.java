@@ -1,7 +1,6 @@
 package com.hbm.handler.jei;
 
 import com.hbm.api.data.ReactorDataMaps;
-import com.hbm.blocks.ModOreBlocks;
 import com.hbm.blocks.ModProduction2Blocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.RecipesCommon.TagStack;
@@ -18,7 +17,9 @@ import com.hbm.items.ModEntityItems;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.machine.ItemRBMKPellet;
 import com.hbm.items.machine.ItemRBMKRod;
+import com.hbm.items.special.BedrockOreSet;
 import com.hbm.items.special.BedrockOreType;
+import com.hbm.items.special.ItemBedrockOreBase;
 import com.hbm.items.weapon.grenade.ItemGrenadeExtra.EnumGrenadeExtra;
 import com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling;
 import com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze;
@@ -102,15 +103,24 @@ public class UniversalRecipeHandler extends JEIUniversalHandler<UniversalRecipeH
         return BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().startsWith("item_secret");
     }
 
-    /** 1.7 {@code OreSlopperHandler}: water and bedrock ore in, every base-grade ore and slop out. */
+    /**
+     * 1.7 {@code OreSlopperHandler}: water and bedrock ore in, every base-grade ore and slop out. hbm-space shows one
+     * row per celestial body, its ore and only its types, so one row per raw ore sample and the types it carries.
+     */
     public static List<Row> oreSlopper() {
         int water = TileEntityMachineOreSlopper.waterUsedBase;
-        List<List<ItemStack>> out = new ArrayList<>();
-        for (BedrockOreType type : BedrockOreType.values()) out.add(List.of(new ItemStack(ModProduction2Blocks.bedrockOreBase(type))));
-        out.add(List.of(ItemFluidIcon.make(new FluidStack(Fluids.SLOP, water))));
-        List<List<ItemStack>> in = List.of(List.of(ItemFluidIcon.make(new FluidStack(Fluids.WATER, water))),
-                List.of(new ItemStack(ModOreBlocks.bedrock_ore_base.get())));
-        return List.of(new Row(in, out, List.of(), null));
+        List<Row> rows = new ArrayList<>();
+        for (ItemStack sample : BedrockOreSet.SAMPLES.get().get()) {
+            List<List<ItemStack>> out = new ArrayList<>();
+            for (BedrockOreType type : ItemBedrockOreBase.types(sample)) {
+                out.add(List.of(new ItemStack(ModProduction2Blocks.bedrockOreBase(type))));
+            }
+            out.add(List.of(ItemFluidIcon.make(new FluidStack(Fluids.SLOP, water))));
+            List<List<ItemStack>> in = List.of(List.of(ItemFluidIcon.make(new FluidStack(Fluids.WATER, water))),
+                    List.of(sample.copy()));
+            rows.add(new Row(in, out, List.of(), null));
+        }
+        return rows;
     }
 
     /** 1.7 {@code OutgasserHandler}: fusion-only rows name the fusion breeder alone. */

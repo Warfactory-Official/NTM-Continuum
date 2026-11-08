@@ -37,10 +37,12 @@ public final class HbmGameTestSuites {
             list.add(Gh154GameTests.TESTS);
             list.add(Gh156GameTests.TESTS);
             list.add(Gh157GameTests.TESTS);
+            list.add(GhSpace6GameTests.TESTS);
             list.add(Gh161GameTests.TESTS);
             list.add(Gh162GameTests.TESTS);
             list.add(Gh155GameTests.TESTS);
             list.add(Gh159To160GameTests.TESTS);
+            list.add(DerrickBlastGameTests.TESTS);
             list.add(AbilityToolGameTests.TESTS);
             list.add(MeleeKitGameTests.TESTS);
             list.add(FinalCellHudFixGameTests.TESTS);
@@ -157,10 +159,12 @@ public final class HbmGameTestSuites {
         Gh154GameTests.init();
         Gh156GameTests.init();
         Gh157GameTests.init();
+        GhSpace6GameTests.init();
         Gh161GameTests.init();
         Gh162GameTests.init();
         Gh155GameTests.init();
         Gh159To160GameTests.init();
+        DerrickBlastGameTests.init();
         AbilityToolGameTests.init();
         MeleeKitGameTests.init();
         FinalCellHudFixGameTests.init();

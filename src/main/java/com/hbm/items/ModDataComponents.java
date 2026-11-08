@@ -1,5 +1,6 @@
 package com.hbm.items;
 
+import dev.golem.core.world.HeldItems;
 import com.hbm.Constants;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.inventory.fluid.FluidType;
@@ -252,5 +253,8 @@ public final class ModDataComponents {
     public static boolean batteryReddMuffled(ItemStack stack) { return BATTERY_REDD_MUFFLED.getOr(stack, false); }
     public static void setBatteryReddMuffled(ItemStack stack, boolean value) { BATTERY_REDD_MUFFLED.set(stack, value); }
 
-    public static void init() {}
+    public static void init() {
+        // any item soaks up neutrons, and a held one must not re-equip at each dose (1.7 compared item and damage)
+        HeldItems.ignoreComponent(NEUTRON_ACTIVATION);
+    }
 }

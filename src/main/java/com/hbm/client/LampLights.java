@@ -9,13 +9,16 @@ import com.hbm.items.weapon.sedna.factory.XFactory10ga;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.DynamicLights;
 import dev.golem.core.world.LightLevels;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2LongMap;
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.util.Arrays;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -35,7 +38,8 @@ import org.jspecify.annotations.Nullable;
  * The mining helmet's lamp (1.7 {@code ArmorNo9.onArmorTick}, client half) and the jade shotgun's flashlight (1.12.2
  * {@code ItemGunJShotty.playerWorldRender}). With GemRender both are spot lights on every player. Without it the local
  * player's lamp is 1.7's: block light written into the client's light data around the block looked at, every other
- * tick, and handed back to the light engine five ticks after it was last written.
+ * tick, and handed back to the light engine five ticks after it was last written. An unchanged spread is not redone
+ * while the light engine leaves its sections alone.
  */
 public final class LampLights {
 
@@ -45,14 +49,31 @@ public final class LampLights {
     private static final int MUZZLE_RGB = 0xFFB875;
     private static final float MUZZLE_RANGE = (float) Math.sqrt(15F / 0.15F - 1F);
 
-    private static final Set<BlockPos> BREADCRUMB = new HashSet<>();
-    private static final Map<BlockPos, Long> LIGHT_CHECK = new HashMap<>();
+    private static final int[][] SIDES = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+
+    /** The cells the last spread reached, by packed position: the level it gave, 0 for a cell that stops light. */
+    private static Long2IntOpenHashMap lit = new Long2IntOpenHashMap();
+    private static Long2IntOpenHashMap spread = new Long2IntOpenHashMap();
+    /** Cells a new spread lights less than the last one: the tick after which the light engine takes them back. */
+    private static final Long2LongOpenHashMap STALE = new Long2LongOpenHashMap();
     private static final LongSet DIRTY = new LongOpenHashSet();
+    /** One written cell per touched section and its value, to see whether the light engine has replaced the section. */
+    private static final LongArrayList SAMPLES = new LongArrayList();
+    private static final IntArrayList SAMPLE_LEVELS = new IntArrayList();
+    private static final BlockPos.MutableBlockPos CURSOR = new BlockPos.MutableBlockPos();
+    private static long[] queue = new long[2048];
+    private static long litStart = Long.MIN_VALUE;
+    private static int litLevel;
+    private static long litUntil;
     private static @Nullable ClientLevel checkedLevel;
 
-    /** For the harness: lights handed to GemRender last frame, block-light writes made by the fallback. */
+    /** For the harness: lights handed to GemRender last frame, fallback block-light writes, spread cost. */
     private static int lightsLastFrame;
     private static int writes;
+    private static int spreads;
+    private static int skips;
+    private static long spreadNanos;
+    private static long maxSpreadNanos;
 
     private LampLights() {}
 
@@ -119,12 +140,14 @@ public final class LampLights {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
         if (level != checkedLevel) {
-            LIGHT_CHECK.clear();
+            lit.clear();
+            STALE.clear();
+            litStart = Long.MIN_VALUE;
             checkedLevel = level;
         }
         if (level == null || mc.player == null) return;
-        checkLights(level);
-        if (level.getGameTime() % 2 != 0 || DynamicLights.shading()) return;
+        boolean redo = checkLights(level);
+        if (level.getGameTime() % 2 != 0 && !redo || DynamicLights.shading()) return;
         if (helmetLit(mc.player)) lightAlong(level, mc.player, 50F);
         else if (flashlightOn(mc.player)) lightAlong(level, mc.player, 30F);
     }
@@ -135,54 +158,122 @@ public final class LampLights {
         if (!(hit instanceof BlockHitResult block) || hit.getType() != HitResult.Type.BLOCK) return;
         double distance = player.getEyePosition(1F).distanceTo(hit.getLocation());
         int light = Math.min(15, (int) (25 - (distance * 25 / range)));
-        lightUpRecursively(level, block.getBlockPos().relative(block.getDirection()), light);
-        BREADCRUMB.clear();
+        long start = block.getBlockPos().relative(block.getDirection()).asLong();
+        long now = level.getGameTime();
+        if (start == litStart && light == litLevel && samplesHold(level)) {
+            litUntil = now + 5;
+            skips++;
+            return;
+        }
+        long began = System.nanoTime();
+        spreadFrom(level, start, light);
+        for (Long2IntMap.Entry entry : lit.long2IntEntrySet()) {
+            if (entry.getIntValue() > spread.get(entry.getLongKey())) STALE.put(entry.getLongKey(), litUntil);
+        }
+        Long2IntOpenHashMap previous = lit;
+        lit = spread;
+        spread = previous;
+        spread.clear();
+        litStart = start;
+        litLevel = light;
+        litUntil = now + 5;
         for (long section : DIRTY) {
             level.setSectionDirtyWithNeighbors(SectionPos.x(section), SectionPos.y(section), SectionPos.z(section));
         }
         DIRTY.clear();
+        long spent = System.nanoTime() - began;
+        spreads++;
+        spreadNanos += spent;
+        maxSpreadNanos = Math.max(maxSpreadNanos, spent);
     }
 
-    private static void lightUpRecursively(ClientLevel level, BlockPos pos, int light) {
+    /**
+     * Light from {@code start} at {@code light}, one less per block, breadth-first so each cell gets its highest level.
+     * Only fully blocking blocks stop it: semi-translucent blocks pass light like air (1.7).
+     */
+    private static void spreadFrom(ClientLevel level, long start, int light) {
+        // port: spreads like a placed light; 1.7's lightUpRecursively walked depth-first and kept each cell's first value
+        SAMPLES.clear();
+        SAMPLE_LEVELS.clear();
         if (light <= 0) return;
-        if (!BREADCRUMB.add(pos)) return;
-        // Only fully blocking blocks stop it: light goes through semi-translucent blocks like it's air.
-        if (LightLevels.opacity(level, pos) >= 15) return;
-        SectionPos section = SectionPos.of(pos);
-        DataLayer layer = level.getLightEngine().getLayerListener(LightLayer.BLOCK).getDataLayerData(section);
-        if (layer == null) return;
-
-        int x = pos.getX() & 15, y = pos.getY() & 15, z = pos.getZ() & 15;
-        int existing = layer.get(x, y, z);
-        int newLight = Math.min(15, Math.max(existing, light));
-        if (newLight != existing) {
-            layer.set(x, y, z, newLight);
-            DIRTY.add(section.asLong());
-            writes++;
-        }
-        LIGHT_CHECK.put(pos, level.getGameTime() + 5);
-
-        lightUpRecursively(level, pos.east(), light - 1);
-        lightUpRecursively(level, pos.west(), light - 1);
-        lightUpRecursively(level, pos.above(), light - 1);
-        lightUpRecursively(level, pos.below(), light - 1);
-        lightUpRecursively(level, pos.south(), light - 1);
-        lightUpRecursively(level, pos.north(), light - 1);
-    }
-
-    /** 1.7 {@code checkLights}: the light engine recomputes what the lamp stopped lighting. */
-    private static void checkLights(ClientLevel level) {
-        if (LIGHT_CHECK.isEmpty()) return;
-        LevelLightEngine engine = level.getLightEngine();
-        long now = level.getGameTime();
-        Iterator<Map.Entry<BlockPos, Long>> it = LIGHT_CHECK.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<BlockPos, Long> entry = it.next();
-            if (now > entry.getValue()) {
-                engine.checkBlock(entry.getKey());
-                it.remove();
+        int head = 0, tail = 0;
+        if (light(level, start, light)) queue[tail++] = start;
+        while (head < tail) {
+            long pos = queue[head++];
+            int next = spread.get(pos) - 1;
+            if (next <= 0) continue;
+            int x = BlockPos.getX(pos), y = BlockPos.getY(pos), z = BlockPos.getZ(pos);
+            for (int[] side : SIDES) {
+                long neighbour = BlockPos.asLong(x + side[0], y + side[1], z + side[2]);
+                if (spread.containsKey(neighbour) || !light(level, neighbour, next)) continue;
+                if (tail == queue.length) queue = Arrays.copyOf(queue, tail * 2);
+                queue[tail++] = neighbour;
             }
         }
+    }
+
+    /** Lights one cell; false, recorded as 0, for a cell that stops light. */
+    private static boolean light(ClientLevel level, long pos, int light) {
+        CURSOR.set(pos);
+        if (LightLevels.opacity(level, CURSOR) >= 15) {
+            spread.put(pos, 0);
+            return false;
+        }
+        spread.put(pos, light);
+        SectionPos section = SectionPos.of(CURSOR);
+        DataLayer layer = level.getLightEngine().getLayerListener(LightLayer.BLOCK).getDataLayerData(section);
+        if (layer == null) return true;
+        int x = CURSOR.getX() & 15, y = CURSOR.getY() & 15, z = CURSOR.getZ() & 15;
+        int existing = layer.get(x, y, z);
+        int newLight = Math.max(existing, light);
+        if (newLight != existing) {
+            layer.set(x, y, z, newLight);
+            writes++;
+        }
+        if (DIRTY.add(section.asLong())) {
+            SAMPLES.add(pos);
+            SAMPLE_LEVELS.add(newLight);
+        }
+        return true;
+    }
+
+    /** Whether the light engine has left every section of the last spread as it was written. */
+    private static boolean samplesHold(ClientLevel level) {
+        var engine = level.getLightEngine().getLayerListener(LightLayer.BLOCK);
+        for (int i = 0; i < SAMPLES.size(); i++) {
+            CURSOR.set(SAMPLES.getLong(i));
+            if (engine.getLightValue(CURSOR) < SAMPLE_LEVELS.getInt(i)) return false;
+        }
+        return true;
+    }
+
+    /**
+     * 1.7 {@code checkLights}: five ticks after a cell was last lit, the light engine recomputes it. The engine's
+     * decrease also clears the lamp's light around it, so its updates run at once; true when it took cells back.
+     */
+    private static boolean checkLights(ClientLevel level) {
+        long now = level.getGameTime();
+        LevelLightEngine engine = level.getLightEngine();
+        boolean checked = false;
+        if (!lit.isEmpty() && now > litUntil) {
+            for (Long2IntMap.Entry entry : lit.long2IntEntrySet()) {
+                if (entry.getIntValue() > 0) engine.checkBlock(CURSOR.set(entry.getLongKey()));
+            }
+            lit.clear();
+            checked = true;
+        }
+        ObjectIterator<Long2LongMap.Entry> it = STALE.long2LongEntrySet().iterator();
+        while (it.hasNext()) {
+            Long2LongMap.Entry entry = it.next();
+            if (now <= entry.getLongValue()) continue;
+            engine.checkBlock(CURSOR.set(entry.getLongKey()));
+            it.remove();
+            checked = true;
+        }
+        if (!checked) return false;
+        engine.runLightUpdates();
+        litStart = Long.MIN_VALUE;
+        return true;
     }
 
     /** With {@code x, y0, y1, z0, z1}: the client's block light on that x plane, one row per y from the top. */
@@ -204,7 +295,14 @@ public final class LampLights {
         json.addProperty("shading", DynamicLights.shading());
         json.addProperty("lights_last_frame", lightsLastFrame);
         json.addProperty("fallback_writes", writes);
-        json.addProperty("fallback_lit", LIGHT_CHECK.size());
+        int held = STALE.size();
+        for (int value : lit.values()) if (value > 0) held++;
+        json.addProperty("fallback_lit", held);
+        json.addProperty("spreads", spreads);
+        json.addProperty("skips", skips);
+        json.addProperty("spread_cells", lit.size());
+        json.addProperty("spread_micros_avg", spreads == 0 ? 0 : spreadNanos / spreads / 1000);
+        json.addProperty("spread_micros_max", maxSpreadNanos / 1000);
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null) {
             json.addProperty("helmet_lit", helmetLit(mc.player));

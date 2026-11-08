@@ -6,21 +6,18 @@ import dev.golem.harness.api.Scenario;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * GitHub issue 158, the lamp's spread: the client block light the mining helmet writes on the wall-adjacent air layer
- * must equal 1.7 {@code ArmorNo9.lightUpRecursively}, a depth-first walk whose breadcrumb keeps the first, often low,
- * value a block gets. A level-15 light block at the same cell is the control (vanilla propagation, 15 minus distance).
- * Shots {@code helmet} and {@code light15} are taken from the same spot. Needs the fallback: {@code -Pshaders.run=true}
- * with a pack selected, or {@code -Pgemrender.run=false}.
+ * GitHub issue 158: the helmet's fallback light on the wall-adjacent layer equals a placed light of the lamp's level,
+ * also after looking elsewhere, for the flashlight and after the helmet comes off; walking reports the spread's cost.
+ * Needs the fallback: {@code -Pshaders.run=true} with a pack, or {@code -Pgemrender.run=false}.
  */
 public final class Gh158LampSpread implements Scenario {
 
     private static final int X0 = 1300, Y0 = 100, Z0 = 1300, X1 = 1320, Y1 = 108, Z1 = 1320;
     private static final int[] FACE = {1319, 103, 1310};
+    private static final int[] MOVED = {1319, 103, 1305};
     private static final int PZ0 = 1303, PZ1 = 1317, PY0 = 101, PY1 = 107;
 
     @Override
@@ -46,9 +43,42 @@ public final class Gh158LampSpread implements Scenario {
             c.waitTicks(60);
             String[] helmet = plane(c);
             c.screenshot("helmet");
-            c.cmd("item replace entity @s armor.head with minecraft:air");
+
+            c.lookAt(X1, Y0 + 3.5, MOVED[2] + 0.5);
+            c.waitTicks(8);
+            String[] moved = plane(c);
+            c.lookAt(X1, Y0 + 3.5, Z0 + 10.5);
+            c.waitTicks(20);
+
+            JsonObject before = lamp(c);
+            for (int step = 0; step < 24; step++) {
+                c.teleport(X0 + 3.5, Y0 + 1, Z0 + 4.5 + step * 0.5);
+                c.lookAt(X1, Y0 + 3.5, Z0 + 4.5 + step * 0.5);
+                c.waitTicks(2);
+            }
+            JsonObject walked = lamp(c);
+            c.teleport(X0 + 3.5, Y0 + 1, Z0 + 10.5);
+            c.lookAt(X1, Y0 + 3.5, Z0 + 10.5);
+            c.waitTicks(20);
+            String[] back = plane(c);
+            JsonObject still = lamp(c);
             c.waitTicks(40);
+            JsonObject stillLater = lamp(c);
+
+            c.cmd("item replace entity @s armor.head with minecraft:air");
+            c.waitTicks(8);
             String[] off = plane(c);
+            JsonObject offLamp = lamp(c);
+
+            c.cmd("give @s hbm:gun_jshotgun");
+            c.hotbar(1);
+            c.waitTicks(10);
+            c.use(2);
+            c.waitTicks(40);
+            String[] flashlight = plane(c);
+            c.use(2);
+            c.waitTicks(10);
+            c.cmd("clear @s");
 
             c.cmd("setblock " + FACE[0] + " " + FACE[1] + " " + FACE[2] + " minecraft:light[level=15]");
             c.waitTicks(60);
@@ -56,22 +86,39 @@ public final class Gh158LampSpread implements Scenario {
             c.screenshot("light15");
             c.cmd("setblock " + FACE[0] + " " + FACE[1] + " " + FACE[2] + " minecraft:air");
 
-            String[] dfs = expected(walk17());
-            String[] bfs = expected(source15());
+            String[] bfs15 = expected(spread(FACE, 15));
+            String[] bfsMoved = expected(spread(MOVED, 15));
+            String[] bfs11 = expected(spread(FACE, 11));
             print(c, "helmet (client)", helmet);
-            print(c, "1.7 walk", dfs);
             print(c, "light block (client)", source);
-            print(c, "level-15 source", bfs);
-            print(c, "helmet off", off);
-            Expect.that(String.join("|", helmet).equals(String.join("|", dfs)), "the helmet's light is 1.7's walk");
-            Expect.that(String.join("|", source).equals(String.join("|", bfs)), "the read-back matches vanilla propagation");
+            print(c, "level-15 spread", bfs15);
+            print(c, "helmet after looking 5 blocks along (client)", moved);
+            print(c, "flashlight, level 11 (client)", flashlight);
+            print(c, "helmet off after 8 ticks (client)", off);
+            System.out.println("[Gh158] " + c.node() + " before walking: " + before);
+            System.out.println("[Gh158] " + c.node() + " after 24 half-block steps along the wall, 2 ticks apart: " + walked);
+            System.out.println("[Gh158] " + c.node() + " standing still: " + still + " then 40 ticks later " + stillLater);
+            System.out.println("[Gh158] " + c.node() + " helmet off: " + offLamp);
+            Expect.that(String.join("|", source).equals(String.join("|", bfs15)), "the read-back matches vanilla propagation");
+            Expect.that(String.join("|", helmet).equals(String.join("|", bfs15)), "the helmet lights like a level-15 light");
+            Expect.that(String.join("|", moved).equals(String.join("|", bfsMoved)), "nothing is left at the old spot");
+            Expect.that(String.join("|", back).equals(String.join("|", bfs15)), "back at the first spot after walking");
+            Expect.that(String.join("|", flashlight).equals(String.join("|", bfs11)), "the flashlight lights like a level-11 light");
             Expect.that(String.join("", off).replace(" ", "").replace("0", "").isEmpty(), "the lamp's light is gone when off");
+            Expect.that(offLamp.get("fallback_lit").getAsInt() == 0, "every lit cell handed back: " + offLamp);
+            Expect.that(stillLater.get("spreads").getAsInt() == still.get("spreads").getAsInt(),
+                    "standing still does not redo the spread: " + still + " / " + stillLater);
         } finally {
+            c.releaseAll();
             c.cmd("clear @s");
             c.cmd("time set 6000");
             if (hideGui != null) c.setOption("hide_gui", hideGui);
             c.cmd("forceload remove " + forceload);
         }
+    }
+
+    private static JsonObject lamp(Client c) {
+        return c.query("hbm_lamp_lights", new JsonObject());
     }
 
     private static String[] plane(Client c) {
@@ -97,32 +144,12 @@ public final class Gh158LampSpread implements Scenario {
         return !inside && x >= X0 && x <= X1 && y >= Y0 && y <= Y1 && z >= Z0 && z <= Z1;
     }
 
-    /** 1.7's walk from the face block with level 15 (the hit is 16.5 blocks away: min(15, 25 - 16.5 * 25 / 50)). */
-    private static Map<String, Integer> walk17() {
-        Map<String, Integer> light = new HashMap<>();
-        walk(light, new HashSet<>(), FACE[0], FACE[1], FACE[2], 15);
-        return light;
-    }
-
-    private static void walk(Map<String, Integer> light, Set<String> crumb, int x, int y, int z, int l) {
-        if (l <= 0) return;
-        String key = x + "," + y + "," + z;
-        if (!crumb.add(key)) return;
-        if (opaque(x, y, z)) return;
-        light.merge(key, l, Math::max);
-        walk(light, crumb, x + 1, y, z, l - 1);
-        walk(light, crumb, x - 1, y, z, l - 1);
-        walk(light, crumb, x, y + 1, z, l - 1);
-        walk(light, crumb, x, y - 1, z, l - 1);
-        walk(light, crumb, x, y, z + 1, l - 1);
-        walk(light, crumb, x, y, z - 1, l - 1);
-    }
-
-    private static Map<String, Integer> source15() {
+    /** A placed light of {@code level} at {@code at}: one less per block, stopped by the room's walls. */
+    private static Map<String, Integer> spread(int[] at, int level) {
         Map<String, Integer> light = new HashMap<>();
         ArrayDeque<int[]> queue = new ArrayDeque<>();
-        light.put(FACE[0] + "," + FACE[1] + "," + FACE[2], 15);
-        queue.add(new int[] {FACE[0], FACE[1], FACE[2], 15});
+        light.put(at[0] + "," + at[1] + "," + at[2], level);
+        queue.add(new int[] {at[0], at[1], at[2], level});
         int[][] dirs = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
         while (!queue.isEmpty()) {
             int[] p = queue.poll();

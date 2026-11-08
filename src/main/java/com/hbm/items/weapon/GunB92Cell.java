@@ -25,6 +25,12 @@ public final class GunB92Cell extends CompatItem {
         super(properties.stacksTo(1));
     }
 
+    /** {@link #compatInventoryTick} rewrites the stack while held; 1.7 re-equipped only on a new item or damage. */
+    @Override
+    public boolean compatIsSameHeldItem(ItemStack shown, ItemStack held) {
+        return shown.is(held.getItem()) && shown.getDamageValue() == held.getDamageValue();
+    }
+
     @Override
     protected void compatInventoryTick(ItemStack stack, ServerLevel level,
                                        Entity owner, EquipmentSlot slot, boolean held) {
