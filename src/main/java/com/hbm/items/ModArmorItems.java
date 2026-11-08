@@ -34,6 +34,7 @@ import com.hbm.util.ArmorRegistry.HazardClass;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.ArmorSlot;
+import dev.golem.core.world.CompatArmorItem;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.GolemArmorMaterial;
 import net.minecraft.world.effect.MobEffects;
@@ -289,7 +290,8 @@ public final class ModArmorItems {
     /** A regular armour piece whose icon is a 1.7 renderStandard OBJ, declared in ArmorSetDeclarations. */
     private static RegistryObject<ArmorFSB> modelled(String name, Supplier<GolemArmorMaterial> material,
                                                      ArmorSlot slot) {
-        RegistryObject<ArmorFSB> ro = REG.item(name, p -> new ArmorFSB(material.get(), slot, p), p -> p.stacksTo(1));
+        RegistryObject<ArmorFSB> ro = REG.item(name, p -> new ArmorFSB(material.get(), slot, CompatArmorItem.unbreakable(p)),
+                p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONTROL, ro);
         return ro;
     }

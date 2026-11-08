@@ -232,6 +232,7 @@ public final class GhIssue108To115GameTests {
         Compat.hurt(wearer, level, wearer.damageSources().generic(), 1F);
         Compat.hurt(wearer, level, wearer.damageSources().mobAttack(zombie), 8F);
         helper.assertTrue(powered.getCharge(worn) == full, "only a player's armor wears in 1.7");
+        helper.assertTrue(!new ItemStack(ModArmorItems.taurun_plate.get()).isDamageableItem(), "1.7 ArmorTaurun calls setMaxDamage(0)");
         helper.succeed();
     }
 
