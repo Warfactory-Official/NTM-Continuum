@@ -4,7 +4,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import com.hbm.lib.Library;
+import com.hbm.util.BobMathUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
@@ -38,11 +38,16 @@ public class PlasmaForgeRecipe extends GenericRecipe {
 
     @Override
     public List<Component> print() {
-        List<Component> lines = new ArrayList<>(super.print());
-        int insertAt = Math.min(1, lines.size());
-        lines.add(insertAt, Component.translatable("gui.recipe.plasmaIn")
-                .append(": " + Library.getShortNumber(ignitionTemp) + "TU/t")
+        List<Component> list = new ArrayList<>();
+        header(list);
+        autoSwitch(list);
+        duration(list);
+        power(list);
+        list.add(Component.translatable("gui.recipe.plasmaIn")
+                .append(": " + BobMathUtil.getShortNumber(ignitionTemp) + "TU/t")
                 .withStyle(ChatFormatting.LIGHT_PURPLE));
-        return lines;
+        input(list);
+        output(list);
+        return list;
     }
 }

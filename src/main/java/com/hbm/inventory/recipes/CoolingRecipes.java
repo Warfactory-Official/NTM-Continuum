@@ -27,10 +27,11 @@ public final class CoolingRecipes {
         return new CoolingRecipe(input, trait.amountReq, trait.coolsTo, trait.amountProduced, trait.heatEnergy);
     }
 
-    /** Read-only view for JEI display, in fluid registration order. */
+    /** Read-only view for JEI display, in fluid registration order; another mod's steam shows as HBM's. */
     public static Map<FluidType, CoolingRecipe> getAll() {
         Map<FluidType, CoolingRecipe> all = new LinkedHashMap<>();
         for (FluidType input : Fluids.getAll()) {
+            if (input.isForeign()) continue;
             CoolingRecipe recipe = get(input);
             if (recipe != null) all.put(input, recipe);
         }

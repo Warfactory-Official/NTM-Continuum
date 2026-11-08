@@ -3,6 +3,7 @@ package com.hbm.blocks.fluid;
 import com.hbm.Constants;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.blocks.ModHazardBlocks;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModFluidNetItems;
 import com.hbm.registration.Presets;
 import dev.golem.core.dejson.Models;
@@ -28,8 +29,7 @@ import net.minecraft.world.phys.Vec3;
  * HBM network fluid ({@code hbm:<FluidType key>}) uses.
  *
  * <p>These are world blocks, not the duct network's {@code FluidType}s. 1.7 linked three buckets to network fluids
- * through its {@code FluidContainerRegistry} (mud: WATZ, schrabidic: SCHRABIDIC, sulfuric: SULFURIC_ACID); that
- * link is unchanged ({@code FluidContainers}).
+ * through its {@code FluidContainerRegistry} (mud: WATZ, schrabidic: SCHRABIDIC, sulfuric: SULFURIC_ACID).
  */
 public final class ModWorldFluids {
 
@@ -95,8 +95,15 @@ public final class ModWorldFluids {
                     .translucent(false),
             () -> ModFluidNetBlocks.rad_lava_block.get(), null);
 
-    /** Loads the declarations; called before the registries are flushed. */
-    public static void init() {}
+    /**
+     * Loads the declarations; called before the registries are flushed. The three fluids 1.7's container registry
+     * linked to network fluids are those fluids in HBM's tanks, so they are not listed as fluids of their own.
+     */
+    public static void init() {
+        Fluids.registerAlias(MUD::source, () -> Fluids.WATZ);
+        Fluids.registerAlias(SCHRABIDIC::source, () -> Fluids.SCHRABIDIC);
+        Fluids.registerAlias(SULFURIC_ACID::source, () -> Fluids.SULFURIC_ACID);
+    }
 
     /**
      * Golem Core's world-fluid block properties (1.7 {@code BlockFluidBase}: no collision or shape, hardness 100, no

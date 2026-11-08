@@ -271,7 +271,7 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
         if (hasAmmo() && tPos != null) {
             spawnRocket(typeLoaded);
             ammo--;
-            level.playSound(null, worldPosition, ModSounds.MISSILE_TAKEOFF.get(), SoundSource.BLOCKS, 25.0F, 1.0F);
+            level.playSound(null, worldPosition, ModSounds.WEAPON_ROCKET_FLAME.get(), SoundSource.BLOCKS, 25.0F, 1.0F);
         }
 
         // One mission per volley: the queue advances whether or not there was a rocket to send.

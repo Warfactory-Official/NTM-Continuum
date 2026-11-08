@@ -12,7 +12,6 @@ import com.hbm.items.armor.ArmorFSBFueled;
 import com.hbm.items.armor.ArmorFSBPowered;
 import com.hbm.util.EnchantmentUtil;
 import dev.golem.core.Ids;
-import dev.golem.core.client.Hud;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.harness.HarnessQueryRegistry;
 import net.minecraft.client.Minecraft;
@@ -48,11 +47,6 @@ public final class ArmorSetBClient {
 
     public static void registerHud(HbmClientRegistrations.HudSink sink) {
         HarnessQueryRegistry.register("hbm_armor_set_b", (mc, params) -> query(mc));
-    }
-
-    /** Forge drew helmet overlays first, so the crosshair and hotbar lie on top of them. */
-    public static void installHelmetOverlay() {
-        Hud.addCameraOverlay("hbm", "helmet_overlay", ArmorSetBClient::renderHelmetOverlay);
     }
 
     /**

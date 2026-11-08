@@ -8,6 +8,7 @@
 # statics initialise, and Minecraft is on this classpath but never bootstrapped.
 com.hbm.items.ModItemModels
 com.hbm.inventory.material.ModMaterialTags
+com.hbm.inventory.fluid.ConventionFluidTags
 com.hbm.lib.ModDamageTypes
 com.hbm.world.gen.ModBiomeModifiers
 com.hbm.inventory.recipes.ModCraftingRecipes

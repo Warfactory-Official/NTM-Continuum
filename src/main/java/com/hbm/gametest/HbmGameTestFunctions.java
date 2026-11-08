@@ -2279,7 +2279,11 @@ public final class HbmGameTestFunctions {
 
     private static void fluidDropletSprites(GameTestHelper helper) {
         Map<String, String> bySprite = new HashMap<>();
+        int checked = 0;
         for (FluidType fluid : Fluids.getAll()) {
+            // a placed fluid that stands for a network fluid shows that fluid's droplet
+            if (Fluids.kindOf(fluid) != fluid) continue;
+            checked++;
             String sprite = fluid.getIconSprite().toString();
             // in the fluid's own namespace (an addon fluid gets its own droplet, minted by FluidSprites.install(ns))
             String expected = fluid.getNamespace() + ":"
@@ -2290,9 +2294,8 @@ public final class HbmGameTestFunctions {
             helper.assertTrue(clash == null,
                     "Fluids " + clash + " and " + fluid.getName() + " both name the droplet " + sprite);
         }
-        helper.assertTrue(bySprite.size() == Fluids.getAll().length,
-                "Every fluid must have its own droplet, " + bySprite.size() + " for "
-                        + Fluids.getAll().length + " fluids");
+        helper.assertTrue(bySprite.size() == checked,
+                "Every fluid must have its own droplet, " + bySprite.size() + " for " + checked + " fluids");
         helper.succeed();
     }
 

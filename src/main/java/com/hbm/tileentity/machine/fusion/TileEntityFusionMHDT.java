@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.Minecraft;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
@@ -8,12 +10,16 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.capability.MachineCaps;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.sound.MachineAudio;
+import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -74,6 +80,7 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
     public float rotor;
     public float prevRotor;
     public float rotorSpeed;
+    private AudioWrapper audio;
 
     public TileEntityFusionMHDT(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_MHDT.get(), pos, state);
@@ -121,6 +128,13 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
             te.rotor -= 360F;
             te.prevRotor -= 360F;
         }
+
+        float speed = te.rotorSpeed / 15F;
+        LocalPlayer me = Minecraft.getInstance().player;
+        boolean heard = me != null && me.distanceToSqr(pos.getX() + 0.5, pos.getY() + 2.5, pos.getZ() + 0.5) < 30 * 30;
+        te.audio = MachineAudio.tick(te.audio, te.rotorSpeed > 0F && heard, ModSounds.INDUSTRIAL_TURBINE.get(),
+                SoundSource.BLOCKS, pos.getX() + 0.5F, pos.getY() + 1.5F, pos.getZ() + 0.5F,
+                te.getVolume(speed), 20F, speed, 20);
     }
 
     protected PortDef[] cachedPorts;
@@ -152,6 +166,10 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
         FusionLink.release(level, plasmaCell(worldPosition,
                 FusionNodes.facing(getBlockState()).getOpposite()));
         super.setRemoved();
+        if (audio != null) {
+            audio.stopSound();
+            audio = null;
+        }
     }
 
     @Override public long getPower() { return power; }

@@ -198,7 +198,7 @@ public class EntityRequestDrone extends EntityDroneBase implements StoredItems {
 
                 inventory.setChanged();
                 // 1.7 played this at the dock's own centre, which the drone hovers a block or more above
-                server.playSound(null, node.getBlockPos(), ModSounds.CRATE_CLOSE.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
+                server.playSound(null, node.getBlockPos(), ModSounds.STORAGE_CLOSE.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
                 break;
             }
         }

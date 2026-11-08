@@ -12,6 +12,7 @@ import dev.golem.core.data.DataOut;
 import dev.golem.core.data.NbtFiles;
 import dev.golem.core.data.Tags;
 import dev.golem.core.fluid.TokenFluids;
+import dev.golem.core.fluid.WorldFluid;
 import dev.golem.core.registry.RegistryObject;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -831,15 +832,32 @@ public class Fluids {
 
     /**
      * 1.7 {@code Fluids.getInNiceOrder()}: the base display sequence with the addon placements declared through
-     * {@link #orderAfter}. Unpositioned custom and foreign fluids follow in registration order.
+     * {@link #orderAfter}. Unpositioned addon fluids follow in registration order. Another mod's fluid and a placed
+     * fluid are moved and stored but never listed: 1.7 had neither, and the ones a tag or alias joins to an HBM fluid
+     * would show that fluid twice.
      */
     public static synchronized FluidType[] getInNiceOrder() {
         List<FluidType> all = new ArrayList<>(registerOrder.size());
         all.addAll(metaOrder);
         Set<FluidType> listed = Collections.newSetFromMap(new IdentityHashMap<>());
         listed.addAll(metaOrder);
-        for (FluidType fluid : registerOrder) if (!listed.contains(fluid)) all.add(fluid);
+        for (FluidType fluid : registerOrder) if (!listed.contains(fluid) && !fluid.isForeign()) all.add(fluid);
         return displayOrder.apply(all, Function.identity()).toArray(new FluidType[0]);
+    }
+
+    /**
+     * port: what the multi identifier picks from: {@link #getInNiceOrder()}, then every other mod's source fluid that
+     * stands for no HBM fluid, so a duct can carry it. Golem placed fluids and tag-shared fluids are left out.
+     */
+    public static FluidType[] getSelectable() {
+        resolveDeclaredResources();
+        List<FluidType> all = new ArrayList<>(List.of(getInNiceOrder()));
+        for (FluidType fluid : getAll()) {
+            if (!fluid.isForeign() || kindOf(fluid) != fluid) continue;
+            Fluid vanilla = toVanilla(fluid);
+            if (!(vanilla instanceof WorldFluid) && vanilla.defaultFluidState().isSource()) all.add(fluid);
+        }
+        return all.toArray(new FluidType[0]);
     }
 
     // Vanilla Fluid registry entries. Every FluidType is also a vanilla Fluid so other

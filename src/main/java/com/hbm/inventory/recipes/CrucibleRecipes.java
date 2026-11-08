@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes;
 
+import com.hbm.blocks.StandardInfo;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.loader.DataRecipeTable;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
@@ -105,21 +106,27 @@ public class CrucibleRecipes extends GenericRecipes {
         @Override
         public List<Component> print() {
             List<Component> list = new ArrayList<>();
-            list.add(Component.literal(getLocalizedName()).withStyle(ChatFormatting.YELLOW));
-
-            list.add(Component.translatable("gui.recipe.input").append(":").withStyle(ChatFormatting.BOLD));
-            for (Mats.MaterialStack stack : input) {
-                list.add(Component.literal("  ").append(stack.material.getLocalizedName()).append(": "
-                        + Mats.formatAmount(stack.amount, false)).withStyle(ChatFormatting.GRAY));
-            }
-
-            list.add(Component.translatable("gui.recipe.output").append(":").withStyle(ChatFormatting.BOLD));
-            for (Mats.MaterialStack stack : output) {
-                list.add(Component.literal("  ").append(stack.material.getLocalizedName()).append(": "
-                        + Mats.formatAmount(stack.amount, false)).withStyle(ChatFormatting.GRAY));
-            }
-
+            header(list);
+            input(list);
+            output(list);
             return list;
+        }
+
+        @Override
+        protected void input(List<Component> list) {
+            list.add(Component.translatable("gui.recipe.input").append(":").withStyle(ChatFormatting.BOLD));
+            for (Mats.MaterialStack stack : input) list.add(materialLine(stack));
+        }
+
+        @Override
+        protected void output(List<Component> list) {
+            list.add(Component.translatable("gui.recipe.output").append(":").withStyle(ChatFormatting.BOLD));
+            for (Mats.MaterialStack stack : output) list.add(materialLine(stack));
+        }
+
+        private static Component materialLine(Mats.MaterialStack stack) {
+            return Component.empty().append(stack.material.getLocalizedName())
+                    .append(": " + Mats.formatAmount(stack.amount, StandardInfo.shiftHeld()));
         }
     }
 

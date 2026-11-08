@@ -13,9 +13,8 @@ import net.minecraft.sounds.SoundEvent;
 import com.hbm.items.machine.ItemCassette;
 
 /**
- * Feature-local sound events. The Leviathan reuses {@code ModSounds.INDUSTRIAL_TURBINE} (1.7 plays the very
- * same {@code chungusTurbine} file for both turbines) and {@code ModSounds.CHUNGUS_LEVER}; the geothermal loop
- * and the twenty siren tracks are registered here. Keys are the 1.7 {@code sounds.json} keys spelled in
+ * Feature-local sound events. The Leviathan uses {@code ModSounds.CHUNGUS_TURBINE} and {@code ModSounds.CHUNGUS_LEVER};
+ * the geothermal loop and the twenty siren tracks are registered here. Keys are the 1.7 {@code sounds.json} keys spelled in
  * snake case, since an identifier may not carry an upper-case letter.
  */
 public final class ModPowerGenSounds {

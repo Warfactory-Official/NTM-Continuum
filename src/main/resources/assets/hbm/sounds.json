@@ -325,7 +325,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "hbm:weapon/rifleshoot",
+        "name": "hbm:weapon/fire/rifle",
         "stream": false
       }
     ]
@@ -1674,7 +1674,8 @@
   "weapon.foley.gunwhack": {
     "category": "player",
     "sounds": [
-      "hbm:weapon/foley/gunwhack"
+      "hbm:weapon/foley/gunwhack",
+      "hbm:weapon/foley/gunwhack2"
     ]
   },
   "weapon.foley.gunwhack2": {

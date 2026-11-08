@@ -352,7 +352,7 @@ public final class PollutionGameTests {
                 "water must not pollute");
 
         int polluting = 0;
-        for (FluidType type : Fluids.getAll()) {
+        for (FluidType type : FluidRecipeTableGameTests.registered()) {
             if (type.hasTrait(FT_Polluting.class)) polluting++;
         }
         // 20 P_OIL + 25 P_FUEL + 3 P_FUEL_LEADED + 7 P_GAS + 1 P_LIQUID_GAS + 9 one-off tables.

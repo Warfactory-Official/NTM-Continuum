@@ -178,8 +178,7 @@ public class TileEntityChungus extends TileEntityLoadedBase
     public void updateSound() {
         if (isTurning() && audio == null) {
             var p = getBlockPos();
-            // 1.7 NTMSounds.TURBINE_LEVI_LOOP is the same chungusTurbine file the industrial turbine plays.
-            audio = AudioSystem.getLoopedSound(ModSounds.INDUSTRIAL_TURBINE.get(), SoundSource.BLOCKS,
+            audio = AudioSystem.getLoopedSound(ModSounds.CHUNGUS_TURBINE.get(), SoundSource.BLOCKS,
                     p.getX(), p.getY(), p.getZ(), 1.0F, 20F, 1.0F, 20);
             if (audio != null) audio.startSound();
         }

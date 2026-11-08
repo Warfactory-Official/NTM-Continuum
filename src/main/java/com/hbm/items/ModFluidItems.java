@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fluid-container items. Currently the {@code fluid_bucket}, a single item that carries any fluid (1000
- * mB) via its data components, with one creative-menu variant per registered fluid. Kept out of the
- * generated {@link ModItems} so codegen never clobbers it.
+ * Fluid-container items, kept out of the generated {@link ModItems} so codegen never clobbers them.
  */
 public final class ModFluidItems {
 
@@ -31,6 +29,7 @@ public final class ModFluidItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(ITEMS);
 
+    /** port: 1.7 had no universal bucket. Nothing makes or lists it; it stays registered so old stacks still empty. */
     public static final RegistryObject<ItemFluidBucket> fluid_bucket =
             REG.item("fluid_bucket", ItemFluidBucket::new, p -> p.stacksTo(1))
             .transform(Presets.sprite("minecraft:item/bucket", "hbm:items/fluid_bucket_fill")
@@ -65,17 +64,6 @@ public final class ModFluidItems {
                     .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
 
     static {
-        // One full bucket per fluid in the creative menu, so any fluid can be grabbed and poured into a
-        // tank. Skip NONE, and WATER/LAVA (vanilla already provides those buckets). Resolved lazily at
-        // tab-build time, after Fluids.init() has populated.
-        ModTabs.addStacksTo(HbmTab.TEMPLATES, () -> {
-            List<ItemStack> list = new ArrayList<>();
-            for (FluidType fluid : Fluids.getAll()) {
-                if (fluid == Fluids.NONE || fluid == Fluids.WATER || fluid == Fluids.LAVA) continue;
-                list.add(ItemFluidBucket.make(fluid));
-            }
-            return list;
-        });
         ModTabs.addStacksTo(HbmTab.TEMPLATES, () -> ItemFluidDuct.creativeStacks(fluid_duct.get()));
         // The universal tank + barrel: an empty one plus one full of each fluid (1.12.2 controlTab).
         ModTabs.addStacksTo(HbmTab.CONTROL, () -> fluidContainerVariants(fluid_tank.get()));

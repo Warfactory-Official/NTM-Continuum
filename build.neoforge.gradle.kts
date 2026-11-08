@@ -182,7 +182,7 @@ val vwServerMod: Configuration by configurations.creating
 for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestServer")) {
     val modsDir = layout.projectDirectory.dir("runs/$run/mods")
     val sync = tasks.register("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
-        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Popencomputers.run, -Psable.run, -Pkubejs.run, -Pae2.run, -Prefinedstorage.run, -Pstellarity.run, -Pvisualworkbench.run)."
+        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Popencomputers.run, -Pmekanism.run, -Psable.run, -Pkubejs.run, -Pae2.run, -Prefinedstorage.run, -Pstellarity.run, -Pvisualworkbench.run)."
         inputs.files(ccServerMod, sableServerMod, kubejsServerMod, ae2ServerMod, rsServerMod, stellarityServerMod, vwServerMod)
         outputs.dir(modsDir)
         doLast {
@@ -364,6 +364,12 @@ dependencies {
     if (propOrNull("opencomputers.run") == "true") propOrNull("deps.oc_file")?.let {
         devModJar("curse.maven:opencomputers-rebooted-1634364:$it") { isTransitive = false }
         ccServerMod("curse.maven:opencomputers-rebooted-1634364:$it") { isTransitive = false }
+    }
+    // Mekanism, dev runs only (`-Pmekanism.run=true`): a real mod whose fluids share HBM fluids' convention tags, for the
+    // gh156 GameTest. Never compiled against, shipped or required.
+    if (propOrNull("mekanism.run") == "true") propOrNull("deps.mekanism")?.let {
+        devModJar("curse.maven:mekanism-268560:$it") { isTransitive = false }
+        ccServerMod("curse.maven:mekanism-268560:$it") { isTransitive = false }
     }
     // Sable (moving block sub-levels, the engine under Create Aeronautics) is an optional peer on the nodes that
     // declare it. HBM's side of it is its own source root, src/sable (com.hbm.compat.sable), added only here; the

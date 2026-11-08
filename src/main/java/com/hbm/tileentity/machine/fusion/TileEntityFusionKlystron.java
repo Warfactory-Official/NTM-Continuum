@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.Minecraft;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -12,6 +14,9 @@ import com.hbm.capability.MachineCaps;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.sound.MachineAudio;
+import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -21,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -67,6 +73,7 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
     public float fan;
     public float prevFan;
     public float fanSpeed;
+    private AudioWrapper audio;
 
     public TileEntityFusionKlystron(BlockPos pos, BlockState state) {
         this(ModBlockEntities.FUSION_KLYSTRON.get(), pos, state);
@@ -122,7 +129,7 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
         te.spinFan(te.output > 0, (float) mult);
     }
 
-    /** Ramps the fan toward its target speed and wraps the angle. Shared with the creative variant. */
+    /** Ramps the fan toward its target speed, wraps the angle and runs the FEL loop. Shared with the creative variant. */
     protected void spinFan(boolean running, float mult) {
         if (running) this.fanSpeed += FAN_ACCELERATION * mult;
         else this.fanSpeed -= FAN_ACCELERATION;
@@ -134,6 +141,13 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
             this.fan -= 360F;
             this.prevFan -= 360F;
         }
+
+        float speed = this.fanSpeed / 5F;
+        BlockPos pos = this.worldPosition;
+        LocalPlayer me = Minecraft.getInstance().player;
+        boolean heard = me != null && me.distanceToSqr(pos.getX() + 0.5, pos.getY() + 2.5, pos.getZ() + 0.5) < 30 * 30;
+        audio = MachineAudio.tick(audio, this.fanSpeed > 0F && heard, ModSounds.FEL.get(), SoundSource.BLOCKS,
+                pos.getX() + 0.5F, pos.getY() + 2.5F, pos.getZ() + 0.5F, getVolume(speed), 15F, speed, 20);
     }
 
     protected PortDef[] cachedPorts;
@@ -157,6 +171,10 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
     public void setRemoved() {
         FusionLink.release(level, FusionNodes.emitter(worldPosition, FusionNodes.facing(getBlockState())));
         super.setRemoved();
+        if (audio != null) {
+            audio.stopSound();
+            audio = null;
+        }
     }
 
     @Override

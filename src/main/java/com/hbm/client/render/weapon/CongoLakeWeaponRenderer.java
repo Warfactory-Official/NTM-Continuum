@@ -4,6 +4,7 @@ import com.hbm.items.weapon.sedna.GunAnimation;
 import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.particle.SpentCasing;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
@@ -21,7 +22,7 @@ public final class CongoLakeWeaponRenderer extends WeaponRenderer {
     @Override protected float getTurnMagnitude(ItemStack s){return ItemGunBaseNT.getIsAiming(s)?2.5F:-.25F;}
     @Override public float viewFov(ItemStack s,float f,float p){return aimingFov(s,f,p,.33F);}
     @Override public void setupFirstPerson(ItemStack s,PoseStack p){p.translate(0,0,.875);float o=.8F;standardAimingTransform(s,p,-1.5F*o,-2F*o,1.25F*o,0,-10/8D,.25);}
-    @Override protected void setup(Gem.Model<WeaponPose>d){WavefrontObj o=model();Gem.Part<WeaponPose>g=d.joint().visibleIf(s->s.animated).stretch(s->.5F).bus(s->s.bus("Gun"));g.child(o.part("Gun"),BODY);g.child(o.part("Pump"),BODY).bus(s->s.bus("Pump"));g.child(o.part("Loop"),BODY).bus(s->s.bus("Loop"));g.child(o.part("Sight"),BODY).bus(s->s.bus("Sight")).spin(Gem.Axes.X,0,2.125F,3F,s->aimLerp(0,-90));Gem.Part<WeaponPose>guard=g.child(o.part("GuardOuter"),BODY).bus(s->s.bus("GuardOuter"));guard.child(o.part("GuardInner"),BODY).bus(s->s.bus("GuardInner"));Gem.Part<WeaponPose>shell=g.joint().visibleIf(CongoLakeWeaponRenderer::shellLoaded).bus(s->s.bus("Shell"));shell.child(o.part("Shell"),CASING);shell.child(o.part("ShellFore"),CASING);d.part(o.parts("Gun","Pump","Sight","Loop","GuardOuter","GuardInner","Shell","ShellFore"),BODY).visibleIf(s->!s.animated);}
+    @Override protected void setup(Gem.Model<WeaponPose>d){WavefrontObj o=model();Gem.Part<WeaponPose>g=d.joint().visibleIf(s->s.animated).stretch(s->.5F).bus(s->s.bus("Gun"));g.child(o.part("Gun"),BODY);g.child(o.part("Pump"),BODY).bus(s->s.bus("Pump"));g.child(o.part("Loop"),BODY).bus(s->s.bus("Loop"));g.child(o.part("Sight"),BODY).bus(s->s.bus("Sight")).spin(Gem.Axes.X,0,2.125F,3F,s->aimLerp(0,-90));Gem.Part<WeaponPose>guard=g.child(o.part("GuardOuter"),BODY).bus(s->s.bus("GuardOuter"));guard.child(o.part("GuardInner"),BODY).bus(s->s.bus("GuardInner"));Gem.Part<WeaponPose>shell=g.joint().visibleIf(CongoLakeWeaponRenderer::shellLoaded).bus(s->s.bus("Shell"));shell.child(o.part("Shell"),CASING).tint(s->SpecialWeaponRenderers.casingColor(s,0,SpentCasing.COLOR_CASE_40MM));shell.child(o.part("ShellFore"),CASING).tint(s->SpecialWeaponRenderers.casingColor(s,1,SpentCasing.COLOR_CASE_40MM));d.part(o.parts("Gun","Pump","Sight","Loop","GuardOuter","GuardInner","Shell","ShellFore"),BODY).visibleIf(s->!s.animated);}
 
     private static boolean shellLoaded(WeaponPose s){
         return ItemGunBaseNT.getLastAnim(s.stack, 0)

@@ -61,6 +61,7 @@ public final class ModGunSounds {
     public static final RegistryObject<SoundEvent> GRENADE_OPEN = register("weapon.glopen");
     public static final RegistryObject<SoundEvent> GRENADE_CLOSE = register("weapon.glclose");
     public static final RegistryObject<SoundEvent> SHREDDER_CYCLE = register("weapon.fire.shreddercycle");
+    public static final RegistryObject<SoundEvent> GUN_WHACK = register("weapon.foley.gunwhack");
 
     public static final RegistryObject<SoundEvent> FIRE_SILENCED = register("weapon.fire.silenced");
     /** AMAT's distinct silencer report from ntm-next's sound table. */

@@ -5,6 +5,12 @@ import com.hbm.inventory.recipes.loader.GenericRecipeCodec;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.hbm.util.BobMathUtil;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * One fusion fuel cycle. Beyond the generic recipe's inputs, outputs, duration and power draw, a fusion
@@ -68,6 +74,24 @@ public class FusionRecipe extends GenericRecipe {
                     recipe.neutronFlux = extras.neutronFlux();
                     recipe.setRGB(extras.r(), extras.g(), extras.b());
                 });
+    }
+
+    @Override
+    public List<Component> print() {
+        List<Component> list = new ArrayList<>();
+        // 1.7 FusionRecipe.print skips header(), so a fusion cycle never shows its internal name
+        list.add(Component.literal(getLocalizedName()).withStyle(ChatFormatting.YELLOW));
+        duration(list);
+        power(list);
+        list.add(Component.translatable("gui.recipe.fusionIn")
+                .append(": " + BobMathUtil.getShortNumber(ignitionTemp) + "KyU/t").withStyle(ChatFormatting.LIGHT_PURPLE));
+        list.add(Component.translatable("gui.recipe.fusionOut")
+                .append(": " + BobMathUtil.getShortNumber(outputTemp) + "TU/t").withStyle(ChatFormatting.LIGHT_PURPLE));
+        list.add(Component.translatable("gui.recipe.fusionFlux")
+                .append(": " + ((int) (neutronFlux * 10)) / 10D + " flux/t").withStyle(ChatFormatting.LIGHT_PURPLE));
+        input(list);
+        output(list);
+        return list;
     }
 
     @Override

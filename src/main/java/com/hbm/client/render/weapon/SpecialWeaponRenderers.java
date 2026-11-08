@@ -98,6 +98,18 @@ public final class SpecialWeaponRenderers {
         return gun.getPrimaryMagazine(state.stack, 0).getAmount(state.stack, null);
     }
 
+    /** Loaded round's casing colour {@code index} (the last if it has fewer) as opaque ARGB, {@code fallback} without one. */
+    static int casingColor(WeaponPose state, int index, int fallback) {
+        int[] colors = null;
+        if (state.stack.getItem() instanceof ItemGunBaseNT gun && gun.isValidConfigIndex(0)
+                && gun.getPrimaryMagazine(state.stack, 0) != null) {
+            BulletConfig config = gun.getPrimaryMagazine(state.stack, 0).getType(state.stack, null);
+            if (config != null && config.casing != null) colors = config.casing.getColors();
+        }
+        int rgb = colors == null || colors.length == 0 ? fallback : colors[Math.min(index, colors.length - 1)];
+        return 0xFF000000 | rgb;
+    }
+
     static String itemPath(ItemStack stack) {
         return BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
     }

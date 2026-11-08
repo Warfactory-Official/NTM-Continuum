@@ -18,6 +18,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.module.machine.ModuleMachinePlasma;
+import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -30,6 +31,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -164,8 +166,8 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFusionPlasmaForge te) {
         if (te.timeOffset == -1) te.timeOffset = level.getRandom().nextInt(30_000);
-        te.armStriker.updateArm(te.didProcess);
-        te.armJet.updateArm(te.didProcess);
+        te.armStriker.updateArm();
+        te.armJet.updateArm();
         te.prevRing = te.ring;
         if (!te.didProcess) return;
         if (te.ring != te.ringTarget) {
@@ -312,7 +314,7 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         super.setRemoved();
     }
 
-    public static class ForgeArm {
+    public class ForgeArm {
         private final boolean striker;
         public final double[] angles;
         public final double[] prevAngles;
@@ -320,35 +322,38 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         private final double[] speed;
         private int delay;
         private ArmState state = ArmState.RETIRE;
-        private static final Random rand = new Random();
 
         private ForgeArm(boolean striker) {
             this.striker = striker;
             int count = striker ? 6 : 4;
             angles = new double[count]; prevAngles = new double[count]; targetAngles = new double[count]; speed = new double[count];
-            for (int i = 0; i < speed.length; i++) {
-                if (i < 3 || i == 4) speed[i] = 15D;
-                if (i > 4) speed[i] = 0.5D;
-            }
+            for (int i = 0; i < speed.length; i++) speed[i] = i > 4 ? 0.5D : 15D;
         }
 
-        private void updateArm(boolean active) {
+        private void updateArm() {
             System.arraycopy(angles, 0, prevAngles, 0, angles.length);
-            if (!active) state = ArmState.RETIRE;
+            if (!didProcess) state = ArmState.RETIRE;
             if (state == ArmState.RETIRE) delay = 0;
-            if (delay-- > 0) return;
+            if (delay > 0) {
+                delay--;
+                return;
+            }
+            if (striker) strike();
+            else aim();
+        }
+
+        private void strike() {
             switch (state) {
-                case RETIRE -> { Arrays.fill(targetAngles, 0D); if (move()) { delay = 10; state = ArmState.REPOSITION; choose(); } }
-                case REPOSITION -> { if (move()) { delay = striker ? 5 : 20; if (striker) { state = ArmState.EXTEND1; targetAngles[4] = 0.5D; } else choose(); } }
-                case EXTEND1 -> { if (move()) { state = ArmState.RETRACT1; targetAngles[4] = 0D; } }
+                case REPOSITION -> { if (move()) { delay = 5; state = ArmState.EXTEND1; targetAngles[4] = 0.5D; } }
+                case EXTEND1 -> { if (move()) { state = ArmState.RETRACT1; targetAngles[4] = 0D; playStrikerSound(); } }
                 case RETRACT1 -> { if (move()) { state = ArmState.EXTEND2; targetAngles[5] = 0.5D; } }
-                case EXTEND2 -> { if (move()) { state = ArmState.RETRACT2; targetAngles[5] = 0D; } }
+                case EXTEND2 -> { if (move()) { state = ArmState.RETRACT2; targetAngles[5] = 0D; playStrikerSound(); } }
                 case RETRACT2 -> {
                     if (move()) {
-                        if (rand.nextInt(3) == 0) {
+                        if (ARM_RAND.nextInt(3) == 0) {
                             delay = 10;
                             state = ArmState.REPOSITION;
-                            choose();
+                            choose(STRIKER_POSITIONS);
                         } else {
                             delay = 5;
                             state = ArmState.EXTEND1;
@@ -356,6 +361,25 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
                         }
                     }
                 }
+                case RETIRE -> retire(STRIKER_POSITIONS);
+            }
+        }
+
+        private void aim() {
+            if (state == ArmState.REPOSITION && move()) {
+                delay = 20 + ARM_RAND.nextInt(3) * 10;
+                choose(JET_POSITIONS);
+            } else if (state == ArmState.RETIRE) {
+                retire(JET_POSITIONS);
+            }
+        }
+
+        private void retire(double[][] positions) {
+            Arrays.fill(targetAngles, 0D);
+            if (move()) {
+                delay = 10;
+                state = ArmState.REPOSITION;
+                choose(positions);
             }
         }
 
@@ -370,12 +394,16 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
             return !moving;
         }
 
-        private void choose() {
-            double[][] positions = striker
-                    ? new double[][]{{20, -30, -20, 30, 0, 0}, {45, -80, 15, 30, 0, 0}, {30, -45, -10, 30, 0, 0}, {15, -20, -30, 30, 0, 0}, {0, 10, -55, 30, 0, 0}}
-                    : new double[][]{{10, 45, -120, 0}, {20, 45, -140, 0}, {0, 30, -80, 0}, {0, 40, -100, 0}, {30, 50, -160, 0}};
-            double[] position = positions[rand.nextInt(positions.length)];
-            System.arraycopy(position, 0, targetAngles, 0, targetAngles.length);
+        /** 1.7 sets only the listed joints: the pistons and the jet's spare angle keep their targets. */
+        private void choose(double[][] positions) {
+            double[] position = positions[ARM_RAND.nextInt(positions.length)];
+            System.arraycopy(position, 0, targetAngles, 0, position.length);
+        }
+
+        /** 1.7 plays this at the core's corner, not its centre. */
+        private void playStrikerSound() {
+            level.playLocalSound(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
+                    ModSounds.BOLTGUN.get(), SoundSource.PLAYERS, getVolume(0.25F), 1.25F, false);
         }
 
         public double[] getPositions(float partialTicks) {
@@ -386,6 +414,12 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
     }
 
     private enum ArmState { REPOSITION, EXTEND1, RETRACT1, EXTEND2, RETRACT2, RETIRE }
+
+    private static final Random ARM_RAND = new Random();
+    private static final double[][] STRIKER_POSITIONS = {
+            {20, -30, -20, 30}, {45, -80, 15, 30}, {30, -45, -10, 30}, {15, -20, -30, 30}, {0, 10, -55, 30}};
+    private static final double[][] JET_POSITIONS = {
+            {10, 45, -120}, {20, 45, -140}, {0, 30, -80}, {0, 40, -100}, {30, 50, -160}};
 
     /** A plasma node, five out at +2 on a side: 1.7 takes the beam across the forge, not through the port ends. */
     private static BlockPos node(BlockPos pos, ForgeDirection side) {

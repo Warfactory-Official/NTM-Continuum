@@ -219,8 +219,9 @@ public final class HbmBlockEntityRenderers {
                 new ModelDef(obj("fusion/collector.obj"), tex("fusion/collector.png")));
         reg(sink, ModBlockEntities.FUSION_BOILER.get(), 90F, 1F,
                 new ModelDef(obj("fusion/boiler.obj"), tex("fusion/boiler.png")));
+        // 1.7 RenderFusionBreeder draws only "Breeder"; the OBJ's spare "BreederAlt" sits off to the side.
         reg(sink, ModBlockEntities.FUSION_BREEDER.get(), 90F, 1F,
-                new ModelDef(obj("fusion/breeder.obj"), tex("fusion/breeder.png")));
+                new ModelDef(obj("fusion/breeder.obj"), tex("fusion/breeder.png"), Set.of("BreederAlt")));
 
         // The klystron's model is authored one block off its core, and its fan spins about the machine
         // axis at a pivot 2.5 up. The "Pipes" group is not drawn, as upstream does not.

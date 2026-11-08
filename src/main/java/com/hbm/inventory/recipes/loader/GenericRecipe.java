@@ -4,12 +4,15 @@ import dev.golem.core.Ids;
 import dev.golem.core.gui.TextSearch;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.Registry;
+import com.hbm.blocks.StandardInfo;
 import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.items.machine.ItemFluidIcon;
+import com.hbm.util.BobMathUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -493,31 +496,49 @@ public class GenericRecipe {
         return nameWrapper == null ? base : Component.translatable(nameWrapper, base).getString();
     }
 
-    /**
-     * Multi-line recipe description for the GUI tooltip (name, duration, power, item/fluid inputs and
-     * outputs). Ported from HBM's {@code GenericRecipe.print()}.
-     */
+    /** The GUI recipe tooltip, 1.7 {@code GenericRecipe.print()}. */
     public List<Component> print() {
         List<Component> list = new ArrayList<>();
+        header(list);
+        autoSwitch(list);
+        duration(list);
+        power(list);
+        input(list);
+        output(list);
+        return list;
+    }
+
+    protected void header(List<Component> list) {
         list.add(Component.literal(getLocalizedName()).withStyle(ChatFormatting.YELLOW));
-
-        // 1.7 autoSwitch(): the group's name and what joining it means, one line per '$' of the lang entry
-        if (autoSwitchGroup != null) {
-            String group = Component.translatable(autoSwitchGroup).getString();
-            for (String line : Component.translatable("autoswitch", group).getString().split("\\$")) {
-                list.add(Component.literal(line).withStyle(ChatFormatting.GOLD));
-            }
+        if (StandardInfo.shiftHeld()) {
+            list.add(Component.literal("Internal: " + getInternalName()).withStyle(ChatFormatting.DARK_GRAY));
         }
+    }
 
+    // 1.7 autoSwitch(): the group's name and what joining it means, one line per '$' of the lang entry
+    protected void autoSwitch(List<Component> list) {
+        if (autoSwitchGroup == null) return;
+        String group = Component.translatable(autoSwitchGroup).getString();
+        for (String line : Component.translatable("autoswitch", group).getString().split("\\$")) {
+            list.add(Component.literal(line).withStyle(ChatFormatting.GOLD));
+        }
+    }
+
+    protected void duration(List<Component> list) {
         if (duration > 0) {
             list.add(Component.translatable("gui.recipe.duration")
                     .append(": " + (duration / 20D) + "s").withStyle(ChatFormatting.RED));
         }
+    }
+
+    protected void power(List<Component> list) {
         if (power > 0) {
             list.add(Component.translatable("gui.recipe.consumption")
-                    .append(": " + power + "HE/t").withStyle(ChatFormatting.RED));
+                    .append(": " + BobMathUtil.getShortNumber(power) + "HE/t").withStyle(ChatFormatting.RED));
         }
+    }
 
+    protected void input(List<Component> list) {
         list.add(Component.translatable("gui.recipe.input").append(":").withStyle(ChatFormatting.BOLD));
         if (inputItem != null) for (AStack stack : inputItem) {
             ItemStack display = stack.getDisplayStack();
@@ -525,33 +546,43 @@ public class GenericRecipe {
                     .append(display.getHoverName()).withStyle(ChatFormatting.GRAY));
         }
         if (inputFluid != null) for (FluidStack fluid : inputFluid) list.add(fluidLine(fluid));
+    }
 
+    protected void output(List<Component> list) {
         list.add(Component.translatable("gui.recipe.output").append(":").withStyle(ChatFormatting.BOLD));
         if (outputChoices != null) {
             float total = 0F;
             for (OutputChoice choice : outputChoices) total += Math.max(0F, choice.weight());
+            list.add(Component.literal("  One of:"));
             for (OutputChoice choice : outputChoices) {
-                int chance = total <= 0F ? 0 : Math.round(choice.weight() * 100F / total);
+                float chance = total <= 0F ? 0F : choice.weight() / total;
                 ItemStack out = choice.stack();
-                list.add(Component.literal("  " + chance + "% " + out.getCount() + "x ")
-                        .append(out.getHoverName()).withStyle(ChatFormatting.GRAY));
+                list.add(Component.literal("    " + out.getCount() + "x ").append(out.getHoverName())
+                        .append(" (" + percent(chance) + "%)").withStyle(ChatFormatting.GRAY));
             }
         } else if (outputItem != null) for (int i = 0; i < outputItem.length; i++) {
             ItemStack out = outputItem[i];
             float chance = getChance(i);
-            String prefix = chance >= 1F ? "  " : "  " + Math.round(chance * 100F) + "% ";
-            list.add(Component.literal(prefix + out.getCount() + "x ")
-                    .append(out.getHoverName()).withStyle(ChatFormatting.GRAY));
+            MutableComponent line = Component.literal("  " + out.getCount() + "x ").append(out.getHoverName());
+            if (chance < 1F) line.append(" (" + percent(chance) + "%)");
+            list.add(line.withStyle(ChatFormatting.GRAY));
         }
         if (outputFluid != null) for (FluidStack fluid : outputFluid) list.add(fluidLine(fluid));
+    }
 
-        return list;
+    /** 1.7 cuts the percentage to one decimal: {@code (int) (chance * 1000) / 10F}. */
+    private static float percent(float chance) {
+        return (int) (chance * 1000F) / 10F;
     }
 
     private static Component fluidLine(FluidStack fluid) {
-        String text = "  " + fluid.fill + " mB " + fluid.type.getDisplayNameString()
-                + (fluid.pressure != 0 ? " @ " + fluid.pressure + " PU" : "");
-        return Component.literal(text).withStyle(ChatFormatting.BLUE);
+        MutableComponent line = Component.literal("  " + fluid.fill + "mB " + fluid.type.getDisplayNameString())
+                .withStyle(ChatFormatting.BLUE);
+        if (fluid.pressure != 0) {
+            line.append(" ").append(Component.translatable("gui.recipe.atPressure")).append(" ")
+                    .append(Component.literal(fluid.pressure + " PU").withStyle(ChatFormatting.RED));
+        }
+        return line;
     }
 
     /** Whether this recipe's localized name contains {@code substring} (case-insensitive). */

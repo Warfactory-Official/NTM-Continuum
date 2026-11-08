@@ -247,9 +247,12 @@ public final class IdsGameTests {
                     : fluid == Fluids.LAVA ? "minecraft:lava" : "hbm:" + fluid.getName().toLowerCase(Locale.ROOT);
             helper.assertTrue(name.equals(expected), "registry name of " + fluid);
             helper.assertTrue(names.add(name), "duplicate fluid registry name " + name);
-            helper.assertTrue(Fluids.byRegistryName(name) == fluid, name + " does not read back");
-            Tag encoded = Fluids.CODEC.encodeStart(NbtOps.INSTANCE, fluid).result().orElseThrow();
-            helper.assertTrue(!(encoded instanceof NumericTag) && Fluids.CODEC.parse(NbtOps.INSTANCE, encoded).result().orElseThrow() == fluid,
+            // a placed fluid reads as the network fluid it stands for; its exact read keeps it
+            var codec = fluid.isForeign() ? Fluids.EXACT_CODEC : Fluids.CODEC;
+            helper.assertTrue((fluid.isForeign() ? Fluids.byRegistryNameExact(name) : Fluids.byRegistryName(name)) == fluid,
+                    name + " does not read back");
+            Tag encoded = codec.encodeStart(NbtOps.INSTANCE, fluid).result().orElseThrow();
+            helper.assertTrue(!(encoded instanceof NumericTag) && codec.parse(NbtOps.INSTANCE, encoded).result().orElseThrow() == fluid,
                     "the fluid codec must save " + name + " as its name, saved " + encoded);
         }
 

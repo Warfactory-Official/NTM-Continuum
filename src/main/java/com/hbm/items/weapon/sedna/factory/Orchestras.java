@@ -4,6 +4,7 @@ import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
+import com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.lib.ModDamageSources;
@@ -16,6 +17,7 @@ import com.hbm.sound.ModSounds;
 import com.hbm.util.EntityDamageUtil;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.Sounds;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
@@ -61,6 +63,21 @@ public final class Orchestras {
             IMagazine<?> mag = magazine(stack, ctx, 0);
             return mag != null && mag.getAmount(stack, ctx.inventory) == 0;
         });
+    }
+
+    private static Cue cueIf(GunAnimation type, int timer, Supplier<SoundEvent> sound, float volume, float pitch,
+            BiPredicate<ItemStack, ItemGunBaseNT.LambdaContext> when) {
+        return new Cue(new GunAnimation[] {type}, timer, sound, volume, pitch, when);
+    }
+
+    /** 1.7 checks the slowdown mod, 207, on config 0. */
+    private static boolean slowedMinigun(ItemStack stack) {
+        return XWeaponModManager.hasUpgrade(stack, 0, 207);
+    }
+
+    private static boolean hookOut(ItemStack stack, ItemGunBaseNT.LambdaContext ctx) {
+        UUID hook = ItemGunChargeThrower.getLastHook(stack);
+        return hook != null && ((ServerLevel) ctx.entity.level()).getEntity(hook) != null;
     }
 
     private enum Muzzle { NONE, CYCLE, CYCLE_OR_ALT, NI4NI_CYCLE }
@@ -749,8 +766,8 @@ public final class Orchestras {
             cue(GunAnimation.RELOAD_CYCLE, 5, ModGunSounds.SHOTGUN_LOAD, 1F, 1F),
             cue(GunAnimation.INSPECT, 5, ModGunSounds.SHOTGUN_OPEN, 1F, 1F),
             cue(GunAnimation.INSPECT, 18, ModGunSounds.SHOTGUN_CLOSE, 1F, 1F),
-            cue(GunAnimation.JAMMED, 18, ModGunSounds.WHACK, 1F, 1F),
-            cue(GunAnimation.JAMMED, 25, ModGunSounds.WHACK, 1F, 1F),
+            cue(GunAnimation.JAMMED, 18, ModGunSounds.GUN_WHACK, 1F, 1F),
+            cue(GunAnimation.JAMMED, 25, ModGunSounds.GUN_WHACK, 1F, 1F),
             cue(GunAnimation.JAMMED, 29, ModGunSounds.SHOTGUN_CLOSE, 1F, 1F));
 
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_PANERSCHRECK = timeline(Muzzle.CYCLE,
@@ -761,6 +778,7 @@ public final class Orchestras {
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 0.9F),
             cue(GunAnimation.CYCLE_DRY, 5, ModGunSounds.PISTOL_COCK, 1F, 1.1F),
             cue(GunAnimation.RELOAD, 5, ModGunSounds.REVOLVER_CLOSE, 1F, 1F),
+            cue(GunAnimation.RELOAD, 5, ModGunSounds.MAG_REMOVE, 1F, 1F),
             cue(GunAnimation.RELOAD, 22, ModGunSounds.MAG_INSERT, 1F, 1F),
             cue(GunAnimation.RELOAD, 30, ModGunSounds.REVOLVER_CLOSE, 1F, 1.1F),
             cue(GunAnimation.JAMMED, 15, ModGunSounds.REVOLVER_CLOSE, 1F, 1F),
@@ -774,6 +792,7 @@ public final class Orchestras {
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 0.9F),
             cue(GunAnimation.CYCLE_DRY, 5, ModGunSounds.PISTOL_COCK, 1F, 1.1F),
             cue(GunAnimation.RELOAD, 5, ModGunSounds.REVOLVER_CLOSE, 1F, 1F),
+            cue(GunAnimation.RELOAD, 5, ModGunSounds.MAG_REMOVE, 1F, 1F),
             cue(GunAnimation.RELOAD, 22, ModGunSounds.MAG_INSERT, 1F, 1F),
             cue(GunAnimation.RELOAD, 30, ModGunSounds.REVOLVER_CLOSE, 1F, 1.1F),
             cue(GunAnimation.JAMMED, 15, ModGunSounds.REVOLVER_CLOSE, 1F, 1F),
@@ -808,7 +827,10 @@ public final class Orchestras {
             cue(GunAnimation.RELOAD, 60, ModGunSounds.IMPACT, 0.5F, 1F),
             cue(GunAnimation.RELOAD, 90, ModGunSounds.MAG_INSERT, 1F, 0.75F),
             cue(GunAnimation.RELOAD, 100, ModGunSounds.MAG_SMALL_INSERT, 1F, 0.75F),
-            cue(GunAnimation.RELOAD, 125, ModGunSounds.REVOLVER_CLOSE, 1F, 0.65F));
+            cue(GunAnimation.RELOAD, 125, ModGunSounds.REVOLVER_CLOSE, 1F, 0.65F),
+            cue(GunAnimation.INSPECT, 9, ModGunSounds.IMPACT, 0.5F, 1.5F),
+            cue(GunAnimation.INSPECT, 14, ModGunSounds.IMPACT, 0.5F, 1.5F),
+            cue(GunAnimation.INSPECT, 19, ModGunSounds.IMPACT, 0.5F, 1.5F));
 
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_AMAT = timeline(Muzzle.CYCLE,
             AMAT_CASINGS,
@@ -844,7 +866,6 @@ public final class Orchestras {
             cue(GunAnimation.INSPECT, 28, ModGunSounds.MAG_INSERT, 1F, 1F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_SHREDDER_SEXY = timeline(Muzzle.CYCLE,
             SHREDDER_SEXY_CASINGS,
-            cue(GunAnimation.CYCLE, 2, ModGunSounds.SHREDDER_CYCLE, 0.25F, 1.5F),
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 1F),
             cue(GunAnimation.RELOAD, 0, ModGunSounds.REVOLVER_COCK, 1F, 1F),
             cue(GunAnimation.RELOAD, 4, ModGunSounds.REVOLVER_CLOSE, 1F, 0.75F),
@@ -871,14 +892,16 @@ public final class Orchestras {
             cue(GunAnimation.JAMMED, 32, ModGunSounds.BOLT_CLOSE, 1F, 0.85F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_MINIGUN = timeline(Muzzle.CYCLE,
             MINIGUN_CASINGS,
-            cue(GunAnimation.CYCLE, 1, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F),
+            cueIf(GunAnimation.CYCLE, 1, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F, (stack, ctx) -> !slowedMinigun(stack)),
+            cueIf(GunAnimation.CYCLE, 3, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F, (stack, ctx) -> slowedMinigun(stack)),
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 0.75F),
             cue(GunAnimation.CYCLE_DRY, 1, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F),
             cue(GunAnimation.RELOAD, 0, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F),
             cue(GunAnimation.INSPECT, 0, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_MINIGUN_DUAL = timeline(Muzzle.CYCLE,
             MINIGUN_DUAL_CASINGS,
-            cue(GunAnimation.CYCLE, 1, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F),
+            cueIf(GunAnimation.CYCLE, 1, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F, (stack, ctx) -> !slowedMinigun(stack)),
+            cueIf(GunAnimation.CYCLE, 3, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F, (stack, ctx) -> slowedMinigun(stack)),
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 0.75F),
             cue(GunAnimation.CYCLE_DRY, 1, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F),
             cue(GunAnimation.RELOAD, 0, ModGunSounds.REVOLVER_SPIN, 1F, 0.75F),
@@ -924,16 +947,17 @@ public final class Orchestras {
             cue(GunAnimation.INSPECT, 11, ModGunSounds.MAG_SMALL_REMOVE, 1F, 1F),
             cue(GunAnimation.INSPECT, 72, ModGunSounds.MAG_SMALL_INSERT, 1F, 1F),
             cue(GunAnimation.INSPECT, 84, ModGunSounds.REVOLVER_CLOSE, 1F, 1F));
-    private static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> TAU_TIMELINE = timeline(
-            cue(GunAnimation.CYCLE, 0, ModGunSounds.FIRE_TAU, 0.5F, 1F),
-            cue(GunAnimation.ALT_CYCLE, 0, ModGunSounds.FIRE_TAU, 0.5F, 0.8F));
     /** The timeline plus the charge: one round per 10 ticks up to 130, and past 200 ticks the cannon blows up. */
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_TAU = (stack, ctx) -> {
-        TAU_TIMELINE.accept(stack, ctx);
         LivingEntity entity = ctx.entity;
-        if (!(entity.level() instanceof ServerLevel level)
-                || ItemGunBaseNT.getLastAnim(stack, ctx.configIndex) != GunAnimation.SPINUP) return;
+        if (!(entity.level() instanceof ServerLevel level)) return;
+        GunAnimation type = ItemGunBaseNT.getLastAnim(stack, ctx.configIndex);
         int timer = ItemGunBaseNT.getAnimTimer(stack, ctx.configIndex);
+        if (timer == 0 && type == GunAnimation.CYCLE)
+            play(ctx, ModGunSounds.FIRE_TAU, 0.5F, 0.9F + entity.getRandom().nextFloat() * 0.2F);
+        if (timer == 0 && type == GunAnimation.ALT_CYCLE)
+            play(ctx, ModGunSounds.FIRE_TAU, 0.5F, 0.7F + entity.getRandom().nextFloat() * 0.2F);
+        if (type != GunAnimation.SPINUP) return;
         if (timer % 10 == 0 && timer < 130) {
             IMagazine<?> mag = magazine(stack, ctx, 0);
             if (mag.getAmount(stack, ctx.inventory) <= 0) {
@@ -1052,6 +1076,7 @@ public final class Orchestras {
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_FIREEXT = timeline(
             cue(GunAnimation.RELOAD, 0, ModGunSounds.VALVE, 1F, 1F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_CHARGE_THROWER = timeline(
+            cueIf(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 0.75F, (stack, ctx) -> !hookOut(stack, ctx)),
             cue(GunAnimation.RELOAD, 30, ModGunSounds.ROCKET_INSERT, 1F, 1F),
             cue(GunAnimation.RELOAD, 40, ModGunSounds.BOLT_CLOSE, 1F, 1F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_DRILL = timeline(

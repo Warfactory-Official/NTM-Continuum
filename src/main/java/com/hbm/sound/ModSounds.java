@@ -91,6 +91,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> MUKE_EXPLOSION = register("weapon.muke_explosion");
     /** Near/far report used by the old controller's small VNT explosion effect. */
     public static final RegistryObject<SoundEvent> EXPLOSION_SMALL_NEAR = register("weapon.explosion_small_near");
+    public static final RegistryObject<SoundEvent> EXPLOSION_MEDIUM = register("weapon.explosion_medium");
     public static final RegistryObject<SoundEvent> EXPLOSION_SMALL_FAR = register("weapon.explosion_small_far");
     /** Near/far report of a large blast, arriving at the speed of sound. */
     public static final RegistryObject<SoundEvent> EXPLOSION_LARGE_NEAR = register("weapon.explosion_large_near");

@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.Minecraft;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.inventory.recipes.FusionRecipes;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
@@ -63,9 +65,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * <p>The OpenComputers component {@code ntm_fusion_torus} is served to CC: Tweaked by
  * {@code com.hbm.compat.computer.fusion.FusionTorusPeripheral}.
  *
- * <p>Not ported: the redstone-over-radio provider, the tilt check (the
- * accelerator's structural-stress system, which no ported machine has yet), and the looping reactor
- * hum (no positional looped-audio facade).
+ * <p>Not ported: the tilt check (the accelerator's structural-stress system, which no ported machine has yet).
  */
 public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuProvider, IControlReceiver, IRORValueProvider,
         IRORInteractive, WorldlyContainer {
@@ -225,7 +225,9 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         }
 
         float speed = te.magnetSpeed / 30F;
-        te.audio = MachineAudio.tick(te.audio, te.magnetSpeed > 0F, ModSounds.FUSION_REACTOR_RUNNING.get(),
+        LocalPlayer me = Minecraft.getInstance().player;
+        boolean heard = me != null && me.distanceToSqr(pos.getX() + 0.5, pos.getY() + 2.5, pos.getZ() + 0.5) < 50 * 50;
+        te.audio = MachineAudio.tick(te.audio, te.magnetSpeed > 0F && heard, ModSounds.FUSION_REACTOR_RUNNING.get(),
                 SoundSource.BLOCKS, pos.getX() + 0.5F, pos.getY() + 2.5F, pos.getZ() + 0.5F,
                 te.getVolume(speed), 30F, speed, 20);
     }
@@ -269,6 +271,10 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
     public void setRemoved() {
         for (int i = 0; i < 4; i++) FusionLink.release(level, nodePos(ForgeDirection.getOrientation(i + 2)));
         super.setRemoved();
+        if (audio != null) {
+            audio.stopSound();
+            audio = null;
+        }
     }
 
     protected PortDef[] cachedPorts;

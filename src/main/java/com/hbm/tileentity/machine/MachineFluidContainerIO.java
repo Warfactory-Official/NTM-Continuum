@@ -179,15 +179,11 @@ public final class MachineFluidContainerIO {
         FluidType type = tank.getFluid();
         ItemStack full = FluidContainerRegistry.INSTANCE.fullOf(input, type);
         int amount = FluidContainerRegistry.INSTANCE.contentOf(full, type);
-        // An exact placed resource names its own physical bucket; an unrelated token fluid names none.
+        // An exact placed resource names its own physical bucket; a token fluid has none, as 1.7's had none.
         if (full.isEmpty() && input.is(Items.BUCKET)) {
             var bucket = Fluids.toVanilla(type).getBucket();
             if (bucket != Items.AIR) {
                 full = new ItemStack(bucket);
-                amount = ItemFluidBucket.VOLUME;
-            } else if (type != Fluids.NONE) {
-                // port: the universal bucket for fluids 1.7 had no bucket for
-                full = ItemFluidBucket.make(type);
                 amount = ItemFluidBucket.VOLUME;
             }
         }

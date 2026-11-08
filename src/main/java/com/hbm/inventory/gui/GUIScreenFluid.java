@@ -207,7 +207,7 @@ public class GUIScreenFluid extends CompatScreen {
         int next = 0;
         String subs = searchText.toLowerCase(Locale.US);
 
-        for (FluidType type : Fluids.getInNiceOrder()) { // 1.7 GUIScreenFluid.updateSearch
+        for (FluidType type : Fluids.getSelectable()) { // 1.7 GUIScreenFluid.updateSearch
             String name = type.getDisplayNameString().toLowerCase(Locale.US);
             if (TextSearch.contains(name, subs) && !IFluidCopiable.ItemFluidIds.hasNoID(type)) {
                 this.searchArray[next] = type;

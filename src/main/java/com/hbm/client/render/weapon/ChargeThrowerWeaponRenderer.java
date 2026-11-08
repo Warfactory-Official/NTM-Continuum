@@ -23,7 +23,7 @@ public final class ChargeThrowerWeaponRenderer extends WeaponRenderer {
         return ItemGunBaseNT.getIsAiming(stack) ? 0F : -0.5F;
     }
     @Override public float viewFov(ItemStack stack, float fov, float partialTick) {
-        return aimingFov(stack, fov, partialTick, 0.33F);
+        return aimingFov(stack, fov, partialTick, SpecialWeaponRenderers.hasUpgrade(stack, 202) ? 0.66F : 0.33F);
     }
     @Override public void setupFirstPerson(ItemStack stack, PoseStack pose) {
         pose.translate(0, 0, 0.875);

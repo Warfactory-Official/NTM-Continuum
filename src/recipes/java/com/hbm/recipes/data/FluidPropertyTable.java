@@ -4,6 +4,7 @@ import static com.hbm.inventory.fluid.Fluids.*;
 
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
+import com.hbm.inventory.fluid.ConventionFluidTags;
 import com.hbm.inventory.fluid.FluidCombustion.FuelGrade;
 import com.hbm.inventory.fluid.FluidHazard;
 import com.hbm.inventory.fluid.FluidHazard.Symbol;
@@ -93,8 +94,9 @@ final class FluidPropertyTable {
             return type.cast(traits.get(type));
         }
 
-        FluidProperties.Properties row() {
-            return new FluidProperties.Properties(color, null, temperature, hazard, new ArrayList<>(traits.values()));
+        FluidProperties.Properties row(FluidType fluid) {
+            return new FluidProperties.Properties(color, null, temperature, hazard, new ArrayList<>(traits.values()),
+                    ConventionFluidTags.of(fluid));
         }
     }
 
@@ -107,7 +109,7 @@ final class FluidPropertyTable {
             init();
         }
         Map<FluidType, FluidProperties.Properties> rows = new LinkedHashMap<>();
-        defs.forEach((fluid, def) -> rows.put(fluid, def.row()));
+        defs.forEach((fluid, def) -> rows.put(fluid, def.row(fluid)));
         return rows;
     }
 

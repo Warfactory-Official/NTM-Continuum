@@ -225,7 +225,7 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
 
     private static void playBoom(EntityArtilleryRocket rocket) {
         rocket.level().playSound(null, rocket.getX(), rocket.getY(), rocket.getZ(),
-                ModSounds.EXPLOSION_SMALL_NEAR.get(), SoundSource.BLOCKS, 20.0F,
+                ModSounds.EXPLOSION_MEDIUM.get(), SoundSource.BLOCKS, 20.0F,
                 0.9F + rocket.level().getRandom().nextFloat() * 0.2F);
     }
 

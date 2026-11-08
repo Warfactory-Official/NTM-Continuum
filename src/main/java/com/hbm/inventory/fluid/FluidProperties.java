@@ -28,6 +28,7 @@ import com.hbm.inventory.fluid.trait.FT_VentRadiation;
 import com.hbm.util.ArmorRegistry.HazardClass;
 import dev.golem.core.Ids;
 import dev.golem.core.data.DataFiles;
+import dev.golem.core.platform.Platform;
 import dev.golem.core.world.Effects;
 import java.io.IOException;
 import java.io.InputStream;
@@ -252,15 +253,23 @@ public final class FluidProperties {
                 json.has("shares") ? readShares(json.get("shares")) : List.of());
     }
 
+    /** A {@code #c:} share also names the loader's convention copy ({@code #forge:} on Forge), where other mods tag. */
     private static List<TagKey<Fluid>> readShares(JsonElement json) {
         List<TagKey<Fluid>> shares = new ArrayList<>();
         Iterable<JsonElement> entries = json.isJsonArray() ? json.getAsJsonArray() : List.of(json);
+        String convention = Platform.conventionNamespace();
         for (var entry : entries) {
             String name = entry.getAsString();
             if (!name.startsWith("#")) throw new IllegalArgumentException("fluid share must name a tag: " + name);
-            shares.add(TagKey.create(Registries.FLUID, Ids.parse(name.substring(1))));
+            var id = Ids.parse(name.substring(1));
+            addShare(shares, TagKey.create(Registries.FLUID, id));
+            if (id.getNamespace().equals("c")) addShare(shares, TagKey.create(Registries.FLUID, Ids.of(convention, id.getPath())));
         }
         return shares;
+    }
+
+    private static void addShare(List<TagKey<Fluid>> shares, TagKey<Fluid> tag) {
+        if (!shares.contains(tag)) shares.add(tag);
     }
 
     private static JsonArray writeShares(List<TagKey<Fluid>> shares) {

@@ -76,13 +76,13 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
         } else {
             pose.translate(0, 0, 1);
             standardAimingTransform(stack, pose, -1.0F * offset, -0.75F * offset, 1F * offset,
-                    0, variant.scoped ? -4.75 / 8D : -3.875 / 8D, variant.scoped ? -0.25 : 0);
+                    0, isScoped(stack) ? -4.75 / 8D : -3.875 / 8D, isScoped(stack) ? -0.25 : 0);
         }
     }
 
     @Override
     public float viewFov(ItemStack stack, float fov, float partialTick) {
-        return aimingFov(stack, fov, partialTick, variant.scoped ? 0.66F : 0.33F);
+        return aimingFov(stack, fov, partialTick, isScoped(stack) ? 0.66F : 0.33F);
     }
 
     /**

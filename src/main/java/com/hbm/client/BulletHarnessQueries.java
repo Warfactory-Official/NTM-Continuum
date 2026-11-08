@@ -4,6 +4,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.client.anim.HbmAnimations;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import dev.golem.core.client.Fov;
 import dev.golem.core.client.Frames;
 import dev.golem.core.harness.HarnessQueryRegistry;
 import dev.golem.core.render.CameraInfo;
@@ -22,7 +24,8 @@ import org.joml.Vector3f;
  * The {@code hbm_bullets} harness query: nearby bullets and how far a tracer's drawn angles stray from the step taken,
  * the last frame's camera pitch, and with {@code buses} the held gun's running bus values. {@code hbm_frame_moves}
  * counts frames in which an entity of {@code type} moved or turned without a client tick: a packet written straight
- * into its position, which 1.7's interpolated projectiles never show.
+ * into its position, which 1.7's interpolated projectiles never show. {@code hbm_gun_aim} is the aim progress and the
+ * level FOV; {@code pin} holds the aim progress at that value from the next frame on (negative releases it).
  */
 public final class BulletHarnessQueries {
 
@@ -33,12 +36,33 @@ public final class BulletHarnessQueries {
     private static double largest;
     private static double travel;
     private static final Map<Integer, double[]> LAST = new HashMap<>();
+    private static float pinnedAim = -1F;
+    private static boolean pinHooked;
 
     private BulletHarnessQueries() {}
 
     public static void register() {
         HarnessQueryRegistry.register("hbm_bullets", BulletHarnessQueries::query);
         HarnessQueryRegistry.register("hbm_frame_moves", BulletHarnessQueries::frameMoves);
+        HarnessQueryRegistry.register("hbm_gun_aim", BulletHarnessQueries::aim);
+    }
+
+    private static JsonObject aim(Minecraft mc, JsonObject params) {
+        if (params.has("pin")) {
+            if (!pinHooked) WorldEffects.onBegin(camera -> {
+                if (pinnedAim < 0F) return;
+                ItemGunBaseNT.prevAimingProgress = pinnedAim;
+                ItemGunBaseNT.aimingProgress = pinnedAim;
+            });
+            pinHooked = true;
+            pinnedAim = params.get("pin").getAsFloat();
+        }
+        JsonObject json = new JsonObject();
+        json.addProperty("aim", ItemGunBaseNT.aimingProgress);
+        json.addProperty("prev_aim", ItemGunBaseNT.prevAimingProgress);
+        json.addProperty("fov", Fov.current());
+        json.addProperty("option_fov", mc.options.fov().get());
+        return json;
     }
 
     private static JsonObject frameMoves(Minecraft mc, JsonObject params) {

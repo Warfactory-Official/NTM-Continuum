@@ -192,7 +192,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         entries.add(new Entry(Fluids.WATER, 250, new ItemStack(Items.GLASS_BOTTLE),
                 Ingredients.potionStack("minecraft:potion", "minecraft:water")));
         for (FluidType type : Fluids.getAll()) {
-            if (type == Fluids.NONE) continue;
+            if (type == Fluids.NONE || type.isForeign()) continue;
             ItemStack cell = ItemCell.getFullCell(type);
             if (!cell.isEmpty()) entries.add(new Entry(type, ItemCell.CAPACITY, new ItemStack(ModSingularityItems.cell.get()), cell));
             for (Typed typed : typed()) {

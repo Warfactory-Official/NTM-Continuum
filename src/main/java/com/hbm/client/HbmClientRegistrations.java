@@ -179,6 +179,7 @@ import dev.golem.core.client.ClientResourceReloads;
 import dev.golem.core.client.Crosshairs;
 import dev.golem.core.client.DebugLines;
 import dev.golem.core.client.Fov;
+import dev.golem.core.client.Hud;
 import dev.golem.core.client.ItemModelProperties;
 import dev.golem.core.client.PlayerRenderHooks;
 import dev.golem.core.client.Tints;
@@ -385,7 +386,6 @@ public final class HbmClientRegistrations {
         EnergyNetClientRegistrations.registerHud(sink);
         sink.register("nuke_flash", NukeScreenEffects::render);
         sink.register("gun_hud", GunHudOverlay::render);
-        sink.register("gun_scope", GunScopeOverlay::render);
         sink.register("armor_hud", ArmorHudOverlay::render);
         ArmorSetClient.registerHud(sink); // final armor sets A: dash bar, HEV health/armour replacement
         sink.register("jetpack_hud", JetpackHudOverlay::render);
@@ -515,7 +515,11 @@ public final class HbmClientRegistrations {
      */
     public static void installArmorLayers() {
         ArmorRenderers.init();
-        ArmorSetBClient.installHelmetOverlay();
+        // 1.7 draws helmet overlays at HELMET and the scope at HOTBAR's pre event: both under the crosshair and hotbar.
+        Hud.addCameraOverlay("hbm", "camera_overlays", graphics -> {
+            ArmorSetBClient.renderHelmetOverlay(graphics);
+            GunScopeOverlay.render(graphics);
+        });
         installJetpackBridge();
         HeatDistortionRenderType.configure(
                 "hbm:pipeline/heat_distortion", "hbm:heat_distortion");
@@ -656,7 +660,7 @@ public final class HbmClientRegistrations {
         // The weapon renderers a gun item definition can name. Both eras read the same definitions:
         // 26.1 through its item-model system, older versions through GunLegacyModels' own parse.
         WeaponRenderers.init();
-        Fov.register(WeaponRenderers::viewFov);
+        Fov.registerMultiplier(WeaponRenderers::viewFov);
         Crosshairs.register(GunCrosshairOverlay::render);
     }
 

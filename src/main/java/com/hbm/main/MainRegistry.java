@@ -331,7 +331,7 @@ public final class MainRegistry {
         ModToolItems.init();  // in-world construction tools (blowtorch, boltgun)
         ModWatzItems.init();  // Watz fuel pellets (one item per type, fresh + depleted)
         ModFallingBlocks.init(); // the BlockFallingBase family (gravity blocks)
-        ModFluidItems.init();      // fluid-container items (fluid_bucket, one per fluid)
+        ModFluidItems.init();      // fluid-container items
         ModBombItems.init();       // hand-registered bomb components
         ModGearItems.init(); // radiation gear (geiger/dosimeter + hazmat armor)
         ModArmorItems.init(); // modelled power armour (T-51b)
