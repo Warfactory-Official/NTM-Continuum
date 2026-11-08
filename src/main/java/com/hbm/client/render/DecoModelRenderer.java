@@ -204,6 +204,8 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
             };
             switch (model.kind) {
                 case POLE -> state.yaw = quadrant - 90F;
+                // fixed in 1.7: north is its unturned look, a turned structure turns it
+                case TOP -> state.yaw = quadrant - 270F;
                 case TAPE_RECORDER, TOASTER_IRON, TOASTER_STEEL, TOASTER_WOOD,
                      CRT_CLEAN, CRT_BROKEN, CRT_BLINKING, CRT_BSOD -> state.yaw = quadrant;
                 // GL rotateY by the stored ForgeDirection (opposite of the look): EAST(look west) 90, SOUTH(look north) 180, WEST(look east) 270

@@ -1,6 +1,8 @@
 package com.hbm.world.gen.nbt;
 
 import com.hbm.world.gen.component.Component;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,5 +53,10 @@ public class JigsawPiece {
         jigsawMap.put(name, this);
 
         this.heightOffset = heightOffset;
+    }
+
+    /** Every registered piece, single-piece structures and jigsaw pool members alike. */
+    public static Collection<JigsawPiece> all() {
+        return Collections.unmodifiableCollection(jigsawMap.values());
     }
 }

@@ -2,6 +2,7 @@ package com.hbm.items.machine;
 
 import com.hbm.blocks.StandardInfo;
 import dev.golem.core.data.ModelData;
+import dev.golem.core.viewer.FluidIcons;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -57,6 +58,11 @@ public class ItemFluidIcon extends CompatItem {
 
     public static FluidType getFluid(ItemStack stack) {
         return ModDataComponents.fluid(stack);
+    }
+
+    /** The fluid a recipe viewer files the icon under, so the fluid's own entry finds the recipe. */
+    public static FluidIcons.Amount viewerFluid(ItemStack icon) {
+        return new FluidIcons.Amount(getFluid(icon).getFluid(), ModDataComponents.fluidAmount(icon));
     }
 
     @Override

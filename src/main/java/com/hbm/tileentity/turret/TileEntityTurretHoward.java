@@ -1,5 +1,7 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.particle.helper.CasingRegistry;
+import com.hbm.handler.CasingEjector;
 import dev.golem.core.data.Tags;
 
 import com.hbm.config.WeaponConfig;
@@ -154,6 +156,11 @@ public class TileEntityTurretHoward extends TileEntityTurretRadarCommandBase {
         level.playSound(null, worldPosition, ModSounds.TURRET_HOWARD_FIRE.get(), SoundSource.BLOCKS, 4.0F,
                 1F + level.getRandom().nextFloat() * 0.3F);
 
+        for (int i = 0; i < 2; i++) {
+            cachedCasingConfig = CasingRegistry.dgk;
+            spawnCasing();
+        }
+
         if (timer % 2 != 0) return;
 
         loaded--;
@@ -167,6 +174,24 @@ public class TileEntityTurretHoward extends TileEntityTurretRadarCommandBase {
         Vec3 offset = alongBarrel(0, 0.25, 0);
         muzzleFlash(tip.add(offset), 1.5F, 1);
         muzzleFlash(tip.subtract(offset), 1.5F, 1);
+    }
+
+    @Override
+    protected Vec3 getCasingSpawnPos() {
+        return getTurretPos().add(alongBarrel(-0.875, 0.2, -0.125));
+    }
+
+    /** 1.7 declares motion (0, 0, -0.1) and then sets (0.4, 0, 0) with range (0.02, 0.03) on every read. */
+    private static final CasingEjector EJECTOR = new CasingEjector().setMotion(0.4, 0, 0).setAngleRange(0.02F, 0.03F);
+
+    @Override
+    protected CasingEjector getEjector() {
+        return EJECTOR;
+    }
+
+    @Override
+    public boolean usesCasings() {
+        return true;
     }
 
     @Override

@@ -33,7 +33,6 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
@@ -146,14 +145,18 @@ public class MachineSawmill extends BlockMultiblockMachine implements WorldlyCon
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+        BlockEntity source = dropSource(state, params);
+        if (state.getValue(CELL) && source == null) return List.of();
         ItemStack stack = new ItemStack(this);
-        BlockPos pos = BlockPos.containing(params.getParameter(LootContextParams.ORIGIN));
-        BlockPos core = MultiblockSurface.coreOfAny(params.getLevel(), pos);
-        if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntitySawmill sawmill
-                && !sawmill.hasBlade) {
+        if (source instanceof TileEntitySawmill sawmill && !sawmill.hasBlade) {
             ModDataComponents.HAS_BLADE.set(stack, false);
         }
         return List.of(stack);
+    }
+
+    @Override
+    protected boolean dropsFromCore() {
+        return true;
     }
 
     @Override

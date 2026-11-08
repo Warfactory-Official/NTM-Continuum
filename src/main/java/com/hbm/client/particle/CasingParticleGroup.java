@@ -42,6 +42,9 @@ public final class CasingParticleGroup {
         }
     }
 
+    /** The live casings, for harness queries. */
+    public List<ParticleSpentCasing> live() { return List.copyOf(particles); }
+
     public void clear() { particles.clear(); }
     public void reload() { clear(); model = null; declaration = null; }
 

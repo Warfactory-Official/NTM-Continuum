@@ -170,6 +170,17 @@ public final class HbmEffectNT {
     public static final HbmEffectNT VanillaBurst_RedDust = hbm("VanillaBurst_RedDust");
     /** 1.7 {@code rbmkflame}: an upright additive fire quad. Tag: {@code maxAge}. */
     public static final HbmEffectNT RBMKFlame = hbm("RBMKFlame");
+    /**
+     * 1.7 {@code vanillaExt} mode {@code largeexplode}: one orange-tinted large explosion of {@code size} and
+     * {@code count} grey smoke puffs, each scaled by its index plus one. A turret's muzzle.
+     */
+    public static final HbmEffectNT VanillaExt_LargeExplode = hbm("VanillaExt_LargeExplode");
+    /**
+     * 1.7 {@code casing}: one spent casing {@code name} thrown by a {@code CasingEjector} whose offset, motion and
+     * angle range ride along ({@code oX/oY/oZ}, {@code mX/mY/mZ}, {@code yawFactor}, {@code pitchFactor}); {@code pitch}
+     * and {@code yaw} in radians.
+     */
+    public static final HbmEffectNT Casing = hbm("Casing");
 
     private final String name;
 

@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 
 /**
@@ -49,6 +50,8 @@ public final class NetworkSyncGameTests {
 
     public static final GameTests.Function REPLICATION = TESTS.function(
             "sync_replication_contract", 20, () -> NetworkSyncGameTests::replicationContract);
+    public static final GameTests.Function RESPAWN = TESTS.function(
+            "sync_respawned_player_is_sent_state_again", 20, () -> NetworkSyncGameTests::respawnedPlayer);
     public static final GameTests.Function WIRING = TESTS.function(
             "sync_machine_wiring", 20, () -> NetworkSyncGameTests::machineWiring);
     public static final GameTests.Function BACKENDS_AGREE = TESTS.function(
@@ -84,6 +87,38 @@ public final class NetworkSyncGameTests {
             }
         } finally {
             GolemTransport.requested(before);
+        }
+    }
+
+    /**
+     * A respawn hands the connection to a new player object with the same UUID, and the client rebuilds the block
+     * entities of the chunks it is sent again, so the new object must be sent the held wire.
+     */
+    public static void respawnedPlayer(GameTestHelper helper) {
+        onEachBackend(backend -> respawnedPlayer(helper, backend));
+        helper.succeed();
+    }
+
+    private static void respawnedPlayer(GameTestHelper helper, GolemTransport.Backend backend) {
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(BlockPos.ZERO).offset(1 << 16, 0, -(1 << 16));
+        try (GameTestHelpers.MockServerPlayer first = GameTestHelpers.mockServerPlayer(helper)) {
+            GolemSync.stateWatchers(level, pos, List.of(first.player()));
+            drain(first);
+            publish(level, pos, (byte) 1);
+            helper.assertTrue(sent(first) == 1, "The watcher present at publish must be sent to" + on(backend));
+
+            ServerPlayer respawned = GameTestHelpers.detachedServerPlayer(helper, first.player().getGameProfile());
+            respawned.connection = first.player().connection;
+            GolemSync.stateWatchers(level, pos, List.of(respawned));
+            GolemSync.pumpNow();
+            helper.assertTrue(sent(first) == 1,
+                    "A respawned player (same UUID, new player object) must be sent the state again" + on(backend));
+            GolemSync.pumpNow();
+            helper.assertTrue(sent(first) == 0, "and only once" + on(backend));
+        } finally {
+            GolemSync.clearStatedWatchers(level, pos);
+            GolemSync.retract(level, pos);
         }
     }
 

@@ -41,11 +41,12 @@ public final class ChargeThrowerWeaponRenderer extends WeaponRenderer {
         declaration.part(obj.part("Gun"), BODY).visibleIf(state -> !state.animated);
         declaration.part(obj.part("Scope"), BODY)
                 .visibleIf(state -> !state.animated && SpecialWeaponRenderers.hasUpgrade(state, 202));
-        declaration.part(obj.part("Hook"), HOOK).visibleIf(state -> !state.animated && isHook(state));
+        declaration.part(obj.part("Hook"), HOOK)
+                .visibleIf(state -> !state.animated && loaded(state) && isHook(state));
         declaration.part(obj.part("Mortar"), MORTAR)
-                .visibleIf(state -> !state.animated && isMortar(state));
+                .visibleIf(state -> !state.animated && loaded(state) && isMortar(state));
         declaration.part(obj.part("Oomph"), MORTAR)
-                .visibleIf(state -> !state.animated && isMortarCharge(state));
+                .visibleIf(state -> !state.animated && loaded(state) && isMortarCharge(state));
 
         Gem.Part<WeaponPose> root = normalRoot(declaration);
         root.child(obj.part("Gun"), BODY);
@@ -57,9 +58,9 @@ public final class ChargeThrowerWeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.Y, state -> (float) state.bus("AMMO")[1])
                 .slide(Gem.Axes.Z, state -> (float) state.bus("AMMO")[2])
                 .angle(Gem.Axes.Z, state -> (float) state.bus("TWIST")[2]);
-        payload.child(obj.part("Hook"), HOOK).visibleIf(ChargeThrowerWeaponRenderer::isHook);
-        payload.child(obj.part("Mortar"), MORTAR).visibleIf(ChargeThrowerWeaponRenderer::isMortar);
-        payload.child(obj.part("Oomph"), MORTAR).visibleIf(ChargeThrowerWeaponRenderer::isMortarCharge);
+        payload.child(obj.part("Hook"), HOOK).visibleIf(state -> drawsPayload(state) && isHook(state));
+        payload.child(obj.part("Mortar"), MORTAR).visibleIf(state -> drawsPayload(state) && isMortar(state));
+        payload.child(obj.part("Oomph"), MORTAR).visibleIf(state -> drawsPayload(state) && isMortarCharge(state));
     }
 
     private Gem.Part<WeaponPose> normalRoot(Gem.Model<WeaponPose> declaration) {
@@ -84,6 +85,15 @@ public final class ChargeThrowerWeaponRenderer extends WeaponRenderer {
                 .translate(0, -1, 0)
                 .angle(Gem.Axes.Z, state -> (float) state.bus("ROLL")[2])
                 .translate(0, 1, 0);
+    }
+
+    private static boolean loaded(WeaponPose state) {
+        return SpecialWeaponRenderers.amount(state) > 0;
+    }
+
+    /** 1.7 draws the round while the magazine holds one or a reload (an AMMO bus) brings the next one in. */
+    private static boolean drawsPayload(WeaponPose state) {
+        return loaded(state) || state.has("AMMO");
     }
 
     private static boolean isHook(WeaponPose state) { return SpecialWeaponRenderers.ammoPath(state).equals("ct_hook"); }

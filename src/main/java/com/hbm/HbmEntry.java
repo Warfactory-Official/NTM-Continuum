@@ -9,11 +9,14 @@ import com.hbm.hazard.Hazards;
 import com.hbm.inventory.fluid.FluidProperties;
 import com.hbm.inventory.recipes.HbmRecipeTables;
 import com.hbm.itempool.ItemPool;
+import com.hbm.items.ModFluidItems;
+import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.itempool.PoolFill;
 import com.hbm.packet.HbmPackets;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import dev.golem.core.platform.Lifecycle;
 import dev.golem.core.platform.ModEntry;
+import dev.golem.core.viewer.FluidIcons;
 import dev.golem.core.world.EntityLoot;
 import dev.golem.core.world.EntityTicks;
 
@@ -58,6 +61,7 @@ public class HbmEntry implements ModEntry {
         Hazards.init();
         // the missile item -> entity table, its own start-up step (separate from Hazards.init)
         TileEntityLaunchPadBase.registerLaunchables();
+        FluidIcons.declare(ModFluidItems.fluid_icon.get(), ItemFluidIcon::viewerFluid);
         // materials requested by startup scripts (HBMEvents.registry), once every register is filled
         HbmScripts.registered();
     }

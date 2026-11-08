@@ -368,7 +368,7 @@ public class CivilianFeatures {
 				this.placeBlockAtCurrentPosition(world, Mod.plant_flower, i, 1, 2, 1 + i, box);
 			}
 
-			int doorMeta = this.getMetadataWithOffset(Vanilla.wooden_door, 2);
+			int doorMeta = this.getDoorMeta(2);
 			this.placeBlockAtCurrentPosition(world, Mod.door_office, doorMeta, 3, 1, 7 - 1, box);
 			placeDoorBlock(world, this.getXWithOffset(3, 7 - 1), this.getYWithOffset(1), this.getZWithOffset(3, 7 - 1), doorMeta, Mod.door_office);
 
@@ -534,7 +534,7 @@ public class CivilianFeatures {
 			int southMeta = this.getDecoMeta(2);
 			this.placeBlockAtCurrentPosition(world, Mod.crashed_balefire, southMeta, 6, 11 - 2, 3, box);
 
-			int doorMeta = this.getMetadataWithOffset(Vanilla.wooden_door, 1);
+			int doorMeta = this.getDoorMeta(1);
 			this.placeBlockAtCurrentPosition(world, Mod.door_office, doorMeta, 12 - 3, 11 - 3, 8 - 2, box);
 			placeDoorBlock(world, this.getXWithOffset(12 - 3, 8 - 2), this.getYWithOffset(11 - 3), this.getZWithOffset(12 - 3, 8 - 2),
 					doorMeta, Mod.door_office);

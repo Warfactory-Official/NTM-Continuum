@@ -16,7 +16,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -140,6 +143,23 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
         return false;
     }
 
+    /** Whether the drops depend on the core's block entity, so a cell a player breaks rolls the core's drops. */
+    protected boolean dropsFromCore() {
+        return carriesData();
+    }
+
+    /**
+     * The block entity a drop of {@code state} reads: the loot context's for the core, else the standing core's. Null
+     * for a cell whose machine is already gone: a player's break, whose drops the core rolled first.
+     */
+    protected @Nullable BlockEntity dropSource(BlockState state, LootParams.Builder params) {
+        BlockEntity own = state.getValue(CELL) ? null : params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if (own != null) return own;
+        Vec3 origin = params.getOptionalParameter(LootContextParams.ORIGIN);
+        BlockPos core = origin == null ? null : MultiblockSurface.coreOfAny(params.getLevel(), BlockPos.containing(origin));
+        return core == null ? null : params.getLevel().getBlockEntity(core);
+    }
+
     /**
      * A cell has no block entity and its loot table is limited to the core, so a cell broken by a player drops the
      * core's loot, rolled with the core's block entity: the machine's contents come from whichever part was broken.
@@ -147,7 +167,7 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
     @Override
     protected void onPlayerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         super.onPlayerWillDestroy(level, pos, state, player);
-        if (!carriesData() || !(level instanceof ServerLevel server) || !state.getValue(CELL)
+        if (!dropsFromCore() || !(level instanceof ServerLevel server) || !state.getValue(CELL)
                 || playerPreventsBlockDrops(player) || !player.hasCorrectToolForDrops(state)) return;
         BlockPos core = coreOf(level, pos, state);
         if (core == null) return;

@@ -594,6 +594,16 @@ public class NBTStructure {
         return toHorizontalConnections == null ? null : toHorizontalConnections.get(target);
     }
 
+    /** Every 1.7 (name, metadata) pair of this structure's palette that a build places (port-saved entries left out). */
+    public Set<LegacyStructurePalette.Legacy> legacyPalette() {
+        Set<LegacyStructurePalette.Legacy> out = new HashSet<>();
+        if (blockArray == null) return out;
+        for (Entry[][] plane : blockArray) for (Entry[] column : plane) for (Entry e : column) {
+            if (e != null && e.modern == null) out.add(new LegacyStructurePalette.Legacy(e.name, e.meta));
+        }
+        return out;
+    }
+
     public int rotateX(int x, int z, int coordBaseMode) {
         return switch (coordBaseMode) {
             case 1 -> sizeZ - 1 - z;
@@ -680,7 +690,7 @@ public class NBTStructure {
                     case CELL -> { return; }
                     case CORE -> { state = r.state(); core = true; }
                     case DOOR -> state = LegacyStructurePalette.door(r.state(), t.meta(), otherDoorMeta(bx, by, bz, entry, t.meta()));
-                    default -> state = r.state();
+                    default -> state = LegacyStructurePalette.turn(t.name(), r.state(), coordBaseMode);
                 }
             }
 

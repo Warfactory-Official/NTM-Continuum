@@ -26,6 +26,14 @@ public final class ExplosionCreator {
         ParticleEffects.rbmkMush(level, x, y, z, scale);
     }
 
+    /** 1.7's free form, for the shells that state their own numbers. */
+    public static void composeEffect(Level level, double x, double y, double z, int cloudCount, float cloudScale,
+            float cloudSpeedMult, float waveScale, int debrisCount, int debrisSize, int debrisRetry, float debrisVelocity,
+            float debrisHorizontalDeviation, float debrisVerticalOffset, float soundRange) {
+        ParticleEffects.explosionLarge(level, x, y, z, cloudCount, cloudScale, cloudSpeedMult, waveScale, debrisCount,
+                debrisSize, debrisRetry, debrisVelocity, debrisHorizontalDeviation, debrisVerticalOffset, soundRange);
+    }
+
     /** Downscaled, for small bombs. */
     public static void composeEffectSmall(Level level, double x, double y, double z) {
         ParticleEffects.explosionLarge(level, x, y, z, 10, 2F, 0.5F, 25F, 5, 8, 20, 0.75F, 1F, -2F, 150F);

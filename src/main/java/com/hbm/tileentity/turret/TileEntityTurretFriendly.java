@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.handler.CasingEjector;
 import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory556mm;
@@ -45,4 +46,11 @@ public class TileEntityTurretFriendly extends TileEntityTurretChekhov {
 
     @Override
     public float getBaseDamage() { return XFactoryTurret.TURRET_FRIENDLY_DAMAGE.get(); }
+
+    private static final CasingEjector EJECTOR = new CasingEjector().setMotion(-0.3, 0.6, 0).setAngleRange(0.02F, 0.05F);
+
+    @Override
+    protected CasingEjector getEjector() {
+        return EJECTOR;
+    }
 }

@@ -41,6 +41,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 1.7 {@code com.hbm.world.gen.component.Component}: the base of NTM's hardcoded structure pieces (the features
@@ -255,12 +256,20 @@ public abstract class Component extends StructurePiece {
 
     private static final class Build {
         final BoundingBox box;
+        final int coordBaseMode;
         final List<BlockPos> placed = new ArrayList<>();
 
-        Build(BoundingBox box) {
+        Build(BoundingBox box, int coordBaseMode) {
             this.box = box;
+            this.coordBaseMode = coordBaseMode;
         }
     }
+
+    /** Blocks every builder places with metadata written for coordBaseMode 0; their placed state turns with the piece. */
+    private static final Set<String> TURNED = Set.of("barbed_wire", "cable_detector", "cable_switch", "crate", "crate_ammo",
+            "crate_can", "crate_iron", "crate_lead", "crate_metal", "crate_steel", "crate_weapon", "hev_battery",
+            "machine_boiler_off", "machine_condenser", "machine_shredder", "machine_transformer", "pwr_channel", "pwr_control",
+            "pwr_fuel", "radio_torch_receiver", "radio_torch_sender", "steel_beam", "steel_roof", "turret_sentry_damaged");
 
     @Override
     public final void postProcess(WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator, RandomSource random,
@@ -271,7 +280,7 @@ public abstract class Component extends StructurePiece {
     /** Builds the part inside {@code box}, then lets the placed blocks take their neighbour shapes. */
     public final void build(WorldGenLevel level, RandomSource random, BoundingBox box) {
         Build previous = BUILD.get();
-        Build build = new Build(box);
+        Build build = new Build(box, coordBaseMode);
         BUILD.set(build);
         try {
             addComponentParts(level, random, box);
@@ -294,7 +303,13 @@ public abstract class Component extends StructurePiece {
 
     /** 1.7 {@code world.setBlock(x, y, z, block, meta, 2)}, clipped to the chunk being built. */
     protected static void setBlock(WorldGenLevel world, int x, int y, int z, LegacyBlock block, int meta) {
-        setState(world, x, y, z, block.state(meta));
+        BlockState state = block.state(meta);
+        Build build = BUILD.get();
+        // port: rotates with the structure; 1.7 left it unturned
+        if (build != null && build.coordBaseMode > 0 && TURNED.contains(block.name.substring(block.name.indexOf('.') + 1))) {
+            state = LegacyStructurePalette.turnState(state, build.coordBaseMode);
+        }
+        setState(world, x, y, z, state);
     }
 
     protected static void setState(WorldGenLevel world, int x, int y, int z, BlockState state) {
@@ -644,6 +659,22 @@ public abstract class Component extends StructurePiece {
         }
         //genuinely like. why did i do that
         return metadata << 2; //To accommodate for BlockDecoModel's shift in the rotation bits; otherwise, simply bit-shift right and or any non-rotation meta after
+    }
+
+    /** A steel scaffold's metadata (bit 3: east/west) turned with the piece. */
+    protected int getScaffoldMeta(int meta) {
+        // port: rotates with the structure; 1.7 left it unturned
+        return this.coordBaseMode % 2 == 1 ? meta ^ 8 : meta;
+    }
+
+    /**
+     * A door's metadata (0 east, 1 south, 2 west, 3 north) given as {@code getMetadataWithOffset(wooden_door, meta)} for
+     * coordBaseMode 0, turned with the piece. Vanilla's door rule assumed a mirrored frame, which these pieces do not use.
+     */
+    protected int getDoorMeta(int meta) {
+        // port: rotates with the structure; 1.7 turned it the wrong way on 1 and 3
+        int south = meta == 0 ? 2 : meta == 2 ? 0 : meta;
+        return (south + this.coordBaseMode) & 3;
     }
 
     //works for crts, toasters, and anything that follows mc's cardinal dirs. S: 0, W: 1, N: 2, E: 3

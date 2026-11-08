@@ -25,6 +25,8 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModDataComponents;
+import com.hbm.particle.SpentCasing;
+import com.hbm.particle.SpentCasing.CasingType;
 import com.hbm.particle.helper.ExplosionCreator;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.potion.ModEffects;
@@ -55,8 +57,8 @@ import net.minecraft.world.phys.Vec3;
  * damage; here the behaviour lives on the enum constants and each shell is its own item, named as ntm-next names
  * it ({@link ArtilleryShellType#name}: {@code ammo_arty}, {@code ammo_arty_he}, ...).
  *
- * <p>This port's ammunition carries no spent casing, so the shells declare none. The chemical shells push 1.7's heavy-metal and poison loads into the pollution
- * system at the struck block ({@link #polluteAt}).
+ * <p>The chemical shells push 1.7's heavy-metal and poison loads into the pollution system at the struck block
+ * ({@link #polluteAt}).
  */
 public class ItemAmmoArty extends ItemEnumMulti {
 
@@ -115,23 +117,26 @@ public class ItemAmmoArty extends ItemEnumMulti {
 
     public enum ArtilleryShellType {
 
-        NORMAL("ammo_arty") {
+        NORMAL("ammo_arty", SpentCasing.COLOR_CASE_16INCH) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 standardExplosion(shell, hit, 10F, 3F, false);
-                ExplosionCreator.composeEffectStandard(shell.level(), hit.getLocation().x, hit.getLocation().y,
-                        hit.getLocation().z);
+                Vec3 at = hit.getLocation();
+                // 1.7: debris size 0, the chunks fly invisible and only their trails show
+                ExplosionCreator.composeEffect(shell.level(), at.x, at.y, at.z, 10, 2F, 0.5F, 25F, 5, 0, 20, 0.75F, 1F,
+                        -2F, 150F);
             }
         },
-        CLASSIC("ammo_arty_classic") {
+        CLASSIC("ammo_arty_classic", SpentCasing.COLOR_CASE_16INCH) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 standardExplosion(shell, hit, 15F, 5F, false);
-                ExplosionCreator.composeEffectStandard(shell.level(), hit.getLocation().x, hit.getLocation().y,
-                        hit.getLocation().z);
+                Vec3 at = hit.getLocation();
+                ExplosionCreator.composeEffect(shell.level(), at.x, at.y, at.z, 15, 5F, 1F, 45F, 10, 0, 50, 1F, 3F, -2F,
+                        200F);
             }
         },
-        EXPLOSIVE("ammo_arty_he") {
+        EXPLOSIVE("ammo_arty_he", SpentCasing.COLOR_CASE_16INCH) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 standardExplosion(shell, hit, 15F, 3F, true);
@@ -139,7 +144,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                         hit.getLocation().z);
             }
         },
-        MINI_NUKE("ammo_arty_mini_nuke") {
+        MINI_NUKE("ammo_arty_mini_nuke", SpentCasing.COLOR_CASE_16INCH_NUKE) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 Level level = shell.level();
@@ -152,7 +157,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 if (level.addFreshEntity(torex)) torex.startChunkLoading();
             }
         },
-        NUKE("ammo_arty_nuke") {
+        NUKE("ammo_arty_nuke", SpentCasing.COLOR_CASE_16INCH_NUKE) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 Level level = shell.level();
@@ -166,7 +171,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 shell.killAndClear();
             }
         },
-        PHOSPHORUS("ammo_arty_phosphorus") {
+        PHOSPHORUS("ammo_arty_phosphorus", SpentCasing.COLOR_CASE_16INCH_PHOS) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 Level level = shell.level();
@@ -200,7 +205,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 ExplosionCreator.composeEffectRBMKMush(level, where.x, where.y, where.z, 10F);
             }
         },
-        MINI_NUKE_MULTI("ammo_arty_mini_nuke_multi") {
+        MINI_NUKE_MULTI("ammo_arty_mini_nuke_multi", SpentCasing.COLOR_CASE_16INCH_NUKE) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 MINI_NUKE.onImpact(shell, hit);
@@ -211,7 +216,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 standardCluster(shell, MINI_NUKE, 5, 300D, 5D);
             }
         },
-        PHOSPHORUS_MULTI("ammo_arty_phosphorus_multi") {
+        PHOSPHORUS_MULTI("ammo_arty_phosphorus_multi", SpentCasing.COLOR_CASE_16INCH_PHOS) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 PHOSPHORUS.onImpact(shell, hit);
@@ -223,7 +228,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
             }
         },
         /** The one shell that does not explode: it sticks where it lands and waits to be emptied. */
-        CARGO("ammo_arty_cargo") {
+        CARGO("ammo_arty_cargo", SpentCasing.COLOR_CASE_16INCH) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 if (hit instanceof BlockHitResult block) {
@@ -233,7 +238,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 }
             }
         },
-        CHLORINE("ammo_arty_chlorine") {
+        CHLORINE("ammo_arty_chlorine", SpentCasing.COLOR_CASE_16INCH) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 Level level = shell.level();
@@ -249,7 +254,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.HEAVYMETAL, 5F);
             }
         },
-        PHOSGENE("ammo_arty_phosgene") {
+        PHOSGENE("ammo_arty_phosgene", SpentCasing.COLOR_CASE_16INCH_NUKE) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 Level level = shell.level();
@@ -261,7 +266,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.POISON, 15F);
             }
         },
-        MUSTARD("ammo_arty_mustard_gas") {
+        MUSTARD("ammo_arty_mustard_gas", SpentCasing.COLOR_CASE_16INCH_NUKE) {
             @Override
             public void onImpact(EntityArtilleryShell shell, HitResult hit) {
                 Level level = shell.level();
@@ -275,9 +280,13 @@ public class ItemAmmoArty extends ItemEnumMulti {
         };
 
         public final String name;
+        /** 1.7 {@code SIXTEEN_INCH_CASE}, registered under the shell's name in its colour. */
+        public final SpentCasing casing;
 
-        ArtilleryShellType(String name) {
+        ArtilleryShellType(String name, int casingColor) {
             this.name = name;
+            this.casing = new SpentCasing(CasingType.STRAIGHT).setScale(15F, 15F, 10F).setupSmoke(1F, 1D, 200, 60)
+                    .setMaxAge(300).setBounceMotion(1F, 0.5F).register(name).setColor(casingColor);
         }
 
         public abstract void onImpact(EntityArtilleryShell shell, HitResult hit);

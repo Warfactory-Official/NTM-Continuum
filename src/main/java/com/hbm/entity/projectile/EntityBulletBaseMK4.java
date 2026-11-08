@@ -279,11 +279,20 @@ public class EntityBulletBaseMK4 extends CompatEntity implements Owners.Carrier 
             followServer();
             return;
         }
-        if (inGround) return;
-
         if (config == null) config = getBulletConfig();
         if (config == null) {
             discard();
+            return;
+        }
+        if (inGround) {
+            // 1.7: a stuck round still ages out and runs its update (the charge thrower's hook)
+            prevVelocity = velocity;
+            velocity = 0D;
+            if (tickCount > config.expires || expiresOverride >= 0 && tickCount > expiresOverride) {
+                discard();
+                return;
+            }
+            if (config.onUpdate != null) config.onUpdate.accept(this);
             return;
         }
 
@@ -369,7 +378,7 @@ public class EntityBulletBaseMK4 extends CompatEntity implements Owners.Carrier 
         if (level().isClientSide()) return;
 
         if (config.onImpact != null) config.onImpact.accept(this, hit);
-        if (isRemoved()) return;
+        if (isRemoved() || inGround) return;
         if (config.onRicochet != null) config.onRicochet.accept(this, hit);
         if (isRemoved()) return;
         if (config.onEntityHit != null) config.onEntityHit.accept(this, hit);

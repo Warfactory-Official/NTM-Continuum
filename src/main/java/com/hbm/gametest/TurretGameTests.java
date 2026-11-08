@@ -359,7 +359,7 @@ public final class TurretGameTests {
     }
 
     /** Places a turret the way a player does, and hands back the core position. */
-    private static BlockPos place(GameTestHelper helper, BlockPos relative, BlockMultiblockCore block) {
+    static BlockPos place(GameTestHelper helper, BlockPos relative, BlockMultiblockCore block) {
         BlockPos clicked = helper.absolutePos(relative);
         var player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);

@@ -36,9 +36,9 @@ import net.minecraft.world.phys.Vec3;
  * <p>It whistles shortly before it lands. The sound plays at the <em>target</em>, not at the shell,
  * so the people about to be hit hear it rather than the gunner. A cargo shell carries a stack that
  * survives the flight and can be taken back off it, so that variant sticks in the ground instead of
- * despawning.
+ * despawning. The client never moves it itself; it follows the server as 1.7's interpolated throwables do.
  */
-public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoader, IRadarDetectableNT {
+public class EntityArtilleryShell extends EntityThrowableInterp implements IChunkLoader, IRadarDetectableNT {
 
     private static final EntityDataAccessor<Integer> TYPE =
             SynchedEntityData.defineId(EntityArtilleryShell.class, EntityDataSerializers.INT);
@@ -127,52 +127,20 @@ public class EntityArtilleryShell extends EntityThrowableNT implements IChunkLoa
     @Override
     public void tick() {
         if (!level().isClientSide()) chunkLoader.tick();
-        if (!level().isClientSide()) adjustBallisticCourse();
         super.tick();
 
         if (isRemoved()) return;
 
         if (level().isClientSide()) {
-            level().addParticle(ParticleTypes.SMOKE, getX(), getY() + 0.5D, getZ(), 0D, 0.1D, 0D);
+            // 1.7 smokes only once the client has caught up with the server's last position
+            if (interpolation().position().distanceTo(position()) < 0.2D) {
+                level().addParticle(ParticleTypes.SMOKE, getX(), getY() + 0.5D, getZ(), 0D, 0.1D, 0D);
+            }
             return;
         }
 
         whistle();
         getShell().onUpdate(this);
-    }
-
-    /** The gun's solved arc is corrected toward its target before each legacy movement step. */
-    private void adjustBallisticCourse() {
-        double deltaX = this.targetX - this.getX();
-        double deltaY = this.targetY - this.getY();
-        double deltaZ = this.targetZ - this.getZ();
-
-        double horizontalDist = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
-        Vec3 motion = getDeltaMovement();
-        double currentHorizontalSpeed = Math.sqrt(motion.x * motion.x + motion.z * motion.z);
-        if (currentHorizontalSpeed < 0.1D) currentHorizontalSpeed = 1.0D;
-
-        double timeToTarget = horizontalDist / currentHorizontalSpeed;
-        double gravity = getGravityVelocity();
-        double idealY = (deltaY + 0.5D * gravity * timeToTarget * timeToTarget) / timeToTarget;
-        double motionY = motion.y + (idealY - motion.y) * 0.1D;
-        double motionX = motion.x;
-        double motionZ = motion.z;
-
-        if (horizontalDist > 0.5D) {
-            double idealX = deltaX / horizontalDist;
-            double idealZ = deltaZ / horizontalDist;
-            motionX += (idealX * currentHorizontalSpeed - motionX) * 0.1D;
-            motionZ += (idealZ * currentHorizontalSpeed - motionZ) * 0.1D;
-
-            double newSpeedXZ = Math.sqrt(motionX * motionX + motionZ * motionZ);
-            if (newSpeedXZ > 0.001D) {
-                motionX = motionX * currentHorizontalSpeed / newSpeedXZ;
-                motionZ = motionZ * currentHorizontalSpeed / newSpeedXZ;
-            }
-        }
-
-        setDeltaMovement(motionX, motionY, motionZ);
     }
 
     /** Roughly eighteen ticks out, measured horizontally: the shell is still above, the sound is not. */

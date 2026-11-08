@@ -100,6 +100,8 @@ public class DecoModelBlock extends CompatBlock implements EntityBlock {
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
+        // 1.7 DecoPoleTop has no orientation; only a turned structure turns it
+        if (kind == Kind.TOP) return defaultBlockState();
         // floor(yaw*4/360+0.5)&3 is exactly the horizontal look quadrant
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
     }

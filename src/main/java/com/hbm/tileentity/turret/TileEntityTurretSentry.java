@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.handler.CasingEjector;
 import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory9mm;
@@ -175,6 +176,7 @@ public class TileEntityTurretSentry extends TileEntityTurretBaseNT {
             BulletConfig conf = getFirstConfigLoaded();
 
             if (conf != null) {
+                cachedCasingConfig = conf.casing;
                 spawnBullet(conf);
                 consumeAmmo(conf);
                 level.playSound(null, worldPosition, ModSounds.TURRET_SENTRY_FIRE.get(), SoundSource.BLOCKS,
@@ -188,6 +190,24 @@ public class TileEntityTurretSentry extends TileEntityTurretBaseNT {
                 shotSide = !shotSide;
             }
         }
+    }
+
+    @Override
+    protected Vec3 getCasingSpawnPos() {
+        return getTurretPos().add(alongBarrel(0, 0.25, -0.125));
+    }
+
+    /** 1.7 declares motion (-0.3, 0.6, 0) and then sets (0.2, 0.2, 0) on every read; the second is what flies. */
+    private static final CasingEjector EJECTOR = new CasingEjector().setMotion(0.2, 0.2, 0).setAngleRange(0.01F, 0.01F);
+
+    @Override
+    protected CasingEjector getEjector() {
+        return EJECTOR;
+    }
+
+    @Override
+    public boolean usesCasings() {
+        return true;
     }
 
     @Override

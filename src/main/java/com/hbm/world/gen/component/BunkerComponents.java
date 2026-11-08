@@ -841,7 +841,7 @@ public class BunkerComponents {
 				placeBlockAtCurrentPosition(world, Mod.concrete_colored_ext, 5, 6, 3, 1, box);
 				placeLever(world, box, 3, false, 6, 2, 2);
 				for(int i = 7; i <= 9; i += 2) {
-					placeBlockAtCurrentPosition(world, Mod.steel_scaffold, 8, i, 1, 1, box); //i'm not making another fucking meta method
+					placeBlockAtCurrentPosition(world, Mod.steel_scaffold, getScaffoldMeta(8), i, 1, 1, box); //i'm not making another fucking meta method
 					placeBlockAtCurrentPosition(world, Mod.machine_diesel, decoMetaE, i, 2, 1, box);
 				}
 				placeBlockAtCurrentPosition(world, Mod.deco_pipe_rim_rusted, getPillarMeta(4), 8, 2, 1, box);
@@ -901,12 +901,12 @@ public class BunkerComponents {
 			//machine
 			for(int i = 1; i <= 5; i += 4) {
 				placeBlockAtCurrentPosition(world, Mod.deco_beryllium, 0, i, 1, 10, box);
-				placeBlockAtCurrentPosition(world, Mod.steel_scaffold, 0, i, 2, 10, box);
+				placeBlockAtCurrentPosition(world, Mod.steel_scaffold, getScaffoldMeta(0), i, 2, 10, box);
 				placeBlockAtCurrentPosition(world, Mod.deco_beryllium, 0, i, 3, 10, box);
 			}
-			placeBlockAtCurrentPosition(world, Mod.steel_scaffold, 0, 2, 1, 10, box);
+			placeBlockAtCurrentPosition(world, Mod.steel_scaffold, getScaffoldMeta(0), 2, 1, 10, box);
 			placeBlockAtCurrentPosition(world, Mod.deco_tungsten, 0, 3, 1, 10, box);
-			placeBlockAtCurrentPosition(world, Mod.steel_scaffold, 0, 4, 1, 10, box);
+			placeBlockAtCurrentPosition(world, Mod.steel_scaffold, getScaffoldMeta(0), 4, 1, 10, box);
 			placeBlockAtCurrentPosition(world, Mod.tape_recorder, decoMetaS, 2, 2, 10, box);
 			placeBlockAtCurrentPosition(world, Mod.deco_computer, getDecoModelMeta(0), 3, 2, 10, box);
 			placeBlockAtCurrentPosition(world, Mod.tape_recorder, decoMetaS, 4, 2, 10, box);

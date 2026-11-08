@@ -14,7 +14,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -46,8 +48,8 @@ import java.util.function.IntFunction;
  * </ol>
  *
  * <p>Rotation stays in metadata space ({@link #transform}): 1.7 rotated the stored metadata by the 1.7 class of the
- * block ({@link INBTBlockTransformable}), and only then did the block reach the world; blocks whose 1.7 class had
- * no rule (e.g. {@code machine_electric_furnace}) were not rotated at all, and still are not.
+ * block ({@link INBTBlockTransformable}), and only then did the block reach the world. HBM blocks whose 1.7 class had
+ * no rule (e.g. {@code machine_electric_furnace}) 1.7 left unturned; the port turns their placed state ({@link #turn}).
  */
 public final class LegacyStructurePalette {
 
@@ -211,11 +213,14 @@ public final class LegacyStructurePalette {
     static {
         // 1.7 DecoBlock: meta = ForgeDirection of the look direction; port facing = the same direction
         for (String s : List.of("steel_beam", "steel_wall", "steel_corner", "steel_roof")) rule(s, Rot.DECO, FACING);
-        // 1.7 DecoPoleSatelliteReceiver/DecoTapeRecorder/DecoSteelPoles: meta = the facing ForgeDirection
-        rule("pole_satellite_receiver", Rot.DECO, FACING);
-        rule("tape_recorder", Rot.DECO, FACING);
-        rule("steel_poles", Rot.NONE, FACING);
+        // 1.7 DecoPoleSatelliteReceiver/DecoTapeRecorder/DecoSteelPoles: meta faces the placer; the port keeps the look
+        rule("pole_satellite_receiver", Rot.DECO, FACING_OPPOSITE);
+        rule("tape_recorder", Rot.DECO, FACING_OPPOSITE);
+        rule("steel_poles", Rot.NONE, FACING_OPPOSITE);
         rule("charger", Rot.DECO, FACING);
+        // 1.7 BlockCableGauge is INBTBlockTransformable, and a BlockLadder subclass took vanilla's ladder rule
+        rule("red_cable_gauge", Rot.DECO, FACING);
+        rule("ladder_sturdy", Rot.DECO, FACING);
         // BlockMachineBase subclasses rotate; the BlockContainer machines did not implement INBTBlockTransformable
         rule("machine_diesel", Rot.DECO, FACING);
         rule("machine_microwave", Rot.DECO, FACING);
@@ -344,6 +349,67 @@ public final class LegacyStructurePalette {
             case VINE -> coordBaseMode == 0 ? meta : INBTBlockTransformable.transformMetaVine(meta, coordBaseMode);
             default -> meta;
         });
+    }
+
+    /** What a build in {@code coordBaseMode} places for a 1.7 (name, metadata) pair; a door still needs {@link #door}. */
+    public static Resolved placed(String name, int meta, int coordBaseMode) {
+        Legacy t = transform(name, meta, coordBaseMode);
+        Resolved r = resolve(t.name(), t.meta());
+        return r.kind() == Kind.STATE ? Resolved.of(turn(t.name(), r.state(), coordBaseMode)) : r;
+    }
+
+    /**
+     * The placed state of an HBM block whose 1.7 class had no structure rotation, turned with the structure:
+     * horizontal facings and gauges clockwise, axes and scaffold orientations swapped on a quarter turn, a 16-step
+     * rotation by four, rails by vanilla's rule. Placeholders are left to their block entity.
+     */
+    public static BlockState turn(String name, BlockState state, int coordBaseMode) {
+        // port: rotates with the structure; 1.7 left it unturned
+        if (coordBaseMode == 0 || rotationOf(name) != Rot.NONE) return state;
+        String hbm = hbmName(name);
+        if (hbm == null || hbm.startsWith("wand_")) return state;
+        return turnState(state, coordBaseMode);
+    }
+
+    /** {@code state} turned {@code quarters} times clockwise seen from above (1.7 coordBaseMode order). */
+    public static BlockState turnState(BlockState state, int quarters) {
+        if (state.getBlock() instanceof BaseRailBlock) return state.rotate(rotation(quarters));
+        BlockState s = state;
+        for (Property<?> property : state.getProperties()) {
+            String key = property.getName();
+            String value = valueName(state, property);
+            switch (key) {
+                case "facing", "gauge" -> {
+                    Direction d = Direction.byName(value);
+                    if (d != null && d.getAxis().isHorizontal()) {
+                        for (int i = 0; i < quarters; i++) d = d.getClockWise();
+                        s = with(s, key, d);
+                    }
+                }
+                case "axis" -> {
+                    if (quarters % 2 == 1) s = with(s, key, value.equals("x") ? "z" : value.equals("z") ? "x" : value);
+                }
+                case "orient" -> {
+                    if (quarters % 2 == 1) s = with(s, key, value.contains("north_south")
+                            ? value.replace("north_south", "east_west") : value.replace("east_west", "north_south"));
+                }
+                case "rotation" -> {
+                    int steps = property.getPossibleValues().size();
+                    if (steps == 16) s = with(s, key, (Integer.parseInt(value) + 4 * quarters) % 16);
+                }
+                default -> { }
+            }
+        }
+        return s;
+    }
+
+    private static Rotation rotation(int quarters) {
+        return switch (quarters & 3) {
+            case 1 -> Rotation.CLOCKWISE_90;
+            case 2 -> Rotation.CLOCKWISE_180;
+            case 3 -> Rotation.COUNTERCLOCKWISE_90;
+            default -> Rotation.NONE;
+        };
     }
 
     private static Rot rotationOf(String name) {

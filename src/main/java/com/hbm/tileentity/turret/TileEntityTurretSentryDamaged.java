@@ -63,6 +63,7 @@ public class TileEntityTurretSentryDamaged extends TileEntityTurretSentry {
 
         BulletConfig conf = XFactory9mm.p9_fmj;
         if (conf == null) return;
+        cachedCasingConfig = conf.casing;
 
         if (shotSide) {
             level.playSound(null, worldPosition, ModSounds.TURRET_SENTRY_FIRE.get(), SoundSource.BLOCKS, 2.0F, 1.0F);
@@ -72,6 +73,8 @@ public class TileEntityTurretSentryDamaged extends TileEntityTurretSentry {
             didJustShootLeft = true;
         } else {
             level.playSound(null, worldPosition, ModSounds.TURRET_SENTRY_FIRE.get(), SoundSource.BLOCKS, 2.0F, 0.75F);
+            if (casingDelay() == 0) spawnCasing();
+            else casingDelay = casingDelay();
             muzzleFlash(getTurretPos(), 1F, 1);
             didJustShootRight = true;
         }

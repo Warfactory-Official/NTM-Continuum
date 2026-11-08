@@ -146,8 +146,8 @@ public final class TracerRegistry {
         register(model("models/weapons/charge_thrower.obj", "textures/models/weapons/charge_thrower_mortar.png", "Mortar", 0.125F,
                 pose -> { pose.mulPose(Axis.YN.rotationDegrees(90F)); pose.mulPose(Axis.ZP.rotationDegrees(180F)); pose.translate(0F, 0F, -6F); }),
                 "ct_mortar", "ct_mortar_charge");
-        register(model("models/weapons/charge_thrower.obj", "textures/models/weapons/charge_thrower_hook.png", "Hook", 0.125F,
-                pose -> { pose.mulPose(Axis.YN.rotationDegrees(90F)); pose.mulPose(Axis.ZP.rotationDegrees(180F)); pose.translate(0F, 0F, -6F); }), "ct_hook");
+        register(new HookWire(model("models/weapons/charge_thrower.obj", "textures/models/weapons/charge_thrower_hook.png", "Hook", 0.125F,
+                pose -> { pose.mulPose(Axis.YN.rotationDegrees(90F)); pose.mulPose(Axis.ZP.rotationDegrees(180F)); pose.translate(0F, 0F, -6F); })), "ct_hook");
         register(model("models/weapons/panzerschreck.obj", "textures/models/weapons/panzerschreck.png", "Rocket", 0.125F,
                 pose -> { pose.mulPose(Axis.YN.rotationDegrees(90F)); pose.translate(0F, 0F, 3.5F); }), "rocket_rpzb_he",
                 "rocket_rpzb_heat", "rocket_rpzb_demo", "rocket_rpzb_inc", "rocket_rpzb_phosphorus",

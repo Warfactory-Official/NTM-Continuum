@@ -15,9 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -29,6 +31,9 @@ import org.joml.Quaternionf;
  * <p>Ported from 1.7 {@code ParticleDebris}. Each chunk carries a {@link WorldInAJar} cut from the
  * blast site and draws it as a block model rather than a sprite, so the rubble is the ground it came
  * from: its ores, its grass tint, its slab and stair shapes.
+ *
+ * <p>A scoop that comes up empty (a blast of debris size 0, over water, off a cliff edge) still flies and trails
+ * smoke, drawing nothing, as in 1.7. Each frame a chunk is lit by the block it is in, as 1.7 relit its jar.
  *
  * <p>These are not vanilla particles: a particle draws one camera-facing quad from an atlas sprite, and a lump of
  * block models turned about its own middle is outside what the particle engine can express. They submit through
@@ -72,19 +77,22 @@ public final class DebrisParticles {
                 "debris_particles", DebrisParticles::clear);
     }
 
-    /**
-     * Throws one chunk from {@code (x, y, z)}, cut from the ground around
-     * {@code (cX, cY, cZ)}.
-     *
-     * <p>A scoop that came up empty is dropped rather than thrown: over water and off a cliff edge
-     * there is nothing to throw, which upstream also leaves as a chunk drawing nothing.
-     */
+    /** Throws one chunk from {@code (x, y, z)}, cut from the ground around {@code (cX, cY, cZ)}. */
     public static void add(ClientLevel level, RandomSource rand, double x, double y, double z,
             int cX, int cY, int cZ, int size, int retry, double vx, double vy, double vz) {
         WorldInAJar jar = WorldInAJar.fromLevel(level, cX, cY, cZ, size, retry, rand);
-        if (jar.isEmpty()) return;
         boolean trails = ACTIVE.size() % TRAIL_EVERY == 0;
         ACTIVE.add(new Debris(rand, x, y, z, vx, vy, vz, jar, trails));
+    }
+
+    /** Per live chunk: filled cells, the block and sky light it is drawn with, and where it was thrown from. */
+    public static List<double[]> live() {
+        List<double[]> out = new ArrayList<>();
+        for (Debris debris : ACTIVE) {
+            out.add(new double[] {debris.jar.filledCells(), debris.jar.blockLight(), debris.jar.skyLight(),
+                    debris.fromX, debris.fromY, debris.fromZ});
+        }
+        return out;
     }
 
     private static void tick() {
@@ -100,9 +108,10 @@ public final class DebrisParticles {
     }
 
     private static void submit(CameraInfo camera) {
-        if (ACTIVE.isEmpty()) return;
+        ClientLevel level = Minecraft.getInstance().level;
+        if (ACTIVE.isEmpty() || level == null) return;
         float partial = Frames.partialTick();
-        for (Debris debris : List.copyOf(ACTIVE)) debris.submit(camera, partial);
+        for (Debris debris : List.copyOf(ACTIVE)) debris.submit(level, camera, partial);
     }
 
     private static void clear() {
@@ -112,6 +121,9 @@ public final class DebrisParticles {
     private static final class Debris {
 
         private final WorldInAJar jar;
+        private final double fromX;
+        private final double fromY;
+        private final double fromZ;
         private final double vx;
         private final double vz;
         private final float spinY;
@@ -126,9 +138,9 @@ public final class DebrisParticles {
 
         private Debris(RandomSource rand, double x, double y, double z, double vx, double vy, double vz,
                 WorldInAJar jar, boolean trails) {
-            this.x = this.xo = x;
-            this.y = this.yo = y;
-            this.z = this.zo = z;
+            this.x = this.xo = this.fromX = x;
+            this.y = this.yo = this.fromY = y;
+            this.z = this.zo = this.fromZ = z;
             this.vx = vx * MOTION_MULT;
             this.vy = vy * MOTION_MULT;
             this.vz = vz * MOTION_MULT;
@@ -182,7 +194,10 @@ public final class DebrisParticles {
             if (age >= MAX_AGE) expired = true;
         }
 
-        private void submit(CameraInfo camera, float partial) {
+        private void submit(ClientLevel level, CameraInfo camera, float partial) {
+            if (jar.isEmpty()) return;
+            BlockPos at = BlockPos.containing(x, y, z);
+            jar.setLight(level.getBrightness(LightLayer.BLOCK, at), level.getBrightness(LightLayer.SKY, at));
             PoseStack pose = new PoseStack();
             pose.translate(Mth.lerp(partial, xo, x) - camera.pos.x,
                     Mth.lerp(partial, yo, y) - camera.pos.y,

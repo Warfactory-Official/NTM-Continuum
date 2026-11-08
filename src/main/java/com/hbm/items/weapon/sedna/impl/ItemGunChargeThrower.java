@@ -74,7 +74,8 @@ public class ItemGunChargeThrower extends ItemGunBaseNT {
             EquipmentSlot slot, boolean held) {
         super.compatInventoryTick(stack, level, entity, slot, held);
         if (getState(stack, 0) == GunState.RELOADING) clearLastHook(stack);
-        if (slot != EquipmentSlot.MAINHAND || !(entity instanceof Player player)) {
+        // 1.7 isHeld; below 26.1 the slot is null and held is the selected main-hand slot
+        if (!held || slot == EquipmentSlot.OFFHAND || !(entity instanceof Player player)) {
             clearLastHook(stack);
             return;
         }

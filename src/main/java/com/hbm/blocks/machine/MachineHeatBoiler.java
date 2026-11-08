@@ -27,9 +27,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -97,25 +95,22 @@ public class MachineHeatBoiler extends BlockMultiblockMachine implements IFluidC
 
     /**
      * 1.7 {@code MachineHeatBoiler.getDrops}: a boiler that has blown its top ({@code hasExploded}) breaks into
-     * 4 steel ingots and 8 copper plates instead of dropping itself.
+     * 4 steel ingots and 8 copper plates instead of dropping itself, whichever part was broken.
      */
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
-        TileEntityHeatBoiler boiler = null;
-        if (params.getOptionalParameter(LootContextParams.BLOCK_ENTITY)
-                instanceof TileEntityHeatBoiler direct) {
-            boiler = direct;
-        } else {
-            Vec3 origin = params.getOptionalParameter(
-                    LootContextParams.ORIGIN);
-            BlockPos core = origin == null ? null : MultiblockSurface.coreOfAny(params.getLevel(), BlockPos.containing(origin));
-            if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntityHeatBoiler found) boiler = found;
-        }
-        if (boiler != null && boiler.hasExploded) {
+        BlockEntity source = dropSource(state, params);
+        if (state.getValue(CELL) && source == null) return List.of();
+        if (source instanceof TileEntityHeatBoiler boiler && boiler.hasExploded) {
             return List.of(new ItemStack(ModItems.ingot_steel.get(), 4),
                     new ItemStack(ModItems.plate_copper.get(), 8));
         }
         return super.getDrops(state, params);
+    }
+
+    @Override
+    protected boolean dropsFromCore() {
+        return true;
     }
 
     @Override

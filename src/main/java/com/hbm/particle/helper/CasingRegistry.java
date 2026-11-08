@@ -8,6 +8,8 @@ import com.hbm.particle.SpentCasing.CasingType;
 
 /** The unique source casing table, installed after every source ammo config exists. */
 public final class CasingRegistry {
+    /** 1.7 {@code GunDGKFactory.CASINGDGK}, the CIWS brass. */
+    public static SpentCasing dgk;
     private static boolean installed;
 
     private CasingRegistry() {}
@@ -142,6 +144,9 @@ public final class CasingRegistry {
         registerShell240("shell_ap", "240w");
         registerShell240("shell_du", "240u");
         registerShell240("shell_w9", "240n");
+
+        dgk = new SpentCasing(CasingType.STRAIGHT).setScale(1.5F).setBounceMotion(1F, 0.5F)
+                .setColor(SpentCasing.COLOR_CASE_BRASS).register("DGK").setupSmoke(0.02F, 0.5D, 60, 20).setMaxAge(60);
 
         installed = true;
     }

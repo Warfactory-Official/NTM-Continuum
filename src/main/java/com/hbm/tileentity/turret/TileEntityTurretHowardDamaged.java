@@ -1,5 +1,6 @@
 package com.hbm.tileentity.turret;
 
+import com.hbm.particle.helper.CasingRegistry;
 import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.config.WeaponConfig;
 import com.hbm.lib.ModDamageSources;
@@ -72,6 +73,9 @@ public class TileEntityTurretHowardDamaged extends TileEntityTurretHoward {
 
         level.playSound(null, worldPosition, ModSounds.TURRET_HOWARD_FIRE.get(), SoundSource.BLOCKS, 4.0F,
                 0.7F + level.getRandom().nextFloat() * 0.3F);
+
+        cachedCasingConfig = CasingRegistry.dgk;
+        spawnCasing();
 
         if (level.getRandom().nextInt(100) + 1 <= WeaponConfig.ciwsHitrate * 0.5D && target != null) {
             EntityDamageUtil.attackEntityFromIgnoreIFrame(target, ModDamageSources.shrapnel(level),

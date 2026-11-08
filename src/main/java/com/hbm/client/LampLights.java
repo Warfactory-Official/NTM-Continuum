@@ -1,5 +1,6 @@
 package com.hbm.client;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.client.gun.JadeShotgunClient;
 import com.hbm.items.ModGunItems;
@@ -184,8 +185,22 @@ public final class LampLights {
         }
     }
 
-    static JsonObject query() {
+    /** With {@code x, y0, y1, z0, z1}: the client's block light on that x plane, one row per y from the top. */
+    static JsonObject query(JsonObject params) {
         JsonObject json = new JsonObject();
+        if (params.has("x") && Minecraft.getInstance().level != null) {
+            ClientLevel level = Minecraft.getInstance().level;
+            int x = params.get("x").getAsInt();
+            JsonArray rows = new JsonArray();
+            for (int y = params.get("y1").getAsInt(); y >= params.get("y0").getAsInt(); y--) {
+                StringBuilder row = new StringBuilder();
+                for (int z = params.get("z0").getAsInt(); z <= params.get("z1").getAsInt(); z++) {
+                    row.append(String.format("%3d", level.getBrightness(LightLayer.BLOCK, new BlockPos(x, y, z))));
+                }
+                rows.add(row.toString());
+            }
+            json.add("plane", rows);
+        }
         json.addProperty("shading", DynamicLights.shading());
         json.addProperty("lights_last_frame", lightsLastFrame);
         json.addProperty("fallback_writes", writes);

@@ -52,7 +52,7 @@ public class ItemGunNI4NI extends ItemGunBaseNT implements ICustomizable {
             charge = 0;
             int count = getCoinCount(stack) + 1;
             setCoinCount(stack, count);
-            if (slot == EquipmentSlot.MAINHAND) {
+            if (held && slot != EquipmentSlot.OFFHAND) {
                 level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), ModSounds.TECH_BOOP.get(),
                         SoundSource.PLAYERS, 1F, 1F + count / (float) maxCoin);
             }

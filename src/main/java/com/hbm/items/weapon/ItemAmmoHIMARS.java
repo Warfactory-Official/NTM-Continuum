@@ -40,6 +40,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -97,16 +98,18 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
             @Override
             public void onImpact(EntityArtilleryRocket rocket, HitResult hit) {
                 standardExplosion(rocket, hit, 20F, 3F, false, SLAG_CRACKED);
-                ExplosionCreator.composeEffectStandard(rocket.level(), hit.getLocation().x, hit.getLocation().y,
-                        hit.getLocation().z);
+                Vec3 at = struckBlockCentre(hit);
+                // 1.7: debris size 0, the chunks fly invisible and only their trails show
+                ExplosionCreator.composeEffect(rocket.level(), at.x, at.y, at.z, 15, 5F, 1F, 45F, 10, 0, 50, 1F, 3F, -2F,
+                        200F);
             }
         },
         SMALL_HE("standard_he", "himars_standard_he", 0) {
             @Override
             public void onImpact(EntityArtilleryRocket rocket, HitResult hit) {
                 standardExplosion(rocket, hit, 20F, 3F, true, SLAG_CRACKED);
-                ExplosionCreator.composeEffectStandard(rocket.level(), hit.getLocation().x, hit.getLocation().y,
-                        hit.getLocation().z);
+                Vec3 at = struckBlockCentre(hit);
+                ExplosionCreator.composeEffectStandard(rocket.level(), at.x, at.y, at.z);
             }
         },
         SMALL_WP("standard_wp", "himars_standard_wp", 0) {
@@ -177,8 +180,8 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
             @Override
             public void onImpact(EntityArtilleryRocket rocket, HitResult hit) {
                 standardExplosion(rocket, hit, 50F, 5F, true, SLAG_CRACKED);
-                ExplosionCreator.composeEffectLarge(rocket.level(), hit.getLocation().x, hit.getLocation().y,
-                        hit.getLocation().z);
+                Vec3 at = struckBlockCentre(hit);
+                ExplosionCreator.composeEffectLarge(rocket.level(), at.x, at.y, at.z);
             }
         },
         LARGE_TB("single_tb", "himars_single_tb", 1) {
@@ -230,6 +233,14 @@ public class ItemAmmoHIMARS extends ItemEnumMulti {
     }
 
     /** Upstream backs the blast off one motion step so a rocket never detonates inside what it hit. */
+    /**
+     * 1.7's {@code mop.blockX + 0.5} (and Y, Z), the struck block's centre. An entity hit leaves those fields unset in
+     * 1.7, the world origin; the port plays the effect at the hit point instead.
+     */
+    public static Vec3 struckBlockCentre(HitResult hit) {
+        return hit instanceof BlockHitResult block ? Vec3.atCenterOf(block.getBlockPos()) : hit.getLocation();
+    }
+
     private static Vec3 behindImpact(EntityArtilleryRocket rocket, HitResult hit) {
         Vec3 motion = rocket.getDeltaMovement();
         return hit.getLocation().subtract(motion.lengthSqr() < 1.0E-8D ? Vec3.ZERO : motion.normalize());

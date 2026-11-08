@@ -58,7 +58,9 @@ public final class LegacyBlock {
     }
 
     public Block block() {
-        return state(0).getBlock();
+        Block block = state(0).getBlock();
+        // a 1.7 BlockDummyable's metadata 0 is a dummy cell, which resolves to air; its core metadata names the block
+        return block == Blocks.AIR && !isAir() ? state(12).getBlock() : block;
     }
 
     public boolean isAir() {

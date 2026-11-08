@@ -96,6 +96,8 @@ public final class HbmParticleHandlers {
         RBMKFlameParticles.register();
         HbmEffectNT.RBMKFlame.setHandler((level, x, y, z, data) -> RBMKFlameParticles.spawn(level, x, y, z,
                 Tags.getIntOr(data, "maxAge", 0)));
+        HbmEffectNT.VanillaExt_LargeExplode.setHandler(HbmParticleHandlers::spawnLargeExplode);
+        HbmEffectNT.Casing.setHandler((level, x, y, z, data) -> CasingParticles.eject(x, y, z, data));
         HbmEffectNT.AmatFlash.setHandler((level, x, y, z, data) -> AmatFlashParticles.spawn(level, x, y, z,
                 Tags.getFloatOr(data, "scale", 1F)));
         HbmEffectNT.ProperJolt.setHandler((level, x, y, z, data) -> properJolt(
@@ -195,6 +197,23 @@ public final class HbmParticleHandlers {
      * backwards at 0.025. 1.7 raised them by 0.25 when the <i>viewing</i> player sneaked (it read {@code player},
      * not the wearer); kept. {@code EntitySmokeFX}'s scale was forced to 0.5, against a default of about 1.125.
      */
+    /** 1.7 {@code EntityLargeExplodeFX} (its size rides the x motion) and {@code count} {@code EntityExplodeFX}. */
+    private static void spawnLargeExplode(Level level, double x, double y, double z, CompoundTag data) {
+        var flash = Particles.spawn(ParticleTypes.EXPLOSION, x, y, z, Tags.getFloatOr(data, "size", 0F), 0D, 0D);
+        if (flash != null) {
+            float r = 1F - level.getRandom().nextFloat() * 0.2F;
+            Particles.color(flash, r, 0.9F * r, 0.5F * r);
+        }
+        int count = Tags.getIntOr(data, "count", 0);
+        for (int i = 0; i < count; i++) {
+            var puff = Particles.spawn(ParticleTypes.POOF, x, y, z, 0D, 0D, 0D);
+            if (puff == null) continue;
+            float r = 1F - level.getRandom().nextFloat() * 0.5F;
+            Particles.color(puff, 0.5F * r, 0.5F * r, 0.5F * r);
+            puff.scale(i + 1);
+        }
+    }
+
     private static void spawnBnuuy(Level level, CompoundTag data) {
         if (!(level instanceof ClientLevel clientLevel)) return;
         if (Particles.quality() == Particles.Quality.MINIMAL) return;

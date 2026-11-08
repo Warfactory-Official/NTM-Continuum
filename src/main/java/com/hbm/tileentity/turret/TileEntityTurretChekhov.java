@@ -1,5 +1,7 @@
 package com.hbm.tileentity.turret;
 
+import net.minecraft.world.phys.Vec3;
+import com.hbm.handler.CasingEjector;
 import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory50;
@@ -15,9 +17,6 @@ import org.jspecify.annotations.Nullable;
 /**
  * The .50 BMG gatling. Its barrels spin up while it holds a target and coast back down when it loses
  * one, which is the only reason it keeps a client tick of its own.
- *
- * <p>The ejector 1.12.2 hands its spent brass to has no counterpart yet: {@code BulletConfig} carries
- * no casing in this port, so nothing is thrown.
  */
 public class TileEntityTurretChekhov extends TileEntityTurretBaseNT {
 
@@ -88,6 +87,7 @@ public class TileEntityTurretChekhov extends TileEntityTurretBaseNT {
             BulletConfig conf = getFirstConfigLoaded();
 
             if (conf != null) {
+                cachedCasingConfig = conf.casing;
                 spawnBullet(conf);
                 consumeAmmo(conf);
                 level.playSound(null, worldPosition, ModSounds.TURRET_CHEKHOV_FIRE.get(), SoundSource.BLOCKS,
@@ -95,6 +95,23 @@ public class TileEntityTurretChekhov extends TileEntityTurretBaseNT {
                 muzzleFlash(barrelTip(), 1.5F, 1);
             }
         }
+    }
+
+    @Override
+    protected Vec3 getCasingSpawnPos() {
+        return getTurretPos().add(alongBarrel(-1.125, 0.125, 0.25));
+    }
+
+    private static final CasingEjector EJECTOR = new CasingEjector().setMotion(-0.8, 0.8, 0).setAngleRange(0.1F, 0.1F);
+
+    @Override
+    protected CasingEjector getEjector() {
+        return EJECTOR;
+    }
+
+    @Override
+    public boolean usesCasings() {
+        return true;
     }
 
     @Override

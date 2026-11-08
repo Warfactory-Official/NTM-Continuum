@@ -1,5 +1,7 @@
 package com.hbm.tileentity.turret;
 
+import net.minecraft.world.phys.Vec3;
+import com.hbm.particle.helper.CasingCreator;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.sound.ModSounds;
@@ -96,6 +98,7 @@ public class TileEntityTurretJeremy extends TileEntityTurretBaseNT {
         BulletConfig conf = getFirstConfigLoaded();
         if (conf == null) return;
 
+        cachedCasingConfig = conf.casing;
         spawnBullet(conf);
         consumeAmmo(conf);
         level.playSound(null, worldPosition, ModSounds.TURRET_JEREMY_FIRE.get(), SoundSource.BLOCKS, 4.0F, 1.0F);
@@ -105,4 +108,29 @@ public class TileEntityTurretJeremy extends TileEntityTurretBaseNT {
 
     @Override
     public float getBaseDamage() { return XFactoryTurret.TURRET_JEREMY_DAMAGE.get(); }
+
+    @Override
+    protected void spawnCasing() {
+        if (cachedCasingConfig == null) return;
+        Vec3 spawn = getCasingSpawnPos();
+        CasingCreator.composeEffect(level, spawn.x, spawn.y, spawn.z, (float) Math.toDegrees(worldYaw()),
+                (float) -Math.toDegrees(worldPitch()), -0.2, -0.2, 0, 0.01, -5, 0, cachedCasingConfig.getName(),
+                true, 100, 0.5, 20);
+        cachedCasingConfig = null;
+    }
+
+    @Override
+    protected Vec3 getCasingSpawnPos() {
+        return getTurretPos().add(alongBarrel(-2, 0, 0));
+    }
+
+    @Override
+    public boolean usesCasings() {
+        return true;
+    }
+
+    @Override
+    public int casingDelay() {
+        return 22;
+    }
 }

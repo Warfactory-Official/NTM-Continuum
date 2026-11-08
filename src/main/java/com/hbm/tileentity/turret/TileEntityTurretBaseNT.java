@@ -19,6 +19,9 @@ import com.hbm.inventory.container.ContainerTurretBase;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.handler.CasingEjector;
+import com.hbm.particle.SpentCasing;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.mojang.serialization.Codec;
 import dev.golem.core.Ids;
@@ -34,7 +37,6 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -79,8 +81,6 @@ import com.hbm.tileentity.TilePort.PortDef;
  * acts while switched on and powered; each tick it decays its search timer, reacquires when it has
  * no target, aims at whatever it holds, and lets {@link #updateFiringTick()} decide whether to shoot.
  *
- * <p><b>Deviation from 1.7.</b> Spent casings are absent: this port's {@code BulletConfig} carries no casing.
- *
  * <p>The redstone-over-radio surface is 1.7's seven functions; {@link #getWhitelist} is null only without a chip.
  */
 public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
@@ -118,6 +118,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
     public boolean isBlacklistMobFilter = true;
     public int stattrak;
     public int casingDelay;
+    protected @Nullable SpentCasing cachedCasingConfig;
     public int connectorMask;
     public @Nullable Entity target;
     public @Nullable Vec3 tPos;
@@ -194,6 +195,14 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
         setChanged();
         networkPackNT();
+        tickCasingDelay();
+    }
+
+    /** 1.7: a delayed casing counts down after the network pack, then goes once the delay has run out. */
+    protected void tickCasingDelay() {
+        if (!usesCasings() || casingDelay() <= 0) return;
+        if (casingDelay > 0) casingDelay--;
+        else spawnCasing();
     }
 
     protected void tickClient() {
@@ -481,14 +490,49 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         return getTurretPos().add(alongBarrel(getBarrelLength(), 0, 0));
     }
 
-    /** 1.12.2's {@code largeexplode}: the flash size rides the x velocity slot. */
+    /** 1.7's {@code vanillaExt} {@code largeexplode}, sent to players within 50 blocks of the turret. */
     protected void muzzleFlash(Vec3 at, float size, int count) {
-        if (!(level instanceof ServerLevel server)) return;
-        if (count <= 1) {
-            server.sendParticles(ParticleTypes.EXPLOSION, at.x, at.y, at.z, 0, size, 0D, 0D, 1D);
-        } else {
-            server.sendParticles(ParticleTypes.EXPLOSION, at.x, at.y, at.z, count, size, 0D, 0D, 0D);
+        muzzleFlash(at, size, count, 50D);
+    }
+
+    protected void muzzleFlash(Vec3 at, float size, int count, double range) {
+        CompoundTag data = new CompoundTag();
+        data.putFloat("size", size);
+        data.putByte("count", (byte) count);
+        HbmEffectNT.VanillaExt_LargeExplode.sendAround(level, at.x, at.y, at.z, data, worldPosition.getX(),
+                worldPosition.getY(), worldPosition.getZ(), range);
+    }
+
+    protected Vec3 getCasingSpawnPos() {
+        return getTurretPos();
+    }
+
+    protected @Nullable CasingEjector getEjector() {
+        return null;
+    }
+
+    /** 1.7 sends the casing to players within 50 blocks; without an ejector the client throws nothing. */
+    protected void spawnCasing() {
+        if (cachedCasingConfig == null) return;
+        CasingEjector ejector = getEjector();
+        if (ejector != null) {
+            Vec3 spawn = getCasingSpawnPos();
+            CompoundTag data = new CompoundTag();
+            data.putFloat("pitch", -worldPitch());
+            data.putFloat("yaw", worldYaw());
+            data.putString("name", cachedCasingConfig.getName());
+            data.putDouble("oX", ejector.getOffset().x);
+            data.putDouble("oY", ejector.getOffset().y);
+            data.putDouble("oZ", ejector.getOffset().z);
+            data.putDouble("mX", ejector.getMotion().x);
+            data.putDouble("mY", ejector.getMotion().y);
+            data.putDouble("mZ", ejector.getMotion().z);
+            data.putFloat("yawFactor", ejector.getYawFactor());
+            data.putFloat("pitchFactor", ejector.getPitchFactor());
+            HbmEffectNT.Casing.sendAround(level, spawn.x, spawn.y, spawn.z, data, worldPosition.getX(),
+                    worldPosition.getY(), worldPosition.getZ(), 50D);
         }
+        cachedCasingConfig = null;
     }
 
     @Override
@@ -535,7 +579,10 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         projectile.setPos(tip.x, tip.y, tip.z);
         fire(projectile);
 
-        if (usesCasings() && casingDelay() > 0) casingDelay = casingDelay();
+        if (usesCasings()) {
+            if (casingDelay() == 0) spawnCasing();
+            else casingDelay = casingDelay();
+        }
     }
 
     public boolean usesCasings() {

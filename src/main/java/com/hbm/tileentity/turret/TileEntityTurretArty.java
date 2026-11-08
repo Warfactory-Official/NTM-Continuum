@@ -8,6 +8,7 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.weapon.ItemAmmoArty;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.lib.Library;
+import com.hbm.particle.helper.CasingCreator;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.data.DataIn;
@@ -153,10 +154,8 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
 
     @Override
     protected void alignTurret() {
-        // Upstream uses +pitch for aim compensation, while firing uses -pitch.
-        Vec3 muzzle = getTurretPos().add(toWorldDirection(new Vec3(getBarrelLength(), 0D, 0D)
-                .zRot((float) rotationPitch)
-                .yRot((float) -(rotationYaw + Math.PI * 0.5D))));
+        // 1.7 solves from the muzzle at the barrel's current angle, the same tip the shell leaves from
+        Vec3 muzzle = barrelTip();
         Vec3 delta = tPos.subtract(muzzle);
         double targetYaw = -Math.atan2(delta.x, delta.z);
 
@@ -215,6 +214,22 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
         if (mode != MODE_CANNON) shell.setWhistle(true);
 
         level.addFreshEntity(shell);
+        casingDelay = casingDelay();
+    }
+
+    @Override
+    public int casingDelay() {
+        return 7;
+    }
+
+    @Override
+    protected void spawnCasing() {
+        if (cachedCasingConfig == null) return;
+        Vec3 spawn = getCasingSpawnPos();
+        CasingCreator.composeEffect(level, spawn.x, spawn.y, spawn.z, (float) Math.toDegrees(worldYaw()),
+                (float) -Math.toDegrees(worldPitch()), -0.6, 0.3, 0, 0.01,
+                level.getRandom().nextFloat() * 20F - 10F, 0, cachedCasingConfig.getName(), true, 200, 1, 20);
+        cachedCasingConfig = null;
     }
 
     @Override
@@ -288,6 +303,10 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
         networkPackNT();
 
         didJustShoot = false;
+
+        // 1.7 counts the casing down here whether or not usesCasings
+        if (casingDelay > 0) casingDelay--;
+        else spawnCasing();
     }
 
     @Override
@@ -299,11 +318,14 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
 
         ItemStack loaded = getShellLoaded();
         if (!loaded.isEmpty()) {
+            if (loaded.getItem() instanceof ItemAmmoArty shell) {
+                cachedCasingConfig = ItemAmmoArty.byIndex(shell.getVariant(loaded)).casing;
+            }
             spawnShell(loaded);
             consumeShell();
             level.playSound(null, worldPosition, ModSounds.TURRET_JEREMY_FIRE.get(), SoundSource.BLOCKS, 25.0F, 1.0F);
             didJustShoot = true;
-            muzzleFlash(barrelTip(), 0F, 5);
+            muzzleFlash(barrelTip(), 0F, 5, 150D);
         }
 
         // One mission per volley: the queue advances whether or not there was a shell to send.

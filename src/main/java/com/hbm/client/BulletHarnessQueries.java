@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.hbm.client.anim.HbmAnimations;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.factory.XFactoryTool;
 import dev.golem.core.client.Fov;
 import dev.golem.core.client.Frames;
 import dev.golem.core.harness.HarnessQueryRegistry;
@@ -123,6 +124,10 @@ public final class BulletHarnessQueries {
             JsonObject b = new JsonObject();
             Vec3 step = bullet.position().subtract(bullet.xo, bullet.yo, bullet.zo);
             b.addProperty("age", bullet.tickCount);
+            b.addProperty("hook", bullet.config == XFactoryTool.ct_hook);
+            b.addProperty("x", bullet.getX());
+            b.addProperty("y", bullet.getY());
+            b.addProperty("z", bullet.getZ());
             b.addProperty("velocity", bullet.velocity);
             b.addProperty("yaw", bullet.getYRot());
             b.addProperty("yaw_old", bullet.yRotO);
@@ -140,6 +145,10 @@ public final class BulletHarnessQueries {
             bullets.add(b);
         }
         json.add("bullets", bullets);
+        json.addProperty("player_x", mc.player.getX());
+        json.addProperty("player_y", mc.player.getY());
+        json.addProperty("player_z", mc.player.getZ());
+        json.addProperty("player_motion", mc.player.getDeltaMovement().length());
         if (params.has("buses")) {
             JsonObject buses = new JsonObject();
             for (var element : params.getAsJsonArray("buses")) {

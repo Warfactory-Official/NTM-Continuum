@@ -4,6 +4,7 @@ import com.hbm.api.data.ArmorDataMaps;
 import dev.golem.core.data.Tags;
 
 import com.hbm.items.ModItems;
+import com.hbm.items.ModMeleeKitItems;
 import com.hbm.items.ModToolItems;
 import com.hbm.items.tool.ItemKey;
 import com.hbm.Constants;
@@ -164,14 +165,17 @@ public abstract class TileEntityLockableBase extends TileEntityLoadedBase {
         double chanceOfSuccess = this.lockMod * 100;
         Item pin = ModItems.pin.get();
         Item screwdriver = ModToolItems.screwdriver.get();
+        Item deshScrewdriver = ModMeleeKitItems.screwdriver_desh.get();
 
-        if (!stack.isEmpty() && stack.getItem() == pin && hasItem(player, screwdriver)) {
+        if (!stack.isEmpty() && stack.getItem() == pin && (carried(player, screwdriver) != null
+                || carried(player, deshScrewdriver) != null)) {
             stack.shrink(1);
             canPick = true;
         }
 
-        if (!stack.isEmpty() && stack.getItem() == screwdriver && hasItem(player, pin)) {
-            consumeItem(player, pin);
+        ItemStack spare = carried(player, pin);
+        if (!stack.isEmpty() && (stack.getItem() == screwdriver || stack.getItem() == deshScrewdriver) && spare != null) {
+            spare.shrink(1);
             player.inventoryMenu.broadcastChanges();
             canPick = true;
         }
@@ -201,19 +205,11 @@ public abstract class TileEntityLockableBase extends TileEntityLoadedBase {
         return false;
     }
 
-    private static boolean hasItem(Player player, Item item) {
+    /** 1.7 {@code inventory.hasItem}: the main inventory, and the offhand, which 1.7 did not have. */
+    private static @Nullable ItemStack carried(Player player, Item item) {
         NonNullList<ItemStack> main = Inventories.main(player.getInventory());
-        for (ItemStack stack : main) if (!stack.isEmpty() && stack.getItem() == item) return true;
-        return false;
-    }
-
-    private static void consumeItem(Player player, Item item) {
-        NonNullList<ItemStack> main = Inventories.main(player.getInventory());
-        for (ItemStack stack : main) {
-            if (!stack.isEmpty() && stack.getItem() == item) {
-                stack.shrink(1);
-                return;
-            }
-        }
+        for (ItemStack stack : main) if (!stack.isEmpty() && stack.getItem() == item) return stack;
+        ItemStack offhand = player.getOffhandItem();
+        return !offhand.isEmpty() && offhand.getItem() == item ? offhand : null;
     }
 }
