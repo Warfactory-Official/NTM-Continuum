@@ -30,11 +30,14 @@ public final class ConventionFluidTags {
         put("kerosene", "kerosene");
         put("naphtha", "naphtha");
         put("lubricant", "lubricant");
+        put("petroleum", "petroleum_gas");
+        put("xylene", "benzol");
         put("biofuel", "biodiesel");
+        put("sunfloweroil", "plantoil");
         put("coalcreosote", "creosote");
         put("hydrogen", "hydrogen");
         put("oxygen", "oxygen");
-        // no steam: 1.7 boils 1 mB of water into 100 mB, other mods into about 1
+        put("steam", "steam");
         put("sulfuric_acid", "sulfuric_acid");
         put("chlorine", "chlorine");
         put("heavywater", "heavy_water");

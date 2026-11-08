@@ -40,6 +40,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -60,6 +61,10 @@ public final class Gh156GameTests {
             TESTS.function("gh156_hbm_fluids_join_convention_tags", 20, () -> Gh156GameTests::tags);
     public static final GameTests.Function MEKANISM =
             TESTS.function("gh156_mekanism_fluids_run_hbm_machines", 200, 16, () -> Gh156GameTests::mekanism);
+    public static final GameTests.Function IMMERSIVE_ENGINEERING =
+            TESTS.function("gh156_immersive_engineering_fluids_are_hbm_fluids", 200, 12, () -> Gh156GameTests::immersiveEngineering);
+    public static final GameTests.Function IMMERSIVE_PETROLEUM =
+            TESTS.function("gh156_immersive_petroleum_fluids_are_hbm_fluids", 200, 12, () -> Gh156GameTests::immersivePetroleum);
 
     public static void init() {}
 
@@ -178,7 +183,7 @@ public final class Gh156GameTests {
         }
         ServerLevel level = helper.getLevel();
         Fluid hydrogen = BuiltInRegistries.FLUID.getOptional(Ids.of("mekanism", "hydrogen")).orElseThrow();
-        String[][] kinds = {{"hydrogen", "hbm:hydrogen"}, {"oxygen", "hbm:oxygen"},
+        String[][] kinds = {{"hydrogen", "hbm:hydrogen"}, {"oxygen", "hbm:oxygen"}, {"steam", "hbm:steam"},
                 {"sulfuric_acid", "hbm:sulfuric_acid"}, {"chlorine", "hbm:chlorine"}, {"heavy_water", "hbm:heavywater"},
                 {"uranium_hexafluoride", "hbm:uf6"}, {"sodium", "hbm:sodium"}};
         for (String[] kind : kinds) {
@@ -186,10 +191,6 @@ public final class Gh156GameTests {
             helper.assertTrue(Fluids.kindOf(resource).getRegistryName().equals(kind[1]),
                     "mekanism:" + kind[0] + " is " + Fluids.kindOf(resource).getRegistryName() + " in HBM, expected " + kind[1]);
         }
-
-        // HBM steam is 100 mB per mB of water, Mekanism's about 1: not joined, so it stays Mekanism's own
-        FluidType mekSteam = Fluids.fromVanillaExact(BuiltInRegistries.FLUID.getOptional(Ids.of("mekanism", "steam")).orElseThrow());
-        helper.assertTrue(Fluids.kindOf(mekSteam) == mekSteam, "mekanism:steam is " + Fluids.kindOf(mekSteam).getRegistryName() + " in HBM");
 
         // brine has no HBM counterpart: picked once, as Mekanism's; hydrogen is HBM's and not picked twice
         long brine = Arrays.stream(Fluids.getSelectable()).filter(f -> f.getRegistryName().equals("mekanism:brine")).count();
@@ -241,6 +242,114 @@ public final class Gh156GameTests {
         });
     }
 
+    /**
+     * With Immersive Engineering loaded: its ethanol, biodiesel, creosote and plant oil are HBM's ethanol, biofuel, coal
+     * creosote and sunflower oil; its ethanol piped in and its biodiesel poured from a bucket run diesel generators; and
+     * HBM's biofuel and creosote are in the tags IE's generator and drill burn. Skips without IE.
+     */
+    private static void immersiveEngineering(GameTestHelper helper) {
+        if (!Platform.isModLoaded("immersiveengineering")) {
+            Constants.LOG.info("[gh156] Immersive Engineering absent, skipped");
+            helper.succeed();
+            return;
+        }
+        ServerLevel level = helper.getLevel();
+        String[][] kinds = {{"ethanol", "hbm:ethanol"}, {"biodiesel", "hbm:biofuel"}, {"creosote", "hbm:coalcreosote"},
+                {"plantoil", "hbm:sunfloweroil"}};
+        for (String[] kind : kinds) {
+            FluidType resource = Fluids.fromVanillaExact(BuiltInRegistries.FLUID.getOptional(Ids.of("immersiveengineering", kind[0])).orElseThrow());
+            helper.assertTrue(Fluids.kindOf(resource).getRegistryName().equals(kind[1]),
+                    "immersiveengineering:" + kind[0] + " is " + Fluids.kindOf(resource).getRegistryName() + " in HBM, expected " + kind[1]);
+        }
+        helper.assertTrue(Arrays.stream(Fluids.getSelectable()).noneMatch(f -> f.getNamespace().equals("immersiveengineering")
+                        && Fluids.kindOf(f) != f), "the picker lists an IE fluid beside its HBM counterpart");
+        helper.assertTrue(isIn(Fluids.BIOFUEL, "c", "biodiesel") && isIn(Fluids.BIOFUEL, "immersiveengineering", "drill_fuel")
+                        && isIn(Fluids.COALCREOSOTE, "c", "creosote"),
+                "HBM biofuel and creosote are not in the tags IE's generator and drill burn");
+        helper.assertTrue(ieBurns(level, Fluids.BIOFUEL.getFluid()) && ieBurns(level, Fluids.COALCREOSOTE.getFluid())
+                        && !ieBurns(level, Fluids.ETHANOL.getFluid()),
+                "IE's generator fuel lookup does not take HBM biofuel and creosote (or takes ethanol)");
+
+        Fluid ethanol = BuiltInRegistries.FLUID.getOptional(Ids.of("immersiveengineering", "ethanol")).orElseThrow();
+        BlockPos piped = helper.absolutePos(new BlockPos(2, 2, 2));
+        BlockPos poured = helper.absolutePos(new BlockPos(6, 2, 2));
+        TileEntityMachineDiesel pipedGen = diesel(level, piped, Fluids.ETHANOL);
+        TileEntityMachineDiesel pouredGen = diesel(level, poured, Fluids.BIOFUEL);
+        pouredGen.inventory.setStackInSlot(0, new ItemStack(item("immersiveengineering:biodiesel_bucket")));
+        helper.runAfterDelay(20, () -> {
+            FluidView view = FluidCompat.find(level, piped, Direction.UP);
+            helper.assertTrue(view != null && view.insert(ethanol, 1_000, false) == 1_000,
+                    "the diesel generator refused IE's ethanol through its fluid capability");
+            helper.assertTrue(pouredGen.tank.getTankType() == Fluids.BIOFUEL && pouredGen.tank.getFill() > 900
+                            && pouredGen.inventory.getStackInSlot(1).is(Items.BUCKET),
+                    "IE's biodiesel bucket gave the generator " + pouredGen.tank.getFill() + " mB");
+            helper.runAfterDelay(80, () -> {
+                helper.assertTrue(pipedGen.power > 0 && pipedGen.tank.getFill() < 1_000 && pouredGen.power > 0,
+                        "IE ethanol made " + pipedGen.power + " HE, IE biodiesel " + pouredGen.power + " HE");
+                helper.succeed();
+            });
+        });
+    }
+
+    /**
+     * With Immersive Petroleum loaded: its oil products are HBM's, its crude oil fills an HBM oil barrel through the fluid
+     * capability, its diesel runs a diesel generator, and HBM diesel and kerosene are in the tags IE's drill and IP's
+     * flare stack burn. Skips without IP.
+     */
+    private static void immersivePetroleum(GameTestHelper helper) {
+        if (!Platform.isModLoaded("immersivepetroleum")) {
+            Constants.LOG.info("[gh156] Immersive Petroleum absent, skipped");
+            helper.succeed();
+            return;
+        }
+        ServerLevel level = helper.getLevel();
+        String[][] kinds = {{"crudeoil", "hbm:oil"}, {"diesel", "hbm:diesel"}, {"diesel_sulfur", "hbm:diesel"},
+                {"gasoline", "hbm:gasoline"}, {"kerosene", "hbm:kerosene"}, {"lubricant", "hbm:lubricant"},
+                {"naphtha", "hbm:naphtha"}, {"petroleum_gas", "hbm:petroleum"}, {"benzol", "hbm:xylene"}};
+        for (String[] kind : kinds) {
+            FluidType resource = Fluids.fromVanillaExact(BuiltInRegistries.FLUID.getOptional(Ids.of("immersivepetroleum", kind[0])).orElseThrow());
+            helper.assertTrue(Fluids.kindOf(resource).getRegistryName().equals(kind[1]),
+                    "immersivepetroleum:" + kind[0] + " is " + Fluids.kindOf(resource).getRegistryName() + " in HBM, expected " + kind[1]);
+        }
+        helper.assertTrue(isIn(Fluids.DIESEL, "immersiveengineering", "drill_fuel") && isIn(Fluids.KEROSENE, "immersiveengineering", "drill_fuel")
+                        && isIn(Fluids.PETROLEUM, "immersivepetroleum", "burnable_in_flarestack"),
+                "HBM diesel, kerosene and petroleum gas are not in IE's drill fuel and IP's flare stack tags");
+
+        Fluid crude = BuiltInRegistries.FLUID.getOptional(Ids.of("immersivepetroleum", "crudeoil")).orElseThrow();
+        Fluid diesel = BuiltInRegistries.FLUID.getOptional(Ids.of("immersivepetroleum", "diesel")).orElseThrow();
+        BlockPos barrelAt = helper.absolutePos(new BlockPos(2, 2, 6));
+        TileEntityBarrel oilBarrel = barrel(helper, new BlockPos(2, 2, 6), Fluids.OIL, 0);
+        BlockPos genAt = helper.absolutePos(new BlockPos(2, 2, 2));
+        TileEntityMachineDiesel gen = diesel(level, genAt, Fluids.DIESEL);
+        helper.runAfterDelay(20, () -> {
+            FluidView barrelView = FluidCompat.find(level, barrelAt, Direction.UP);
+            helper.assertTrue(barrelView != null && barrelView.insert(crude, 1_000, false) == 1_000
+                            && oilBarrel.tank.getTankType() == Fluids.OIL && oilBarrel.tank.getFill() == 1_000,
+                    "the oil barrel holds " + oilBarrel.tank.getFill() + " mB after IP crude oil");
+            FluidView genView = FluidCompat.find(level, genAt, Direction.UP);
+            helper.assertTrue(genView != null && genView.insert(diesel, 1_000, false) == 1_000,
+                    "the diesel generator refused IP's diesel");
+            helper.runAfterDelay(80, () -> {
+                helper.assertTrue(gen.power > 0 && gen.tank.getFill() < 1_000, "IP diesel made " + gen.power + " HE");
+                helper.succeed();
+            });
+        });
+    }
+
+    /** IE's {@code GeneratorFuel.getRecipeFor}, what its diesel generator asks, reached reflectively like Mekanism's API. */
+    private static boolean ieBurns(ServerLevel level, Fluid fluid) {
+        try {
+            Class<?> fuel = Class.forName("blusunrize.immersiveengineering.api.energy.GeneratorFuel");
+            return fuel.getMethod("getRecipeFor", Level.class, Fluid.class, fuel).invoke(null, level, fluid, null) != null;
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("IE's generator fuel API changed", e);
+        }
+    }
+
+    private static boolean isIn(FluidType fluid, String namespace, String path) {
+        return fluid.getFluid().defaultFluidState().is(TagKey.create(Registries.FLUID, Ids.of(namespace, path)));
+    }
+
     /** Mekanism's {@code mekanism:rotary/hydrogen} recipe ({@code #c:hydrogen}), reached reflectively like Pipez. */
     private static boolean rotaryTakes(ServerLevel level, Fluid fluid) {
         try {
@@ -262,9 +371,13 @@ public final class Gh156GameTests {
     }
 
     private static TileEntityMachineDiesel diesel(ServerLevel level, BlockPos pos) {
+        return diesel(level, pos, Fluids.HYDROGEN);
+    }
+
+    private static TileEntityMachineDiesel diesel(ServerLevel level, BlockPos pos, FluidType type) {
         level.setBlock(pos, ModMachineBlocks.machine_diesel.get().defaultBlockState(), 3);
         TileEntityMachineDiesel gen = (TileEntityMachineDiesel) level.getBlockEntity(pos);
-        gen.tank.setTankType(Fluids.HYDROGEN);
+        gen.tank.setTankType(type);
         gen.isOn = true;
         return gen;
     }

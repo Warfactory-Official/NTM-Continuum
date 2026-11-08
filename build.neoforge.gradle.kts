@@ -182,7 +182,7 @@ val vwServerMod: Configuration by configurations.creating
 for ((run, task) in listOf("server" to "runServer", "gametest" to "runGameTestServer")) {
     val modsDir = layout.projectDirectory.dir("runs/$run/mods")
     val sync = tasks.register("syncComputerCraft${run.replaceFirstChar { it.uppercase() }}") {
-        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Popencomputers.run, -Pmekanism.run, -Psable.run, -Pkubejs.run, -Pae2.run, -Prefinedstorage.run, -Pstellarity.run, -Pvisualworkbench.run)."
+        description = "Places the opt-in peer mods in the $run run's mods folder (-Pcomputercraft.run, -Popencomputers.run, -Pmekanism.run, -Pimmersiveengineering.run, -Pimmersivepetroleum.run, -Psable.run, -Pkubejs.run, -Pae2.run, -Prefinedstorage.run, -Pstellarity.run, -Pvisualworkbench.run)."
         inputs.files(ccServerMod, sableServerMod, kubejsServerMod, ae2ServerMod, rsServerMod, stellarityServerMod, vwServerMod)
         outputs.dir(modsDir)
         doLast {
@@ -370,6 +370,17 @@ dependencies {
     if (propOrNull("mekanism.run") == "true") propOrNull("deps.mekanism")?.let {
         devModJar("curse.maven:mekanism-268560:$it") { isTransitive = false }
         ccServerMod("curse.maven:mekanism-268560:$it") { isTransitive = false }
+    }
+    // Immersive Engineering, dev runs only (`-Pimmersiveengineering.run=true`): its ethanol, biodiesel, creosote and plant
+    // oil share HBM fluids' convention tags, for the gh156 GameTests. Never compiled against, shipped or required.
+    if (propOrNull("immersiveengineering.run") == "true") propOrNull("deps.immersiveengineering")?.let {
+        devModJar("maven.modrinth:immersiveengineering:$it") { isTransitive = false }
+        ccServerMod("maven.modrinth:immersiveengineering:$it") { isTransitive = false }
+    }
+    // Immersive Petroleum (needs IE, so `-Pimmersiveengineering.run=true` too): its oil products share HBM fluids' tags.
+    if (propOrNull("immersivepetroleum.run") == "true") propOrNull("deps.immersivepetroleum")?.let {
+        devModJar("maven.modrinth:immersivepetroleum:$it") { isTransitive = false }
+        ccServerMod("maven.modrinth:immersivepetroleum:$it") { isTransitive = false }
     }
     // Sable (moving block sub-levels, the engine under Create Aeronautics) is an optional peer on the nodes that
     // declare it. HBM's side of it is its own source root, src/sable (com.hbm.compat.sable), added only here; the
