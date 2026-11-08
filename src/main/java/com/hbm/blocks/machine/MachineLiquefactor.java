@@ -15,13 +15,17 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.level.LevelAccessor;
 
 /**
  * MachineLiquefactor block - 1:1 port of the 1.12.2 {@code MachineLiquefactor}: a 4-tall 3x3 the folded core
  * (dims {@code {3,0,1,1,1,1}}, offset 1) with the top-centre + the 4 mid-side cells marked extras
  * (the fluid/power ports on {@code getConPos}).
  */
-public class MachineLiquefactor extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider {
+public class MachineLiquefactor extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider, WorldlyContainerHolder {
 
     public MachineLiquefactor(Properties properties) {
         super(properties);
@@ -30,6 +34,13 @@ public class MachineLiquefactor extends BlockMultiblockMachine implements IEnerg
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityMachineLiquefactor(pos, state);
+    }
+
+    @Override
+    public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityMachineLiquefactor machine ? machine : null;
     }
 
     @Override

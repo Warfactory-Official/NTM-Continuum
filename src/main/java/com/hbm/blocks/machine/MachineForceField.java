@@ -41,7 +41,7 @@ public class MachineForceField extends CompatBlock implements TickingBlock, ICap
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

@@ -11,6 +11,7 @@ import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.handler.BossSpawnHandler;
 import com.hbm.handler.neutron.NeutronNodeWorld;
 import com.hbm.handler.neutron.RBMKNeutronHandler.RBMKNeutronNode;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.ModRBMKItems;
 import com.hbm.items.machine.ItemRBMKLid;
@@ -48,7 +49,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /** Cells are this column's own block, preserving its lid and top-part state. */
-public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConnectorBlockMK2, IEnergyConnectorBlock, IToolable {
+public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConnectorBlockMK2, IEnergyConnectorBlock, IToolable, ILookOverlay {
     public static final EnumProperty<Lid> LID = EnumProperty.create("lid", Lid.class);
     public static final EnumProperty<Part> PART = EnumProperty.create("part", Part.class);
     public static final Direction DIR_NO_LID = Direction.NORTH;
@@ -59,7 +60,7 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
     protected RBMKBase(Properties properties) { super(properties); registerDefaultState(defaultBlockState().setValue(LID, Lid.NONE).setValue(PART, Part.CORE)); }
     private static int above() { return RBMKDials.getColumnHeight(null); }
     public static Lid lidOf(BlockState state) { return state.hasProperty(LID) ? state.getValue(LID) : Lid.NONE; }
-    private static @Nullable BlockPos coreOf(Level level, BlockPos pos, BlockState state) { return state.getValue(PART) == Part.CORE ? pos : MultiblockSurface.coreOfCell(level, pos); }
+    protected static @Nullable BlockPos coreOf(Level level, BlockPos pos, BlockState state) { return state.getValue(PART) == Part.CORE ? pos : MultiblockSurface.coreOfCell(level, pos); }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { super.createBlockStateDefinition(builder); builder.add(LID, PART); }
     @Override public int[] getDimensions() { return new int[]{above(), 0, 0, 0, 0, 0}; }
     @Override protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) { int above = above(); for (int y = 1; y <= above; y++) visitor.cell(core.above(y), y == above ? topMask() : MASK_NONE); }
@@ -106,6 +107,13 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
         if (player.isShiftKeyDown() && !hasOwnLid() && takeLid(level, core, coreState)) return InteractionResult.SUCCESS;
         if (level.getBlockEntity(core) instanceof MenuProvider menu && player instanceof ServerPlayer serverPlayer) { Menus.openWithPos(serverPlayer, menu, core); return InteractionResult.SUCCESS; }
         return InteractionResult.TRY_WITH_EMPTY_HAND;
+    }
+    /** 1.7 {@code printHook}: every column shows its DODD while the client config allows it. */
+    @Override
+    public ILookOverlay.@Nullable Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        BlockPos core = coreOf(level, pos, level.getBlockState(pos));
+        if (core == null || !(level.getBlockEntity(core) instanceof BlockEntityRBMKBase rbmk)) return null;
+        return rbmk.diagnostic(getName().getString());
     }
     private static ItemStack lidItem(Lid lid) { return new ItemStack(lid == Lid.GLASS ? ModRBMKItems.rbmk_lid_glass.get() : ModRBMKItems.rbmk_lid.get()); }
     private boolean takeLid(Level level, BlockPos core, BlockState coreState) {

@@ -9,6 +9,9 @@ import com.hbm.interfaces.ILookOverlay;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityFireboxBase;
 import com.hbm.tileentity.machine.TileEntityHeaterFirebox;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
@@ -28,7 +31,8 @@ import java.util.List;
  * GUI; the look-overlay shows the stored TU + the current burn rate. The ring cells are its smoke vents:
  * a duct against any of their outward faces draws the firebox's smoke tanks (1.7 {@code sendSmoke}).
  */
-public class HeaterFirebox extends BlockMultiblockMachine implements ILookOverlay, IFluidConnectorBlockMK2, ITooltipProvider {
+public class HeaterFirebox extends BlockMultiblockMachine implements ILookOverlay, IFluidConnectorBlockMK2, ITooltipProvider,
+        WorldlyContainerHolder {
 
     public HeaterFirebox(Properties properties) {
         super(properties);
@@ -37,6 +41,13 @@ public class HeaterFirebox extends BlockMultiblockMachine implements ILookOverla
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityHeaterFirebox(pos, state);
+    }
+
+    /** 1.7 proxies the core's inventory on every cell. */
+    @Override
+    public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityFireboxBase heater ? heater : null;
     }
 
     @Override

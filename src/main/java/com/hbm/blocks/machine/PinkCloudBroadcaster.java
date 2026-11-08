@@ -49,7 +49,7 @@ public class PinkCloudBroadcaster extends CompatBlock implements TickingBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     /** 1.7 metadata 3/4/2/5 for yaw quadrants 0..3: the direction the placer looked. */

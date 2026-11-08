@@ -79,7 +79,7 @@ public class DetCord extends CompatBlock implements EntityBlock, IDetConnectible
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

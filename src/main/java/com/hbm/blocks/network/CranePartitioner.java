@@ -70,7 +70,7 @@ public class CranePartitioner extends CompatBlock implements TickingBlock, IConv
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

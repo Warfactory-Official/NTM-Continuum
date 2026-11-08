@@ -59,6 +59,10 @@ public final class ParticleCoolingTower extends CompatParticle {
         this.alphaMod = alpha;
     }
 
+    public int ageTicks() {
+        return this.age;
+    }
+
     @Override
     public void tick() {
         this.xo = this.x;

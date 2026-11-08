@@ -19,7 +19,6 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -180,15 +179,8 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
     }
 
     protected void tryPullHeat() {
-        BlockPos below = worldPosition.below();
-        BlockEntity con = level.getBlockEntity(below);
-
-        // Port seam: the heater below may expose only a dummy cell here, so resolve to its core.
-        if (!(con instanceof IHeatSource)) {
-            con = MachineCore.at(level, below, level.getBlockState(below));
-        }
-
-        if (con instanceof IHeatSource source) {
+        IHeatSource source = IHeatSource.at(level, worldPosition.below());
+        if (source != null) {
             int diff = source.getHeatStored() - this.heat;
             if (diff == 0) return;
 

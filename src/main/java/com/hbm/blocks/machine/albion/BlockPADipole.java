@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -23,6 +24,11 @@ import org.jspecify.annotations.Nullable;
 
 /** The bending magnet: a 3x3x3 cube that takes the beam from any horizontal side. */
 public class BlockPADipole extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider, ICapabilityBlock {
+
+    /** Its blockstate model is a full cube, so only the renderer may draw it. */
+    @Override public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
+    }
 
     public BlockPADipole(Properties properties) {
         super(properties);

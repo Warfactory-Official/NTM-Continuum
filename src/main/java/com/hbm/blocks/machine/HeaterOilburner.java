@@ -31,6 +31,12 @@ public class HeaterOilburner extends BlockMultiblockMachine implements IFluidCon
         return new TileEntityHeaterOilburner(pos, state);
     }
 
+    /** 1.7 proxies the heat only on the cell above the core ({@code TileEntityProxyCombo.heatSource()}). */
+    @Override
+    public boolean heatSourceAt(int lx, int ly, int lz) {
+        return lx == 0 && ly == 1 && lz == 0;
+    }
+
     @Override
     public int[] getDimensions() {
         return new int[]{1, 0, 1, 1, 1, 1};

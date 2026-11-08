@@ -9,11 +9,13 @@ import com.hbm.blocks.machine.BlockPWR;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
+import com.hbm.entity.ModEntities;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.missile.EntityMissileAntiBallistic;
 import com.hbm.entity.missile.EntityMissileTier1.EntityMissileGeneric;
 import com.hbm.entity.mob.EntityDuck;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.entity.projectile.EntitySawblade;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
@@ -58,8 +60,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.phys.Vec3;
 
 /** GitHub issues 108 to 119: each test states the 1.7 value or the crash it guards against. */
 public final class GhIssue108To115GameTests {
@@ -92,8 +96,43 @@ public final class GhIssue108To115GameTests {
             TESTS.function("gh117_ciws_tracks_a_descending_missile", 20, () -> GhIssue108To115GameTests::ciwsTracksMissile);
     public static final GameTests.Function ABM_ACTIVATION =
             TESTS.function("gh119_abm_climbs_40_ticks_then_locks_from_the_radar_list", 20, () -> GhIssue108To115GameTests::abmActivation);
+    public static final GameTests.Function SAWBLADE_BOUNCE =
+            TESTS.function("gh150_sawblade_bounces_and_breaks_soft_blocks", 40, 8,
+                    () -> GhIssue108To115GameTests::sawbladeBounce);
+    public static final GameTests.Function SAWBLADE_LANDS =
+            TESTS.function("gh150_slow_sawblade_lands", 60, 8, () -> GhIssue108To115GameTests::sawbladeLands);
 
     public static void init() {}
+
+    private static EntitySawblade sawblade(GameTestHelper helper, Vec3 at, Vec3 motion) {
+        EntitySawblade blade = new EntitySawblade(ModEntities.SAWBLADE.get(), helper.getLevel());
+        blade.setPos(helper.absoluteVec(at));
+        blade.setDeltaMovement(motion);
+        helper.getLevel().addFreshEntity(blade);
+        return blade;
+    }
+
+    /** 1.7 {@code EntitySawblade.onImpact}: at 0.75 or faster it reverses off the face and breaks anything under 50. */
+    public static void sawbladeBounce(GameTestHelper helper) {
+        BlockPos wall = new BlockPos(6, 2, 2);
+        helper.setBlock(wall, Blocks.OAK_PLANKS);
+        helper.setBlock(wall.above(), Blocks.OAK_PLANKS);
+        EntitySawblade blade = sawblade(helper, new Vec3(2.5D, 2.5D, 2.5D), new Vec3(1D, 0.05D, 0D));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(blade.getDeltaMovement().x < 0D, "blade did not bounce: " + blade.getDeltaMovement());
+            helper.assertTrue(helper.getBlockState(wall).isAir() || helper.getBlockState(wall.above()).isAir(),
+                    "the planks it hit are still there");
+        });
+    }
+
+    /** 1.7: slower than 0.75 it settles, adding 6 to its orientation, which stops its spin. */
+    public static void sawbladeLands(GameTestHelper helper) {
+        BlockPos floor = new BlockPos(2, 1, 2);
+        helper.setBlock(floor, Blocks.STONE);
+        EntitySawblade blade = sawblade(helper, new Vec3(2.5D, 3.5D, 2.5D), new Vec3(0D, -0.1D, 0D));
+        helper.succeedWhen(() -> helper.assertTrue(blade.getOrientation() >= 6,
+                "orientation " + blade.getOrientation() + " never gained the landed 6"));
+    }
 
     /** 1.7 {@code setBiomeName}: Crater, Inner Crater, Outer Crater. */
     public static void craterBiomeNames(GameTestHelper helper) {

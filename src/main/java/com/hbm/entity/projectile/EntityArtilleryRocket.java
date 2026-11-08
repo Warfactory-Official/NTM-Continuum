@@ -30,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * arc. Guidance is dropped for good once the target is within one and a half ticks of travel, which is also
  * what makes gravity switch on (see {@link #getGravityVelocity}).
  */
-public class EntityArtilleryRocket extends EntityThrowableNT implements IChunkLoader, IRadarDetectableNT {
+public class EntityArtilleryRocket extends EntityThrowableInterp implements IChunkLoader, IRadarDetectableNT {
 
     private static final EntityDataAccessor<Integer> ROCKET_TYPE =
             SynchedEntityData.defineId(EntityArtilleryRocket.class, EntityDataSerializers.INT);

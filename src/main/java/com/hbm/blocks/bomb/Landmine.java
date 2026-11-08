@@ -47,7 +47,7 @@ import com.hbm.tileentity.bomb.TileEntityLandmine;
 
 /**
  * 1.7 {@code Landmine}: five variants of one block class, each with its own trigger box and blast.
- * Rendered by a block-entity renderer ({@code getRenderType() == -1}); the block itself is invisible.
+ * Rendered by a block-entity renderer ({@code getRenderType() == -1}); the block model is empty.
  * Drops nothing when broken (breaking it detonates it); only the defuser lifts it as an item.
  *
  * <p>The static {@code safeMode} flag is upstream's: it is raised while the mine removes itself so the
@@ -76,7 +76,7 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

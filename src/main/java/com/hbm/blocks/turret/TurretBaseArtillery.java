@@ -140,6 +140,6 @@ public abstract class TurretBaseArtillery extends BlockMultiblockCore implements
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 }

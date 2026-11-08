@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine.oil;
 
 import dev.golem.core.data.Tags;
 
-import com.hbm.tileentity.MachineCore;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
@@ -28,7 +27,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -141,13 +139,8 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
 
     protected void tryPullHeat() {
         if (this.heat >= maxHeat) return;
-        BlockPos below = worldPosition.below();
-        BlockEntity con = level.getBlockEntity(below);
-        if (!(con instanceof IHeatSource)) {
-            con = MachineCore.at(level, below, level.getBlockState(below));
-        }
-
-        if (con instanceof IHeatSource source) {
+        IHeatSource source = IHeatSource.at(level, worldPosition.below());
+        if (source != null) {
             int diff = source.getHeatStored() - this.heat;
             if (diff == 0) return;
             if (diff > 0) {

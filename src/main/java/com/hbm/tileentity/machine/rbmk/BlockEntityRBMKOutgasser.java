@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import java.util.Map;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
@@ -22,6 +23,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -31,7 +33,7 @@ import org.jspecify.annotations.Nullable;
 import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
 
 /** Flux-fed irradiation channel. Progress is flux, rather than elapsed ticks. */
-public class BlockEntityRBMKOutgasser extends BlockEntityRBMKBase implements IRBMKFluxReceiver, IFluidProviderMK2, MenuProvider {
+public class BlockEntityRBMKOutgasser extends BlockEntityRBMKBase implements IRBMKFluxReceiver, IFluidProviderMK2, MenuProvider, WorldlyContainer {
     public static final int SLOT_INPUT = 0, SLOT_OUTPUT = 1;
     public final FluidTankNTM gas = new FluidTankNTM(Fluids.TRITIUM, 64_000);
     public double progress, lastUsedFlux;
@@ -75,8 +77,9 @@ public class BlockEntityRBMKOutgasser extends BlockEntityRBMKBase implements IRB
     @Override public RBMKColumn getConsoleData() { RBMKColumn.OutgasserColumn data = (RBMKColumn.OutgasserColumn) super.getConsoleData(); data.gas = gas.getFill(); data.maxGas = gas.getMaxFill(); data.progress = progress; data.maxProgress = duration; data.usedFlux = lastUsedFlux; return data; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{gas}; }
     @Override public boolean isItemValidForSlot(int slot, ItemStack stack) { return slot == SLOT_INPUT && OutgasserRecipes.INSTANCE.getRecipe(stack) != null; }
-    public int[] getSlotsForFace(Direction side) { return new int[]{SLOT_INPUT, SLOT_OUTPUT}; }
-    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == SLOT_OUTPUT; }
+    @Override public int[] getSlotsForFace(Direction side) { return new int[]{SLOT_INPUT, SLOT_OUTPUT}; }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == SLOT_OUTPUT; }
     @Override public long getFluidAvailable(FluidType type, int pressure) { return gas.provides(type) && pressure == gas.getPressure() ? gas.getFill() : 0L; }
     @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (gas.provides(type) && pressure == gas.getPressure()) { gas.setFill(gas.getFill() - (int) Math.min(amount, gas.getFill())); markChanged(); } }
     @Override protected void saveData(DataOut output) { super.saveData(output); output.putDouble("progress", progress); gas.writeToNBT(output, "gas"); }
@@ -85,4 +88,5 @@ public class BlockEntityRBMKOutgasser extends BlockEntityRBMKBase implements IRB
     @Override public void deserialize(RegistryFriendlyByteBuf buffer) { super.deserialize(buffer); gas.deserialize(buffer); progress = buffer.readDouble(); }
     @Override public Component getDisplayName() { return Component.translatable("container.rbmkOutgasser"); }
     @Override public @Nullable AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new MenuRBMKOutgasser(id, inventory, this); }
+    @Override protected void getDiagData(Map<String, String> data) { super.getDiagData(data); data.put("progress", String.valueOf(progress)); diagTank(data, "gas", gas); }
 }

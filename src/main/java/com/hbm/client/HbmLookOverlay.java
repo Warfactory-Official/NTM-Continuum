@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Central dispatcher for {@link ILookOverlay}: each frame it finds the block (or {@link com.hbm.interfaces.IEntityLookOverlay}
@@ -25,47 +26,45 @@ import net.minecraft.world.phys.HitResult;
  */
 public final class HbmLookOverlay {
 
+    private static final String DODD_TITLE = "Dump of Ordered Data Diagnostic (DODD)";
+
     private HbmLookOverlay() {}
 
     public static void render(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null || mc.screen != null || mc.options.hideGui) return;
-        if (!ClientConfig.DODD_RBMK_DIAGNOSTIC) return; // 1.7: the whole hook sits behind this toggle
+        if (mc.screen != null || mc.options.hideGui) return;
+        ILookOverlay.Data data = current(mc);
+        if (data != null) render(graphics, data);
+    }
+
+    /** The readout for what the player looks at, or null. */
+    public static ILookOverlay.@Nullable Data current(Minecraft mc) {
+        if (mc.level == null || mc.player == null) return null;
+        if (!ClientConfig.DODD_RBMK_DIAGNOSTIC) return null; // 1.7: the whole hook sits behind this toggle
 
         HitResult hit = mc.hitResult;
-        if (hit == null) return;
+        if (hit == null) return null;
 
         // 1.7: an entity looked at (mop.entityHit instanceof ILookOverlay) gives its own readout
         if (hit.getType() == HitResult.Type.ENTITY) {
-            ILookOverlay.Data data = IEntityLookOverlay.of(
-                    ((EntityHitResult) hit).getEntity(), mc.player);
-            if (data != null) render(graphics, data);
-            return;
+            return IEntityLookOverlay.of(((EntityHitResult) hit).getEntity(), mc.player);
         }
-        if (hit.getType() != HitResult.Type.BLOCK) return;
+        if (hit.getType() != HitResult.Type.BLOCK) return null;
 
         Level level = mc.level;
         BlockPos pos = ((BlockHitResult) hit).getBlockPos();
         Block block = level.getBlockState(pos).getBlock();
         if (block instanceof ILookOverlay overlay) {
             ILookOverlay.Data data = overlay.getLookOverlay(level, pos, mc.player);
-            if (data != null) {
-                render(graphics, data);
-                return;
-            }
+            if (data != null) return data;
         }
         ILookOverlay.Data provided = ILookOverlay.provided(level, pos, mc.player); // addon readouts (C-26)
-        if (provided != null) {
-            render(graphics, provided);
-            return;
-        }
+        if (provided != null) return provided;
 
         // 1.7 IItemLookOverlay: the held item may add its own readout (the conveyor wand's creative line break).
         ItemStack held = mc.player.getMainHandItem();
-        if (held.getItem() instanceof IItemLookOverlay overlay) {
-            ILookOverlay.Data data = overlay.getLookOverlay(level, pos, held, mc.player);
-            if (data != null) render(graphics, data);
-        }
+        if (held.getItem() instanceof IItemLookOverlay overlay) return overlay.getLookOverlay(level, pos, held, mc.player);
+        return null;
     }
 
     private static void render(GuiGraphicsExtractor graphics, ILookOverlay.Data data) {
@@ -74,6 +73,11 @@ public final class HbmLookOverlay {
         int pX = mc.getWindow().getGuiScaledWidth() / 2 + 8;
         int pZ = mc.getWindow().getGuiScaledHeight() / 2;
 
+        if (data.diagnostic()) {
+            // 1.7 keeps this title unlocalized
+            GuiDraw.text(graphics, font, DODD_TITLE, pX + 1, pZ - 19, opaque(0x006000), false);
+            GuiDraw.text(graphics, font, DODD_TITLE, pX, pZ - 20, opaque(0x00FF00), false);
+        }
         GuiDraw.text(graphics, font, data.title(), pX + 1, pZ - 9, opaque(data.backgroundColor()), false);
         GuiDraw.text(graphics, font, data.title(), pX, pZ - 10, opaque(data.titleColor()), false);
 
@@ -88,7 +92,7 @@ public final class HbmLookOverlay {
                     line = line.substring(end + 2);
                 }
             }
-            GuiDraw.text(graphics, font, line, pX, pZ, opaque(color), true);
+            GuiDraw.text(graphics, font, line, pX, pZ, opaque(color), !data.diagnostic());
             pZ += 10;
         }
     }

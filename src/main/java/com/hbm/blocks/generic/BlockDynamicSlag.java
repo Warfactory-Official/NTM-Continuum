@@ -45,7 +45,7 @@ public class BlockDynamicSlag extends CompatBlock implements TickingBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE; // the SlagRenderer draws the variable-height pile
+        return RenderShape.MODEL; // the SlagRenderer draws the variable-height pile
     }
 
     @Override

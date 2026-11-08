@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import java.util.Map;
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.entity.projectile.EntityRBMKDebris;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
@@ -101,4 +102,5 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
         if ((PREFIX_VALUE + "out").equals(name)) return "" + steam.getFill();
         return null;
     }
+    @Override protected void getDiagData(Map<String, String> data) { super.getDiagData(data); diagTank(data, "feed", feed); diagTank(data, "steam", steam); }
 }

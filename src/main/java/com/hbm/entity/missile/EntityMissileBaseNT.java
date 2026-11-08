@@ -38,6 +38,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import dev.golem.core.world.EntityInterpolation;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -60,10 +61,8 @@ import org.jspecify.annotations.Nullable;
  * asynchronous, so the missile holds the 3×3 around its current chunk, which gives the next border chunk time to
  * become resident before the entity crosses.
  *
- * <p><b>One deviation.</b> Upstream ran the flight simulation on both sides and reconciled with its own
- * {@code EntityThrowableInterp}, because 1.12's tracker sent a position only every few ticks and dropped rotation
- * updates (hence its {@code EntityTrackerEntry.encodedRotationYaw += 100} hack). Here the simulation is server-only
- * and the entity types register {@code updateInterval(1)}, so vanilla's own interpolation draws the path.
+ * <p>The flight runs on the server only. The client follows it as 1.7's {@code EntityThrowableInterp} did, a third of
+ * the way to the last server position each tick.
  *
  * <p><b>Pitch does not live in {@code xRot}.</b> Upstream's convention is 0° pointing straight up, −90°
  * horizontal and −180° straight down, and from 26.1 {@code Entity.setXRot} clamps to [−90, 90], so a missile stored
@@ -108,6 +107,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
     private boolean contrailStarted;
 
     private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 1);
+    private final EntityInterpolation interpolation = new EntityInterpolation(this);
 
     public EntityMissileBaseNT(EntityType<?> type, Level world) {
         super(type, world);
@@ -218,12 +218,18 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
     }
 
     @Override
+    protected EntityInterpolation interpolation() {
+        return interpolation;
+    }
+
+    @Override
     public void tick() {
         this.xo = getX();
         this.yo = getY();
         this.zo = getZ();
 
         if (level().isClientSide()) {
+            interpolation.interpolate();
             this.pitchO = this.pitchNow;
             this.pitchNow = this.entityData.get(PITCH);
 

@@ -43,7 +43,7 @@ public abstract class NukeBomb2Block extends CompatBlock implements TickingBlock
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

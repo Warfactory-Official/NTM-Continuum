@@ -40,7 +40,7 @@ public class FluidPump extends CompatBlock implements TickingBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE; // drawn by the BER (fluid_diode.obj)
+        return RenderShape.MODEL; // drawn by the BER (fluid_diode.obj)
     }
 
     @Override

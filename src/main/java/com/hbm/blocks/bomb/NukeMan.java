@@ -34,7 +34,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.UUID;
 
 /**
- * The Fat Man ({@code nuke_man}) bomb block. Ported from 1.12.2. Renders {@code INVISIBLE} (its OBJ
+ * The Fat Man ({@code nuke_man}) bomb block. Ported from 1.12.2. Bakes an empty model (its OBJ
  * model is drawn by a {@code BlockEntityRenderer}); right-click opens the assembly GUI, and a redstone
  * signal detonates it when {@link TileEntityNukeMan#isReady()}. Detonation spawns an
  * {@link EntityNukeExplosionMK5} of radius {@link BombConfig#manRadius}.
@@ -57,7 +57,7 @@ public class NukeMan extends CompatBlock implements TickingBlock, IBomb {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

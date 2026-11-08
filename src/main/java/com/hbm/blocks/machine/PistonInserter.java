@@ -62,7 +62,7 @@ public class PistonInserter extends CompatBlock implements TickingBlock, IToolti
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

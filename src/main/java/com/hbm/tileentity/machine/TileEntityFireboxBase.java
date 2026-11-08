@@ -21,6 +21,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.core.Direction;
 import dev.golem.core.world.Compat;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -42,7 +44,7 @@ import com.hbm.tileentity.TilePortShapes;
  * puts 1.7's {@code SOOT_PER_SECOND * 3} into its smoke tanks each second and offers them to the ring of
  * cells around its footprint. Fuel loaded also feeds an ashpit below.
  */
-public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting implements MenuProvider, IHeatSource {
+public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting implements MenuProvider, IHeatSource, WorldlyContainer {
 
     public int maxBurnTime;
     public int burnTime;
@@ -191,6 +193,10 @@ public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting i
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return level != null && getModule().getBurnTime(level, stack) > 0;
     }
+
+    @Override public int[] getSlotsForFace(Direction side) { return getAccessibleSlotsFromSide(side.ordinal()); }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 
     @Override
     public FluidTankNTM[] getAllTanks() {

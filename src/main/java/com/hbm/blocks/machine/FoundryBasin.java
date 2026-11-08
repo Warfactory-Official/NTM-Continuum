@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The large caster block (1.12.2 {@code foundry_basin}): full block, takes size-1 molds, pour-only.
- * Drawn by the BER (the old {@code foundry_basin.obj}), so the block itself is invisible. */
+ * Drawn by the BER (the old {@code foundry_basin.obj}), so the block model is empty. */
 public class FoundryBasin extends FoundryCastingBase {
 
     public FoundryBasin(Properties properties) {
@@ -22,7 +22,7 @@ public class FoundryBasin extends FoundryCastingBase {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE; // OBJ drawn by the BER
+        return RenderShape.MODEL; // OBJ drawn by the BER
     }
 
     @Override

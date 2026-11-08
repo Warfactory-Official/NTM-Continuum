@@ -17,9 +17,13 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.level.LevelAccessor;
 
 /** The old two-port, six-slot wood burner. */
-public class MachineWoodBurner extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider, ICapabilityBlock {
+public class MachineWoodBurner extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ITooltipProvider, ICapabilityBlock, WorldlyContainerHolder {
 
     public MachineWoodBurner(Properties properties) {
         super(properties);
@@ -28,6 +32,13 @@ public class MachineWoodBurner extends BlockMultiblockMachine implements IEnergy
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityMachineWoodBurner(pos, state);
+    }
+
+    @Override
+    public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityMachineWoodBurner burner ? burner : null;
     }
 
     @Override public int[] getDimensions() { return new int[]{1, 0, 1, 0, 1, 0}; }

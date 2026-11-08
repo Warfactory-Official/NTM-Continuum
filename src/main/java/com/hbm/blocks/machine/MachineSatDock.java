@@ -11,13 +11,18 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import com.hbm.blocks.multiblock.MultiblockSurface;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.level.LevelAccessor;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 1.7 {@code MachineSatDock}, the "Cargo Landing Pad": a 3x3 multiblock of full cells placed one block ahead of the
  * player, every cell an inventory proxy. The drop pod lands on the core cell. A plain click on any cell opens the
  * core's GUI; sneaking passes.
  */
-public class MachineSatDock extends BlockMultiblockMachine {
+public class MachineSatDock extends BlockMultiblockMachine implements WorldlyContainerHolder {
 
     public MachineSatDock(Properties properties) {
         super(properties);
@@ -26,6 +31,13 @@ public class MachineSatDock extends BlockMultiblockMachine {
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityMachineSatDock(pos, state);
+    }
+
+    @Override
+    public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityMachineSatDock dock ? dock : null;
     }
 
     @Override public int[] getDimensions() { return new int[]{0, 0, 1, 1, 1, 1}; }

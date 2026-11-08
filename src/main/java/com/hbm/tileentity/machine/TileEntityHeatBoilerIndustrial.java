@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.saveddata.TomSaveData;
 import dev.golem.core.data.Tags;
 
-import com.hbm.tileentity.MachineCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -20,7 +19,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.sounds.SoundSource;
 import com.hbm.sound.ModSounds;
@@ -122,12 +120,8 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
 
     /** 1.7.10 {@code tryPullHeat}: an equal source neither feeds nor cools; no source (or a cooler one) cools. */
     private void tryPullHeat(Level level) {
-        BlockPos below = worldPosition.below();
-        BlockEntity sourceEntity = level.getBlockEntity(below);
-        if (!(sourceEntity instanceof IHeatSource)) {
-            sourceEntity = MachineCore.at(level, below, level.getBlockState(below));
-        }
-        if (sourceEntity instanceof IHeatSource source) {
+        IHeatSource source = IHeatSource.at(level, worldPosition.below());
+        if (source != null) {
             int diff = source.getHeatStored() - heat;
             if (diff == 0) return;
             if (diff > 0) {

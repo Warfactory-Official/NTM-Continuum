@@ -4,7 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.handler.radiation.RadiationFog;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.main.ModEventHandlerImpact;
+import com.hbm.tileentity.machine.pile.TileEntityPileLoader;
 import com.hbm.world.feature.OreCaveFeature;
 import com.hbm.world.gen.LegacyBiomes;
 import dev.golem.core.Ids;
@@ -22,6 +24,8 @@ import net.minecraft.world.phys.AABB;
  * The {@code hbm_small} harness query. Inert unless the harness listener runs.
  * <ul>
  *   <li>{@code boss}: the client's 1.7 {@link BossStatus} bar (showing, name).</li>
+ *   <li>{@code look}: the look overlay for what the player aims at (title, diagnostic, lines).</li>
+ *   <li>{@code pile}: the client's Chicago Pile loader at {@code x, y, z} (ram travel, loaded rod).</li>
  *   <li>{@code fog}: radiation fog effects sent so far; {@code set_rad} sets the chunk radiation at the player first.</li>
  *   <li>{@code spawns}: spawns the impact hook refused so far, and the monsters within {@code radius} by height.</li>
  *   <li>{@code sulfur}: columns of this world's sulfur stratum near {@code x, z} (noise only, nothing generated).</li>
@@ -41,6 +45,28 @@ public final class SmallHarnessQueries {
             JsonObject json = new JsonObject();
             json.addProperty("showing", BossStatus.showing());
             json.addProperty("name", BossStatus.shownName() == null ? "" : BossStatus.shownName().getString());
+            return json;
+        }
+        if (mode.equals("look")) {
+            JsonObject json = new JsonObject();
+            ILookOverlay.Data data = HbmLookOverlay.current(mc);
+            json.addProperty("showing", data != null);
+            if (data != null) {
+                json.addProperty("title", data.title());
+                json.addProperty("diagnostic", data.diagnostic());
+                JsonArray lines = new JsonArray();
+                data.lines().forEach(lines::add);
+                json.add("lines", lines);
+            }
+            return json;
+        }
+        if (mode.equals("pile")) {
+            JsonObject json = new JsonObject();
+            BlockPos pos = new BlockPos(params.get("x").getAsInt(), params.get("y").getAsInt(), params.get("z").getAsInt());
+            if (mc.level != null && mc.level.getBlockEntity(pos) instanceof TileEntityPileLoader loader) {
+                json.addProperty("travel", loader.travel);
+                json.addProperty("loaded", !loader.syncStack.isEmpty());
+            }
             return json;
         }
         return ServerQueries.answer(mc, "hbm_small", params.deepCopy(), (level, p) -> {

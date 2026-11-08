@@ -85,7 +85,7 @@ public class RBMKCraneConsole extends BlockMultiblockMachine implements IToolabl
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return isCellState(state) ? RenderShape.INVISIBLE : RenderShape.MODEL;
+        return RenderShape.MODEL;
     }
 
     @Override

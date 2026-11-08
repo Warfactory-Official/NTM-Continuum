@@ -251,6 +251,11 @@ dependencies {
     // through Golem Core's dev.golem.core.jade, so HBM has no Jade dependency. Jade carries mixins, hence `devModJar`.
     if (propOrNull("jade.run") == "true") propOrNull("deps.jade")?.let { devModJar("maven.modrinth:jade:$it") }
     // ImmediatelyFast, dev runs only (`-Pimmediatelyfast.run=true`): HUD batching that has hidden the hotbar before.
+    // Xaero's Minimap and World Map, dev runs only (`-Pxaero.run=true`): map mods that read each block's map colour.
+    if (propOrNull("xaero.run") == "true") {
+        propOrNull("deps.xaero_minimap")?.let { devModJar("maven.modrinth:xaeros-minimap:$it") }
+        propOrNull("deps.xaero_worldmap")?.let { devModJar("maven.modrinth:xaeros-world-map:$it") }
+    }
     if (propOrNull("immediatelyfast.run") == "true") propOrNull("deps.immediatelyfast")?.let { devModJar("maven.modrinth:immediatelyfast:$it") }
     // Stellarity, dev runs only (`-Pstellarity.run=true`): an End overhaul datapack shipped as a mod.
     if (propOrNull("stellarity.run") == "true") propOrNull("deps.stellarity")?.let {

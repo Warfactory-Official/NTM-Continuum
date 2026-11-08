@@ -350,9 +350,8 @@ public class TileEntityCustomMachine extends TileEntityMachineBase
     }
 
     protected void tryPullHeat(Level level, int x, int y, int z) {
-        BlockEntity con = level.getBlockEntity(new BlockPos(x, y, z));
-
-        if (con instanceof IHeatSource source) {
+        IHeatSource source = IHeatSource.at(level, new BlockPos(x, y, z));
+        if (source != null) {
             int diff = source.getHeatStored() - this.heat;
 
             if (diff == 0) {

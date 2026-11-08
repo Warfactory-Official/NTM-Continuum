@@ -23,6 +23,7 @@ public final class NtmEntityModels {
     public static final WavefrontObj SPHERE = load("sphere.obj");
     public static final WavefrontObj SPHERE_NEW = load("sphere_new.obj");
     public static final WavefrontObj STIRLING = load("machines/stirling.obj");
+    public static final WavefrontObj SAWMILL = load("machines/sawmill.obj");
     public static final WavefrontObj PROJECTILES = load("projectiles/projectiles.obj");
 
     public static final WavefrontObj GLYPHID = load("mobs/glyphid.obj");

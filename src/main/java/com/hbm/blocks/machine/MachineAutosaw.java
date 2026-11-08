@@ -46,7 +46,7 @@ public class MachineAutosaw extends CompatBlock
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

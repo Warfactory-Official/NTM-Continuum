@@ -14,7 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -98,12 +97,12 @@ public class WorldInAJar {
     /**
      * A block entity for a block that the port draws with its block-entity renderer rather than a block
      * model, such as a barrel, standing in the jar without a tile of its own. 1.7 drew such blocks (ISBRHs)
-     * in the block pass from the block alone; this lends the renderer the block entity it reads. Null for
-     * blocks with a model, or without a block entity.
+     * in the block pass from the block alone; this lends the renderer the block entity it reads, and is drawn only
+     * where the type has a declared renderer. Null for blocks without a block entity.
      */
     public @Nullable BlockEntity standIn(int x, int y, int z) {
         BlockState state = getBlock(x, y, z);
-        if (state.isAir() || state.getRenderShape() == RenderShape.MODEL || !(state.getBlock() instanceof EntityBlock entityBlock)) {
+        if (state.isAir() || !(state.getBlock() instanceof EntityBlock entityBlock)) {
             return null;
         }
         int index = index(x, y, z);

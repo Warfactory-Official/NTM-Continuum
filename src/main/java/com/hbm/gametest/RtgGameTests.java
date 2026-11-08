@@ -33,7 +33,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.RenderShape;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -245,9 +244,6 @@ public final class RtgGameTests {
         helper.assertTrue(ModRtgBlockEntities.MACHINE_RTG.get().isValid(
                         ModMachineBlocks.machine_rtg_grey.get().defaultBlockState()),
                 "Grey RTG renderer target block is not registered on its block-entity type");
-        helper.assertTrue(ModMachineBlocks.machine_rtg_grey.get().getRenderShape(
-                        ModMachineBlocks.machine_rtg_grey.get().defaultBlockState()) == RenderShape.INVISIBLE,
-                "Grey RTG must not submit its baked cube alongside RTGRenderer");
         String blockstate = resourceText("assets/hbm/blockstates/machine_rtg_grey.json");
         helper.assertTrue(blockstate.contains("hbm:block/machine_dummy_empty")
                         && !blockstate.contains("hbm:block/machine_rtg_grey"),

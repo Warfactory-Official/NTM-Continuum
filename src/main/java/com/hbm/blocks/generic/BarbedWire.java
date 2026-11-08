@@ -51,8 +51,8 @@ import com.hbm.tileentity.TileEntitySecurityObj;
  * </ul>
  * The 1.7.10 block stored the placement yaw in its metadata and drew the OBJ rotated by -90°
  * (east/west) or -180° (north/south); here that is the horizontal {@link #FACING}, read by
- * {@code SecurityObjRenderer}. The block itself is invisible; the wire OBJ is drawn by the BER on
- * its {@link TileEntitySecurityObj}, the same invisible-block + renderer route the deco OBJs take.
+ * {@code SecurityObjRenderer}. The block model is empty; the wire OBJ is drawn by the BER on
+ * its {@link TileEntitySecurityObj}, the same empty-model + renderer route the deco OBJs take.
  * Waterloggable (port addition, see {@link Waterlogging}).
  */
 public class BarbedWire extends CompatBlock implements EntityBlock, SimpleWaterloggedBlock {
@@ -131,7 +131,7 @@ public class BarbedWire extends CompatBlock implements EntityBlock, SimpleWaterl
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

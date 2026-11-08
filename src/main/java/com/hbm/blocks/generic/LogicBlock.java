@@ -55,7 +55,7 @@ public class LogicBlock extends CompatBlock implements TickingBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         // both are drawn by their renderer (the visible one wears its disguise there); the invisible one by nothing
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

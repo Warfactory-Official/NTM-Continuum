@@ -63,7 +63,7 @@ public class Radiobox extends CompatBlock implements TickingBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     /** 1.7 metadata 2/5/3/4 for yaw quadrants 0..3: facing back at the placer. */

@@ -62,7 +62,7 @@ public class BlockRefueler extends CompatBlock implements TickingBlock, IFluidCo
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE; // RefuelerRenderer draws the OBJ
+        return RenderShape.MODEL; // RefuelerRenderer draws the OBJ
     }
 
     @Override

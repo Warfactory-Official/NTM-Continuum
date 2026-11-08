@@ -32,7 +32,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Diesel Generator block, a 1:1 port of the 1.12.2 {@code MachineDiesel}: a single horizontal-facing,
- * INVISIBLE block drawn by {@code DieselGenRenderer} (an OBJ TESR, like the 1.12.2 fork). Right-click
+ * Empty-model block drawn by {@code DieselGenRenderer} (an OBJ TESR, like the 1.12.2 fork). Right-click
  * opens the menu; while burning fuel it puffs smoke from the exhaust corner (old {@code randomDisplayTick}).
  */
 public class MachineDiesel extends CompatBlock implements TickingBlock {
@@ -52,7 +52,7 @@ public class MachineDiesel extends CompatBlock implements TickingBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE; // the DieselGenRenderer draws the OBJ
+        return RenderShape.MODEL; // the DieselGenRenderer draws the OBJ
     }
 
     @Override

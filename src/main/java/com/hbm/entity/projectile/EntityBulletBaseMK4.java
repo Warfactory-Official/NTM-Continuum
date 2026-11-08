@@ -11,6 +11,8 @@ import dev.golem.core.data.CompatEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.SynchedData;
+import dev.golem.core.world.EntityInterpolation;
+import com.hbm.items.weapon.sedna.factory.XFactoryTool;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -82,6 +84,7 @@ public class EntityBulletBaseMK4 extends CompatEntity implements Owners.Carrier 
     /** Source charge-thrower hook state; culling is consumed by the client renderer. */
     public boolean ignoreFrustum;
     private boolean inGround;
+    private final EntityInterpolation interpolation = new EntityInterpolation(this);
 
     public EntityBulletBaseMK4(EntityType<? extends EntityBulletBaseMK4> type, Level level) {
         super(type, level);
@@ -264,9 +267,18 @@ public class EntityBulletBaseMK4 extends CompatEntity implements Owners.Carrier 
     }
 
     @Override
+    protected EntityInterpolation interpolation() {
+        return interpolation;
+    }
+
+    @Override
     public void tick() {
         super.tick();
 
+        if (level().isClientSide()) {
+            followServer();
+            return;
+        }
         if (inGround) return;
 
         if (config == null) config = getBulletConfig();
@@ -332,6 +344,26 @@ public class EntityBulletBaseMK4 extends CompatEntity implements Owners.Carrier 
         if (config.onUpdate != null) config.onUpdate.accept(this);
     }
 
+    /**
+     * 1.7's client never moves a bullet itself ({@code EntityThrowableInterp}): it closes a third of the gap to the
+     * server's position each tick and aims the tracer along the step it took. Server rotations never reach it.
+     */
+    private void followServer() {
+        if (config == null) config = getBulletConfig();
+        if (config == null) {
+            discard();
+            return;
+        }
+        Vec3 from = position();
+        interpolation.interpolate();
+        Vec3 step = position().subtract(from);
+        prevVelocity = velocity;
+        velocity = step.length();
+        // 1.7: "shitty hack", the hook keeps its client rotation
+        if (config != XFactoryTool.ct_hook && velocity > 0D) updateRotationFromDisplacement(step);
+        if (config.onUpdate != null) config.onUpdate.accept(this);
+    }
+
     /** Runs the config's impact chain: bespoke impact first, then ricochet, then the entity hit. */
     protected void onImpact(HitResult hit) {
         if (level().isClientSide()) return;
@@ -376,13 +408,9 @@ public class EntityBulletBaseMK4 extends CompatEntity implements Owners.Carrier 
         setXRot((float) (Math.atan2(motion.y, Math.sqrt(motion.x * motion.x + motion.z * motion.z)) * 180D / Math.PI));
     }
 
-    /** Source-style rotation from the actual displacement, retaining the old angle for interpolation. */
+    /** Source-style rotation from the actual displacement; the tick's start angle stays in yRotO for interpolation. */
     private void updateRotationFromDisplacement(Vec3 displacement) {
         if (displacement.lengthSqr() < 1.0E-7D) return;
-        float previousYaw = getYRot();
-        float previousPitch = getXRot();
-        yRotO = previousYaw;
-        xRotO = previousPitch;
         float yaw = (float) (Math.atan2(displacement.x, displacement.z) * 180D / Math.PI);
         float pitch = (float) (Math.atan2(displacement.y,
                 Math.sqrt(displacement.x * displacement.x + displacement.z * displacement.z)) * 180D / Math.PI);

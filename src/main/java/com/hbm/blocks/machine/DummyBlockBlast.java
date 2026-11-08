@@ -42,7 +42,7 @@ public class DummyBlockBlast extends CompatBlock implements TickingBlock, IBomb,
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     /** 1.7 {@code getItem}: pick-block on a leaf gives the blast door (the cell drops nothing). */

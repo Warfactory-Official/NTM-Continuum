@@ -47,9 +47,10 @@ public class BlockScaffold extends CompatBlock implements TickingBlock, SimpleWa
                 .setValue(Waterlogging.WATERLOGGED, false));
     }
 
+    /** The renderer draws the scaffold; the baked model is empty, there for map mods that skip invisible shapes. */
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

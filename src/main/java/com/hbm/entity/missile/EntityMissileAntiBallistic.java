@@ -26,6 +26,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import dev.golem.core.world.EntityInterpolation;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -57,6 +58,7 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
     private @Nullable UUID owner;
 
     private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 1);
+    private final EntityInterpolation interpolation = new EntityInterpolation(this);
 
     public EntityMissileAntiBallistic(EntityType<?> type, Level world) {
         super(type, world);
@@ -79,12 +81,18 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
     }
 
     @Override
+    protected EntityInterpolation interpolation() {
+        return interpolation;
+    }
+
+    @Override
     public void tick() {
         this.xo = getX();
         this.yo = getY();
         this.zo = getZ();
 
         if (level().isClientSide()) {
+            interpolation.interpolate();
             this.pitchO = this.pitchNow;
             this.pitchNow = this.entityData.get(PITCH);
             return;

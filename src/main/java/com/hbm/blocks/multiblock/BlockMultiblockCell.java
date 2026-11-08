@@ -34,7 +34,7 @@ public class BlockMultiblockCell extends CompatBlock {
 
     public BlockMultiblockCell(Properties properties) { super(properties); }
 
-    @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.INVISIBLE; }
+    @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
 
     /** 1.7 dummies had light opacity 0, as {@link BlockMultiblockCore#isLightTransparent}. */
     @Override protected boolean isLightTransparent(BlockState state) { return true; }

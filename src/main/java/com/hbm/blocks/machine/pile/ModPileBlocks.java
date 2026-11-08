@@ -99,7 +99,7 @@ public final class ModPileBlocks {
     /** 1.7 {@code pile_rod} metadata, one item per rod as ntm-next registers them ({@code pile_rod_mk2_<type>}). */
     public static final ItemFamily<EnumPileRod, ItemPileRodMK2> pile_rod = ItemFamily.of(
             EnumPileRod.class, type -> REG.item("pile_rod_mk2_" + type.name().toLowerCase(Locale.ROOT),
-                            p -> new ItemPileRodMK2(p, type), p -> p.stacksTo(1))
+                            (Item.Properties p) -> new ItemPileRodMK2(p, type))
                     .transform(Presets.sprite("hbm:items/" + switch (type) {
                         case RA226BE -> "pile_rod_ra226be";
                         case PO210BE -> "pile_rod_po210be";

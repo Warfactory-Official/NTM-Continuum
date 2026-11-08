@@ -30,7 +30,10 @@ import com.hbm.entity.effect.EntitySpear;
 import com.hbm.entity.ModRBMKEntities;
 import com.hbm.handler.neutron.NeutronNodeWorld;
 import com.hbm.handler.neutron.RBMKNeutronHandler.RBMKType;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.interfaces.IOverpressurable;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.particle.helper.ExplosionCreator;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.world.Advancements;
@@ -38,14 +41,19 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import io.netty.buffer.Unpooled;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -340,4 +348,31 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
     @Override protected void saveData(DataOut output) { super.saveData(output); output.putDouble("heat", heat); output.putInt("reasimWater", reasimWater); output.putInt("reasimSteam", reasimSteam); }
     @Override public void serialize(RegistryFriendlyByteBuf buf) { super.serialize(buf); buf.writeDouble(heat); buf.writeInt(reasimWater); buf.writeInt(reasimSteam); buf.writeByte(craneIndicator); }
     @Override public void deserialize(RegistryFriendlyByteBuf buf) { super.deserialize(buf); heat = buf.readDouble(); reasimWater = buf.readInt(); reasimSteam = buf.readInt(); craneIndicator = buf.readByte(); }
+
+    /**
+     * 1.7 {@code diagnosticPrintHook}: the column's diag-mode NBT, one line per key in key order. Values are written as 1.7's
+     * NBT {@code toString} prints them with the trailing d/s/b cut, so strings keep their quotes and a boolean reads 1 or 0.
+     */
+    public ILookOverlay.Data diagnostic(String name) {
+        Map<String, String> data = new TreeMap<>();
+        getDiagData(data);
+        List<String> lines = new ArrayList<>();
+        data.forEach((key, value) -> lines.add(Component.translatable("tile.rbmk.dodd." + key).getString() + ": " + value));
+        return ILookOverlay.Data.diagnostic(name, lines);
+    }
+
+    /** 1.7 {@code writeToNBT} with {@code diag} set: what the client's copy of the column holds. */
+    protected void getDiagData(Map<String, String> data) {
+        data.put("heat", String.valueOf(heat));
+        data.put("reasimWater", String.valueOf(reasimWater));
+        data.put("reasimSteam", String.valueOf(reasimSteam));
+    }
+
+    /** 1.7 {@code FluidTank.writeToNBT(nbt, key)}. */
+    protected static void diagTank(Map<String, String> data, String key, FluidTankNTM tank) {
+        data.put(key, String.valueOf(tank.getFill()));
+        data.put(key + "_max", String.valueOf(tank.getMaxFill()));
+        data.put(key + "_type", String.valueOf(Fluids.legacyId(tank.getTankType())));
+        data.put(key + "_p", String.valueOf((short) tank.getPressure()));
+    }
 }

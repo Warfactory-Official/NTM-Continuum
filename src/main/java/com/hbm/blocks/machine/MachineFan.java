@@ -61,7 +61,7 @@ public class MachineFan extends CompatBlock implements TickingBlock, IToolable, 
         return new TileEntityFan(type.get(), pos, state);
     }
 
-    @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.INVISIBLE; }
+    @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {

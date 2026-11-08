@@ -31,7 +31,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** The heat-fed, three-lane steel furnace. */
@@ -138,8 +137,8 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements Men
 
     protected void tryPullHeat() {
         if (heat >= maxHeat || level == null) return;
-        BlockEntity below = level.getBlockEntity(worldPosition.below());
-        if (below instanceof IHeatSource source) {
+        IHeatSource source = IHeatSource.at(level, worldPosition.below());
+        if (source != null) {
             int diff = source.getHeatStored() - heat;
             if (diff == 0) return;
             if (diff > 0) {

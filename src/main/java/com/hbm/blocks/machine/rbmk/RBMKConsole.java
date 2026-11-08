@@ -89,7 +89,7 @@ public class RBMKConsole extends BlockMultiblockMachine implements IToolable {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return isCellState(state) ? RenderShape.INVISIBLE : RenderShape.MODEL;
+        return RenderShape.MODEL;
     }
 
     @Override

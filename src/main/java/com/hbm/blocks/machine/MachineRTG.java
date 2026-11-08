@@ -34,7 +34,7 @@ public final class MachineRTG extends CompatBlock implements TickingBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE; // RTGRenderer is the only world-render path for this block.
+        return RenderShape.MODEL; // RTGRenderer is the only world-render path for this block.
     }
 
     @Override

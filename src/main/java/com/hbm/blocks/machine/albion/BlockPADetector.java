@@ -16,6 +16,7 @@ import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -25,6 +26,11 @@ import org.jspecify.annotations.Nullable;
 /** The detector: the 5x5x5 collision chamber that ends the beamline and holds the products. */
 public class BlockPADetector extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder, ITooltipProvider {
+
+    /** Its blockstate model is a full cube, so only the renderer may draw it. */
+    @Override public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
+    }
 
     public BlockPADetector(Properties properties) {
         super(properties);

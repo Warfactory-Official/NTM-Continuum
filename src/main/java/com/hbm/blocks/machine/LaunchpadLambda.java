@@ -15,12 +15,16 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.level.LevelAccessor;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 1.7 {@code LaunchpadLambda}: a 15x15 silo deck two blocks high whose rim rises two more, core seven blocks ahead of
  * the click. The five cells on the front edge one block up take power, fluids and items.
  */
-public class LaunchpadLambda extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class LaunchpadLambda extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     private static final int[][] WALLS = {
             {2, -2, 7, -6, 7, 7},
@@ -36,6 +40,13 @@ public class LaunchpadLambda extends BlockMultiblockMachine implements IEnergyCo
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityLaunchpadLambda(pos, state);
+    }
+
+    @Override
+    public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityLaunchpadLambda pad ? pad : null;
     }
 
     @Override public int[] getDimensions() { return new int[] {1, 0, 7, 7, 7, 7}; }

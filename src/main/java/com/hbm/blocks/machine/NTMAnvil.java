@@ -36,10 +36,10 @@ import org.jspecify.annotations.Nullable;
  * browser); the {@link #tier} is baked into the block instance and gates which recipes it can run.
  *
  * <p>Rendering: the old anvils were {@code forge_marker} OBJ blockstates, so like the machines the block
- * is {@link RenderShape#INVISIBLE} and carries a no-op {@link TileEntityAnvil} for
+ * bakes an empty model and carries a no-op {@link TileEntityAnvil} for
  * {@link com.hbm.client.render.AnvilObjRenderer}. The thin per-axis collision box is faithful to the old
   * {@code getBoundingBox}. <b>Deferred:</b> the old {@code BlockFalling} gravity (a falling-block entity
-  * would render nothing for an INVISIBLE block).
+  * would render nothing for an empty-model block).
  */
 public class NTMAnvil extends CompatBlock implements TickingBlock {
 
@@ -70,7 +70,7 @@ public class NTMAnvil extends CompatBlock implements TickingBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

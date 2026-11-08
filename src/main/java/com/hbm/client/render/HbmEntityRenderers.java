@@ -2,6 +2,7 @@ package com.hbm.client.render;
 
 import com.hbm.Constants;
 import com.hbm.client.render.entity.NtmEntityRenderers;
+import com.hbm.client.render.entity.RenderSawblade;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.ModRBMKEntities;
 import com.hbm.entity.missile.IMissilePitch;
@@ -64,7 +65,7 @@ public final class HbmEntityRenderers {
         sink.register(ModEntities.MIST.get(), NoopRenderer::new);
         regGem(sink, ModEntities.NUKE_TOREX.get(), TorexRenderer::new);
         regGem(sink, ModEntities.ZIRNOX_DEBRIS.get(), ZirnoxDebrisRenderer::new);
-        regGem(sink, ModEntities.SAWBLADE.get(), SawbladeRenderer::new);
+        sink.register(ModEntities.SAWBLADE.get(), RenderSawblade::new);
         // The per-ammo LegoClient styles are resolved by the client-owned ID registry.
         regGem(sink, ModEntities.BULLET_MK4.get(), BulletProjectileRenderer::new);
         regGem(sink, ModEntities.BULLET_MK4_CL.get(), BulletProjectileRenderer::new);

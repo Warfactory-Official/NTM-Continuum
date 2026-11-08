@@ -5,11 +5,17 @@ import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.machine.albion.TileEntityPABeamline;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** The accelerator's plain beam pipe: a 3x1x3 segment with no ports of its own. */
 public class BlockPABeamline extends BlockMultiblockMachine implements ITooltipProvider {
+
+    /** Its blockstate model is a full cube, so only the renderer may draw it. */
+    @Override public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
+    }
 
     public BlockPABeamline(Properties properties) {
         super(properties);

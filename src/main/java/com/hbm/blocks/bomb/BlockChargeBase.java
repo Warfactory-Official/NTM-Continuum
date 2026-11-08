@@ -81,7 +81,7 @@ public abstract class BlockChargeBase extends CompatBlock implements TickingBloc
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

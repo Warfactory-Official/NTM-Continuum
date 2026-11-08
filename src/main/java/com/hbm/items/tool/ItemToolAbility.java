@@ -285,7 +285,7 @@ public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, H
 
     /**
      * 1.7 {@code standardDigPost}: breaks the block the conventional way, except that the drops land on
-     * {@link #dropPos}, and experience is not dropped (1.7 left that commented out).
+     * {@link #dropPos}. port: ore experience drops as for a vanilla pickaxe; 1.7 left that commented out.
      */
     public static void standardDigPost(ServerLevel world, BlockPos pos, ServerPlayer player) {
         BlockState state = world.getBlockState(pos);
@@ -319,7 +319,7 @@ public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, H
             for (ItemStack drop : Block.getDrops(state, world, pos, blockEntity, player, rollWith)) {
                 Block.popResource(world, dropPos, drop);
             }
-            state.spawnAfterBreak(world, pos, rollWith, false);
+            Harvests.afterBreak(world, pos, state, blockEntity, player, rollWith);
         }
     }
 

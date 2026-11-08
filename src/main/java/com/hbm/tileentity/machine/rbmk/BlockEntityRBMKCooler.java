@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import java.util.Map;
 import com.hbm.blocks.machine.rbmk.RBMKLoader;
 import dev.golem.core.data.Tags;
 
@@ -30,4 +31,5 @@ public class BlockEntityRBMKCooler extends BlockEntityRBMKBase implements IFluid
     @Override protected void saveData(DataOut o){super.saveData(o);cold.writeToNBT(o,"cold");hot.writeToNBT(o,"hot");o.putInt("timer",timer);} @Override protected void loadData(DataIn i){super.loadData(i);cold.readFromNBT(i,"cold");hot.readFromNBT(i,"hot");timer=i.getIntOr("timer",0);}
     @Override public void serialize(RegistryFriendlyByteBuf buffer){super.serialize(buffer);cold.serialize(buffer);hot.serialize(buffer);}
     @Override public void deserialize(RegistryFriendlyByteBuf buffer){super.deserialize(buffer);cold.deserialize(buffer);hot.deserialize(buffer);}
+    @Override protected void getDiagData(Map<String,String> d){super.getDiagData(d);diagTank(d,"t0",cold);diagTank(d,"t1",hot);}
 }

@@ -25,7 +25,7 @@ import com.hbm.tileentity.TileEntitySecurityObj;
 /**
  * Spikes, port of 1.7.10's {@code Spikes}: no collision box; a living entity falling into them
  * faster than -0.1 blocks/tick takes 100 armour-bypassing "impaled" damage, with the slicer sound
- * when the hit lands. Invisible block + {@code SecurityObjRenderer} drawing {@code spikes.obj}.
+ * when the hit lands. Empty-model block + {@code SecurityObjRenderer} drawing {@code spikes.obj}.
  */
 public class Spikes extends CompatBlock implements EntityBlock {
 
@@ -51,7 +51,7 @@ public class Spikes extends CompatBlock implements EntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

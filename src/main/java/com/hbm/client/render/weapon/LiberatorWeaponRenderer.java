@@ -31,7 +31,8 @@ public final class LiberatorWeaponRenderer extends WeaponRenderer {
         gun.child(o.part("Gun"),BODY);
         Gem.Part<WeaponPose> barrel=gun.joint().spin(Gem.Axes.X,0F,-.5F,.75F,s->(float)s.bus("BREAK")[0]);
         barrel.child(o.part("Barrel"),BODY);
-        for(String part:new String[]{"Shell1","Shell2","Shell3","Shell4"}) barrel.child(o.part(part),BODY).slide(Gem.Axes.X,s->(float)s.bus(part)[0]).slide(Gem.Axes.Y,s->(float)s.bus(part)[1]).slide(Gem.Axes.Z,s->(float)s.bus(part)[2]);
+        // part ShellN rides bus SHELLN, which drops an unloaded shell out of sight below the breech
+        for(int i=1;i<=4;i++) { String bus="SHELL"+i; barrel.child(o.part("Shell"+i),BODY).slide(Gem.Axes.X,s->(float)s.bus(bus)[0]).slide(Gem.Axes.Y,s->(float)s.bus(bus)[1]).slide(Gem.Axes.Z,s->(float)s.bus(bus)[2]); }
         barrel.child(o.part("Latch"),BODY).spin(Gem.Axes.X,0F,1.15625F,.75F,s->(float)s.bus("LATCH")[0]);
         d.part(o.parts("Gun","Barrel","Shell1","Shell2","Shell3","Shell4","Latch"),BODY).visibleIf(s->!s.animated);
     }

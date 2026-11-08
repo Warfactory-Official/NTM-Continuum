@@ -35,6 +35,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -207,6 +208,9 @@ public final class AbilityToolGameTests {
     public static final GameTests.Function RC_DIG =
             TESTS.function("rc_tool_dig_rules", 40, () -> AbilityToolGameTests::rcDigRules);
 
+    public static final GameTests.Function ORE_XP =
+            TESTS.function("gh145_ability_tools_drop_ore_xp", 60, 14, () -> AbilityToolGameTests::oreXp);
+
     public static final GameTests.Function RC_DEFUSER =
             TESTS.function("rc_tool_defuser_creeper", 60, () -> AbilityToolGameTests::rcDefuser);
 
@@ -239,6 +243,30 @@ public final class AbilityToolGameTests {
             if (!helper.getLevel().getBlockState(p).isAir()) n++;
         }
         return n;
+    }
+
+    /** Ore experience drops as for a vanilla pickaxe in every mode but silk touch (orbs merge, so only presence is checked). */
+    public static void oreXp(GameTestHelper helper) {
+        ServerPlayer player = survivor(helper);
+        BlockPos at = helper.absolutePos(new BlockPos(6, 4, 6));
+        ToolPreset[] presets = {
+                new ToolPreset(IToolAreaAbility.NONE, 0, IToolHarvestAbility.NONE, 0),
+                new ToolPreset(IToolAreaAbility.NONE, 0, IToolHarvestAbility.LUCK, 0),
+                new ToolPreset(IToolAreaAbility.RECURSION, 0, IToolHarvestAbility.NONE, 0),
+                new ToolPreset(IToolAreaAbility.NONE, 0, IToolHarvestAbility.SILK, 0)};
+        for (int i = 0; i < presets.length; i++) {
+            holding(player, ModAbilityToolItems.cobalt_pickaxe.get(), presets[i]);
+            for (int x = 0; x < 3; x++) helper.getLevel().setBlock(at.east(x), Blocks.DIAMOND_ORE.defaultBlockState(), 3);
+            for (ExperienceOrb orb : helper.getLevel().getEntitiesOfClass(ExperienceOrb.class, new AABB(at).inflate(12))) orb.discard();
+            player.gameMode.destroyBlock(at);
+            int xp = 0;
+            for (ExperienceOrb orb : helper.getLevel().getEntitiesOfClass(ExperienceOrb.class, new AABB(at).inflate(12))) {
+                xp += orb.getValue();
+            }
+            boolean silk = presets[i].harvestAbility == IToolHarvestAbility.SILK;
+            helper.assertTrue(silk == (xp == 0), "preset " + i + " dropped orbs worth " + xp + " xp");
+        }
+        helper.succeed();
     }
 
     private static void clearDrops(GameTestHelper helper, BlockPos near) {

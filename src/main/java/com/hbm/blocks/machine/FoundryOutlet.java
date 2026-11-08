@@ -74,7 +74,7 @@ public class FoundryOutlet extends CompatBlock implements TickingBlock, ICrucibl
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE; // OBJ drawn by the BER
+        return RenderShape.MODEL; // OBJ drawn by the BER
     }
 
     @Override

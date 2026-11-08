@@ -12,7 +12,6 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -69,8 +68,8 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
 
     /** Heat relay: fully drains an {@link IHeatSource} below at 0.85 efficiency (old behaviour). */
     private void tryPullHeat(Level level, BlockPos pos) {
-        BlockEntity below = level.getBlockEntity(pos.below());
-        if (below instanceof IHeatSource source) {
+        IHeatSource source = IHeatSource.at(level, pos.below());
+        if (source != null) {
             this.heatEnergy += source.getHeatStored() * 0.85;
             source.useUpHeat(source.getHeatStored());
         }

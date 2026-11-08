@@ -18,6 +18,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -30,6 +31,11 @@ import java.util.List;
 
 /** The sat link dish. A satellite chip held against it sets which frequency the dish listens on. */
 public class MachineSatLink extends BlockMultiblockMachine implements ILookOverlay {
+
+    /** Its blockstate model is a full cube, so only the renderer may draw it. */
+    @Override public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
+    }
 
     public MachineSatLink(Properties properties) {
         super(properties);

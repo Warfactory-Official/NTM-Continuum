@@ -113,8 +113,9 @@ public final class ModFluidNetBlocks {
         file.part(When.of("down", "false"), new Variant("hbm:block/foundry_tank_floor"));
     });
 
+    /** 1.7 {@code ModSoundTypes.pipe}: ducts, box ducts, exhaust ducts and the anchors. */
     private static final UnaryOperator<BlockBehaviour.Properties> PIPE =
-            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops();
+            p -> p.strength(5.0F, 6.0F).sound(ModSoundTypes.PIPE).noOcclusion().requiresCorrectToolForDrops();
     private static final UnaryOperator<BlockBehaviour.Properties> STEEL =
             p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
     private static final UnaryOperator<BlockBehaviour.Properties> EFFECT_BARREL =
@@ -149,7 +150,8 @@ public final class ModFluidNetBlocks {
             .transform(valve("hbm:blocks/fluid_switch_off", "hbm:blocks/fluid_switch_on"));
     public static final RegistryObject<FluidCounterValve> fluid_counter_valve = REG.block("fluid_counter_valve", FluidCounterValve::new, STEEL)
             .transform(valve("hbm:blocks/fluid_counter_valve_off", "hbm:blocks/fluid_counter_valve_on"));
-    public static final RegistryObject<FluidPump> fluid_pump = REG.block("fluid_pump", FluidPump::new, PIPE)
+    public static final RegistryObject<FluidPump> fluid_pump = REG.block("fluid_pump", FluidPump::new,
+            p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops())
             .transform(Presets.rendered(Variants.uniform("facing", "north", "east", "south", "west")).and(SELF_PICKAXE));
     public static final RegistryObject<FlowControlPump> flow_control_pump = REG.block("flow_control_pump", FlowControlPump::new,
             p -> p.strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops()

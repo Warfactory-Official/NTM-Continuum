@@ -16,8 +16,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 
 /**
  * 1.7 render/entity/projectile/RenderCog: the thrown stirling gear, spinning while airborne and frozen once its
- * orientation has gained the landed 6. The sawblade half of ntm-next's shared renderer is
- * {@code SawbladeRenderer}, which predates this port.
+ * orientation has gained the landed 6.
  */
 public class RenderCog extends CompatEntityRenderer<EntityCog, RenderCog.State> {
 

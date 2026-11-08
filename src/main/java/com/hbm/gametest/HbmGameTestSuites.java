@@ -31,6 +31,9 @@ public final class HbmGameTestSuites {
             list.add(HazardGameTests.TESTS);
             list.add(ToolingGameTests.TESTS);
             list.add(Gh131To141GameTests.TESTS);
+            list.add(Gh142GameTests.TESTS);
+            list.add(Gh146To148GameTests.TESTS);
+            list.add(Gh144To151GameTests.TESTS);
             list.add(AbilityToolGameTests.TESTS);
             list.add(MeleeKitGameTests.TESTS);
             list.add(FinalCellHudFixGameTests.TESTS);
@@ -141,6 +144,9 @@ public final class HbmGameTestSuites {
         HazardGameTests.init();
         ToolingGameTests.init();
         Gh131To141GameTests.init();
+        Gh142GameTests.init();
+        Gh146To148GameTests.init();
+        Gh144To151GameTests.init();
         AbilityToolGameTests.init();
         MeleeKitGameTests.init();
         FinalCellHudFixGameTests.init();

@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.sound.ModSounds;
-import com.hbm.tileentity.MachineCore;
 import dev.golem.core.world.ItemStacks;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.api.tile.IHeatSource;
@@ -34,7 +33,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
@@ -152,13 +150,8 @@ public class TileEntityFurnaceCombination extends TileEntityMachinePolluting imp
 
     protected void tryPullHeat() {
         if (heat >= maxHeat) return;
-        BlockPos below = worldPosition.below();
-        BlockEntity connection = level.getBlockEntity(below);
-        if (!(connection instanceof IHeatSource)) {
-            connection = MachineCore.at(level, below, level.getBlockState(below));
-        }
-
-        if (connection instanceof IHeatSource source) {
+        IHeatSource source = IHeatSource.at(level, worldPosition.below());
+        if (source != null) {
             int diff = source.getHeatStored() - heat;
             if (diff == 0) return;
             if (diff > 0) {

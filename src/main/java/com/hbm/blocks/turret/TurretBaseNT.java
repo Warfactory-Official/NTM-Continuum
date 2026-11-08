@@ -147,7 +147,7 @@ public abstract class TurretBaseNT extends BlockMultiblockCore implements IEnerg
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

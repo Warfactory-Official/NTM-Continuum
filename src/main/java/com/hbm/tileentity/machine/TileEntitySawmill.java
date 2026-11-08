@@ -29,7 +29,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
@@ -135,7 +134,7 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
                         EntitySawblade blade = new EntitySawblade(level,
                                 pos.getX() + 0.5D + direction.offsetX,
                                 pos.getY() + 1D,
-                                pos.getZ() + 0.5D + direction.offsetZ, orientation);
+                                pos.getZ() + 0.5D + direction.offsetZ).setOrientation(orientation);
                         blade.setDeltaMovement(rotation.offsetX,
                                 1D + (sawmill.heat - 100) * 0.0001D, rotation.offsetZ);
                         level.addFreshEntity(blade);
@@ -196,8 +195,8 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
     }
 
     private void tryPullHeat(Level level, BlockPos pos) {
-        BlockEntity below = level.getBlockEntity(pos.below());
-        if (below instanceof IHeatSource source) {
+        IHeatSource source = IHeatSource.at(level, pos.below());
+        if (source != null) {
             int heatSource = (int) (source.getHeatStored() * DIFFUSION);
             if (heatSource > 0) {
                 source.useUpHeat(heatSource);

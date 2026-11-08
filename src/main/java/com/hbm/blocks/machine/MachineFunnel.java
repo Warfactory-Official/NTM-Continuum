@@ -28,7 +28,7 @@ public final class MachineFunnel extends CompatBlock implements TickingBlock, IT
         return new TileEntityMachineFunnel(pos, state);
     }
 
-    @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.INVISIBLE; }
+    @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos,

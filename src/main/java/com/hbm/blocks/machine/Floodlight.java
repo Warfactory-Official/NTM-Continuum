@@ -51,7 +51,7 @@ public class Floodlight extends CompatBlock implements IToolable, TickingBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

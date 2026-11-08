@@ -316,18 +316,18 @@ public final class ModBlockEntities {
                             ModPileBlocks.pile_block.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPileLoader>> PILE_LOADER =
             REG.blockEntity("pile_loader",
-                    () -> BlockEntities.serverTicking(TileEntityPileLoader::new,
-                            TileEntityPileLoader::serverTick,
+                    () -> BlockEntities.ticking(TileEntityPileLoader::new,
+                            TileEntityPileLoader::clientTick, TileEntityPileLoader::serverTick,
                             ModPileBlocks.pile_device.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPileVent>> PILE_VENT =
             REG.blockEntity("pile_vent",
-                    () -> BlockEntities.serverTicking(TileEntityPileVent::new,
-                            TileEntityPileVent::serverTick,
+                    () -> BlockEntities.ticking(TileEntityPileVent::new,
+                            TileEntityPileVent::clientTick, TileEntityPileVent::serverTick,
                             ModPileBlocks.pile_device.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPileControl>> PILE_CONTROL =
             REG.blockEntity("pile_control",
-                    () -> BlockEntities.serverTicking(TileEntityPileControl::new,
-                            TileEntityPileControl::serverTick,
+                    () -> BlockEntities.ticking(TileEntityPileControl::new,
+                            TileEntityPileControl::clientTick, TileEntityPileControl::serverTick,
                             ModPileBlocks.pile_device.get()));
 
 
@@ -425,8 +425,8 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineSatLink>> MACHINE_SATLINK =
             REG.blockEntity("machine_satlink",
-                    () -> BlockEntities.serverTicking(TileEntityMachineSatLink::new,
-                            TileEntityMachineSatLink::serverTick,
+                    () -> BlockEntities.ticking(TileEntityMachineSatLink::new,
+                            TileEntityMachineSatLink::clientTick, TileEntityMachineSatLink::serverTick,
                             ModMachineBlocks.machine_satlink.get()));
 
 

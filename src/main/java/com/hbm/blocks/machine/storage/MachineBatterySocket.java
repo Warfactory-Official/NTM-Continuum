@@ -21,13 +21,16 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.level.LevelAccessor;
 
 /**
  * Battery Socket: a 2x2 folded multiblock (dims {1,0,1,0,1,0}), drawn by the
  * {@code BatterySocketRenderer}. Its core is {@link TileEntityBatterySocket}, which exposes the inserted
  * battery item's charge to the power grid.
  */
-public class MachineBatterySocket extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, ITooltipProvider {
+public class MachineBatterySocket extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay, ITooltipProvider, WorldlyContainerHolder {
 
     public MachineBatterySocket(Properties properties) {
         super(properties);
@@ -36,6 +39,13 @@ public class MachineBatterySocket extends BlockMultiblockMachine implements IEne
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityBatterySocket(pos, state);
+    }
+
+    @Override
+    public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityBatterySocket socket ? socket : null;
     }
 
     @Override

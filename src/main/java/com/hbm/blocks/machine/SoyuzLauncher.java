@@ -21,6 +21,7 @@ import com.hbm.tileentity.machine.TileEntitySoyuzLauncher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -39,6 +40,11 @@ import java.util.List;
  */
 public class SoyuzLauncher extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ICapabilityBlock {
+
+    /** Its blockstate model is a full cube, so only the renderer may draw it. */
+    @Override public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
+    }
 
     /** How far above the struct core the launcher's own core sits. */
     public static final int HEIGHT = 4;

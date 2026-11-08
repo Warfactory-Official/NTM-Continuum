@@ -2,6 +2,7 @@ package com.hbm;
 
 import com.hbm.api.energymk2.PowerNetwork;
 import com.hbm.api.fluidmk2.FluidNetwork;
+import com.hbm.blocks.MapColors;
 import com.hbm.itempool.VanillaChestLoot;
 import com.hbm.lib.IdConstants;
 import com.hbm.main.MainRegistry;
@@ -24,6 +25,9 @@ public class CommonClass {
                 net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE, ATTRIBUTE_CAP);
         dev.golem.core.world.Attributes.raiseMax(
                 net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH, ATTRIBUTE_CAP);
+
+        // Before any block is built: the 1.7 map colour each one starts from.
+        MapColors.register();
 
         // Populate all DeferredRegisters. Loaders flush them afterwards (NeoForge via RegisterEvent,
         // Fabric via DeferredRegister.flushAll). This must run before registration is flushed.

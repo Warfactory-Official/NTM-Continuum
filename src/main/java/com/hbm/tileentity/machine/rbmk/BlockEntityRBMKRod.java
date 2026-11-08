@@ -38,12 +38,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Map;
+
 /** Fuel channel tick order is burn, fuel heat, column tick, fail-safe, then stream emission. */
 public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFluxReceiver, IRBMKLoadable, MenuProvider, IRORValueProvider {
     public static final Vec3[] fluxDirs = {new Vec3(0,0,-1), new Vec3(1,0,0), new Vec3(0,0,1), new Vec3(-1,0,0)};
     public double fluxFastRatio, fluxQuantity, lastFluxQuantity, lastFluxRatio, lastFluxOut;
     public boolean hasRod;
     public int rodColor;
+    /** The rod's diagnostic readouts, formatted by the server as in 1.7; null without a rod. */
+    public @Nullable String fuelYield, fuelXenon, fuelHeat;
     public BlockEntityRBMKRod(BlockPos pos, BlockState state) { this(ModRBMKBlockEntities.RBMK_ROD.get(), pos, state); }
     protected BlockEntityRBMKRod(BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state, 1); }
     @Override public boolean isModerated() { return getBlockState().getBlock() instanceof RBMKRod rod && rod.moderated; }
@@ -101,8 +105,36 @@ public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFlux
     @Override public @Nullable AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new MenuRBMKRod(id, inventory, this); }
     @Override protected void loadData(DataIn input) { super.loadData(input); fluxQuantity = input.getDoubleOr("fluxQuantity", fluxQuantity); fluxFastRatio = input.getDoubleOr("fluxMod", fluxFastRatio); hasRod = input.getBooleanOr("hasRod", hasRod); }
     @Override protected void saveData(DataOut output) { super.saveData(output); output.putDouble("fluxQuantity", lastFluxQuantity); output.putDouble("fluxMod", lastFluxRatio); output.putBoolean("hasRod", hasRod); }
-    @Override public void serialize(RegistryFriendlyByteBuf buf) { super.serialize(buf); buf.writeDouble(lastFluxQuantity); buf.writeDouble(lastFluxRatio); buf.writeBoolean(hasRod); buf.writeInt(rodColor); buf.writeDouble(lastFluxOut); }
-    @Override public void deserialize(RegistryFriendlyByteBuf buf) { super.deserialize(buf); fluxQuantity = buf.readDouble(); fluxFastRatio = buf.readDouble(); hasRod = buf.readBoolean(); rodColor = buf.readInt(); lastFluxOut = buf.readDouble(); }
+    @Override public void serialize(RegistryFriendlyByteBuf buf) {
+        super.serialize(buf); buf.writeDouble(lastFluxQuantity); buf.writeDouble(lastFluxRatio); buf.writeBoolean(hasRod); buf.writeInt(rodColor); buf.writeDouble(lastFluxOut);
+        ItemStack fuel = inventory.getStackInSlot(0);
+        boolean fuelled = hasRod && fuel.getItem() instanceof ItemRBMKRod;
+        buf.writeBoolean(fuelled);
+        if (fuelled) {
+            ItemRBMKRod rod = (ItemRBMKRod) fuel.getItem();
+            buf.writeUtf(ItemRBMKRod.getYield(fuel) + " / " + rod.stats().yield() + " (" + (ItemRBMKRod.getEnrichment(fuel) * 100) + "%)");
+            buf.writeUtf(ItemRBMKRod.getPoison(fuel) + "%");
+            // 1.7 formats with the default locale
+            buf.writeUtf(String.format("%.6f", ItemRBMKRod.getCoreHeat(fuel)) + " / " + String.format("%.6f", ItemRBMKRod.getHullHeat(fuel))
+                    + " / " + String.format("%.2f", rod.stats().meltingPoint()));
+        }
+    }
+    @Override public void deserialize(RegistryFriendlyByteBuf buf) {
+        super.deserialize(buf); fluxQuantity = buf.readDouble(); fluxFastRatio = buf.readDouble(); hasRod = buf.readBoolean(); rodColor = buf.readInt(); lastFluxOut = buf.readDouble();
+        if (buf.readBoolean()) { fuelYield = buf.readUtf(); fuelXenon = buf.readUtf(); fuelHeat = buf.readUtf(); }
+        else fuelYield = fuelXenon = fuelHeat = null;
+    }
+    @Override protected void getDiagData(Map<String, String> data) {
+        super.getDiagData(data);
+        data.put("fluxSlow", String.valueOf(fluxQuantity * (1 - fluxFastRatio)));
+        data.put("fluxFast", String.valueOf(fluxQuantity * fluxFastRatio));
+        data.put("hasRod", hasRod ? "1" : "0");
+        if (fuelYield != null && fuelXenon != null && fuelHeat != null) {
+            data.put("f_yield", "\"" + fuelYield + "\"");
+            data.put("f_xenon", "\"" + fuelXenon + "\"");
+            data.put("f_heat", "\"" + fuelHeat + "\"");
+        }
+    }
     @Override public String[] getFunctionInfo() { return new String[]{PREFIX_VALUE + "columnheat", PREFIX_VALUE + "rodheat", PREFIX_VALUE + "depletion", PREFIX_VALUE + "xenon", PREFIX_VALUE + "fastflux", PREFIX_VALUE + "slowflux", PREFIX_VALUE + "flux"}; }
     @Override public String provideRORValue(String name) {
         if ((PREFIX_VALUE + "columnheat").equals(name)) return "" + (int) heat;

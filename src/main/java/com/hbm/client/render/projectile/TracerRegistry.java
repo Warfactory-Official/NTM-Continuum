@@ -390,16 +390,16 @@ public final class TracerRegistry {
     public static BulletTracer ribbon(int dark, int light, boolean fullbright) {
         return (state, pose, sink) -> {
             if (state.length <= 0D) return;
-            bulletStandard(pose, sink, (float) state.length, dark, light, fullbright ? 0xF000F0 : state.lightCoords,
-                    fullbright);
+            bulletStandard(pose, sink, (float) state.length, dark, light, fullbright ? 0xF000F0 : state.lightCoords);
         };
     }
 
-    /** 1.7 {@code LegoClient.renderBulletStandard}: a prism along +X, the light end at the origin. */
-    private static void bulletStandard(PoseStack pose, SubmitSink sink, float end, int dark, int light, int packed,
-            boolean fullbright) {
-        sink.submitCustomGeometry(pose, fullbright ? CompatRenderTypes.entityTranslucentEmissive(WHITE)
-                : CompatRenderTypes.entityTranslucent(WHITE), (p, buffer) -> {
+    /**
+     * 1.7 {@code LegoClient.renderBulletStandard}: a prism along +X, the light end at the origin, opaque and drawn with
+     * {@code GL_LIGHTING} off. A lit type shades it by its normal, which points down once the bullet is turned.
+     */
+    private static void bulletStandard(PoseStack pose, SubmitSink sink, float end, int dark, int light, int packed) {
+        sink.submitCustomGeometry(pose, CompatRenderTypes.flatCutout(WHITE), (p, buffer) -> {
             ribbonVertex(buffer, p, end, 0.0078125F, -0.0078125F, 0F, 1F, dark, packed);
             ribbonVertex(buffer, p, end, 0.0078125F, 0.0078125F, 0F, 0F, dark, packed);
             ribbonVertex(buffer, p, 0F, 0.03125F, 0.03125F, 1F, 0F, light, packed);
@@ -453,7 +453,7 @@ public final class TracerRegistry {
         pose.scale(radial, 1F, radial);
         pose.translate(0F, (float) state.length, 0F);
         pose.mulPose(Axis.ZN.rotationDegrees(90F));
-        bulletStandard(pose, sink, (float) state.length, dark, light, 0xF000F0, true);
+        bulletStandard(pose, sink, (float) state.length, dark, light, 0xF000F0);
     }
 
     private static BeamTracer tesla(boolean infraredSub) {

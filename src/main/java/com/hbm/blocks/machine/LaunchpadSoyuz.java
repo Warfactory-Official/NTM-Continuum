@@ -15,13 +15,17 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.WorldlyContainerHolder;
+import net.minecraft.world.level.LevelAccessor;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 1.7 {@code LaunchpadSoyuz}: the pad, its service tower, the 58-block carriage rails and the rocket shed, built from
  * nineteen boxes around a core two blocks ahead of the click. The twelve rail ends one block up take power, fluids
  * and items.
  */
-public class LaunchpadSoyuz extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class LaunchpadSoyuz extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     /** {forward, up, right, box}: 1.7 {@code fillSpace}'s extra boxes, origins in core-relative steps. */
     private static final int[][][] BOXES = {
@@ -63,6 +67,13 @@ public class LaunchpadSoyuz extends BlockMultiblockMachine implements IEnergyCon
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityLaunchpadSoyuz(pos, state);
+    }
+
+    @Override
+    public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityLaunchpadSoyuz pad ? pad : null;
     }
 
     @Override public int getOffset() { return 2; }

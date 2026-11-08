@@ -42,7 +42,7 @@ import com.hbm.client.render.RenderThresher;
 import com.hbm.tileentity.machine.TileEntityMachineThresher;
 
 /**
- * The automatic thresher: the autosaw's sibling. One horizontal-facing INVISIBLE block drawn by
+ * The automatic thresher: the autosaw's sibling. One horizontal-facing empty-model block drawn by
  * {@code RenderThresher}; a fluid identifier retypes its fuel tank, a screwdriver suspends it.
  *
  * <p>1.7 stores the facing as the metadata {@code 3/4/2/5} by player yaw quadrant, which is the player's
@@ -60,7 +60,7 @@ public class MachineThresher extends CompatBlock
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

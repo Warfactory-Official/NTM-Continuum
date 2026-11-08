@@ -240,7 +240,11 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> MISSILE_ASSEMBLY = register("block.missile_assembly");
     public static final RegistryObject<SoundEvent> MISSILE_ASSEMBLY_2 = register("block.missile_assembly2");
     public static final RegistryObject<SoundEvent> OPEN_C = register("block.open_c");
-    public static final RegistryObject<SoundEvent> PIPE_PLACED = register("block.pipe_placed");
+    /** Built eagerly for {@code ModSoundTypes.PIPE}, like {@link #METAL_BLOCK_EVENT}. */
+    public static final SoundEvent PIPE_PLACED_EVENT = SoundEvent.createVariableRangeEvent(
+            Ids.of(Constants.MOD_ID, "block.pipe_placed"));
+    public static final RegistryObject<SoundEvent> PIPE_PLACED = REG.register(Registries.SOUND_EVENT, "block.pipe_placed",
+            () -> PIPE_PLACED_EVENT);
     public static final RegistryObject<SoundEvent> SONAR_PING = register("block.sonar_ping");
     public static final RegistryObject<SoundEvent> SPARK = register("block.spark");
     public static final RegistryObject<SoundEvent> VAULT_SCRAPE = register("block.vault_scrape");

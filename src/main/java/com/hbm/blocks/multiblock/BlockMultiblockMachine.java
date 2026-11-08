@@ -60,9 +60,12 @@ public abstract class BlockMultiblockMachine extends BlockMultiblockCore {
         return state.getValue(CELL);
     }
 
-    /** The block entity renderer on the core draws the whole machine; every cell of it draws nothing. */
+    /**
+     * The block entity renderer on the core draws the whole machine. Every cell bakes its empty model, which draws
+     * nothing, so map mods that skip invisible shapes (Xaero's) still see the machine.
+     */
     @Override public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {

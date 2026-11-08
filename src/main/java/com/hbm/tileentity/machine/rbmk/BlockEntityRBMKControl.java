@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import java.util.Map;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.inventory.container.MenuRBMKControl;
 import com.hbm.inventory.container.MenuRBMKControlAuto;
@@ -21,4 +22,5 @@ import com.hbm.tileentity.TilePort.PortDef;
  @Override public RBMKColumn getConsoleData(){RBMKColumn.ControlColumn c=(RBMKColumn.ControlColumn)super.getConsoleData();c.level=level;return c;} @Override protected void loadData(DataIn i){super.loadData(i);level=i.getDoubleOr("level",level);targetLevel=i.getDoubleOr("targetLevel",targetLevel);}@Override protected void saveData(DataOut o){super.saveData(o);o.putDouble("level",level);o.putDouble("targetLevel",targetLevel);}@Override public void serialize(RegistryFriendlyByteBuf b){super.serialize(b);b.writeDouble(level);b.writeDouble(targetLevel);b.writeLong(power);b.writeBoolean(hasPower);}@Override public void deserialize(RegistryFriendlyByteBuf b){super.deserialize(b);level=b.readDouble();targetLevel=b.readDouble();power=b.readLong();hasPower=b.readBoolean();}
   @Override public String[] getFunctionInfo(){return new String[]{PREFIX_VALUE+"extraction"};}
   @Override public String provideRORValue(String name){return (PREFIX_VALUE+"extraction").equals(name)?""+(int)(level*100):null;}
+   @Override protected void getDiagData(Map<String,String> d){super.getDiagData(d);d.put("level",String.valueOf(level));d.put("targetLevel",String.valueOf(targetLevel));}
  }

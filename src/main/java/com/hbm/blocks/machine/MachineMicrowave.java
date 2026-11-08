@@ -27,7 +27,7 @@ import com.hbm.tileentity.machine.TileEntityMicrowave;
 
 /**
  * The microwave: a rotatable {@code BlockMachineBase} in 1.7 (meta 2/5/3/4 by yaw quadrant, the opposite of
- * the look direction), INVISIBLE and drawn by {@code RenderMicrowave}. Right-click opens the menu.
+ * the look direction), an empty model drawn by {@code RenderMicrowave}. Right-click opens the menu.
  */
 public class MachineMicrowave extends CompatBlock implements TickingBlock {
 
@@ -46,7 +46,7 @@ public class MachineMicrowave extends CompatBlock implements TickingBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

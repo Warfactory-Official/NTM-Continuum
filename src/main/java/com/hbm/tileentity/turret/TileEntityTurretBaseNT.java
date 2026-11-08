@@ -59,6 +59,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -83,7 +84,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * <p>The redstone-over-radio surface is 1.7's seven functions; {@link #getWhitelist} is null only without a chip.
  */
 public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
-        implements IEnergyReceiverMK2, IControlReceiver, MenuProvider, IRORInteractive {
+        implements IEnergyReceiverMK2, IControlReceiver, MenuProvider, IRORInteractive, WorldlyContainer {
 
     private static final Identifier TURRET_GUI_BASE = turretGui("base");
 
@@ -839,6 +840,10 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return true;
     }
+
+    @Override public int[] getSlotsForFace(Direction side) { return getAccessibleSlotsFromSide(side.ordinal()); }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return isItemValidForSlot(slot, stack); }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

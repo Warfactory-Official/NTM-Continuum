@@ -170,7 +170,8 @@ public class TileEntityStirling extends TileEntityMachineBase implements IEnergy
     }
 
     private void tryPullHeat(Level level, BlockPos pos) {
-        if (level.getBlockEntity(pos.below()) instanceof IHeatSource source) {
+        IHeatSource source = IHeatSource.at(level, pos.below());
+        if (source != null) {
             int heatSource = (int) (source.getHeatStored() * diffusion);
             if (heatSource > 0) {
                 source.useUpHeat(heatSource);

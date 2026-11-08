@@ -32,7 +32,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -251,9 +250,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     protected void tryPullHeat(Level level, BlockPos pos) {
         if (this.heat >= maxHeat) return;
 
-        BlockEntity con = level.getBlockEntity(pos.below());
-
-        if (con instanceof IHeatSource source) {
+        IHeatSource source = IHeatSource.at(level, pos.below());
+        if (source != null) {
             int diff = source.getHeatStored() - this.heat;
 
             if (diff == 0) return;

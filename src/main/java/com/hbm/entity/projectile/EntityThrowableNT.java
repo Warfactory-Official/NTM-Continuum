@@ -40,10 +40,8 @@ import org.jspecify.annotations.Nullable;
  * <em>not</em> built on it: its flight model differs (the config's velocity is a per-tick step length).
  * New projectiles use this base.
  *
- * <p>Two upstream pieces are absent. There is no interpolation handler, {@code EntityThrowableInterp}
- * exists only on 26.1 and nothing in this port interpolates a non-living entity, so a rocket rides the
- * entity tracker like every other projectile here. And {@link #getStuck} does not resend the position:
- * upstream's teleport packet has no pre-26.1 spelling, and a stuck projectile is already where the
+ * <p>Client interpolation is {@link EntityThrowableInterp}'s, as upstream. {@link #getStuck} does not resend the
+ * position: upstream's teleport packet has no pre-26.1 spelling, and a stuck projectile is already where the
  * client last saw it.
  */
 public abstract class EntityThrowableNT extends CompatEntity implements Owners.Carrier {

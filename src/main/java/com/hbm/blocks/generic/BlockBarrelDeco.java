@@ -72,7 +72,7 @@ public abstract class BlockBarrelDeco extends BlockTNTBase implements EntityBloc
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

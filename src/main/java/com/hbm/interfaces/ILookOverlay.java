@@ -41,10 +41,21 @@ public interface ILookOverlay {
         return null;
     }
 
-    /** Plain overlay data consumed by the client renderer. Colors are RGB values. */
-    record Data(String title, int titleColor, int backgroundColor, List<String> lines) {
+    /**
+     * Plain overlay data consumed by the client renderer. Colors are RGB values. A diagnostic readout is 1.7's RBMK
+     * DODD: a green header above the title and lines without shadow.
+     */
+    record Data(String title, int titleColor, int backgroundColor, List<String> lines, boolean diagnostic) {
         public Data {
             lines = List.copyOf(lines);
+        }
+
+        public Data(String title, int titleColor, int backgroundColor, List<String> lines) {
+            this(title, titleColor, backgroundColor, lines, false);
+        }
+
+        public static Data diagnostic(String title, List<String> lines) {
+            return new Data(title, 0xFFFF00, 0x606000, lines, true);
         }
     }
 }

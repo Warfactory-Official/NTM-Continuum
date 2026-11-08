@@ -74,7 +74,7 @@ public class BlastDoor extends CompatBlock implements TickingBlock, IBomb, IRadR
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

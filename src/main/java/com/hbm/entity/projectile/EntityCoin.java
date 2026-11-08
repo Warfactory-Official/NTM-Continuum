@@ -9,7 +9,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class EntityCoin extends EntityThrowableNT {
+public class EntityCoin extends EntityThrowableInterp {
     public EntityCoin(EntityType<? extends EntityCoin> type, Level level) {
         super(type, level);
         setBoundingBox(makeBoundingBox(position()));

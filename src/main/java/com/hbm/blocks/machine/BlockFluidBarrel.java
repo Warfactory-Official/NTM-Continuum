@@ -57,7 +57,7 @@ public class BlockFluidBarrel extends CompatBlock implements TickingBlock, ICapa
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     @Override

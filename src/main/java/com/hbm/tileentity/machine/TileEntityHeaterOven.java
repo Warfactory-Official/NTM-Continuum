@@ -15,7 +15,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -77,8 +76,8 @@ public class TileEntityHeaterOven extends TileEntityFireboxBase {
     }
 
     private void tryPullHeat(Level level) {
-        BlockEntity below = level.getBlockEntity(worldPosition.below());
-        if (!(below instanceof IHeatSource source)) return;
+        IHeatSource source = IHeatSource.at(level, worldPosition.below());
+        if (source == null) return;
 
         int toPull = Math.max(Math.min(source.getHeatStored(), getMaxHeat() - heatEnergy), 0);
         heatEnergy += (int) (toPull * heatEff);

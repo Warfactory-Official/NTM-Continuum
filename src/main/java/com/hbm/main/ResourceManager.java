@@ -95,6 +95,7 @@ public final class ResourceManager {
     public static final Identifier mini_nuke_tex = Library.id("textures/models/projectiles/mini_nuke.png");
     public static final Identifier stirling_tex = Library.id("textures/models/machines/stirling.png");
     public static final Identifier stirling_steel_tex = Library.id("textures/models/machines/stirling_steel.png");
+    public static final Identifier sawmill_tex = Library.id("textures/models/machines/sawmill.png");
     public static final Identifier white_tex = Library.id("textures/models/misc/white.png");
 
     /**

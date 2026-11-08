@@ -65,7 +65,7 @@ public class TurretSentry extends CompatBlock implements TickingBlock, ICapabili
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+        return RenderShape.MODEL;
     }
 
     /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
