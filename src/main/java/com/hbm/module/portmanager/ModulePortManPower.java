@@ -35,7 +35,7 @@ public class ModulePortManPower {
     }
 
     public void destroy() {
-        if (powerPorts != null) for (TilePort port : powerPorts) port.disableIfPresent(owner.getLevel());
+        if (powerPorts != null) for (TilePort port : powerPorts) port.release(owner.getLevel(), owner);
     }
 
     public void update(PortDef[] ports) {

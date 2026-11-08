@@ -1,5 +1,27 @@
 package com.hbm.client.render;
 
+import com.hbm.capability.HbmLivingProps;
+import com.hbm.entity.mob.EntityHunterChopper;
+import com.hbm.entity.mob.EntityMaskMan;
+import com.hbm.entity.mob.EntityQuackos;
+import com.hbm.entity.mob.EntityUFO;
+import com.hbm.entity.mob.botprime.EntityBOTPrimeHead;
+import com.hbm.entity.mob.siege.EntitySiegeCraft;
+import com.hbm.items.armor.ArmorFSB;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -37,6 +59,8 @@ public final class RenderOverhead {
     private static final Map<BlockPos, Marker> QUEUED = new HashMap<>();
     private static final Map<BlockPos, Marker> MARKERS = new HashMap<>();
     private static boolean initialized;
+    private static int lastThermalBoxes;
+    private static int lastHealthTags;
 
     private RenderOverhead() {}
 
@@ -45,6 +69,7 @@ public final class RenderOverhead {
         initialized = true;
         WorldEffects.init();
         WorldEffects.onBegin(RenderOverhead::renderMarkers);
+        WorldEffects.onBegin(RenderOverhead::renderArmorSight);
     }
 
     /** 1.7 {@code queuedMarkers.put}. Client thread. */
@@ -65,6 +90,11 @@ public final class RenderOverhead {
         return out;
     }
 
+    /** Thermal boxes and health tags drawn in the last frame, for the harness. */
+    public static int[] lastSight() {
+        return new int[]{lastThermalBoxes, lastHealthTags};
+    }
+
     public static void clear() {
         QUEUED.clear();
         MARKERS.clear();
@@ -72,6 +102,9 @@ public final class RenderOverhead {
 
     /** 1.7 {@code renderMarkers}. */
     private static void renderMarkers(CameraInfo camera) {
+        // 1.7 draws markers only with the HUD on; queued ones wait
+        LocalPlayer viewer = Minecraft.getInstance().player;
+        if (viewer != null && !HbmLivingProps.getEnableHUD(viewer)) return;
         MARKERS.putAll(QUEUED);
         QUEUED.clear();
         if (MARKERS.isEmpty()) return;
@@ -142,6 +175,95 @@ public final class RenderOverhead {
         }
     }
 
+    /**
+     * 1.7 {@code ModEventHandlerClient}, with the HUD on: a full working {@code ArmorFSB} set with VATS tags every other
+     * living entity with a health bar, and thermal sight (the set's, or a fully aimed gun's) outlines entities within 64
+     * blocks through walls.
+     */
+    private static void renderArmorSight(CameraInfo camera) {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        lastThermalBoxes = 0;
+        lastHealthTags = 0;
+        if (player == null || mc.level == null || !HbmLivingProps.getEnableHUD(player)) return;
+        ArmorFSB set = ArmorFSB.hasFSBArmor(player)
+                && player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorFSB chestplate ? chestplate : null;
+        boolean thermal = set != null && set.thermal;
+        ItemStack held = player.getMainHandItem();
+        if (held.getItem() instanceof ItemGunBaseNT gun && ItemGunBaseNT.aimingProgress == 1F) {
+            for (int i = 0; i < gun.getConfigCount(); i++) {
+                if (gun.getConfig(held, i).hasThermalSights(held)) thermal = true;
+            }
+        }
+        if (thermal) renderThermalSight(mc, player, camera);
+        if (set != null && set.vats) renderHealthTags(mc, player, camera, set.thermal);
+    }
+
+    /** 1.7 {@code renderThermalSight}: each entity's box, coloured by kind, black once dead. */
+    private static void renderThermalSight(Minecraft mc, LocalPlayer player, CameraInfo camera) {
+        List<float[]> boxes = new ArrayList<>();
+        for (Entity ent : mc.level.entitiesForRendering()) {
+            if (ent == player || ent.distanceToSqr(player) > 4096D) continue;
+            int color;
+            if (isBoss(ent)) color = 0xFF8000;
+            else if (ent instanceof Enemy) color = 0xFF0000;
+            else if (ent instanceof Player) color = 0xFF00FF;
+            else if (ent instanceof Mob) color = 0x00FF00;
+            else if (ent instanceof ItemEntity) color = 0xFFFF80;
+            else if (ent instanceof ExperienceOrb) color = player.tickCount % 10 < 5 ? 0xFFFF80 : 0x80FF80;
+            else continue;
+            if (ent instanceof LivingEntity living && living.getHealth() <= 0F) color = 0x000000;
+            AABB bb = ent.getBoundingBox();
+            boxes.add(new float[]{
+                    (float) (bb.minX - camera.pos.x), (float) (bb.minY - camera.pos.y), (float) (bb.minZ - camera.pos.z),
+                    (float) (bb.maxX - camera.pos.x), (float) (bb.maxY - camera.pos.y), (float) (bb.maxZ - camera.pos.z),
+                    Float.intBitsToFloat(color)});
+        }
+        lastThermalBoxes = boxes.size();
+        if (boxes.isEmpty()) return;
+        WorldEffects.submit(new PoseStack(), LineRenderTypes.seeThrough(2F), 10, (last, buffer) -> {
+            for (float[] box : boxes) outline(last, buffer, box);
+        });
+    }
+
+    /** 1.7's {@code IBossDisplayData} entities. */
+    private static boolean isBoss(Entity ent) {
+        return ent instanceof EnderDragon || ent instanceof WitherBoss || ent instanceof EntityBOTPrimeHead
+                || ent instanceof EntityHunterChopper || ent instanceof EntityMaskMan || ent instanceof EntityQuackos
+                || ent instanceof EntityUFO || ent instanceof EntitySiegeCraft;
+    }
+
+    /**
+     * 1.7 {@code preRenderEvent} VATS: a bar of up to 100 strokes over each other living entity within name-tag range
+     * (32 while it sneaks), red for its health; seen through walls when the set also has thermal sight.
+     */
+    private static void renderHealthTags(Minecraft mc, LocalPlayer player, CameraInfo camera, boolean throughWalls) {
+        if (mc.options.hideGui) return;
+        Entity viewer = mc.getCameraEntity() == null ? player : mc.getCameraEntity();
+        float partial = Frames.partialTick();
+        float viewY = player.getViewYRot(partial);
+        float viewX = player.getViewXRot(partial);
+        for (Entity ent : mc.level.entitiesForRendering()) {
+            if (!(ent instanceof LivingEntity living) || ent == viewer || ent.isInvisibleTo(player)
+                    || ent.isVehicle()) continue;
+            double distSq = ent.distanceToSqr(viewer);
+            float range = ent.isDiscrete() ? 32F : 64F;
+            if (distSq >= range * range) continue;
+            int count = (int) Math.min(living.getMaxHealth(), 100F);
+            int bars = (int) Math.ceil(living.getHealth() * count / living.getMaxHealth());
+            StringBuilder bar = new StringBuilder(ChatFormatting.RED.toString());
+            for (int i = 0; i < count; i++) {
+                if (i == bars) bar.append(ChatFormatting.RESET);
+                bar.append('|');
+            }
+            Vec3 at = ent.getPosition(partial).subtract(camera.pos);
+            double y = living.isSleeping() ? at.y - 1.5D : at.y;
+            drawTag(ent.getBbHeight() + 0.75F, distSq, bar.toString(), at.x, y, at.z, 64, throughWalls, -1, 553648127,
+                    viewY, viewX);
+            lastHealthTags++;
+        }
+    }
+
     /** 1.7's 24 GL_LINES vertices: the twelve edges of the box, opaque in the marker colour. */
     private static void outline(PoseStack.Pose pose, VertexConsumer buffer, float[] b) {
         int color = 0xFF000000 | Float.floatToRawIntBits(b[6]);
@@ -176,7 +298,7 @@ public final class RenderOverhead {
     /**
      * 1.7 {@code drawTag}: a nameplate {@code 1.6 / 60} blocks per pixel, turned to the player's view, over a black
      * quarter-alpha backing; the first (shadow-colour) pass ignores depth when {@code depthTest}, the second is
-     * depth-tested.
+     * depth-tested, offset towards the camera so the backing's depth never hides it (1.7 wrote no depth there).
      */
     public static void drawTag(float offset, double distsq, String name, double x, double y, double z, int dist,
                                boolean depthTest, int color, int shadowColor, float viewY, float viewX) {
@@ -190,10 +312,15 @@ public final class RenderOverhead {
         pose.scale(-scale, -scale, scale);
         int heightOffset = name.equals("deadmau5") ? -10 : 0;
         float left = -font.width(name) / 2F;
-        WorldEffects.submitText(pose, 11, font, name, left, heightOffset, 0xFF000000 | shadowColor, false,
+        WorldEffects.submitText(pose, 11, font, name, left, heightOffset, opaqueUnlessAlpha(shadowColor), false,
                 depthTest ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, 0x40000000, 0xF000F0);
-        WorldEffects.submitText(pose, 12, font, name, left, heightOffset, 0xFF000000 | color, false,
-                Font.DisplayMode.NORMAL, 0, 0xF000F0);
+        WorldEffects.submitText(pose, 12, font, name, left, heightOffset, opaqueUnlessAlpha(color), false,
+                Font.DisplayMode.POLYGON_OFFSET, 0, 0xF000F0);
+    }
+
+    /** 1.7 {@code FontRenderer}: a colour without alpha bits draws opaque, one with them keeps its alpha. */
+    private static int opaqueUnlessAlpha(int color) {
+        return (color & 0xFC000000) == 0 ? color | 0xFF000000 : color;
     }
 
     /** 1.7 {@code RenderOverhead.Marker}: a unit block box by default. */

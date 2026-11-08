@@ -1,12 +1,17 @@
 package com.hbm.client.render.armor;
 
+import com.hbm.items.armor.ArmorFSB;
 import com.hbm.items.armor.IArmorDisableModel;
 import com.hbm.items.armor.IArmorDisableModel.EnumPlayerPart;
 import dev.golem.core.render.HumanoidPose;
 import dev.golem.core.render.Worn;
 import dev.golem.core.world.ArmorSlot;
+import java.lang.ref.WeakReference;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -45,6 +50,7 @@ public final class ArmorPartHiding {
     public static void apply(HumanoidModel<?> model, Player player, ItemStack head, ItemStack chest,
             ItemStack legs, ItemStack feet) {
 
+        if (!HumanoidPose.skinLayers(model).isEmpty()) lastPlayerModel = new WeakReference<>(model);
         Map<ModelPart, Boolean> previous = HIDDEN.remove(model);
         if (previous != null) {
             for (Map.Entry<ModelPart, Boolean> entry : previous.entrySet()) entry.getKey().visible = entry.getValue();
@@ -58,6 +64,7 @@ public final class ArmorPartHiding {
             Worn worn = new Worn(head, chest, legs, feet);
             if (worn.isEmpty()) return;
 
+            List<ModelPart> layers = HumanoidPose.skinLayers(model);
             for (ArmorSlot slot : SLOTS) {
                 ItemStack stack = worn.get(slot);
                 if (!(stack.getItem() instanceof IArmorDisableModel armor)) continue;
@@ -65,10 +72,35 @@ public final class ArmorPartHiding {
                 for (EnumPlayerPart which : PARTS) {
                     if (armor.disablesPart(worn, stack, which)) hide(part(model, which), hidden);
                 }
+                // port: 1.7 skins have no outer layer; a modelled suit hides the one it covers, as 1.12.2 and ntm-next do.
+                // Not in the first-person hand (no player here), which draws no armour on any version.
+                if (player != null && !layers.isEmpty() && armor instanceof ArmorFSB piece && ArmorRenderLayer.renderer(piece, stack) != null) {
+                    switch (slot) {
+                        case HELMET -> hide(model.hat, hidden);
+                        case CHESTPLATE -> { for (int i = 0; i < 3; i++) hide(layers.get(i), hidden); }
+                        default -> { hide(layers.get(3), hidden); hide(layers.get(4), hidden); }
+                    }
+                }
             }
         }
 
         if (!hidden.isEmpty()) HIDDEN.put(model, hidden);
+    }
+
+    private static final String[] LAYER_NAMES = {"jacket", "left_sleeve", "right_sleeve", "left_pants", "right_pants"};
+
+    private static WeakReference<HumanoidModel<?>> lastPlayerModel = new WeakReference<>(null);
+
+    /** Harness: the outer skin layers the last pass over a player model hid. */
+    public static Set<String> hiddenSkinLayers() {
+        Set<String> out = new TreeSet<>();
+        HumanoidModel<?> model = lastPlayerModel.get();
+        Map<ModelPart, Boolean> hidden = model == null ? null : HIDDEN.get(model);
+        if (hidden == null) return out;
+        List<ModelPart> layers = HumanoidPose.skinLayers(model);
+        if (hidden.containsKey(model.hat)) out.add("hat");
+        for (int i = 0; i < LAYER_NAMES.length; i++) if (hidden.containsKey(layers.get(i))) out.add(LAYER_NAMES[i]);
+        return out;
     }
 
     private static void hide(ModelPart part, Map<ModelPart, Boolean> hidden) {

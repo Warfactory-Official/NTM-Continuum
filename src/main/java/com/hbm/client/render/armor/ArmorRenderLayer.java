@@ -54,18 +54,23 @@ public class ArmorRenderLayer extends CompatHumanoidLayer {
         pose.popPose();
     }
 
+    /** The worn model of a suit piece, or null for a piece drawn as a flat armour layer. */
+    static ArmorRenderer renderer(ArmorFSB piece, ItemStack stack) {
+        String modelName = piece.armorModel();
+        if (modelName == null) {
+            String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+            if (path.startsWith("bj_")) modelName = "bj";
+            else if (path.startsWith("dns_")) modelName = "dns";
+        }
+        return ArmorRenderers.get(modelName);
+    }
+
     private static void submitSuits(Worn worn, PoseStack pose, SubmitSink sink, int light, HumanoidPose armorPose) {
         for (ArmorSlot slot : SLOTS) {
             ItemStack stack = worn.get(slot);
             if (!(stack.getItem() instanceof ArmorFSB piece)) continue;
 
-            String modelName = piece.armorModel();
-            if (modelName == null) {
-                String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
-                if (path.startsWith("bj_")) modelName = "bj";
-                else if (path.startsWith("dns_")) modelName = "dns";
-            }
-            ArmorRenderer renderer = ArmorRenderers.get(modelName);
+            ArmorRenderer renderer = renderer(piece, stack);
             if (renderer == null) continue;
 
             renderer.submit(slot, pose, sink, light, armorPose);

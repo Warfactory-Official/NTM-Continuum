@@ -1,14 +1,18 @@
 package com.hbm.recipes;
 
+import com.hbm.Constants;
 import com.hbm.recipes.tables.*;
 import com.hbm.recipes.data.D1Sources;
 import com.hbm.recipes.data.D2Sources;
 import com.hbm.recipes.data.D3Sources;
+import com.hbm.recipes.data.HazardRegistrySource;
+import com.hbm.util.CategoryTagSource;
 import dev.golem.core.world.DataSource;
 import dev.golem.core.world.RecipeSource;
 import dev.golem.core.world.DataSources;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * HBM's machine recipe tables: one {@link RecipeSource} per table, each a transliteration of the 1.7 table's
@@ -89,6 +93,8 @@ public final class HbmDataSources implements DataSources {
         sources.addAll(D3Sources.sources());
         sources.addAll(D1Sources.sources());
         sources.addAll(D2Sources.sources());
+        // category and convention tags (GitHub 132), computed from the running game
+        sources.add(new CategoryTagSource(Constants.MOD_ID, Map.of(), new HazardRegistrySource.Items()));
         return sources;
     }
 }

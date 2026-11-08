@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.pile;
 
+import com.hbm.uninos.graph.LevelNodeGraph;
 import dev.golem.core.world.Explosions;
 import com.hbm.blocks.machine.pile.BlockPile;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
@@ -252,7 +253,8 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
 
     @Override
     public void setRemoved() {
-        if (level != null && !level.isClientSide()) {
+        // 1.7 ejected in invalidate, which a chunk unload does not call
+        if (LevelNodeGraph.blockWentWithIt(this)) {
             for (PileChannel chan : this.fuelChannels) chan.ejectAll();
         }
         super.setRemoved();

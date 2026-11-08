@@ -313,10 +313,14 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     public void setRemoved() {
         releaseSync();
         // also a chunk unload: 1.7 dropped the port nodes in onChunkUnload and invalidate alike
-        disablePorts(powerPorts);
-        disablePorts(fluidInPorts);
-        disablePorts(fluidOutPorts);
+        releasePorts(powerPorts);
+        releasePorts(fluidInPorts);
+        releasePorts(fluidOutPorts);
         super.setRemoved();
+    }
+
+    private void releasePorts(TilePort[] ports) {
+        if (ports != null && level != null) for (TilePort port : ports) if (port != null) port.release(level, this);
     }
 
     /** Releases this tile's current native publication entry before its lifecycle ends. */

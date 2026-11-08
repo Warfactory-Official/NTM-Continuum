@@ -1,5 +1,7 @@
 package com.hbm.handler;
 
+import net.minecraft.ChatFormatting;
+import com.hbm.packet.PlayerInformPayload;
 import com.hbm.items.armor.JetpackVectorized;
 import com.hbm.items.armor.JetpackBooster;
 import com.hbm.Constants;
@@ -48,6 +50,10 @@ import java.util.function.BiConsumer;
 
 /** Common flight state and motion rules for HBM's jetpacks, glider and wings. */
 public final class JetpackHandler {
+
+    /** 1.7 {@code ServerProxy.ID_JETPACK} and {@code ID_HUD}. */
+    public static final int ID_JETPACK = 5;
+    public static final int ID_HUD = 7;
 
     public static final String JETPACK_NBT = "hbmJetpackAdvanced";
 
@@ -558,6 +564,7 @@ public final class JetpackHandler {
                 if (state && !info.backpackToggleKeyDown) {
                     info.backpackEnabled = !info.backpackEnabled;
                     HbmLivingProps.setEnableBackpack(player, info.backpackEnabled);
+                    inform(player, ID_JETPACK, info.backpackEnabled, "Jetpack");
                 }
                 info.backpackToggleKeyDown = state;
                 info.dirty = true;
@@ -566,6 +573,7 @@ public final class JetpackHandler {
                 if (state && !info.headToggleKeyDown) {
                     info.hudEnabled = !info.hudEnabled;
                     HbmLivingProps.setEnableHUD(player, info.hudEnabled);
+                    inform(player, ID_HUD, info.hudEnabled, "HUD");
                 }
                 info.headToggleKeyDown = state;
                 info.dirty = true;
@@ -574,6 +582,14 @@ public final class JetpackHandler {
         }
         info.dirty = true;
         if (player instanceof ServerPlayer serverPlayer) sendState(serverPlayer, info);
+    }
+
+    /** 1.7 {@code HbmPlayerProps.setKeyPressed}: "X ON" green or "X OFF" red for one second. */
+    private static void inform(Player player, int id, boolean on, String what) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+        GolemNetwork.sendToPlayer(serverPlayer, PlayerInformPayload.CODEC, on
+                ? PlayerInformPayload.of(id, 1000, ChatFormatting.GREEN, what + " ON")
+                : PlayerInformPayload.of(id, 1000, ChatFormatting.RED, what + " OFF"));
     }
 
     public static void toggleOpenState(Player player) {

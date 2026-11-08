@@ -2,7 +2,10 @@ package com.hbm.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.capability.HbmLivingProps;
 import com.hbm.client.particle.CasingParticles;
+import com.hbm.client.render.RenderOverhead;
+import com.hbm.items.armor.ArmorFSB;
 import com.hbm.client.particle.DebrisParticles;
 import com.hbm.client.particle.ParticleSpentCasing;
 import com.hbm.particle.helper.CasingCreator;
@@ -24,6 +27,20 @@ public final class TurretHarnessQueries {
 
     public static void register() {
         HarnessQueryRegistry.register("hbm_turret_fx", TurretHarnessQueries::effects);
+        HarnessQueryRegistry.register("hbm_armor_sight", TurretHarnessQueries::armorSight);
+    }
+
+    /** {@code hbm_armor_sight}: the client's own HUD switch and full-set answer, and what the last frame drew. */
+    private static JsonObject armorSight(Minecraft mc, JsonObject params) {
+        JsonObject json = new JsonObject();
+        if (mc.player == null) return json;
+        json.addProperty("hud_enabled", HbmLivingProps.getEnableHUD(mc.player));
+        json.addProperty("fsb", ArmorFSB.hasFSBArmor(mc.player));
+        int[] sight = RenderOverhead.lastSight();
+        json.addProperty("thermal_boxes", sight[0]);
+        json.addProperty("health_tags", sight[1]);
+        json.addProperty("dedicated", mc.getSingleplayerServer() == null);
+        return json;
     }
 
     private static JsonObject effects(Minecraft mc, JsonObject params) {

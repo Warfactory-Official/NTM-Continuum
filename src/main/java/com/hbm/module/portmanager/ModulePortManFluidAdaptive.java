@@ -28,8 +28,8 @@ public class ModulePortManFluidAdaptive {
     }
 
     public void destroy() {
-        if (inPorts != null) for (TilePort port : inPorts) if (port != null) port.disableIfPresent(owner.getLevel());
-        if (outPorts != null) for (TilePort port : outPorts) if (port != null) port.disableIfPresent(owner.getLevel());
+        if (inPorts != null) for (TilePort port : inPorts) if (port != null) port.release(owner.getLevel(), owner);
+        if (outPorts != null) for (TilePort port : outPorts) if (port != null) port.release(owner.getLevel(), owner);
     }
 
     public ModulePortManFluidAdaptive setInputTanks(FluidTankNTM... tanks) {

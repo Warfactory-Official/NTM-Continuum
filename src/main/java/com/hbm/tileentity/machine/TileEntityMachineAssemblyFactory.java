@@ -345,8 +345,8 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
     @Override
     public void setRemoved() {
         if (level != null) {
-            if (coolantInPort != null) coolantInPort.disableIfPresent(level);
-            if (coolantOutPort != null) coolantOutPort.disableIfPresent(level);
+            if (coolantInPort != null) coolantInPort.release(level, this);
+            if (coolantOutPort != null) coolantOutPort.release(level, this);
         }
         super.setRemoved();
     }

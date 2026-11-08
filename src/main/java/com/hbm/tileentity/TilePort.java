@@ -12,6 +12,7 @@ import com.hbm.uninos.INetworkProvider;
 import com.hbm.uninos.PortNet;
 import com.hbm.uninos.PortNode;
 import com.hbm.uninos.PortNodes;
+import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.networkproviders.FluidNetProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -123,12 +124,27 @@ public class TilePort {
     }
 
     public void disableIfPresent(Level world) {
+        disableIfPresent(world, true);
+    }
+
+    /**
+     * Disables the port of an owner being removed. If it leaves with its chunk (an unload, a Sable sub-level leaving),
+     * the machine is still there and the ducts keep their arms: blocks must not be written into an unloading chunk.
+     */
+    public void release(@Nullable Level world, BlockEntity owner) {
+        if (world == null || node == null && fluidAliases == null) return;
+        disableIfPresent(world, LevelNodeGraph.blockWentWithIt(owner));
+    }
+
+    private void disableIfPresent(Level world, boolean ductsFollow) {
         if (this.node != null) {
             PortNodes.destroyNode(world, node);
             this.node = null;
-            if (type instanceof FluidNetProvider) for (var connection : connections) BlockFluidDuct.portChanged(world, connection.getPos());
+            if (ductsFollow && type instanceof FluidNetProvider) {
+                for (var connection : connections) BlockFluidDuct.portChanged(world, connection.getPos());
+            }
         }
-        if (fluidAliases != null) for (var alias : fluidAliases) alias.disableIfPresent(world);
+        if (fluidAliases != null) for (var alias : fluidAliases) alias.disableIfPresent(world, ductsFollow);
     }
 
     protected void createNode(Level world) {

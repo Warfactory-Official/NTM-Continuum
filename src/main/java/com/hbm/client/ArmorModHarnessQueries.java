@@ -3,6 +3,7 @@ package com.hbm.client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.client.render.armor.ArmorPartHiding;
 import com.hbm.handler.ArmorModEvents;
 import com.hbm.handler.ArmorModHandler;
 import dev.golem.core.harness.HarnessQueryRegistry;
@@ -52,6 +53,9 @@ public final class ArmorModHarnessQueries {
             effects.add(effect.getDescriptionId() + "@" + effect.getAmplifier());
         }
         json.add("effects", effects);
+        JsonArray layers = new JsonArray();
+        for (String layer : ArmorPartHiding.hiddenSkinLayers()) layers.add(layer);
+        json.add("hidden_skin_layers", layers);
 
         for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS,
                 EquipmentSlot.FEET}) {
