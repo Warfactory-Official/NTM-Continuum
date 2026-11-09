@@ -2,6 +2,7 @@ package com.hbm.compat.sable;
 
 import com.hbm.Constants;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.config.GeneralConfig;
 import com.hbm.blocks.ModConveyorBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.blocks.turret.ModTurretBlocks;
@@ -317,7 +318,7 @@ final class SableGameTests {
         });
     }
 
-    /** Iron block is the unit; reinforced stone (hardness 15) weighs 3, a centrifuge (5) 1 per solid part. */
+    /** By hardness, reinforced stone (15) weighs 3 iron blocks and a centrifuge (5) 1 per solid part; off, Sable's default. */
     private static void blockMassesByHardness(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos ironPos = fixture(helper, 8);
@@ -329,7 +330,8 @@ final class SableGameTests {
         BlockState stone = ModBlocks.reinforced_stone.get().defaultBlockState();
         level.setBlock(stonePos, stone, 3);
         double stoneMass = assemble(level, stonePos, Set.of(stonePos)).getMassTracker().getMass();
-        assertMass(helper, "reinforced stone", stoneMass, iron * 15.0 / 5.0);
+        boolean byHardness = GeneralConfig.sableHardnessMass;
+        assertMass(helper, "reinforced stone", stoneMass, byHardness ? iron * 15.0 / 5.0 : SABLE_DEFAULT_MASS);
 
         BlockPos core = fixture(helper, 10);
         BlockMultiblockCore centrifuge = ModMachineBlocks.machine_centrifuge.get();
@@ -342,9 +344,12 @@ final class SableGameTests {
         }
         helper.assertTrue(solid > 0, "the centrifuge has no solid part");
         double machineMass = assemble(level, core, parts).getMassTracker().getMass();
-        assertMass(helper, "the centrifuge (" + solid + " solid parts)", machineMass, iron * solid);
+        assertMass(helper, "the centrifuge (" + solid + " solid parts)", machineMass, (byHardness ? iron : SABLE_DEFAULT_MASS) * solid);
         helper.succeed();
     }
+
+    /** kpg, for a block Sable's data does not name. */
+    private static final double SABLE_DEFAULT_MASS = 1.0;
 
     private static void assertMass(GameTestHelper helper, String what, double mass, double expected) {
         helper.assertTrue(Math.abs(mass - expected) < 1e-6 * expected, what + " weighs " + mass + " kpg, not " + expected);

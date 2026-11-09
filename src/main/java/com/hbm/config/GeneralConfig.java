@@ -59,6 +59,13 @@ public final class GeneralConfig {
      */
     public static boolean enableRawOres = true;
 
+    /** Port-only {@code 1.91_sableHardnessMass}: on Sable sub-levels HBM blocks weigh by hardness, off gives Sable's default. */
+    public static boolean sableHardnessMass = false;
+    /** Port-only {@code 1.92_sableBlockMasses}: {@code namespace:block=mass} entries, mass in iron blocks. */
+    public static String[] sableBlockMasses = new String[0];
+    /** Port-only {@code 1.93_deImportBackup}: the DE importer copies the world beside itself before converting it. */
+    public static boolean deImportBackup = true;
+
     /** Old {@code 1.99_enableExpensiveMode}; selects the alternate Exposure Chamber catalyst. */
     public static boolean enableExpensiveMode = false;
 
@@ -190,6 +197,10 @@ public final class GeneralConfig {
         preferredOutputMod = CommonConfig.createConfigStringList(config,CATEGORY_GENERAL,"1.42_preferredOutputMod",
                 "The mod which is preferred as output when certain machines autogenerate recipes. Currently used for the shredder", new String[] {Constants.MOD_ID});
         enableRawOres = config.get(CATEGORY_GENERAL, "1.90_enableRawOres", true, "Metal ores drop raw ore items (smelted or processed at two thirds of the ore's yield). False restores the old drops.").getBoolean(true);
+        sableHardnessMass = config.get(CATEGORY_GENERAL, "1.91_sableHardnessMass", false, "On Create Aeronautics / Sable ships, NTM blocks weigh by their hardness (an iron block weighs 1). False leaves them at Sable's default mass.").getBoolean(false);
+        sableBlockMasses = CommonConfig.createConfigStringList(config, CATEGORY_GENERAL, "1.92_sableBlockMasses",
+                "Sable masses for single blocks, as namespace:block=mass with the mass in iron blocks (e.g. hbm:machine_press=4). Wins over 1.91; Sable's own datapack masses win over both.", new String[0]);
+        deImportBackup = config.get(CATEGORY_GENERAL, "1.93_deImportBackup", true, "The NTM: Decentralized Edition world importer copies the whole world next to itself before converting it. False skips the copy; make your own backup first.").getBoolean(true);
         enableExpensiveMode = config.get(CATEGORY_GENERAL, "1.99_enableExpensiveMode", false, "It does what the name implies.").getBoolean(false);
 
         final String CATEGORY_528 = CommonConfig.CATEGORY_528;

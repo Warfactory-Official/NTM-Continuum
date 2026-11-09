@@ -1,6 +1,7 @@
 package com.hbm.compat.sable;
 
 import com.hbm.Constants;
+import com.hbm.config.GeneralConfig;
 import dev.golem.core.world.SubLevels;
 
 /**
@@ -18,6 +19,7 @@ public final class HbmSableIntegration {
         SubLevels.addMoveListener(CarriedBlocks::afterMove);
         SubLevels.addStructureResolver(MultiblockParts::partsWith);
         SubLevels.addMassRule(BlockMasses::inIronBlocks);
-        Constants.LOG.info("Sable present: HBM blocks follow sub-level assembly, splitting and disassembly, and weigh by hardness");
+        Constants.LOG.info("Sable present: HBM blocks follow sub-level assembly, splitting and disassembly"
+                + (GeneralConfig.sableHardnessMass ? ", and weigh by hardness" : ""));
     }
 }

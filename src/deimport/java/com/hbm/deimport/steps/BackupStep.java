@@ -1,5 +1,6 @@
 package com.hbm.deimport.steps;
 
+import com.hbm.config.GeneralConfig;
 import com.hbm.deimport.engine.Ctx;
 import com.hbm.deimport.engine.Journal;
 import com.hbm.deimport.engine.Step;
@@ -18,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Copies the whole world next to itself before anything is written, and refuses when the disk cannot hold the copy.
- * {@code -Dhbm.deimport.backup=none} skips it for operators who made their own.
+ * {@code 1.93_deImportBackup=false} in {@code hbm.cfg} or {@code -Dhbm.deimport.backup=none} skips it.
  */
 public final class BackupStep implements Step {
     /** The finished backup's folder name, in the world: an earlier or interrupted backup can lie beside it. */
@@ -32,7 +33,7 @@ public final class BackupStep implements Step {
 
     @Override
     public boolean applies(Ctx ctx) {
-        return !"none".equals(System.getProperty("hbm.deimport.backup"));
+        return GeneralConfig.deImportBackup && !"none".equals(System.getProperty("hbm.deimport.backup"));
     }
 
     @Override
@@ -40,7 +41,7 @@ public final class BackupStep implements Step {
         Path world = ctx.world;
         long size = size(world);
         if (Files.getFileStore(world).getUsableSpace() < size + (64L << 20))
-            throw new IOException("not enough disk space for a backup of " + (size >> 20) + " MB; free some or start with -Dhbm.deimport.backup=none");
+            throw new IOException("not enough disk space for a backup of " + (size >> 20) + " MB; free some or set 1.93_deImportBackup=false in hbm.cfg");
         String stamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
         Path target = world.resolveSibling(world.getFileName() + "_DE_backup_" + stamp);
         Files.walkFileTree(world, new SimpleFileVisitor<>() {
