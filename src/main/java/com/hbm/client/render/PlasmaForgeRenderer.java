@@ -57,7 +57,8 @@ public class PlasmaForgeRenderer extends GemBER<TileEntityFusionPlasmaForge, Pla
         coldPlasma = Surface.solid(Constants.MOD_ID + ":textures/models/misc/white.png");
         body = CompatRenderTypes.entityCutout(Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_forge.png"));
         inactivePlasma = CompatRenderTypes.entitySolid(Ids.of(Constants.MOD_ID, "textures/models/misc/white.png"));
-        plasma = CompatRenderTypes.plasmaGlow(Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma.png"));
+        // 1.7 draws this first pass opaque and unlit; only the two glow passes over it are additive
+        plasma = CompatRenderTypes.flatCutout(Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma.png"));
         glow = CompatRenderTypes.plasmaGlow(Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_glow.png"));
         beam = CompatRenderTypes.plasmaGlow(Fluids.STELLAR_FLUX.getTexture());
         plume = CompatRenderTypes.additive();

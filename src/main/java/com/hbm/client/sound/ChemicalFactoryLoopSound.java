@@ -3,27 +3,23 @@ package com.hbm.client.sound;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 
-/** Tickable loop bound to one factory, stopping when its last lane stops or the BE unloads. */
-public final class ChemicalFactoryLoopSound extends AbstractTickableSoundInstance {
+/** Loop bound to one factory, 1.7's volume 1 and range 15, stopping when its last lane stops or the BE unloads. */
+public final class ChemicalFactoryLoopSound extends AudioDynamic {
 
     private final TileEntityMachineChemicalFactory factory;
 
     public ChemicalFactoryLoopSound(TileEntityMachineChemicalFactory factory) {
-        super(ModSounds.CHEMICAL_PLANT.get(), SoundSource.BLOCKS, SoundInstance.createUnseededRandom());
+        super(ModSounds.CHEMICAL_PLANT.get(), SoundSource.BLOCKS);
         this.factory = factory;
         BlockPos pos = factory.getBlockPos();
-        x = pos.getX() + 0.5;
-        y = pos.getY() + 0.5;
-        z = pos.getZ() + 0.5;
-        looping = true;
+        setPosition(pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F);
+        setRange(15F);
+        setVolume(factory.getVolume(1F));
         delay = 0;
-        pitch = 1F;
-        volume = factory.getVolume(1F);
+        super.tick();
     }
 
     @Override
@@ -36,6 +32,7 @@ public final class ChemicalFactoryLoopSound extends AbstractTickableSoundInstanc
             stop();
             return;
         }
-        volume = factory.getVolume(1F);
+        setVolume(factory.getVolume(1F));
+        super.tick();
     }
 }

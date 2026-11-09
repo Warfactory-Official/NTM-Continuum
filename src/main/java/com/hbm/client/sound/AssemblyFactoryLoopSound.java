@@ -2,27 +2,24 @@ package com.hbm.client.sound;
 
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
-import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 
-/** The Assembly Factory's looping motor hum while at least one lane is processing. */
-public final class AssemblyFactoryLoopSound extends AbstractTickableSoundInstance {
+/** The Assembly Factory's motor hum while a lane processes: 1.7's volume 0.5, range 15, pitch 0.75. */
+public final class AssemblyFactoryLoopSound extends AudioDynamic {
 
     private final TileEntityMachineAssemblyFactory factory;
 
     public AssemblyFactoryLoopSound(TileEntityMachineAssemblyFactory factory) {
-        super(ModSounds.MOTOR.get(), SoundSource.BLOCKS, SoundInstance.createUnseededRandom());
+        super(ModSounds.MOTOR.get(), SoundSource.BLOCKS);
         this.factory = factory;
         BlockPos pos = factory.getBlockPos();
-        x = pos.getX() + 0.5D;
-        y = pos.getY() + 0.5D;
-        z = pos.getZ() + 0.5D;
-        looping = true;
+        setPosition(pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F);
+        setRange(15F);
+        setPitch(0.75F);
+        setVolume(factory.getVolume(0.5F));
         delay = 0;
-        pitch = 0.75F;
-        volume = factory.getVolume(0.5F);
+        super.tick();
     }
 
     @Override
@@ -31,7 +28,8 @@ public final class AssemblyFactoryLoopSound extends AbstractTickableSoundInstanc
             stop();
             return;
         }
-        volume = factory.getVolume(0.5F);
+        setVolume(factory.getVolume(0.5F));
+        super.tick();
     }
 
     /** Stops this loop from the factory sound dispatcher without exposing the base sound API. */

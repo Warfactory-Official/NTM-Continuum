@@ -22,6 +22,7 @@ public final class ParticleHadron extends CompatParticle {
         this.lifetime = 10;
         this.particleScale = 1F;
         this.setLayer(ParticleLayer.ADDITIVE);
+        this.keepFaintFragments();
         this.setColor(1F, 1F, 1F);
     }
 

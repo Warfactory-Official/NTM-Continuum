@@ -2,40 +2,36 @@ package com.hbm.client.sound;
 
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
-import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * The looping operating sound an ore acidizer plays while it's processing, the chemical-plant loop
- * at the 1.12.2 tile's lower 0.75 pitch. A tickable client sound bound to one machine that stops
- * itself once the machine stops. Client-only, only constructed from {@link CrystallizerSoundHandler}.
+ * The ore acidizer's loop while it runs: 1.7's chemical plant loop at pitch 0.75, volume 1 and range 15. Only
+ * constructed from {@link CrystallizerSoundHandler}.
  */
-public class CrystallizerLoopSound extends AbstractTickableSoundInstance {
+public class CrystallizerLoopSound extends AudioDynamic {
 
     private final TileEntityMachineCrystallizer te;
 
     public CrystallizerLoopSound(TileEntityMachineCrystallizer te) {
-        super(ModSounds.CHEMICAL_PLANT.get(), SoundSource.BLOCKS, SoundInstance.createUnseededRandom());
+        super(ModSounds.CHEMICAL_PLANT.get(), SoundSource.BLOCKS);
         this.te = te;
         BlockPos pos = te.getBlockPos();
-        this.x = pos.getX() + 0.5;
-        this.y = pos.getY() + 0.5;
-        this.z = pos.getZ() + 0.5;
-        this.looping = true;
-        this.delay = 0;
-        this.pitch = 0.75F; // the 1.12.2 crystallizer's lower pitch on the shared chem-plant loop
-        // Keep the base volume well under 1.0 so it audibly attenuates with distance (see ChemPlantLoopSound).
-        this.volume = 0.5F * te.getVolume(0.5F);
+        setPosition(pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F);
+        setRange(15F);
+        setPitch(0.75F);
+        setVolume(te.getVolume(1F));
+        delay = 0;
+        super.tick();
     }
 
     @Override
     public void tick() {
         if (te.isRemoved() || !te.isOn) {
-            this.stop();
+            stop();
             return;
         }
-        this.volume = 0.5F * te.getVolume(0.5F);
+        setVolume(te.getVolume(1F));
+        super.tick();
     }
 }

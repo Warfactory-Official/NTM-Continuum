@@ -32,6 +32,7 @@ public final class ParticleRadiationFog extends CompatParticle {
         this.xd = this.yd = this.zd = 0D;
         this.setColor(0.85F, 0.9F, 0.5F);
         this.setLayer(ParticleLayer.EMISSIVE);
+        this.keepFaintFragments();
     }
 
     @Override

@@ -29,6 +29,7 @@ public final class ParticleCoolingTower extends CompatParticle {
         this.setQuadSize((this.random.nextFloat() * 0.5F + 0.5F) * 2F);
         this.hasPhysics = false;
         this.setLayer(ParticleLayer.TRANSLUCENT);
+        this.keepFaintFragments();
     }
 
     public void setBaseScale(float scale) {
@@ -90,5 +91,13 @@ public final class ParticleCoolingTower extends CompatParticle {
         this.xd *= 0.925D;
         this.yd *= 0.925D;
         this.zd *= 0.925D;
+    }
+
+    /** 1.7 updated a new particle before drawing it; here it is drawn once first, so show its first update's look. */
+    @Override
+    protected void updateForFrame(float partialTick) {
+        if (this.age > 0) return;
+        this.setAlpha(alphaMod);
+        this.setQuadSize(baseScale + baseScale * baseScale);
     }
 }

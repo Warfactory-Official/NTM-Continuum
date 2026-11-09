@@ -37,11 +37,14 @@ public class ArcFurnaceRenderer extends GemBER<TileEntityMachineArcFurnaceLarge,
         public float cableSwing;
     }
 
+    private static final int FULLBRIGHT = 0xF000F0;
+
     private final WavefrontObj model = WavefrontObj.load(
             Ids.of(Constants.MOD_ID, "models/machines/arc_furnace.obj"));
     private final Surface body = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/arc_furnace.png");
-    private final Surface hot = Surface.emissive(
+    /** 1.7 {@code fullbright(true)}: lighting and culling off, lightmap 240. */
+    private final Surface hot = Surface.flat(
             Constants.MOD_ID + ":textures/models/machines/arc_furnace.png");
     private final RenderType streamType = CompatRenderTypes.entitySolid(
             Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
@@ -59,6 +62,7 @@ public class ArcFurnaceRenderer extends GemBER<TileEntityMachineArcFurnaceLarge,
 
         machine.child(model.part("Furnace"), body);
         machine.child(model.part("ContentsHot"), hot)
+                .light(state -> FULLBRIGHT)
                 .visibleIf(state -> state.meltAmount > 0)
                 .slide(Gem.Axes.Y, state -> -1.75F
                         + state.meltAmount * 1.75F / TileEntityMachineArcFurnaceLarge.MAX_LIQUID);
@@ -81,8 +85,10 @@ public class ArcFurnaceRenderer extends GemBER<TileEntityMachineArcFurnaceLarge,
             final int slot = i;
             String index = String.valueOf(i + 1);
             lid.child(model.part("Electrode" + index + "Hot"), hot)
+                    .light(state -> FULLBRIGHT)
                     .visibleIf(state -> state.electrodes[slot] == TileEntityMachineArcFurnaceLarge.ELECTRODE_USED);
             lid.child(model.part("Electrode" + index + "Short"), hot)
+                    .light(state -> FULLBRIGHT)
                     .visibleIf(state -> state.electrodes[slot] != TileEntityMachineArcFurnaceLarge.ELECTRODE_NONE
                             && state.electrodes[slot] != TileEntityMachineArcFurnaceLarge.ELECTRODE_FRESH
                             && state.electrodes[slot] != TileEntityMachineArcFurnaceLarge.ELECTRODE_USED);
