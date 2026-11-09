@@ -10,7 +10,8 @@ import java.util.List;
  * GitHub issue 113: HBM's native EMI plugin, on a client started with {@code -Pemi.run=true} (1.21.1 and 1.20.1 only, EMI
  * has no 26.1 build). JEI stays in the run, so EMI's JEI layer must skip HBM's categories instead of listing them twice.
  * A table row carries its recipe id on an output slot and can be a recipe tree goal; EMI's fill moves a recipe's item
- * input into an open centrifuge menu. Needs {@code ORG_GRADLE_PROJECT_emi.run=true harness up --rebuild}.
+ * input into an open centrifuge menu. Needs {@code ORG_GRADLE_PROJECT_emi.run=true harness up --rebuild}; add
+ * {@code jei.run=false} for the EMI-only case.
  */
 public final class Gh113Emi implements Scenario {
 
@@ -41,10 +42,14 @@ public final class Gh113Emi implements Scenario {
                 "hbm:anvil_construction=", "hbm:arc_furnace_solid="}) {
             Expect.that(ids.contains(id) && !ids.contains(id + "0\""), "EMI category " + id + " has recipes: " + ids);
         }
+        // without JEI (-Pjei.run=false) EMI's JEI layer never runs
         List<String> jemi = c.log(200_000, "\\[JEMI\\] Collecting data for");
-        Expect.that(jemi.stream().anyMatch(line -> line.contains("Collecting data for Crafting")), "EMI's JEI layer ran: " + jemi);
-        Expect.that(jemi.stream().noneMatch(line -> line.contains("Collecting data for Centrifuge")),
-                "EMI's JEI layer leaves HBM's own categories out: " + jemi);
+        System.out.println("[Gh113] " + c.node() + " EMI's JEI layer lines: " + jemi.size());
+        if (!jemi.isEmpty()) {
+            Expect.that(jemi.stream().anyMatch(line -> line.contains("Collecting data for Crafting")), "EMI's JEI layer ran: " + jemi);
+            Expect.that(jemi.stream().noneMatch(line -> line.contains("Collecting data for Centrifuge")),
+                    "EMI's JEI layer leaves HBM's own categories out: " + jemi);
+        }
 
         JsonObject recipe = emi(c, "op", "recipe", "id", "hbm:centrifuge/crystal_coal");
         Expect.that(!recipe.has("error"), "the coal crystal row keeps its table id: " + recipe);

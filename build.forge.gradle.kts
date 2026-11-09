@@ -142,7 +142,7 @@ dependencies {
     if (jei != null && jeiVer != null) {
         modCompileOnly("mezz.jei:jei-$jei-common-api:$jeiVer")
         modCompileOnly("mezz.jei:jei-$jei-forge-api:$jeiVer")
-        modRuntimeOnly("mezz.jei:jei-$jei-forge:$jeiVer")
+        if (propOrNull("jei.run") != "false") modRuntimeOnly("mezz.jei:jei-$jei-forge:$jeiVer")
     }
 
     // EMI is an optional peer like REI, fed by the thin plugin in com.hbm.handler.emi (`-Pemi.run=true` for dev runs).

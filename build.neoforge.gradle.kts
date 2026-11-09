@@ -226,7 +226,8 @@ dependencies {
     if (jei != null && jeiVer != null) {
         compileOnly("mezz.jei:jei-$jei-common-api:$jeiVer")
         compileOnly("mezz.jei:jei-$jei-neoforge-api:$jeiVer")
-        localRuntime("mezz.jei:jei-$jei-neoforge:$jeiVer")
+        // `-Pjei.run=false` leaves JEI out of the run: the EMI-only case (`-Pemi.run=true`).
+        if (propOrNull("jei.run") != "false") localRuntime("mezz.jei:jei-$jei-neoforge:$jeiVer")
     }
 
     // REI (Roughly Enough Items) is an optional peer like JEI: HBM's recipe-viewer declarations

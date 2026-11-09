@@ -275,7 +275,9 @@ dependencies {
         // JEI's transitive Fabric Loader is excluded: Loom sets Mixin up from the node's declared loader, and a second
         // loader on the dev classpath fails at launch (`IAdviceProvider` not found). The node's loader (0.19.5) already
         // meets JEI 29.43's 0.19.4 floor.
-        devRuntime("mezz.jei:jei-$jei-fabric:$jeiVer") { exclude(group = "net.fabricmc", module = "fabric-loader") }
+        if (propOrNull("jei.run") != "false") {
+            devRuntime("mezz.jei:jei-$jei-fabric:$jeiVer") { exclude(group = "net.fabricmc", module = "fabric-loader") }
+        }
     }
 
     // REI (Roughly Enough Items) is an optional peer like JEI: HBM's recipe-viewer declarations
