@@ -3,6 +3,97 @@
 Each release has a `## <version>` section; the release workflow uploads only the section matching
 `mod.version` in gradle.properties.
 
+## 1.0.5
+
+Requires Golem Core 1.0.5. Use GemRender 0.1.20; older versions are refused.
+
+### Added
+- Native EMI support on 1.21.1 and 1.20.1: every HBM recipe category with recipe ids, favourites and the recipe tree
+  (GitHub issues 113, 168). Fluid recipes show when looking up a fluid in EMI, JEI and REI (GitHub issue 162).
+- Item tags generated from the game: `hbm:guns`, `ammo`, `food`, `armor`, `bombs`, `missiles`, `machines`,
+  `hbm:hazardous/<type>`, `hbm:blast_resistant/<tier>`, `hbm:radiation_shielding` and the `c:` / `forge:` convention
+  tags (GitHub issue 132).
+- HBM fluids join the `c:` fluid tags (crude oil, ethanol, diesel, hydrogen, steam, plant oil and more), so other mods'
+  tagged fluids work in HBM tanks and recipes and HBM's work in theirs (GitHub issue 156).
+- Every 1.7 structure and scattered site can be found with `/locate` and switched in `hbm.cfg`, including the silo,
+  blueprint chest, locked safe, lantern, broadcaster, capsule, glyphid hive and fallen meteorite (GitHub issue 131).
+- RBMK columns show 1.7's DODD diagnostic overlay (client config, on by default) (GitHub issues 147, 165).
+- Smoking glyphid meat in a smoker (GitHub issue 141).
+- Ability tools drop ore experience like a vanilla pickaxe; silk touch and the processing abilities drop none (GitHub
+  issue 145).
+- Power armour VATS health bars and thermal sight, and the HUD and jetpack toggle messages (GitHub issue 163).
+- Fluid ducts, pipes and pneumatic tubes use 1.7's pipe sounds (GitHub issue 146).
+- Turrets eject 1.7's spent casings and muzzle flashes (GitHub issue 159).
+- An oil derrick destroyed by an explosion with fluid inside blows up, as in 1.7.
+- `hbm.cfg`: `1.91_sableHardnessMass` (off: Sable's default block mass), `1.92_sableBlockMasses` (per-block masses) and
+  `1.93_deImportBackup` (skip the world backup before a DE import).
+
+### Changed
+- Every MK4 gun scatters with 1.7's spread; shots had been 133 times too accurate (GitHub issue 115).
+- Recipe machines take ingredient i of the selected recipe in input slot i only, as in 1.7, so one ingredient can no
+  longer fill every slot and stall the machine; old saves keep working (GitHub issue 126).
+- Powered and fueled suits spend charge through 1.7's armour wear (damage / 4 per piece), lasting about four times as
+  long; the Taurun suit is unbreakable as in 1.7 (GitHub issue 140).
+- The Goalkeeper CIWS has 1.7's flat 250-block range, and the ABM climbs and locks on as in 1.7 (GitHub issues 117, 119).
+- 39 items 1.7 keeps out of its creative tabs are hidden from the tabs and recipe viewers; the turret AI chip, grenade
+  parts, drones and carts are listed (GitHub issues 117, 122).
+- Every HBM block in a structure turns with the structure; structure bobbleheads and plushies are random (GitHub issue
+  161).
+- The mining helmet and flashlight fallback light spreads like a placed torch.
+- Gun zoom eases in and out like 1.7, and scope overlays cover wide screens (GitHub issue 152).
+- Stereo sounds fade with distance as in 1.7; the chemical plant, chemical factory, ore acidizer and assembly factory
+  loops use 1.7's volumes (GitHub issue 166).
+- Armour pieces with their own 3D model, such as the Taurun suit, hide the matching skin outer layer (GitHub issue
+  127).
+- The universal fluid bucket is no longer listed, and fluid pickers list HBM and addon fluids only (GitHub issue 156).
+- DE world import follows NTM: DE 1.0.0-beta.14; DE's Create motors are refunded.
+
+### Fixed
+- Reopening a world with an assembled PWR crashed it, and the world could not load again (GitHub issue 111).
+- Desert Atom barrels gave almost no radiation (GitHub issue 110).
+- Ducks and Quackos took fall damage (GitHub issue 109).
+- Crater biome names were missing (GitHub issue 108).
+- Centrifuge and crystallizer showed a certus ore row with an empty input with AE2 installed (GitHub issue 114).
+- Vein mining stopped at bent or connected cables, tubes, fences and walls (GitHub issue 120).
+- The fan ignored redstone changes on the client (GitHub issue 123).
+- A Watz filled with poisonous mud never melted down (GitHub issue 124).
+- The assembly factory and precision assembler ignored recipe selection (GitHub issue 125).
+- The plasma forge took plasma on the wrong side of the fusion reactor (GitHub issue 128).
+- Welders, soldering stations, the Tauon turret, blast furnace, crucible, large arc furnace, turbofan and Maxwell never
+  showed their 1.7 effects (GitHub issue 133).
+- Conveyor and crane sides could not be changed with a screwdriver (GitHub issue 134).
+- Foundry mold melt z-fought (GitHub issue 135); the electrolyser poured without a stream (GitHub issue 136).
+- Beam and laser visuals steered with pitch; four grenades were missing on clients; additive effects were plain alpha on
+  1.20.1 (GitHub issue 137).
+- Folly sight overlays, jingle and rings, plasma blast particles and fog on beam effects (GitHub issue 138).
+- Conveyor inserters and other mods' funnels could not reach the firebox, oven and other multiblock inventories; heat
+  machines read heat from any cell (GitHub issue 142).
+- HBM blocks were missing on Xaero's and vanilla maps (GitHub issue 144).
+- Chicago pile loader, vent and control rod animations never ran; pile rods stack to 64 (GitHub issue 148).
+- Steam clouds stuck inside blocks on Sable ships (GitHub issue 149).
+- Bullet tracers were brown, projectiles jittered, recoil snapped, and the sawblade was not 1.7's (GitHub issue 150).
+- Quitting a world with fluid ducts on a Sable ship aborted the game; Chicago piles ejected rods on chunk unload (GitHub
+  issue 151).
+- SPAS-12 and Congo Lake shells were miscoloured (GitHub issue 153).
+- Fusion reactor parts were silent and the plasma forge striker stopped (GitHub issue 154).
+- The lever-action rifle and several other guns and machines played the wrong sounds (GitHub issue 155).
+- Two "Ethanol Bucket"s, colourless buckets for other mods' fluids, and fluid lists full of foreign fluids (GitHub issue
+  156).
+- After a respawn, casts and battery sockets showed empty; vault locks ignored the offhand and desh screwdriver; AppleSkin
+  icons were erased on Fabric; broken multiblocks dropped working machines or their parts; glyphids hit from too far
+  (GitHub issue 157).
+- The mining helmet light did nothing under Oculus or 26.1 Iris shader packs (GitHub issue 158).
+- Artillery shells flew 1.12.2's course and missed; turret casings were dark on 1.21.1 and 26.1 (GitHub issue 159).
+- The charge thrower's hook let go the tick it hit and was forgotten every tick below 26.1 (GitHub issue 160).
+- Silo hatches, Methusalem turrets, launch pads, bunkers and offices generated without their multiblock cells, and
+  some structure blocks faced backwards (GitHub issue 161).
+- Bobbleheads, plushies and snow globes dropped nothing when broken by hand (GitHub issue 167).
+- HBM tools played a block's break sound and particles twice, and the drill gun three times (GitHub issue 169).
+- Particles flashed at full size, radiation fog had hard edges, liquefactor and solidifier glass was invisible, the
+  plasma forge tube was see-through and arc furnace electrodes did not glow (GitHub issue 166).
+- Neutron-activated items re-equipped in hand every tick (NTM: Space issue 6).
+- The ore slopper's recipe listed every bedrock ore in one row (NTM: Space issue 7).
+
 ## 1.0.4
 
 Requires Golem Core 1.0.4. Use GemRender 0.1.20; older versions are refused.

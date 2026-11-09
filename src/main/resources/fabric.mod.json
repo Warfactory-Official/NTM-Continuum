@@ -47,7 +47,7 @@
     "depends": {
         "fabricloader": ">=${fabric_loader}",
         "fabric-api": "*",
-        "golemcore": ">=1.0.4",
+        "golemcore": ">=1.0.5",
         "minecraft": "${minecraft_range}",
         "java": ">=${java_version}"
     },
