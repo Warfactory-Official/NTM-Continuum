@@ -4,8 +4,10 @@ import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
 import dev.golem.core.data.Inventories;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -18,6 +20,38 @@ import java.util.List;
 public final class InventoryUtil {
 
     private InventoryUtil() {}
+
+    /**
+     * 1.7 {@code mergeItemStack}: vanilla's shift-click merge, except that a stack also tops up an occupied slot only if
+     * the slot would accept it.
+     */
+    public static boolean mergeItemStack(List<Slot> slots, ItemStack stack, int start, int end, boolean reverse) {
+        boolean success = false;
+        if (stack.isStackable()) {
+            for (int n = 0; n < end - start && !stack.isEmpty(); n++) {
+                Slot slot = slots.get(reverse ? end - 1 - n : start + n);
+                ItemStack current = slot.getItem();
+                if (current.isEmpty() || !ItemStacks.sameItemAndData(stack, current)) continue;
+                int max = Math.min(stack.getMaxStackSize(), slot.getMaxStackSize());
+                if (!slot.mayPlace(stack.copyWithCount(Math.min(stack.getCount(), max)))) continue;
+                int moved = Math.min(stack.getCount(), max - current.getCount());
+                if (moved <= 0) continue;
+                current.grow(moved);
+                stack.shrink(moved);
+                slot.setChanged();
+                success = true;
+            }
+        }
+        for (int n = 0; n < end - start && !stack.isEmpty(); n++) {
+            Slot slot = slots.get(reverse ? end - 1 - n : start + n);
+            if (slot.hasItem()) continue;
+            int max = Math.min(stack.getMaxStackSize(), slot.getMaxStackSize());
+            if (!slot.mayPlace(stack.copyWithCount(Math.min(stack.getCount(), max)))) continue;
+            slot.set(stack.split(max));
+            success = true;
+        }
+        return success;
+    }
 
     /**
      * Inserts {@code stack} into machine-inventory slots {@code start..end} (inclusive), merging into

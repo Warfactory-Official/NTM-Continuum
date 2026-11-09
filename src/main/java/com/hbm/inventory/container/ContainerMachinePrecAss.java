@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.util.InventoryUtil;
 import com.hbm.inventory.SlotCraftingOutput;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -100,7 +101,7 @@ public final class ContainerMachinePrecAss extends AbstractContainerMenu {
                 if (!moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
             } else if (Library.isMachineUpgrade(stack)) {
                 if (!moveItemStackTo(stack, 2, 4, false)) return ItemStack.EMPTY;
-            } else if (!moveItemStackTo(stack, 4, 13, false)) {
+            } else if (!InventoryUtil.mergeItemStack(slots, stack, 4, 13, false)) {
                 return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

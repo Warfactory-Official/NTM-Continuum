@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.util.InventoryUtil;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.inventory.SlotCraftingOutput;
 import com.hbm.items.machine.ItemBlueprints;
@@ -108,7 +109,7 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
             } else if (result.getItem() instanceof ItemMachineUpgrade) {
                 if (!this.moveItemStackTo(stack, 2, 4, false)) return ItemStack.EMPTY;
-            } else if (!this.moveItemStackTo(stack, 4, 7, false)) {
+            } else if (!InventoryUtil.mergeItemStack(this.slots, stack, 4, 7, false)) {
                 return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

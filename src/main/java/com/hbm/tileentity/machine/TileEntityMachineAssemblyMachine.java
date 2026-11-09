@@ -110,7 +110,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         if (slot == SLOT_OUTPUT) return false;                                     // output
         // recipe inputs 4..15: accept the current recipe's inputs OR any recipe in the inserted
         // template's pool (so an ingredient can go in before the recipe auto-selects)
-        return assemblerModule.isItemValidForPool(slot, stack, inventory.getStackInSlot(1));
+        return assemblerModule.isItemValid(slot, stack);
     }
 
     // --- WorldlyContainer: lets hoppers/pipes feed the input buffer and pull from the output ---

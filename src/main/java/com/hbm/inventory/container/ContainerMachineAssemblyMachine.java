@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.util.InventoryUtil;
 import com.hbm.inventory.SlotCraftingOutput;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemMachineUpgrade;
@@ -96,7 +97,7 @@ public class ContainerMachineAssemblyMachine extends AbstractContainerMenu {
             } else if (stack.getItem() instanceof ItemMachineUpgrade) {
                 if (!this.moveItemStackTo(stack, 2, 4, false)) return ItemStack.EMPTY;
             } else {
-                if (!this.moveItemStackTo(stack, TileEntityMachineAssemblyMachine.SLOT_INPUT_START, TileEntityMachineAssemblyMachine.SLOT_OUTPUT, false)) return ItemStack.EMPTY;
+                if (!InventoryUtil.mergeItemStack(this.slots, stack, TileEntityMachineAssemblyMachine.SLOT_INPUT_START, TileEntityMachineAssemblyMachine.SLOT_OUTPUT, false)) return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();

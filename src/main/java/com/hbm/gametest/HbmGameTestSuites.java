@@ -41,6 +41,7 @@ public final class HbmGameTestSuites {
             list.add(Gh132GameTests.TESTS);
             list.add(Gh161GameTests.TESTS);
             list.add(Gh162GameTests.TESTS);
+            list.add(Gh126GameTests.TESTS);
             list.add(Gh155GameTests.TESTS);
             list.add(Gh159To160GameTests.TESTS);
             list.add(DerrickBlastGameTests.TESTS);

@@ -160,14 +160,14 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         if (slot >= 13 && slot <= 15) return true;                        // emptied-container out (machine-insert)
         if (slot >= 16 && slot <= 18) return true;                        // fluid-out load (1.7 accepts anything)
         if (slot >= 19 && slot <= 21) return true;                        // filled-container out (machine-insert)
-        return chemplantModule.isItemValidForPool(slot, stack, inventory.getStackInSlot(1)); // item inputs 4..6
+        return chemplantModule.isItemValid(slot, stack); // item inputs 4..6
     }
 
     // --- WorldlyContainer: hoppers/pipes feed item inputs, pull item outputs ---
 
     @Override public int[] getSlotsForFace(Direction side) { return IO_SLOTS; }
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return slot >= 4 && slot <= 6 && isItemValidForSlot(slot, stack); }
-    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot >= 7 && slot <= 9; }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot >= 7 && slot <= 9 || chemplantModule.isSlotClogged(slot); }
 
     // --- IUpgradeInfoProvider (identical to the assembly machine's 1.12.2 provideInfo) ---
 

@@ -207,7 +207,7 @@ public class TileEntityMachinePrecAss extends TileEntityMachineBase implements M
         if (slot == 1) return stack.getItem() instanceof ItemBlueprints;
         if (slot >= 2 && slot <= 3) return Library.isMachineUpgrade(stack);
         if (slot >= 13 && slot <= 21) return false;
-        return assemblerModule.isItemValidForPool(slot, stack, inventory.getStackInSlot(1));
+        return assemblerModule.isItemValid(slot, stack);
     }
 
     @Override

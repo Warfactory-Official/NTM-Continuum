@@ -181,7 +181,7 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase
         if (slot == 1) return stack.getItem() instanceof ItemBlueprints;
         if (slot >= 2 && slot <= 3) return Library.isMachineUpgrade(stack);
         if (slot >= 7 && slot <= 12) return true; // outputs; the module writes them via setStackInSlot
-        return purexModule.isItemValidForPool(slot, stack, inventory.getStackInSlot(1)); // inputs 4..6
+        return purexModule.isItemValid(slot, stack); // inputs 4..6
     }
 
     // --- WorldlyContainer: pipes/hoppers feed the item inputs and pull the outputs ---

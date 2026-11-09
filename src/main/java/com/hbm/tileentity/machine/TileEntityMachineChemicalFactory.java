@@ -363,8 +363,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
         if (slot >= 0 && slot < MACHINE_SLOTS && isOutputSlot(slot)) return false;
         if (slot >= 0 && slot < MACHINE_SLOTS && slot % 7 == 4) return stack.getItem() instanceof ItemBlueprints;
         int lane = laneForInput(slot);
-        return lane >= 0 && chemplantModule[lane].isItemValidForPool(slot, stack,
-                inventory.getStackInSlot(blueprintSlot(lane)));
+        return lane >= 0 && chemplantModule[lane].isItemValid(slot, stack);
     }
 
     @Override public int[] getSlotsForFace(Direction side) { return IO_SLOTS.clone(); }
@@ -372,7 +371,11 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) {
         return isInputSlot(slot) && isItemValidForSlot(slot, stack);
     }
-    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return isOutputSlot(slot); }
+    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
+        if (isOutputSlot(slot)) return true;
+        for (var module : chemplantModule) if (module.isSlotClogged(slot)) return true;
+        return false;
+    }
 
     @Override protected int[] getUpgradeSlotRange() { return new int[]{1, 3}; }
 

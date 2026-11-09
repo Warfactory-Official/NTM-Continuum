@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.util.InventoryUtil;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.SlotCraftingOutput;
@@ -73,7 +74,7 @@ public class ContainerMachineRockMill extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
             } else if (stack.getItem() instanceof ItemBlueprints) {
                 if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
-            } else if (!this.moveItemStackTo(stack, 2, 5, false)) {
+            } else if (!InventoryUtil.mergeItemStack(this.slots, stack, 2, 5, false)) {
                 return ItemStack.EMPTY;
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);

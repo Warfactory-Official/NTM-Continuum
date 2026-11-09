@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.util.InventoryUtil;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.items.machine.ItemBlueprints;
@@ -116,7 +117,7 @@ public class ContainerMachinePlasmaForge extends AbstractContainerMenu {
         } else if (source.getItem() instanceof ItemBlueprints) {
             if (!moveItemStackTo(source, TileEntityFusionPlasmaForge.SLOT_BLUEPRINT,
                     TileEntityFusionPlasmaForge.SLOT_BLUEPRINT + 1, false)) return ItemStack.EMPTY;
-        } else if (!moveItemStackTo(source, TileEntityFusionPlasmaForge.SLOT_BOOSTER,
+        } else if (!InventoryUtil.mergeItemStack(slots, source, TileEntityFusionPlasmaForge.SLOT_BOOSTER,
                 TileEntityFusionPlasmaForge.SLOT_OUTPUT, false)) {
             return ItemStack.EMPTY;
         }

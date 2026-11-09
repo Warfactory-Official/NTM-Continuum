@@ -135,8 +135,7 @@ public class TileEntityMachineAssemblyFactory extends TileEntityMachineBase impl
         if (slot >= 1 && slot <= 3) return Library.isMachineUpgrade(stack);
         for (int i = 0; i < LANES; i++) {
             if (slot >= inputStart(i) && slot < inputStart(i) + 12
-                    && assemblerModule[i].isItemValidForPool(
-                    slot, stack, inventory.getStackInSlot(templateSlot(i)))) return true;
+                    && assemblerModule[i].isItemValid(slot, stack)) return true;
         }
         return false;
     }

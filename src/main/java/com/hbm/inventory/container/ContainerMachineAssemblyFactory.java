@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.util.InventoryUtil;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
@@ -134,7 +135,7 @@ public final class ContainerMachineAssemblyFactory extends AbstractContainerMenu
     private boolean moveInputs(ItemStack source) {
         for (int lane = 0; lane < TileEntityMachineAssemblyFactory.LANES; lane++) {
             int start = TileEntityMachineAssemblyFactory.inputStart(lane);
-            if (moveItemStackTo(source, start, start + 12, false)) return true;
+            if (InventoryUtil.mergeItemStack(slots, source, start, start + 12, false)) return true;
         }
         return false;
     }

@@ -2,12 +2,10 @@ package com.hbm.module.machine;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
 import com.hbm.inventory.NTMItemHandler;
-import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.PlasmaForgeRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
-import net.minecraft.world.item.ItemStack;
 
 /** Plasma forge processing module: twelve item inputs, one output, and one dynamic fluid input. */
 public class ModuleMachinePlasma extends ModuleMachineBase {
@@ -47,18 +45,5 @@ public class ModuleMachinePlasma extends ModuleMachineBase {
     public ModuleMachinePlasma fluidInput(FluidTankNTM tank) {
         inputTanks[0] = tank;
         return this;
-    }
-
-    @Override
-    public boolean isItemValidForPool(int slot, ItemStack stack,
-                                      ItemStack blueprint) {
-        if (super.isItemValidForPool(slot, stack, blueprint)) return true;
-        // Plasma recipes are selected explicitly in the forge GUI; allow an ingredient to be inserted
-        // before selection, just like the legacy machine's broad input-slot filter.
-        for (GenericRecipe recipe : getRecipeSet().recipeOrderedList) {
-            if (recipe.inputItem == null) continue;
-            for (AStack input : recipe.inputItem) if (input.matchesRecipe(stack, true)) return true;
-        }
-        return false;
     }
 }

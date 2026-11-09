@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import com.hbm.util.InventoryUtil;
 import com.hbm.inventory.SlotCraftingOutput;
 import com.hbm.lib.Library;
 import com.hbm.items.machine.ItemBlueprints;
@@ -125,7 +126,7 @@ public class ContainerMachineChemicalFactory extends AbstractContainerMenu {
                 boolean moved = false;
                 for (int lane = 0; lane < TileEntityMachineChemicalFactory.LANES; lane++) {
                     int input = TileEntityMachineChemicalFactory.inputStart(lane);
-                    if (moveItemStackTo(stack, input, input + 3, false)) {
+                    if (InventoryUtil.mergeItemStack(slots, stack, input, input + 3, false)) {
                         moved = true;
                         break;
                     }
