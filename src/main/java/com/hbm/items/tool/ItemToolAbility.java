@@ -292,8 +292,7 @@ public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, H
         Block block = state.getBlock();
         BlockEntity blockEntity = world.getBlockEntity(pos);
 
-        world.levelEvent(null, 2001, pos, Block.getId(state));
-
+        // 1.7 sent the break effect to everyone but the player; playerWillDestroy below does the same
         if (player.isCreative()) {
             block.playerWillDestroy(world, pos, state, player);
             if (world.removeBlock(pos, false)) block.destroy(world, pos, state);

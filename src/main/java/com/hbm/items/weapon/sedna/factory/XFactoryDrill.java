@@ -164,7 +164,6 @@ public class XFactoryDrill {
                         new AABB(pos).inflate(0.75D)).isEmpty()) {
             Block.popResource(world, pos, new ItemStack(Blocks.COBBLESTONE));
         }
-        if (destroyed && world.getBlockState(pos).isAir()) world.levelEvent(null, 2001, pos, Block.getId(state));
     }
 
     public static double getModdableReach(ItemStack stack, double base) {
