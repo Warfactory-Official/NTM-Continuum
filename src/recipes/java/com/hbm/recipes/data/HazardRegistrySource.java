@@ -87,13 +87,13 @@ public final class HazardRegistrySource {
         registerRawOres();
     }
 
-    /** port: ntm-next's raw ores carry their ore's hazards at ore strength. */
+    /** port: ntm-next's raw ores carry their ore's hazards at ore strength, by tag so other mods' raw ores do too. */
     private static void registerRawOres() {
-        register("raw_uranium", makeData(RADIATION_, u * ore));
-        register("raw_thorium", makeData(RADIATION_, th232 * ore));
-        register("raw_plutonium", makeData(RADIATION_, pu * ore));
-        register("raw_schrabidium", makeData().addEntry(RADIATION_, sa326 * ore).addEntry(BLINDING_, 50F * ore));
-        register("raw_lithium", makeData(HYDROACTIVE_, 1F * ore));
+        registerTag("raw_materials/uranium", makeData(RADIATION_, u * ore));
+        registerTag("raw_materials/thorium", makeData(RADIATION_, th232 * ore));
+        registerTag("raw_materials/plutonium", makeData(RADIATION_, pu * ore));
+        registerTag("raw_materials/schrabidium", makeData().addEntry(RADIATION_, sa326 * ore).addEntry(BLINDING_, 50F * ore));
+        registerTag("raw_materials/lithium", makeData(HYDROACTIVE_, 1F * ore));
     }
 
     private static void registerItems() {

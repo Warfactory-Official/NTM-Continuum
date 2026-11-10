@@ -330,6 +330,7 @@ public final class TagIds {
     public static final String dusts_uranium = "#c:dusts/uranium";
     public static final String dusts_verticium = "#c:dusts/verticium";
     public static final String dusts_weidanium = "#c:dusts/weidanium";
+    public static final String dusts_wood = "#c:dusts/wood";
     public static final String dusts_xe135 = "#c:dusts/xe135";
     public static final String dusts_yellowcake = "#c:dusts/yellowcake";
     public static final String dusts_zirconium = "#c:dusts/zirconium";

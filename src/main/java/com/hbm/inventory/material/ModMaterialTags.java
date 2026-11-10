@@ -1,6 +1,9 @@
 package com.hbm.inventory.material;
 
 import dev.golem.core.dejson.Tags;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Every {@code c:} convention tag hbm's materials belong to, declared through Golem Core's
@@ -66,6 +69,7 @@ public final class ModMaterialTags {
                 "tungsten", "lead", "beryllium", "rare", "cinnabar", "cobalt", "lignite", "asbestos", "coltan"}) {
             Tags.member("item", NS, "ores/" + ore, "hbm:ore_" + ore + "_deepslate");
         }
+        oreConventions();
         tag("cobblestones", "minecraft:cobblestone");
         tag("cokes", "hbm:coke_coal", "hbm:coke_lignite", "hbm:coke_petroleum");
         tag("concretes", "hbm:concrete", "hbm:concrete_smooth", "hbm:concrete_asbestos", "hbm:ducrete",
@@ -80,6 +84,8 @@ public final class ModMaterialTags {
         tag("dusts/lanthanium_tiny", "hbm:powder_lanthanium_tiny");
         tag("dusts/meteorite_tiny", "hbm:powder_meteorite_tiny");
         tag("dusts/steel_tiny", "hbm:powder_steel_tiny");
+        // port: the name other mods give sawdust (Mekanism's paper and charcoal); 1.7 had no ore name for it
+        tag("dusts/wood", "hbm:powder_sawdust");
         // 1.7 P_WHITE.ingot() "ingotWhitePhosphorus": only ingot_phosphorus (OreDictManager P_WHITE.ingot(ingot_phosphorus))
         tag("ingots/white_phosphorus", "hbm:ingot_phosphorus");
         // 1.7 KEY_SAND, Forge's "sand" ore name: sand and red sand (Blocks.sand at any meta), and other mods' sands. The
@@ -153,5 +159,44 @@ public final class ModMaterialTags {
         tag("storage_blocks/quartz", "minecraft:quartz_block");
         tag("storage_blocks/fiberglass", "hbm:block_fiberglass");
         tag("tars", "hbm:oil_tar_crude", "hbm:oil_tar_coal", "hbm:oil_tar_crack", "hbm:oil_tar_wood");
+    }
+
+    /** port: the conventions' ground and drop-rate tags; ores in other rock or without a fixed drop get none. */
+    private static void oreConventions() {
+        String[] twins = {"aluminium", "asbestos", "beryllium", "cinnabar", "cobalt", "coltan", "fluorite", "lead",
+                "lignite", "niter", "rare", "sulfur", "thorium", "titanium", "tungsten", "uranium"};
+        List<String> stone = new ArrayList<>(List.of("hbm:ore_uranium_scorched", "hbm:ore_schrabidium", "hbm:ore_australium"));
+        List<String> deepslate = new ArrayList<>();
+        for (String ore : twins) {
+            stone.add("hbm:ore_" + ore);
+            deepslate.add("hbm:ore_" + ore + "_deepslate");
+        }
+        String[] netherrack = {"hbm:ore_nether_coal", "hbm:ore_nether_cobalt", "hbm:ore_nether_plutonium",
+                "hbm:ore_nether_schrabidium", "hbm:ore_nether_smoldering", "hbm:ore_nether_sulfur",
+                "hbm:ore_nether_tungsten", "hbm:ore_nether_uranium", "hbm:ore_nether_uranium_scorched"};
+        both("ores_in_ground/stone", stone.toArray(String[]::new));
+        both("ores_in_ground/deepslate", deepslate.toArray(String[]::new));
+        both("ores_in_ground/netherrack", netherrack);
+
+        List<String> dense = new ArrayList<>(List.of("hbm:ore_nether_sulfur", "hbm:ore_nether_cobalt"));
+        List<String> singular = new ArrayList<>(List.of("hbm:ore_uranium_scorched", "hbm:ore_schrabidium",
+                "hbm:ore_nether_plutonium", "hbm:ore_nether_schrabidium", "hbm:ore_nether_tungsten",
+                "hbm:ore_nether_uranium", "hbm:ore_nether_uranium_scorched", "hbm:ore_sellafield_diamond",
+                "hbm:ore_sellafield_emerald", "hbm:ore_gneiss_asbestos", "hbm:ore_gneiss_copper", "hbm:ore_gneiss_gold",
+                "hbm:ore_gneiss_iron", "hbm:ore_gneiss_lithium", "hbm:ore_gneiss_rare", "hbm:ore_gneiss_schrabidium",
+                "hbm:ore_gneiss_uranium", "hbm:ore_gneiss_uranium_scorched"));
+        Set<String> several = Set.of("cobalt", "fluorite", "niter", "sulfur");
+        for (String ore : twins) {
+            List<String> rate = several.contains(ore) ? dense : singular;
+            rate.add("hbm:ore_" + ore);
+            rate.add("hbm:ore_" + ore + "_deepslate");
+        }
+        both("ore_rates/dense", dense.toArray(String[]::new));
+        both("ore_rates/singular", singular.toArray(String[]::new));
+    }
+
+    private static void both(String path, String... values) {
+        tag(path, values);
+        blockTag(path, values);
     }
 }

@@ -41,6 +41,8 @@ public final class ConventionFluidTags {
         put("sulfuric_acid", "sulfuric_acid");
         put("chlorine", "chlorine");
         put("heavywater", "heavy_water");
+        put("deuterium", "deuterium");
+        put("tritium", "tritium");
         put("uf6", "uranium_hexafluoride");
         put("sodium", "sodium");
         put("mercury", "mercury");
