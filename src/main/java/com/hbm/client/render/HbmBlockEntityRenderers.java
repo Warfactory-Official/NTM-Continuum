@@ -456,7 +456,6 @@ public final class HbmBlockEntityRenderers {
         regGem(sink, ModBlockEntities.REEDS.get(), RenderReeds::new);
 
         // The 12 tiered anvils: one renderer picks the per-anvil OBJ + texture from the block.
-        regGem(sink, ModBlockEntities.ANVIL.get(), AnvilObjRenderer::new);
         regGem(sink, ModBlockEntities.MACHINE_ARC_WELDER.get(), ArcWelderRenderer::new);
         regGem(sink, ModBlockEntities.MACHINE_ASSEMBLY_FACTORY.get(), AssemblyFactoryRenderer::new);
         regGem(sink, ModBlockEntities.MACHINE_CHEMICAL_FACTORY.get(), ChemicalFactoryRenderer::new);

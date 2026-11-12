@@ -12,6 +12,7 @@ import com.hbm.blocks.network.BlockCablePaintable;
 import com.hbm.blocks.network.PneumoTubePaintableBlock;
 import com.hbm.client.render.BoxDuctModel;
 import com.hbm.client.render.CableModel;
+import com.hbm.client.render.StaticObjModels;
 import com.hbm.client.render.NeoDuctModel;
 import com.hbm.client.render.PneumoTubeModel;
 import com.hbm.client.render.PowerCableBoxModel;
@@ -94,6 +95,7 @@ public final class ChunkModelRegistrations {
 
     public static void register() {
         registerPipes();
+        StaticObjModels.register();
         Disguises.register(ModEnergyNetBlocks.red_cable_paintable, new Disguises.Look() {
             @Override
             public @Nullable BlockState disguise(BlockGetter level, BlockPos pos, BlockState state) {

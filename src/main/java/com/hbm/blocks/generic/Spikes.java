@@ -10,24 +10,19 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jspecify.annotations.Nullable;
-import com.hbm.client.render.SecurityObjRenderer;
 import com.hbm.sound.ModSecuritySounds;
-import com.hbm.tileentity.TileEntitySecurityObj;
 
 /**
  * Spikes, port of 1.7.10's {@code Spikes}: no collision box; a living entity falling into them
  * faster than -0.1 blocks/tick takes 100 armour-bypassing "impaled" damage, with the slicer sound
- * when the hit lands. Empty-model block + {@code SecurityObjRenderer} drawing {@code spikes.obj}.
+ * when the hit lands. {@code spikes.obj} is a chunk model ({@code StaticObjModels}).
  */
-public class Spikes extends CompatBlock implements EntityBlock {
+public class Spikes extends CompatBlock {
 
     public Spikes(Properties properties) {
         super(properties);
@@ -54,9 +49,4 @@ public class Spikes extends CompatBlock implements EntityBlock {
         return RenderShape.MODEL;
     }
 
-    @Override
-    @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntitySecurityObj(pos, state);
-    }
 }

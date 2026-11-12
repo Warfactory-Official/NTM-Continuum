@@ -325,6 +325,19 @@ dependencies {
     // Client-side, dev runtime only, never compiled against or published; off by default so the standard runs
     // and baselines keep vanilla's pipeline. Place a pack in the run's shaderpacks folder and select it in game.
     if (propOrNull("shaders.run") == "true") propOrNull("deps.iris")?.let { devModJar("maven.modrinth:iris:$it") }
+    // Colorwheel (or `-Pshaders.flywheel=irisflw`, `none`) draws GemRender's instances through the pack's programs.
+    // `-Pcolorwheel.jar=<path>` takes a local build, `{loader}` standing for the loader; on 26.1 only with a local
+    // GemRender (`gemrender.dir`), as released GemRender's own Flywheel fork lacks classes Colorwheel needs.
+    if (propOrNull("shaders.run") == "true" && propOrNull("gemrender.run") != "false") {
+        val flywheelCompat = propOrNull("shaders.flywheel") ?: "colorwheel"
+        require(flywheelCompat in setOf("colorwheel", "irisflw", "none")) { "shaders.flywheel: colorwheel, irisflw or none" }
+        val colorwheelJar = propOrNull("colorwheel.jar")?.replace("{loader}", "neoforge")
+        if (flywheelCompat == "colorwheel" && colorwheelJar != null) {
+            if (localGemRender != null || !mcVersion.startsWith("26.")) devModJar(files(colorwheelJar))
+        } else if (flywheelCompat != "none") propOrNull("deps.$flywheelCompat")?.let {
+            devModJar("maven.modrinth:${if (flywheelCompat == "irisflw") "iris-flw-compat" else "colorwheel"}:$it")
+        }
+    }
 
     // Pipez is a real third-party energy mod, on `localRuntime` so it is present for the gametest
     // server run and not only the client: it ships no mixins, so it needs no `mods` folder placement.

@@ -436,7 +436,6 @@ public final class HbmClientRegistrations {
         ProductionClientRegistrations.registerRenderers(blockEntities);
         Production2ClientRegistrations.registerRenderers(blockEntities);
         DoorClientRegistrations.registerRenderers(blockEntities);
-        SecurityClientRegistrations.registerRenderers(blockEntities);
         NuclearMiscClientRegistrations.registerRenderers(blockEntities);
         PowerGenClientRegistrations.registerRenderers(blockEntities);
         ExplosivesClientRegistrations.registerRenderers(blockEntities);

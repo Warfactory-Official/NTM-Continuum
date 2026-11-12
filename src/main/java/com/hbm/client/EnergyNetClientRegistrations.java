@@ -11,7 +11,6 @@ import com.hbm.tileentity.ModEnergyNetBlockEntities;
 import net.minecraft.client.Minecraft;
 import com.hbm.client.render.RenderCableDiode;
 import com.hbm.client.render.RenderConnector;
-import com.hbm.client.render.RenderHEVBattery;
 import com.hbm.client.render.RenderPylon;
 import com.hbm.client.render.RenderPylonLarge;
 import com.hbm.client.render.RenderPylonMedium;
@@ -37,7 +36,6 @@ public final class EnergyNetClientRegistrations {
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.CONNECTOR.get(), () -> new RenderConnector<>(false));
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.CONNECTOR_SUPER.get(), () -> new RenderConnector<>(true));
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.CABLE_DIODE.get(), RenderCableDiode::new);
-        HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.HEV_BATTERY.get(), RenderHEVBattery::new);
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.TESLA.get(), RenderTesla::new);
         // 1.7 turns N=90, W=180, S=270, E=0: the standard map + 90
         HbmBlockEntityRenderers.regGem(sink, ModEnergyNetBlockEntities.NETWORK_SEPARATOR.get(),

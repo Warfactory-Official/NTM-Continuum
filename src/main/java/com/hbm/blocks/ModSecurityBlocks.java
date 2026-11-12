@@ -58,7 +58,7 @@ public final class ModSecurityBlocks {
     public static final List<RegistryObject<BarbedWire>> BARBED_WIRES = List.of(
             barbed_wire, barbed_wire_fire, barbed_wire_poison, barbed_wire_acid, barbed_wire_wither, barbed_wire_ultradeath);
 
-    /** OBJ-drawn: the blockstate is the empty placeholder, the BER draws the mesh. */
+    /** OBJ-drawn: the blockstate is the empty placeholder, {@code StaticObjModels} adds the mesh. */
     public static final RegistryObject<Spikes> spikes = REG.block("spikes", Spikes::new,
                     p -> p.strength(2.5F, 3.0F).noOcclusion().requiresCorrectToolForDrops())
             .transform(Presets.rendered(Variants.simple()))
@@ -116,7 +116,7 @@ public final class ModSecurityBlocks {
     public static final RegistryObject<BlockItem> wood_barrier_item = item("wood_barrier", wood_barrier, HbmTab.BLOCKS);
     public static final RegistryObject<BlockItem> machine_keyforge_item = item("machine_keyforge", machine_keyforge, HbmTab.CONSUMABLES);
 
-    /** OBJ-drawn: the blockstate is the empty placeholder, the BER draws the mesh. */
+    /** OBJ-drawn: the blockstate is the empty placeholder, {@code StaticObjModels} adds the mesh. */
     private static RegistryObject<BarbedWire> wire(BarbedWire.Kind kind) {
         return REG.block(kind.texture, p -> new BarbedWire(p, kind),
                         p -> p.strength(5.0F, 6.0F).noOcclusion().requiresCorrectToolForDrops())

@@ -39,8 +39,8 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
  * The decorative {@code DecoBlock} set from 1.12.2 (12 blocks). Two rendering paths, mirroring the old
  * {@code StaticDecoBakedModels}:
  * <ul>
- *   <li><b>steel_wall/corner/roof/beam</b>: small box models become static JSON {@code elements} models
- *       ({@link BlockDeco}, {@code RenderShape.MODEL}); skins under {@code textures/models/deco/}.</li>
+ *   <li><b>steel_wall/corner/roof</b>: OBJ meshes built into the chunk mesh ({@code StaticObjModels});
+ *       <b>steel_beam</b> is a JSON {@code elements} model; skins under {@code textures/models/deco/}.</li>
  *   <li><b>boxcar / boat / the 6 satellites</b>: full OBJ meshes become invisible blocks drawn by
  *       {@link com.hbm.client.render.DecoObjRenderer} ({@link BlockDecoObj} + a {@code TileEntityDeco}),
  *       the same invisible-block + BER pattern the machines use.</li>
@@ -67,10 +67,10 @@ public final class ModDecoBlocks {
             .and(handle -> handle.loot(Loot.self()).tag(BlockTag.PICKAXE));
 
     // Steel structural pieces (OBJ-rendered from their old ModelBase box models; custom collision)
-    public static final RegistryObject<Block> steel_wall   = decoObj("steel_wall", Shape.WALL, p -> p.requiresCorrectToolForDrops().strength(5.0F, 9.0F));
-    public static final RegistryObject<Block> steel_corner = decoObj("steel_corner", Shape.CORNER, p -> p.requiresCorrectToolForDrops().strength(15.0F, 9.0F));
+    public static final RegistryObject<Block> steel_wall   = decoChunk("steel_wall", Shape.WALL, p -> p.requiresCorrectToolForDrops().strength(5.0F, 9.0F));
+    public static final RegistryObject<Block> steel_corner = decoChunk("steel_corner", Shape.CORNER, p -> p.requiresCorrectToolForDrops().strength(15.0F, 9.0F));
     // 1.7 ItemRenderDecoBlock: the flat steel_roof block icon in a slot, ModelSteelRoof in hand and on the ground
-    public static final RegistryObject<Block> steel_roof   = decoObj("steel_roof", Shape.ROOF, p -> p.requiresCorrectToolForDrops().strength(5.0F, 9.0F))
+    public static final RegistryObject<Block> steel_roof   = decoChunk("steel_roof", Shape.ROOF, p -> p.requiresCorrectToolForDrops().strength(5.0F, 9.0F))
             .andThen(h -> ItemRendererDeclarations.heldBlockIcon(h.path(), "hbm:blocks/steel_roof", "deco_block"));
     // steel_beam kept as a static JSON central post (its old model was a simple beam.obj post); the model is authored.
     public static final RegistryObject<Block> steel_beam   = deco("steel_beam", Shape.BEAM, p -> p.requiresCorrectToolForDrops().strength(5.0F, 9.0F))
@@ -302,6 +302,13 @@ public final class ModDecoBlocks {
         Reg.Handle<Block> block = REG.<Block>block(id, p -> new BlockDeco(p, shape), p -> props.apply(p.noOcclusion()));
         blockItem(block);
         return block;
+    }
+
+    /** An OBJ deco block drawn into the chunk mesh, its look registered in {@code StaticObjModels}. */
+    private static Reg.Handle<Block> decoChunk(String id, Shape shape, UnaryOperator<BlockBehaviour.Properties> props) {
+        Reg.Handle<Block> block = REG.<Block>block(id, p -> new BlockDeco(p, shape), p -> props.apply(p.noOcclusion()));
+        blockItem(block);
+        return block.transform(OBJ_DECO);
     }
 
     /** An OBJ-rendered (invisible + BER) deco block with the given collision shape. */

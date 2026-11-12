@@ -25,7 +25,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
-import com.hbm.client.render.DecoModelRenderer;
 import com.hbm.tileentity.deco.TileEntityDecoModel;
 
 /**
@@ -34,10 +33,10 @@ import com.hbm.tileentity.deco.TileEntityDecoModel;
  * {@code BlockDecoToaster} and four {@code BlockDecoCRT} subtypes (flattened) and the
  * {@code BlockDecoModel} computer. Every one of them stored the
  * {@code MathHelper.floor_double(yaw * 4 / 360 + 0.5) & 3} quadrant in some bit layout; {@link #FACING}
- * keeps the placer's horizontal look direction itself and {@code DecoModelRenderer} owns each kind's
- * old rotation table. Looks are drawn by that renderer through {@link TileEntityDecoModel}.
+ * keeps the placer's horizontal look direction itself. Most kinds are built into the chunk mesh by
+ * {@code StaticObjModels}; {@link Rendered} kinds are drawn by {@code DecoModelRenderer}.
  */
-public class DecoModelBlock extends CompatBlock implements EntityBlock {
+public class DecoModelBlock extends CompatBlock {
 
     public enum Kind {
         POLE, TOP, SATELLITE, TAPE_RECORDER,
@@ -72,11 +71,6 @@ public class DecoModelBlock extends CompatBlock implements EntityBlock {
         return RenderShape.MODEL;
     }
 
-    @Override
-    @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityDecoModel(pos, state);
-    }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
@@ -114,6 +108,20 @@ public class DecoModelBlock extends CompatBlock implements EntityBlock {
     @Override
     public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
+
+    /** The CRTs and the pole satellite receiver, drawn every frame by {@code DecoModelRenderer}. */
+    public static class Rendered extends DecoModelBlock implements EntityBlock {
+
+        public Rendered(Properties properties, Kind kind) {
+            super(properties, kind);
+        }
+
+        @Override
+        @Nullable
+        public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+            return new TileEntityDecoModel(pos, state);
+        }
     }
 
     /** {@code steel_poles}: the one furniture piece that is waterloggable (port addition, see {@link Waterlogging}). */

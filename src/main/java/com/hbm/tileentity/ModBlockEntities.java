@@ -2,10 +2,8 @@ package com.hbm.tileentity;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.Constants;
-import com.hbm.blocks.ModAnvilBlocks;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModDecoBlocks;
-import com.hbm.blocks.ModSteelBlocks;
 import com.hbm.blocks.ModTerrainBlocks;
 import com.hbm.blocks.generic.BlockDynamicSlag;
 import com.hbm.blocks.machine.MachineFan;
@@ -192,7 +190,6 @@ import com.hbm.tileentity.machine.TileEntityDeuteriumTower;
 import com.hbm.tileentity.network.TileEntityCableBaseNT;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.tileentity.network.TileEntityFluidValve;
-import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -980,18 +977,12 @@ public final class ModBlockEntities {
 
     // The 12 tiered anvils (OBJ-rendered; the BE exists only for the renderer)
 
-    public static final RegistryObject<BlockEntityType<TileEntityAnvil>> ANVIL =
-            REG.blockEntity("anvil",
-                    () -> BlockEntities.type(TileEntityAnvil::new, ModAnvilBlocks.ANVILS.stream()
-                            .map(RegistryObject::get).toArray(Block[]::new)));
-
     // Decorative OBJ-rendered blocks (boxcar / boat / satellite dishes)
 
     public static final RegistryObject<BlockEntityType<TileEntityDeco>> DECO =
             REG.blockEntity("deco",
-                    () -> BlockEntities.type(TileEntityDeco::new, Stream.concat(
-                            ModDecoBlocks.OBJ_BLOCKS.stream(), ModSteelBlocks.OBJ_BLOCKS.stream())
-                            .map(RegistryObject::get).toArray(Block[]::new)));
+                    () -> BlockEntities.type(TileEntityDeco::new,
+                            ModDecoBlocks.OBJ_BLOCKS.stream().map(RegistryObject::get).toArray(Block[]::new)));
 
     /** plant_reeds: exists only so RenderReeds can draw the stem down the whole water column. */
     public static final RegistryObject<BlockEntityType<TileEntityReeds>> REEDS =

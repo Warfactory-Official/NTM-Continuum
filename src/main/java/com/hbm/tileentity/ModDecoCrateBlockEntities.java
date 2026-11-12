@@ -4,7 +4,6 @@ import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.tileentity.deco.TileEntityBobble;
-import com.hbm.tileentity.deco.TileEntityCanCrate;
 import com.hbm.tileentity.deco.TileEntityEmitter;
 import com.hbm.tileentity.deco.TileEntityGlyphidSpawner;
 import com.hbm.tileentity.deco.TileEntityPartEmitter;
@@ -32,9 +31,6 @@ public final class ModDecoCrateBlockEntities {
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
     private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
-    public static final RegistryObject<BlockEntityType<TileEntityCanCrate>> CRATE_CAN =
-            REG.blockEntity("crate_can", () -> BlockEntities.type(TileEntityCanCrate::new,
-                    ModDecoCrateBlocks.crate_can.get()));
     public static final RegistryObject<BlockEntityType<TileEntityCrateTungsten>> CRATE_TUNGSTEN =
             REG.blockEntity("crate_tungsten", () -> BlockEntities.ticking(TileEntityCrateTungsten::new,
                     TileEntityCrateTungsten::clientTick, TileEntityCrateTungsten::serverTick,

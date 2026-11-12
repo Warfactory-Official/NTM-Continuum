@@ -21,11 +21,9 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -34,7 +32,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
-import com.hbm.tileentity.bomb.TileEntityDetCord;
 
 /**
  * 1.7 {@code DetCord}: a redstone-fired 1.5-strength fuse block drawn as a cable ({@code cable_neo.obj}
@@ -42,7 +39,7 @@ import com.hbm.tileentity.bomb.TileEntityDetCord;
  * connection flags live in the state, as the red cable's do, and a block-entity renderer draws the
  * matching OBJ parts (1.7 {@code RenderDetCord}).
  */
-public class DetCord extends CompatBlock implements EntityBlock, IDetConnectible, IFuckingExplode, IBlockExplodedVNT {
+public class DetCord extends CompatBlock implements IDetConnectible, IFuckingExplode, IBlockExplodedVNT {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;
@@ -80,11 +77,6 @@ public class DetCord extends CompatBlock implements EntityBlock, IDetConnectible
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
-    }
-
-    @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityDetCord(pos, state);
     }
 
     @Override

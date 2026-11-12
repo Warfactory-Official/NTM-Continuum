@@ -2,8 +2,6 @@ package com.hbm.client.render;
 
 import com.hbm.Constants;
 import com.hbm.blocks.ModDecoBlocks;
-import com.hbm.blocks.ModSteelBlocks;
-import com.hbm.blocks.generic.BlockScaffold;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.deco.TileEntityDeco;
 import dev.golem.core.Ids;
@@ -17,27 +15,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * The OBJ-modelled decorations, boxcar, boat, satellites, the steel structural pieces and the
- * scaffold, all served by one renderer that looks its model up from the block it is on.
- *
- * <p>Each family poses differently, so the model states one joint per family and fills the one or two
- * mesh-shaped slots under it from the block. A part per decoration would put a hundred buckets on
- * every steel wall a player stacks.
+ * The boxcar, boat and satellite decorations (1.7 {@code RenderDecoBlock}), served by one renderer that
+ * looks its model up from the block it is on. Each family poses differently, so the model states one
+ * joint per family and fills the one or two mesh-shaped slots under it from the block.
  */
 public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
 
-    private enum Style { BOXCAR, BOAT, SAT, STEEL, SCAFFOLD }
+    private enum Style { BOXCAR, BOAT, SAT }
 
     private record Piece(Geometry mesh, Surface surface) {}
 
-    private record Config(List<Piece> pieces, Style style, Map<Direction, Float> yaw,
-                          Map<BlockScaffold.Variant, Piece> variants) {}
+    private record Config(List<Piece> pieces, Style style, Map<Direction, Float> yaw) {}
 
     private final Map<Block, Config> configs = new HashMap<>();
     private Piece fallback;
@@ -60,16 +53,6 @@ public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
                 .mesh(state -> piece(state, 0).mesh())
                 .skin(state -> piece(state, 0).surface());
 
-        // compose(translate(0.5,1.5,0.5), rotateZ(180), rotateY(legacyFacingYaw)) + the ModelBase 0.0625 scale.
-        style(declaration, Style.STEEL)
-                .translate(0.5F, 1.5F, 0.5F)
-                .rotate(Gem.Axes.Z, 180F)
-                .angle(Gem.Axes.Y, state -> state.yaw)
-                .scale(0.0625F)
-                .child(fallback.mesh(), fallback.surface())
-                .mesh(state -> piece(state, 0).mesh())
-                .skin(state -> piece(state, 0).surface());
-
         // The port's BER basis is the old bake's post-flip basis (cf. BombObjRenderer), so drop the old
         // rotateZ(180)+1.5 Y-offset compensation; keep the dish-orienting rotateY(90)+yaw.
         Gem.Part<DecoRenderState> satellite = style(declaration, Style.SAT)
@@ -83,27 +66,6 @@ public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
                 .visibleIf(state -> pieces(state).size() > 1)
                 .mesh(state -> piece(state, 1).mesh())
                 .skin(state -> piece(state, 1).surface());
-
-        for (BlockScaffold.Orientation orientation : BlockScaffold.Orientation.values()) {
-            Gem.Part<DecoRenderState> scaffold = declaration.joint()
-                    .visibleIf(state -> styleOf(state) == Style.SCAFFOLD && orientationOf(state) == orientation)
-                    .translate(0.5F, 0.5F, 0.5F);
-            // 1.7 RenderScaffoldBlock: v' = rotY(rotation) * rotZ(-pitch) * v + origin (ObjUtil applies Vec3
-            // rotateAroundZ(pitch), which is a -pitch rotation, then rotateAroundY(rotation)). Metas 0/8 stand on
-            // the block's floor at (0.5, 0, 0.5); metas 4 (placed on a N/S face) and 12 (E/W face) lie on their
-            // side with pitch 90 about origins (0.5, 0.5, 0) and (1, 0.5, 0.5). Pose ops compose outer-first, so
-            // the Y rotation precedes the Z rotation here; the reverse order laid both side-placed states out of
-            // their block.
-            switch (orientation) {
-                case HORIZONTAL_NS -> scaffold.rotate(Gem.Axes.Y, -90F).translate(0F, -0.5F, 0F);
-                case HORIZONTAL_EW -> scaffold.rotate(Gem.Axes.Y, -180F).translate(0F, -0.5F, 0F);
-                case VERTICAL_NS -> scaffold.translate(0F, 0F, -0.5F).rotate(Gem.Axes.Y, -90F).rotate(Gem.Axes.Z, -90F);
-                case VERTICAL_EW -> scaffold.translate(0.5F, 0F, 0F).rotate(Gem.Axes.Y, -180F).rotate(Gem.Axes.Z, -90F);
-            }
-            scaffold.child(fallback.mesh(), fallback.surface())
-                    .mesh(state -> scaffoldPiece(state).mesh())
-                    .skin(state -> scaffoldPiece(state).surface());
-        }
     }
 
     private Gem.Part<DecoRenderState> style(Gem.Model<DecoRenderState> declaration, Style style) {
@@ -113,10 +75,6 @@ public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
     private Style styleOf(DecoRenderState state) {
         Config config = configs.get(state.block);
         return config == null ? null : config.style();
-    }
-
-    private static BlockScaffold.Orientation orientationOf(DecoRenderState state) {
-        return state.scaffoldOrient == null ? BlockScaffold.Orientation.HORIZONTAL_NS : state.scaffoldOrient;
     }
 
     private List<Piece> pieces(DecoRenderState state) {
@@ -129,39 +87,12 @@ public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
         return index < pieces.size() ? pieces.get(index) : fallback;
     }
 
-    private Piece scaffoldPiece(DecoRenderState state) {
-        Config config = configs.get(state.block);
-        if (config == null) return fallback;
-        BlockScaffold.Variant variant = state.scaffoldVariant == null
-                ? BlockScaffold.Variant.STEEL : state.scaffoldVariant;
-        return config.variants().getOrDefault(variant,
-                config.variants().getOrDefault(BlockScaffold.Variant.STEEL, fallback));
-    }
-
     /** The yaw maps are copied from StaticDecoBakedModels (boxcarYaw / satelliteYaw / resonatorYaw). */
     private void build() {
         Map<Direction, Float> boxcarYaw = yawMap(270F, 90F, 0F, 180F);
         Map<Direction, Float> satYaw = yawMap(180F, 0F, 90F, 270F);
         Map<Direction, Float> resonatorYaw = yawMap(180F, 0F, 270F, 90F);
-        Map<Direction, Float> legacyYaw = yawMap(180F, 0F, 90F, 270F);
         Map<Direction, Float> noYaw = yawMap(0F, 0F, 0F, 0F);
-
-        // steel structural pieces: generated OBJs (from the old ModelBase boxes, in pixel units).
-        put(ModDecoBlocks.steel_wall.get(), Style.STEEL, legacyYaw, piece("models/deco/steel_wall.obj", "deco/steelwall"));
-        put(ModDecoBlocks.steel_corner.get(), Style.STEEL, legacyYaw, piece("models/deco/steel_corner.obj", "deco/steelcorner"));
-        // steel_roof has no per-facing rotation in the old bake (only rotateZ 180); noYaw keeps it fixed.
-        put(ModDecoBlocks.steel_roof.get(), Style.STEEL, noYaw, piece("models/deco/steel_roof.obj", "deco/steelroof"));
-
-        Geometry scaffold = WavefrontObj.load(
-                Ids.of(Constants.MOD_ID, "models/blocks/scaffold.obj")).all();
-        Map<BlockScaffold.Variant, Piece> scaffoldPieces = new EnumMap<>(BlockScaffold.Variant.class);
-        for (BlockScaffold.Variant variant : BlockScaffold.Variant.values()) {
-            scaffoldPieces.put(variant, new Piece(scaffold,
-                    Surface.cutout(Constants.MOD_ID + ":textures/blocks/" + variant.texture + ".png")));
-        }
-        configs.put(ModSteelBlocks.steel_scaffold.get(),
-                new Config(List.of(), Style.SCAFFOLD, Map.of(), scaffoldPieces));
-
         put(ModDecoBlocks.boxcar.get(), Style.BOXCAR, boxcarYaw, piece("models/boxcar.obj", "misc/boxcar"));
         put(ModDecoBlocks.boat.get(), Style.BOAT, noYaw, piece("models/duchessgambit.obj", "misc/duchessgambit"));
 
@@ -192,7 +123,7 @@ public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
     }
 
     private void put(Block block, Style style, Map<Direction, Float> yaw, Piece... pieces) {
-        configs.put(block, new Config(List.of(pieces), style, yaw, Map.of()));
+        configs.put(block, new Config(List.of(pieces), style, yaw));
     }
 
     @Override
@@ -205,15 +136,9 @@ public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
         BlockState bs = blockEntity.getBlockState();
         state.block = bs.getBlock();
         state.yaw = 0F;
-        state.scaffoldOrient = null;
-        state.scaffoldVariant = null;
         Config cfg = configs.get(state.block);
         if (cfg != null && bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
             state.yaw = cfg.yaw().getOrDefault(bs.getValue(BlockStateProperties.HORIZONTAL_FACING), 0F);
-        }
-        if (state.block == ModSteelBlocks.steel_scaffold.get()) {
-            state.scaffoldOrient = bs.getValue(BlockScaffold.ORIENT);
-            state.scaffoldVariant = bs.getValue(BlockScaffold.VARIANT);
         }
     }
 }

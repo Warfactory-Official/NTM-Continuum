@@ -24,7 +24,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -36,7 +35,6 @@ public final class ModSteelBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
     private static final Reg REG = Reg.of(BLOCKS, ITEMS);
-    public static final List<RegistryObject<? extends Block>> OBJ_BLOCKS = new ArrayList<>();
 
     /**
      * 1.7 {@code ModSoundTypes.grate}. A holder, not a field of this class: a {@code SoundType} only exists in a
@@ -121,8 +119,6 @@ public final class ModSteelBlocks {
 
         ModTabs.addStacksTo(HbmTab.BLOCKS, () -> IntStream.range(0, SCAFFOLD_ITEMS.size())
                 .mapToObj(ModSteelBlocks::scaffoldItem).toList());
-
-        OBJ_BLOCKS.add(steel_scaffold);
     }
 
     public static void init() {}

@@ -22,17 +22,11 @@ public final class ModDecoBlockEntities {
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
     private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
-    /** The one stateless type every OBJ-drawn decoration of this family carries so its renderer runs. */
+    /** The stateless type {@code DecoModelBlock.Rendered} carries so its renderer runs. */
     public static final RegistryObject<BlockEntityType<TileEntityDecoModel>> DECO_MODEL =
             REG.blockEntity("deco_model", () -> BlockEntities.type(TileEntityDecoModel::new,
-                    ModDecoContent.spotlight_incandescent.get(), ModDecoContent.spotlight_incandescent_off.get(),
-                    ModDecoContent.spotlight_fluoro.get(), ModDecoContent.spotlight_fluoro_off.get(),
-                    ModDecoContent.spotlight_halogen.get(), ModDecoContent.spotlight_halogen_off.get(),
-                    ModDecoContent.steel_poles.get(), ModDecoContent.pole_top.get(),
-                    ModDecoContent.pole_satellite_receiver.get(), ModDecoContent.tape_recorder.get(),
-                    ModDecoContent.deco_toaster_iron.get(), ModDecoContent.deco_toaster_steel.get(), ModDecoContent.deco_toaster_wood.get(),
-                    ModDecoContent.deco_crt_clean.get(), ModDecoContent.deco_crt_broken.get(), ModDecoContent.deco_crt_blinking.get(),
-                    ModDecoContent.deco_crt_bsod.get(), ModDecoContent.deco_computer_ibm_300pl.get()));
+                    ModDecoContent.pole_satellite_receiver.get(), ModDecoContent.deco_crt_clean.get(),
+                    ModDecoContent.deco_crt_broken.get(), ModDecoContent.deco_crt_blinking.get(), ModDecoContent.deco_crt_bsod.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityFloodlight>> FLOODLIGHT =
             REG.blockEntity("floodlight", () -> BlockEntities.serverTicking(TileEntityFloodlight::new,

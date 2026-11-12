@@ -14,11 +14,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -33,8 +31,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Supplier;
 import com.hbm.blocks.generic.ReinforcedLamp;
 import com.hbm.blocks.generic.SpotlightBeams;
-import com.hbm.client.render.DecoModelRenderer;
-import com.hbm.tileentity.deco.TileEntityDecoModel;
 
 /**
  * 1.7 {@code Spotlight}: the cage lamp, fluorescent tube and halogen floodlight fixtures. Two blocks per
@@ -43,9 +39,9 @@ import com.hbm.tileentity.deco.TileEntityDecoModel;
  * fixture points away from) and {@link #BROKEN} (a structure-generated fixture that needs a click to
  * replace its bulb). The lit block lays a {@link SpotlightBeam} of {@code beamLength} along its facing.
  *
- * <p>The OBJ body is drawn by {@code DecoModelRenderer} through the shared {@code TileEntityDecoModel}.
+ * <p>The OBJ body is built into the chunk mesh by {@code StaticObjModels}.
  */
-public class Spotlight extends CompatBlock implements ISpotlight, EntityBlock {
+public class Spotlight extends CompatBlock implements ISpotlight {
 
     public enum LightType { INCANDESCENT, FLUORESCENT, HALOGEN }
 
@@ -78,13 +74,7 @@ public class Spotlight extends CompatBlock implements ISpotlight, EntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
-    }
-
-    @Override
-    @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityDecoModel(pos, state);
+        return RenderShape.MODEL;
     }
 
     /** Old {@code getPartName}: which OBJ group draws this fixture. */

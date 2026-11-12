@@ -4,7 +4,6 @@ import com.hbm.blocks.bomb.BlockDetonatable;
 import com.hbm.blocks.bomb.BlockTNTBase;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
 import com.hbm.explosion.vanillant.ExplosionVNT;
-import com.hbm.tileentity.network.TileEntityBarrelDeco;
 import com.hbm.api.block.IToolable;
 import dev.golem.core.world.Fires;
 import java.util.function.BiConsumer;
@@ -21,9 +20,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -41,10 +38,10 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Extends {@link BlockTNTBase} only so the shared {@link EntityPrimedExplosive} can call back into
  * {@link #detonate}; the TNT base's redstone/flint-and-steel/screwdriver behaviours are switched off
- * here, because 1.7 barrels had none of them. The drum is drawn by a block-entity renderer
- * ({@code barrel.obj}), which is what {@link TileEntityBarrelDeco} exists for.
+ * here, because 1.7 barrels had none of them. The drum ({@code barrel.obj}) is a chunk model
+ * ({@code StaticObjModels}).
  */
-public abstract class BlockBarrelDeco extends BlockTNTBase implements EntityBlock, BlockDetonatable {
+public abstract class BlockBarrelDeco extends BlockTNTBase implements BlockDetonatable {
 
     private static final VoxelShape SHAPE = Shapes.box(0.125, 0, 0.125, 0.875, 1, 0.875);
     private static final int POP_FUSE = 100;
@@ -78,11 +75,6 @@ public abstract class BlockBarrelDeco extends BlockTNTBase implements EntityBloc
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
-    }
-
-    @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityBarrelDeco(pos, state);
     }
 
     // --- ignition: only fire next to a flammable drum, checked on neighbour change (1.7 BlockFlammable.shouldIgnite / BlockDetonatable) ---

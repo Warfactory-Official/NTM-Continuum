@@ -6,11 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.client.render.DecoModelRenderer;
 import com.hbm.tileentity.ModDecoBlockEntities;
 
-/**
- * A do-nothing block entity carried by the OBJ-drawn decorative blocks of this family (spotlights,
- * poles, tape recorder, ...) so {@code DecoModelRenderer} runs for them. The same invisible-block +
- * renderer pattern as {@code TileEntityDeco}; the renderer looks the model up from the block.
- */
+/** A do-nothing block entity that lets {@link DecoModelRenderer} draw the CRTs and the pole satellite receiver. */
 public class TileEntityDecoModel extends BlockEntity {
 
     public TileEntityDecoModel(BlockPos pos, BlockState state) {

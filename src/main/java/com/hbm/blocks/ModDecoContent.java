@@ -463,11 +463,11 @@ public final class ModDecoContent {
             p -> p.strength(1.0F, 1.5F).sound(SoundType.STONE).requiresCorrectToolForDrops(), HbmTab.CONSUMABLES) // 1.7 Material.rock
             .transform(CUBE).tag(BlockTag.PICKAXE);
 
-    // OBJ-drawn decorations (invisible block + TileEntityDecoModel + DecoModelRenderer)
+    // OBJ-drawn decorations: chunk models, except the CRTs and the satellite receiver (TileEntityDecoModel)
     public static final RegistryObject<DecoModelBlock> steel_poles = model("steel_poles", DecoModelBlock.Pole::new, 5.0F, 9.0F, true);
     public static final RegistryObject<DecoModelBlock> pole_top = model("pole_top", DecoModelBlock.Kind.TOP, 5.0F, 9.0F, true);
     /** 1.7 render type -1 with no item renderer: the item is the block's flat {@code deco_satellite_receiver} icon. */
-    public static final RegistryObject<DecoModelBlock> pole_satellite_receiver = model("pole_satellite_receiver", DecoModelBlock.Kind.SATELLITE, 5.0F, 9.0F, true)
+    public static final RegistryObject<DecoModelBlock> pole_satellite_receiver = rendered("pole_satellite_receiver", DecoModelBlock.Kind.SATELLITE, 5.0F, 9.0F, true)
             .transform(Presets.sprite("hbm:blocks/deco_satellite_receiver"));
     public static final RegistryObject<DecoModelBlock> tape_recorder = model("tape_recorder", DecoModelBlock.Kind.TAPE_RECORDER, 5.0F, 9.0F, true);
     /** BlockDecoToaster subtypes (Material.iron, 5/10), flattened. */
@@ -475,15 +475,19 @@ public final class ModDecoContent {
     public static final RegistryObject<DecoModelBlock> deco_toaster_steel = model("deco_toaster_steel", DecoModelBlock.Kind.TOASTER_STEEL, 5.0F, 6.0F, true);
     public static final RegistryObject<DecoModelBlock> deco_toaster_wood = model("deco_toaster_wood", DecoModelBlock.Kind.TOASTER_WOOD, 5.0F, 6.0F, true);
     /** BlockDecoCRT subtypes (Material.iron, 5/10), flattened. */
-    public static final RegistryObject<DecoModelBlock> deco_crt_clean = model("deco_crt_clean", DecoModelBlock.Kind.CRT_CLEAN, 5.0F, 6.0F, true);
-    public static final RegistryObject<DecoModelBlock> deco_crt_broken = model("deco_crt_broken", DecoModelBlock.Kind.CRT_BROKEN, 5.0F, 6.0F, true);
-    public static final RegistryObject<DecoModelBlock> deco_crt_blinking = model("deco_crt_blinking", DecoModelBlock.Kind.CRT_BLINKING, 5.0F, 6.0F, true);
-    public static final RegistryObject<DecoModelBlock> deco_crt_bsod = model("deco_crt_bsod", DecoModelBlock.Kind.CRT_BSOD, 5.0F, 6.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_crt_clean = rendered("deco_crt_clean", DecoModelBlock.Kind.CRT_CLEAN, 5.0F, 6.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_crt_broken = rendered("deco_crt_broken", DecoModelBlock.Kind.CRT_BROKEN, 5.0F, 6.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_crt_blinking = rendered("deco_crt_blinking", DecoModelBlock.Kind.CRT_BLINKING, 5.0F, 6.0F, true);
+    public static final RegistryObject<DecoModelBlock> deco_crt_bsod = rendered("deco_crt_bsod", DecoModelBlock.Kind.CRT_BSOD, 5.0F, 6.0F, true);
     /** BlockDecoModel(DecoComputerEnum.IBM_300PL) (Material.iron, 5/10), flattened. */
     public static final RegistryObject<DecoModelBlock> deco_computer_ibm_300pl = model("deco_computer_ibm_300pl", DecoModelBlock.Kind.COMPUTER, 5.0F, 10.0F, true);
 
     private static Reg.Handle<DecoModelBlock> model(String id, DecoModelBlock.Kind kind, float hardness, float resistance, boolean iron) {
         return model(id, p -> new DecoModelBlock(p, kind), hardness, resistance, iron);
+    }
+
+    private static Reg.Handle<DecoModelBlock> rendered(String id, DecoModelBlock.Kind kind, float hardness, float resistance, boolean iron) {
+        return model(id, p -> new DecoModelBlock.Rendered(p, kind), hardness, resistance, iron);
     }
 
     private static Reg.Handle<DecoModelBlock> model(String id, Function<BlockBehaviour.Properties, DecoModelBlock> factory,

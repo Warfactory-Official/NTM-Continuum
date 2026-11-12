@@ -19,7 +19,6 @@ import com.hbm.tileentity.network.TileEntityCableSwitch;
 import com.hbm.tileentity.network.TileEntityConnector;
 import com.hbm.tileentity.network.TileEntityConnectorSuper;
 import com.hbm.tileentity.network.TileEntityDiode;
-import com.hbm.tileentity.network.TileEntityHEVBattery;
 import com.hbm.tileentity.network.TileEntityNetworkSeparator;
 import com.hbm.tileentity.network.TileEntityPylon;
 import com.hbm.tileentity.network.TileEntityPylonLarge;
@@ -81,9 +80,6 @@ public final class ModEnergyNetBlockEntities {
                     TileEntityMachineBattery::serverTick,
                     ModEnergyNetBlocks.machine_battery_potato.get(), ModEnergyNetBlocks.machine_lithium_battery.get(),
                     ModEnergyNetBlocks.machine_schrabidium_battery.get(), ModEnergyNetBlocks.machine_dineutronium_battery.get()));
-    public static final RegistryObject<BlockEntityType<TileEntityHEVBattery>> HEV_BATTERY =
-            REG.blockEntity("hev_battery", () -> BlockEntities.type(TileEntityHEVBattery::new,
-                    ModEnergyNetBlocks.hev_battery.get()));
     public static final RegistryObject<BlockEntityType<TileEntityTesla>> TESLA =
             REG.blockEntity("tesla", () -> BlockEntities.serverTicking(TileEntityTesla::new,
                     TileEntityTesla::serverTick, ModEnergyNetBlocks.tesla.get()));

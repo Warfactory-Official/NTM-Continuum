@@ -6,7 +6,6 @@ import com.hbm.inventory.ModExplosivesMenus;
 import com.hbm.client.render.BombMultiRenderer;
 import com.hbm.client.render.ChargeRenderer;
 import com.hbm.client.render.CrashedBombRenderer;
-import com.hbm.client.render.DetCordRenderer;
 import com.hbm.client.render.LandmineRenderer;
 import com.hbm.inventory.gui.GUIBombMulti;
 
@@ -21,7 +20,6 @@ public final class ExplosivesClientRegistrations {
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {
         HbmBlockEntityRenderers.regGem(sink, ModExplosivesBlockEntities.LANDMINE.get(), LandmineRenderer::new);
         HbmBlockEntityRenderers.regGem(sink, ModExplosivesBlockEntities.CHARGE.get(), ChargeRenderer::new);
-        HbmBlockEntityRenderers.regGem(sink, ModExplosivesBlockEntities.DET_CORD.get(), DetCordRenderer::new);
         HbmBlockEntityRenderers.regGem(sink, ModExplosivesBlockEntities.CRASHED_BOMB.get(), CrashedBombRenderer::new);
         HbmBlockEntityRenderers.regGem(sink, ModExplosivesBlockEntities.BOMB_MULTI.get(), BombMultiRenderer::new);
     }

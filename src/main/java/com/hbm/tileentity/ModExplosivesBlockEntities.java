@@ -11,7 +11,6 @@ import com.hbm.blocks.ModExplosivesBlocks;
 import com.hbm.tileentity.bomb.TileEntityBombMulti;
 import com.hbm.tileentity.bomb.TileEntityCharge;
 import com.hbm.tileentity.bomb.TileEntityCrashedBomb;
-import com.hbm.tileentity.bomb.TileEntityDetCord;
 import com.hbm.tileentity.bomb.TileEntityLandmine;
 
 /** Feature-local block-entity types for the conventional explosives. */
@@ -33,10 +32,6 @@ public final class ModExplosivesBlockEntities {
                     TileEntityCharge::serverTick,
                     ModExplosivesBlocks.charge_dynamite.get(), ModExplosivesBlocks.charge_miner.get(),
                     ModExplosivesBlocks.charge_c4.get(), ModExplosivesBlocks.charge_semtex.get()));
-
-    public static final RegistryObject<BlockEntityType<TileEntityDetCord>> DET_CORD =
-            REG.blockEntity("det_cord", () -> BlockEntities.type(TileEntityDetCord::new,
-                    ModExplosivesBlocks.det_cord.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityCrashedBomb>> CRASHED_BOMB =
             REG.blockEntity("crashed_bomb", () -> BlockEntities.serverTicking(TileEntityCrashedBomb::new,

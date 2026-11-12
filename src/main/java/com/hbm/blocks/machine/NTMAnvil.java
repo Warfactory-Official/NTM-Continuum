@@ -2,8 +2,6 @@ package com.hbm.blocks.machine;
 
 import com.hbm.inventory.container.ContainerAnvil;
 import dev.golem.core.gui.Menus;
-import dev.golem.core.registry.TickingBlock;
-import com.hbm.tileentity.TileEntityAnvil;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,11 +14,9 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -35,13 +31,12 @@ import org.jspecify.annotations.Nullable;
  * GUI block: right-click opens {@link ContainerAnvil} (two smithing slots + the construction-recipe
  * browser); the {@link #tier} is baked into the block instance and gates which recipes it can run.
  *
- * <p>Rendering: the old anvils were {@code forge_marker} OBJ blockstates, so like the machines the block
- * bakes an empty model and carries a no-op {@link TileEntityAnvil} for
- * {@link com.hbm.client.render.AnvilObjRenderer}. The thin per-axis collision box is faithful to the old
+ * <p>Rendering: the old anvils were {@code forge_marker} OBJ blockstates; {@code StaticObjModels} builds the OBJ
+ * into the chunk mesh. The thin per-axis collision box is faithful to the old
   * {@code getBoundingBox}. <b>Deferred:</b> the old {@code BlockFalling} gravity (a falling-block entity
   * would render nothing for an empty-model block).
  */
-public class NTMAnvil extends CompatBlock implements TickingBlock {
+public class NTMAnvil extends CompatBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -71,12 +66,6 @@ public class NTMAnvil extends CompatBlock implements TickingBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
-    }
-
-    @Override
-    @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityAnvil(pos, state);
     }
 
     @Override

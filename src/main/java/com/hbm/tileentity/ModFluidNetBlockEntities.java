@@ -4,7 +4,6 @@ import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.blocks.network.FluidDuctBox;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
-import com.hbm.tileentity.network.TileEntityBarrelDeco;
 import com.hbm.tileentity.network.TileEntityFluidCounterValve;
 import com.hbm.tileentity.network.TileEntityFluidDuctVariant;
 import com.hbm.tileentity.network.TileEntityFluidPump;
@@ -89,12 +88,6 @@ public final class ModFluidNetBlockEntities {
             REG.blockEntity("barrel", () -> BlockEntities.serverTicking(TileEntityBarrel::new, TileEntityBarrel::serverTick,
                     ModFluidNetBlocks.barrel_plastic.get(), ModFluidNetBlocks.barrel_corroded.get(), ModFluidNetBlocks.barrel_steel.get(),
                     ModFluidNetBlocks.barrel_tcalloy.get(), ModFluidNetBlocks.barrel_antimatter.get()));
-
-    public static final RegistryObject<BlockEntityType<TileEntityBarrelDeco>> BARREL_DECO =
-            REG.blockEntity("barrel_deco", () -> BlockEntities.type(TileEntityBarrelDeco::new,
-                    ModFluidNetBlocks.red_barrel.get(), ModFluidNetBlocks.pink_barrel.get(),
-                    ModFluidNetBlocks.yellow_barrel.get(), ModFluidNetBlocks.vitrified_barrel.get(),
-                    ModFluidNetBlocks.lox_barrel.get(), ModFluidNetBlocks.taint_barrel.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityFoundryTank>> FOUNDRY_TANK =
             REG.blockEntity("foundry_tank", () -> BlockEntities.serverTicking(TileEntityFoundryTank::new,

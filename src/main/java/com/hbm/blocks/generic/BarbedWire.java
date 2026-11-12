@@ -21,11 +21,9 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -35,8 +33,6 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
-import com.hbm.client.render.SecurityObjRenderer;
-import com.hbm.tileentity.TileEntitySecurityObj;
 
 /**
  * Barbed wire, port of 1.7.10's {@code BarbedWire}. No collision box; anything inside is held like a
@@ -51,11 +47,10 @@ import com.hbm.tileentity.TileEntitySecurityObj;
  * </ul>
  * The 1.7.10 block stored the placement yaw in its metadata and drew the OBJ rotated by -90°
  * (east/west) or -180° (north/south); here that is the horizontal {@link #FACING}, read by
- * {@code SecurityObjRenderer}. The block model is empty; the wire OBJ is drawn by the BER on
- * its {@link TileEntitySecurityObj}, the same empty-model + renderer route the deco OBJs take.
+ * {@code StaticObjModels}, which builds the wire OBJ into the chunk mesh.
  * Waterloggable (port addition, see {@link Waterlogging}).
  */
-public class BarbedWire extends CompatBlock implements EntityBlock, SimpleWaterloggedBlock {
+public class BarbedWire extends CompatBlock implements SimpleWaterloggedBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -132,12 +127,6 @@ public class BarbedWire extends CompatBlock implements EntityBlock, SimpleWaterl
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
-    }
-
-    @Override
-    @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntitySecurityObj(pos, state);
     }
 
     /**

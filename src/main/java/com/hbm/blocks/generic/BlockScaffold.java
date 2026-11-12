@@ -9,8 +9,6 @@ import net.minecraft.world.level.material.FluidState;
 import dev.golem.core.world.BlockTickScheduler;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
-import dev.golem.core.registry.TickingBlock;
-import com.hbm.tileentity.deco.TileEntityDeco;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -18,9 +16,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -30,7 +26,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /** The four-way steel scaffold, including the old metadata-backed colour variants. Waterloggable (port addition, see {@link Waterlogging}). */
-public class BlockScaffold extends CompatBlock implements TickingBlock, SimpleWaterloggedBlock {
+public class BlockScaffold extends CompatBlock implements SimpleWaterloggedBlock {
 
     public static final EnumProperty<Orientation> ORIENT = EnumProperty.create("orient", Orientation.class);
     public static final EnumProperty<Variant> VARIANT = EnumProperty.create("variant", Variant.class);
@@ -47,7 +43,7 @@ public class BlockScaffold extends CompatBlock implements TickingBlock, SimpleWa
                 .setValue(Waterlogging.WATERLOGGED, false));
     }
 
-    /** The renderer draws the scaffold; the baked model is empty, there for map mods that skip invisible shapes. */
+    /** The chunk mesh draws the scaffold through {@code StaticObjModels}. */
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
@@ -108,12 +104,6 @@ public class BlockScaffold extends CompatBlock implements TickingBlock, SimpleWa
     @Override
     protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return ModSteelBlocks.scaffoldItem(state.getValue(VARIANT).ordinal());
-    }
-
-    @Override
-    @Nullable
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityDeco(pos, state);
     }
 
     @Override

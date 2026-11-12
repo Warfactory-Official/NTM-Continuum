@@ -3,7 +3,6 @@ package com.hbm.blocks.generic;
 import com.hbm.blocks.machine.storage.BlockCrateSupply;
 import com.hbm.items.food.ItemConserve;
 import com.hbm.sound.ModSounds;
-import com.hbm.tileentity.deco.TileEntityCanCrate;
 import dev.golem.core.Ids;
 import dev.golem.core.world.CompatBlock;
 import java.util.Locale;
@@ -18,12 +17,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,15 +29,10 @@ import java.util.List;
  * open with the crate-break sound and spills 5-8 random cans - each of the canned conserves, the soda cans and
  * pudding equally likely; mined, it drops itself. Drawn from {@code conservecrate.obj} in its own texture.
  */
-public class BlockCanCrate extends CompatBlock implements EntityBlock {
+public class BlockCanCrate extends CompatBlock {
 
     public BlockCanCrate(Properties properties) {
         super(properties);
-    }
-
-    @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityCanCrate(pos, state);
     }
 
     @Override

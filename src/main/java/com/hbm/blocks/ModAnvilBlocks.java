@@ -23,9 +23,7 @@ import static com.hbm.blocks.machine.NTMAnvil.*;
 
 /**
  * The 12 tiered NTM anvils (1.12.2 {@code ModBlocks} anvil block set). Hand-registered like
- * {@link ModDecoBlocks}; all share the {@code anvil} block-entity type (see
- * {@link com.hbm.tileentity.ModBlockEntities}) so {@link com.hbm.client.render.AnvilObjRenderer} can draw
- * their OBJ models. Loot/lang/pickaxe entries regenerate from {@code MACHINE_BLOCK_IDS} in the port-tools generator.
+ * {@link ModDecoBlocks}; their OBJ models are chunk models ({@code StaticObjModels}). Loot/lang/pickaxe entries regenerate from {@code MACHINE_BLOCK_IDS} in the port-tools generator.
  */
 public final class ModAnvilBlocks {
 
