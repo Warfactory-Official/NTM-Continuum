@@ -205,8 +205,8 @@ public final class Gh191To197GameTests {
         EntityGlyphidScout retreating = scout(helper, new BlockPos(5, 2, 5), EntityGlyphid.TASK_RETREAT_FOR_REINFORCEMENTS);
         helper.runAfterDelay(3, () -> {
             try {
-                helper.assertFalse(guided.getCurrentTask() == EntityGlyphid.TASK_FOLLOW && guided.getWaypoint() != null
-                        && guided.getWaypoint().isRemoved(), "the guided scout still follows its removed waypoint");
+                helper.assertTrue(guided.getCurrentTask() == EntityGlyphid.TASK_BUILD_HIVE,
+                        "the guided scout did not settle to build a hive, task " + guided.getCurrentTask());
                 helper.assertTrue(retreating.getCurrentTask() == EntityGlyphid.TASK_FOLLOW,
                         "a scout following a removed retreat waypoint left FOLLOW, which 1.7 never does");
             } finally {

@@ -119,7 +119,8 @@ public class EntityGlyphidScout extends EntityGlyphid {
             hasTarget = false;
         }
 
-        if ((getCurrentTask() != TASK_BUILD_HIVE || getCurrentTask() != TASK_TERRAFORM) && getWaypoint() == null) {
+        // port: 1.7 tests != BUILD_HIVE || != TERRAFORM, always true, so guidance pulled a building scout away again
+        if (getCurrentTask() != TASK_BUILD_HIVE && getCurrentTask() != TASK_TERRAFORM && getWaypoint() == null) {
 
             if (MobConfig.rampantGlyphidGuidance && PollutionHandler.targetCoords != null) {
 
