@@ -121,7 +121,8 @@ public final class MachineBatteryREDD extends BlockMultiblockMachine implements 
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         Direction rot = facing.getClockWise();
-        int domains = PASSIVE_POWER_IN | PASSIVE_ITEMS;
+        // 1.7 TileEntityProxyCombo().power().conductor(): no inventory
+        int domains = PASSIVE_POWER_IN;
         visitor.passiveCell(core.relative(facing, 2).relative(rot, 2), MASK_ALL, domains);
         visitor.passiveCell(core.relative(facing, 2).relative(rot, -2), MASK_ALL, domains);
         visitor.passiveCell(core.relative(facing, -2).relative(rot, 2), MASK_ALL, domains);

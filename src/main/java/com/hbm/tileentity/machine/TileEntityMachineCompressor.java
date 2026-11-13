@@ -1,20 +1,20 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.lib.ForgeDirection;
+import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import com.hbm.tileentity.TilePort.PortDef;
 
 /**
- * Compressor ({@code machine_compressor}): 1:1 port of the 1.12.2 {@code TileEntityMachineCompressor}.
- * Adds the client-side pump/fan animation on top of {@link TileEntityMachineCompressorBase}: the fan
- * spins 15°/tick and the pump strokes down at a randomised speed / up at 0.05 per tick while running.
- *
- * <p>Not ported: the boltgun stroke sound at the bottom of each pump stroke.
+ * Compressor ({@code machine_compressor}): the client-side pump/fan animation on top of
+ * {@link TileEntityMachineCompressorBase}. The fan spins 15°/tick and the pump strokes down at a randomised
+ * speed and up at 0.05 per tick while running; each stroke ends with 1.7's boltgun sound.
  */
 public class TileEntityMachineCompressor extends TileEntityMachineCompressorBase {
 
@@ -43,7 +43,8 @@ public class TileEntityMachineCompressor extends TileEntityMachineCompressorBase
             if (te.pistonDir) {
                 te.piston -= te.randSpeed;
                 if (te.piston <= 0) {
-                    // old: the boltgun stroke sound plays here (sound not ported)
+                    level.playLocalSound(pos.getX(), pos.getY(), pos.getZ(), ModSounds.BOLTGUN.get(), SoundSource.BLOCKS,
+                            te.getVolume(0.5F), 0.75F, false);
                     te.pistonDir = !te.pistonDir;
                 }
             } else {

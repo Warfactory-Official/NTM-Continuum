@@ -155,6 +155,26 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
             fan.lastSpin -= 360F;
         }
         TurbofanSoundHandler.tickLoop(fan);
+        if (fan.wasOn) fan.pullLocalPlayer(level);
+    }
+
+    /** 1.7 repeats the pushes on the client for its own player: the server never sends a player its motion. */
+    private void pullLocalPlayer(Level level) {
+        ForgeDirection dir = getFacing().getRotation(ForgeDirection.UP);
+        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+        Consumer<Entity> push = entity -> {
+            if (isLocalSurvivalPlayer(entity)) push(entity, dir);
+        };
+        affectBox(level, exhaustBox(dir, rot, -3.5D, -19.5D, 1.5D), push);
+        affectBox(level, exhaustBox(dir, rot, 3.5D, 8.5D, 1.5D), push);
+        affectBox(level, exhaustBox(dir, rot, 3.5D, 3.75D, 1.5D), entity -> {
+            if (isLocalSurvivalPlayer(entity))
+                entity.makeStuckInBlock(level.getBlockState(worldPosition), new Vec3(0.25D, 0.05D, 0.25D));
+        });
+    }
+
+    private static boolean isLocalSurvivalPlayer(Entity entity) {
+        return entity instanceof Player player && player.isLocalPlayer() && !player.isCreative();
     }
 
     private void applyExhaust(Level level, int amountToBurn) {
@@ -191,12 +211,12 @@ public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         });
         affectBox(level, exhaustBox(dir, rot, 3.5D, 8.5D, 1.5D), entity -> push(entity, dir));
         affectBox(level, exhaustBox(dir, rot, 3.5D, 3.75D, 1.5D), entity -> {
-            if (Compat.hurt(entity, (ServerLevel) level, ModDamageSources.turbofan(level), 1000F)
-                    && !entity.isAlive()
-                    && entity instanceof LivingEntity) {
+            // 1.7 gibs whatever lies dead in the blades, every tick until it is gone
+            Compat.hurt(entity, (ServerLevel) level, ModDamageSources.turbofan(level), 1000F);
+            if (!entity.isAlive() && entity instanceof LivingEntity) {
                 ParticleEffects.giblets(level, entity, ParticleGiblet.TYPE_MEAT, 5);
-                level.playSound(null, entity.blockPosition(), SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.BLOCKS,
-                        2F, 0.95F + level.getRandom().nextFloat() * 0.2F);
+                level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR,
+                        SoundSource.BLOCKS, 2F, 0.95F + level.getRandom().nextFloat() * 0.2F);
                 blood.setFill(Math.min(blood.getMaxFill(), blood.getFill() + 50));
                 showBlood = true;
             }

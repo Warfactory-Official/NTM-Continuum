@@ -71,7 +71,7 @@ public class BlockPADetector extends BlockMultiblockMachine
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         BlockPos side = core.relative(facing.getClockWise(), -4);
-        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
         visitor.passiveCell(side, MASK_ALL, domains);
         visitor.passiveCell(side.above(), MASK_ALL, domains);
         visitor.passiveCell(side.below(), MASK_ALL, domains);

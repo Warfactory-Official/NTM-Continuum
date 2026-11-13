@@ -682,9 +682,9 @@ public final class GluonParticles {
             posX = (box.minX + box.maxX) / 2.0;
             posY = box.minY;
             posZ = (box.minZ + box.maxZ) / 2.0;
-            if (origY != allowed.y) motionY = -motionY * 0.75 * (rand.nextFloat() * 0.8 + 0.25);
-            if (origX != allowed.x) motionX = -motionX * 0.75 * (rand.nextFloat() * 1.12 + 0.25);
-            if (origZ != allowed.z) motionZ = -motionY * 0.75 * (rand.nextFloat() * 1.12 + 0.25);
+            if (ParticleCollisions.blocked(origY, allowed.y)) motionY = -motionY * 0.75 * (rand.nextFloat() * 0.8 + 0.25);
+            if (ParticleCollisions.blocked(origX, allowed.x)) motionX = -motionX * 0.75 * (rand.nextFloat() * 1.12 + 0.25);
+            if (ParticleCollisions.blocked(origZ, allowed.z)) motionZ = -motionY * 0.75 * (rand.nextFloat() * 1.12 + 0.25);
         }
 
         void render(Vec3 cam, Vector3f right, Vector3f up, float partial) {

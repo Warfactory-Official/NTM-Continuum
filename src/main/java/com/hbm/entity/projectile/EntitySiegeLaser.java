@@ -9,15 +9,12 @@ import dev.golem.core.data.SynchedData;
 import com.hbm.lib.ModDamageSources;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -153,10 +150,9 @@ public class EntitySiegeLaser extends EntityThrowableNT {
 
     // 1.7: new EntityDamageSourceIndirect(ModDamageSource.s_laser, this, thrower) / plain DamageSource without a thrower
     private DamageSource laserDamageSource() {
-        Holder<DamageType> holder = level().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE)
-                                            .getOrThrow(ModDamageSources.LASER);
         LivingEntity thrower = getThrower();
-        return thrower != null ? new DamageSource(holder, this, thrower) : new DamageSource(holder);
+        return thrower != null ? ModDamageSources.source(level(), ModDamageSources.LASER, this, thrower)
+                : ModDamageSources.source(level(), ModDamageSources.LASER);
     }
 
     @Override

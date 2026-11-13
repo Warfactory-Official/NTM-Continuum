@@ -114,6 +114,7 @@ public final class MachineFluidContainerIO {
         if (input.isEmpty()) return false;
         if (tank.getPressure() != 0 && !input.is(ModFluidNetItems.fluid_barrel_infinite.get())) return false;
         int before = tank.getFill();
+        if (FluidContainerRegistry.INSTANCE.isUniversal(input)) return emptyUniversal(tank, inventory, inputSlot, outputSlot);
         if (emptyContainer(tank, inventory, inputSlot, outputSlot)) return tank.getFill() != before;
         if (emptyFillable(tank, inventory, inputSlot, outputSlot)) return tank.getFill() != before;
         return loadInfinite(tank, input) && tank.getFill() != before;
@@ -127,9 +128,59 @@ public final class MachineFluidContainerIO {
         ItemStack input = inventory.getStackInSlot(inputSlot);
         if (input.isEmpty()) return false;
         int before = tank.getFill();
+        if (FluidContainerRegistry.INSTANCE.isUniversal(input)) return fillUniversal(tank, inventory, inputSlot, outputSlot);
         if (fillContainer(tank, inventory, inputSlot, outputSlot)) return true;
         if (fillFillable(tank, inventory, inputSlot, outputSlot)) return tank.getFill() != before;
         return unloadInfinite(tank, inventory.getStackInSlot(inputSlot)) && tank.getFill() != before;
+    }
+
+    /** 1.12.2 {@code FluidLoaderForge.emptyItem}: one of a stack goes out; a lone one once empty or the tank is full. */
+    private static boolean emptyUniversal(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
+        ItemStack input = inventory.getStackInSlot(inputSlot);
+        ItemFluidTank item = (ItemFluidTank) input.getItem();
+        FluidType type = ItemFluidTank.getType(input);
+        int contained = item.getFill(input);
+        if (contained <= 0 || !FluidContainerRegistry.INSTANCE.fillsInPart(input, type) || !tank.accepts(type)) return false;
+        int toDrain = Math.min(tank.getMaxFill() - tank.getFill(), contained);
+        if (toDrain <= 0) return false;
+        ItemStack work = input.copy();
+        work.setCount(1);
+        int drained = item.tryEmpty(type, toDrain, work);
+        if (drained <= 0) return false;
+        boolean toOut = input.getCount() > 1 || item.getFill(work) <= 0 || tank.getFill() + drained >= tank.getMaxFill();
+        if (!placeUniversal(inventory, inputSlot, outputSlot, work, toOut)) return false;
+        tank.receive(type, drained);
+        return true;
+    }
+
+    /** 1.12.2 {@code FluidLoaderForge.fillItem}: one of a stack goes out; a lone one once full or the tank is empty. */
+    private static boolean fillUniversal(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
+        if (tank.getPressure() != 0 || tank.getFill() <= 0) return false;
+        ItemStack input = inventory.getStackInSlot(inputSlot);
+        ItemFluidTank item = (ItemFluidTank) input.getItem();
+        FluidType type = tank.getFluid();
+        if (type == Fluids.NONE || !FluidContainerRegistry.INSTANCE.fillsInPart(input, type)) return false;
+        ItemStack work = input.copy();
+        work.setCount(1);
+        int remainder = item.tryFill(type, tank.getFill(), work);
+        if (remainder == tank.getFill()) return false;
+        boolean toOut = input.getCount() > 1 || remainder == 0 || !item.acceptsFluid(type, work);
+        if (!placeUniversal(inventory, inputSlot, outputSlot, work, toOut)) return false;
+        tank.setFill(remainder);
+        return true;
+    }
+
+    private static boolean placeUniversal(NTMItemHandler inventory, int inputSlot, int outputSlot, ItemStack work, boolean preferOut) {
+        boolean stacked = inventory.getStackInSlot(inputSlot).getCount() > 1;
+        boolean fits = inputSlot != outputSlot && fitsInternally(inventory, outputSlot, work);
+        if (stacked && !fits) return false;
+        if (preferOut && fits) {
+            inventory.extractItem(inputSlot, 1, false);
+            insertInternally(inventory, outputSlot, work);
+        } else {
+            inventory.setStackInSlot(inputSlot, work);
+        }
+        return true;
     }
 
     /** 1.7 {@code FluidLoaderStandard.emptyItem}. */
@@ -231,7 +282,8 @@ public final class MachineFluidContainerIO {
             input = inventory.getStackInSlot(inputSlot);
         }
         if (!(input.getItem() instanceof IFillableItem fillable) || input.getItem() instanceof IInfiniteFluidItem) return filled;
-        if (FluidContainerRegistry.INSTANCE.isRegistryContainer(input) && !partFilled(input)) return filled;
+        if (FluidContainerRegistry.INSTANCE.isRegistryContainer(input) && !partFilled(input)
+                && !FluidContainerRegistry.INSTANCE.fillsInPart(input, type)) return filled;
         if (!fillable.acceptsFluid(type, input)) return true;
         ItemStack work = input.copy();
         work.setCount(1);

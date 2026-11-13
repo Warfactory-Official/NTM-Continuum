@@ -7,6 +7,7 @@ import com.hbm.saveddata.satellites.SatelliteScanner;
 import com.hbm.util.OverheadMarkers;
 import dev.golem.core.Ids;
 import dev.golem.core.world.CompatTooltipContext;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -26,9 +28,9 @@ import net.minecraft.world.level.chunk.LevelChunk;
 /**
  * 1.7 {@code ItemModLens} (Neutrino Lens): a satellite chip for a helmet's special slot. While a scanner satellite
  * answers on its frequency, every tick it scans one Y layer of the 7x7 chunks around the wearer (the layer cycles with
- * world time over {@code max(min(y + 10, 255), 64)} layers, from 0 as in 1.7) and marks ores and treasure for the
- * wearer's client ({@code RenderOverhead} markers, 15 s, 300 blocks), each kind with its 1-in-N chance and colour,
- * stopping after 100 hits. Chunks that are not loaded are skipped rather than loaded.
+ * world time over {@code max(min(y + 10, 255), 64)} layers counted from the world floor, 1.7's y 0) and marks ores and
+ * treasure for the wearer's client ({@code RenderOverhead} markers, 15 s, 300 blocks), each kind with its 1-in-N chance
+ * and colour, stopping after 100 hits. Chunks that are not loaded are skipped rather than loaded.
  */
 public class ItemModLens extends ItemArmorMod implements ISatChip {
 
@@ -62,13 +64,32 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
             {"hbm:ore_australium", 1000, "Australium", 0xffff00},
             {"minecraft:end_portal_frame", 1, "End Portal", 0x40b080},
             {"hbm:volcano_core", 1, "Volcano Core", 0xff4000},
+            // port: 1.7's volcano_core metadata, one block each here
+            {"hbm:volcano_core_static_extinguishing", 1, "Volcano Core", 0xff4000},
+            {"hbm:volcano_core_growing_active", 1, "Volcano Core", 0xff4000},
+            {"hbm:volcano_core_growing_extinguishing", 1, "Volcano Core", 0xff4000},
+            {"hbm:volcano_core_smoldering", 1, "Volcano Core", 0xff4000},
             {"hbm:pink_log", 1, "Pink Log", 0xff00ff},
             {"hbm:bobblehead", 1, "A Treasure!", 0xff0000},
             {"hbm:deco_loot", 1, null, 0x800000},
             {"hbm:crate_ammo", 1, null, 0x800000},
             {"hbm:crate_can", 1, null, 0x800000},
-            {"hbm:ore_bedrock", 1, "Bedrock Ore", 0xff0000},
+            {"hbm:ore_bedrock_block", 1, "Bedrock Ore", 0xff0000},
     };
+
+    /** The block ids the lens looks for, in 1.7's order. */
+    public static List<String> targetIds() {
+        List<String> ids = new ArrayList<>();
+        for (Object[] target : TARGETS) ids.add((String) target[0]);
+        return ids;
+    }
+
+    /** 1.7's scanned layer at {@code time}: heights count from the world floor, where 1.7's y 0 was. */
+    public static int layer(Level level, int y, long time) {
+        int floor = level.getMinY();
+        int height = Math.max(Math.min(y - floor + 10, level.getHeight() - 1), 64);
+        return floor + (int) (time % height);
+    }
 
     @Override
     public void modUpdate(LivingEntity entity, ItemStack armor) {
@@ -87,8 +108,7 @@ public class ItemModLens extends ItemArmorMod implements ISatChip {
         int range = 3;
         int cX = x >> 4;
         int cZ = z >> 4;
-        int height = Math.max(Math.min(y + 10, 255), 64);
-        int seg = (int) (level.getGameTime() % height);
+        int seg = layer(level, y, level.getGameTime());
 
         Block[] blocks = new Block[TARGETS.length];
         for (int i = 0; i < TARGETS.length; i++) {

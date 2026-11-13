@@ -506,7 +506,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
 
     /^* {@code spriteFrame}: a declined slot is the extruded sprite rather than the inventory square. ^/
     private record CustomEntry(com.hbm.client.render.item.CustomItemRenderer renderer, Identifier sprite, boolean oversized,
-                         boolean spriteFrame) {}
+                         boolean spriteFrame, boolean full3d) {}
 
     private static Map<Identifier, CustomEntry> customModels = Map.of();
 
@@ -538,7 +538,8 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                 String name = path.substring("items/".length(), path.length() - ".json".length());
                 parsed.put(dev.golem.core.Ids.of(file.getNamespace(), name),
                         new CustomEntry(com.hbm.client.render.item.CustomItemRenderers.byName(renderer), texture,
-                                oversized != null && oversized.getAsBoolean(), spriteFrame));
+                                oversized != null && oversized.getAsBoolean(), spriteFrame,
+                                com.hbm.client.render.item.CustomItemRenderer.FULL3D_FRAME.equals(frame)));
             } catch (Exception e) {
                 Constants.LOG.warn("Skipping custom item model {}: {}", file, e.toString());
             }
@@ -571,7 +572,8 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         com.hbm.client.render.item.CustomItemRenderer.Type type = com.hbm.client.render.item.CustomItemRenderer.Type.of(context);
         dev.golem.core.render.RecordingSubmitSink sink = new dev.golem.core.render.RecordingSubmitSink();
         if (entry.renderer().handles(stack, type)) {
-            entry.renderer().render(stack, context, poseStack, sink, light, overlay, dev.golem.core.render.ItemRenderContext.owner());
+            com.hbm.client.render.item.CustomItemRenderer.renderInFrame(entry.renderer(), entry.full3d(), stack, context,
+                    poseStack, sink, light, overlay, dev.golem.core.render.ItemRenderContext.owner());
         } else if (entry.sprite() != null && entry.spriteFrame()) {
             dev.golem.core.render.ItemSprites.submit(poseStack, sink, entry.sprite(), light, overlay);
         } else if (entry.sprite() != null) {

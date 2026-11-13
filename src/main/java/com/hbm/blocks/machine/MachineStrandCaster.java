@@ -180,8 +180,8 @@ public class MachineStrandCaster extends BlockMultiblockMachine
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         Direction rot = facing.getClockWise();
         for (int along : new int[]{-1, -5}) {
-            visitor.passiveCell(core.relative(facing, along).relative(rot), MASK_ALL, PASSIVE_FLUID_IN);
-            visitor.passiveCell(core.relative(facing, along), MASK_ALL, PASSIVE_FLUID_IN);
+            visitor.passiveCell(core.relative(facing, along).relative(rot), MASK_ALL, PASSIVE_FLUID_IN | PASSIVE_ITEMS);
+            visitor.passiveCell(core.relative(facing, along), MASK_ALL, PASSIVE_FLUID_IN | PASSIVE_ITEMS);
         }
         visitor.passiveCell(core.relative(facing, -1).relative(rot).above(2), MASK_ALL, PASSIVE_ITEMS);
         visitor.passiveCell(core.relative(facing, -1).above(2), MASK_ALL, PASSIVE_ITEMS);

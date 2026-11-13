@@ -33,14 +33,14 @@ public class RefineryRecipeHandler extends JEIUniversalHandler<RefineryRecipeHan
 
     @Override
     protected List<List<ItemStack>> inputs(Entry recipe) {
-        return List.of(List.of(ItemFluidIcon.make(recipe.input)));
+        return List.of(List.of(ItemFluidIcon.make(recipe.input, 1000)));
     }
 
     @Override
     protected List<List<ItemStack>> outputs(Entry recipe) {
         List<List<ItemStack>> out = new ArrayList<>();
         for (var frac : recipe.recipe.fractions()) {
-            out.add(List.of(ItemFluidIcon.make(frac.type)));
+            out.add(List.of(ItemFluidIcon.make(frac, 10)));
         }
         ItemStack byproduct = recipe.recipe.byproduct();
         if (byproduct != null && !byproduct.isEmpty()) out.add(List.of(byproduct.copy()));

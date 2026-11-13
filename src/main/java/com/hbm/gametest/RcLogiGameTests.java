@@ -638,6 +638,7 @@ public final class RcLogiGameTests {
             helper.assertTrue(picked.getLocation().distanceToSqr(Vec3.atCenterOf(picked.getBlockPos())) < 1D,
                     "the platform hit would be rejected by the server's cell-distance check");
             Mob pig = helper.spawn(EntityType.PIG, new BlockPos(4, 2, 4));
+            // no AI: a wandering mob jumps in the shaft (its cell's collision reaches above its feet)
             pig.setNoAi(true);
             double y0 = pig.getY();
             lift.toggleElevator();

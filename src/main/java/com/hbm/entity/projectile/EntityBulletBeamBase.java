@@ -6,6 +6,7 @@ import dev.golem.core.world.Protection;
 import com.hbm.Constants;
 import com.hbm.packet.ProjectileStatePayload;
 import dev.golem.core.data.Tags;
+import dev.golem.core.net.GolemNetwork;
 
 import com.hbm.entity.ModEntities;
 import com.hbm.items.weapon.sedna.BulletConfig;
@@ -22,6 +23,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -241,6 +243,14 @@ public class EntityBulletBeamBase extends CompatEntity implements Protection.Own
     }
 
     public boolean hasRenderState() { return renderStateReady; }
+
+    /** 1.7 sends the length and exact angles with the spawn; the vanilla spawn alone rounds them to 1.4 degrees. */
+    @Override
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
+        if (hasRenderState())
+            GolemNetwork.sendToPlayer(player, ProjectileStatePayload.CODEC, ProjectileStatePayload.beam(this));
+    }
 
     private static Vec3 directionFromRotations(float yaw, float pitch) {
         double yawRadians = yaw * Math.PI / 180D;

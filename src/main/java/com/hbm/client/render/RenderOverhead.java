@@ -150,6 +150,8 @@ public final class RenderOverhead {
             for (float[] box : boxes) outline(last, buffer, box);
         });
 
+        // port: 1.7's 100 blocks plus the depth its world floor (y 0) lies above this one's, so deposits keep their labels
+        int labelRange = 100 - Math.min(0, mc.level.getMinY());
         Vec3 look = player.getViewVector(partial);
         float viewY = player.getViewYRot(partial);
         float viewX = player.getViewXRot(partial);
@@ -171,7 +173,9 @@ public final class RenderOverhead {
             if (Math.abs(look.x - nx) + Math.abs(look.y - ny) + Math.abs(look.z - nz) < 0.15) {
                 label += (!label.isEmpty() ? " " : "") + ((int) sqrt) + "m";
             }
-            if (!label.isEmpty()) drawTag(1F, len, label, vx, vy, vz, 100, true, marker.color, marker.color, viewY, viewX);
+            if (!label.isEmpty()) {
+                drawTag(1F, len, label, vx, vy, vz, labelRange, true, marker.color, marker.color, viewY, viewX);
+            }
         }
     }
 

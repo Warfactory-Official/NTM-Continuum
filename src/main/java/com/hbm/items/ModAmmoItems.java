@@ -10,6 +10,7 @@ import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.Ids;
 import dev.golem.core.dejson.Models;
+import dev.golem.core.registry.Preset;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import java.util.Locale;
@@ -194,10 +195,16 @@ public final class ModAmmoItems {
     public static final ItemFamily<ItemAmmoHIMARS.HIMARSRocketType, ItemAmmoHIMARS> ammo_himars =
             ItemFamily.of(ItemAmmoHIMARS.HIMARSRocketType.class,
                     type -> REG.item("ammo_himars_" + type.name, p -> new ItemAmmoHIMARS(p, type)));
+    /** 1.7 ItemAmmoArty.getIconIndex: a filled cargo shell draws ammo_arty_cargo_full ({@code hbm:model_state} 1). */
+    private static final Preset CARGO_SHELL = handle -> handle.icon(d -> d.models(Models.group()
+                    .and("", Models.generated("hbm:items/ammo_arty_cargo"))
+                    .and("_full", Models.generated("hbm:items/ammo_arty_cargo_full")))
+            .selects(Constants.MOD_ID + ":model_state"));
     public static final ItemFamily<ItemAmmoArty.ArtilleryShellType, ItemAmmoArty> ammo_arty =
             ItemFamily.of(ItemAmmoArty.ArtilleryShellType.class,
                     type -> REG.item(type.name, p -> new ItemAmmoArty(p, type))
-                            .transform(Presets.sprite(Constants.MOD_ID + ":items/" + type.name)));
+                            .transform(type == ItemAmmoArty.ArtilleryShellType.CARGO ? CARGO_SHELL
+                                    : (Preset) Presets.sprite(Constants.MOD_ID + ":items/" + type.name)));
     public static final RegistryObject<ItemDesignatorArtyRange> designator_arty_range =
             REG.item("designator_arty_range", ItemDesignatorArtyRange::new)
                     .transform(Presets.handheld());

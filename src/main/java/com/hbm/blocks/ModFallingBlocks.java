@@ -67,7 +67,7 @@ public final class ModFallingBlocks {
 
     /** Tar sand, the oil-sand-bubble worldgen block; liquefies into BITUMEN (old {@code ModBlocks.ore_oil_sand}). */
     public static final RegistryObject<BlockFallingBase> ore_oil_sand = falling("ore_oil_sand", 0.5F, 0.6F, () -> SoundType.SAND)
-            .transform(Presets.cubeAll().viaItemModel())
+            .transform(Presets.cubeAll("hbm:blocks/ore_oil_sand_alt").viaItemModel())
             .loot(Loot.self())
             .tag(BlockTag.SHOVEL);
 

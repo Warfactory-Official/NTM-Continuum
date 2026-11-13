@@ -9,6 +9,7 @@ import dev.golem.core.render.CompatEntityRenderState;
 import dev.golem.core.render.CompatEntityRenderer;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.living.LivingLooks;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -44,6 +45,8 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
         state.walkCycle = entity.walkAnimation.position(partialTicks);
         state.swingProgress = entity.getAttackAnim(partialTicks);
         state.light = state.lightCoords;
+        state.overlay = LivingLooks.overlay(entity);
+        state.deathTilt = LivingLooks.deathTilt(entity, partialTicks, 90F);
     }
 
     @Override
@@ -61,13 +64,16 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
     }
 
     protected void applyBaseTransform(PoseStack pose, State state) {
-        pose.mulPose(Axis.YP.rotationDegrees(-state.bodyYaw));
+        pose.mulPose(Axis.YP.rotationDegrees(180F - state.bodyYaw));
+        LivingLooks.tilt(pose, state.deathTilt);
+        pose.mulPose(Axis.YP.rotationDegrees(180F));
         float s = (float) state.scale;
         pose.scale(s, s, s);
     }
 
     protected final void submitLimbs(State state, PoseStack pose, SubmitSink sink, int light, RenderType type,
                                      int color) {
+        int overlay = state.overlay;
         byte armor = state.armor;
         double walkCycle = state.walkCycle;
 
@@ -79,26 +85,26 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
         double bite = Mth.clamp(Math.sin(state.swingProgress * Math.PI * 2 - Math.PI * 0.5), 0D, 1D) * 20;
         double headTilt = Math.sin(state.swingProgress * Math.PI) * 30;
 
-        part(pose, sink, light, type, color, "Body");
-        if ((armor & (1 << 0)) > 0) part(pose, sink, light, type, color, "ArmorFront");
-        if ((armor & (1 << 1)) > 0) part(pose, sink, light, type, color, "ArmorLeft");
-        if ((armor & (1 << 2)) > 0) part(pose, sink, light, type, color, "ArmorRight");
+        part(pose, sink, light, overlay, type, color, "Body");
+        if ((armor & (1 << 0)) > 0) part(pose, sink, light, overlay, type, color, "ArmorFront");
+        if ((armor & (1 << 1)) > 0) part(pose, sink, light, overlay, type, color, "ArmorLeft");
+        if ((armor & (1 << 2)) > 0) part(pose, sink, light, overlay, type, color, "ArmorRight");
 
         pose.pushPose();
         pose.translate(0.25F, 0.625F, 0.0625F);
         pose.mulPose(Axis.YP.rotationDegrees(10F));
         pose.mulPose(Axis.XP.rotationDegrees((float) (35 + cy1 * 20)));
         pose.translate(-0.25F, -0.625F, -0.0625F);
-        part(pose, sink, light, type, color, "ArmLeftUpper");
+        part(pose, sink, light, overlay, type, color, "ArmLeftUpper");
         pose.translate(0.25F, 0.625F, 0.4375F);
         pose.mulPose(Axis.XP.rotationDegrees((float) (-75 - cy1 * 20 + cy0 * 20)));
         pose.translate(-0.25F, -0.625F, -0.4375F);
-        part(pose, sink, light, type, color, "ArmLeftMid");
+        part(pose, sink, light, overlay, type, color, "ArmLeftMid");
         pose.translate(0.25F, 0.625F, 0.9375F);
         pose.mulPose(Axis.XP.rotationDegrees((float) (90 - cy0 * 45)));
         pose.translate(-0.25F, -0.625F, -0.9375F);
-        part(pose, sink, light, type, color, "ArmLeftLower");
-        if ((armor & (1 << 3)) > 0) part(pose, sink, light, type, color, "ArmLeftArmor");
+        part(pose, sink, light, overlay, type, color, "ArmLeftLower");
+        if ((armor & (1 << 3)) > 0) part(pose, sink, light, overlay, type, color, "ArmLeftArmor");
         pose.popPose();
 
         pose.pushPose();
@@ -106,16 +112,16 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
         pose.mulPose(Axis.YP.rotationDegrees(-10F));
         pose.mulPose(Axis.XP.rotationDegrees((float) (35 + cy2 * 20)));
         pose.translate(0.25F, -0.625F, -0.0625F);
-        part(pose, sink, light, type, color, "ArmRightUpper");
+        part(pose, sink, light, overlay, type, color, "ArmRightUpper");
         pose.translate(-0.25F, 0.625F, 0.4375F);
         pose.mulPose(Axis.XP.rotationDegrees((float) (-75 - cy2 * 20 + cy3 * 20)));
         pose.translate(0.25F, -0.625F, -0.4375F);
-        part(pose, sink, light, type, color, "ArmRightMid");
+        part(pose, sink, light, overlay, type, color, "ArmRightMid");
         pose.translate(-0.25F, 0.625F, 0.9375F);
         pose.mulPose(Axis.XP.rotationDegrees((float) (90 - cy3 * 45)));
         pose.translate(0.25F, -0.625F, -0.9375F);
-        part(pose, sink, light, type, color, "ArmRightLower");
-        if ((armor & (1 << 4)) > 0) part(pose, sink, light, type, color, "ArmRightArmor");
+        part(pose, sink, light, overlay, type, color, "ArmRightLower");
+        if ((armor & (1 << 4)) > 0) part(pose, sink, light, overlay, type, color, "ArmRightArmor");
         pose.popPose();
 
         pose.pushPose();
@@ -127,7 +133,7 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
         pose.translate(0F, 0.5F, 0.25F);
         pose.mulPose(Axis.XP.rotationDegrees((float) -bite));
         pose.translate(0F, -0.5F, -0.25F);
-        part(pose, sink, light, type, color, "JawTop");
+        part(pose, sink, light, overlay, type, color, "JawTop");
         pose.popPose();
 
         pose.pushPose();
@@ -135,7 +141,7 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
         pose.mulPose(Axis.YP.rotationDegrees((float) bite));
         pose.mulPose(Axis.XP.rotationDegrees((float) bite));
         pose.translate(0F, -0.5F, -0.25F);
-        part(pose, sink, light, type, color, "JawLeft");
+        part(pose, sink, light, overlay, type, color, "JawLeft");
         pose.popPose();
 
         pose.pushPose();
@@ -143,7 +149,7 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
         pose.mulPose(Axis.YP.rotationDegrees((float) -bite));
         pose.mulPose(Axis.XP.rotationDegrees((float) bite));
         pose.translate(0F, -0.5F, -0.25F);
-        part(pose, sink, light, type, color, "JawRight");
+        part(pose, sink, light, overlay, type, color, "JawRight");
         pose.popPose();
         pose.popPose();
 
@@ -159,11 +165,11 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
             pose.mulPose(Axis.YP.rotationDegrees((float) (i * 30 - 15 + c0 * 7.5)));
             pose.mulPose(Axis.ZP.rotationDegrees((float) (steppy + c1 * steppy)));
             pose.translate(0F, -0.25F, 0F);
-            part(pose, sink, light, type, color, "LegLeftUpper");
+            part(pose, sink, light, overlay, type, color, "LegLeftUpper");
             pose.translate(0.5625F, 0.25F, 0F);
             pose.mulPose(Axis.ZP.rotationDegrees((float) (-bend - c1 * steppy)));
             pose.translate(-0.5625F, -0.25F, 0F);
-            part(pose, sink, light, type, color, "LegLeftLower");
+            part(pose, sink, light, overlay, type, color, "LegLeftLower");
             pose.popPose();
 
             pose.pushPose();
@@ -171,18 +177,19 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
             pose.mulPose(Axis.YP.rotationDegrees((float) (i * 30 - 45 + c0 * 7.5)));
             pose.mulPose(Axis.ZP.rotationDegrees((float) (-steppy + c1 * steppy)));
             pose.translate(0F, -0.25F, 0F);
-            part(pose, sink, light, type, color, "LegRightUpper");
+            part(pose, sink, light, overlay, type, color, "LegRightUpper");
             pose.translate(-0.5625F, 0.25F, 0F);
             pose.mulPose(Axis.ZP.rotationDegrees((float) (bend - c1 * steppy)));
             pose.translate(0.5625F, -0.25F, 0F);
-            part(pose, sink, light, type, color, "LegRightLower");
+            part(pose, sink, light, overlay, type, color, "LegRightLower");
             pose.popPose();
         }
     }
 
-    private static void part(PoseStack pose, SubmitSink sink, int light, RenderType type, int color, String name) {
+    private static void part(PoseStack pose, SubmitSink sink, int light, int overlay, RenderType type, int color,
+                             String name) {
         sink.submitCustomGeometry(pose, type, (p, buf) ->
-                NtmEntityModels.GLYPHID.renderPart(name, p, buf, light, OverlayTexture.NO_OVERLAY, color));
+                NtmEntityModels.GLYPHID.renderPart(name, p, buf, light, overlay, color));
     }
 
     public static class State extends CompatEntityRenderState {
@@ -194,6 +201,8 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
         public float walkCycle;
         public float swingProgress;
         public float deathAge;
+        public float deathTilt;
         public int light;
+        public int overlay = OverlayTexture.NO_OVERLAY;
     }
 }

@@ -23,8 +23,8 @@ import net.minecraft.world.item.ItemStack;
  *   <li>{@link Cold}: spent fuel that is not hot (PUREX; 1.7 matched the cooled metadata).</li>
  *   <li>{@link AnyOf}: any one of several ingredients (the DiFurnace's 1.7 {@code DictFrame} of a material's
  *   ingot, plate, gem and dust).</li>
- *   <li>{@link FluidItem}: a fluid container item holding a given fluid, at any fill (the DiFurnace's gasoline
- *   canister, 1.7's {@code canister_full} matched by fluid metadata only).</li>
+ *   <li>{@link FluidItem}: a full fluid container item holding a given fluid (the DiFurnace's gasoline canister,
+ *   1.7's {@code canister_full} matched by fluid metadata only; 1.7's containers were always full).</li>
  * </ul>
  */
 public final class RecipeIngredients {
@@ -138,6 +138,7 @@ public final class RecipeIngredients {
         @Override
         public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
             return !stack.isEmpty() && stack.getItem() == item && ItemFluidTank.getType(stack) == fluid
+                    && (!(item instanceof ItemFluidTank tank) || tank.getFill(stack) >= tank.capacity)
                     && (ignoreSize || stack.getCount() >= stacksize);
         }
 

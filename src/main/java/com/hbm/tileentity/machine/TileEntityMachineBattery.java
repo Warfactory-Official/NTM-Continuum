@@ -203,11 +203,6 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         return (mode == MODE_OUTPUT || mode == MODE_BUFFER) ? getMaxPower() / 600L : 0L;
     }
 
-    @Override
-    public boolean bufferedEndpoint() {
-        return getRelevantMode() == MODE_BUFFER;
-    }
-
     // Per-tick sync
 
     @Override

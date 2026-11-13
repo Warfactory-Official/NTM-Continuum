@@ -122,9 +122,8 @@ public class ItemConveyorWand extends CompatItem implements IItemLookOverlay {
     private static void setRun(ItemStack stack, @Nullable CompoundTag run) {
         CompoundTag data = ModDataComponents.PERSISTENT_DATA.get(stack).map(CompoundTag::copy).orElse(new CompoundTag());
         for (String key : RUN_KEYS) data.remove(key);
-        if (run != null) {
-            for (String key : RUN_KEYS) data.putInt(key, Tags.getIntOr(run, key, 0));
-        }
+        // run_side is the side's name, so the keys are copied as they are, not as ints
+        if (run != null) data.merge(run);
         if (data.isEmpty()) ModDataComponents.PERSISTENT_DATA.remove(stack);
         else ModDataComponents.PERSISTENT_DATA.set(stack, data);
     }

@@ -27,11 +27,11 @@ public class BoilingRecipeHandler extends JEIUniversalHandler<BoilingRecipeHandl
 
     @Override
     protected List<List<ItemStack>> inputs(Entry recipe) {
-        return List.of(List.of(ItemFluidIcon.make(recipe.input)));
+        return List.of(List.of(ItemFluidIcon.make(recipe.input, recipe.step.amountReq())));
     }
 
     @Override
     protected List<List<ItemStack>> outputs(Entry recipe) {
-        return List.of(List.of(ItemFluidIcon.make(recipe.step.output())));
+        return List.of(List.of(ItemFluidIcon.make(recipe.step.output(), recipe.step.amountProduced())));
     }
 }

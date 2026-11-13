@@ -79,7 +79,7 @@ public class MachineHydrotreater extends BlockMultiblockMachine implements IEner
     }
 
     /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
-    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().fluidOut().items().fe()
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().fluidOut().items()
             .faces(BlockEntity.class, (be, side) -> side != Direction.DOWN)
             .fluidFaces(BlockEntity.class, (be, side) -> side != Direction.DOWN);
 

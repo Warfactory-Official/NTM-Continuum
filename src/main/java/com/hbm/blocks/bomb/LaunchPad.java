@@ -116,7 +116,7 @@ public class LaunchPad extends BlockMultiblockMachine
     }
 
     /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
-    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().items().fe()
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().items()
             .faces(BlockEntity.class, (be, side) -> side.getAxis().isHorizontal())
             .fluidFaces(BlockEntity.class, (be, side) -> side.getAxis().isHorizontal());
 

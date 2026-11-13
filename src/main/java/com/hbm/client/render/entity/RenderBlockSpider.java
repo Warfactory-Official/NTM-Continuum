@@ -10,6 +10,7 @@ import dev.golem.core.render.CompatEntityRenderState;
 import dev.golem.core.render.CompatEntityRenderer;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.living.LivingLooks;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -30,9 +31,9 @@ public class RenderBlockSpider extends CompatEntityRenderer<EntityBlockSpider, R
         this.shadowRadius = 1.0F;
     }
 
-    private void legPart(PoseStack poseStack, SubmitSink sink, int light, String part) {
+    private void legPart(PoseStack poseStack, SubmitSink sink, int light, int overlay, String part) {
         sink.submitCustomGeometry(poseStack, type, (pose, buffer) ->
-                NtmEntityModels.BLOCK_SPIDER.renderPart(part, pose, buffer, light, OverlayTexture.NO_OVERLAY));
+                NtmEntityModels.BLOCK_SPIDER.renderPart(part, pose, buffer, light, overlay));
     }
 
     @Override
@@ -46,6 +47,8 @@ public class RenderBlockSpider extends CompatEntityRenderer<EntityBlockSpider, R
         state.swing = -(Mth.cos(entity.walkAnimation.position(partialTicks) * 0.6662F * 2F) * 0.4F)
                 * entity.walkAnimation.speed(partialTicks) * 57.3F;
         state.disguise.extract(entity.getDisguise());
+        state.overlay = LivingLooks.overlay(entity);
+        state.deathTilt = LivingLooks.deathTilt(entity, partialTicks, 90F);
     }
 
     @Override
@@ -56,6 +59,7 @@ public class RenderBlockSpider extends CompatEntityRenderer<EntityBlockSpider, R
         int light = state.lightCoords;
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(180F - state.bodyYaw));
+        LivingLooks.tilt(poseStack, state.deathTilt);
         // ModelBlockSpider's quarter turn is rotate(90,0,-1,0), but it ran inside RendererLivingEntity's
         // scale(-1,-1,1); that flip conjugates a Y rotation into its opposite, so the turn is +90 out here
         poseStack.mulPose(Axis.YP.rotationDegrees(90F));
@@ -63,19 +67,19 @@ public class RenderBlockSpider extends CompatEntityRenderer<EntityBlockSpider, R
         poseStack.pushPose();
         poseStack.translate(0D, state.swing * 0.005D, 0D);
         poseStack.mulPose(Axis.YP.rotationDegrees(state.swing));
-        for (String leg : ODD) legPart(poseStack, sink, light, leg);
+        for (String leg : ODD) legPart(poseStack, sink, light, state.overlay, leg);
         poseStack.popPose();
 
         poseStack.pushPose();
         poseStack.translate(0D, state.swing * -0.005D, 0D);
         poseStack.mulPose(Axis.YN.rotationDegrees(state.swing));
-        for (String leg : EVEN) legPart(poseStack, sink, light, leg);
+        for (String leg : EVEN) legPart(poseStack, sink, light, state.overlay, leg);
         poseStack.popPose();
 
         poseStack.pushPose();
         // 1.7's renderBlockAsItem centres the block itself, so 1.7's 0.75 lands the base at 0.25
         poseStack.translate(-0.5D, 0.25D, -0.5D);
-        sink.submitBlock(poseStack, state.disguise, light, OverlayTexture.NO_OVERLAY);
+        sink.submitBlock(poseStack, state.disguise, light, state.overlay);
         poseStack.popPose();
         poseStack.popPose();
     }
@@ -84,5 +88,7 @@ public class RenderBlockSpider extends CompatEntityRenderer<EntityBlockSpider, R
         public final CompatBlockRenderState disguise = new CompatBlockRenderState();
         float bodyYaw;
         float swing;
+        float deathTilt;
+        int overlay = OverlayTexture.NO_OVERLAY;
     }
 }

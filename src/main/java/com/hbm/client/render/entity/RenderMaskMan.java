@@ -10,6 +10,7 @@ import dev.golem.core.render.CompatEntityRenderState;
 import dev.golem.core.render.CompatEntityRenderer;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.living.LivingLooks;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -50,53 +51,59 @@ public class RenderMaskMan extends CompatEntityRenderer<EntityMaskMan, RenderMas
                 - Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);
         state.bodyYaw = Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);
         state.wounded = entity.getHealth() < entity.getMaxHealth() / 2F;
+        state.overlay = LivingLooks.overlay(entity);
+        state.deathTilt = LivingLooks.deathTilt(entity, partialTicks, 90F);
     }
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
         int light = state.lightCoords;
+        int overlay = state.overlay;
 
         poseStack.pushPose();
         // ModelMaskMan opened with rotate(180,1,0,0) + translate(0,-1.5,0), but that is not a transform: it is the
         // model undoing the scale(-1,-1,1) + translate(0,-1.5,0) RendererLivingEntity had already applied. The pair
         // cancels to a 180 turn, so the whole inherited chain nets out to yaw plus the model's own quarter turn.
-        poseStack.mulPose(Axis.YP.rotationDegrees(270F - state.bodyYaw));
+        poseStack.mulPose(Axis.YP.rotationDegrees(180F - state.bodyYaw));
+        LivingLooks.tilt(poseStack, state.deathTilt);
+        poseStack.mulPose(Axis.YP.rotationDegrees(90F));
         poseStack.mulPose(Axis.XP.rotationDegrees(state.swing * -0.1F));
 
-        part(poseStack, sink, BODY, "Torso", light);
+        part(poseStack, sink, BODY, "Torso", light, overlay);
 
-        limb(poseStack, sink, "LLeg", light, -0.5F, 1.75F, -0.5F, state.swing);
-        limb(poseStack, sink, "RLeg", light, -0.5F, 1.75F, 0.5F, -state.swing);
-        limb(poseStack, sink, "LArm", light, -0.5F, 3.75F, -1.5F, state.swing * 0.25F);
-        limb(poseStack, sink, "RArm", light, -0.5F, 3.75F, 1.5F, state.swing * -0.25F);
+        limb(poseStack, sink, "LLeg", light, overlay, -0.5F, 1.75F, -0.5F, state.swing);
+        limb(poseStack, sink, "RLeg", light, overlay, -0.5F, 1.75F, 0.5F, -state.swing);
+        limb(poseStack, sink, "LArm", light, overlay, -0.5F, 3.75F, -1.5F, state.swing * 0.25F);
+        limb(poseStack, sink, "RArm", light, overlay, -0.5F, 3.75F, 1.5F, state.swing * -0.25F);
 
         poseStack.pushPose();
         poseStack.translate(0.5F, 4F, 0F);
         poseStack.mulPose(Axis.YP.rotationDegrees(-state.headYaw));
 
         if (state.wounded) {
-            part(poseStack, sink, BODY, "Skull", light);
-            part(poseStack, sink, IOU, "IOU", light);
+            part(poseStack, sink, BODY, "Skull", light, overlay);
+            part(poseStack, sink, IOU, "IOU", light, overlay);
         } else {
-            part(poseStack, sink, BODY, "Head", light);
+            part(poseStack, sink, BODY, "Head", light, overlay);
         }
 
         poseStack.popPose();
         poseStack.popPose();
     }
 
-    private static void limb(PoseStack poseStack, SubmitSink sink, String part, int light,
+    private static void limb(PoseStack poseStack, SubmitSink sink, String part, int light, int overlay,
                              float x, float y, float z, float roll) {
         poseStack.pushPose();
         poseStack.translate(x, y, z);
         poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
-        part(poseStack, sink, BODY, part, light);
+        part(poseStack, sink, BODY, part, light, overlay);
         poseStack.popPose();
     }
 
-    private static void part(PoseStack poseStack, SubmitSink sink, RenderType type, String part, int light) {
+    private static void part(PoseStack poseStack, SubmitSink sink, RenderType type, String part, int light,
+                             int overlay) {
         sink.submitCustomGeometry(poseStack, type, (pose, buffer) ->
-                NtmEntityModels.MASK_MAN.renderPart(part, pose, buffer, light, OverlayTexture.NO_OVERLAY));
+                NtmEntityModels.MASK_MAN.renderPart(part, pose, buffer, light, overlay));
     }
 
     public static final class State extends CompatEntityRenderState {
@@ -104,5 +111,7 @@ public class RenderMaskMan extends CompatEntityRenderer<EntityMaskMan, RenderMas
         float headYaw;
         float bodyYaw;
         boolean wounded;
+        float deathTilt;
+        int overlay = OverlayTexture.NO_OVERLAY;
     }
 }

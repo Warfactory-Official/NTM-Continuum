@@ -115,7 +115,8 @@ public class MachineCatalyticCracker extends BlockMultiblockMachine implements I
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         Direction rot = facing.getClockWise();
-        int domains = PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        // 1.7 TileEntityProxyCombo(false, false, true): no inventory
+        int domains = PASSIVE_FLUID_IN;
         visitor.passiveCell(core.relative(facing, 3).relative(rot), MASK_ALL, domains);
         visitor.passiveCell(core.relative(facing, 3).relative(rot, -2), MASK_ALL, domains);
         visitor.passiveCell(core.relative(facing, -3).relative(rot), MASK_ALL, domains);

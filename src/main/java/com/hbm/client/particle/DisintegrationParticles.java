@@ -109,6 +109,13 @@ public final class DisintegrationParticles {
         return GIBLETS.size();
     }
 
+    /** Each live giblet as x, y, z, horizontal speed and this tick's fall, for the harness. */
+    public static List<double[]> gibletMotion() {
+        List<double[]> rows = new ArrayList<>();
+        for (Giblet g : GIBLETS) rows.add(new double[] {g.x, g.y, g.z, Math.sqrt(g.xd * g.xd + g.zd * g.zd), g.yo - g.y});
+        return rows;
+    }
+
     /** Hides the source entity for the same two-second client presentation window as ClientProxy. */
     public static void vanish(LivingEntity entity) {
         int id = entity.getId();
@@ -366,13 +373,21 @@ public final class DisintegrationParticles {
         void tick(ClientLevel level) {
             xo = x; yo = y; zo = z; oYaw = yaw; oPitch = pitch; age++;
             yd -= 0.04D * (type == 2 ? 4D : 2D);
-            AABB box = new AABB(x - 0.05, y - 0.05, z - 0.05, x + 0.05, y + 0.05, z + 0.05);
+            // 1.7 EntityFX: a 0.2 box, motion zeroed on each blocked axis, 0.7 ground friction
+            AABB box = new AABB(x - 0.1, y - 0.1, z - 0.1, x + 0.1, y + 0.1, z + 0.1);
             List<VoxelShape> collisions = new ArrayList<>();
             level.getBlockCollisions(null, box.expandTowards(xd, yd, zd)).forEach(collisions::add);
             Vec3 moved = Entity.collideBoundingBox(null, new Vec3(xd, yd, zd), box, level, collisions);
             boolean onGround = yd < 0D && moved.y != yd;
-            x += moved.x; y += moved.y; z += moved.z; xd *= 0.98D; yd *= 0.98D; zd *= 0.98D;
-            if (!onGround) {
+            x += moved.x; y += moved.y; z += moved.z;
+            if (moved.x != xd) xd = 0D;
+            if (moved.y != yd) yd = 0D;
+            if (moved.z != zd) zd = 0D;
+            xd *= 0.98D; yd *= 0.98D; zd *= 0.98D;
+            if (onGround) {
+                xd *= 0.7D;
+                zd *= 0.7D;
+            } else {
                 yaw += momentumYaw;
                 pitch += momentumPitch;
                 if (type != 2) level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK,

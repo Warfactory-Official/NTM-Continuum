@@ -431,9 +431,12 @@ public final class ForeignFluids {
             int max = FluidUnits.saturate(maxMb);
             if (one.getItem() instanceof IFillableItem fillable) {
                 if (!fillable.providesFluid(type, one)) return null;
+                // 1.12.2 NTMFluidCapabilityHandler: a registry container drains whole, to its empty item
+                boolean whole = FluidContainerRegistry.INSTANCE.isRegistryContainer(one) && !FluidContainerRegistry.INSTANCE.isUniversal(one);
+                if (whole && max < fillable.getFill(one)) return null;
                 ItemStack result = one.copy();
                 int moved = fillable.tryEmpty(type, max, result);
-                return moved > 0 ? new Moved(result, moved) : null;
+                return moved > 0 ? new Moved(FluidContainerRegistry.INSTANCE.settle(result), moved) : null;
             }
             if (one.getItem() instanceof ItemFluidBucket) {
                 if (ItemFluidBucket.getFluid(one) != type || max < ItemFluidBucket.VOLUME) return null;

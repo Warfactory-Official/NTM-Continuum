@@ -36,7 +36,6 @@ public final class MachineCaps {
     public static final int FLUID_OUT = 1 << 3;
     public static final int ITEMS = 1 << 4;
     public static final int ITEMS_AT_CELLS = 1 << 5;
-    public static final int FE = 1 << 6;
 
     /**
      * The fusion links, which are domains rather than caps: no block declares them and the builder below
@@ -57,19 +56,19 @@ public final class MachineCaps {
      */
     public static final int FACE_MASK_ALL = 0b111111;
 
-    final boolean powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe;
+    final boolean powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells;
     final boolean selfProvided;
     private final FaceGate faces;
     private final FluidRule<BlockEntity> fluidFaces;
     private final @Nullable RegistryObject<? extends BlockEntityType<?>> beType;
 
     private MachineCaps(@Nullable RegistryObject<? extends BlockEntityType<?>> beType) {
-        this(beType, false, false, false, false, false, false, false, false, ALL, ALL_FLUID);
+        this(beType, false, false, false, false, false, false, false, ALL, ALL_FLUID);
     }
 
     private MachineCaps(@Nullable RegistryObject<? extends BlockEntityType<?>> beType, boolean powerIn,
                         boolean powerOut, boolean fluidIn, boolean fluidOut, boolean items,
-                        boolean itemsAtCells, boolean fe, boolean selfProvided,
+                        boolean itemsAtCells, boolean selfProvided,
                         FaceGate faces,
                         FluidRule<BlockEntity> fluidFaces) {
         this.beType = beType;
@@ -79,7 +78,6 @@ public final class MachineCaps {
         this.fluidOut = fluidOut;
         this.items = items;
         this.itemsAtCells = itemsAtCells;
-        this.fe = fe;
         this.selfProvided = selfProvided;
         this.faces = faces;
         this.fluidFaces = fluidFaces;
@@ -95,34 +93,29 @@ public final class MachineCaps {
     }
 
     public MachineCaps powerIn() {
-        return new MachineCaps(beType, true, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe, selfProvided, faces, fluidFaces);
+        return new MachineCaps(beType, true, powerOut, fluidIn, fluidOut, items, itemsAtCells, selfProvided, faces, fluidFaces);
     }
 
     public MachineCaps powerOut() {
-        return new MachineCaps(beType, powerIn, true, fluidIn, fluidOut, items, itemsAtCells, fe, selfProvided, faces, fluidFaces);
+        return new MachineCaps(beType, powerIn, true, fluidIn, fluidOut, items, itemsAtCells, selfProvided, faces, fluidFaces);
     }
 
     public MachineCaps fluidIn() {
-        return new MachineCaps(beType, powerIn, powerOut, true, fluidOut, items, itemsAtCells, fe, selfProvided, faces, fluidFaces);
+        return new MachineCaps(beType, powerIn, powerOut, true, fluidOut, items, itemsAtCells, selfProvided, faces, fluidFaces);
     }
 
     public MachineCaps fluidOut() {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, true, items, itemsAtCells, fe, selfProvided, faces, fluidFaces);
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, true, items, itemsAtCells, selfProvided, faces, fluidFaces);
     }
 
     /** Sided inventory at the core block entity only: a GUI inventory with no proxy cells. */
     public MachineCaps items() {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, true, itemsAtCells, fe, selfProvided, faces, fluidFaces);
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, true, itemsAtCells, selfProvided, faces, fluidFaces);
     }
 
     /** Sided inventory at every connector cell, which is 1.7's {@code TileEntityProxyCombo().inventory()}. */
     public MachineCaps itemsAtCells() {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, true, fe, selfProvided, faces, fluidFaces);
-    }
-
-    /** Foreign-energy exposure. NeoForge and Forge only; Fabric ships no standard energy capability. */
-    public MachineCaps fe() {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, true, selfProvided, faces, fluidFaces);
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, true, selfProvided, faces, fluidFaces);
     }
 
     /**
@@ -132,7 +125,7 @@ public final class MachineCaps {
      * handlers.
      */
     public MachineCaps selfProvided() {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe, true, faces, fluidFaces);
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, true, faces, fluidFaces);
     }
 
     /**
@@ -143,13 +136,13 @@ public final class MachineCaps {
      * <p>Evaluated per lookup, so a rule may read the block state or live state.
      */
     public <BE extends BlockEntity> MachineCaps faces(Class<BE> type, BiPredicate<BE, Direction> gate) {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe,
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells,
                 selfProvided, (be, side, role) -> gate.test(type.cast(be), side), fluidFaces);
     }
 
     /** Separates input and output faces without changing a machine's priority or speed contract. */
     public <BE extends BlockEntity> MachineCaps roleFaces(Class<BE> type, RoleGate<BE> gate) {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe,
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells,
                 selfProvided, (be, side, role) -> gate.test(type.cast(be), side, role), fluidFaces);
     }
 
@@ -169,7 +162,7 @@ public final class MachineCaps {
 
     /** A side rule specific to fluid contacts, evaluated against the live owner on every query. */
     public <BE extends BlockEntity> MachineCaps fluidFaces(Class<BE> type, BiPredicate<BE, Direction> gate) {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe,
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells,
                 selfProvided, faces, (be, fluid, side) -> gate.test(type.cast(be), side));
     }
 
@@ -179,7 +172,7 @@ public final class MachineCaps {
 
     /** A live fluid-type and face rule, independent of energy and inventory faces. */
     public <BE extends BlockEntity> MachineCaps fluidTypes(Class<BE> type, FluidRule<BE> gate) {
-        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe,
+        return new MachineCaps(beType, powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells,
                 selfProvided, faces, (be, fluid, side) -> gate.test(type.cast(be), fluid, side));
     }
 
@@ -239,8 +232,7 @@ public final class MachineCaps {
     /** The flag set, so a folded multiblock's cell can re-apply its owner's declaration at query time. */
     public int declaredBits() {
         return (powerIn ? POWER_IN : 0) | (powerOut ? POWER_OUT : 0) | (fluidIn ? FLUID_IN : 0)
-                | (fluidOut ? FLUID_OUT : 0) | (items ? ITEMS : 0) | (itemsAtCells ? ITEMS_AT_CELLS : 0)
-                | (fe ? FE : 0);
+                | (fluidOut ? FLUID_OUT : 0) | (items ? ITEMS : 0) | (itemsAtCells ? ITEMS_AT_CELLS : 0);
     }
 
     public boolean isSelfProvided() {

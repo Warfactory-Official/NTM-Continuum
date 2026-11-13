@@ -24,7 +24,7 @@ public class CrystallizerRecipeHandler extends JEIUniversalHandler<CrystallizerR
     @Override
     protected List<List<ItemStack>> inputs(CrystallizerRecipes.CrystallizerRecipe recipe) {
         List<List<ItemStack>> list = new ArrayList<>();
-        ItemStack acid = ItemFluidIcon.make(recipe.fluid);
+        ItemStack acid = ItemFluidIcon.make(recipe.fluid, recipe.acidAmount);
         if (!acid.isEmpty()) list.add(List.of(acid));
         List<ItemStack> item = recipe.input.getDisplayStacks();
         if (!item.isEmpty()) list.add(item);

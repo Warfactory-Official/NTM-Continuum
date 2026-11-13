@@ -288,6 +288,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         FluidType type = tank.getTankType();
         if (stack.isEmpty() || type == Fluids.NONE) return false;
         if (!FluidContainerRegistry.INSTANCE.fullOf(stack, type).isEmpty() || stack.is(Items.BUCKET)) return true;
+        if (FluidContainerRegistry.INSTANCE.isUniversal(stack)) return ((IFillableItem) stack.getItem()).acceptsFluid(type, stack)
+                && FluidContainerRegistry.INSTANCE.fillsInPart(stack, type);
         return stack.getItem() instanceof IFillableItem fillable && fillable.acceptsFluid(type, stack)
                 && (stack.getMaxStackSize() == 1 || fillable.getFill(stack) == 0);
     }

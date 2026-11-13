@@ -23,6 +23,7 @@ import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
+import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.saveddata.TomSaveData;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -172,6 +173,13 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         if (slot == 0 || slot == 1) return stack.getItem() instanceof IItemFluidId;
         FluidType type = tank.getTankType();
         if (slot == 2 && type == Fluids.NONE && tank.getFill() == 0) return MachineFluidContainerIO.heldFluid(stack) != Fluids.NONE;
+        // 1.12.2 Library.isStackDrainableForTank / isStackFillableForTank: a Forge fluid item in part
+        if ((slot == 2 || slot == 4) && FluidContainerRegistry.INSTANCE.isUniversal(stack)) {
+            FluidType held = ItemFluidTank.getType(stack);
+            ItemFluidTank item = (ItemFluidTank) stack.getItem();
+            if (slot == 4) return item.acceptsFluid(type, stack) && FluidContainerRegistry.INSTANCE.fillsInPart(stack, type);
+            return item.getFill(stack) > 0 && tank.accepts(held) && tank.getFill() < tank.getMaxFill();
+        }
         if (slot == 2) {
             int content = FluidContainerRegistry.INSTANCE.contentOf(stack, type);
             // port: the universal bucket, which 1.7's registry never had

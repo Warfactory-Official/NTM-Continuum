@@ -56,9 +56,15 @@ public final class ConfigGameTests {
     public static final GameTests.Function PLACEMENT = TESTS.function(
             "fix8_config_placement_reads_cfg", 20, () -> ConfigGameTests::placement);
 
-    /** Port-only keys: category, key, default. Cables exchange HE with other mods' FE; ores drop ntm-next's raw items; worldgen 1.7 hardcoded. */
+    /**
+     * Port-only keys: category, key, default (a list joined with "|"). Cables exchange HE with other mods' FE; ores drop
+     * ntm-next's raw items; Sable masses; the DE importer's backup; worldgen 1.7 hardcoded.
+     */
     private static final String[][] PORT_KEYS = {
             {"01_general", "1.90_enableRawOres", "true"},
+            {"01_general", "1.91_sableHardnessMass", "false"},
+            {"01_general", "1.92_sableBlockMasses", ""},
+            {"01_general", "1.93_deImportBackup", "true"},
             {"09_machines", "9.50_energyRatioHE", "5"},
             {"09_machines", "9.51_energyRatioFE", "1"},
             {"09_machines", "9.52_foreignExportReserve", "0.0"},
@@ -111,7 +117,8 @@ public final class ConfigGameTests {
             for (String[] k : PORT_KEYS) {
                 Configuration.Property p = cfg.peek(k[0], k[1]);
                 helper.assertTrue(p != null, "port key " + k[0] + "/" + k[1] + " missing from hbm.cfg");
-                helper.assertTrue(k[2].equals(p.getString()), k[1] + " default must be " + k[2] + ", got " + p.getString());
+                String value = p.isList() ? String.join("|", p.getStringList()) : p.getString();
+                helper.assertTrue(k[2].equals(value), k[1] + " default must be " + k[2] + ", got " + value);
                 expected.add(k[0] + "/" + k[1]);
             }
             // nothing beyond the 1.7 keys and PORT_KEYS

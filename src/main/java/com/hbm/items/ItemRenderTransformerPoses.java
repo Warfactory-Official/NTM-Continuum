@@ -24,8 +24,9 @@ import java.util.Map;
  * {@code z} from {@code -1/16} to {@code 0}. That is {@code item/generated}'s slab turned half round Y
  * ({@link #SPRITE_TO_2D}). The full-3D hand pose mirrors (see {@link Pose17.Klass#ITEM_RENDER_WEAPON_FULL3D});
  * a sprite slab is its own mirror image through its middle plane, so the third-person poses fold that mirror into
- * {@link #SLAB_FLIP} and ship unmirrored, which keeps vanilla's culled item faces the right way out. The left hands
- * are the right hands' mirror images, as vanilla's own sprite models are.
+ * {@link #SLAB_FLIP} and ship unmirrored, which keeps vanilla's culled item faces the right way out. 1.7 had no
+ * off hand; a left hand is vanilla {@code item/handheld}'s: the right hand mirrored, the sprite turned to its other
+ * face so its picture is not.
  *
  * <p>Plain Java and JOML only: the declarations call this from {@code dejson.gradle.kts}'s plain JVM.
  */
@@ -56,7 +57,7 @@ public final class ItemRenderTransformerPoses {
     /** The sprite slab mirrored through its own middle plane, {@code z = 8/16}: the same slab, faces swapped. */
     static final Matrix4f SLAB_FLIP = new Matrix4f().translate(0F, 0F, 0.5F).scale(1F, 1F, -1F).translate(0F, 0F, -0.5F);
 
-    /** Mirror of block space about {@code x = 1/2}: a right-hand pose to its left hand. */
+    /** Mirror of block space about {@code x = 1/2}. */
     private static final Matrix4f MIRROR_X = new Matrix4f().translate(0.5F, 0F, 0F).scale(-1F, 1F, 1F).translate(-0.5F, 0F, 0F);
 
     /** The four hand poses of a Transformer item with third-person translate {@code ttp}, first-person scale {@code sfp}. */
@@ -67,9 +68,9 @@ public final class ItemRenderTransformerPoses {
                 .mul(firstPerson(sfp)).mul(SPRITE_TO_2D);
         Map<DisplaySlot, Matrix4f> poses = new EnumMap<>(DisplaySlot.class);
         poses.put(DisplaySlot.THIRD_PERSON_RIGHT_HAND, third);
-        poses.put(DisplaySlot.THIRD_PERSON_LEFT_HAND, mirrored(third));
+        poses.put(DisplaySlot.THIRD_PERSON_LEFT_HAND, leftHand(third));
         poses.put(DisplaySlot.FIRST_PERSON_RIGHT_HAND, first);
-        poses.put(DisplaySlot.FIRST_PERSON_LEFT_HAND, mirrored(first));
+        poses.put(DisplaySlot.FIRST_PERSON_LEFT_HAND, leftHand(first));
         return poses;
     }
 
@@ -85,10 +86,18 @@ public final class ItemRenderTransformerPoses {
                 .mul(SPRITE_TO_2D);
         Map<DisplaySlot, Matrix4f> poses = new EnumMap<>(DisplaySlot.class);
         poses.put(DisplaySlot.THIRD_PERSON_RIGHT_HAND, third);
-        poses.put(DisplaySlot.THIRD_PERSON_LEFT_HAND, mirrored(third));
+        poses.put(DisplaySlot.THIRD_PERSON_LEFT_HAND, leftHand(third));
         poses.put(DisplaySlot.FIRST_PERSON_RIGHT_HAND, first);
-        poses.put(DisplaySlot.FIRST_PERSON_LEFT_HAND, mirrored(first));
+        poses.put(DisplaySlot.FIRST_PERSON_LEFT_HAND, leftHand(first));
         return poses;
+    }
+
+    /** {@code frames} with each left hand rebuilt from its right hand as {@link #leftHand} does. */
+    public static Map<DisplaySlot, Matrix4f> withVanillaLeftHands(Map<DisplaySlot, Matrix4f> frames) {
+        Map<DisplaySlot, Matrix4f> out = new EnumMap<>(frames);
+        out.put(DisplaySlot.THIRD_PERSON_LEFT_HAND, leftHand(frames.get(DisplaySlot.THIRD_PERSON_RIGHT_HAND)));
+        out.put(DisplaySlot.FIRST_PERSON_LEFT_HAND, leftHand(frames.get(DisplaySlot.FIRST_PERSON_RIGHT_HAND)));
+        return out;
     }
 
     /** {@code case EQUIPPED}, op for op. */
@@ -111,8 +120,9 @@ public final class ItemRenderTransformerPoses {
                 .translate(-0.5F, -0.5F, 0.25F);
     }
 
-    private static Matrix4f mirrored(Matrix4f right) {
-        return new Matrix4f(MIRROR_X).mul(right).mul(MIRROR_X);
+    /** The right hand mirrored, drawing the slab from its other face: vanilla's handheld left hands negate y and z. */
+    private static Matrix4f leftHand(Matrix4f right) {
+        return new Matrix4f(MIRROR_X).mul(right).mul(SLAB_FLIP);
     }
 
     private static float rad(float degrees) {

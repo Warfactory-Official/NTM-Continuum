@@ -1,9 +1,12 @@
 package com.hbm.tileentity;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.turret.BlockTurretEmplacement;
+import com.hbm.blocks.turret.BlockTurretPad;
 import dev.golem.core.autocraft.CraftingMachines;
 import dev.golem.core.data.CompatBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
@@ -19,7 +22,13 @@ public class TileEntityProxyCell extends CompatBlockEntity {
     }
 
     public static @Nullable TileEntityProxyCell at(BlockPos pos, BlockState state) {
-        if (!(state.getBlock() instanceof BlockMultiblockMachine) || CraftingMachines.reachesBlocksWithoutBlockEntity()) return null;
+        if (!proxies(state.getBlock()) || CraftingMachines.reachesBlocksWithoutBlockEntity()) return null;
         return new TileEntityProxyCell(pos, state);
+    }
+
+    /** The cell blocks that carry one: folded machines, and the turrets' own pad and emplacement cells. */
+    public static boolean proxies(Block block) {
+        return block instanceof BlockMultiblockMachine machine && machine.proxiesCells()
+                || block instanceof BlockTurretPad || block instanceof BlockTurretEmplacement;
     }
 }

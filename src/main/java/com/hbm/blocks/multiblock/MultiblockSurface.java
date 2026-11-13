@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -179,6 +180,25 @@ public final class MultiblockSurface {
                 pos.getX() - core.getX(), pos.getY() - core.getY(), pos.getZ() - core.getZ(), side,
                 BlockMultiblockCore.PASSIVE_NONE, role);
     }
+
+    /**
+     * Whether 1.7's tubes and cranes found an inventory at {@code pos}: anything but an HBM multiblock cell, any cell
+     * the holder answers for on machines 1.7 proxied everywhere (RBMK columns: the lid), else an item-proxy stamp.
+     */
+    public static boolean itemProxyAt(BlockGetter level, BlockPos pos) {
+        if (!isFoldedCell(level.getBlockState(pos))) return true;
+        BlockPos core = coreOfAny(level, pos);
+        if (core == null) return false;
+        String machine = BuiltInRegistries.BLOCK.getKey(level.getBlockState(core).getBlock()).getPath();
+        return EVERY_CELL.contains(machine) || carriesPassive(level, pos, BlockMultiblockCore.PASSIVE_ITEMS);
+    }
+
+    private static final Set<String> EVERY_CELL = Set.of("furnace_iron", "furnace_steel", "machine_furnace_combination",
+            "machine_ammo_press", "machine_soldering_station", "machine_arc_welder", "machine_crucible", "machine_ashpit",
+            "heater_oven", "sat_dock", "machine_reactor", "turret_chekhov", "turret_friendly", "turret_howard",
+            "turret_tauon", "turret_maxwell", "turret_jeremy", "turret_richard", "turret_fritz", "turret_himars",
+            "turret_arty", "rbmk_storage", "rbmk_autoloader", "rbmk_outgasser", "rbmk_fuel_rod",
+            "rbmk_fuel_rod_moderated", "rbmk_fuel_rod_reasim", "rbmk_fuel_rod_reasim_moderated");
 
     /** {@link BlockMultiblockCore#carriesPassiveAt} reached through any cell of the machine. */
     public static boolean carriesPassive(BlockGetter level, BlockPos pos, int domains) {

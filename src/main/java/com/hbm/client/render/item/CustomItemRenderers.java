@@ -105,6 +105,11 @@ public final class CustomItemRenderers {
         public boolean animated(ItemStack stack, Type type) {
             return get().animated(stack, type);
         }
+
+        @Override
+        public boolean mirrorsExactly() {
+            return get().mirrorsExactly();
+        }
     }
 
     // Shared by the renderers

@@ -25,7 +25,8 @@ import org.jspecify.annotations.Nullable;
 import com.hbm.module.portmanager.ModulePortManFluidAdaptive;
 
 /** Heat-exchanger column: a fluid identifier selects the first FT_Heatable conversion step. */
-public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluidProviderMK2, IFluidReceiverMK2, MenuProvider, IRORValueProvider {
+public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluidProviderMK2, IFluidReceiverMK2, MenuProvider, IRORValueProvider,
+        RBMKSlottedAccess {
     public final FluidTankNTM feed = new FluidTankNTM(Fluids.COOLANT, 16_000);
     public final FluidTankNTM steam = new FluidTankNTM(Fluids.COOLANT_HOT, 16_000);
 

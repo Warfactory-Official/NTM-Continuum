@@ -75,7 +75,7 @@ public class CompactLauncher extends BlockMultiblockMachine implements IBomb, IE
     }
 
     /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
-    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().items().fe()
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().items()
             .faces(BlockEntity.class, (be, side) -> side != Direction.UP)
             .fluidFaces(BlockEntity.class, (be, side) -> side != Direction.UP);
 

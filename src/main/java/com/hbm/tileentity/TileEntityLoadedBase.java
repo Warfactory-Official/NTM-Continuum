@@ -3,6 +3,7 @@ package com.hbm.tileentity;
 import dev.golem.core.world.Protection;
 import io.netty.buffer.ByteBuf;
 import com.hbm.util.Owners;
+import java.util.Arrays;
 import java.util.UUID;
 import net.minecraft.core.UUIDUtil;
 import org.jspecify.annotations.Nullable;
@@ -18,7 +19,9 @@ import com.hbm.uninos.PortNodes;
 import com.hbm.uninos.networkproviders.FluidNetProvider;
 import com.hbm.uninos.networkproviders.PowerNetProvider;
 import com.hbm.api.tile.ILoadedTile;
+import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.util.EnergyPush;
 import com.hbm.packet.BlockEntitySyncPayload;
 import dev.golem.core.net.GolemBuffers;
 import dev.golem.core.net.GolemSync;
@@ -130,7 +133,28 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     public void updatePortPOFIFO() { this.updatePortFIFO(); this.providePower(); }
 
     public void receivePower() { if (powerPorts == null) return; if (this instanceof IEnergyReceiverMK2) for (TilePort port : powerPorts) port.checkSubscribe(level); }
-    public void providePower() { if (powerPorts == null) return; if (this instanceof IEnergyProviderMK2) for (TilePort port : powerPorts) port.checkProvide(level); }
+    public void providePower() {
+        if (powerPorts == null || !(this instanceof IEnergyProviderMK2 provider)) return;
+        for (TilePort port : powerPorts) port.checkProvide(level);
+        if (!(level instanceof ServerLevel server)) return;
+        long now = server.getGameTime();
+        int index = 0;
+        for (TilePort port : powerPorts) {
+            if (port.connections == null) continue;
+            for (DirPos connection : port.connections) {
+                if (foreignRetry == null || foreignRetry.length <= index) foreignRetry = Arrays.copyOf(
+                        foreignRetry == null ? new long[0] : foreignRetry, index + 1);
+                if (foreignRetry[index] <= now && !EnergyPush.toForeign(server, provider, connection)) {
+                    foreignRetry[index] = now + FOREIGN_RETRY_TICKS;
+                }
+                index++;
+            }
+        }
+    }
+
+    /** A port connection with no foreign energy block is asked again only after this long. */
+    private static final int FOREIGN_RETRY_TICKS = 20;
+    private long @Nullable [] foreignRetry;
 
     public void provideFluid(FluidTankNTM[] tanks) { provideFluid(tanks, this.fluidOutPorts); }
     public void provideFluid(FluidTankNTM[] tanks, TilePort[] ports) {

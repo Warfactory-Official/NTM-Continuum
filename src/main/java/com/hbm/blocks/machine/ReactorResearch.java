@@ -41,11 +41,11 @@ public final class ReactorResearch extends BlockMultiblockMachine implements Wor
         return core != null && level.getBlockEntity(core) instanceof TileEntityReactorResearch te ? te : null;
     }
 
-    /** 1.7 {@code TileEntityProxyCombo(false, true, true)} on the upper cells: items pass through to the core. */
+    /** 1.7 {@code TileEntityProxyCombo(false, true, true)} on the upper cells: power and fluid, no inventory. */
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
-        visitor.passiveCell(core.above(), MASK_ALL, PASSIVE_ITEMS);
-        visitor.passiveCell(core.above(2), MASK_ALL, PASSIVE_ITEMS);
+        visitor.passiveCell(core.above(), MASK_ALL, PASSIVE_POWER_IN | PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.above(2), MASK_ALL, PASSIVE_POWER_IN | PASSIVE_FLUID_IN);
     }
 
     @Override

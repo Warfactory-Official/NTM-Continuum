@@ -229,6 +229,8 @@ public abstract class EntityThrowableNT extends CompatEntity implements Owners.C
 
         float drag = getAirDrag();
         double gravity = getGravityVelocity();
+        // 1.7 steps by the motion as the impact left it: a stuck projectile stays at the hit, a bounce turns at once
+        motion = getDeltaMovement().scale(motionMult());
 
         if (fullBlockCollisions()) {
             move(MoverType.SELF, motion);

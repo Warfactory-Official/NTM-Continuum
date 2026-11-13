@@ -74,11 +74,11 @@ public class BlockPASource extends BlockMultiblockMachine
         visitor.cell(core.relative(rot, 4), MASK_WEST, ROLE_ALL);
     }
 
-    /** Every port takes both a cable and a coolant duct, so each cell answers for either domain. */
+    /** 1.7 {@code TileEntityProxyCombo().inventory().power().fluid()} on every port. */
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         Direction rot = facing.getClockWise();
-        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
 
         for (int side = -1; side <= 1; side++) {
             visitor.passiveCell(core.relative(facing).relative(rot, side * 2), MASK_ALL, domains);

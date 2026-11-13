@@ -2,8 +2,11 @@ package com.hbm.lib;
 
 import com.hbm.Constants;
 import dev.golem.core.Ids;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -162,6 +165,13 @@ public final class ModDamageSources {
         private final ResourceKey<DamageType> type = key("bullet_" + name().toLowerCase(Locale.ROOT));
 
         public ResourceKey<DamageType> type() { return type; }
+
+        /** 1.7 {@code damageType.equals(name)}: this class's rounds, or a non-bullet type of the same name. */
+        public boolean isApplicable(DamageSource source) {
+            String id = source.getMsgId().toLowerCase(Locale.ROOT);
+            String name = name().toLowerCase(Locale.ROOT);
+            return id.equals(name) || id.equals("bullet_" + name);
+        }
     }
 
     /**
@@ -178,23 +188,43 @@ public final class ModDamageSources {
     /** A bullet hit: {@code direct} is the projectile, {@code attacker} whoever fired it (may be null). */
     public static DamageSource bullet(Level level, ResourceKey<DamageType> key,
             net.minecraft.world.entity.Entity direct, net.minecraft.world.entity.Entity attacker) {
-        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key),
-                direct, attacker);
+        return source(level, key, direct, attacker);
     }
+
+    /** 1.7's sedna classes and the indirect sources whose 1.7 message differs once an attacker is known. */
+    private static Map<ResourceKey<DamageType>, String> attackerMessages() {
+        if (attackerMessages == null) {
+            Map<ResourceKey<DamageType>, String> map = new HashMap<>();
+            for (DamageClass damageClass : DamageClass.values()) {
+                map.put(damageClass.type(), "death.sedna." + damageClass.name().toLowerCase(Locale.ROOT));
+            }
+            map.put(BULLET_PIERCING, "death.sedna.physical");
+            map.put(BOIL, "death.attack.boil");
+            map.put(ICE, "death.attack.ice");
+            map.put(LASER, "death.attack.laser");
+            attackerMessages = map;
+        }
+        return attackerMessages;
+    }
+
+    private static Map<ResourceKey<DamageType>, String> attackerMessages;
 
     private static ResourceKey<DamageType> key(String name) {
         return ResourceKey.create(Registries.DAMAGE_TYPE, Ids.of(Constants.MOD_ID, name));
     }
 
     public static DamageSource source(Level level, ResourceKey<DamageType> key) {
-        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key));
+        return source(level, key, null, null);
     }
 
     /** A typed source with a direct (projectile/beam) and a causing entity, the 3-arg {@code DamageSources.source} shape. */
     public static DamageSource source(Level level, ResourceKey<DamageType> key,
                                       net.minecraft.world.entity.@org.jspecify.annotations.Nullable Entity direct,
                                       net.minecraft.world.entity.@org.jspecify.annotations.Nullable Entity causing) {
-        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key), direct, causing);
+        Holder<DamageType> type = level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key);
+        String message = attackerMessages().get(key);
+        return message == null ? new DamageSource(type, direct, causing)
+                : new AttackerDamageSource(type, direct, causing, message, key == LASER);
     }
 
     /** The hard-landing shockwave, credited to the wearer whose suit made it. */

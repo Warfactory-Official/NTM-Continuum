@@ -20,7 +20,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -48,6 +47,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.Map;
 import com.hbm.api.block.IPneumaticConnector;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
+import com.hbm.uninos.networkproviders.PneumaticNetwork;
 
 /**
  * 1.7 {@code com.hbm.blocks.network.pneumatic.PneumoTube}. The block state holds one bit per face for the tube
@@ -281,7 +281,7 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
      * it finds. {@code UNKNOWN} - null here - always terminates the walk and simply disables that part.
      */
     public static boolean screwDirections(Level level, Player player, BlockPos pos) {
-        if (level.isClientSide()) return true;
+        if (!(level instanceof ServerLevel server)) return true;
         if (!(level.getBlockEntity(pos) instanceof TileEntityPneumoTube tube)) return false;
 
         boolean sneaking = player.isShiftKeyDown();
@@ -292,9 +292,8 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
             rot = nextDir(rot);
             if (rot == null) break; // unknown is always valid, simply disables this part
             if (rot == oth) continue; // skip if both positions collide
-            BlockEntity next = level.getBlockEntity(pos.relative(rot));
-            if (next instanceof TileEntityPneumoTube) continue;
-            if (next instanceof Container) break; // valid if connected to an inventory
+            if (level.getBlockEntity(pos.relative(rot)) instanceof TileEntityPneumoTube) continue;
+            if (PneumaticNetwork.containerAt(server, pos.relative(rot)) != null) break; // valid if connected to an inventory
         }
 
         if (sneaking) tube.ejectionDir = rot;
@@ -305,7 +304,7 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
         BlockState state = level.getBlockState(pos);
         level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL);
         // the port walk moves the destination and the air intake without touching a neighbour
-        if (level instanceof ServerLevel sl) LevelNodeGraph.invalidateEndpointsAt(sl, pos);
+        LevelNodeGraph.invalidateEndpointsAt(server, pos);
         return true;
     }
 

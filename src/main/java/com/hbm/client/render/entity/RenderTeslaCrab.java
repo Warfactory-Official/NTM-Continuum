@@ -14,6 +14,7 @@ import dev.golem.core.render.CompatEntityRenderState;
 import dev.golem.core.render.CompatEntityRenderer;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.living.LivingLooks;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -88,6 +89,8 @@ public class RenderTeslaCrab<T extends Mob> extends CompatEntityRenderer<T, Rend
             state.beams.add(target.subtract(entity.getX(), entity.getY() + arcHeight, entity.getZ()));
         }
         state.start = (int) entity.level().getGameTime() % 1000 + 1;
+        state.overlay = LivingLooks.overlay(entity);
+        state.deathTilt = LivingLooks.deathTilt(entity, partialTicks, 90F);
     }
 
     @Override
@@ -97,15 +100,16 @@ public class RenderTeslaCrab<T extends Mob> extends CompatEntityRenderer<T, Rend
 
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(180F - state.bodyYaw));
+        LivingLooks.tilt(poseStack, state.deathTilt);
         poseStack.mulPose(Axis.YP.rotationDegrees(baseYaw));
-        part(poseStack, sink, light, body);
+        part(poseStack, sink, light, state.overlay, body);
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(swing));
-        part(poseStack, sink, light, legsLeft);
+        part(poseStack, sink, light, state.overlay, legsLeft);
         poseStack.popPose();
         poseStack.pushPose();
         poseStack.mulPose(Axis.YN.rotationDegrees(swing));
-        part(poseStack, sink, light, legsRight);
+        part(poseStack, sink, light, state.overlay, legsRight);
         poseStack.popPose();
         poseStack.popPose();
 
@@ -120,9 +124,9 @@ public class RenderTeslaCrab<T extends Mob> extends CompatEntityRenderer<T, Rend
         }
     }
 
-    private void part(PoseStack poseStack, SubmitSink sink, int light, String part) {
+    private void part(PoseStack poseStack, SubmitSink sink, int light, int overlay, String part) {
         sink.submitCustomGeometry(poseStack, type,
-                (pose, buffer) -> model.renderPart(part, pose, buffer, light, OverlayTexture.NO_OVERLAY));
+                (pose, buffer) -> model.renderPart(part, pose, buffer, light, overlay));
     }
 
     public static final class State extends CompatEntityRenderState {
@@ -131,5 +135,7 @@ public class RenderTeslaCrab<T extends Mob> extends CompatEntityRenderer<T, Rend
         float walkCycle;
         float walkSpeed;
         int start;
+        float deathTilt;
+        int overlay = OverlayTexture.NO_OVERLAY;
     }
 }

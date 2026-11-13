@@ -12,6 +12,7 @@ import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
+import com.hbm.tileentity.TileEntityProxyCell;
 import com.hbm.uninos.graph.EndpointRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -83,7 +84,8 @@ public final class NativeContacts {
         var declared = EndpointRegistry.of(level).resolve(level, pos.asLong(), side, role);
         if (declared != null && !declared.isRemoved()) return declared;
         var direct = level.getBlockEntity(pos);
-        if (direct != null && !direct.isRemoved()) return direct;
+        // Forge's capability proxy on a folded cell is not the machine: the core behind it is
+        if (direct != null && !direct.isRemoved() && !(direct instanceof TileEntityProxyCell)) return direct;
         var core = MachineCore.at(level, pos, level.getBlockState(pos));
         return core != null && !core.isRemoved() ? core : null;
     }

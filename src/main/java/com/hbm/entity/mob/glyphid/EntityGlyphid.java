@@ -24,6 +24,7 @@ import com.hbm.handler.pollution.PollutionType;
 import com.hbm.handler.threading.TargetPoint;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.lib.ModDamageSources.DamageClass;
 import com.hbm.main.ResourceManager;
 import dev.golem.core.world.Navigations;
 import net.minecraft.core.BlockPos;
@@ -195,9 +196,9 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
         float threshold = stats.thresholdMultForArmor * getGlyphidArmor() / 5F;
 
         if (damage.is(ModDamageSources.NUCLEAR_BLAST)) return new float[]{threshold * 0.25F, 0F};
-        if (damage.is(ModDamageSources.LASER)) return new float[]{threshold * 0.5F, stats.resistanceMult * 0.5F};
-        if (damage.is(ModDamageSources.ELECTRIC)) return new float[]{threshold * 0.25F, stats.resistanceMult * 0.25F};
-        if (damage.is(ModDamageSources.SUBATOMIC)) return new float[]{0F, stats.resistanceMult * 0.1F};
+        if (DamageClass.LASER.isApplicable(damage)) return new float[]{threshold * 0.5F, stats.resistanceMult * 0.5F};
+        if (DamageClass.ELECTRIC.isApplicable(damage)) return new float[]{threshold * 0.25F, stats.resistanceMult * 0.25F};
+        if (DamageClass.SUBATOMIC.isApplicable(damage)) return new float[]{0F, stats.resistanceMult * 0.1F};
 
         if (isFireDamage(damage)) return new float[]{0F, stats.resistanceMult * 0.2F};
         if (isExplosionDamage(damage)) return new float[]{threshold * 0.5F, stats.resistanceMult * 0.35F};

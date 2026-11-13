@@ -2,6 +2,16 @@ package com.hbm.gametest;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import dev.golem.core.world.ItemStacks;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.world.entity.Mob;
 import com.hbm.Constants;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.handler.EntityEffectHandler;
@@ -175,6 +185,72 @@ public final class DamageTypeGameTests {
                     source.getMsgId() + " knocked the pig back: " + pig.getDeltaMovement());
         }
         helper.succeed();
+    }
+
+    /** HBM types whose 1.7 message names the attacker: the sedna classes and 1.7's indirect sources. */
+    private static final Set<String> NAMES_ATTACKER = Set.of("bullet_physical", "bullet_fire", "bullet_explosive",
+            "bullet_electric", "bullet_plasma", "bullet_laser", "bullet_microwave", "bullet_subatomic", "bullet_other",
+            "bullet_piercing", "revolver_bullet", "emplacer", "tau", "combine", "subatomic_1", "subatomic_2",
+            "subatomic_3", "subatomic_4", "subatomic_5", "euthanized", "electrified", "flamethrower", "plasma", "ice",
+            "laser", "boil", "acid_player");
+    /** Types 1.7 gave a {@code .item} message naming the attacker's weapon. */
+    private static final Set<String> NAMES_ITEM = Set.of("flamethrower", "laser", "revolver_bullet");
+
+    /** Every HBM death message names a translated key, and the attacker and weapon wherever 1.7's did. */
+    public static void deathMessagesAreTranslated(GameTestHelper helper) {
+        JsonObject lang;
+        try (InputStream in = DamageTypeGameTests.class.getResourceAsStream("/assets/hbm/lang/en_us.json")) {
+            helper.assertTrue(in != null, "en_us.json is in the jar");
+            lang = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
+        } catch (IOException failure) {
+            throw new IllegalStateException("en_us.json", failure);
+        }
+        LivingEntity victim = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 2, 1));
+        Mob armed = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(3, 2, 1));
+        ItemStack sword = new ItemStack(Items.IRON_SWORD);
+        ItemStacks.setCustomName(sword, Component.literal("Named"));
+        armed.setItemInHand(InteractionHand.MAIN_HAND, sword);
+        armed.setCustomName(Component.literal("Armed"));
+        Mob bare = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(3, 2, 3));
+        bare.setCustomName(Component.literal("Bare"));
+        List<String> problems = new ArrayList<>();
+        for (Map.Entry<String, ResourceKey<DamageType>> entry : keysInUse().entrySet()) {
+            String name = entry.getKey();
+            DamageSource sourceless = ModDamageSources.source(helper.getLevel(), entry.getValue());
+            victim.setLastHurtByMob(null);
+            check(lang, name + " alone", sourceless.getLocalizedDeathMessage(victim), problems);
+            for (Mob attacker : List.of(armed, bare)) {
+                String label = name + (attacker == armed ? " by a named sword" : " by a bare attacker");
+                Component message = ModDamageSources.source(helper.getLevel(), entry.getValue(), attacker, attacker)
+                        .getLocalizedDeathMessage(victim);
+                String template = check(lang, label, message, problems);
+                if (template == null || !NAMES_ATTACKER.contains(name)) continue;
+                Object[] args = ((TranslatableContents) message.getContents()).getArgs();
+                boolean named = args.length > 1 && args[1] instanceof Component arg
+                        && arg.getString().equals(attacker.getCustomName().getString());
+                if (!template.contains("%2$s") || !named) {
+                    problems.add(label + " does not name the attacker: " + template);
+                }
+                if (attacker == armed && NAMES_ITEM.contains(name) && !template.contains("%3$s")) {
+                    problems.add(label + " does not name the weapon: " + template);
+                }
+            }
+            // vanilla's player message: 1.7's boltgun source always carries its player
+            if ("player".equals(sourceless.getMsgId())) continue;
+            victim.setLastHurtByMob(armed);
+            check(lang, name + " with a kill credit", sourceless.getLocalizedDeathMessage(victim), problems);
+        }
+        helper.assertTrue(problems.isEmpty(), "death messages: " + join(problems));
+        helper.succeed();
+    }
+
+    private static String check(JsonObject lang, String label, Component message, List<String> problems) {
+        if (!(message.getContents() instanceof TranslatableContents contents)) return null;
+        String key = contents.getKey();
+        if (lang.has(key)) return lang.get(key).getAsString();
+        if (Language.getInstance().has(key)) return Language.getInstance().getOrDefault(key);
+        problems.add(label + " gives " + key);
+        return null;
     }
 
     private static Player survivalPlayer(GameTestHelper helper) {

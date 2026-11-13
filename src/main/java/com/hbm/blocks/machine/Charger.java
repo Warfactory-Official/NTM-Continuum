@@ -87,7 +87,7 @@ public class Charger extends CompatBlock implements TickingBlock, ICapabilityBlo
     }
 
     /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
-    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fe()
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn()
             .faces(TileEntityCharger.class, (be, side) -> be.canConnect(ForgeDirection.getOrientation(side)));
 
     @Override

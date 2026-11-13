@@ -308,10 +308,37 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         return false;
     }
 
+    /** 1.12.2 {@code fluid_tank_v2} / {@code fluid_barrel_v2}: Forge fluid items that fill and drain in part. */
+    public boolean isUniversal(ItemStack stack) {
+        return stack.is(ModFluidItems.fluid_tank.get()) || stack.is(ModFluidItems.fluid_barrel.get());
+    }
+
+    /**
+     * port: the universal tank and barrel items take part of a fill, which 1.7's whole containers never did; the fluid
+     * must still be one 1.7 registered that container for.
+     */
+    public boolean fillsInPart(ItemStack stack, FluidType type) {
+        for (Typed typed : typed()) {
+            if (stack.getItem() != typed.item.get() || !(stack.getItem() instanceof ItemFluidTank tank)) continue;
+            boolean universal = tank == ModFluidItems.fluid_tank.get() || tank == ModFluidItems.fluid_barrel.get();
+            return universal && admits(typed, tank, type);
+        }
+        return false;
+    }
+
     /** 1.7 registered the canister and gas tank only for fluids with that container data, the rest by its loop's rules. */
     private static boolean admits(Typed typed, ItemFluidTank tank, FluidType type) {
         if (!typed.admits(type)) return false;
         return !(tank instanceof ItemFluidContainerNT container) || container.allows(type);
+    }
+
+    /** A whole-drained registry container as its empty item: a canister holding nothing is {@code canister_empty}. */
+    public ItemStack settle(ItemStack stack) {
+        if (!(stack.getItem() instanceof ItemFluidTank tank) || tank.getFill(stack) > 0 || isUniversal(stack)) return stack;
+        ItemStack empty = emptied(stack);
+        if (empty.isEmpty() || empty.getItem() == stack.getItem()) return stack;
+        empty.setCount(stack.getCount());
+        return empty;
     }
 
     private static ItemStack item(String id) {

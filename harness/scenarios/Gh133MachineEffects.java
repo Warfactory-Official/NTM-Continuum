@@ -14,7 +14,7 @@ import java.util.List;
  * GitHub issue 133 sibling audit: effects 1.7 emits that never reached the client. Smoke is measured as pixels darkened
  * against a white wall, compared with the same machine without the condition (blast furnace running with an empty flue
  * tank, empty crucible). Flames and giblets are counted through {@code hbm_effects}. By hand from 1.7's ClientProxy, an
- * iron golem (1.4 x 2.7) gives gW 5, gH 10, count 75: the Maxwell throws 75, the turbofan's cDiv 5 leaves 15.
+ * iron golem (1.4 x 2.7) gives gW 5, gH 10, count 75: the Maxwell throws 75, the turbofan's cDiv 5 leaves 15 a tick.
  */
 public class Gh133MachineEffects implements Scenario {
 
@@ -118,7 +118,8 @@ public class Gh133MachineEffects implements Scenario {
         int gibs = waitForGiblets(c, "turbofan");
         System.out.println("[Gh133Fx] turbofan giblets: " + gibs);
         c.screenshot("turbofan-gibs");
-        if (gibs != 15) failures.get().add("turbofan giblets " + gibs + " of 15");
+        // 1.7 gibs a body lying dead in the blades every tick, 15 at a time
+        if (gibs < 15 || gibs % 15 != 0) failures.get().add("turbofan giblets " + gibs + ", not bursts of 15");
     }
 
     private void maxwell(Client c) throws Exception {

@@ -26,16 +26,19 @@ public final class FluidTankGameTests {
         tank.tank.setFill(1_075);
         tank.inventory.setStackInSlot(4, new ItemStack(ModFluidItems.fluid_tank.get(), 2));
 
-        // 1.7 FluidLoaderStandard.fillItem: an empty tank item fills whole (1,000 mB) or not at all
+        // 1.7 FluidLoaderStandard.fillItem fills a whole tank item into the output bay; the rest goes into the next
+        // one where it sits (port: the universal tank fills in part)
         TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
         TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
         ItemStack output = tank.inventory.getStackInSlot(5);
-        helper.assertTrue(tank.tank.getFill() == 75 && tank.inventory.getStackInSlot(4).getCount() == 1
+        ItemStack rest = tank.inventory.getStackInSlot(4);
+        helper.assertTrue(tank.tank.getFill() == 0 && rest.getCount() == 1
+                        && ModFluidItems.fluid_tank.get().getFill(rest) == 75
                         && output.getItem() == ModFluidItems.fluid_tank.get() && output.getCount() == 1
                         && ModFluidItems.fluid_tank.get().getFill(output) == 1_000
                         && ItemFluidTank.getType(output) == Fluids.GASOLINE,
-                "empty output-bay container did not extract a whole tank item: fill=" + tank.tank.getFill()
-                        + " in=" + tank.inventory.getStackInSlot(4) + " out=" + output);
+                "output bay did not take a whole tank item and then 75 mB in part: fill=" + tank.tank.getFill()
+                        + " in=" + rest + " out=" + output);
         helper.succeed();
     }
 
@@ -89,8 +92,11 @@ public final class FluidTankGameTests {
                 "fluid tank drain input slot accepted an empty container");
         helper.assertTrue(menu.slots.get(4).mayPlace(empty),
                 "fluid tank fill input slot rejected an empty container");
-        helper.assertFalse(menu.slots.get(4).mayPlace(full),
-                "fluid tank fill input slot accepted a filled container");
+        // 1.12.2 Library.isStackFillableForTank: a universal tank goes in while it has room
+        helper.assertTrue(menu.slots.get(4).mayPlace(full),
+                "fluid tank fill input slot rejected a part-filled universal tank");
+        helper.assertFalse(menu.slots.get(4).mayPlace(ModFluidItems.fluid_tank.get().make(Fluids.GASOLINE, 1_000)),
+                "fluid tank fill input slot accepted a full container");
         helper.assertFalse(menu.slots.get(3).mayPlace(empty),
                 "fluid tank drain output slot accepted player insertion");
         helper.assertFalse(menu.slots.get(5).mayPlace(empty),

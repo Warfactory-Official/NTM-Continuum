@@ -170,7 +170,7 @@ public class MachineIndustrialTurbine extends BlockMultiblockMachine
     }
 
     /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
-    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerOut().fluidIn().fluidOut().fe()
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerOut().fluidIn().fluidOut()
             .faces(TileEntityMachineIndustrialTurbine.class, (be, side) -> be.canConnect(ForgeDirection.getOrientation(side)))
             .fluidContacts(TileEntityMachineIndustrialTurbine.class);
 

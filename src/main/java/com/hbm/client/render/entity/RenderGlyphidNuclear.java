@@ -9,7 +9,6 @@ import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 
 /**
@@ -40,13 +39,13 @@ public final class RenderGlyphidNuclear extends RenderGlyphid<EntityGlyphidNucle
         applySwellScale(pose, state);
         applyBaseTransform(pose, state);
         submitLimbs(state, pose, sink, light, type, -1);
-        submitMiniNuke(pose, sink, light, MINI_NUKE_TYPE, -1);
+        submitMiniNuke(pose, sink, light, state.overlay, MINI_NUKE_TYPE, -1);
 
         int packedAlpha = flashPackedAlpha(state.deathAge / 20F);
         if (packedAlpha > 0) {
             int flashColor = (packedAlpha << 24) | 0xFFFFFF;
             submitLimbs(state, pose, sink, light, WHITE_FLASH_TYPE, flashColor);
-            submitMiniNuke(pose, sink, light, WHITE_FLASH_TYPE, flashColor);
+            submitMiniNuke(pose, sink, light, state.overlay, WHITE_FLASH_TYPE, flashColor);
         }
         pose.popPose();
     }
@@ -76,12 +75,13 @@ public final class RenderGlyphidNuclear extends RenderGlyphid<EntityGlyphidNucle
         return a;
     }
 
-    private static void submitMiniNuke(PoseStack pose, SubmitSink sink, int light, RenderType type, int color) {
+    private static void submitMiniNuke(PoseStack pose, SubmitSink sink, int light, int overlay, RenderType type,
+                                       int color) {
         pose.pushPose();
         pose.translate(0F, 1F, 0F);
         pose.mulPose(Axis.XP.rotationDegrees(90F));
         sink.submitCustomGeometry(pose, type, (p, buf) ->
-                NtmEntityModels.PROJECTILES.renderPart("MiniNuke", p, buf, light, OverlayTexture.NO_OVERLAY, color));
+                NtmEntityModels.PROJECTILES.renderPart("MiniNuke", p, buf, light, overlay, color));
         pose.popPose();
     }
 }

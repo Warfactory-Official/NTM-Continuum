@@ -31,5 +31,7 @@ public final class HbmHarnessQueries {
         MachineEffectHarnessQueries.register();
         BulletHarnessQueries.register();
         TurretHarnessQueries.register();
+        ClientMotionHarnessQueries.register();
+        PlayerHarnessQueries.register();
     }
 }

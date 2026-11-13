@@ -27,8 +27,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The battery socket: the {@code Socket} cradle, and the {@code Battery} or {@code Capacitor} body of
@@ -48,7 +48,8 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
     private static final Identifier NOISE = Ids.of("hbm", "textures/misc/noise_2.png");
     /** The ball's centre between chuddie's hands, in model units, and its radius in blocks (below 1, see the shader). */
     private static final float BALL_X = 0.64F, BALL_Y = 1.13F, BALL_RADIUS = 0.24F;
-    private final Map<Identifier, Surface> skins = new HashMap<>();
+    // read by GemRender's instancing workers as well as the render thread
+    private final Map<Identifier, Surface> skins = new ConcurrentHashMap<>();
 
     /** Match the 1.12.2 RenderBatterySocket placement: centre, facing-rotate, then its model offset. */
     @Override

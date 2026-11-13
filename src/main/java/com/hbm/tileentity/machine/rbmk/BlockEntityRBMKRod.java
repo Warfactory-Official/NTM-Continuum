@@ -41,7 +41,8 @@ import org.jspecify.annotations.Nullable;
 import java.util.Map;
 
 /** Fuel channel tick order is burn, fuel heat, column tick, fail-safe, then stream emission. */
-public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFluxReceiver, IRBMKLoadable, MenuProvider, IRORValueProvider {
+public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFluxReceiver, IRBMKLoadable, MenuProvider, IRORValueProvider,
+        RBMKSlottedAccess {
     public static final Vec3[] fluxDirs = {new Vec3(0,0,-1), new Vec3(1,0,0), new Vec3(0,0,1), new Vec3(-1,0,0)};
     public double fluxFastRatio, fluxQuantity, lastFluxQuantity, lastFluxRatio, lastFluxOut;
     public boolean hasRod;

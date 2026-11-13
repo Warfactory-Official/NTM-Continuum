@@ -229,14 +229,7 @@ public final class PowerNetwork {
                     : EnergyBus.serveShortage(gather.receivers, gather.demand, toTransfer, PowerNetwork::deliver);
         }
 
-        // The pool is the round's residual: it takes what the real providers still hold, or covers
-        // what they could not, and the two are mutually exclusive by construction.
         long owed = delivered;
-        long untaken = gather.powerAvailable - Math.min(owed, gather.powerAvailable);
-        if (untaken > 0L && gather.bufferDemand > 0L) {
-            owed += EnergyBus.serveShortage(gather.bufferReceivers, gather.bufferHeadroom,
-                    untaken, PowerNetwork::deliver);
-        }
         long spent = owed;
         if (bridge != null) owed += bridge.drainOwed();
         long unpaid = settle(gather, owed, net);
@@ -280,9 +273,8 @@ public final class PowerNetwork {
     }
 
     /**
-     * Charge the round back. Real providers pay first and buffers only cover the shortfall, lowest
-     * tier first. A buffer's priority reads "how full I want this one", so the overflow tank empties
-     * before the main bank.
+     * Charge the round back, every provider by its share of the supply as in 1.7 {@code PowerNetMK2}; a battery in
+     * buffer mode is an ordinary provider and receiver there, so it may pay part of what it was just given.
      *
      * @return what no provider could cover, which a foreign debt must keep rather than write off.
      */
@@ -294,22 +286,12 @@ public final class PowerNetwork {
             charged[0] += amount;
             return amount;
         };
-        int[] cursors = net.providerCursors(1 + PRIORITIES);
-
-        long fromReal = Math.min(owed, gather.powerAvailable);
-        if (fromReal > 0L) {
-            Distribution.debit(gather.providers, fromReal, gather.powerAvailable, cursors, 0, apply);
+        int[] cursors = net.providerCursors(1);
+        long fromProviders = Math.min(owed, gather.powerAvailable);
+        if (fromProviders > 0L) {
+            Distribution.debit(gather.providers, fromProviders, gather.powerAvailable, cursors, 0, apply);
         }
-        long remaining = owed - charged[0];
-        for (int tier = 0; tier < PRIORITIES && remaining > 0L; tier++) {
-            long tierSupply = gather.bufferSupply[tier];
-            if (tierSupply <= 0L) continue;
-            long before = charged[0];
-            Distribution.debit(gather.bufferProviders[tier], Math.min(remaining, tierSupply), tierSupply,
-                    cursors, 1 + tier, apply);
-            remaining -= charged[0] - before;
-        }
-        return Math.max(0L, remaining);
+        return Math.max(0L, owed - charged[0]);
     }
 
     private static long deliver(IEnergyHandlerMK2 receiver, long amount) {
@@ -327,6 +309,8 @@ public final class PowerNetwork {
 
     private static @Nullable EnergyView foreignAt(ServerLevel level, BlockPos pos, int faceOrdinal) {
         if (!EnergyCompat.supported() || faceOrdinal == EdgeFaces.SELF) return null;
+        // our own machines' FE faces (a port the cable rule does not draw to) are served through their ports
+        if (MachineEnergyExposure.isMachine(level, pos)) return null;
         return EnergyCompat.find(level, pos, DIRS[faceOrdinal].getOpposite());
     }
 
@@ -392,36 +376,25 @@ public final class PowerNetwork {
 
         @SuppressWarnings("unchecked")
         final List<Distribution.Share<IEnergyHandlerMK2>>[] receivers = new List[PRIORITIES];
-        @SuppressWarnings("unchecked")
-        final List<Distribution.Share<IEnergyHandlerMK2>>[] bufferReceivers = new List[PRIORITIES];
-        @SuppressWarnings("unchecked")
-        final List<Distribution.Share<IEnergyHandlerMK2>>[] bufferProviders = new List[PRIORITIES];
         final List<Distribution.Share<IEnergyHandlerMK2>> providers = new ArrayList<>();
         final ReferenceOpenHashSet<IEnergyHandlerMK2> seenProviding = new ReferenceOpenHashSet<>();
         final ReferenceOpenHashSet<IEnergyHandlerMK2> seenReceiving = new ReferenceOpenHashSet<>();
         final ReferenceOpenHashSet<Object> seenForeign = new ReferenceOpenHashSet<>();
         final long[] demand = new long[PRIORITIES];
-        final long[] bufferHeadroom = new long[PRIORITIES];
-        final long[] bufferSupply = new long[PRIORITIES];
         long powerAvailable;
-        long bufferPower;
         long totalDemand;
         long nativeDemand;
-        long bufferDemand;
         @Nullable List<Distribution.Share<IEnergyHandlerMK2>> foreignDemand;
 
         Gather() {
             for (int i = 0; i < PRIORITIES; i++) {
                 receivers[i] = new ArrayList<>();
-                bufferReceivers[i] = new ArrayList<>();
-                bufferProviders[i] = new ArrayList<>();
             }
             Arrays.fill(demand, 0L);
         }
 
         void offer(IEnergyHandlerMK2 handler, boolean provide, boolean receive) {
             int tier = handler.getPriority().ordinal();
-            boolean buffer = handler.bufferedEndpoint();
 
             // 1.7 PowerNetMK2 kept providers and receivers in two lists, filled only by IEnergyProviderMK2.tryProvide
             // and IEnergyReceiverMK2.trySubscribe: a consumer's stored power is never supply, and a generator's
@@ -429,29 +402,17 @@ public final class PowerNetwork {
             long supply = provide && handler instanceof IEnergyProviderMK2
                     ? handler.getPowerAvailable() : 0L;
             if (supply > 0L) {
-                if (buffer) {
-                    bufferProviders[tier].add(new Distribution.Share<>(handler, supply));
-                    bufferSupply[tier] += supply;
-                    bufferPower += supply;
-                } else {
-                    providers.add(new Distribution.Share<>(handler, supply));
-                    powerAvailable += supply;
-                }
+                providers.add(new Distribution.Share<>(handler, supply));
+                powerAvailable += supply;
             }
 
             long headroom = receive && handler instanceof IEnergyReceiverMK2
                     ? Math.min(handler.getMaxPower() - handler.getPower(), handler.getReceiverSpeed()) : 0L;
             if (headroom > 0L) {
-                if (buffer) {
-                    bufferReceivers[tier].add(new Distribution.Share<>(handler, headroom));
-                    bufferHeadroom[tier] += headroom;
-                    bufferDemand += headroom;
-                } else {
-                    receivers[tier].add(new Distribution.Share<>(handler, headroom));
-                    demand[tier] += headroom;
-                    totalDemand += headroom;
-                    nativeDemand += headroom;
-                }
+                receivers[tier].add(new Distribution.Share<>(handler, headroom));
+                demand[tier] += headroom;
+                totalDemand += headroom;
+                nativeDemand += headroom;
             }
         }
 
@@ -474,12 +435,12 @@ public final class PowerNetwork {
 
         void fileForeignDemand() {
             if (foreignDemand == null) return;
-            totalDemand += ForeignEnergyEndpoint.fileForeignDemand(foreignDemand, powerAvailable + bufferPower,
+            totalDemand += ForeignEnergyEndpoint.fileForeignDemand(foreignDemand, powerAvailable,
                     GeneralConfig.foreignExportReserve, nativeDemand, receivers, demand);
         }
 
         long totalSupply() {
-            return powerAvailable + bufferPower;
+            return powerAvailable;
         }
     }
 }

@@ -13,6 +13,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -25,6 +26,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
@@ -136,22 +138,31 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        return structureShape(world, pos);
+        return structureShape(world, pos, CollisionContext.empty());
     }
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos,
                                         CollisionContext context) {
-        return structureShape(world, pos);
+        return structureShape(world, pos, context);
     }
 
-    private VoxelShape structureShape(BlockGetter world, BlockPos pos) {
+    /**
+     * port: a server player below the platform's top collides with the rails only. Its position comes from the
+     * client, whose platform trails the server's while rising, and the server's platform inside it would squeeze it
+     * into a crouching or swimming pose that the client's camera shows as a dip.
+     */
+    private VoxelShape structureShape(BlockGetter world, BlockPos pos, CollisionContext context) {
         BlockPos core = MultiblockSurface.coreOfAny(world, pos);
         if (core == null || !(world.getBlockEntity(core) instanceof TileEntityCargoElevator lift)) {
             return Shapes.block();
         }
 
-        return lift.shape().move(core.getX() - pos.getX(), core.getY() - pos.getY(), core.getZ() - pos.getZ());
+        boolean squeezed = context instanceof EntityCollisionContext entity
+                && entity.getEntity() instanceof ServerPlayer player
+                && player.getY() < core.getY() + 1D + lift.extension - 1.0E-5D;
+        VoxelShape shape = squeezed ? lift.rails() : lift.shape();
+        return shape.move(core.getX() - pos.getX(), core.getY() - pos.getY(), core.getZ() - pos.getZ());
     }
 
     @Override

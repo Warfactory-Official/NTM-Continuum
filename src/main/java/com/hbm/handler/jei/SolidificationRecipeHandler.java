@@ -27,7 +27,7 @@ public class SolidificationRecipeHandler extends JEIUniversalHandler<Solidificat
 
     @Override
     protected List<List<ItemStack>> inputs(Entry recipe) {
-        return List.of(List.of(ItemFluidIcon.make(recipe.input)));
+        return List.of(List.of(ItemFluidIcon.make(recipe.input, recipe.recipe.amount())));
     }
 
     @Override

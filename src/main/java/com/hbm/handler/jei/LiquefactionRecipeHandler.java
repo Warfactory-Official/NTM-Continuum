@@ -48,6 +48,6 @@ public class LiquefactionRecipeHandler extends JEIUniversalHandler<LiquefactionR
 
     @Override
     protected List<List<ItemStack>> outputs(Entry recipe) {
-        return List.of(List.of(ItemFluidIcon.make(recipe.output.type)));
+        return List.of(List.of(ItemFluidIcon.make(recipe.output)));
     }
 }

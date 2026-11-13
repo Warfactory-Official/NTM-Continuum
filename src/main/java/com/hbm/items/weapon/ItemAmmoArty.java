@@ -25,6 +25,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModelState;
 import com.hbm.particle.SpentCasing;
 import com.hbm.particle.SpentCasing.CasingType;
 import com.hbm.particle.helper.ExplosionCreator;
@@ -60,10 +61,16 @@ import net.minecraft.world.phys.Vec3;
  * <p>The chemical shells push 1.7's heavy-metal and poison loads into the pollution system at the struck block
  * ({@link #polluteAt}).
  */
-public class ItemAmmoArty extends ItemEnumMulti {
+public class ItemAmmoArty extends ItemEnumMulti implements ModelState {
 
     public ItemAmmoArty(Properties properties, ArtilleryShellType type) {
         super(ArtilleryShellType.class, type, properties);
+    }
+
+    /** {@code hbm:model_state} 1: a cargo shell holding a stack, which 1.7 draws closed. */
+    @Override
+    public int modelState(ItemStack stack) {
+        return getType(stack) == ArtilleryShellType.CARGO && ModDataComponents.ARTY_CARGO.has(stack) ? 1 : 0;
     }
 
     @Override

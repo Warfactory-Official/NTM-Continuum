@@ -1,5 +1,7 @@
 package com.hbm.uninos.networkproviders;
 
+import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.capability.ForeignItems;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
 import com.hbm.uninos.graph.EdgeFaces;
@@ -105,17 +107,23 @@ public final class PneumaticNetwork {
             BlockPos node = BlockPos.of(member.posKey);
             if (!(level.getBlockEntity(node) instanceof TileEntityPneumoTube tube)) continue;
             if (tube.ejectionDir == null) continue;
-            Container dest = containerAt(level, node.relative(tube.ejectionDir));
-            if (dest != null) out.add(new Destination(dest, tube.ejectionDir, tube));
+            BlockPos at = node.relative(tube.ejectionDir);
+            Container dest = containerAt(level, at);
+            if (dest != null) out.add(new Destination(dest, at, tube.ejectionDir, tube));
         }
         return out;
     }
 
-    /** 1.7 {@code Compat.getTileStandard}: the container at pos, never force-loading a chunk to answer. */
+    /**
+     * 1.7 {@code Compat.getTileStandard}: the container at pos, never force-loading a chunk to answer. A multiblock's
+     * proxy cell, an {@code ISidedInventory} tile in 1.7, is its block's {@code WorldlyContainerHolder} here. A holder
+     * may answer for every cell, as hoppers expect; tubes take only {@link MultiblockSurface#itemProxyAt} cells.
+     */
     public static @Nullable Container containerAt(ServerLevel level, BlockPos pos) {
         if (level.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(pos.getX()),
                 SectionPos.blockToSectionCoord(pos.getZ())) == null) return null;
-        return level.getBlockEntity(pos) instanceof Container container ? container : null;
+        if (!MultiblockSurface.itemProxyAt(level, pos)) return null;
+        return ForeignItems.hopperContainerAt(level, pos, level.getBlockState(pos), level.getBlockEntity(pos));
     }
 
     /** 1.7 {@code NodeNet.isBadLink}: a container whose block entity has since been unloaded or destroyed. */
@@ -159,8 +167,9 @@ public final class PneumaticNetwork {
         accessors.removeIf(x -> x.hasExpired);
     }
 
-    public boolean send(ServerLevel level, Container source, TileEntityPneumoTube tube, Direction accessDir,
-                        int sendOrder, int receiveOrder, int maxRange, int nextReceiver) {
+    /** {@code sourcePos} is where {@code source} was looked up: a holder's wrapper has no position of its own. */
+    public boolean send(ServerLevel level, Container source, BlockPos sourcePos, TileEntityPneumoTube tube,
+                        Direction accessDir, int sendOrder, int receiveOrder, int maxRange, int nextReceiver) {
 
         LevelNodeGraph<PneumaticData> graph = PneumaticGraph.get(level);
         NodeNetwork<PneumaticData> net = graph.networkAt(tube.getBlockPos().asLong());
@@ -194,8 +203,6 @@ public final class PneumaticNetwork {
         if (receiveOrder == RECEIVE_ROBIN) receiverList.sort(new ReceiverComparator(tube.getBlockPos()));
         if (receiveOrder == RECEIVE_RANDOM) Collections.shuffle(receiverList);
 
-        BlockEntity tile1 = source instanceof BlockEntity be ? be : null;
-
         int attempts = 0;
         int maxAttempts = Math.min(receiverList.size(), 5);
 
@@ -207,8 +214,8 @@ public final class PneumaticNetwork {
 
             Destination candidate = receiverList.get(index);
 
-            // skip sending to self
-            if (candidate.container() == source) {
+            // skip sending to self; a holder hands out a new wrapper per lookup, so the cell decides
+            if (candidate.container() == source || candidate.pos().equals(sourcePos)) {
                 attempts++;
                 continue;
             }
@@ -220,15 +227,12 @@ public final class PneumaticNetwork {
 
             Container dest = candidate.container();
             TileEntityPneumoTube endpointTile = candidate.tube();
-            BlockEntity tile2 = dest instanceof BlockEntity be ? be : null;
 
-            // range check for our compression level, skip if either source or dest aren't tile entities
-            if (tile1 != null && tile2 != null) {
-                int sq = (int) tile1.getBlockPos().distSqr(tile2.getBlockPos());
-                if (sq > maxRange * maxRange) {
-                    attempts++;
-                    continue;
-                }
+            // range check for our compression level; 1.7 measured between the proxy tiles, the cells looked up here
+            int sq = (int) sourcePos.distSqr(candidate.pos());
+            if (sq > maxRange * maxRange) {
+                attempts++;
+                continue;
             }
 
             WorldlyContainer sidedDest = dest instanceof WorldlyContainer w ? w : null;
@@ -320,33 +324,23 @@ public final class PneumaticNetwork {
      * One live destination, derived fresh from the active-endpoint set rather than remembered: 1.7's timestamped
      * subscription table existed because it had no way to notice an owner dying.
      */
-    public record Destination(Container container, Direction pipeDir, TileEntityPneumoTube tube) {
+    public record Destination(Container container, BlockPos pos, Direction pipeDir, TileEntityPneumoTube tube) {
     }
 
     /**
-     * Compares containers by distance, going off the assumption that they are block entities. Uses positional data
-     * for tie-breaking if the distance is the same.
+     * Compares containers by distance from their looked-up cells (1.7's proxy tiles). Uses positional data for
+     * tie-breaking if the distance is the same.
      */
     public record ReceiverComparator(BlockPos origin) implements Comparator<Destination> {
 
         @Override
         public int compare(Destination o1, Destination o2) {
-
-            BlockEntity tile1 = o1.container() instanceof BlockEntity be ? be : null;
-            BlockEntity tile2 = o2.container() instanceof BlockEntity be ? be : null;
-
-            // prioritize actual block entities
-            if (tile1 == null && tile2 != null) return 1;
-            if (tile1 != null && tile2 == null) return -1;
-            if (tile1 == null) return 0;
-
-            int dist1 = (int) tile1.getBlockPos().distSqr(origin);
-            int dist2 = (int) tile2.getBlockPos().distSqr(origin);
+            int dist1 = (int) o1.pos().distSqr(origin);
+            int dist2 = (int) o2.pos().distSqr(origin);
 
             // tie-breaker: use hash value instead
             if (dist1 == dist2) {
-                return TileEntityPneumoTube.getIdentifier(tile1.getBlockPos())
-                        - TileEntityPneumoTube.getIdentifier(tile2.getBlockPos());
+                return TileEntityPneumoTube.getIdentifier(o1.pos()) - TileEntityPneumoTube.getIdentifier(o2.pos());
             }
 
             return dist1 - dist2;

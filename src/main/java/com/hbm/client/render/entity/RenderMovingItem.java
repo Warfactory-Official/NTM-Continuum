@@ -13,8 +13,8 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 
 /**
  * 1.7 {@code render/entity/item/RenderMovingItem}: the stack riding a belt, lifted a fraction of a pixel by
- * entity id so a dense belt does not z-fight, and laid flat unless it draws as a block. See {@link FramedItem}
- * for the two arms and their frame factors.
+ * entity id so a dense belt does not z-fight, laid flat unless it draws as a block, and drawn as 1.7's mini-stack
+ * for its count. See {@link FramedItem} for the two arms and their frame factors.
  */
 public class RenderMovingItem extends CompatEntityRenderer<EntityMovingItem, RenderMovingItem.State> {
 
@@ -32,6 +32,7 @@ public class RenderMovingItem extends CompatEntityRenderer<EntityMovingItem, Ren
     public void extract(EntityMovingItem entity, State state, float partialTicks) {
         state.lift = (float) (new Random(entity.getId()).nextDouble() * 0.0625D);
         state.arm = FramedItem.resolveArm(state.item, entity.getItemStack(), entity.level());
+        state.count = entity.getItemStack().getCount();
     }
 
     @Override
@@ -49,7 +50,7 @@ public class RenderMovingItem extends CompatEntityRenderer<EntityMovingItem, Ren
             poseStack.translate(0F, -0.1875F, 0F);
             FramedItem.framedFlatArm(poseStack, state.arm);
         }
-        FramedItem.draw(poseStack, state.item, sink, state.lightCoords);
+        FramedItem.drawCopies(poseStack, state.item, sink, state.lightCoords, state.arm, state.count);
 
         poseStack.popPose();
     }
@@ -57,6 +58,7 @@ public class RenderMovingItem extends CompatEntityRenderer<EntityMovingItem, Ren
     public static final class State extends CompatEntityRenderState {
         public final CompatItemRenderState item = new CompatItemRenderState();
         float lift;
+        int count = 1;
         FramedItem.Arm arm = FramedItem.Arm.SPRITE;
     }
 }

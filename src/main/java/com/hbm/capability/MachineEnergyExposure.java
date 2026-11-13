@@ -1,22 +1,38 @@
 package com.hbm.capability;
 
+import com.hbm.Constants;
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
+import com.hbm.api.energymk2.IEnergyProviderMK2;
+import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.energymk2.PowerNetwork;
 import com.hbm.blocks.multiblock.BlockMultiblockCell;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
+import com.hbm.uninos.PortNodes;
+import com.hbm.uninos.networkproviders.PowerNetProvider;
 import dev.golem.core.world.EnergyExposure;
 import dev.golem.core.world.EnergySource;
 import java.lang.ref.WeakReference;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
-/** Authored machine FE faces over real finite HE buffers. All accesses are on the owning server thread. */
+/**
+ * HBM's and its addons' machines on the loaders' energy capabilities: a ported machine is open at its power ports in
+ * their role ({@link PortNodes#allows}), any other machine exactly where an HBM cable connects
+ * ({@link PowerNetwork#handlerAtFace}). All accesses are on the owning server thread.
+ */
 public final class MachineEnergyExposure implements EnergySource {
     private static final MachineEnergyExposure INSTANCE = new MachineEnergyExposure();
     private static final Map<BlockEntity, WeakReference<MachineEnergyStaging>> STAGING = new WeakHashMap<>();
@@ -29,9 +45,23 @@ public final class MachineEnergyExposure implements EnergySource {
         EnergyExposure.expose(INSTANCE, MachineEnergyExposure::carriers);
     }
 
+    /**
+     * Blocks that can be or front an energy machine (block entities, folded cells, connector footprints) of HBM and of
+     * every addon built on it: a namespace counts once any of its blocks is one of HBM's machine block types.
+     */
     private static Block[] carriers() {
-        return BuiltInRegistries.BLOCK.stream().filter(block -> block instanceof BlockMultiblockCell
-                || block instanceof ICapabilityBlock declaring && (declaring.caps().declaredBits() & MachineCaps.FE) != 0)
+        Set<String> namespaces = new HashSet<>();
+        namespaces.add(Constants.MOD_ID);
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (block instanceof BlockMultiblockCore || block instanceof BlockMultiblockCell
+                    || block instanceof IEnergyConnectorBlock || block instanceof ICapabilityBlock) {
+                namespaces.add(BuiltInRegistries.BLOCK.getKey(block).getNamespace());
+            }
+        }
+        return BuiltInRegistries.BLOCK.stream()
+                .filter(block -> namespaces.contains(BuiltInRegistries.BLOCK.getKey(block).getNamespace()))
+                .filter(block -> block instanceof EntityBlock || block instanceof BlockMultiblockCell
+                        || block instanceof IEnergyConnectorBlock)
                 .toArray(Block[]::new);
     }
 
@@ -39,21 +69,39 @@ public final class MachineEnergyExposure implements EnergySource {
         return level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
     }
 
+    /** Whether pos holds or fronts one of our energy machines: HBM's own net and pushes never treat it as foreign. */
+    public static boolean isMachine(ServerLevel level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof IEnergyHandlerMK2
+                || MachineCore.at(level, pos, level.getBlockState(pos)) instanceof IEnergyHandlerMK2;
+    }
+
     private static @Nullable IEnergyHandlerMK2 at(ServerLevel level, BlockPos pos, Direction side, CapRole role) {
         if (!resident(level, pos)) return null;
-        var handler = NativeContacts.powerAt(level, pos, side, role);
-        if (handler == null || !handler.ownsEnergyBuffer()) return null;
-        var owner = (BlockEntity) handler;
-        if (!(owner.getBlockState().getBlock() instanceof ICapabilityBlock declaring)) return null;
-        var bits = declaring.caps().declaredBits();
-        if ((bits & MachineCaps.FE) == 0 || (bits & role.bit) == 0) return null;
-        if (owner.getBlockState().getBlock() instanceof BlockMultiblockCore block) {
-            var core = owner.getBlockPos();
-            if (!block.isOpenAt(owner.getBlockState().getValue(BlockMultiblockCore.FACING),
-                    pos.getX() - core.getX(), pos.getY() - core.getY(), pos.getZ() - core.getZ(), side,
-                    BlockMultiblockCore.PASSIVE_NONE, role)) return null;
-        } else if (!pos.equals(owner.getBlockPos())) return null;
-        return handler;
+        var handler = machineAt(level, pos, side, role);
+        if (handler == null) return null;
+        // a port block (custom machine) stages into the machine it fronts
+        if (handler instanceof PortNodes.Delegate delegate && delegate.portOwner() instanceof IEnergyHandlerMK2 owner
+                && owner.ownsEnergyBuffer()) handler = owner;
+        // a relay without a buffer (the charger) can only take; a bufferless source (creative generator) stays closed
+        if (!handler.ownsEnergyBuffer()) return role == CapRole.POWER_IN && handler instanceof IEnergyReceiverMK2 ? handler : null;
+        // a buffer outside its own capacity cannot be staged
+        var power = handler.getPower();
+        return power >= 0 && power <= handler.getMaxPower() ? handler : null;
+    }
+
+    /** A ported machine answers at its power ports in their role, any other where an HBM cable connects. */
+    private static @Nullable IEnergyHandlerMK2 machineAt(ServerLevel level, BlockPos pos, Direction side, CapRole role) {
+        var owner = level.getBlockEntity(pos) instanceof IEnergyHandlerMK2 own ? (BlockEntity) own
+                : MachineCore.at(level, pos, level.getBlockState(pos));
+        boolean receive = role == CapRole.POWER_IN;
+        if (owner instanceof IEnergyHandlerMK2 machine && PortNodes.isPorted(level, machine, true)) {
+            if (receive ? !(machine instanceof IEnergyReceiverMK2) : !(machine instanceof IEnergyProviderMK2)) return null;
+            return PortNodes.allows(level, pos.relative(side).asLong(), ForgeDirection.getOrientation(side), machine,
+                    PowerNetProvider.THE_PROVIDER, receive) ? machine : null;
+        }
+        if (!(PowerNetwork.handlerAtFace(level, pos, side) instanceof IEnergyHandlerMK2 machine)) return null;
+        boolean plays = receive ? machine instanceof IEnergyReceiverMK2 : machine instanceof IEnergyProviderMK2;
+        return plays && MachineCaps.accepts((BlockEntity) machine, side, role) ? machine : null;
     }
 
     @Override

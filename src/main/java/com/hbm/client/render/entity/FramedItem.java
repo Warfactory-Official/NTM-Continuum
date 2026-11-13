@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CompatItemRenderState;
 import dev.golem.core.render.SubmitSink;
+import java.util.Random;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -28,8 +29,7 @@ import org.jspecify.annotations.Nullable;
  * {@link Arm#CUSTOM} arm resolves the stack at {@link ItemDisplayContext#GROUND} instead, whose frame is exactly
  * that Forge chain (see {@code Pose17.Klass.ITEM_RENDER_WEAPON}), and only restates the placement.
  *
- * <p>The mini-stack copies 1.7 jittered about the pose for larger counts are not drawn; one copy stands for the
- * stack.
+ * <p>{@link #drawCopies} draws 1.7's mini-stack for a count; a {@link Arm#CUSTOM} stack draws one copy.
  */
 public final class FramedItem {
 
@@ -43,6 +43,9 @@ public final class FramedItem {
     private static final float SPRITE_ANCHOR_Z = -SPRITE_DEPTH / 2.0F;
     // Pose17 ITEM_RENDER_WEAPON GROUND: translate(0.5, 0.25, 0.5) after vanilla's translate(-0.5, -0.5, -0.5)
     static final float GROUND_FRAME_DROP = 0.25F;
+    // 1.7 renderDroppedItem: f12 + f10, one sheet's depth plus the gap to the next
+    private static final float SHEET_STEP = 0.0625F + 0.021875F;
+    private static final long COPY_SEED = 187L;
 
     private FramedItem() {
     }
@@ -128,6 +131,57 @@ public final class FramedItem {
     public static void framedSpriteAnchor(PoseStack poseStack) {
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
         poseStack.translate(0.0F, SPRITE_ANCHOR_Y, SPRITE_ANCHOR_Z);
+    }
+
+    /** 1.7 RenderItem.doRender's {@code b0}: the block copies drawn for a stack of {@code count}. */
+    public static int blockCopies(int count) {
+        return count > 40 ? 5 : count > 20 ? 4 : count > 5 ? 3 : count > 1 ? 2 : 1;
+    }
+
+    /** 1.7 RenderItem.renderDroppedItem's {@code b0}: the sprite sheets drawn for a stack of {@code count}. */
+    public static int spriteCopies(int count) {
+        return count < 2 ? 1 : count < 16 ? 2 : count < 32 ? 3 : 4;
+    }
+
+    /**
+     * Draws a resolved stack of {@code count} past its arm's chain as 1.7 did, from its {@code random} seeded 187: each
+     * block copy after the first jittered by up to 0.2 / f9, the sheets a {@link #SHEET_STEP} apart around the pose
+     * with a running spread of up to 0.6 (Forge's {@code shouldSpreadItems}).
+     */
+    public static void drawCopies(PoseStack poseStack, CompatItemRenderState item, SubmitSink sink, int light,
+                                  Arm arm, int count) {
+        Random random = new Random(COPY_SEED);
+        if (arm == Arm.BLOCK) {
+            for (int l = 0; l < blockCopies(count); l++) {
+                poseStack.pushPose();
+                if (l > 0) {
+                    poseStack.translate(jitter(random, 0.2F / F9), jitter(random, 0.2F / F9), jitter(random, 0.2F / F9));
+                }
+                draw(poseStack, item, sink, light);
+                poseStack.popPose();
+            }
+        } else if (arm == Arm.SPRITE) {
+            int sheets = spriteCopies(count);
+            float x = 0F;
+            float y = 0F;
+            for (int k = 0; k < sheets; k++) {
+                if (k > 0) {
+                    x += jitter(random, 0.3F / 0.5F);
+                    y += jitter(random, 0.3F / 0.5F);
+                    random.nextFloat();
+                }
+                poseStack.pushPose();
+                poseStack.translate(x, y, SHEET_STEP * (k - (sheets - 1) / 2F));
+                draw(poseStack, item, sink, light);
+                poseStack.popPose();
+            }
+        } else {
+            draw(poseStack, item, sink, light);
+        }
+    }
+
+    private static float jitter(Random random, float range) {
+        return (random.nextFloat() * 2.0F - 1.0F) * range;
     }
 
     /** Draws a resolved stack once at the current pose. */

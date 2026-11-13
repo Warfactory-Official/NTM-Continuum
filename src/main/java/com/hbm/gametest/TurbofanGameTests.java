@@ -12,8 +12,11 @@ import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 
 /** GameTests for the turbofan's footprint, exhaust ports, burn path, and menu. */
 public final class TurbofanGameTests {
@@ -74,6 +77,25 @@ public final class TurbofanGameTests {
         TileEntityMachineTurbofan.serverTick(helper.getLevel(), core, fan.getBlockState(), fan);
         helper.assertTrue(!fan.wasOn && fan.tank.getFill() == 20, "a powered port stops the burn");
         helper.succeed();
+    }
+
+    /**
+     * 1.7 hurts everything in the blade box each tick and gibs it while it lies dead, adding 50 mB of blood a tick
+     * until the body is gone (a mob's 20 death ticks). A pig dropped into the blades gives about 1000 mB, not 50.
+     */
+    public static void gibsEveryTick(GameTestHelper helper) {
+        TileEntityMachineTurbofan fan = place(helper, new BlockPos(3, 1, 3));
+        fan.tank.setTankType(Fluids.KEROSENE);
+        fan.tank.setFill(24_000);
+        ForgeDirection dir = fan.getFacing().getRotation(ForgeDirection.UP);
+        Mob pig = helper.spawn(EntityType.PIG, new Vec3(3.5D + dir.offsetX * 3.6D, 1D, 3.5D + dir.offsetZ * 3.6D));
+        pig.setNoAi(true);
+        helper.runAfterDelay(40, () -> {
+            int blood = fan.blood.getFill();
+            helper.assertTrue(!pig.isAlive(), "the pig survived the blades");
+            helper.assertTrue(blood >= 500, "a body is gibbed every tick it lies dead in 1.7, blood " + blood + " mB");
+            helper.succeed();
+        });
     }
 
     public static void menu(GameTestHelper helper) {

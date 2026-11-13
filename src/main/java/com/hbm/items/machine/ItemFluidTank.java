@@ -10,6 +10,7 @@ import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -126,14 +127,15 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
 
     @Override
     public int getBarColor(ItemStack stack) {
-        int color = getType(stack).clientMetadata().getColor();
-        return color >= 0 ? color : 0x3399FF;
+        // 1.12.2 ItemFluidTankV2 kept Item's durability colour, green full to red empty
+        return Mth.hsvToRgb(Math.max(0F, (float) getFill(stack) / capacity) / 3.0F, 1.0F, 1.0F);
     }
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal(getFill(stack) + " / " + capacity + " mB").withStyle(ChatFormatting.GRAY));
+        String fill = getFill(stack) + "/" + capacity + " mB";
+        tooltip.add(Component.literal(stack.getCount() > 1 ? stack.getCount() + "x " + fill : fill).withStyle(ChatFormatting.GRAY));
     }
 
 }

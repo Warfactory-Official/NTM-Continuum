@@ -40,8 +40,11 @@ public final class HbmGameTestSuites {
             list.add(GhSpace6GameTests.TESTS);
             list.add(Gh132GameTests.TESTS);
             list.add(Gh161GameTests.TESTS);
+            list.add(Gh171To183GameTests.TESTS);
             list.add(Gh167GameTests.TESTS);
+            list.add(Gh170To177GameTests.TESTS);
             list.add(Gh162GameTests.TESTS);
+            list.add(Gh185To188GameTests.TESTS);
             list.add(Gh126GameTests.TESTS);
             list.add(Gh155GameTests.TESTS);
             list.add(Gh159To160GameTests.TESTS);
@@ -167,8 +170,11 @@ public final class HbmGameTestSuites {
         GhSpace6GameTests.init();
         Gh132GameTests.init();
         Gh161GameTests.init();
+        Gh171To183GameTests.init();
         Gh167GameTests.init();
+        Gh170To177GameTests.init();
         Gh162GameTests.init();
+        Gh185To188GameTests.init();
         Gh155GameTests.init();
         Gh159To160GameTests.init();
         DerrickBlastGameTests.init();

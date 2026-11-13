@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -44,6 +45,8 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
     private int shapeHeight = -1;
     private double shapeExtension;
     private VoxelShape shape = Shapes.empty();
+    private int railsHeight = -1;
+    private VoxelShape rails = Shapes.empty();
 
     public TileEntityCargoElevator(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CARGO_ELEVATOR.get(), pos, state);
@@ -113,27 +116,46 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
         return shape;
     }
 
+    /** {@link #shape} without the platform. */
+    public VoxelShape rails() {
+        if (railsHeight == height) return rails;
+        railsHeight = height;
+        double top = height + 1D;
+        rails = OrderedShape.of(new AABB(-1D, 0D, -1D, 2D, top, 2D),
+                new AABB(-1D, 0D, -1D, -0.75D, top, -0.75D),
+                new AABB(-1D, 0D, 1.75D, -0.75D, top, 2D),
+                new AABB(1.75D, 0D, -1D, 2D, top, -0.75D),
+                new AABB(1.75D, 0D, 1.75D, 2D, top, 2D));
+        return rails;
+    }
+
     private void carryRiders(Level level, BlockPos pos) {
         if (extension == prevExtension) return;
 
         double upper = pos.getY() + 1D + Math.max(extension, prevExtension);
         double lower = pos.getY() + 1D + Math.min(extension, prevExtension);
+        boolean descending = extension < prevExtension;
         List<Entity> riders = level.getEntitiesOfClass(Entity.class,
-                new AABB(pos.getX() - 0.99D, lower, pos.getZ() - 0.99D,
-                        // port: 1.7's query also excludes touching faces and lets a descending rider fall; this
-                        // includes one standing exactly at upper so it rides down with the platform.
-                        pos.getX() + 1.99D, Math.nextUp(upper), pos.getZ() + 1.99D));
+                new AABB(pos.getX() - 0.99D, lower, pos.getZ() - 0.99D, pos.getX() + 1.99D, Math.nextUp(upper),
+                        pos.getZ() + 1.99D));
 
         for (Entity entity : riders) {
             if (entity instanceof Player && !level.isClientSide()) continue;
             double feet = entity.getBoundingBox().minY;
             if (feet < lower || feet > upper) continue;
+            // 1.7 lets a rider on a descending platform fall the step (a carried player reports airborne every tick
+            // and takes the descent as fall damage); 1.7 had no entity that cannot fall, so those ride down
+            if (feet >= upper && (!descending || fallsOnItsOwn(entity))) continue;
 
             entity.move(MoverType.SELF, new Vec3(
                     0D, -(feet - (pos.getY() + 1D + extension)), 0D));
             entity.setOnGround(true);
             entity.move(MoverType.SELF, new Vec3(0D, -0.125D, 0D));
         }
+    }
+
+    private static boolean fallsOnItsOwn(Entity entity) {
+        return !entity.isNoGravity() && !(entity instanceof Mob mob && mob.isNoAi());
     }
 
     public void toggleElevator() {

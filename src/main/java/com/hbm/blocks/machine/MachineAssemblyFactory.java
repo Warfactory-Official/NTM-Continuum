@@ -115,10 +115,12 @@ public final class MachineAssemblyFactory extends BlockMultiblockMachine
                 }
             }
         }
+        // 1.7 stamps no inventory proxy on the upper strips (getAllPorts is the foot ring)
         Direction rot = facing.getClockWise();
+        int upper = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
         for (int along = -2; along <= 2; along++) {
-            visitor.passiveCell(core.relative(facing, along).relative(rot, 2).above(2), MASK_ALL, domains);
-            visitor.passiveCell(core.relative(facing, along).relative(rot, -2).above(2), MASK_ALL, domains);
+            visitor.passiveCell(core.relative(facing, along).relative(rot, 2).above(2), MASK_ALL, upper);
+            visitor.passiveCell(core.relative(facing, along).relative(rot, -2).above(2), MASK_ALL, upper);
         }
     }
 

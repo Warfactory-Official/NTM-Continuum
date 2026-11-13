@@ -110,12 +110,15 @@ public final class ParticleSpentCasing {
         x += collided.x;
         y += collided.y;
         z += collided.z;
-        onGround = initial.y != collided.y && initial.y < 0D;
-        if (initial.x != collided.x) {
+        boolean hitX = ParticleCollisions.blocked(initial.x, collided.x);
+        boolean hitY = ParticleCollisions.blocked(initial.y, collided.y);
+        boolean hitZ = ParticleCollisions.blocked(initial.z, collided.z);
+        onGround = hitY && initial.y < 0D;
+        if (hitX) {
             xd *= -0.25D;
             momentumYaw = Math.abs(momentumYaw) > 1E-7 ? momentumYaw * -0.75F : (float) RANDOM.nextGaussian() * 10F * config.getBounceYaw();
         }
-        if (initial.y != collided.y) {
+        if (hitY) {
             yd *= -0.5D;
             boolean fromSpeed = Math.abs(yd) > 0.04D;
             if (fromSpeed || Math.abs(momentumPitch) > 1E-7) {
@@ -134,7 +137,7 @@ public final class ParticleSpentCasing {
                         1F + RANDOM.nextFloat() * 0.2F, false);
             }
         }
-        if (initial.z != collided.z) {
+        if (hitZ) {
             zd *= -0.25D;
             momentumYaw = Math.abs(momentumYaw) > 1E-7 ? momentumYaw * -0.75F : (float) RANDOM.nextGaussian() * 10F * config.getBounceYaw();
         }

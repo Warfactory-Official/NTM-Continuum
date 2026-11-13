@@ -1,10 +1,12 @@
 package com.hbm.client.render.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.golem.core.render.Poses;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4f;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -56,6 +58,36 @@ public interface CustomItemRenderer {
     default void render(ItemStack stack, ItemDisplayContext context, PoseStack pose, SubmitSink sink, int light,
                         int overlay, @Nullable LivingEntity owner) {
         render(stack, Type.of(context), pose, sink, light, overlay, owner);
+    }
+
+    /** The frame of 1.7's full-3D held weapons, whose left hands are vanilla handheld's (see {@link #renderInFrame}). */
+    String FULL3D_FRAME = "weapon_full3d";
+
+    /**
+     * {@link #render} in its frame's slot. 1.7 had no off hand: the full-3D frame's left hands are vanilla handheld's,
+     * the right hand mirrored with the body turned about the plane {@code z = 1/2}. That fits a sprite; a held body is
+     * turned about the principal plane it is most nearly symmetric about instead ({@link HeldMirror}), so the off hand
+     * shows the main hand's mirror image.
+     */
+    static void renderInFrame(CustomItemRenderer renderer, boolean full3d, ItemStack stack, ItemDisplayContext context,
+                              PoseStack pose, SubmitSink sink, int light, int overlay, @Nullable LivingEntity owner) {
+        Matrix4f turn = full3d ? HeldMirror.of(renderer, stack, context, pose.last(), light, overlay, owner) : null;
+        if (turn == null) {
+            renderer.render(stack, context, pose, sink, light, overlay, owner);
+            return;
+        }
+        pose.pushPose();
+        Poses.mulPose(pose, turn);
+        renderer.render(stack, context, pose, sink, light, overlay, owner);
+        pose.popPose();
+    }
+
+    /**
+     * Whether the off hand draws this body as the main hand's exact mirror image; the renderer then draws its left
+     * hands unculled. For a body with no mirror plane, which {@link HeldMirror} cannot turn onto itself.
+     */
+    default boolean mirrorsExactly() {
+        return false;
     }
 
     /** Whether the drawing changes with time, so 26.1 must not serve a cached icon. */

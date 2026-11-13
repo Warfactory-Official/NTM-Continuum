@@ -34,7 +34,7 @@ public final class EndpointRegistry {
 
     /** The domains a net can probe for; items answer through the item route, which no net gathers. */
     private static final int NET_DOMAINS = MachineCaps.POWER_IN | MachineCaps.POWER_OUT
-            | MachineCaps.FLUID_IN | MachineCaps.FLUID_OUT | MachineCaps.FE;
+            | MachineCaps.FLUID_IN | MachineCaps.FLUID_OUT;
 
     private static final Reference2ObjectOpenHashMap<Level, EndpointRegistry> LEVELS =
             new Reference2ObjectOpenHashMap<>();

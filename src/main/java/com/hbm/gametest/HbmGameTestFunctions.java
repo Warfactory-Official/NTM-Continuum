@@ -413,6 +413,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("turbofan_ports_burn", 100, 8, () -> TurbofanGameTests::portsAndBurn);
     public static final GameTests.Function TURBOFAN_ANY_FUEL_ZERO_OUTPUT =
             TESTS.function("turbofan_any_fuel_zero_output", 100, 8, () -> TurbofanGameTests::anyFuelZeroOutput);
+    public static final GameTests.Function TURBOFAN_GIBS_EVERY_TICK =
+            TESTS.function("turbofan_gibs_every_tick", 100, 8, () -> TurbofanGameTests::gibsEveryTick);
     public static final GameTests.Function TURBOFAN_MENU =
             TESTS.function("turbofan_menu", 40, () -> TurbofanGameTests::menu);
     public static final GameTests.Function STEAM_ENGINE_LAYOUT =
@@ -1430,6 +1432,13 @@ public final class HbmGameTestFunctions {
             TESTS.function("damage_types_keyed", 40, () -> DamageTypeGameTests::everyDamageTypeIsKeyedAndTagged);
     public static final GameTests.Function DAMAGE_ABSOLUTE_1_7 =
             TESTS.function("damage_absolute_1_7", 40, () -> DamageTypeGameTests::absoluteDamageFollows17);
+    public static final GameTests.Function DAMAGE_DEATH_MESSAGES_TRANSLATED =
+            TESTS.function("damage_death_messages_translated", 40, () -> DamageTypeGameTests::deathMessagesAreTranslated);
+    public static final GameTests.Function DAMAGE_CLASS_GLYPHID =
+            TESTS.function("damage_class_glyphid_resistance", 40, () -> DamageClassGameTests::glyphidResistsDamageClasses);
+    public static final GameTests.Function DAMAGE_CLASS_ELECTRIC_POWERED =
+            TESTS.function("damage_class_electric_powered_chest", 40,
+                    () -> DamageClassGameTests::electricHitsPoweredChestFivefold);
     public static final GameTests.Function DAMAGE_SOURCELESS_NO_KNOCKBACK =
             TESTS.function("damage_sourceless_no_knockback", 40, () -> DamageTypeGameTests::sourcelessDamageDoesNotKnockBack);
 

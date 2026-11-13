@@ -8,6 +8,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
+import com.hbm.util.BobMathUtil;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
@@ -56,6 +57,19 @@ public class ItemFluidIcon extends CompatItem {
         return icon;
     }
 
+    public static ItemStack make(FluidType fluid, int amount) {
+        return make(new FluidStack(fluid, amount));
+    }
+
+    public static ItemStack make(FluidType fluid, int amount, int pressure) {
+        return make(new FluidStack(fluid, amount, pressure));
+    }
+
+    /** {@code stack} at {@code times} its amount: 1.7's oil tables show per 1,000 mB of input, ten operations. */
+    public static ItemStack make(FluidStack stack, int times) {
+        return make(stack.type, stack.fill * times, stack.pressure);
+    }
+
     public static FluidType getFluid(ItemStack stack) {
         return ModDataComponents.fluid(stack);
     }
@@ -76,7 +90,11 @@ public class ItemFluidIcon extends CompatItem {
         int amount = ModDataComponents.fluidAmount(stack);
         if (amount > 0) tooltip.add(Component.literal(amount + "mB"));
         int pressure = ModDataComponents.fluidPressure(stack);
-        if (pressure > 0) tooltip.add(Component.literal(pressure + "PU").withStyle(ChatFormatting.RED));
+        if (pressure > 0) {
+            tooltip.add(Component.literal(pressure + "PU").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.literal("Pressurized, use compressor!")
+                    .withStyle(BobMathUtil.getBlink() ? ChatFormatting.RED : ChatFormatting.DARK_RED));
+        }
         getFluid(stack).clientMetadata().addInfo(tooltip, StandardInfo.shiftHeld());
     }
 }

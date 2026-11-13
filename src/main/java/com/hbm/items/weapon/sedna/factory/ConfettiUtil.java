@@ -3,7 +3,6 @@ package com.hbm.items.weapon.sedna.factory;
 import com.hbm.lib.ModDamageSources.DamageClass;
 import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.sound.ModGunSounds;
-import java.util.Locale;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
@@ -22,10 +21,10 @@ public final class ConfettiUtil {
 
         // Modern damage types are named bullet_laser/etc.; accept the old message id as well because
         // this is the same source gate after the registry API adaptation.
-        if (isBulletClass(source, DamageClass.LASER) || isBulletClass(source, DamageClass.ELECTRIC)) {
+        if (DamageClass.LASER.isApplicable(source) || DamageClass.ELECTRIC.isApplicable(source)) {
             pulverize(entity);
         }
-        if (isBulletClass(source, DamageClass.PLASMA)
+        if (DamageClass.PLASMA.isApplicable(source)
                 || source.is(DamageTypeTags.IS_FIRE)) {
             cremate(entity);
         }
@@ -79,11 +78,5 @@ public final class ConfettiUtil {
         entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(),
                 ModGunSounds.DISINTEGRATION.get(), SoundSource.PLAYERS, 2F,
                 0.9F + entity.getRandom().nextFloat() * 0.2F);
-    }
-
-    private static boolean isBulletClass(DamageSource source, DamageClass damageClass) {
-        String id = source.getMsgId().toLowerCase(Locale.ROOT);
-        String name = damageClass.name().toLowerCase(Locale.ROOT);
-        return id.equals(name) || id.equals("bullet_" + name);
     }
 }

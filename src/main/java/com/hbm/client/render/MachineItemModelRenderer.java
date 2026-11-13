@@ -454,12 +454,15 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
         public static final Identifier ID = dev.golem.core.Ids.of("hbm", "custom_item");
 
         private final com.hbm.client.render.item.CustomItemRenderer renderer;
+        private final boolean full3d;
         private final ModelRenderProperties properties;
         private final @Nullable ItemModel flat;
         private final Body body = new Body();
 
-        private CustomItem(com.hbm.client.render.item.CustomItemRenderer renderer, ModelRenderProperties properties, @Nullable ItemModel flat) {
+        private CustomItem(com.hbm.client.render.item.CustomItemRenderer renderer, boolean full3d,
+                           ModelRenderProperties properties, @Nullable ItemModel flat) {
             this.renderer = renderer;
+            this.full3d = full3d;
             this.properties = properties;
             this.flat = flat;
         }
@@ -503,8 +506,9 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
             public void submit(@Nullable Argument argument, PoseStack pose, SubmitNodeCollector collector,
                                int lightCoords, int overlayCoords, boolean hasFoil, int outlineColor) {
                 if (argument == null) return;
-                renderer.render(argument.stack(), argument.context(), pose, new VanillaSubmitSink(collector),
-                        lightCoords, overlayCoords, argument.owner());
+                com.hbm.client.render.item.CustomItemRenderer.renderInFrame(renderer, full3d, argument.stack(),
+                        argument.context(), pose, new VanillaSubmitSink(collector), lightCoords, overlayCoords,
+                        argument.owner());
             }
 
             @Override
@@ -616,7 +620,8 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                         baker, base, base.getTopTextureSlots());
                 ItemModel flatModel = flat.map(id -> new CuboidItemModelWrapper.Unbaked(id, Optional.empty(), List.of())
                         .bake(context, transformation)).orElse(null);
-                return new CustomItem(com.hbm.client.render.item.CustomItemRenderers.byName(renderer), properties, flatModel);
+                return new CustomItem(com.hbm.client.render.item.CustomItemRenderers.byName(renderer),
+                        com.hbm.client.render.item.CustomItemRenderer.FULL3D_FRAME.equals(frame), properties, flatModel);
             }
         }
     }

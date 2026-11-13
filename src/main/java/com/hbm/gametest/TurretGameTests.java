@@ -46,6 +46,7 @@ import com.hbm.lib.Library;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.packet.HbmPackets;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.TileEntityProxyCell;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
 import com.hbm.tileentity.turret.TileEntityTurretFritz;
@@ -384,8 +385,10 @@ public final class TurretGameTests {
         for (BlockPos cell : cells) {
             helper.assertTrue(helper.getLevel().getBlockState(cell).getBlock() == ModTurretBlocks.turret_pad.get(),
                     "Pad cell missing at " + cell);
-            helper.assertTrue(helper.getLevel().getBlockEntity(cell) == null,
-                    "A folded pad cell must not carry a block entity");
+            // only Forge's capability proxy, which forwards to the core
+            helper.assertTrue(helper.getLevel().getBlockEntity(cell) == null
+                            || helper.getLevel().getBlockEntity(cell) instanceof TileEntityProxyCell,
+                    "A folded pad cell must not carry a block entity of its own");
             helper.assertTrue(core.equals(MultiblockSurface.coreOfCell(helper.getLevel(), cell)),
                     "Pad cell at " + cell + " does not resolve to its core");
         }
@@ -1093,8 +1096,9 @@ public final class TurretGameTests {
                             helper.getLevel().getBlockState(at).getBlock()
                                     == ModTurretBlocks.turret_emplacement.get(),
                             "Emplacement cell missing at " + at);
-                    helper.assertTrue(helper.getLevel().getBlockEntity(at) == null,
-                            "A folded emplacement cell must not carry a block entity");
+                    helper.assertTrue(helper.getLevel().getBlockEntity(at) == null
+                                    || helper.getLevel().getBlockEntity(at) instanceof TileEntityProxyCell,
+                            "A folded emplacement cell must not carry a block entity of its own");
                     helper.assertTrue(core.equals(MultiblockSurface.coreOfCell(helper.getLevel(), at)),
                             "Emplacement cell at " + at + " does not resolve to its core");
                     cells++;

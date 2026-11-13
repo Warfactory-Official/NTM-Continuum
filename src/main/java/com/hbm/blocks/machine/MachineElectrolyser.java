@@ -98,7 +98,7 @@ public class MachineElectrolyser extends BlockMultiblockMachine
      */
     public static boolean sidePorts = false;
 
-    /** 1.7 stamps {@code inventory().power().fluid()} on the six. */
+    /** 1.7 stamps {@code inventory().power().fluid()} on all sixteen {@code getAllPorts} cells. */
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         Direction rot = facing.getClockWise();
@@ -107,9 +107,9 @@ public class MachineElectrolyser extends BlockMultiblockMachine
             visitor.passiveCell(core.relative(facing, 5).relative(rot, side), MASK_ALL, domains);
             visitor.passiveCell(core.relative(facing, -5).relative(rot, side), MASK_ALL, domains);
         }
-        if (sidePorts) {
-            visitor.passiveCell(core.relative(rot, -3), MASK_ALL, domains);
-            visitor.passiveCell(core.relative(rot, 1), MASK_ALL, domains);
+        for (int along = -4; along <= 4; along += 2) {
+            visitor.passiveCell(core.relative(facing, along).relative(rot, 1), MASK_ALL, domains);
+            visitor.passiveCell(core.relative(facing, along).relative(rot, -3), MASK_ALL, domains);
         }
     }
 

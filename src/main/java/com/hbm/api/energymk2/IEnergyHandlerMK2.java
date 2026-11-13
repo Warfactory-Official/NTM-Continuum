@@ -1,7 +1,6 @@
 package com.hbm.api.energymk2;
 
 import com.hbm.api.tile.ILoadedTile;
-import com.hbm.uninos.IBufferedEndpoint;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
@@ -17,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
  * <p>{@code ConnectionPriority} is nested here. A qualified use through either role interface resolves because
  * nested types are inherited; an <i>import</i> must use the canonical name.
  */
-public interface IEnergyHandlerMK2 extends IEnergyConnectorMK2, ILoadedTile, IBufferedEndpoint {
+public interface IEnergyHandlerMK2 extends IEnergyConnectorMK2, ILoadedTile {
 
     long getPower();
 

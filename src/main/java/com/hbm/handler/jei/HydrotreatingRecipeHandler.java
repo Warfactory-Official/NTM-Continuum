@@ -1,6 +1,5 @@
 package com.hbm.handler.jei;
 
-import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.HydrotreatingRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
@@ -11,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.ArrayList;
 
-/** JEI category for the hydrotreater: {input 100, hydrogen} to {out1, out2}. */
+/** JEI category for the hydrotreater; 1.7 shows each row per 1,000 mB of input, ten times the per-operation table. */
 public class HydrotreatingRecipeHandler extends JEIUniversalHandler<HydrotreatingRecipeHandler.Entry> {
 
     public record Entry(FluidType input, HydrotreatingRecipes.HydrotreatingRecipe recipe) {}
@@ -29,14 +28,14 @@ public class HydrotreatingRecipeHandler extends JEIUniversalHandler<Hydrotreatin
     @Override
     protected List<List<ItemStack>> inputs(Entry recipe) {
         return List.of(
-                List.of(ItemFluidIcon.make(new FluidStack(recipe.input, 100))),
-                List.of(ItemFluidIcon.make(recipe.recipe.hydrogen())));
+                List.of(ItemFluidIcon.make(recipe.input, 1000)),
+                List.of(ItemFluidIcon.make(recipe.recipe.hydrogen(), 10)));
     }
 
     @Override
     protected List<List<ItemStack>> outputs(Entry recipe) {
         return List.of(
-                List.of(ItemFluidIcon.make(recipe.recipe.out1())),
-                List.of(ItemFluidIcon.make(recipe.recipe.out2())));
+                List.of(ItemFluidIcon.make(recipe.recipe.out1(), 10)),
+                List.of(ItemFluidIcon.make(recipe.recipe.out2(), 10)));
     }
 }

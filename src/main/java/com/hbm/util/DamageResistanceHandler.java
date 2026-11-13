@@ -11,6 +11,7 @@ import com.hbm.items.armor.ItemArmorMod;
 import com.hbm.items.armor.ArmorFSB;
 import com.hbm.items.armor.ArmorFSBFueled;
 import com.hbm.items.armor.ArmorFSBPowered;
+import com.hbm.lib.ModDamageSources.DamageClass;
 import dev.golem.core.Ids;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.DamageEvents;
@@ -200,6 +201,10 @@ public final class DamageResistanceHandler {
             ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
             if (chest.getItem() instanceof ArmorFSB fsb) fsb.handleHurt(event);
             if (event.isCanceled()) return;
+        }
+        if (DamageClass.ELECTRIC.isApplicable(event.source())
+                && event.entity().getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorFSBPowered) {
+            event.setAmount(event.amount() * 5F);
         }
         float amount = calculateDamage(event.entity(), event.source(), event.amount(),
                 event.piercingThreshold(), event.piercingResistance());

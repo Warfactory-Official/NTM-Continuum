@@ -138,11 +138,6 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         return mode == mode_input || mode == mode_buffer ? getMaxPower() : 0L;
     }
 
-    @Override
-    public boolean bufferedEndpoint() {
-        return getRelevantMode(true) == mode_buffer;
-    }
-
     /** 0..15 comparator output from the fill fraction. */
     public byte getComparatorPower() {
         double frac = (double) getPower() / (double) Math.max(getMaxPower(), 1) * 15D;
@@ -150,9 +145,8 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
     }
 
     /**
-     * Re-reads the redstone the mode is picked from. The gather asks three times a round, for each
-     * speed and for the buffer flag, and every answer is six neighbour lookups, so it is read once a
-     * tick and cached.
+     * Re-reads the redstone the mode is picked from. The gather asks for both speeds every round, and every
+     * answer is six neighbour lookups, so it is read once a tick and cached.
      */
     public void refreshMode() {
         getRelevantMode(false);

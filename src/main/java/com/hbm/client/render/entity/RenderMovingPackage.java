@@ -1,6 +1,6 @@
 package com.hbm.client.render.entity;
 
-import com.hbm.blocks.machine.storage.ModStorageBlocks;
+import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.entity.item.EntityMovingPackage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.CameraInfo;
@@ -13,9 +13,8 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * 1.7 {@code render/entity/item/RenderMovingPackage}, whose dummy {@code EntityItem} carries
- * {@code hoverStart = 0} under {@code RenderItem.renderInFrame}: the framed block arm, bobbing and spinning for
- * neither. 1.7 drew {@code ModBlocks.crate}, the wooden loot crate, which this port does not carry; the wooden
- * supply crate stands in.
+ * {@code hoverStart = 0} under {@code RenderItem.renderInFrame}: the framed block arm of {@code ModBlocks.crate} at
+ * twice its size, bobbing and spinning for neither.
  */
 public class RenderMovingPackage extends CompatEntityRenderer<EntityMovingPackage, RenderMovingPackage.State> {
 
@@ -34,7 +33,7 @@ public class RenderMovingPackage extends CompatEntityRenderer<EntityMovingPackag
 
     @Override
     public void extract(EntityMovingPackage entity, State state, float partialTicks) {
-        FramedItem.resolve(state.item, new ItemStack(ModStorageBlocks.crate_supply.get()), entity.level());
+        FramedItem.resolve(state.item, new ItemStack(ModDecoCrateBlocks.crate.get()), entity.level());
     }
 
     @Override

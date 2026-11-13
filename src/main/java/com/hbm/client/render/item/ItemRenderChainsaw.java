@@ -8,9 +8,11 @@ import com.mojang.math.Axis;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -45,9 +47,28 @@ final class ItemRenderChainsaw implements CustomItemRenderer {
         return stack.getItem() instanceof ItemToolAbilityFueled fueled && fueled.canOperate(stack);
     }
 
+    /** The saw has no mirror plane (engine on one side), so the off hand draws its exact mirror image, both faces. */
+    @Override
+    public boolean mirrorsExactly() {
+        return true;
+    }
+
+    @Override
+    public void render(ItemStack stack, ItemDisplayContext context, PoseStack pose, SubmitSink sink, int light,
+                       int overlay, @Nullable LivingEntity owner) {
+        boolean left = context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
+                || context == ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
+        render(stack, Type.of(context), left ? open(TEXTURE) : culled(TEXTURE), pose, sink, light, overlay, owner);
+    }
+
     @Override
     public void render(ItemStack stack, Type type, PoseStack pose, SubmitSink sink, int light, int overlay,
                        @Nullable LivingEntity owner) {
+        render(stack, type, culled(TEXTURE), pose, sink, light, overlay, owner);
+    }
+
+    private void render(ItemStack stack, Type type, RenderType surface, PoseStack pose, SubmitSink sink, int light,
+                        int overlay, @Nullable LivingEntity owner) {
         pose.pushPose();
         switch (type) {
             case EQUIPPED_FIRST_PERSON -> {
@@ -85,7 +106,7 @@ final class ItemRenderChainsaw implements CustomItemRenderer {
             }
         }
 
-        part(pose, sink, chainsaw, culled(TEXTURE), "Saw", light, overlay);
+        part(pose, sink, chainsaw, surface, "Saw", light, overlay);
 
         boolean running = running(stack);
         for (int i = 0; i < 20; i++) {
@@ -100,7 +121,7 @@ final class ItemRenderChainsaw implements CustomItemRenderer {
             pose.translate(0D, -0.375D, -0.5625D);
             if (forward < 0) pose.translate(0D, 0D, forward);
             if (forward > Math.PI * 0.25) pose.translate(0D, 0D, forward - Math.PI * 0.25);
-            part(pose, sink, chainsaw, culled(TEXTURE), "Tooth", light, overlay);
+            part(pose, sink, chainsaw, surface, "Tooth", light, overlay);
             pose.popPose();
         }
         pose.popPose();

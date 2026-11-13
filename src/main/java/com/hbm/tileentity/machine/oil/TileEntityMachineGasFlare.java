@@ -6,6 +6,7 @@ import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.environment.Environment;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.client.particle.FlarePilotSmoke;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineGasFlare;
 import com.hbm.inventory.fluid.FluidCombustion;
@@ -20,6 +21,7 @@ import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
@@ -32,11 +34,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
@@ -61,9 +64,8 @@ import com.hbm.tileentity.TilePortShapes;
  *
  * <p>Vent: {@code min(50·(1+speed), fill)} mB, no power. Burn: {@code min(10·(1+speed), fill)} mB, then
  * {@code power += flammableEnergy·eject/1000/penalty · (1 + yield/3)}, penalty 5 gaseous / 10 liquid.
- * Effects use vanilla particle stand-ins for the custom gas-tower and flamethrower particles:
- * a smoke column while venting, FLAME + LARGE_SMOKE at the tip while burning; burning also sets
- * fire to entities in the flame AABB. Every fifth tick the vented or burned fluid's {@code FT_Polluting}
+ * Venting draws 1.7's gas column; burning sends one gas flame a tick and sets fire to entities in the flame
+ * AABB. Every fifth tick the vented or burned fluid's {@code FT_Polluting}
  * table is applied to {@code eject * 5} mB, as in 1.7.
  */
 public class TileEntityMachineGasFlare extends TileEntityMachineBase
@@ -154,6 +156,13 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                     Effects.ignite(e, 5);
                     e.hurt(level.damageSources().onFire(), 5F);
                 }
+                RandomSource rand = level.getRandom();
+                CompoundTag flame = new CompoundTag();
+                flame.putDouble("moX", rand.nextGaussian() * 0.15);
+                flame.putDouble("moY", 0.2);
+                flame.putDouble("moZ", rand.nextGaussian() * 0.15);
+                HbmEffectNT.GasFlame.send(level, pos.getX() + 0.5, pos.getY() + 11.75, pos.getZ() + 0.5, flame, 150);
+
                 if (TickPhase.every(level, pos, 3)) {
                     level.playSound(null, pos.getX(), pos.getY() + 11, pos.getZ(), ModSounds.FLAMETHROWER_SHOOT.get(), SoundSource.BLOCKS, te.getVolume(1.5F), 0.75F);
                 }
@@ -168,21 +177,23 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         te.networkPackNT();
     }
 
-    /** Client: vanilla-particle stand-ins for the custom gas-tower / flame particles. */
+    /** Client: the vented gas column, and the pilot smoke within 32 blocks while burning. */
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasFlare te) {
         if (!te.isOn || te.tank.getFill() <= 0) return;
         FluidType type = te.tank.getTankType();
         boolean flammable = FluidCombustion.isFlammable(type);
 
         if ((!te.doesBurn || !flammable) && FluidTraitSimple.isGaseousAny(type)) {
-            level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, pos.getX() + 0.5, pos.getY() + 11, pos.getZ() + 0.5,
-                    level.getRandom().nextGaussian() * 0.02, 0.05, level.getRandom().nextGaussian() * 0.02);
-        } else if (te.doesBurn && flammable) {
-            level.addParticle(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 11.75, pos.getZ() + 0.5,
-                    level.getRandom().nextGaussian() * 0.05, 0.1, level.getRandom().nextGaussian() * 0.05);
-            level.addParticle(ParticleTypes.LARGE_SMOKE, pos.getX() + 0.5, pos.getY() + 12.5, pos.getZ() + 0.5,
-                    0, 0.1, 0);
+            CompoundTag data = new CompoundTag();
+            data.putFloat("lift", 1F);
+            data.putFloat("base", 0.25F);
+            data.putFloat("max", 3F);
+            data.putInt("life", 150 + level.getRandom().nextInt(20));
+            data.putInt("color", type.getColor(true));
+            HbmEffectNT.Tower.summonParticle(level, pos.getX() + 0.5, pos.getY() + 11, pos.getZ() + 0.5, data);
         }
+
+        if (te.doesBurn && flammable) FlarePilotSmoke.tick(level, pos);
     }
 
     protected PortDef[] cachedPorts;

@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,9 +24,9 @@ public final class ConveyorInventories {
 
     private ConveyorInventories() {}
 
-    /** The inventory at {@code pos} as a hopper would find it: a block entity, a holder block, or a container entity. */
+    /** The inventory a hopper finds at {@code pos}, on HBM machines only at {@link MultiblockSurface#itemProxyAt}. */
     public static @Nullable Container containerAt(Level level, BlockPos pos) {
-        return HopperBlockEntity.getContainerAt(level, pos);
+        return MultiblockSurface.itemProxyAt(level, pos) ? HopperBlockEntity.getContainerAt(level, pos) : null;
     }
 
     /**

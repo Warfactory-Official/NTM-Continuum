@@ -499,7 +499,8 @@ public final class ModItemModels {
         machineFrame("machine", Pose17.Klass.ITEM_RENDER_BASE);
         machineFrame("missile", Pose17.Klass.ITEM_RENDER_MISSILE);
         machineFrame("weapon", Pose17.Klass.ITEM_RENDER_WEAPON);
-        machineFrame("weapon_full3d", Pose17.Klass.ITEM_RENDER_WEAPON_FULL3D);
+        machineFrame("weapon_full3d", ItemRenderTransformerPoses.withVanillaLeftHands(
+                Pose17.frames(Pose17.Klass.ITEM_RENDER_WEAPON_FULL3D)));
         machineFrame("block", blockFrames());
         weaponFlatFrame();
         spriteFrames();
@@ -644,7 +645,8 @@ public final class ModItemModels {
                 .register();
         // the same for a full-3D held weapon (an ItemSword/ItemTool, 1.7 RenderPlayer's full-3D hand pose)
         Dejson.item(NS, "weapon_full3d_obj_flat_legacy")
-                .models(Models.guiLight("front", Models.display(Pose17.frames(Pose17.Klass.ITEM_RENDER_WEAPON_FULL3D),
+                .models(Models.guiLight("front", Models.display(ItemRenderTransformerPoses.withVanillaLeftHands(
+                        Pose17.frames(Pose17.Klass.ITEM_RENDER_WEAPON_FULL3D)),
                         Models.parented("minecraft:builtin/entity", Slots.EMPTY))))
                 .register();
     }

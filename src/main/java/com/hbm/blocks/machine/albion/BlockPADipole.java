@@ -119,7 +119,7 @@ public class BlockPADipole extends BlockMultiblockMachine implements IEnergyConn
     }
 
     /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
-    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().fluidOut().fe()
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().fluidOut()
             .faces(BlockEntity.class, (be, side) -> side.getAxis() == Direction.Axis.Y)
             .fluidFaces(BlockEntity.class, (be, side) -> side == Direction.UP || side == Direction.DOWN);
 

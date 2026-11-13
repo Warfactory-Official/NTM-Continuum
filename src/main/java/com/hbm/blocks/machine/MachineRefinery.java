@@ -146,7 +146,7 @@ public class MachineRefinery extends BlockMultiblockMachine implements IEnergyCo
     }
 
     /** Live connection rules of the corresponding 1.7 tile, shared by native and foreign contacts. */
-    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().fluidOut().items().itemsAtCells().fe()
+    private static final MachineCaps CAPS = MachineCaps.blockKeyed().powerIn().fluidIn().fluidOut().items().itemsAtCells()
             .fluidFaces(BlockEntity.class, (be, side) -> side != Direction.DOWN);
 
     @Override

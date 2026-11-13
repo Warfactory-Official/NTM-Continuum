@@ -13,6 +13,7 @@ import com.hbm.tileentity.network.TileEntityRadioTorchController;
 import com.hbm.tileentity.network.TileEntityRadioTorchCounter;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
+import com.hbm.tileentity.TileEntityProxyCell;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.ItemStacks;
@@ -120,7 +121,7 @@ public final class CounterControllerGameTests {
 
     /**
      * The other half of {@link #counterResolvesMultiblock}: a folded multiblock has no dummy blocks to
-     * walk, only cells with no block entity at all, and 1.12.2 had no such thing to port a rule from.
+     * walk, only cells with no ROR block entity, and 1.12.2 had no such thing to port a rule from.
      */
     public static void controllerResolvesFoldedMultiblock(GameTestHelper helper) {
         BlockMultiblockCore block = ModTurretBlocks.turret_chekhov.get();
@@ -133,8 +134,10 @@ public final class CounterControllerGameTests {
 
         BlockPos corePos = clicked.above(block.getHeightOffset()).relative(Direction.NORTH, -block.getOffset());
         BlockPos cell = corePos.east();
-        helper.assertTrue(helper.getLevel().getBlockEntity(cell) == null,
-                "This test is meaningless unless the cell really has no block entity");
+        // Forge 1.20.1 gives the cell a capability proxy (1.7's TileEntityProxyCombo), which is no ROR target itself
+        helper.assertTrue(helper.getLevel().getBlockEntity(cell) == null
+                        || helper.getLevel().getBlockEntity(cell) instanceof TileEntityProxyCell,
+                "This test is meaningless unless the cell has no ROR target of its own");
 
         TileEntityTurretChekhov turret = (TileEntityTurretChekhov) helper.getLevel().getBlockEntity(corePos);
         helper.assertTrue(turret != null, "Expected a turret block entity at the folded core");

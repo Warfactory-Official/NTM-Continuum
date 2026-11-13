@@ -136,11 +136,12 @@ public class TileEntityPneumoTube extends TileEntityMachineBase
 
             if (randTime % 5 == 0 && this.compair.getFill() >= 50) {
                 PneumaticNetwork net = PneumaticNetwork.at(sl, worldPosition);
-                Container sendFrom = PneumaticNetwork.containerAt(sl, worldPosition.relative(insertionDir));
+                BlockPos sourcePos = worldPosition.relative(insertionDir);
+                Container sendFrom = PneumaticNetwork.containerAt(sl, sourcePos);
 
                 if (net != null && sendFrom != null) {
 
-                    if (net.send(sl, sendFrom, this, this.insertionDir.getOpposite(), sendOrder, receiveOrder,
+                    if (net.send(sl, sendFrom, sourcePos, this, this.insertionDir.getOpposite(), sendOrder, receiveOrder,
                             getRangeFromPressure(compair.getPressure()), sendCounter)) {
                         this.compair.setFill(this.compair.getFill() - 50);
 
