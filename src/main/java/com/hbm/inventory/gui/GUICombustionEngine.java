@@ -6,11 +6,14 @@ import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCombustionEngine;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.items.machine.ItemPistons;
+import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
 import dev.golem.core.gui.MouseInput;
+import dev.golem.core.net.GolemNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -160,7 +163,9 @@ public class GUICombustionEngine extends CompatContainerScreen<ContainerCombusti
         int setting = Mth.clamp((int) ((mouseX - this.leftPos - 81) * 30 / 32), 0, 30);
         if (te.setting != setting) {
             te.setting = setting; // optimistic client update; the server echoes it back on the BufPacket
-            mc.gameMode.handleInventoryButtonClick(this.menu.containerId, 1000 + setting);
+            CompoundTag data = new CompoundTag();
+            data.putInt("setting", setting);
+            GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(te.getBlockPos(), data));
         }
     }
 }

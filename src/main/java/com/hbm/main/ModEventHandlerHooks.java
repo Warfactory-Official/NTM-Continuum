@@ -78,7 +78,7 @@ public final class ModEventHandlerHooks {
         ConsumableTreatments.init();
         BlockBreaks.onBreak(ModEventHandlerHooks::onBlockBreak);
         Sleeps.onSleepAttempt((player, pos) -> PollutionHandler.rampantTargetSetter(pos));
-        Spawns.onPotentialSpawns((level, category, pos) -> PollutionHandler.rampantScoutPopulator(level, pos));
+        Spawns.onPotentialSpawns((level, category, pos) -> PollutionHandler.rampantScoutPopulator(level, category, pos));
         ItemFirstUse.registerBlockClick(ModEventHandlerHooks::explosiveEnergistics);
         Lifecycle.onServerTick(ModEventHandlerHooks::syncPollution);
         Lifecycle.onServerTick(ModEventHandlerHooks::syncManly);

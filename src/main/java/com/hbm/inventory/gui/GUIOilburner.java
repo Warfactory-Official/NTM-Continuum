@@ -6,11 +6,14 @@ import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.inventory.fluid.FluidCombustion;
+import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import dev.golem.core.gui.MouseInput;
+import dev.golem.core.net.GolemNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -139,7 +142,9 @@ public class GUIOilburner extends CompatContainerScreen<ContainerOilburner> impl
         int rate = Mth.clamp((mouseX - this.leftPos - 70) * te.maxBurnRate / 32, 1, te.maxBurnRate);
         if (rate != this.burnRate) {
             this.burnRate = rate;
-            mc.gameMode.handleInventoryButtonClick(this.menu.containerId, 1000 + rate);
+            CompoundTag data = new CompoundTag();
+            data.putInt("burnRate", rate);
+            GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(te.getBlockPos(), data));
         }
     }
 

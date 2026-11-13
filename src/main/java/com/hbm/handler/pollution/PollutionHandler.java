@@ -11,6 +11,7 @@ import com.hbm.handler.pollution.PollutionSavedData.PollutionData;
 import dev.golem.core.world.Attributes;
 import dev.golem.core.world.Chunks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -18,9 +19,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.jspecify.annotations.Nullable;
 
@@ -238,8 +242,9 @@ public final class PollutionHandler {
         if (MobConfig.rampantGlyphidGuidance) targetCoords = bedPos.immutable();
     }
 
-    public static void rampantScoutPopulator(ServerLevel level, BlockPos pos) {
+    public static void rampantScoutPopulator(ServerLevel level, MobCategory category, BlockPos pos) {
         if (!MobConfig.rampantNaturalScoutSpawn) return;
+        if (!landSpawnPosition(level, category, pos)) return;
         if (level.dimension() != Level.OVERWORLD) return;
         if (!level.canSeeSky(pos)) return;
         if (level.getRandom().nextInt(MobConfig.rampantScoutSpawnChance) != 0) return;
@@ -255,6 +260,19 @@ public final class PollutionHandler {
 
         if (canSpawnHere(level, scout)) level.addFreshEntity(scout);
         if (canSpawnHere(level, digger)) level.addFreshEntity(digger);
+    }
+
+    /**
+     * 1.7 fired PotentialSpawns only after SpawnerAnimals.canCreatureTypeSpawnAtLocation; at its liquid positions a
+     * scout's getCanSpawnHere fails, so only the land rule can place one.
+     */
+    public static boolean landSpawnPosition(ServerLevel level, MobCategory category, BlockPos pos) {
+        if (category != MobCategory.MONSTER && category != MobCategory.CREATURE && category != MobCategory.AMBIENT) return false;
+        BlockPos below = pos.below();
+        BlockState ground = level.getBlockState(below);
+        if (!ground.isFaceSturdy(level, below, Direction.UP) || ground.is(Blocks.BEDROCK)) return false;
+        return !level.getBlockState(pos).isRedstoneConductor(level, pos) && level.getFluidState(pos).isEmpty()
+                && !level.getBlockState(pos.above()).isRedstoneConductor(level, pos.above());
     }
 
     private static boolean canSpawnHere(ServerLevel level, EntityGlyphid glyphid) {

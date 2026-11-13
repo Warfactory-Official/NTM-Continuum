@@ -115,7 +115,7 @@ public final class CombustionHeatGameTests {
 
         helper.assertTrue(burner.tank.getFill() == 7 && burner.heatEnergy == 75,
                 "Oil burner did not consume setting mB/t at the legacy oil heat rate");
-        burner.handleButtonPacket(1000 + TileEntityHeaterOilburner.MAX_SLIDER_RATE, 0);
+        burner.burnRate = TileEntityHeaterOilburner.MAX_SLIDER_RATE;
         TileEntityHeaterOilburner.serverTick(helper.getLevel(), helper.absolutePos(relative),
                 burner.getBlockState(), burner);
         helper.assertTrue(burner.burnRate == 10 && burner.maxHeatEnergy == 500_000,

@@ -47,7 +47,7 @@ public final class ChestLootSource extends DataSource<JsonObject> {
         }
     }
 
-    /** {@code draws} rolls of the pool's own table, for a container that is filled when first opened. */
+    /** {@code draws} rolls of the pool's own table, for a Lootr container; it loads only with Lootr. */
     private static JsonObject draws(String id, int draws) {
         JsonObject entry = new JsonObject();
         entry.addProperty("type", "minecraft:loot_table");
@@ -60,7 +60,14 @@ public final class ChestLootSource extends DataSource<JsonObject> {
         lootPool.add("entries", entries);
         JsonArray pools = new JsonArray();
         pools.add(lootPool);
+        JsonObject lootr = new JsonObject();
+        lootr.addProperty("type", "mod_loaded");
+        lootr.addProperty("mod", "lootr");
+        JsonArray conditions = new JsonArray();
+        conditions.add(lootr);
         JsonObject table = new JsonObject();
+        // only PoolLoot.fill's Lootr path reads these
+        table.add("golem:conditions", conditions);
         table.addProperty("type", "minecraft:chest");
         table.add("pools", pools);
         return table;

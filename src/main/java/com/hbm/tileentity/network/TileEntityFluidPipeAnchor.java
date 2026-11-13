@@ -3,6 +3,7 @@ package com.hbm.tileentity.network;
 import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.blocks.network.BasePipeAnchor;
+import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
@@ -76,9 +77,18 @@ public class TileEntityFluidPipeAnchor extends TileEntityFluidDuctVariant implem
     @Override
     public int canConnect(TileEntityPipelineBase other) {
         if (!(other instanceof TileEntityFluidPipeAnchor pipe)) return 1;
-        if (this.type == Fluids.NONE && pipe.type != this.type) this.setFluidType(pipe.type);
-        if (pipe.type == Fluids.NONE && this.type != pipe.type) pipe.setFluidType(this.type);
+        if (this.type == Fluids.NONE && pipe.type != this.type) this.retype(pipe.type);
+        if (pipe.type == Fluids.NONE && this.type != pipe.type) pipe.retype(this.type);
         return this.type != pipe.type ? 4 : 0;
+    }
+
+    /** The duct on the open face draws its arm from block state, so it looks again. */
+    public void retype(FluidType type) {
+        setFluidType(type);
+        if (level == null) return;
+        ForgeDirection open = openSide();
+        BlockFluidDuct.portChanged(level, getBlockPos().offset(open.offsetX, open.offsetY, open.offsetZ));
+        BlockFluidDuct.portChanged(level, getBlockPos());
     }
 
     @Override

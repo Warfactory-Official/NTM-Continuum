@@ -30,6 +30,7 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
     }
 
     private static final Surface SATURNITE = Surface.cutout("hbm:textures/models/weapons/uzi_saturnite.png");
+    private static final Surface GREASEGUN_CLEAN = Surface.cutout("hbm:textures/models/weapons/greasegun_clean.png");
 
     private final Variant variant;
     private final Identifier modelId;
@@ -51,10 +52,18 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
         return XWeaponModManager.hasUpgrade(state.stack, rail, XWeaponModManager.ID_SILENCER);
     }
 
-    /** Upstream binds one texture for the whole uzi, so the skin moves per part rather than per mesh. */
+    /** Upstream binds one texture for the whole gun, so the skin moves per part rather than per mesh. */
+    private Gem.SurfaceOf<WeaponPose> skin(int rail, int mod, Surface modded) {
+        return state -> XWeaponModManager.hasUpgrade(state.stack, rail, mod) ? modded : body;
+    }
+
     private Gem.SurfaceOf<WeaponPose> skin(int rail) {
-        return state -> XWeaponModManager.hasUpgrade(state.stack, rail, XWeaponModManager.ID_UZI_SATURN)
-                ? SATURNITE : body;
+        return skin(rail, XWeaponModManager.ID_UZI_SATURN, SATURNITE);
+    }
+
+    /** 1.7 ItemRenderGreasegun.isRefurbished reads configuration 0, the mod table included. */
+    private Gem.SurfaceOf<WeaponPose> cleanSkin() {
+        return skin(0, XWeaponModManager.ID_GREASEGUN_CLEAN, GREASEGUN_CLEAN);
     }
 
     @Override
@@ -98,7 +107,8 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
         switch (variant) {
             case GREASEGUN -> {
                 greasegun(declaration);
-                rest(declaration, "Gun", "Stock", "Magazine", "Handle", "Flap", "Bullet");
+                declaration.part(model().parts("Gun", "Stock", "Magazine", "Handle", "Flap", "Bullet"), body)
+                        .skin(cleanSkin()).visibleIf(state -> !state.animated);
             }
             case LAG -> {
                 lag(declaration);
@@ -135,12 +145,9 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
         return declaration.joint().visibleIf(state -> state.animated);
     }
 
-    private void rest(Gem.Model<WeaponPose> declaration, String... parts) {
-        declaration.part(model().parts(parts), body).visibleIf(state -> !state.animated);
-    }
-
     private void greasegun(Gem.Model<WeaponPose> declaration) {
         WavefrontObj obj = model();
+        Gem.SurfaceOf<WeaponPose> clean = cleanSkin();
         Gem.Part<WeaponPose> gun = held(declaration)
                 .scale(0.375F)
                 .spin(Gem.Axes.X, 0F, -3F, -3F, state -> (float) state.bus("EQUIP")[0])
@@ -149,8 +156,8 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
                         ? (float) state.bus("TURN")[2] : 0F)
                 .slide(Gem.Axes.Z, state -> (float) state.bus("RECOIL")[2]);
 
-        gun.child(obj.part("Gun"), body);
-        gun.child(obj.part("Stock"), body)
+        gun.child(obj.part("Gun"), body).skin(clean);
+        gun.child(obj.part("Stock"), body).skin(clean)
                 .translate(0F, 0F, -4F)
                 .slide(Gem.Axes.Z, state -> (float) -state.bus("STOCK")[2]);
 
@@ -158,12 +165,12 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.X, state -> (float) state.bus("MAG")[0])
                 .slide(Gem.Axes.Y, state -> (float) state.bus("MAG")[1])
                 .slide(Gem.Axes.Z, state -> (float) state.bus("MAG")[2]);
-        magazine.child(obj.part("Magazine"), body);
-        magazine.child(obj.part("Bullet"), body).visibleIf(state -> state.bus("BULLET")[0] != 1);
+        magazine.child(obj.part("Magazine"), body).skin(clean);
+        magazine.child(obj.part("Bullet"), body).skin(clean).visibleIf(state -> state.bus("BULLET")[0] != 1);
 
-        gun.child(obj.part("Handle"), body)
+        gun.child(obj.part("Handle"), body).skin(clean)
                 .spin(Gem.Axes.X, 0F, -1.4375F, -0.125F, state -> (float) state.bus("HANDLE")[0]);
-        gun.child(obj.part("Flap"), body)
+        gun.child(obj.part("Flap"), body).skin(clean)
                 .translate(0F, 0.53125F, 0F)
                 .angle(Gem.Axes.Z, state -> (float) state.bus("FLAP")[2])
                 .translate(0F, -0.5125F, 0F);

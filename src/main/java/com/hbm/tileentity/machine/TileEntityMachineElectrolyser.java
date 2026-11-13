@@ -162,11 +162,13 @@ public class TileEntityMachineElectrolyser extends TileEntityMachineBase
     private boolean canProcessFluid() {
         if (power < usageFluid) return false;
         ElectrolyserFluidRecipes.ElectrolysisRecipe recipe = ElectrolyserFluidRecipes.getRecipe(tanks[0].getTankType());
-        if (recipe == null || tanks[0].getFill() < recipe.amount) return false;
-        if (recipe.output1.type == tanks[1].getTankType()
-                && recipe.output1.fill + tanks[1].getFill() > tanks[1].getMaxFill()) return false;
-        if (recipe.output2.type == tanks[2].getTankType()
-                && recipe.output2.fill + tanks[2].getFill() > tanks[2].getMaxFill()) return false;
+        if (recipe == null) return false;
+        // 1.7 retypes the outputs every tick, before it checks the input
+        tanks[1].setTankType(recipe.output1.type);
+        tanks[2].setTankType(recipe.output2.type);
+        if (tanks[0].getFill() < recipe.amount) return false;
+        if (recipe.output1.fill + tanks[1].getFill() > tanks[1].getMaxFill()) return false;
+        if (recipe.output2.fill + tanks[2].getFill() > tanks[2].getMaxFill()) return false;
         return canFitByproducts(recipe.byproduct, 11);
     }
 

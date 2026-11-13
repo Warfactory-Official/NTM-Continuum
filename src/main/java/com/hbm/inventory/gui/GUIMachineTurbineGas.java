@@ -4,13 +4,16 @@ import com.hbm.inventory.container.ContainerMachineTurbineGas;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatContainerScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
+import dev.golem.core.net.GolemNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -223,7 +226,9 @@ public class GUIMachineTurbineGas extends CompatContainerScreen<ContainerMachine
         else if (value < 0) value = 0;
         if (turbine.powerSliderPos != value) {
             turbine.powerSliderPos = value;
-            minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1000 + value);
+            CompoundTag data = new CompoundTag();
+            data.putInt("slidPos", value);
+            GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(turbine.getBlockPos(), data));
         }
     }
 }

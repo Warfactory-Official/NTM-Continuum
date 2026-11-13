@@ -11,6 +11,7 @@ import com.hbm.util.TickPhase;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCombustionEngine;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidCombustion.Combustible;
@@ -25,6 +26,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachinePolluting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -52,7 +54,7 @@ import com.hbm.tileentity.TilePort.PortDef;
  * <p>Deferred: OpenComputers {@code SimpleComponent}, IFluidCopiable.
  */
 public class TileEntityMachineCombustionEngine extends TileEntityMachinePolluting
-        implements MenuProvider, IEnergyProviderMK2, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive {
+        implements MenuProvider, IEnergyProviderMK2, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive, IControlReceiver {
 
     public static final long maxPower = 2_500_000;
 
@@ -162,10 +164,21 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachinePollutin
 
     public long getPowerScaled(long i) { return (power * i) / maxPower; }
 
-    /** Menu button dispatch: 0 = ignition toggle; 1000..1030 = set throttle to (id − 1000). */
+    /** Menu button 0 toggles ignition. */
     public void handleButton(int id) {
         if (id == 0) isOn = !isOn;
-        else if (id >= 1000 && id <= 1030) setting = id - 1000;
+        setChanged();
+    }
+
+    @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof ContainerCombustionEngine menu && menu.getTile() == this && menu.stillValid(player);
+    }
+
+    /** 1.7 sends the throttle as a control packet: a menu button id is one byte on the 1.20.1 wire. */
+    @Override
+    public void receiveControl(CompoundTag data) {
+        if (Tags.hasInt(data, "setting")) setting = Mth.clamp(Tags.getIntOr(data, "setting", 0), 0, 30);
         setChanged();
     }
 

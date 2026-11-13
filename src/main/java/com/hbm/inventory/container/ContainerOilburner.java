@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Menu for the fluid burner: 1.7 {@code ContainerOilburner} layout. Fluid container in (26,17),
  * emptied container out (26,53), fluid identifier (44,71), upgrade (80,73); 176×203 with the player
- * inventory offset 37. Buttons: 0 = burn toggle, 1000 + rate = burn rate slider.
+ * inventory offset 37. Button 0 toggles burning; the burn rate is a control packet.
  */
 public class ContainerOilburner extends AbstractContainerMenu {
 
@@ -69,7 +69,7 @@ public class ContainerOilburner extends AbstractContainerMenu {
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (heater == null) return false;
-        if (id != 0 && (id <= 1000 || id > 1000 + TileEntityHeaterOilburner.MAX_SLIDER_RATE)) return false;
+        if (id != 0) return false;
         heater.handleButtonPacket(id, 0);
         return true;
     }

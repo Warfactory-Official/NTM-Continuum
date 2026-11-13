@@ -112,6 +112,13 @@ public class EntityGlyphidScout extends EntityGlyphid {
             setTarget(findTargetCandidate());
         }
 
+        // port: 1.7 keeps a removed guidance waypoint, so a guided scout stood in FOLLOW for good
+        EntityWaypoint guide = getWaypoint();
+        if (getCurrentTask() == TASK_FOLLOW && guide != null && guide.isRemoved() && guide.getWaypointType() == TASK_BUILD_HIVE) {
+            setCurrentTask(TASK_BUILD_HIVE, null);
+            hasTarget = false;
+        }
+
         if ((getCurrentTask() != TASK_BUILD_HIVE || getCurrentTask() != TASK_TERRAFORM) && getWaypoint() == null) {
 
             if (MobConfig.rampantGlyphidGuidance && PollutionHandler.targetCoords != null) {

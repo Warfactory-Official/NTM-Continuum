@@ -15,6 +15,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FluidReleaseType;
+import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerMachineTurbineGas;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
@@ -33,6 +34,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +44,7 @@ import com.hbm.tileentity.TilePort.PortDef;
 
 /** The legacy gas turbine: a slow-starting gas generator with a steam heat exchanger. */
 public class TileEntityMachineTurbineGas extends TileEntityMachinePolluting
-        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, MenuProvider, IRORValueProvider, IRORInteractive {
+        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, MenuProvider, IRORValueProvider, IRORInteractive, IControlReceiver {
 
     public static final long MAX_POWER = 1_000_000L;
 
@@ -147,7 +149,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachinePolluting
     }
 
     /**
-     * Menu controls: 0 ignition, 1 automatic load-following, 1000..1060 slider position.
+     * Menu controls: 0 ignition, 1 automatic load-following; the slider is a control packet.
      * 1.7 gated the ignition button on the client only ({@code GUIMachineTurbineGas.mouseClicked}: counter 0 or 579,
      * where the client's counter freezes at 579 once state 1 stops syncing it); its {@code receiveControl} applied the
      * state unconditionally. The server counter is 225 while running, so a server-side gate here would block stop.
@@ -156,10 +158,21 @@ public class TileEntityMachineTurbineGas extends TileEntityMachinePolluting
         if (id == 0) state = state - 1;
         else if (id == 1 && state == 1) autoMode = !autoMode;
         else if (id == 2 && state == 1) autoMode = false;
-        else if (id >= 1000 && id <= 1060 && state == 1) {
-            powerSliderPos = id - 1000;
-            autoMode = false;
-        } else return;
+        else return;
+        setChanged();
+    }
+
+    @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof ContainerMachineTurbineGas menu && menu.getTurbine() == this && menu.stillValid(player);
+    }
+
+    /** 1.7's slidPos control packet; port: only while running, and it ends auto mode. */
+    @Override
+    public void receiveControl(CompoundTag data) {
+        if (!Tags.hasInt(data, "slidPos") || state != 1) return;
+        powerSliderPos = Math.max(0, Math.min(60, Tags.getIntOr(data, "slidPos", 0)));
+        autoMode = false;
         setChanged();
     }
 

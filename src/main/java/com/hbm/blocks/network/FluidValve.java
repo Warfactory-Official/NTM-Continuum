@@ -14,6 +14,7 @@ import com.hbm.tileentity.network.TileEntityFluidValve;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -77,7 +78,7 @@ public class FluidValve extends CompatBlock
                     BlockFluidDuct.spreadType(level, pos, type, valve.getFluidType(), 256);
                 } else {
                     valve.setFluidType(type);
-                    level.updateNeighborsAt(pos, this);
+                    for (Direction side : Direction.values()) BlockFluidDuct.portChanged(level, pos.relative(side));
                 }
                 player.sendSystemMessage(Component.literal("Valve fluid: ")
                         .append(type.getDisplayName()).withStyle(ChatFormatting.AQUA));

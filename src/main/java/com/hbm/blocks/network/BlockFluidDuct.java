@@ -192,6 +192,7 @@ public class BlockFluidDuct extends CompatBlock implements TickingBlock, SimpleW
                 level.setBlock(p, recomputeConnections(state, level, p), 3);
             } else {
                 level.updateNeighborsAt(p, state.getBlock());
+                for (Direction side : Direction.values()) portChanged(level, p.relative(side));
             }
         }
     }

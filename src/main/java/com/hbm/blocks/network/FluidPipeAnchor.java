@@ -81,8 +81,7 @@ public class FluidPipeAnchor extends BlockFluidDuct implements BasePipeAnchor {
             FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             if (type != anchor.getFluidType()) {
                 FluidType prev = anchor.getFluidType();
-                anchor.setFluidType(type);
-                level.setBlock(pos, state, 3);
+                anchor.retype(type);
                 if (player.isShiftKeyDown()) {
                     ForgeDirection open = anchor.openSide();
                     BlockPos next = pos.offset(open.offsetX, open.offsetY, open.offsetZ);

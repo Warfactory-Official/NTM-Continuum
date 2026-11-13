@@ -16,8 +16,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
-/** Menu for the combustion engine, 1.12.2 {@code ContainerCombustionEngine} layout (176×203). Buttons:
- * 0 = ignition toggle, 1000..1030 = throttle. */
+/** Menu for the combustion engine, 1.12.2 {@code ContainerCombustionEngine} layout (176×203). Button 0
+ * toggles ignition; the throttle is a control packet. */
 public class ContainerCombustionEngine extends AbstractContainerMenu {
 
     public static final int MACHINE_SLOTS = 5;

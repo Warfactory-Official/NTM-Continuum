@@ -8,6 +8,7 @@ import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.inventory.fluid.FluidCombustion;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -45,7 +47,7 @@ import com.hbm.tileentity.TilePortShapes;
  * 3 overdrive upgrade (each level adds 10 mB/t of burn rate and 500k TU of capacity). Every fifth burning
  * tick the fuel's burn pollution goes into the smoke tanks, which leave through the four fuel ports.
  */
-public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implements MenuProvider, IHeatSource, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive, IUpgradeInfoProvider {
+public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implements MenuProvider, IHeatSource, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive, IUpgradeInfoProvider, IControlReceiver {
 
     /** The highest maxBurnRate, at three overdrive levels. */
     public static final int MAX_SLIDER_RATE = 40;
@@ -119,11 +121,22 @@ public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implem
     protected PortDef[] cachedPorts;
     public PortDef[] getPorts() { if (cachedPorts == null) cachedPorts = TilePortShapes.flare(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()); return cachedPorts; }
 
-    /** GUI buttons: 0 = burn toggle, 1000 + rate = slider burn rate, clamped to maxBurnRate on the next tick. */
+    /** GUI button 0 toggles burning. */
     @Override
     public void handleButtonPacket(int value, int meta) {
         if (value == 0) this.isOn = !this.isOn;
-        else if (value > 1000 && value <= 1000 + MAX_SLIDER_RATE) this.burnRate = value - 1000;
+        setChanged();
+    }
+
+    @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof ContainerOilburner menu && menu.getHeater() == this && menu.stillValid(player);
+    }
+
+    /** 1.7's burnRate control packet, clamped to maxBurnRate on the next tick. */
+    @Override
+    public void receiveControl(CompoundTag data) {
+        if (Tags.hasInt(data, "burnRate")) burnRate = Math.max(1, Math.min(MAX_SLIDER_RATE, Tags.getIntOr(data, "burnRate", 1)));
         setChanged();
     }
 

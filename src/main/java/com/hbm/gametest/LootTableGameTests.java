@@ -6,6 +6,7 @@ import com.hbm.itempool.PoolLoot;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.platform.Platform;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.world.ChestLoot;
 import dev.golem.core.world.CompatEnchantments;
@@ -115,9 +116,21 @@ public final class LootTableGameTests {
         helper.succeed();
     }
 
-    /** Lootr's chest tables: one per pool and draw count, N draws give N times the items, a chest fills on opening. */
+    /**
+     * Lootr's chest tables: one per pool and draw count, N draws give N times the items, a chest fills on opening.
+     * Without Lootr they are not loaded (1.20.1 Forge loads them anyway) and a chest keeps 1.7's direct fill.
+     */
     public static void drawTablesForLootr(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
+        if (!Platform.isModLoaded("lootr")) {
+            BlockPos pos = new BlockPos(1, 1, 1);
+            helper.setBlock(pos, Blocks.CHEST);
+            RandomizableContainerBlockEntity chest = (RandomizableContainerBlockEntity) level.getBlockEntity(helper.absolutePos(pos));
+            PoolLoot.fill(level, helper.absolutePos(pos), chest, "POOL_MACHINE_PARTS", RandomSource.create(7L), 10);
+            helper.assertFalse(chest.isEmpty(), "without Lootr a structure fill left the chest empty");
+            helper.succeed();
+            return;
+        }
         Vec3 origin = Vec3.atCenterOf(helper.absolutePos(BlockPos.ZERO));
         List<String> missing = new ArrayList<>();
         for (String pool : new TreeSet<>(ItemPool.POOLS.keySet())) {

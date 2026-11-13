@@ -2,6 +2,7 @@ package com.hbm.module;
 
 import dev.golem.core.data.Tags;
 import com.hbm.items.ItemFamily;
+import com.hbm.items.special.ItemBedrockOreGraded;
 
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -16,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The three-state item filter used by the old radio counter.
+ * Item filter shared by the logistics blocks: exact, wildcard, bedrock grade or a {@code c:} tag name.
  *
  * <p>The old implementation read Forge ore-dictionary names. The shared port has no ore dictionary;
  * the equivalent cross-mod contract is the {@code c:} item-tag namespace. Tag paths are exposed as
@@ -26,6 +27,7 @@ import java.util.List;
 public final class ModulePatternMatcher {
     public static final String MODE_EXACT = "exact";
     public static final String MODE_WILDCARD = "wildcard";
+    public static final String MODE_BEDROCK = "bedrock";
 
     public final String[] modes;
 
@@ -52,7 +54,7 @@ public final class ModulePatternMatcher {
         if (iterateAndCheck(names, index, "plate")) return;
 
         // Modern variant items have their old metadata identity in the item/components themselves.
-        modes[index] = MODE_WILDCARD;
+        modes[index] = isBedrockOre(stack) ? MODE_BEDROCK : MODE_WILDCARD;
     }
 
     public void initPatternStandard(Level level, ItemStack stack, int index) {
@@ -61,7 +63,7 @@ public final class ModulePatternMatcher {
             modes[index] = null;
             return;
         }
-        modes[index] = MODE_WILDCARD;
+        modes[index] = isBedrockOre(stack) ? MODE_BEDROCK : MODE_WILDCARD;
     }
 
     public void nextMode(Level level, ItemStack pattern, int index) {
@@ -74,6 +76,8 @@ public final class ModulePatternMatcher {
         if (modes[index] == null) {
             modes[index] = MODE_EXACT;
         } else if (MODE_EXACT.equals(modes[index])) {
+            modes[index] = isBedrockOre(pattern) ? MODE_BEDROCK : MODE_WILDCARD;
+        } else if (MODE_BEDROCK.equals(modes[index])) {
             modes[index] = MODE_WILDCARD;
         } else if (MODE_WILDCARD.equals(modes[index])) {
             List<String> names = tagNames(pattern);
@@ -103,9 +107,15 @@ public final class ModulePatternMatcher {
         ItemStack oneFilter = filter.copyWithCount(1);
         ItemStack oneInput = input.copyWithCount(1);
         if (MODE_EXACT.equals(mode)) return ItemStacks.sameItemAndData(oneInput, oneFilter);
+        // 1.7 bedrock_ore was one item: the grade mode ignores the type, the wildcard ignores both
+        if (MODE_BEDROCK.equals(mode)) {
+            return oneInput.getItem() instanceof ItemBedrockOreGraded in
+                    && oneFilter.getItem() instanceof ItemBedrockOreGraded f && in.grade == f.grade;
+        }
         if (MODE_WILDCARD.equals(mode)) {
             return ItemStacks.sameItemAndDataIgnoringDamage(oneInput, oneFilter)
-                    || ItemFamily.sameFamily(oneInput.getItem(), oneFilter.getItem());
+                    || ItemFamily.sameFamily(oneInput.getItem(), oneFilter.getItem())
+                    || isBedrockOre(oneInput) && isBedrockOre(oneFilter);
         }
         return tagNames(oneInput).contains(mode);
     }
@@ -143,7 +153,12 @@ public final class ModulePatternMatcher {
     public static String getLabel(String mode) {
         if (MODE_EXACT.equals(mode)) return "Item and meta match";
         if (MODE_WILDCARD.equals(mode)) return "Item matches";
+        if (MODE_BEDROCK.equals(mode)) return "Item and bedrock grade match";
         return "Ore dict key matches: " + mode;
+    }
+
+    private static boolean isBedrockOre(ItemStack stack) {
+        return stack.getItem() instanceof ItemBedrockOreGraded;
     }
 
     private boolean iterateAndCheck(List<String> names, int index, String prefix) {

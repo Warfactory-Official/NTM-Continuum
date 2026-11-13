@@ -64,7 +64,7 @@ public class ContainerMachineTurbineGas extends AbstractContainerMenu {
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (turbine == null) return false;
-        if (id != 0 && id != 1 && id != 2 && (id < 1000 || id > 1060)) return false;
+        if (id != 0 && id != 1 && id != 2) return false;
         turbine.handleButton(id);
         return true;
     }
