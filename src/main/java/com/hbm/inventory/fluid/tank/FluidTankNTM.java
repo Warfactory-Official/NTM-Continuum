@@ -95,7 +95,7 @@ public class FluidTankNTM implements Cloneable {
 
     /** A player's identifier chooses one exact resource; incompatible contents are discarded. */
     public void setTankTypeByIdentifier(@Nullable FluidType incoming) {
-        var exact = incoming == null || incoming == Fluids.NONE ? null : incoming;
+        var exact = incoming == null || incoming == Fluids.NONE ? null : Fluids.inTanks(incoming);
         var kind = exact == null ? Fluids.NONE : Fluids.kindOf(exact);
         if (type == kind && pin == exact) return;
         if (type != kind || fluid > 0 && getFluid() != exact) {
@@ -133,15 +133,17 @@ public class FluidTankNTM implements Cloneable {
     }
 
     public boolean accepts(@Nullable FluidType incoming) {
+        incoming = Fluids.inTanks(incoming);
         if (incoming == null || incoming == Fluids.NONE || type == Fluids.NONE) return false;
         if (fluid > 0) return incoming == getFluid();
         return pin != null ? incoming == pin : incoming == type || Fluids.kindOf(incoming) == type;
     }
     public boolean provides(@Nullable FluidType incoming) {
-        return incoming != null && type != Fluids.NONE && incoming == getFluid();
+        return incoming != null && type != Fluids.NONE && Fluids.inTanks(incoming) == getFluid();
     }
     /** Physical connection ignores stored content; a strict identifier still limits the resource. */
     public boolean joins(@Nullable FluidType incoming) {
+        incoming = Fluids.inTanks(incoming);
         if (incoming == null || incoming == Fluids.NONE || type == Fluids.NONE) return false;
         return pin != null ? incoming == pin : incoming == type || Fluids.kindOf(incoming) == type;
     }
@@ -175,6 +177,7 @@ public class FluidTankNTM implements Cloneable {
         return excess;
     }
     public int receive(FluidType incoming, int amount) {
+        incoming = Fluids.inTanks(incoming);
         if (!accepts(incoming)) return 0;
         var accepted = Math.min(amount, maxFluid - fluid);
         if (accepted <= 0) return 0;
@@ -202,6 +205,7 @@ public class FluidTankNTM implements Cloneable {
     }
 
     public int fill(FluidType incoming, int amount, boolean doFill) {
+        incoming = Fluids.inTanks(incoming);
         if (incoming == null || incoming == Fluids.NONE || amount <= 0) return 0;
         if (type == Fluids.NONE) {
             var accepted = Math.min(maxFluid, amount);
@@ -222,6 +226,9 @@ public class FluidTankNTM implements Cloneable {
         return exact == Fluids.NONE ? null : exact;
     }
     private void restoreIdentities(@Nullable FluidType pin, @Nullable FluidType held, boolean missingHeld) {
+        pin = Fluids.inTanks(pin);
+        held = Fluids.inTanks(held);
+        if (held == type) held = null;
         this.pin = pin;
         pinnedConnections = pin == null ? null : new FluidType[]{pin};
         this.held = held != null ? held : fluid > 0 && type.isForeign() ? type : null;

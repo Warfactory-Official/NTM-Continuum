@@ -84,12 +84,14 @@ public final class ScreenRBMKControlAuto extends RBMKContainerScreen<MenuRBMKCon
     @Override protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         if (event.button() != 0) return false;
         if (region(28, 70, 30, 10, (int) event.x(), (int) event.y())) {
+            GuiUtil.playClickSound();
             saveParameters();
             return true;
         }
         for (int i = 0; i < 3; i++) {
             if (region(61, 48 + i * 11, 22, 10, (int) event.x(), (int) event.y())) {
                 CompoundTag data = new CompoundTag();
+                GuiUtil.playClickSound();
                 data.putInt("function", i);
                 send(data);
                 return true;

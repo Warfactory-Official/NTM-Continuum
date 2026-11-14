@@ -980,6 +980,13 @@ public class Fluids {
         return resource.isForeign() ? fromVanilla(toVanilla(resource)) : resource;
     }
 
+    /** What a tank stores: a placed world fluid 1.7's container registry linked to a network fluid is that fluid. */
+    public static @Nullable FluidType inTanks(@Nullable FluidType resource) {
+        if (resource == null || !resource.isForeign()) return resource;
+        var kind = aliases().get(toVanilla(resource));
+        return kind != null ? kind : resource;
+    }
+
     private record Alias(Supplier<? extends Fluid> resource, Supplier<FluidType> kind) {}
     private static final List<Alias> ALIASES = new ArrayList<>();
     private static volatile Map<Fluid, FluidType> aliasKinds;

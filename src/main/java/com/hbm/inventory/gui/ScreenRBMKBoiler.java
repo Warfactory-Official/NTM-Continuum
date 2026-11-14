@@ -50,6 +50,7 @@ public final class ScreenRBMKBoiler extends RBMKContainerScreen<MenuRBMKBoiler> 
         if (event.button() != 0 || !region(33, 21, 20, 64, (int) event.x(), (int) event.y())) return false;
         BlockEntityRBMKBoiler boiler = menu.blockEntity();
         if (boiler == null) return false;
+        GuiUtil.playClickSound();
         CompoundTag data = new CompoundTag();
         data.putBoolean("compression", true);
         GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(boiler.getBlockPos(), data));

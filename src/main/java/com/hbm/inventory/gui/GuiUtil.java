@@ -91,7 +91,11 @@ public final class GuiUtil {
 
     /** Plays the legacy master-channel UI click through the shared GUI helper. */
     public static void playClickSound() {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        playClickSound(1.0F);
+    }
+
+    public static void playClickSound(float pitch) {
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, pitch));
     }
 
     /** The exact legacy fluid-tank tooltip: name, fill, optional pressure, then fluid metadata. */

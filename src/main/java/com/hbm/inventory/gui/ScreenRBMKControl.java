@@ -58,11 +58,12 @@ public final class ScreenRBMKControl extends RBMKContainerScreen<MenuRBMKControl
         if (control == null) return false;
         for (int i = 0; i < 5; i++) {
             if (region(118, 26 + i * 11, 30, 10, (int) event.x(), (int) event.y())) {
+                GuiUtil.playClickSound();
                 send("level", 1D - i * .25D);
                 return true;
             }
         }
-        for (int i = 0; i < RBMKColor.VALUES.length; i++) if (region(28, 26 + i * 11, 12, 10, (int) event.x(), (int) event.y())) { sendColor(i); return true; }
+        for (int i = 0; i < RBMKColor.VALUES.length; i++) if (region(28, 26 + i * 11, 12, 10, (int) event.x(), (int) event.y())) { GuiUtil.playClickSound(); sendColor(i); return true; }
         return false;
     }
 

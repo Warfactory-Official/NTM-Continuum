@@ -41,12 +41,10 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Queue;
 import com.hbm.tileentity.TilePort.PortDef;
 
 /**
@@ -77,7 +75,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
     public int speedLevel;
     public int energyLevel;
     public int overLevel;
-    private final HashSet<BlockPos> processed = new HashSet<>();
+    private final HashSet<BlockPos> trace = new HashSet<>();
 
     public TileEntityOilDrillBase(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state, 8);
@@ -177,32 +175,28 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         BlockPos startPos = new BlockPos(worldPosition.getX(), y, worldPosition.getZ());
         if (!canSuckState(level.getBlockState(startPos))) return false;
         if (!this.canPump()) return true;
-        Queue<BlockPos> queue = new ArrayDeque<>();
-        processed.clear();
-        queue.offer(startPos);
-        processed.add(startPos);
+        trace.clear();
+        return suckRec(startPos, 0);
+    }
 
-        int nodesVisited = 0;
-        while (!queue.isEmpty() && nodesVisited < 256) {
-            BlockPos currentPos = queue.poll();
-            nodesVisited++;
-            BlockState currentState = level.getBlockState(currentPos);
-            Block currentBlock = currentState.getBlock();
-            // 1.7: a live deposit (ore_oil, or ore_bedrock_oil for the fracking tower) is sucked, a drained one searched
-            // through; both are hbm:fluid_deposit data (DepositDataMaps), by block state where an addon's one block
-            // carries several deposits (hbm:fluid_deposit_states)
-            DepositDataMaps.Deposit deposit = DepositDataMaps.deposit(currentState);
-            if (deposit != null && reaches(deposit)) {
-                doSuck(currentPos);
-                return true;
-            }
-            if (!DepositDataMaps.isEmptyDeposit(currentBlock)) continue;
+    /**
+     * 1.7 {@code suckRec}: a randomized depth-first walk through drained deposit, at most 64 steps deep. The trace is
+     * shared, so a cell first met deep is not searched again from a shorter path. Any live deposit ends the walk, even
+     * one this drill cannot pump (1.7's derrick idles on bedrock oil).
+     */
+    private boolean suckRec(BlockPos pos, int layer) {
+        if (!trace.add(pos)) return false;
+        if (layer > 64) return false;
+        if (!level.isLoaded(pos)) return false; // port: never load a chunk from a block entity tick
+        BlockState state = level.getBlockState(pos);
+        DepositDataMaps.Deposit deposit = DepositDataMaps.deposit(state);
+        if (deposit != null) {
+            doSuck(pos);
+            return true;
+        }
+        if (DepositDataMaps.isEmptyDeposit(state.getBlock())) {
             for (ForgeDirection dir : getShuffledDirs()) {
-                BlockPos neighborPos = currentPos.offset(dir.offsetX, dir.offsetY, dir.offsetZ);
-                if (!processed.contains(neighborPos) && canSuckState(level.getBlockState(neighborPos))) {
-                    processed.add(neighborPos);
-                    queue.offer(neighborPos);
-                }
+                if (suckRec(pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), layer + 1)) return true;
             }
         }
         return false;

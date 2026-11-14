@@ -75,7 +75,7 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
     public boolean acceptsFluid(FluidType type, ItemStack stack) {
         if (type == null || type == Fluids.NONE) return false;
         FluidType held = getType(stack);
-        return (held == Fluids.NONE || held == type) && getFill(stack) < capacity;
+        return (held == Fluids.NONE || held == Fluids.inTanks(type)) && getFill(stack) < capacity;
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
         if (!acceptsFluid(type, stack) || amount <= 0) return amount;
         int fill = getFill(stack);
         int added = Math.min(amount, capacity - fill);
-        setFluid(stack, type, fill + added);
+        setFluid(stack, Fluids.inTanks(type), fill + added);
         return amount - added;
     }
 

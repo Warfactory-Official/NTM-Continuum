@@ -12,6 +12,7 @@ import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.nbt.CompoundTag;
@@ -140,15 +141,16 @@ public final class ScreenRBMKConsole extends RBMKContainerScreen<MenuRBMKConsole
         else if (region(72, 70, 10, 10, mouseX, mouseY)) tooltip(graphics, List.of(Component.literal("Deselect all")), mouseX, mouseY);
         else if (region(70, 82, 12, 12, mouseX, mouseY)) tooltip(graphics, List.of(Component.literal("Cycle steam channel compressor setting")), mouseX, mouseY);
         String[] groups = {"red", "yellow", "green", "blue", "purple"};
-        for (int i = 0; i < groups.length; i++) if (region(6 + i * 11, 70, 10, 10, mouseX, mouseY)) tooltip(graphics, List.of(Component.literal("Left: select " + groups[i] + " group"), Component.literal("Right: assign " + groups[i] + " group")), mouseX, mouseY);
+        ChatFormatting[] colors = {ChatFormatting.RED, ChatFormatting.YELLOW, ChatFormatting.GREEN, ChatFormatting.BLUE, ChatFormatting.LIGHT_PURPLE};
+        for (int i = 0; i < groups.length; i++) if (region(6 + i * 11, 70, 10, 10, mouseX, mouseY)) tooltip(graphics, List.of(Component.literal("Left click: Select " + groups[i] + " group").withStyle(colors[i]), Component.literal("Right click: Assign " + groups[i] + " group").withStyle(colors[i])), mouseX, mouseY);
         if (console != null) for (int j = 0; j < 3; j++) for (int k = 0; k < 2; k++) {
             int slot = j * 2 + k, screen = slot + 1;
             if (region(6 + 40 * k, 8 + 21 * j, 18, 18, mouseX, mouseY)) {
-                tooltip(graphics, List.of(Component.literal("Monitor " + screen + ": " + console.screens[slot].type.name())), mouseX, mouseY);
+                tooltip(graphics, List.of(Component.translatable("rbmk.console." + console.screens[slot].type.name().toLowerCase(Locale.US), screen).withStyle(ChatFormatting.YELLOW)), mouseX, mouseY);
                 return;
             }
             if (region(24 + 40 * k, 8 + 21 * j, 18, 18, mouseX, mouseY)) {
-                tooltip(graphics, List.of(Component.literal("Assign selected columns to monitor " + screen)), mouseX, mouseY);
+                tooltip(graphics, List.of(Component.translatable("rbmk.console.assign", screen)), mouseX, mouseY);
                 return;
             }
         }
@@ -159,14 +161,34 @@ public final class ScreenRBMKConsole extends RBMKContainerScreen<MenuRBMKConsole
     @Override protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         BlockEntityRBMKConsole console = menu.blockEntity();
         int x = (int) event.x(), y = (int) event.y();
-        if (console != null && region(86, 11, 150, 150, x, y)) { int index = (x - leftPos - 86) / 10 + (y - topPos - 11) / 10 * 15; if (console.columns[index] != null) { selection[index] = !selection[index]; return true; } }
-        if (region(72, 70, 10, 10, x, y)) { Arrays.fill(selection, false); return true; }
-        if (console != null && region(61, 70, 10, 10, x, y)) { select(console, column -> column.type == RBMKColumnType.CONTROL); return true; }
-        if (console != null && region(70, 82, 12, 12, x, y)) { send("compressor", selected(console, RBMKColumnType.BOILER, false)); return true; }
-        if (console != null) for (int i = 0; i < 5; i++) if (region(6 + i * 11, 70, 10, 10, x, y)) { if (event.button() == 0) { int color = i; select(console, column -> column.type == RBMKColumnType.CONTROL && ((RBMKColumn.ControlColumn) column).color == color); } else if (event.button() == 1) { CompoundTag data = action("color"); data.putInt("color", i); data.putIntArray("cols", selected(console, RBMKColumnType.CONTROL, false)); send(data); } return true; }
-        if (region(30, 138, 28, 28, x, y)) { if (az5Lid) { az5Lid = false; playUi(ModSounds.RBMK_AZ5_COVER.get(), 0.5F); } else if (console != null && lastPress + 3000 < System.currentTimeMillis()) { playUi(ModSounds.RBMK_SHUTDOWN.get(), 1F); lastPress = System.currentTimeMillis(); send("level", selected(console, RBMKColumnType.CONTROL, true), 0); } return true; }
-        if (region(48, 82, 12, 12, x, y)) { try { int percent = (int) Mth.clamp(Double.parseDouble(field.getValue()), 0, 100); field.setValue(String.valueOf(percent)); send("level", selectedIndices(), percent * .01D); } catch (NumberFormatException ignored) { } return true; }
-        if (console != null) for (int j = 0; j < 3; j++) for (int k = 0; k < 2; k++) { int slot = j * 2 + k; if (region(6 + 40 * k, 8 + 21 * j, 18, 18, x, y)) { CompoundTag data = action("toggle"); data.putInt("slot", slot); send(data); return true; } if (region(24 + 40 * k, 8 + 21 * j, 18, 18, x, y)) { CompoundTag data = action("assign"); data.putInt("slot", slot); data.putIntArray("cols", selectedIndices()); send(data); return true; } }
+        if (console != null && region(86, 11, 150, 150, x, y)) {
+            int index = (x - leftPos - 86) / 10 + (y - topPos - 11) / 10 * 15;
+            if (console.columns[index] != null) { selection[index] = !selection[index]; GuiUtil.playClickSound(selection[index] ? 1F : 0.75F); return true; }
+        }
+        if (region(72, 70, 10, 10, x, y)) { Arrays.fill(selection, false); GuiUtil.playClickSound(0.5F); return true; }
+        if (console != null && region(61, 70, 10, 10, x, y)) { select(console, column -> column.type == RBMKColumnType.CONTROL); GuiUtil.playClickSound(1.5F); return true; }
+        if (console != null && region(70, 82, 12, 12, x, y)) { send("compressor", selected(console, RBMKColumnType.BOILER, false)); GuiUtil.playClickSound(); return true; }
+        if (console != null) for (int i = 0; i < 5; i++) if (region(6 + i * 11, 70, 10, 10, x, y)) {
+            if (event.button() == 0) { int color = i; select(console, column -> column.type == RBMKColumnType.CONTROL && ((RBMKColumn.ControlColumn) column).color == color); }
+            else if (event.button() == 1) { CompoundTag data = action("color"); data.putInt("color", i); data.putIntArray("cols", selected(console, RBMKColumnType.CONTROL, false)); send(data); }
+            GuiUtil.playClickSound(0.8F + i * 0.1F);
+            return true;
+        }
+        if (region(30, 138, 28, 28, x, y)) {
+            if (az5Lid) { az5Lid = false; playUi(ModSounds.RBMK_AZ5_COVER.get(), 0.5F); }
+            else if (console != null && lastPress + 3000 < System.currentTimeMillis()) { playUi(ModSounds.RBMK_SHUTDOWN.get(), 1F); lastPress = System.currentTimeMillis(); send("level", selected(console, RBMKColumnType.CONTROL, true), 0); GuiUtil.playClickSound(); }
+            return true;
+        }
+        if (region(48, 82, 12, 12, x, y)) {
+            try { int percent = (int) Mth.clamp(Double.parseDouble(field.getValue()), 0, 100); field.setValue(String.valueOf(percent)); send("level", selectedIndices(), percent * .01D); GuiUtil.playClickSound(); }
+            catch (NumberFormatException ignored) { } // 1.7 ignores a non-number setpoint silently
+            return true;
+        }
+        if (console != null) for (int j = 0; j < 3; j++) for (int k = 0; k < 2; k++) {
+            int slot = j * 2 + k;
+            if (region(6 + 40 * k, 8 + 21 * j, 18, 18, x, y)) { CompoundTag data = action("toggle"); data.putInt("slot", slot); send(data); GuiUtil.playClickSound(0.5F); return true; }
+            if (region(24 + 40 * k, 8 + 21 * j, 18, 18, x, y)) { CompoundTag data = action("assign"); data.putInt("slot", slot); data.putIntArray("cols", selectedIndices()); send(data); GuiUtil.playClickSound(0.75F); return true; }
+        }
         return false;
     }
 
