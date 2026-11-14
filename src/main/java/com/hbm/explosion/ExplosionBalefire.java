@@ -7,6 +7,7 @@ import dev.golem.core.data.Tags;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.ModDecoContent;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -228,15 +229,11 @@ public class ExplosionBalefire {
         return result;
     }
 
-    /**
-     * 1.7 {@code block_schrabidium_cluster}: this port has not registered the cluster blocks, so no column
-     * stops on one and no euphemium cluster is minted (entity port manifest).
-     */
     private static boolean isSchrabidiumCluster(BlockState state) {
-        return false;
+        return state.is(ModDecoContent.block_schrabidium_cluster.get());
     }
 
     private static BlockState euphemiumClusterOf(BlockState state) {
-        return state;
+        return copyPillarAxis(state, ModDecoContent.block_euphemium_cluster.get());
     }
 }

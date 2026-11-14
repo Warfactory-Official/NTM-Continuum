@@ -379,6 +379,7 @@ public final class HbmClientRegistrations {
 
     public static void registerHud(HudSink sink) {
         GunFactoryClient.init();
+        sink.register("mode_badges", BadgeOverlay::render);
         ArmorSetBClient.registerHud(sink);
         sink.register("look_overlay", HbmLookOverlay::render);
         sink.register("boss_status", BossStatus::render); // 1.7 BossStatus: render-pushed boss bar

@@ -72,6 +72,18 @@ public final class GeneralConfig {
     /** The legacy central 528-mode toggle; precision-assembler recipes remain disabled by default. */
     public static boolean enable528 = false;
 
+    /** 1.7 {@code trueExp}: expensive mode. 1.7 also required an unmodified precision assembler recipe file. */
+    public static boolean trueExp() {
+        return enableExpensiveMode;
+    }
+
+    /** 1.7 {@code true528}: 528 mode with none of its switches relaxed. */
+    public static boolean true528() {
+        return enable528 && enable528ReasimBoilers && !enable528ColtanSpawn && DungeonConfig.enable528BosniaSimulator
+                && enable528NetherBurn && enable528PressurizedRecipes && enable528ExplosiveEnergistics
+                && enable528MachineGravity && coltanRate <= 2;
+    }
+
     /**
      * The HE side of the HE:FE exchange ratio. With {@link #energyRatioFe} it says {@code energyRatioHe}
      * HE is worth exactly {@code energyRatioFe} FE, in both directions. The default is 1.7's own

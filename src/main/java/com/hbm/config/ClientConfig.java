@@ -49,6 +49,9 @@ public final class ClientConfig extends RunningConfig {
     /** 1.7 {@code NEI_HIDE_SECRETS}: leaves the secret guns, ammo and items out of the recipe viewers' lists. */
     public static boolean NEI_HIDE_SECRETS = true;
 
+    /** 1.7 {@code BADGES_HUD}: the 528/expensive/rampant mode badges at the top left of the HUD. */
+    public static boolean BADGES_HUD = true;
+
     public static final Map<String, ConfigWrapper<?>> configMap = new LinkedHashMap<>();
 
     private static final String FILE = "hbmClient.json";
@@ -90,7 +93,7 @@ public final class ClientConfig extends RunningConfig {
                 () -> AbilityToolClientRegistrations.toolHudIndicatorY,
                 v -> AbilityToolClientRegistrations.toolHudIndicatorY = v));
         configMap.put("SHOW_BLOCK_META_OVERLAY", new ConfigWrapper<>(false));
-        configMap.put("BADGES_HUD", new ConfigWrapper<>(true));
+        configMap.put("BADGES_HUD", ConfigWrapper.bound(() -> BADGES_HUD, v -> BADGES_HUD = v));
     }
 
     /** Initializes defaults, then reads the config file if it exists, then writes the config file. */

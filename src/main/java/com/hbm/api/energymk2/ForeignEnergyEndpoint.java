@@ -17,7 +17,8 @@ final class ForeignEnergyEndpoint implements IEnergyHandlerMK2 {
     static final boolean BIDIRECTIONAL_IS_RECEIVER_ONLY = true;
 
     /**
-     * Foreign receivers sit at LOWEST (diverging from the fluid net's NORMAL). Foreign providers get no tier. Debit is untiered, as in 1.7.
+     * Foreign receivers sit at LOWEST (diverging from the fluid net's NORMAL), except the part a buffer would pay itself,
+     * which goes at HIGHEST. Foreign providers get no tier. Debit is untiered, as in 1.7.
      */
     static final IEnergyHandlerMK2.ConnectionPriority FOREIGN_PRIORITY =
             IEnergyHandlerMK2.ConnectionPriority.LOWEST;
@@ -60,35 +61,48 @@ final class ForeignEnergyEndpoint implements IEnergyHandlerMK2 {
 
     /**
      * File foreign receiver demand into the priority tiers, applying reserve; lives here because it IS FOREIGN_PRIORITY's arithmetic.
+     * A buffer (a handler giving and taking in one round) would spend {@code bufferSelf} of its own supply on itself:
+     * foreign receivers may take that part first, as far as the supply still covers every other receiver.
      */
     static long fileForeignDemand(List<Distribution.Share<IEnergyHandlerMK2>> foreign,
                                   long powerAvailable, double reserve, long nativeDemand,
+                                  long bufferDemand, long bufferSelf,
                                   List<Distribution.Share<IEnergyHandlerMK2>>[] receivers,
                                   long[] demand) {
         long reserveBudget = reserve > 0 ? (long) (powerAvailable * Math.min(reserve, 1.0)) : 0;
         long surplusBudget = Math.max(0L, powerAvailable - nativeDemand);
         int lowest = FOREIGN_PRIORITY.ordinal();
         int normal = ConnectionPriority.NORMAL.ordinal();
+        long[] unfiled = new long[foreign.size()];
         long added = 0;
-        for (Distribution.Share<IEnergyHandlerMK2> share : foreign) {
+        for (int i = 0; i < unfiled.length; i++) {
+            Distribution.Share<IEnergyHandlerMK2> share = foreign.get(i);
             long atNormal = Math.min(share.amount(), reserveBudget);
             reserveBudget -= atNormal;
             long atLowest = Math.min(share.amount() - atNormal, surplusBudget);
             surplusBudget -= atLowest;
-            if (atNormal > 0) {
-                if (receivers[normal] == null) receivers[normal] = new ArrayList<>();
-                receivers[normal].add(new Distribution.Share<>(share.endpoint(), atNormal));
-                demand[normal] += atNormal;
-                added += atNormal;
-            }
-            if (atLowest > 0) {
-                if (receivers[lowest] == null) receivers[lowest] = new ArrayList<>();
-                receivers[lowest].add(new Distribution.Share<>(share.endpoint(), atLowest));
-                demand[lowest] += atLowest;
-                added += atLowest;
-            }
+            added += file(receivers, demand, normal, share.endpoint(), atNormal);
+            added += file(receivers, demand, lowest, share.endpoint(), atLowest);
+            unfiled[i] = share.amount() - atNormal - atLowest;
+        }
+        // served before any buffer's tier; the supply still covers every receiver that is not a buffer
+        long bufferBudget = Math.min(bufferSelf, Math.max(0L, powerAvailable - (nativeDemand - bufferDemand) - added));
+        int highest = ConnectionPriority.HIGHEST.ordinal();
+        for (int i = 0; i < unfiled.length && bufferBudget > 0; i++) {
+            long atHighest = Math.min(unfiled[i], bufferBudget);
+            bufferBudget -= atHighest;
+            added += file(receivers, demand, highest, foreign.get(i).endpoint(), atHighest);
         }
         return added;
+    }
+
+    private static long file(List<Distribution.Share<IEnergyHandlerMK2>>[] receivers, long[] demand, int tier,
+                             IEnergyHandlerMK2 endpoint, long amount) {
+        if (amount <= 0) return 0;
+        if (receivers[tier] == null) receivers[tier] = new ArrayList<>();
+        receivers[tier].add(new Distribution.Share<>(endpoint, amount));
+        demand[tier] += amount;
+        return amount;
     }
 
     /**

@@ -6,6 +6,7 @@ import com.hbm.tileentity.ModProductionBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.platform.Lifecycle;
 import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.Recipes;
 import net.minecraft.core.BlockPos;
@@ -22,7 +23,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Faithful port of old {@code TileEntityMachineFunnel}. Each input slot automatically crafts a full 3x3
@@ -37,6 +40,10 @@ public class TileEntityMachineFunnel extends TileEntityMachineBase
     public int mode;
     private static final int[] INPUT = {0, 1, 2, 3, 4, 5, 6, 7, 8};
     private static final int[] OUTPUT = {9, 10, 11, 12, 13, 14, 15, 16, 17};
+
+    // 1.7 from4Cache/from9Cache: one recipe search per ingredient, cleared when the recipes may change.
+    private static final Map<Key, ItemStack> FROM_4 = new HashMap<>();
+    private static final Map<Key, ItemStack> FROM_9 = new HashMap<>();
 
     public TileEntityMachineFunnel(BlockPos pos, BlockState state) {
         super(ModProductionBlockEntities.FUNNEL.get(), pos, state, 18);
@@ -70,16 +77,46 @@ public class TileEntityMachineFunnel extends TileEntityMachineBase
         te.networkPackNT();
     }
 
+    public static void init() {
+        Lifecycle.onDatapackReloaded(server -> clearCache());
+        Lifecycle.onServerStopping(server -> clearCache());
+    }
+
+    public static void clearCache() {
+        FROM_4.clear();
+        FROM_9.clear();
+    }
+
+    /** The cached 2x2 or 3x3 result for {@code ingredient}, or null before the first search for it. */
+    public static ItemStack cached(ItemStack ingredient, int size) {
+        return (size == 2 ? FROM_4 : FROM_9).get(new Key(ingredient.copyWithCount(1)));
+    }
+
     private ItemStack from4(Level level, ItemStack ingredient) {
-        List<ItemStack> grid = new ArrayList<>(4);
-        for (int i = 0; i < 4; i++) grid.add(ingredient.copy());
-        return Recipes.craftingResult(level, 2, 2, grid).orElse(ItemStack.EMPTY);
+        return compress(level, ingredient, 2, FROM_4);
     }
 
     private ItemStack from9(Level level, ItemStack ingredient) {
-        List<ItemStack> grid = new ArrayList<>(9);
-        for (int i = 0; i < 9; i++) grid.add(ingredient.copy());
-        return Recipes.craftingResult(level, 3, 3, grid).orElse(ItemStack.EMPTY);
+        return compress(level, ingredient, 3, FROM_9);
+    }
+
+    private static ItemStack compress(Level level, ItemStack ingredient, int size, Map<Key, ItemStack> cache) {
+        ItemStack singular = ingredient.copyWithCount(1);
+        ItemStack result = cache.computeIfAbsent(new Key(singular), key -> {
+            List<ItemStack> grid = new ArrayList<>(size * size);
+            for (int i = 0; i < size * size; i++) grid.add(singular.copy());
+            return Recipes.craftingResult(level, size, size, grid).orElse(ItemStack.EMPTY);
+        });
+        return result.copy();
+    }
+
+    /** 1.7's singular {@code ComparableStack}, with the item's components standing in for its damage value. */
+    private record Key(ItemStack stack) {
+        @Override public boolean equals(Object other) {
+            return other instanceof Key key && ItemStacks.sameItemAndData(stack, key.stack);
+        }
+
+        @Override public int hashCode() { return ItemStacks.hashItemAndData(stack); }
     }
 
     public void cycleMode() {

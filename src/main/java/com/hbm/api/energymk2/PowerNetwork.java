@@ -433,10 +433,19 @@ public final class PowerNetwork {
             }
         }
 
+        /** A buffer-mode battery's headroom is native demand, but the part its own supply covers may go out instead. */
         void fileForeignDemand() {
             if (foreignDemand == null) return;
+            long bufferDemand = 0L, bufferSelf = 0L;
+            for (Distribution.Share<IEnergyHandlerMK2> share : providers) {
+                IEnergyHandlerMK2 handler = share.endpoint();
+                if (!seenReceiving.contains(handler)) continue;
+                long headroom = Math.min(handler.getMaxPower() - handler.getPower(), handler.getReceiverSpeed());
+                bufferDemand += headroom;
+                bufferSelf += Math.min(share.amount(), headroom);
+            }
             totalDemand += ForeignEnergyEndpoint.fileForeignDemand(foreignDemand, powerAvailable,
-                    GeneralConfig.foreignExportReserve, nativeDemand, receivers, demand);
+                    GeneralConfig.foreignExportReserve, nativeDemand, bufferDemand, bufferSelf, receivers, demand);
         }
 
         long totalSupply() {

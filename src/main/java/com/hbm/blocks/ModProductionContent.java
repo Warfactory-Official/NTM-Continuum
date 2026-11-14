@@ -3,6 +3,7 @@ package com.hbm.blocks;
 import com.hbm.inventory.ModProductionMenus;
 import com.hbm.sound.ModProductionSounds;
 import com.hbm.tileentity.ModProductionBlockEntities;
+import com.hbm.tileentity.machine.TileEntityMachineFunnel;
 
 
 /**
@@ -17,5 +18,6 @@ public final class ModProductionContent {
         ModProductionBlockEntities.init();
         ModProductionMenus.init();
         ModProductionSounds.init();
+        TileEntityMachineFunnel.init();
     }
 }
