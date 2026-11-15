@@ -16,6 +16,10 @@ ServerEvents.recipes(event => {
     .duration(40)
     .power(100)
     .id('kubejs:chem_typed')
+  // the same table with optional fields passed positionally (name, outputItems, inputItems, outputFluids, inputFluids,
+  // duration, power): scripts written against the full signature keep working
+  event.recipes.hbm.chemical_plant('kjs.positional', ['minecraft:diamond'], ['minecraft:coal'], [], [], 40, 100)
+    .id('kubejs:chem_positional')
   // an output with item data (components from 1.20.5, NBT on 1.20.1) keeps it: GameTest script_fields_output_item_data
   const damaged = Item.of('minecraft:iron_pickaxe')
   damaged.setDamageValue(3)

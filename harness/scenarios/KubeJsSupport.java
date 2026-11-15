@@ -31,7 +31,8 @@ public class KubeJsSupport implements Scenario {
         expectIds(c, "hbm:press", List.of("kubejs:press_typed", "kubejs:press_raw"),
                 List.of("hbm:press/ball_resin", "hbm:press/biomass_compressed"), problems);
         expectIds(c, "hbm:shredder", List.of("kubejs:shredder_tag"), List.of(), problems);
-        expectIds(c, "hbm:chemical_plant", List.of("kubejs:chem_typed"), List.of(), problems);
+        expectIds(c, "hbm:chemical_plant", List.of("kubejs:chem_typed", "kubejs:chem_positional"), List.of(),
+                problems);
 
         // --- binding, startup material, events: through chat ---
         c.cmd("gamemode survival");

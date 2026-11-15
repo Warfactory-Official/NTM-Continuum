@@ -354,6 +354,8 @@ dependencies {
                 devModJar(mod) { isTransitive = false }
                 kubejsServerMod(mod) { isTransitive = false }
             }
+            // ProbeJS writes the script typings editors show (`/probejs dump`); client runs with -Pprobejs.run=true.
+            if (propOrNull("probejs.run") == "true") propOrNull("deps.kubejs_probejs")?.let { devModJar("maven.modrinth:probejs:$it") { isTransitive = false } }
         }
     }
 
