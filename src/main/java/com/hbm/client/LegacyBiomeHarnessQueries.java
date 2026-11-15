@@ -23,7 +23,9 @@ import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
@@ -46,6 +48,8 @@ import java.util.TreeMap;
  *       at chunk {@code x, z} of this world's terrain: its has_structure tag membership per spawn, the 1.7 predicate's
  *       answer ({@link LegacyBiomes#guess} for a non-table biome), and the structure's own start run with that biome
  *       (a {@link FixedBiomeSource}); per legacy dungeon kind the same with its climate rule.</li>
+ *   <li>{@code hbm_structure_set biome x0 z0 radius}: vanilla's weighted tries over the {@code ntm_structures} set at
+ *       every chunk of a grid, with that biome everywhere: the member each chunk gets and the wall time spent.</li>
  * </ul>
  */
 public final class LegacyBiomeHarnessQueries {
@@ -55,12 +59,17 @@ public final class LegacyBiomeHarnessQueries {
     public static void register() {
         HarnessQueryRegistry.register("hbm_legacy_biome", (mc, p) -> ask(mc, "hbm_legacy_biome", p));
         HarnessQueryRegistry.register("hbm_modded_biome", (mc, p) -> ask(mc, "hbm_modded_biome", p));
+        HarnessQueryRegistry.register("hbm_structure_set", (mc, p) -> ask(mc, "hbm_structure_set", p));
     }
 
     private static JsonObject ask(Minecraft mc, String kind, JsonObject params) {
         return ServerQueries.answer(mc, kind, params.deepCopy(), (level, p) -> {
             try {
-                return kind.equals("hbm_legacy_biome") ? calibrate(level, p) : modded(level, p);
+                return switch (kind) {
+                    case "hbm_legacy_biome" -> calibrate(level, p);
+                    case "hbm_structure_set" -> structureSet(level, p);
+                    default -> modded(level, p);
+                };
             } catch (RuntimeException e) {
                 JsonObject error = new JsonObject();
                 error.addProperty("error", String.valueOf(e));
@@ -143,6 +152,66 @@ public final class LegacyBiomeHarnessQueries {
         Optional<GenerationStub> probe(GenerationContext context) {
             return findGenerationPoint(context);
         }
+    }
+
+    /** {@code ChunkGenerator.createStructures} for a multi-member set: weighted tries until one member starts. */
+    private static JsonObject structureSet(ServerLevel level, JsonObject p) {
+        String[] name = p.get("biome").getAsString().split(":", 2);
+        Holder<Biome> biome = Biomes.holder(level.registryAccess(), Biomes.key(name[0], name[1]));
+        ChunkGenerator generator = level.getChunkSource().getGenerator();
+        RandomState random = level.getChunkSource().randomState();
+        FixedBiomeSource source = new FixedBiomeSource(biome);
+        List<NTMStructureDeclarations.Entry> members = NTMStructureDeclarations.entries();
+        List<ProbeStructure> probes = new ArrayList<>();
+        List<TagKey<Biome>> tags = new ArrayList<>();
+        for (NTMStructureDeclarations.Entry entry : members) {
+            probes.add(new ProbeStructure(entry.spawn()));
+            tags.add(hasStructure(entry.id()));
+        }
+        int x0 = i(p, "x0", 0) >> 4, z0 = i(p, "z0", 0) >> 4, radius = i(p, "radius", 4);
+        StringBuilder picks = new StringBuilder();
+        int starts = 0;
+        long begin = System.nanoTime();
+        for (int cx = x0 - radius; cx <= x0 + radius; cx++) {
+            for (int cz = z0 - radius; cz <= z0 + radius; cz++) {
+                ChunkPos chunk = new ChunkPos(cx, cz);
+                List<Integer> left = new ArrayList<>();
+                int total = 0;
+                for (int m = 0; m < members.size(); m++) {
+                    left.add(m);
+                    total += members.get(m).weight();
+                }
+                WorldgenRandom draw = new WorldgenRandom(new LegacyRandomSource(0L));
+                draw.setLargeFeatureSeed(level.getSeed(), cx, cz);
+                String pick = "-";
+                while (!left.isEmpty()) {
+                    int roll = draw.nextInt(total), k = 0;
+                    for (int m : left) {
+                        roll -= members.get(m).weight();
+                        if (roll < 0) break;
+                        k++;
+                    }
+                    int m = left.get(k);
+                    TagKey<Biome> tag = tags.get(m);
+                    Structure.GenerationContext context = new Structure.GenerationContext(level.registryAccess(), generator,
+                            source, random, level.getStructureManager(), level.getSeed(), chunk, level, h -> h.is(tag));
+                    if (probes.get(m).probe(context).isPresent() && biome.is(tag)) {
+                        pick = members.get(m).id();
+                        starts++;
+                        break;
+                    }
+                    left.remove(k);
+                    total -= members.get(m).weight();
+                }
+                picks.append(pick).append(' ');
+            }
+        }
+        JsonObject json = new JsonObject();
+        json.addProperty("ms", (System.nanoTime() - begin) / 1_000_000L);
+        json.addProperty("chunks", (2 * radius + 1) * (2 * radius + 1));
+        json.addProperty("starts", starts);
+        json.addProperty("picks", picks.toString().trim());
+        return json;
     }
 
     private static final class ProbeDungeon extends LegacyDungeonStructure {

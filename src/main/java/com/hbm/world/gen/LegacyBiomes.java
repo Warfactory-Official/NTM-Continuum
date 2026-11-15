@@ -16,11 +16,13 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
+import java.lang.ref.WeakReference;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * The generation-time half of {@link NTMStructureDeclarations}' 1.7 biome model: the 1.7 predicate of a spawn run on the
@@ -119,17 +121,87 @@ public final class LegacyBiomes {
         LegacyBiome row = NTMStructureDeclarations.legacy(id(biome));
         if (row != null) return predicate.test(row);
         if (!biome.is(OVERWORLD)) return false;
-        Terrain terrain = terrain(context.chunkGenerator(), context.heightAccessor(), context.randomState(),
-                context.chunkPos().getMinBlockX(), context.chunkPos().getMinBlockZ());
-        return predicate.test(guess(biome, terrain));
+        return predicate.test(guess(biome, terrain(context)));
     }
 
     /** 1.7 {@code heightVariation} of the biome at a start: the table's, or read off the terrain for a modded biome. */
     public static float heightVariation(Holder<Biome> biome, Structure.GenerationContext context) {
         LegacyBiome row = NTMStructureDeclarations.legacy(id(biome));
         if (row != null) return row.heightVariation();
-        return terrain(context.chunkGenerator(), context.heightAccessor(), context.randomState(),
-                context.chunkPos().getMinBlockX(), context.chunkPos().getMinBlockZ()).heightVariation();
+        return terrain(context).heightVariation();
+    }
+
+    /**
+     * What a structure search knows about its start chunk, kept for the last chunk each thread asked about. Vanilla tries
+     * the members of a structure set one after another on one chunk, and each reads the same surface, terrain and region
+     * pick. Weak references, so an idle worker thread keeps no finished world alive.
+     */
+    private static final class Site {
+        final WeakReference<ChunkGenerator> generator;
+        final WeakReference<RandomState> random;
+        final long seed;
+        final int minX, minZ, minY, height;
+        int surface = Integer.MIN_VALUE;
+        Terrain terrain;
+        WeakReference<Holder<Biome>> pickBiome;
+        String pick;
+
+        Site(Structure.GenerationContext context) {
+            generator = new WeakReference<>(context.chunkGenerator());
+            random = new WeakReference<>(context.randomState());
+            seed = context.seed();
+            minX = context.chunkPos().getMinBlockX();
+            minZ = context.chunkPos().getMinBlockZ();
+            minY = context.heightAccessor().getMinY();
+            height = context.heightAccessor().getHeight();
+        }
+
+        boolean matches(Structure.GenerationContext context) {
+            return minX == context.chunkPos().getMinBlockX() && minZ == context.chunkPos().getMinBlockZ() && seed == context.seed()
+                    && generator.get() == context.chunkGenerator() && random.get() == context.randomState()
+                    && minY == context.heightAccessor().getMinY() && height == context.heightAccessor().getHeight();
+        }
+    }
+
+    private static final ThreadLocal<Site> SITE = new ThreadLocal<>();
+
+    private static Site site(Structure.GenerationContext context) {
+        Site site = SITE.get();
+        if (site == null || !site.matches(context)) {
+            site = new Site(context);
+            SITE.set(site);
+        }
+        return site;
+    }
+
+    /** The first occupied height ({@code WORLD_SURFACE_WG}) of the start chunk's centre column. */
+    public static int surface(Structure.GenerationContext context) {
+        Site site = site(context);
+        if (site.surface == Integer.MIN_VALUE) {
+            site.surface = context.chunkGenerator().getFirstOccupiedHeight(context.chunkPos().getMiddleBlockX(),
+                    context.chunkPos().getMiddleBlockZ(), Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
+        }
+        return site.surface;
+    }
+
+    /** {@link #terrain(ChunkGenerator, LevelHeightAccessor, RandomState, int, int)} of the start chunk. */
+    public static Terrain terrain(Structure.GenerationContext context) {
+        Site site = site(context);
+        if (site.terrain == null) {
+            site.terrain = terrain(context.chunkGenerator(), context.heightAccessor(), context.randomState(),
+                    context.chunkPos().getMinBlockX(), context.chunkPos().getMinBlockZ());
+        }
+        return site.terrain;
+    }
+
+    /** The structure set's region pick at the start chunk for {@code biome}, computed once for all of the set's tries. */
+    public static String regionPick(Structure.GenerationContext context, Holder<Biome> biome, Supplier<String> pick) {
+        Site site = site(context);
+        if (site.pickBiome == null || site.pickBiome.get() != biome) {
+            site.pick = pick.get();
+            site.pickBiome = new WeakReference<>(biome);
+        }
+        return site.pick;
     }
 
     /** A legacy dungeon's 1.7 climate rule on the biome at its site: the table row for a vanilla biome, the biome's own values otherwise. */

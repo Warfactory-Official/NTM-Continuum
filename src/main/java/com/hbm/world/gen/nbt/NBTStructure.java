@@ -1397,7 +1397,7 @@ public class NBTStructure {
 
             int cx = context.chunkPos().getMiddleBlockX();
             int cz = context.chunkPos().getMiddleBlockZ();
-            int surface = context.chunkGenerator().getFirstOccupiedHeight(cx, cz, Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
+            int surface = LegacyBiomes.surface(context);
             BlockPos center = new BlockPos(cx, surface, cz);
 
             // 1.7 ran the spawn's biome predicate on this biome. The structure's tag only narrows the candidates (a
@@ -1440,6 +1440,11 @@ public class NBTStructure {
          */
         public static boolean wins(String spawn, Holder<Biome> biome,
                                    GenerationContext context) {
+            return spawn.equals(LegacyBiomes.regionPick(context, biome, () -> pick(biome, context)));
+        }
+
+        /** The spawn name the region's weighted draw picks, null when no spawn is a candidate. */
+        private static String pick(Holder<Biome> biome, GenerationContext context) {
             List<NTMStructureDeclarations.Entry> candidates = new ArrayList<>();
             int total = 0;
             for (NTMStructureDeclarations.Entry entry : NTMStructureDeclarations.entries()) {
@@ -1452,16 +1457,16 @@ public class NBTStructure {
                 candidates.add(entry);
                 total += weight;
             }
-            if (total <= 0) return false;
+            if (total <= 0) return null;
             WorldgenRandom random =
                     new WorldgenRandom(new LegacyRandomSource(0L));
             random.setLargeFeatureSeed(context.seed(), context.chunkPos().getMinBlockX() >> 4, context.chunkPos().getMinBlockZ() >> 4);
             int roll = random.nextInt(total);
             for (NTMStructureDeclarations.Entry entry : candidates) {
                 roll -= NTMStructureDeclarations.runtimeWeight(entry.id());
-                if (roll < 0) return entry.spawn().equals(spawn);
+                if (roll < 0) return entry.spawn();
             }
-            return false;
+            return null;
         }
 
         /**

@@ -16,12 +16,15 @@ import com.hbm.world.feature.ImpactAftermathFeature;
 import com.hbm.world.feature.LegacyPerlinNoise;
 import com.hbm.world.feature.OreLayer3DFeature;
 import com.hbm.world.feature.SchistStratumFeature;
+import com.hbm.world.gen.ConfigInt;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.world.Biomes;
 import dev.golem.core.world.Spawns;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -34,6 +37,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
+import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTest;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -50,6 +55,8 @@ public final class WorldgenImpactGameTests {
             "fix6_schist_band_17", 20, () -> WorldgenImpactGameTests::schist);
     public static final GameTests.Function ORE_LAYER = TESTS.function(
             "fix6_ore_layer_noise_17", 20, () -> WorldgenImpactGameTests::oreLayer);
+    public static final GameTests.Function ORE_LAYER_PLACED = TESTS.function(
+            "gh208_ore_layer_places_17_cells", 20, () -> WorldgenImpactGameTests::oreLayerPlaced);
     public static final GameTests.Function HOSTS = TESTS.function(
             "fix6_depth_hosts_and_terrain_17", 20, () -> WorldgenImpactGameTests::hosts);
     public static final GameTests.Function AMBIENT = TESTS.function(
@@ -98,6 +105,47 @@ public final class WorldgenImpactGameTests {
         double got = OreLayer3DFeature.cellProduct17(seed, 0, cx, cz, xOff, zOff, y);
         helper.assertTrue(near(got, bug), "the cell product must use 1.7's cacheX for nz: " + got + " vs " + bug);
         helper.assertTrue(!near(got, intended), "and must not be the intended noiseZ product " + intended);
+        helper.succeed();
+    }
+
+    /** The placed layer against {@link OreLayer3DFeature#cellProduct17} per cell, at the band's median threshold. */
+    private static void oreLayerPlaced(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos base = helper.absolutePos(new BlockPos(0, 24, 0));
+        int cx = base.getX() - 8, cz = base.getZ() - 8, minY = base.getY(), maxY = base.getY() + 7;
+        BlockState stone = Blocks.STONE.defaultBlockState();
+        BlockState ore = Blocks.IRON_ORE.defaultBlockState();
+        double[] products = new double[16 * 16 * 8];
+        int n = 0;
+        for (int x = 0; x < 16; x++) for (int z = 0; z < 16; z++) for (int y = minY; y <= maxY; y++)
+            products[n++] = OreLayer3DFeature.cellProduct17(level.getSeed(), 0, cx, cz, x, z, y);
+        Arrays.sort(products);
+        double threshold = products[products.length / 2];
+        OreLayer3DFeature.Layer layer = new OreLayer3DFeature.Layer(ore, 0.04D, 0.25D, threshold, 0, ConfigInt.of(1));
+        OreLayer3DFeature.Config config = new OreLayer3DFeature.Config(List.of(layer), new BlockMatchTest(Blocks.STONE), minY, maxY);
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int x = 0; x < 16; x++) for (int z = 0; z < 16; z++) for (int y = minY; y <= maxY; y++)
+            level.setBlock(pos.set(base.getX() + x, y, base.getZ() + z), stone, 2 | 16);
+        new OreLayer3DFeature(OreLayer3DFeature.Config.CODEC).place(new FeaturePlaceContext<>(Optional.empty(), level,
+                level.getChunkSource().getGenerator(), RandomSource.create(0L), new BlockPos(cx, minY, cz), config));
+        int hits = 0, misses = 0;
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = minY; y <= maxY; y++) {
+                    boolean expected = OreLayer3DFeature.cellProduct17(level.getSeed(), 0, cx, cz, x, z, y) > threshold;
+                    boolean placed = level.getBlockState(pos.set(base.getX() + x, y, base.getZ() + z)).is(Blocks.IRON_ORE);
+                    if (expected != placed) {
+                        helper.fail("cell " + x + "," + y + "," + z + ": 1.7 says " + expected + ", placed " + placed);
+                        return;
+                    }
+                    if (expected) hits++;
+                    else misses++;
+                }
+            }
+        }
+        for (int x = 0; x < 16; x++) for (int z = 0; z < 16; z++) for (int y = minY; y <= maxY; y++)
+            level.setBlock(pos.set(base.getX() + x, y, base.getZ() + z), Blocks.AIR.defaultBlockState(), 2 | 16);
+        helper.assertTrue(hits > 0 && misses > 0, "both outcomes occur: " + hits + " ore, " + misses + " stone");
         helper.succeed();
     }
 
