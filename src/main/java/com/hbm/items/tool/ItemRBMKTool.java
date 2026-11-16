@@ -5,25 +5,35 @@ import com.hbm.blocks.machine.rbmk.RBMKConsole;
 import com.hbm.blocks.machine.rbmk.RBMKCraneConsole;
 import com.hbm.blocks.machine.rbmk.RBMKDisplay;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.inventory.gui.GuiUtil;
 import com.hbm.items.ModDataComponents;
 import com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKConsole;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKDisplay;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 /** RBMK linker (mallet): links a reactor core to a console or crane console. */
-public class ItemRBMKTool extends Item {
+public class ItemRBMKTool extends CompatItem {
     public ItemRBMKTool(Properties properties) { super(properties); }
+
+    @Override
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         List<Component> tooltip, TooltipFlag flag) {
+        for (Component line : GuiUtil.keyArray("item.rbmk_tool.desc")) tooltip.add(line.copy().withStyle(ChatFormatting.YELLOW));
+    }
 
     private static void message(Player player, String key) {
         if (player != null) player.sendSystemMessage(Component.translatable(key).withStyle(ChatFormatting.YELLOW));

@@ -7,7 +7,7 @@ import dev.golem.core.net.GolemPayload;
 import net.minecraft.resources.Identifier;
 
 /**
- * S2C, on a player's first join of a world: the client says in chat that GemRender is missing, if it is. Only the
+ * S2C, on every join of a world: the client says in chat that GemRender is missing, if it is. Only the
  * client knows its own mods, so the server cannot decide this itself.
  */
 public record GemRenderNoticePayload() implements GolemPayload {

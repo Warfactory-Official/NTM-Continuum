@@ -5,6 +5,7 @@ import com.hbm.items.special.ItemCustomLore;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
+import java.util.Locale;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -66,18 +67,19 @@ public class ItemMissileStandard extends ItemCustomLore {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal(this.tier.display).withStyle(ChatFormatting.ITALIC));
+        tooltip.add(Component.translatable(this.tier.key).withStyle(ChatFormatting.ITALIC));
 
         if (!this.launchable) {
-            tooltip.add(Component.literal("Not launchable!").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.translatable("item.missile.desc.notLaunchable").withStyle(ChatFormatting.RED));
         } else if (!TileEntityLaunchPadBase.canBeInstantiated(this)) {
             // port: a missile whose warhead needs an unported subsystem has no flying entity, so a launch pad
             // refuses it at the slot. Without this line the refusal is silent and reads as a bug.
             tooltip.add(Component.translatable("desc.missile.unimplemented").withStyle(ChatFormatting.RED));
         } else {
-            tooltip.add(Component.literal("Fuel: ").append(Component.literal(this.fuel.display).withStyle(this.fuel.colour)));
+            tooltip.add(Component.translatable("item.missile.desc.fuel").append(": ")
+                    .append(Component.translatable(this.fuel.key).withStyle(this.fuel.colour)));
             if (this.fuelCap > 0) {
-                tooltip.add(Component.literal("Fuel capacity: " + this.fuelCap + "mB"));
+                tooltip.add(Component.translatable("item.missile.desc.fuelCapacity").append(": " + this.fuelCap + "mB"));
             }
             super.appendCompatHoverText(stack, context, tooltip, flag);
         }
@@ -103,17 +105,9 @@ public class ItemMissileStandard extends ItemCustomLore {
 
     /** Radar class. Also what the missile entity reports as its blip level and name. */
     public enum MissileTier {
-        TIER0("Tier 0"),
-        TIER1("Tier 1"),
-        TIER2("Tier 2"),
-        TIER3("Tier 3"),
-        TIER4("Tier 4");
+        TIER0, TIER1, TIER2, TIER3, TIER4;
 
-        public final String display;
-
-        MissileTier(String display) {
-            this.display = display;
-        }
+        public final String key = "item.missile.tier." + name().toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -121,18 +115,18 @@ public class ItemMissileStandard extends ItemCustomLore {
      * capacity 0, so the pad's tanks are irrelevant and only its power matters.
      */
     public enum MissileFuel {
-        SOLID("Solid Fuel (pre-fueled)", ChatFormatting.GOLD, 0),
-        ETHANOL_PEROXIDE("Ethanol / Hydrogen Peroxide", ChatFormatting.AQUA, 4_000),
-        KEROSENE_PEROXIDE("Kerosene / Hydrogen Peroxide", ChatFormatting.BLUE, 8_000),
-        KEROSENE_LOXY("Kerosene / Liquid Oxygen", ChatFormatting.LIGHT_PURPLE, 12_000),
-        JETFUEL_LOXY("Jet Fuel / Liquid Oxygen", ChatFormatting.RED, 16_000);
+        SOLID("item.missile.fuel.solid.prefueled", ChatFormatting.GOLD, 0),
+        ETHANOL_PEROXIDE("item.missile.fuel.ethanol_peroxide", ChatFormatting.AQUA, 4_000),
+        KEROSENE_PEROXIDE("item.missile.fuel.kerosene_peroxide", ChatFormatting.BLUE, 8_000),
+        KEROSENE_LOXY("item.missile.fuel.kerosene_loxy", ChatFormatting.LIGHT_PURPLE, 12_000),
+        JETFUEL_LOXY("item.missile.fuel.jetfuel_loxy", ChatFormatting.RED, 16_000);
 
-        public final String display;
+        public final String key;
         public final ChatFormatting colour;
         public final int defaultCap;
 
-        MissileFuel(String display, ChatFormatting colour, int defaultCap) {
-            this.display = display;
+        MissileFuel(String key, ChatFormatting colour, int defaultCap) {
+            this.key = key;
             this.colour = colour;
             this.defaultCap = defaultCap;
         }

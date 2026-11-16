@@ -98,7 +98,7 @@ public final class HbmPackets {
             for (ServerPlayer player : players) GolemNetwork.sendToPlayer(player, RecipeSwitchesPayload.CODEC, switches);
         });
         Lifecycle.onPlayerJoin((player, firstTime) -> {
-            if (firstTime) GolemNetwork.sendToPlayer(player, GemRenderNoticePayload.CODEC, new GemRenderNoticePayload());
+            GolemNetwork.sendToPlayer(player, GemRenderNoticePayload.CODEC, new GemRenderNoticePayload());
             GolemNetwork.sendToPlayer(player, MachineConfigPayload.CODEC, new MachineConfigPayload(MachineDynConfig.values()));
             DuckPayload.onJoin(player);
         });

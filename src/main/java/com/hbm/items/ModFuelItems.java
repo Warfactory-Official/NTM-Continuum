@@ -7,6 +7,7 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.food.ItemLemon;
 import com.hbm.items.special.FuelAdditiveItem;
+import com.hbm.items.special.ItemCustomLore;
 import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -64,6 +65,13 @@ public final class ModFuelItems {
         return ro;
     }
 
+    /** A fuel item that also shows 1.7 {@code ItemCustomLore} desc lines. */
+    private static Reg.Handle<ItemCustomLore> fuelLore(String name) {
+        Reg.Handle<ItemCustomLore> ro = REG.item(name, (Item.Properties p) -> new ItemCustomLore(p));
+        ModTabs.addTo(HbmTab.MATERIALS, ro);
+        return ro;
+    }
+
     public static final RegistryObject<Item> ingot_graphite = plain("ingot_graphite")
             .transform(Presets.sprite());
     public static final RegistryObject<Item> powder_lignite = fuel("powder_lignite")
@@ -72,7 +80,7 @@ public final class ModFuelItems {
             .transform(Presets.sprite());
     public static final RegistryObject<Item> powder_coal_tiny = plain("powder_coal_tiny")
             .transform(Presets.sprite());
-    public static final RegistryObject<Item> powder_fire = fuel("powder_fire")
+    public static final RegistryObject<ItemCustomLore> powder_fire = fuelLore("powder_fire")
             .transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_c4 = plain("ingot_c4")
             .transform(Presets.sprite());

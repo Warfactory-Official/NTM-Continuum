@@ -24,7 +24,7 @@ public final class ModMedicineItems {
     private static final Reg REG = Reg.of(ITEMS);
 
     private static Reg.Handle<ItemPill> pill(String id, HbmTab tab) {
-        Reg.Handle<ItemPill> item = REG.item(id, p -> new ItemPill(p, id),
+        Reg.Handle<ItemPill> item = REG.item(id, ItemPill::new,
                 p -> CompatConsumables.foodAlwaysEdible(p, 0, 0F, List.of()));
         if (tab != null) ModTabs.addTo(tab, item);
         return item;

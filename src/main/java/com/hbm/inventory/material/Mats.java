@@ -9,6 +9,7 @@ import com.hbm.items.ItemEnums.EnumChunkType;
 import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.machine.ModStampItems;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -644,12 +645,16 @@ public final class Mats {
         amount -= nuggets * NUGGET.quantity;
         int quanta = amount;
 
-        if (blocks > 0) format.append(blocks).append(blocks == 1 ? " block " : " blocks ");
-        if (ingots > 0) format.append(ingots).append(ingots == 1 ? " ingot " : " ingots ");
-        if (nuggets > 0) format.append(nuggets).append(nuggets == 1 ? " nugget " : " nuggets ");
-        if (quanta > 0) format.append(quanta).append(quanta == 1 ? " quantum " : " quanta ");
+        if (blocks > 0) format.append(shape(blocks, "matshape.block", "matshape.blocks"));
+        if (ingots > 0) format.append(shape(ingots, "matshape.ingot", "matshape.ingots"));
+        if (nuggets > 0) format.append(shape(nuggets, "matshape.nugget", "matshape.nuggets"));
+        if (quanta > 0) format.append(shape(quanta, "matshape.quantum", "matshape.quanta"));
 
         return format.toString().trim();
+    }
+
+    private static String shape(int count, String one, String many) {
+        return Component.translatable(count == 1 ? one : many, count).getString() + " ";
     }
 
     public static void init() {}

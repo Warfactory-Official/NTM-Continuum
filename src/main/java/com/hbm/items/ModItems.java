@@ -96,7 +96,7 @@ public final class ModItems {
     public static final RegistryObject<Item> ingot_aluminium = item("ingot_aluminium", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_beryllium = item("ingot_beryllium", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_lead = item("ingot_lead", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<Item> ingot_asbestos = item("ingot_asbestos", HbmTab.MATERIALS).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> ingot_asbestos = lore("ingot_asbestos", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_magnetized_tungsten = item("ingot_magnetized_tungsten", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_technetium = item("ingot_technetium", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> ingot_tcalloy = item("ingot_tcalloy", HbmTab.MATERIALS).transform(Presets.sprite());
@@ -174,7 +174,7 @@ public final class ModItems {
     public static final RegistryObject<Item> powder_semtex_mix = item("powder_semtex_mix", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> powder_desh = item("powder_desh", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> powder_zirconium = item("powder_zirconium", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<Item> powder_asbestos = item("powder_asbestos", HbmTab.MATERIALS).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> powder_asbestos = lore("powder_asbestos", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> powder_cadmium = item("powder_cadmium", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> powder_bismuth = item("powder_bismuth", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> powder_caesium = item("powder_caesium", HbmTab.MATERIALS, p -> p.rarity(Rarity.EPIC)).transform(Presets.sprite());
@@ -189,7 +189,7 @@ public final class ModItems {
     public static final RegistryObject<Item> powder_flux = item("powder_flux", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> powder_sawdust = item("powder_sawdust", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> powder_coltan = item("powder_coltan", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<Item> powder_poison = item("powder_poison", HbmTab.MATERIALS).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> powder_poison = lore("powder_poison", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> sulfur = item("sulfur", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> nitra = item("nitra", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> nitra_small = item("nitra_small", HbmTab.MATERIALS).transform(Presets.sprite());
@@ -199,7 +199,7 @@ public final class ModItems {
     public static final RegistryObject<Item> scrap = item("scrap", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> scrap_oil = item("scrap_oil", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> scrap_nuclear = item("scrap_nuclear", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<Item> dust = item("dust", HbmTab.MATERIALS).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> dust = lore("dust", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> dust_tiny = item("dust_tiny", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> falloutitem = item("falloutitem", HbmTab.MATERIALS).transform(Presets.sprite("hbm:items/fallout"));
     public static final RegistryObject<Item> rod_empty = item("rod_empty", HbmTab.CONTROL).transform(Presets.sprite());
@@ -293,7 +293,7 @@ public final class ModItems {
     public static final RegistryObject<Item> plate_kevlar = item("plate_kevlar", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> plate_polymer = item("plate_polymer", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> plate_desh = item("plate_desh", HbmTab.MATERIALS).transform(Presets.sprite());
-    public static final RegistryObject<Item> plate_bismuth = item("plate_bismuth", HbmTab.MATERIALS).transform(Presets.sprite());
+    public static final RegistryObject<ItemCustomLore> plate_bismuth = lore("plate_bismuth", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> plate_dineutronium = item("plate_dineutronium", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> plate_armor_titanium = item("plate_armor_titanium", HbmTab.MATERIALS).transform(Presets.sprite());
     public static final RegistryObject<Item> plate_armor_ajr = item("plate_armor_ajr", HbmTab.MATERIALS).transform(Presets.sprite());

@@ -1,6 +1,7 @@
 package com.hbm.items.food;
 
 import java.util.List;
+import com.hbm.inventory.gui.GuiUtil;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.hook.Hook;
 import java.util.function.Consumer;
@@ -32,37 +33,11 @@ public class ItemLemon extends CompatItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        switch (id) {
-            case "lemon" -> tooltip.add(Component.literal("Eh, good enough."));
-            case "med_ipecac", "med_ptsd" -> {
-                Language language = Language.getInstance();
-                String base = getDescriptionId() + ".desc.";
-                for (int i = 0; language.has(base + i); i++) tooltip.add(Component.translatable(base + i));
-            }
-            case "med_schizophrenia" -> {
-                tooltip.add(Component.literal("Makes the voices go away. Just for a while."));
-                tooltip.add(Component.empty());
-                tooltip.add(Component.literal("..."));
-                tooltip.add(Component.literal("Better not take it."));
-            }
-            case "loops" -> tooltip.add(Component.literal("Br\u00f8ther, may I have some l\u00f6\u00f6ps?"));
-            case "loop_stew" -> tooltip.add(Component.literal("A very, very healthy breakfast."));
-            case "twinkie" -> tooltip.add(Component.literal("Expired 600 years ago!"));
-            case "pudding" -> {
-                tooltip.add(Component.literal("What if he did?"));
-                tooltip.add(Component.literal("What if he didn't?"));
-                tooltip.add(Component.literal("What if the world was made of pudding?"));
-            }
-            case "ingot_semtex" -> {
-                tooltip.add(Component.literal("Semtex H Plastic Explosive"));
-                tooltip.add(Component.literal("Performant explosive for many applications."));
-                tooltip.add(Component.literal("Edible"));
-            }
-            case "marshmallow" -> tooltip.add(Component.literal("Gets grilled in the heat of burning nuclear failure"));
-            case "marshmallow_roasted" -> tooltip.add(Component.literal("Hmmm... tastes a bit metallic"));
-            default -> {
-            }
-        }
+        // 1.7 resolveKeyArray: one key split on $; ipecac and PTSD keep their numbered lines
+        Language language = Language.getInstance();
+        String key = getDescriptionId() + ".desc";
+        if (language.has(key)) tooltip.addAll(GuiUtil.keyArray(key));
+        for (int i = 0; language.has(key + "." + i); i++) tooltip.add(Component.translatable(key + "." + i));
     }
 
     /** 1.7 ItemFood: the eat animation, sound and crumbs. */
