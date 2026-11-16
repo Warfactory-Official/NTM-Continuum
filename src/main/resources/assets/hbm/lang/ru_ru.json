@@ -7183,5 +7183,7 @@
   "entity.hbm.entity_missile_ab": "Антибаллистическая ракета",
   "entity.hbm.entity_sawblade": "Лезвие пилорамы",
   "entity.hbm.entity_effect_torex": "Ядерный гриб",
-  "entity.hbm.entity_fallout_rain": "Радиоактивные осадки"
+  "entity.hbm.entity_fallout_rain": "Радиоактивные осадки",
+  "desc.item.rtgHeat": "Уровень энергии: %s",
+  "desc.item.rtgDecay": "Распадается на: %s x%s"
 }

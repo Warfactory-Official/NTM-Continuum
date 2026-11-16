@@ -6857,5 +6857,7 @@
   "entity.hbm.entity_missile_ab": "Missile anti-balistique",
   "entity.hbm.entity_sawblade": "Lame de scie",
   "entity.hbm.entity_effect_torex": "Champignon nucléaire",
-  "entity.hbm.entity_fallout_rain": "Retombées radioactives"
+  "entity.hbm.entity_fallout_rain": "Retombées radioactives",
+  "desc.item.rtgHeat": "Niveau de puissance : %s",
+  "desc.item.rtgDecay": "Se désintègre en : %s"
 }

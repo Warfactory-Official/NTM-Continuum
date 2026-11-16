@@ -7023,5 +7023,7 @@
   "entity.hbm.entity_missile_ab": "Rakieta Antybalistyczna",
   "entity.hbm.entity_sawblade": "Ostrze Piły",
   "entity.hbm.entity_effect_torex": "Grzyb Atomowy",
-  "entity.hbm.entity_fallout_rain": "Opad"
+  "entity.hbm.entity_fallout_rain": "Opad",
+  "desc.item.rtgHeat": "Poziom mocy: %s",
+  "desc.item.rtgDecay": "Rozkłada się na: %s"
 }

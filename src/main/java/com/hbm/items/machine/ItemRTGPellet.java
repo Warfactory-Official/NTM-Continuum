@@ -49,19 +49,17 @@ public final class ItemRTGPellet extends CompatItem {
     private final short heat;
     private final long lifespan;
     private final Supplier<? extends ItemRTGPelletDepleted> decayItem;
-    private final String displayName;
 
     /**
      * 1.7 {@code new ItemRTGPellet(heat).setDecays(material, life)}: {@code lifespan} is 1.7's {@code life}, the pellet's
      * whole life in ticks ({@code (long) (RTGUtil.getLifespan(halfLife, type, false) * 1.5)} for most pellets).
      */
     public ItemRTGPellet(Properties properties, int heat, long lifespan,
-                         Supplier<? extends ItemRTGPelletDepleted> decayItem, String displayName) {
+                         Supplier<? extends ItemRTGPelletDepleted> decayItem) {
         super(properties);
         this.heat = (short) heat;
         this.lifespan = lifespan;
         this.decayItem = decayItem;
-        this.displayName = displayName;
     }
 
     /** This pellet's {@code hbm:rtg_pellet} entry, or null when it has none (then its constructor values apply). */
@@ -115,11 +113,6 @@ public final class ItemRTGPellet extends CompatItem {
     }
 
     @Override
-    public Component getName(ItemStack stack) {
-        return Component.literal(displayName);
-    }
-
-    @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         if (!level.isClientSide()) {
             player.sendSystemMessage(Component.literal(FACTS[level.getRandom().nextInt(FACTS.length)])
@@ -145,9 +138,9 @@ public final class ItemRTGPellet extends CompatItem {
                                           List<Component> tooltip, TooltipFlag flag) {
         String desc = getDescriptionId() + ".desc";
         tooltip.add(Component.translatable(desc));
-        tooltip.add(Component.literal("Power Level: "
-                + (MachineConfig.scaleRTGPowerActive() ? getScaledPower(this, stack) : getHeat())));
-        tooltip.add(Component.literal("Decays to: ").append(new ItemStack(getDecayItem()).getHoverName()));
+        tooltip.add(Component.translatable("desc.item.rtgHeat",
+                MachineConfig.scaleRTGPowerActive() ? getScaledPower(this, stack) : getHeat()));
+        tooltip.add(Component.translatable("desc.item.rtgDecay", new ItemStack(getDecayItem()).getHoverName(), 1));
         // 1.7 BobMathUtil.toPercentage(life, maxLife): float division, the default locale's percent format
         tooltip.add(Component.literal(NumberFormat.getPercentInstance()
                 .format((float) getLifespan(stack) / (float) getMaxLifespan())));

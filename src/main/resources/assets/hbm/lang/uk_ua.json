@@ -7161,5 +7161,7 @@
   "entity.hbm.entity_missile_ab": "Протибалістична ракета",
   "entity.hbm.entity_sawblade": "Лезо пилорами",
   "entity.hbm.entity_effect_torex": "Ядерна грибоподібна хмара",
-  "entity.hbm.entity_fallout_rain": "Радіоактивні опади"
+  "entity.hbm.entity_fallout_rain": "Радіоактивні опади",
+  "desc.item.rtgHeat": "Рівень потужності: %s",
+  "desc.item.rtgDecay": "Розпадається на: %s"
 }

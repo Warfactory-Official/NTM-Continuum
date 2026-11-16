@@ -47,28 +47,28 @@ public final class ModRtgContent {
     // 1.7 ModItems: new ItemRTGPellet(heat).setDecays(material, (long) (RTGUtil.getLifespan(halfLife, type, false) * 1.5)),
     // RTGUtil.getLifespan in float: LONG = 48000 * 100 * 100 * halfLife, MEDIUM = 48000 * 100 * halfLife, SHORT = 48000 * halfLife
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_RADIUM = pellet("pellet_rtg_radium", 3,
-            11_520_000_000L, DepletedRTGMaterial.LEAD, "Radium-226 RTG Pellet");          // 16 LONG
+            11_520_000_000L, DepletedRTGMaterial.LEAD);          // 16 LONG
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_WEAK = pellet("pellet_rtg_weak", 5,
-            720_000_000L, DepletedRTGMaterial.LEAD, "Weak Uranium RTG Pellet");           // 1 LONG
+            720_000_000L, DepletedRTGMaterial.LEAD);           // 1 LONG
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG = pellet("pellet_rtg", 10,
-            631_440_000L, DepletedRTGMaterial.LEAD, "Plutonium-238 RTG Pellet");          // 87.7 MEDIUM
+            631_440_000L, DepletedRTGMaterial.LEAD);          // 87.7 MEDIUM
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_STRONTIUM = pellet("pellet_rtg_strontium", 15,
-            208_800_000L, DepletedRTGMaterial.ZIRCONIUM, "Strontium-90 RTG Pellet");      // 29 MEDIUM
+            208_800_000L, DepletedRTGMaterial.ZIRCONIUM);      // 29 MEDIUM
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_COBALT = pellet("pellet_rtg_cobalt", 15,
-            38_160_000L, DepletedRTGMaterial.NICKEL, "Cobalt-60 RTG Pellet");             // 5.3 MEDIUM
+            38_160_000L, DepletedRTGMaterial.NICKEL);             // 5.3 MEDIUM
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_ACTINIUM = pellet("pellet_rtg_actinium", 20,
-            156_960_000L, DepletedRTGMaterial.LEAD, "Actinium-227 RTG Pellet");           // 21.8 MEDIUM
+            156_960_000L, DepletedRTGMaterial.LEAD);           // 21.8 MEDIUM
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_AMERICIUM = pellet("pellet_rtg_americium", 20,
-            3_384_000_000L, DepletedRTGMaterial.NEPTUNIUM, "Americium-241 RTG Pellet");   // 4.7 LONG
+            3_384_000_000L, DepletedRTGMaterial.NEPTUNIUM);   // 4.7 LONG
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_POLONIUM = pellet("pellet_rtg_polonium", 50,
-            9_936_000L, DepletedRTGMaterial.LEAD, "Polonium-210 RTG Pellet");             // 138 SHORT
+            9_936_000L, DepletedRTGMaterial.LEAD);             // 138 SHORT
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_GOLD = pellet("pellet_rtg_gold", MachineConfig.rtgDecay() ? 200 : 100,
-            194_400L, DepletedRTGMaterial.MERCURY, "Gold-198 RTG Pellet");                // 2.7 SHORT
+            194_400L, DepletedRTGMaterial.MERCURY);                // 2.7 SHORT
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_LEAD = pellet("pellet_rtg_lead", MachineConfig.rtgDecay() ? 600 : 200,
-            21_600L, DepletedRTGMaterial.BISMUTH, "Lead-209 RTG Pellet");                 // 0.3 SHORT
+            21_600L, DepletedRTGMaterial.BISMUTH);                 // 0.3 SHORT
     // port-only (1.12.2's pellet, not in 1.7): 6,000 heat over 1.12.2's 12 half-lives of 1,000 ticks, decaying linearly here
     public static final RegistryObject<ItemRTGPellet> PELLET_RTG_BALEFIRE = pellet("pellet_rtg_balefire", 6_000,
-            12_000L, DepletedRTGMaterial.NEPTUNIUM, "Balefire-XXX RTG Pellet");
+            12_000L, DepletedRTGMaterial.NEPTUNIUM);
 
 
     private static RegistryObject<ItemRTGPelletDepleted> depleted(DepletedRTGMaterial material) {
@@ -83,9 +83,9 @@ public final class ModRtgContent {
     }
 
     private static RegistryObject<ItemRTGPellet> pellet(String id, int heat, long lifespan,
-                                                         DepletedRTGMaterial decay, String displayName) {
+                                                         DepletedRTGMaterial decay) {
         RegistryObject<ItemRTGPellet> result = REG.item(id,
-                        p -> new ItemRTGPellet(p, heat, lifespan, () -> DEPLETED.get(decay).get(), displayName),
+                        p -> new ItemRTGPellet(p, heat, lifespan, () -> DEPLETED.get(decay).get()),
                         p -> p.stacksTo(1))
                 .transform(Presets.sprite())
                 .tab(HbmTab.CONTROL);

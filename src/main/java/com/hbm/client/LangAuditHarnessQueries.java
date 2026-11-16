@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.Block;
 /**
  * Harness query {@code hbm_lang_audit}: translation keys that would show raw. {@code mode=stacks, from, to} checks the
  * hover name and every tooltip line of each icon-audit stack; {@code mode=registries} checks block, entity, effect and
- * fluid keys.
+ * fluid keys. {@code namespace} picks the mod (default hbm).
  */
 public final class LangAuditHarnessQueries {
 
@@ -39,11 +39,12 @@ public final class LangAuditHarnessQueries {
 
     private static JsonObject query(Minecraft mc, JsonObject params) {
         String mode = params.has("mode") ? params.get("mode").getAsString() : "stacks";
-        return mode.equals("registries") ? registries() : stacks(mc, params);
+        String namespace = params.has("namespace") ? params.get("namespace").getAsString() : Constants.MOD_ID;
+        return mode.equals("registries") ? registries(namespace) : stacks(mc, params, namespace);
     }
 
-    private static JsonObject stacks(Minecraft mc, JsonObject params) {
-        List<ItemStack> all = IconAuditHarnessQueries.allStacks();
+    private static JsonObject stacks(Minecraft mc, JsonObject params, String namespace) {
+        List<ItemStack> all = IconAuditHarnessQueries.allStacks(namespace);
         int from = params.has("from") ? params.get("from").getAsInt() : 0;
         int to = Math.min(all.size(), params.has("to") ? params.get("to").getAsInt() : all.size());
         JsonArray flagged = new JsonArray();
@@ -100,23 +101,23 @@ public final class LangAuditHarnessQueries {
         return json;
     }
 
-    private static JsonObject registries() {
+    private static JsonObject registries(String namespace) {
         Language lang = Language.getInstance();
         JsonObject json = new JsonObject();
         JsonArray bad = new JsonArray();
         int n = 0;
         for (Block block : BuiltInRegistries.BLOCK) {
-            if (!Constants.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(block).getNamespace())) continue;
+            if (!namespace.equals(BuiltInRegistries.BLOCK.getKey(block).getNamespace())) continue;
             n++;
             if (!lang.has(block.getDescriptionId())) bad.add("block:" + block.getDescriptionId());
         }
         for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
-            if (!Constants.MOD_ID.equals(BuiltInRegistries.ENTITY_TYPE.getKey(type).getNamespace())) continue;
+            if (!namespace.equals(BuiltInRegistries.ENTITY_TYPE.getKey(type).getNamespace())) continue;
             n++;
             if (!lang.has(type.getDescriptionId())) bad.add("entity:" + type.getDescriptionId());
         }
         for (MobEffect effect : BuiltInRegistries.MOB_EFFECT) {
-            if (!Constants.MOD_ID.equals(BuiltInRegistries.MOB_EFFECT.getKey(effect).getNamespace())) continue;
+            if (!namespace.equals(BuiltInRegistries.MOB_EFFECT.getKey(effect).getNamespace())) continue;
             n++;
             if (!lang.has(effect.getDescriptionId())) bad.add("effect:" + effect.getDescriptionId());
         }

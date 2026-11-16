@@ -7220,5 +7220,7 @@
   "entity.hbm.entity_missile_ab": "Anti-Ballistic Missile",
   "entity.hbm.entity_sawblade": "Sawblade",
   "entity.hbm.entity_effect_torex": "Nuclear Mushroom Cloud",
-  "entity.hbm.entity_fallout_rain": "Fallout"
+  "entity.hbm.entity_fallout_rain": "Fallout",
+  "desc.item.rtgHeat": "Power Level: %s",
+  "desc.item.rtgDecay": "Decays to: %s"
 }

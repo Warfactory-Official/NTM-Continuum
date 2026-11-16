@@ -6938,5 +6938,7 @@
   "entity.hbm.entity_missile_n2": "N²-Rakete",
   "entity.hbm.entity_missile_ab": "Flugabwehrrakete",
   "entity.hbm.entity_sawblade": "Sägeblatt",
-  "entity.hbm.entity_effect_torex": "Atompilzwolke"
+  "entity.hbm.entity_effect_torex": "Atompilzwolke",
+  "desc.item.rtgHeat": "Hitzelevel: %s",
+  "desc.item.rtgDecay": "Zerfällt zu: %s"
 }

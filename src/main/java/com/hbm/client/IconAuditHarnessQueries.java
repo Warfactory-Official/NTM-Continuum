@@ -86,6 +86,10 @@ public final class IconAuditHarnessQueries {
         return stacksByNamespace.computeIfAbsent(Constants.MOD_ID, IconAuditHarnessQueries::collect);
     }
 
+    static List<ItemStack> allStacks(String namespace) {
+        return stacksByNamespace.computeIfAbsent(namespace, IconAuditHarnessQueries::collect);
+    }
+
     private static JsonObject query(Minecraft mc, JsonObject params) {
         JsonObject json = new JsonObject();
         if (params.has("close")) {

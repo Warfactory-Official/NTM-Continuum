@@ -7217,5 +7217,7 @@
   "entity.hbm.entity_missile_ab": "対弾道迎撃ミサイル",
   "entity.hbm.entity_sawblade": "のこぎり刃",
   "entity.hbm.entity_effect_torex": "核爆弾キノコ雲",
-  "entity.hbm.entity_fallout_rain": "放射性降下物（フォールアウト）"
+  "entity.hbm.entity_fallout_rain": "放射性降下物（フォールアウト）",
+  "desc.item.rtgHeat": "出力レベル：%s",
+  "desc.item.rtgDecay": "崩壊後：%s"
 }

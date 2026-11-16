@@ -7004,5 +7004,7 @@
   "entity.hbm.entity_missile_ab": "Míssil Antibalístico",
   "entity.hbm.entity_sawblade": "Lâmina de Serra",
   "entity.hbm.entity_effect_torex": "Nuvem de Cogumelo Nuclear",
-  "entity.hbm.entity_fallout_rain": "Chuva Radioativa"
+  "entity.hbm.entity_fallout_rain": "Chuva Radioativa",
+  "desc.item.rtgHeat": "Nível de energia: %s",
+  "desc.item.rtgDecay": "Decai para: %s"
 }

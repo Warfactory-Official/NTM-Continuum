@@ -7168,5 +7168,7 @@
   "entity.hbm.entity_missile_ab": "反弹道导弹",
   "entity.hbm.entity_sawblade": "锯片",
   "entity.hbm.entity_effect_torex": "核蘑菇云",
-  "entity.hbm.entity_fallout_rain": "落尘"
+  "entity.hbm.entity_fallout_rain": "落尘",
+  "desc.item.rtgHeat": "功率级别：%s",
+  "desc.item.rtgDecay": "衰变为：%s"
 }

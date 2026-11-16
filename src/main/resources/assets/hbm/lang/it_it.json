@@ -6958,5 +6958,7 @@
   "entity.hbm.entity_missile_ab": "Missile antibalistico",
   "entity.hbm.entity_sawblade": "Lama da sega",
   "entity.hbm.entity_effect_torex": "Fungo nucleare",
-  "entity.hbm.entity_fallout_rain": "Ricaduta radioattiva"
+  "entity.hbm.entity_fallout_rain": "Ricaduta radioattiva",
+  "desc.item.rtgHeat": "Livello di potenza: %s",
+  "desc.item.rtgDecay": "Decade in: %s"
 }
