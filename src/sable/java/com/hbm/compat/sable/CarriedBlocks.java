@@ -3,6 +3,7 @@ package com.hbm.compat.sable;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.Constants;
+import com.hbm.capability.MachineEnergyExposure;
 import com.hbm.entity.item.EntityMovingConveyorObject;
 import com.hbm.tileentity.IRelocatable;
 import dev.golem.core.world.SubLevels;
@@ -14,6 +15,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Set;
 
 /**
  * Finishes a sub-level move for HBM's blocks. The sub-level system has copied each block entity's saved data to
@@ -36,11 +39,13 @@ final class CarriedBlocks {
 
     private CarriedBlocks() {}
 
+    private static volatile Set<String> namespaces;
+
     static void afterMove(SubLevels.Move move) {
         ServerLevel level = move.to();
         int carried = 0;
         for (BlockPos pos : move.moved().values()) {
-            if (isHbm(level.getBlockState(pos))) carried++;
+            if (ours(level.getBlockState(pos))) carried++;
         }
         if (carried == 0) return;
 
@@ -53,14 +58,14 @@ final class CarriedBlocks {
         }
         for (BlockPos pos : move.moved().values()) {
             BlockState state = level.getBlockState(pos);
-            if (isHbm(state)) state.onPlace(level, pos, Blocks.AIR.defaultBlockState(), true);
+            if (ours(state)) state.onPlace(level, pos, Blocks.AIR.defaultBlockState(), true);
         }
         for (BlockPos pos : move.moved().values()) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (be != null && !be.isRemoved() && isHbm(be.getBlockState())) be.clearRemoved();
+            if (be != null && !be.isRemoved() && ours(be.getBlockState())) be.clearRemoved();
         }
         carryConveyorObjects(move);
-        Constants.LOG.debug("Sub-level move carried {} HBM block(s)", carried);
+        Constants.LOG.debug("Sub-level move carried {} HBM or addon block(s)", carried);
     }
 
     /**
@@ -94,7 +99,10 @@ final class CarriedBlocks {
         }
     }
 
-    private static boolean isHbm(BlockState state) {
-        return Constants.MOD_ID.equals(BuiltInRegistries.BLOCK.getKey(state.getBlock()).getNamespace());
+    /** HBM's blocks and those of every addon built on it (NTM: Space's thrusters are {@code ntmspace:}). */
+    private static boolean ours(BlockState state) {
+        Set<String> known = namespaces;
+        if (known == null) namespaces = known = MachineEnergyExposure.machineNamespaces();
+        return known.contains(BuiltInRegistries.BLOCK.getKey(state.getBlock()).getNamespace());
     }
 }

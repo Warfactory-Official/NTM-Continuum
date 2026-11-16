@@ -50,6 +50,16 @@ public final class MachineEnergyExposure implements EnergySource {
      * every addon built on it: a namespace counts once any of its blocks is one of HBM's machine block types.
      */
     private static Block[] carriers() {
+        Set<String> namespaces = machineNamespaces();
+        return BuiltInRegistries.BLOCK.stream()
+                .filter(block -> namespaces.contains(BuiltInRegistries.BLOCK.getKey(block).getNamespace()))
+                .filter(block -> block instanceof EntityBlock || block instanceof BlockMultiblockCell
+                        || block instanceof IEnergyConnectorBlock)
+                .toArray(Block[]::new);
+    }
+
+    /** HBM's namespace and every addon's with a block of one of HBM's machine block types. Read once blocks are registered. */
+    public static Set<String> machineNamespaces() {
         Set<String> namespaces = new HashSet<>();
         namespaces.add(Constants.MOD_ID);
         for (Block block : BuiltInRegistries.BLOCK) {
@@ -58,11 +68,7 @@ public final class MachineEnergyExposure implements EnergySource {
                 namespaces.add(BuiltInRegistries.BLOCK.getKey(block).getNamespace());
             }
         }
-        return BuiltInRegistries.BLOCK.stream()
-                .filter(block -> namespaces.contains(BuiltInRegistries.BLOCK.getKey(block).getNamespace()))
-                .filter(block -> block instanceof EntityBlock || block instanceof BlockMultiblockCell
-                        || block instanceof IEnergyConnectorBlock)
-                .toArray(Block[]::new);
+        return namespaces;
     }
 
     private static boolean resident(ServerLevel level, BlockPos pos) {

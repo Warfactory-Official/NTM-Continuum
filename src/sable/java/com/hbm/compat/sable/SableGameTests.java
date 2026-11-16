@@ -109,6 +109,7 @@ final class SableGameTests {
         TESTS.function("sable_black_hole_pulls_ship", 60, () -> SableGameTests::blackHolePullsShip);
         TESTS.function("sable_designator_on_ship", 40, () -> SableGameTests::designatorOnShip);
         TESTS.function("sable_drone_meets_moving_crate", 120, () -> SableGameTests::droneMeetsMovingCrate);
+        TESTS.function("sable_place_onto_ship", 40, () -> SableGameTests::placeOntoShip);
     }
 
     /** A burning turbofan on a ship in the air pushes it forward; the ship had no horizontal speed before. */
@@ -860,5 +861,36 @@ final class SableGameTests {
         int drops = 0;
         for (BlockPos pos : around) drops += level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(16)).size();
         helper.assertTrue(drops == 0, drops + " item(s) dropped during the move");
+    }
+
+    /**
+     * A machine placed by hand onto a one-block ship is whole: its core lands eight blocks out, in a plot chunk the ship
+     * did not have, where Sable drops writes. Every cell must exist and be indexed to the core.
+     */
+    private static void placeOntoShip(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos anchor = fixture(helper, 16);
+        level.setBlock(anchor, Blocks.IRON_BLOCK.defaultBlockState(), 3);
+        ServerSubLevel sub = assemble(level, anchor, Set.of(anchor));
+        BlockPos clicked = new SubLevelAssemblyHelper.AssemblyTransform(
+                anchor, sub.getPlot().getCenterBlock(), 0, Rotation.NONE, level).apply(anchor).above();
+
+        BlockMultiblockCore block = ModMachineBlocks.machine_supercomputer.get();
+        Player placer = helper.makeMockPlayer(GameType.SURVIVAL);
+        placer.setYRot(0F);
+        ItemStack stack = new ItemStack(block);
+        level.setBlock(clicked, block.defaultBlockState(), 3);
+        block.setPlacedBy(level, clicked, block.defaultBlockState(), placer, stack);
+
+        BlockMultiblockCore.Placement placement = block.placement(clicked, Direction.UP, 0F);
+        BlockPos core = placement.core();
+        helper.assertTrue(SubLevels.isOnSubLevel(level, core), "the core is not on the ship");
+        helper.assertTrue(level.getBlockEntity(core) != null, "the core has no block entity at " + core);
+        List<BlockPos> missing = new ArrayList<>();
+        block.visitPlacementCells(core, placement.facing(), stack, (pos, mask) -> {
+            if (!pos.equals(core) && !core.equals(MultiblockSurface.coreOfCell(level, pos))) missing.add(pos.immutable());
+        });
+        helper.assertTrue(missing.isEmpty(), missing.size() + " cell(s) missing or unindexed, e.g. " + (missing.isEmpty() ? "" : missing.get(0)));
+        helper.succeed();
     }
 }

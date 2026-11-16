@@ -710,7 +710,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         Placement placement = placement(pos, face, player.getYRot());
         Direction facing = placement.facing();
         BlockPos core = placement.core();
-        if (!canPlace(level, placement, stack)) {
+        if (!prepareFootprint(level, core, facing, stack) || !canPlace(level, placement, stack)) {
             ItemStack refund = ItemStacks.copyWithCount(stack, 1);
             if (!player.getAbilities().instabuild && !player.getInventory().add(refund)) player.drop(refund, false);
             return;
@@ -725,7 +725,7 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
             return;
         }
         withoutTeardown(() -> {
-            level.setBlock(core, defaultBlockState().setValue(FACING, facing), 3);
+            if (!level.setBlock(core, defaultBlockState().setValue(FACING, facing), 3)) return;
             BlockEntity placedCore = level.getBlockEntity(core);
             if (placedCore != null) {
                 BlockItem.updateCustomBlockEntityTag(level, player, core, stack);
@@ -741,6 +741,16 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
 
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         return MultiblockHandlerXR.checkSpace(level, core, getDimensions(), clicked, facing);
+    }
+
+    /** A sub-level drops writes outside the chunks it has, so the whole footprint is made writable first. */
+    private boolean prepareFootprint(Level level, BlockPos core, Direction facing, ItemStack stack) {
+        int[] box = {core.getX(), core.getY(), core.getZ(), core.getX(), core.getY(), core.getZ()};
+        visitPlacementCells(core, facing, stack, (pos, mask) -> {
+            box[0] = Math.min(box[0], pos.getX()); box[1] = Math.min(box[1], pos.getY()); box[2] = Math.min(box[2], pos.getZ());
+            box[3] = Math.max(box[3], pos.getX()); box[4] = Math.max(box[4], pos.getY()); box[5] = Math.max(box[5], pos.getZ());
+        });
+        return SubLevels.prepareArea(level, new BlockPos(box[0], box[1], box[2]), new BlockPos(box[3], box[4], box[5]));
     }
 
     /** The state written for one cell. */
