@@ -55,6 +55,10 @@ public final class WavefrontObj implements Geometry.Groups {
     public final List<Group> groups;
     private final float[] min;
     private final float[] max;
+    /** Per group: x, y, z, u, v, nx, ny, nz per corner (absent uv 0, 0 and normal 0, 1, 0), and each face's corner count. */
+    private final float[][] groupCorners;
+    private final int[][] groupSizes;
+    private final Map<String, int[]> groupsByName;
     private Identifier source = Ids.of("minecraft", "unknown");
     /** Distinguishes a {@link #stripFrame} copy's mesh names from the source's. */
     private String variant = "";
@@ -74,7 +78,43 @@ public final class WavefrontObj implements Geometry.Groups {
         }
         this.min = mn;
         this.max = mx;
+        int count = this.groups.size();
+        groupCorners = new float[count][];
+        groupSizes = new int[count][];
+        Map<String, List<Integer>> named = new LinkedHashMap<>();
+        for (int g = 0; g < count; g++) {
+            List<int[][]> faces = this.groups.get(g).faces;
+            int[] sizes = new int[faces.size()];
+            int total = 0;
+            for (int f = 0; f < sizes.length; f++) total += sizes[f] = faces.get(f).length;
+            float[] corners = new float[total * 8];
+            int o = 0;
+            for (int[][] face : faces) {
+                for (int[] ref : face) {
+                    float[] p = positions[ref[0]];
+                    corners[o] = p[0];
+                    corners[o + 1] = p[1];
+                    corners[o + 2] = p[2];
+                    corners[o + 3] = ref[1] >= 0 ? uvs[ref[1]][0] : 0F;
+                    corners[o + 4] = ref[1] >= 0 ? uvs[ref[1]][1] : 0F;
+                    float[] n = ref[2] >= 0 ? normals[ref[2]] : UP;
+                    corners[o + 5] = n[0];
+                    corners[o + 6] = n[1];
+                    corners[o + 7] = n[2];
+                    o += 8;
+                }
+            }
+            groupCorners[g] = corners;
+            groupSizes[g] = sizes;
+            named.computeIfAbsent(this.groups.get(g).name, name -> new ArrayList<>()).add(g);
+        }
+        Map<String, int[]> byName = new LinkedHashMap<>();
+        named.forEach((name, indices) -> byName.put(name, indices.stream().mapToInt(Integer::intValue).toArray()));
+        groupsByName = byName;
     }
+
+    private static final float[] UP = {0F, 1F, 0F};
+    private static final int[] NONE = {};
 
     /** Authored quad order and per-face UV inset, as Forge's OBJ sky submissions used them. */
     public float[] texturedQuads(float inset) {
@@ -276,7 +316,9 @@ public final class WavefrontObj implements Geometry.Groups {
 
     /** Draws every face run using the given material (for multi-texture OBJs, one call per material). */
     public void renderMaterial(String material, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay) {
-        for (Group g : groups) if (g.material.equals(material)) drawGroup(g, pose, buffer, light, overlay);
+        for (int g = 0; g < groups.size(); g++) {
+            if (groups.get(g).material.equals(material)) drawGroup(g, pose, buffer, light, overlay, -1, false, 0F, 0F);
+        }
     }
 
     /**
@@ -327,13 +369,13 @@ public final class WavefrontObj implements Geometry.Groups {
 
     /** Draws every part tinted with an ARGB vertex colour. */
     public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
-        for (Group g : groups) drawGroup(g, pose, buffer, light, overlay, color);
+        for (int g = 0; g < groups.size(); g++) drawGroup(g, pose, buffer, light, overlay, color, false, 0F, 0F);
     }
 
     /** Draws every part tinted, with the texture scrolled by {@code (uOffset, vOffset)}; see {@link #renderPart}. */
     public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color,
                           float uOffset, float vOffset) {
-        for (Group g : groups) drawGroup(g, pose, buffer, light, overlay, color, false, uOffset, vOffset);
+        for (int g = 0; g < groups.size(); g++) drawGroup(g, pose, buffer, light, overlay, color, false, uOffset, vOffset);
     }
 
     /** Draws every part except those named in {@code exclude} (e.g. dynamic parts like a fluid overlay). */
@@ -343,7 +385,9 @@ public final class WavefrontObj implements Geometry.Groups {
 
     public void renderExcept(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
                              Set<String> exclude, boolean doubleSided) {
-        for (Group g : groups) if (!exclude.contains(g.name)) drawGroup(g, pose, buffer, light, overlay, -1, doubleSided);
+        for (int g = 0; g < groups.size(); g++) {
+            if (!exclude.contains(groups.get(g).name)) drawGroup(g, pose, buffer, light, overlay, -1, doubleSided, 0F, 0F);
+        }
     }
 
     /** Draws a single named part (no-op if the part doesn't exist). */
@@ -353,7 +397,7 @@ public final class WavefrontObj implements Geometry.Groups {
 
     /** Draws a single named part with a vertex colour (e.g. an overlay tinted by a fluid colour). */
     public void renderPart(String name, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
-        for (Group g : groups) if (g.name.equals(name)) drawGroup(g, pose, buffer, light, overlay, color);
+        for (int g : groupsByName.getOrDefault(name, NONE)) drawGroup(g, pose, buffer, light, overlay, color, false, 0F, 0F);
     }
 
     /** Draws a named part with only position and vertex colour, for textureless legacy glow parts. */
@@ -377,8 +421,8 @@ public final class WavefrontObj implements Geometry.Groups {
      */
     public void renderPart(String name, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
                            int color, float uOffset, float vOffset, boolean doubleSided) {
-        for (Group g : groups) {
-            if (g.name.equals(name)) drawGroup(g, pose, buffer, light, overlay, color, doubleSided, uOffset, vOffset);
+        for (int g : groupsByName.getOrDefault(name, NONE)) {
+            drawGroup(g, pose, buffer, light, overlay, color, doubleSided, uOffset, vOffset);
         }
     }
 
@@ -478,8 +522,8 @@ public final class WavefrontObj implements Geometry.Groups {
 
         @Override
         public void draw(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
-            for (Group g : groups) {
-                if (selected(g)) drawGroup(g, pose, buffer, light, overlay, color, doubleSided);
+            for (int g = 0; g < groups.size(); g++) {
+                if (selected(groups.get(g))) drawGroup(g, pose, buffer, light, overlay, color, doubleSided, 0F, 0F);
             }
         }
 
@@ -586,35 +630,25 @@ public final class WavefrontObj implements Geometry.Groups {
         return copy;
     }
 
-    private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay) {
-        drawGroup(g, pose, buffer, light, overlay, -1, false);
-    }
-
-    private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
-        drawGroup(g, pose, buffer, light, overlay, color, false);
-    }
-
-    private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
-                           int color, boolean doubleSided) {
-        drawGroup(g, pose, buffer, light, overlay, color, doubleSided, 0F, 0F);
-    }
-
-    private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
-                            int color, boolean doubleSided, float uOffset, float vOffset) {
-        for (int[][] face : g.faces) {
+    private void drawGroup(int g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
+                           int color, boolean doubleSided, float uOffset, float vOffset) {
+        float[] corners = groupCorners[g];
+        int base = 0;
+        for (int size : groupSizes[g]) {
             // Fan-triangulate; emit each triangle as a quad (4th vertex duplicates the 3rd) for QUADS mode.
-            for (int i = 1; i + 1 < face.length; i++) {
-                emit(face[0], pose, buffer, light, overlay, color, false, uOffset, vOffset);
-                emit(face[i], pose, buffer, light, overlay, color, false, uOffset, vOffset);
-                emit(face[i + 1], pose, buffer, light, overlay, color, false, uOffset, vOffset);
-                emit(face[i + 1], pose, buffer, light, overlay, color, false, uOffset, vOffset);
+            for (int i = 1; i + 1 < size; i++) {
+                emit(corners, base, pose, buffer, light, overlay, color, false, uOffset, vOffset);
+                emit(corners, base + i, pose, buffer, light, overlay, color, false, uOffset, vOffset);
+                emit(corners, base + i + 1, pose, buffer, light, overlay, color, false, uOffset, vOffset);
+                emit(corners, base + i + 1, pose, buffer, light, overlay, color, false, uOffset, vOffset);
                 if (doubleSided) {
-                    emit(face[i + 1], pose, buffer, light, overlay, color, true, uOffset, vOffset);
-                    emit(face[i + 1], pose, buffer, light, overlay, color, true, uOffset, vOffset);
-                    emit(face[i], pose, buffer, light, overlay, color, true, uOffset, vOffset);
-                    emit(face[0], pose, buffer, light, overlay, color, true, uOffset, vOffset);
+                    emit(corners, base + i + 1, pose, buffer, light, overlay, color, true, uOffset, vOffset);
+                    emit(corners, base + i + 1, pose, buffer, light, overlay, color, true, uOffset, vOffset);
+                    emit(corners, base + i, pose, buffer, light, overlay, color, true, uOffset, vOffset);
+                    emit(corners, base, pose, buffer, light, overlay, color, true, uOffset, vOffset);
                 }
             }
+            base += size;
         }
     }
 
@@ -629,31 +663,17 @@ public final class WavefrontObj implements Geometry.Groups {
         }
     }
 
+    private static void emit(float[] corners, int index, PoseStack.Pose pose, VertexConsumer buffer, int light,
+                             int overlay, int color, boolean reverseNormal, float uOffset, float vOffset) {
+        int o = index * 8;
+        float nx = corners[o + 5], ny = corners[o + 6], nz = corners[o + 7];
+        if (reverseNormal) { nx = -nx; ny = -ny; nz = -nz; }
+        Vertexes.vertex(buffer, pose, corners[o], corners[o + 1], corners[o + 2], color, corners[o + 3] + uOffset,
+                corners[o + 4] + vOffset, overlay, light, nx, ny, nz);
+    }
+
     private void emitColor(int[] ref, PoseStack.Pose pose, VertexConsumer buffer, int color) {
         float[] p = positions[ref[0]];
         Vertexes.color(buffer, pose, p[0], p[1], p[2], color);
-    }
-
-    private void emit(int[] ref, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
-        emit(ref, pose, buffer, light, overlay, color, false);
-    }
-
-    private void emit(int[] ref, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color,
-                      boolean reverseNormal) {
-        emit(ref, pose, buffer, light, overlay, color, reverseNormal, 0F, 0F);
-    }
-
-    private void emit(int[] ref, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color,
-                      boolean reverseNormal, float uOffset, float vOffset) {
-        float[] p = positions[ref[0]];
-        float u = (ref[1] >= 0 ? uvs[ref[1]][0] : 0F) + uOffset;
-        float v = (ref[1] >= 0 ? uvs[ref[1]][1] : 0F) + vOffset;
-        float nx = 0F, ny = 1F, nz = 0F;
-        if (ref[2] >= 0) {
-            float[] nrm = normals[ref[2]];
-            nx = nrm[0]; ny = nrm[1]; nz = nrm[2];
-        }
-        if (reverseNormal) { nx = -nx; ny = -ny; nz = -nz; }
-        Vertexes.vertex(buffer, pose, p[0], p[1], p[2], color, u, v, overlay, light, nx, ny, nz);
     }
 }
