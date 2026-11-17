@@ -5,8 +5,11 @@ Each release has a `## <version>` section; the release workflow uploads only the
 
 ## 1.0.6
 
-Requires Golem Core 1.0.6. Use GemRender 0.1.22; older versions are refused (on 26.1 it needs NeoForge 26.1.2.126 or
-newer). The 26.1 NeoForge jar accepts NeoForge 26.1.2.114 again.
+### HUGE Performance gains for people using shaders, anywhre from 5x to 10x.
+For the big performance increase with shaders you need to install colorwheel.
+There are also big performance increases for anyone playing with modded biomes, the game no longer hitches.
+There are other performance gains that range anywhere from 30% to 70%, depending on the current scene.
+Requires Golem Core 1.0.6. Use GemRender 0.1.22; older versions are refused.
 
 ### Added
 - Other mods' energy cables (Mekanism, Pipez, Team Reborn and others) connect to every HBM and addon machine at its
