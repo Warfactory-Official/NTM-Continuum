@@ -9,6 +9,9 @@ Each release has a `## <version>` section; the release workflow uploads only the
 For the big performance increase with shaders you need to install colorwheel.
 There are also big performance increases for anyone playing with modded biomes, the game no longer hitches.
 There are other performance gains that range anywhere from 30% to 70%, depending on the current scene.
+
+There is also a new profiler, run `/golem profiler`, it will profile for 30s, the save the profile to `./minecraft/golem`.
+Useful to see whats causing lag. Please attach the html file to future issues regarding performance.
 Requires Golem Core 1.0.6. Use GemRender 0.1.22; older versions are refused.
 
 ### Added
