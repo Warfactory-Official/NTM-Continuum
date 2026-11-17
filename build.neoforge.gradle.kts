@@ -44,6 +44,9 @@ neoForge {
         register("client") {
             client()
             gameDirectory = file("runs/client")
+            // Iris (shaders.run) declares Sampler1 for vanilla item types that bind no overlay, and NeoForge's dev-only GL
+            // validation throws on it (Iris issue 3347); released NeoForge never validates.
+            if (providers.gradleProperty("shaders.run").orNull == "true") systemProperty("neoforge.disableGlValidation", "true")
             // Quick Play is opt-in through -PquickPlayWorld. Do not inherit HBM_QUICKPLAY from a
             // previous visual fixture into ordinary IDE launches.
             providers.gradleProperty("quickPlayWorld").orNull?.let {

@@ -24,15 +24,15 @@ side = "BOTH"
 [[dependencies.${mod_id}]]
 modId = "golemcore"
 mandatory = true
-versionRange = "[1.0.5,)"
+versionRange = "[1.0.6,)"
 ordering = "AFTER"
 side = "BOTH"
 
-# GemRender before 0.1.20 hangs the loading screen when another mod replaces a vanilla core shader.
+# GemRender before 0.1.22 is refused (0.1.20 fixed a loading-screen hang; 0.1.22 runs upstream Flywheel on 26.1).
 [[dependencies.${mod_id}]]
 modId = "gemrender"
 mandatory = false
-versionRange = "[0.1.20,)"
+versionRange = "[0.1.22,)"
 ordering = "NONE"
 side = "CLIENT"
 

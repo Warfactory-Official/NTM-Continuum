@@ -3,6 +3,73 @@
 Each release has a `## <version>` section; the release workflow uploads only the section matching
 `mod.version` in gradle.properties.
 
+## 1.0.6
+
+Requires Golem Core 1.0.6. Use GemRender 0.1.22; older versions are refused (on 26.1 it needs NeoForge 26.1.2.126 or
+newer). The 26.1 NeoForge jar accepts NeoForge 26.1.2.114 again.
+
+### Added
+- Other mods' energy cables (Mekanism, Pipez, Team Reborn and others) connect to every HBM and addon machine at its
+  power ports, or where an HBM cable would connect, and generators push into other mods' energy blocks.
+- French, Italian and Polish translations; German, Japanese, Portuguese, Russian, Ukrainian and Chinese are completed,
+  and remaining untranslated names, key binds and messages are fixed.
+- The 528, EXP, RAM and 328 mode badges in the top left corner, as in 1.7 (GitHub issue 202).
+- Filters have 1.7's bedrock mode, matching bedrock ores by grade (GitHub issue 191).
+- The grease gun's modernization kit changes its texture (GitHub issue 178).
+- A filled express delivery shell has its own icon (GitHub issue 174).
+- 1.7's compressor piston sound and flare stack flame, tower and pilot smoke particles (GitHub issues 172, 182).
+- Recipe viewers show fluid amounts and the pressurized line (GitHub issue 185).
+- The RBMK console, boiler and control rod screens click like 1.7, with 1.7's tooltips (GitHub issue 199).
+- Mekanism tags: sawdust is `c:dusts/wood`; raw-ore radiation applies to any mod's `c:raw_materials/*`; HBM ores carry
+  `c:ores_in_ground/*` and `c:ore_rates/*`; deuterium and tritium join `c:deuterium` and `c:tritium`.
+- Every HBM death message names the killer when there is one.
+
+### Changed
+- Static decoration (scaffold, steel walls and roofs, poles, spotlights, barbed wire, anvils, deco barrels, toasters and
+  more) is part of the chunk mesh, as in 1.7: far faster, above all under shader packs (Golem Core issue 1).
+- With Colorwheel or Iris & Oculus Flywheel Compat, gem machines stay instanced under a shader pack (Golem Core 1.0.6).
+- Battery sockets in buffer mode trade charge by priority as in 1.7 (GitHub issue 176).
+- The universal fluid tank and barrel fill and drain partly again, as in 1.12.2 (GitHub issue 183).
+- Pneumatic tubes and cranes reach multiblock inventories through 1.7's item ports only, the PWR port included; RBMK
+  rods and heaters are closed to automation as in 1.7 (GitHub issue 171).
+- Rampant mode spawns follow 1.7's rate and land rule, and glyphid scouts guided to a bed build their hive (GitHub
+  issue 197).
+- The electrolyser retypes its output tanks to the current recipe every tick, as in 1.7 (GitHub issue 196).
+- Conveyor items and boxes and tram crates look like 1.7's (GitHub issue 175).
+- The turbofan pulls in and shreds like 1.7, with 1.7's death message (GitHub issue 181).
+- Glyphids resist each bullet damage class as in 1.7, and electric damage hurts a powered suit five times as much.
+- Survey scanner and lens labels show up to 164 blocks away, enough to read bedrock deposits from the surface.
+
+### Fixed
+- Worlds with modded biomes generated slowly: structure starts are about 100 times faster there; ore layers use 1.7's
+  noise cache (GitHub issue 208).
+- Multiblocks placed by hand onto a Sable ship lost their model or some of their blocks.
+- The cargo elevator gave fall damage going down and dipped the camera going up (GitHub issue 170).
+- Gibs slid, spent casings wiggled on the ground, and a beam's first frame pointed the wrong way (GitHub issue 172).
+- Glyphids, the Mask Man and crabs had no hurt flash or death roll (GitHub issue 173).
+- The express delivery shell sank into the ground; grenades, cogs and sawblades could pass through the wall they hit
+  (GitHub issue 174).
+- The conveyor wand started every run on top of the clicked block (GitHub issue 175).
+- Tar sand used the wrong texture (GitHub issue 177).
+- Tools held in the off hand showed the wrong face (GitHub issue 186).
+- Survey scanner markers disappeared in fog on 1.21.1 and 1.20.1 (GitHub issue 187).
+- The neutrino lens missed bedrock ore and oil below y 0 (GitHub issue 188).
+- Lootr draw tables were listed in loot viewers without Lootr (GitHub issue 192).
+- A duct kept its arm after the anchor beside it was retyped (GitHub issue 194).
+- The combustion engine throttle, fluid burner rate and gas turbine slider misbehaved on 1.20.1 servers (GitHub issue
+  195).
+- Sulfuric acid buckets were refused by identified tanks (GitHub issue 200).
+- Oil derricks stopped short in wide drained deposits (GitHub issue 201).
+- An inserter feeding a combinator funnel caused lag (GitHub issue 203).
+- Balefire cut schrabidium clusters instead of etching them (GitHub issue 206).
+- A battery socket in buffer mode gave other mods' machines no power (GitHub issue 207).
+- The glider could turn the screen white (GitHub issue 209, fixed in Golem Core 1.0.6).
+- Jade disappeared under helmet overlays on 1.21.1 (GitHub issue 210, fixed in Golem Core 1.0.6).
+- Some deaths showed a raw translation key.
+- A battery socket holding a battery could crash the 26.1 client.
+- On 1.20.1 Forge, turret cells had no block entity, so cables and other mods' pipes could not reach them.
+- RTG pellet names and tooltips were English only.
+
 ## 1.0.5
 
 Requires Golem Core 1.0.5. Use GemRender 0.1.20; older versions are refused.

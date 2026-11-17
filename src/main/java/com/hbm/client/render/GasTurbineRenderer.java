@@ -23,7 +23,7 @@ public final class GasTurbineRenderer extends GemBER<TileEntityMachineTurbineGas
     @Override
     protected void setup(Gem.Model<GasTurbineRenderState> declaration) {
         declaration.offScreen().viewDistance(256)
-                .part(model.all(true), surface)
+                .part(model.all(), surface)
                 .translate(0.5F, 0F, 0.5F)
                 .angle(Gem.Axes.Y, state -> state.yaw);
     }

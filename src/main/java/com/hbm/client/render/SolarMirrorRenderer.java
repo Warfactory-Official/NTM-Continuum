@@ -17,14 +17,13 @@ import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Set;
 
 /** A heliostat: the post, the mirror aimed at the tower, and the beam it throws while lit. */
 public final class SolarMirrorRenderer extends GemBER<TileEntitySolarMirror, SolarMirrorRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
             Ids.of(Constants.MOD_ID, "models/machines/solar_mirror.obj"));
-    private final Surface surface = Surface.cutoutNoCull(
+    private final Surface surface = Surface.cutout(
             Constants.MOD_ID + ":textures/models/machines/solar_mirror.png");
     private final RenderType beamType = CompatRenderTypes.additive();
 
@@ -34,13 +33,13 @@ public final class SolarMirrorRenderer extends GemBER<TileEntitySolarMirror, Sol
                 .joint()
                 .translate(0.5F, 0F, 0.5F);
 
-        post.child(model.parts(Set.of("Base"), true), surface);
+        post.child(model.part("Base"), surface);
         post.joint()
                 .translate(0F, 1F, 0F)
                 .angle(Gem.Axes.Y, state -> state.yaw)
                 .angle(Gem.Axes.Z, state -> state.pitch)
                 .translate(0F, -1F, 0F)
-                .child(model.parts(Set.of("Mirror"), true), surface);
+                .child(model.part("Mirror"), surface);
     }
 
     @Override

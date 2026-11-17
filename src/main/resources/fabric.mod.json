@@ -47,11 +47,11 @@
     "depends": {
         "fabricloader": ">=${fabric_loader}",
         "fabric-api": "*",
-        "golemcore": ">=1.0.5",
+        "golemcore": ">=1.0.6",
         "minecraft": "${minecraft_range}",
         "java": ">=${java_version}"
     },
     "breaks": {
-        "gemrender": "<0.1.20"
+        "gemrender": "<0.1.22"
     }
 }
