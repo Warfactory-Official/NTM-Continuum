@@ -6,6 +6,8 @@ Each release has a `## <version>` section; the release workflow uploads only the
 ## Unreleased
 
 ### Added
+- `ExplosionCreator.INTERCEPT` (a Golem `Hook`): an addon may draw the small, standard and large explosion effects itself; a listener that returns
+  true has, and Continuum sends no particles for it. None registered: unchanged.
 - `EntityNukeExplosionMK5.RAY` (a Golem `Hook`) and an overridable `createRay`: another mod can answer with its own crater ray for a nuclear
   blast; with no answer the batched ray runs as before.
 - `CommonConfig.override(category, name, value)`: an addon states a configuration value from `ModEntry.substitute()`; it wins over the file on
