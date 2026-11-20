@@ -25,7 +25,30 @@ public class NoteBuilder {
             return new Hit[0];
         }
     }
-    public enum Instrument { PIANO, BASSDRUM, SNARE, CLICKS, BASSGUITAR }
+    public enum Instrument {
+        PIANO,
+        BASSDRUM,
+        SNARE,
+	CLICKS, 
+	BASSGUITAR, 
+	BELL, 
+	CHIME, 
+	FLUTE, 
+	GUITAR, 
+	PLING, 
+	XYLO, 
+	IRONXYLO, 
+	COWBELL, 
+	DIDGERIDOO, 
+	BIT, 
+	BANJO, 
+	ZOMBIE, 
+	SKELETON, 
+	DRAGON, 
+	CREEPER, 
+	WITHER,
+	PIGLIN 
+    }
     public enum Note { F_SHARP, G, G_SHARP, A, A_SHARP, B, C, C_SHARP, D, D_SHARP, E, F }
     public enum Octave { LOW, MID, HIGH }
 }
