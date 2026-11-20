@@ -53,28 +53,47 @@ public final class CommonConfig {
         return value;
     }
 
+    /**
+     * Values another mod states for a key, winning over the file on every load (including a reload) without being written to it. Declare
+     * them in {@link dev.golem.core.platform.ModEntry#substitute()}, which runs before HBM reads its configuration.
+     */
+    private static final java.util.Map<String, String> OVERRIDES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** States {@code value} for {@code category}/{@code name} ({@code "true"}, {@code "12"}, {@code "0.5"}, or text). Int, double, boolean and string keys only. */
+    public static void override(String category, String name, String value) {
+        OVERRIDES.put(category + '\u0000' + name, value);
+    }
+
+    private static String overridden(String category, String name) {
+        return OVERRIDES.get(category + '\u0000' + name);
+    }
+
     public static int createConfigInt(Configuration config, String category, String name, String comment, int def) {
         Property prop = config.get(category, name, def);
         prop.comment = comment;
-        return prop.getInt();
+        String o = overridden(category, name);
+        return o != null ? Integer.parseInt(o.trim()) : prop.getInt();
     }
 
     public static double createConfigDouble(Configuration config, String category, String name, String comment, double def) {
         Property prop = config.get(category, name, def);
         prop.comment = comment;
-        return prop.getDouble();
+        String o = overridden(category, name);
+        return o != null ? Double.parseDouble(o.trim()) : prop.getDouble();
     }
 
     public static boolean createConfigBool(Configuration config, String category, String name, String comment, boolean def) {
         Property prop = config.get(category, name, def);
         prop.comment = comment;
-        return prop.getBoolean();
+        String o = overridden(category, name);
+        return o != null ? Boolean.parseBoolean(o.trim()) : prop.getBoolean();
     }
 
     public static String createConfigString(Configuration config, String category, String name, String comment, String def) {
         Property prop = config.get(category, name, def);
         prop.comment = comment;
-        return prop.getString();
+        String o = overridden(category, name);
+        return o != null ? o : prop.getString();
     }
 
     public static int[] createConfigIntList(Configuration config, String category, String name, String comment, int[] def) {

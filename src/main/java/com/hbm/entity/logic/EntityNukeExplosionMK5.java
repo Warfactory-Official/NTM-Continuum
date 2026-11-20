@@ -63,6 +63,28 @@ import java.util.UUID;
  */
 public class EntityNukeExplosionMK5 extends CompatEntity implements Owners.Carrier {
 
+    /** Builds the crater ray for a blast. Another mod's listener may answer with its own {@link IExplosionRay}; {@code null} passes. */
+    @FunctionalInterface
+    public interface RayFactory {
+        @org.jspecify.annotations.Nullable
+        IExplosionRay create(Level level, int x, int y, int z, int strength, int radius);
+    }
+
+    /** First non-null answer wins; with none, the batched ray ({@link ExplosionNukeRayBatched}) is used. */
+    public static final dev.golem.core.hook.Hook<RayFactory> RAY = dev.golem.core.hook.Hook.of(listeners -> (level, x, y, z, strength, radius) -> {
+        for (RayFactory listener : listeners) {
+            IExplosionRay ray = listener.create(level, x, y, z, strength, radius);
+            if (ray != null) return ray;
+        }
+        return null;
+    });
+
+    /** The ray this blast runs. Overridable for a substituted entity; the {@link #RAY} hook is the way for everyone else. */
+    protected IExplosionRay createRay(Level level, int x, int y, int z, int strength, int radius) {
+        IExplosionRay custom = RAY.invoker().create(level, x, y, z, strength, radius);
+        return custom != null ? custom : new ExplosionNukeRayBatched(level, x, y, z, strength, radius);
+    }
+
     private int strength;
     private int radius;
     private boolean fallout = true;
@@ -180,7 +202,7 @@ public class EntityNukeExplosionMK5 extends CompatEntity implements Owners.Carri
 
         // Create the crater raytracer once.
         if (!initialized) {
-            explosion = new ExplosionNukeRayBatched(level(), (int) getX(), (int) getY(), (int) getZ(), strength, radius);
+            explosion = createRay(level(), (int) getX(), (int) getY(), (int) getZ(), strength, radius);
             explosion.setDetonator(detonator);
             SatelliteDetector.reportEvent(level(), SatelliteDetector.DURATION_HIGH,
                     SatelliteDetector.BurstIntensity.HIGH, getX(), getZ());
