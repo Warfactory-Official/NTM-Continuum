@@ -6,12 +6,18 @@ Each release has a `## <version>` section; the release workflow uploads only the
 ## Unreleased
 
 ### Added
+- `ArmorRenderer.LIMB_BENDS`: modelled armour is cut at the elbows, knees and waist, and an addon with a body animation can bend the lower half
+  (forearm, shin and boot, or the chest). None registered: every suit draws as before.
+- `ArmorRenderLayer.submitFirstPersonArms`: a first-person view that draws its own arms can draw a chestplate's sleeves on them.
 - `ExplosionCreator.INTERCEPT` (a Golem `Hook`): an addon may draw the small, standard and large explosion effects itself; a listener that returns
   true has, and Continuum sends no particles for it. None registered: unchanged.
 - `EntityNukeExplosionMK5.RAY` (a Golem `Hook`) and an overridable `createRay`: another mod can answer with its own crater ray for a nuclear
   blast; with no answer the batched ray runs as before.
 - `CommonConfig.override(category, name, value)`: an addon states a configuration value from `ModEntry.substitute()`; it wins over the file on
   every load, including `/hbm reload`, and is never written to it.
+
+### Fixed
+- The DNT suit draws its model again (its `dnt_*` items never found the renderer, registered as `dns`).
 
 ## 1.0.6
 

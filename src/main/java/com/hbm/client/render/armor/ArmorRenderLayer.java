@@ -54,13 +54,26 @@ public class ArmorRenderLayer extends CompatHumanoidLayer {
         pose.popPose();
     }
 
+    /**
+     * A first-person view that draws its own arms: the sleeves of the modelled chestplate {@code chest} on its arm frames ({@link ArmorPose#arms}).
+     *
+     * @return whether anything was drawn (the chestplate is a modelled suit)
+     */
+    public static boolean submitFirstPersonArms(ItemStack chest, PoseStack pose, SubmitSink sink, int light, org.joml.Matrix4fc[] arms) {
+        if (!(chest.getItem() instanceof ArmorFSB piece) || piece.slot != ArmorSlot.CHESTPLATE) return false;
+        ArmorRenderer renderer = renderer(piece, chest);
+        if (renderer == null) return false;
+        renderer.submitArms(pose, sink, light, arms);
+        return true;
+    }
+
     /** The worn model of a suit piece, or null for a piece drawn as a flat armour layer. */
     static ArmorRenderer renderer(ArmorFSB piece, ItemStack stack) {
         String modelName = piece.armorModel();
         if (modelName == null) {
             String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
             if (path.startsWith("bj_")) modelName = "bj";
-            else if (path.startsWith("dns_")) modelName = "dns";
+            else if (path.startsWith("dns_") || path.startsWith("dnt_")) modelName = "dns";   // the DNT suit's items are dnt_*, its model "dns"
         }
         return ArmorRenderers.get(modelName);
     }
