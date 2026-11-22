@@ -1,0 +1,59 @@
+{
+  "machines": [
+    {
+      "recipeKey": "paperPress",
+      "unlocalizedName": "paperPress",
+      "localization": {
+        "de_DE": "Papierpresse"
+      },
+      "localizedName": "Paper Press",
+      "fluidInCount": 1,
+      "fluidInCap": 1000,
+      "itemInCount": 1,
+      "fluidOutCount": 0,
+      "fluidOutCap": 0,
+      "itemOutCount": 1,
+      "generatorMode": false,
+      "maxPollutionCap": 100,
+      "fluxMode": false,
+      "recipeSpeedMult": 1.0,
+      "recipeConsumptionMult": 1.0,
+      "maxPower": 10000,
+      "maxHeat": 0,
+      "recipeShape": [
+        "IPI",
+        "PCP",
+        "IPI"
+      ],
+      "recipeParts": ["I",["dict","ingotSteel"],"P",["dict","plateSteel"],"C",["item","hbm:circuit_basic"]
+      ],
+      "components": [
+        {"block":"hbm:tile.cm_block","x":-1,"y":-1,"z":0,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":-1,"y":-1,"z":1,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":-1,"y":-1,"z":2,"metas":[0]},
+        {"block":"hbm:tile.cm_sheet","x":-1,"y":0,"z":0,"metas":[0]},
+        {"block":"hbm:tile.cm_sheet","x":-1,"y":0,"z":1,"metas":[0]},
+        {"block":"hbm:tile.cm_sheet","x":-1,"y":0,"z":2,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":-1,"y":1,"z":0,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":-1,"y":1,"z":1,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":-1,"y":1,"z":2,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":0,"y":-1,"z":1,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":0,"y":-1,"z":2,"metas":[0]},
+        {"block":"hbm:tile.cm_sheet","x":0,"y":0,"z":2,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":0,"y":1,"z":1,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":0,"y":1,"z":2,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":1,"y":-1,"z":0,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":1,"y":-1,"z":1,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":1,"y":-1,"z":2,"metas":[0]},
+        {"block":"hbm:tile.cm_sheet","x":1,"y":0,"z":0,"metas":[0]},
+        {"block":"hbm:tile.cm_sheet","x":1,"y":0,"z":1,"metas":[0]},
+        {"block":"hbm:tile.cm_sheet","x":1,"y":0,"z":2,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":1,"y":1,"z":0,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":1,"y":1,"z":1,"metas":[0]},
+        {"block":"hbm:tile.cm_block","x":1,"y":1,"z":2,"metas":[0]},
+        {"block":"hbm:tile.cm_port","x":0,"y":-1,"z":0,"metas":[0]},
+        {"block":"hbm:tile.cm_port","x":0,"y":1,"z":0,"metas":[0]}
+      ]
+    }
+  ]
+}

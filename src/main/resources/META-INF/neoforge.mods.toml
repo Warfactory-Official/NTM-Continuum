@@ -1,30 +1,60 @@
 modLoader = "javafml"
-loaderVersion = "[4,)"
-license = "MIT"
+loaderVersion = "${neoforge_loader_range}"
+license = "${mod_license}"
+issueTrackerURL = "@golem.issues@"
 
 [[mods]]
-modId = "fissionworks"
-version = "0.1.0"
-displayName = "Create: Fission Works"
-description = "A Create addon: build a nuclear pile from blocks, then right-click the panel with a wrench to form it."
+modId = "${mod_id}"
+version = "${mod_version}"
+displayName = "${mod_name}"
+displayURL = "@golem.homepage@"
+logoFile = "assets/${mod_id}/icon.png"
+authors = "${mod_author}"
+description = '''${mod_description}@golem.credits@'''
 
-[[dependencies.fissionworks]]
+# NeoForge has no loader-specific mixins: its only one was the template's demo MixinTitleScreen,
+# removed during the flat-layout restructure. Only the shared config is listed.
+[[mixins]]
+config = "${mod_id}.mixins.json"
+
+[[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.1,)"
+versionRange = "[${neoforge_version},)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.fissionworks]]
+# AFTER, not BEFORE: `ordering` describes THIS mod relative to the dependency, so BEFORE means
+# "hbm constructs before golemcore" — the exact opposite of what is needed. Golem Core's mod class
+# captures the mod event bus in its constructor, and this mod's client init grabs that bus during its
+# own construction (item tints subscribe to a mod-bus event). Getting this backwards fails at launch
+# with "Golem Core's mod bus is not available yet", not at build time.
+[[dependencies.${mod_id}]]
+modId = "golemcore"
+type = "required"
+versionRange = "[1.0.6,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "gemrender"
+type = "incompatible"
+reason = "GemRender before 0.1.22 is not supported; install 0.1.22 or later."
+versionRange = "(,0.1.22)"
+ordering = "NONE"
+side = "CLIENT"
+
+# Create Energy Shaft: the Shaft Output only registers when Create is present.
+[[dependencies.${mod_id}]]
+modId = "create"
+type = "optional"
+versionRange = "[6.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.1]"
+versionRange = "${minecraft_range}"
 ordering = "NONE"
-side = "BOTH"
-
-[[dependencies.fissionworks]]
-modId = "create"
-type = "required"
-versionRange = "[6.0.0,)"
-ordering = "AFTER"
 side = "BOTH"

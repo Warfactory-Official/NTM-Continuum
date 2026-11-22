@@ -1,82 +1,77 @@
-[22Nov2026 12:18:58.082] [main/INFO] [net.neoforged.fml.startup.Entrypoint/]: JVM Uptime at startup: 321ms
-[22Nov2026 12:18:58.118] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Starting FancyModLoader version 11.0.15 (DEDICATED_SERVER in DEV)
-[22Nov2026 12:18:58.119] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Game directory: D:\khairy\java mod\mc-dev\NTM-Continuum\versions\26.1-neoforge\runs\generatedata
-[22Nov2026 12:18:58.250] [main/INFO] [net.neoforged.fml.loading.EarlyServiceDiscovery/]: Found 2 early service jars (out of 116) in 63ms
-[22Nov2026 12:18:58.251] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Loading FML Early Services:
-[22Nov2026 12:18:58.252] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.neoforged.fancymodloader/loader/11.0.15/69ddd98736a6b095783523404d1af8992842722/loader-11.0.15.jar
-[22Nov2026 12:18:58.254] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.neoforged.fancymodloader/earlydisplay/11.0.15/b254aa4ec40828f8ce65411dcb7fb9f6ce008064/earlydisplay-11.0.15.jar
-[22Nov2026 12:18:58.270] [main/INFO] [net.neoforged.fml.loading.ImmediateWindowHandler/]: Not loading early display in headless mode.
-[22Nov2026 12:18:58.356] [main/INFO] [net.neoforged.fml.loading.moddiscovery.locators.GameLocator/]: Detected a joined NeoForge and Minecraft configuration. Applying filtering...
-[22Nov2026 12:18:58.523] [main/INFO] [net.neoforged.fml.loading.moddiscovery.locators.InDevFolderLocator/CORE]: Got mod coordinates hbmRecipes%%D:\khairy\java mod\mc-dev\NTM-Continuum\versions\26.1-neoforge\build\classes\java\recipes;hbmRecipes%%D:\khairy\java mod\mc-dev\NTM-Continuum\versions\26.1-neoforge\build\resources\recipes;hbmRecipes%%D:\khairy\java mod\mc-dev\NTM-Continuum\versions\26.1-neoforge\build\classes\java\main from env
-[22Nov2026 12:18:59.192] [main/WARN] [net.neoforged.jarjar.selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: mezz_config. Using jar(C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.mezzdev.config/mezz_config-26.1.2-neoforge/0.6.3/7558f937b99e45cfe92b7f382a1c10cc983370aa/mezz_config-26.1.2-neoforge-0.6.3.jar)
-[22Nov2026 12:18:59.192] [main/INFO] [net.neoforged.fml.loading.moddiscovery.locators.JarInJarDependencyLocator/]: Found 2 dependencies adding them to mods collection
-[22Nov2026 12:18:59.200] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/]: 
+[22Nov2026 12:44:51.639] [main/INFO] [net.neoforged.fml.startup.Entrypoint/]: JVM Uptime at startup: 255ms
+[22Nov2026 12:44:51.674] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Starting FancyModLoader version 11.0.15 (DEDICATED_SERVER in DEV)
+[22Nov2026 12:44:51.674] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Game directory: D:\khairy\java mod\mc-dev\NTM-Continuum\versions\26.1-neoforge\runs\generatedata
+[22Nov2026 12:44:51.849] [main/INFO] [net.neoforged.fml.loading.EarlyServiceDiscovery/]: Found 2 early service jars (out of 116) in 64ms
+[22Nov2026 12:44:51.851] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Loading FML Early Services:
+[22Nov2026 12:44:51.853] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.neoforged.fancymodloader/loader/11.0.15/69ddd98736a6b095783523404d1af8992842722/loader-11.0.15.jar
+[22Nov2026 12:44:51.855] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.neoforged.fancymodloader/earlydisplay/11.0.15/b254aa4ec40828f8ce65411dcb7fb9f6ce008064/earlydisplay-11.0.15.jar
+[22Nov2026 12:44:51.873] [main/INFO] [net.neoforged.fml.loading.ImmediateWindowHandler/]: Not loading early display in headless mode.
+[22Nov2026 12:44:51.938] [main/INFO] [net.neoforged.fml.loading.moddiscovery.locators.GameLocator/]: Detected a joined NeoForge and Minecraft configuration. Applying filtering...
+[22Nov2026 12:44:52.098] [main/INFO] [net.neoforged.fml.loading.moddiscovery.locators.InDevFolderLocator/CORE]: Got mod coordinates hbmRecipes%%D:\khairy\java mod\mc-dev\NTM-Continuum\versions\26.1-neoforge\build\classes\java\recipes;hbmRecipes%%D:\khairy\java mod\mc-dev\NTM-Continuum\versions\26.1-neoforge\build\resources\recipes;hbmRecipes%%D:\khairy\java mod\mc-dev\NTM-Continuum\versions\26.1-neoforge\build\classes\java\main from env
+[22Nov2026 12:44:52.663] [main/WARN] [net.neoforged.jarjar.selection.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: mezz_config. Using jar(C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.mezzdev.config/mezz_config-26.1.2-neoforge/0.6.3/7558f937b99e45cfe92b7f382a1c10cc983370aa/mezz_config-26.1.2-neoforge-0.6.3.jar)
+[22Nov2026 12:44:52.663] [main/INFO] [net.neoforged.fml.loading.moddiscovery.locators.JarInJarDependencyLocator/]: Found 2 dependencies adding them to mods collection
+[22Nov2026 12:44:52.668] [main/INFO] [net.neoforged.fml.loading.moddiscovery.ModDiscoverer/]: 
      Mod List:
 		Name Version (Mod Id)
 
-		Create: Fission Works 0.1.0 (fissionworks)
 		Golem Core 1.0.6 (golemcore)
 		Just Enough Items 29.43.0.107 (jei)
 		MezzConfig 0.6.3 (mezz_config)
 		Minecraft 26.1.2 (minecraft)
 		NeoForge 26.1.2.126 (neoforge)
+		NTM - Continuum 1.0.6 (hbm)
 		Pipez 1.2.31+26.1.2 (pipez)
-[22Nov2026 12:18:59.226] [main/ERROR] [net.neoforged.fml.loading.ModSorter/LOADING]: Missing or unsupported mandatory dependencies:
-	Mod ID: 'create', Requested by: 'fissionworks', Expected range: '[6.0.0,)', Actual version: '[MISSING]'
-	Mod ID: 'minecraft', Requested by: 'fissionworks', Expected range: '[1.21.1,1.21.1]', Actual version: '26.1.2'
-[22Nov2026 12:18:59.318] [main/ERROR] [net.neoforged.fml.loading.FMLLoader/]: Mod fissionworks requires create 6.0.0 or above
-Currently, create is not installed
-
-[22Nov2026 12:18:59.320] [main/ERROR] [net.neoforged.fml.loading.FMLLoader/]: Mod fissionworks requires minecraft 1.21.1
-Currently, minecraft is 26.1.2
-
-[22Nov2026 12:18:59.321] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Closing FML Loader 4044fb95
-[22Nov2026 12:18:59.322] [main/ERROR] [net.neoforged.fml.loading.modscan.BackgroundScanHandler/SCAN]: An error occurred scanning file composite(filtered(jar(D:/khairy/java mod/mc-dev/NTM-Continuum/versions/26.1-neoforge/build/moddev/artifacts/minecraft-patched-26.1.2.126.jar)), filtered(jar(D:/khairy/java mod/mc-dev/NTM-Continuum/versions/26.1-neoforge/build/moddev/artifacts/minecraft-patched-26.1.2.126.jar)))
-java.util.concurrent.CancellationException
-	at java.base/java.util.concurrent.CompletableFuture.cancel(CompletableFuture.java:2552) ~[?:?]
-	at net.neoforged.fml.loading.moddiscovery.ModFile.close(ModFile.java:246) ~[loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.loading.FMLLoader.close(FMLLoader.java:239) [loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.loading.FMLLoader.create(FMLLoader.java:415) [loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.startup.Entrypoint.startup(Entrypoint.java:65) [loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.startup.GameTestServer.main(GameTestServer.java:17) [loader-11.0.15.jar:11.0]
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[?:?]
-	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[?:?]
-	at net.neoforged.devlaunch.Main.main(Main.java:57) [DevLaunch-1.0.2.jar:?]
-[22Nov2026 12:18:59.348] [main/ERROR] [net.neoforged.fml.loading.modscan.BackgroundScanHandler/SCAN]: An error occurred scanning file composite(filtered(jar(C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.1.2.126/e03e444b0e0793b0fa76b967d944af6fa855516e/neoforge-26.1.2.126-universal.jar)))
-java.util.concurrent.CancellationException
-	at java.base/java.util.concurrent.CompletableFuture.cancel(CompletableFuture.java:2552) ~[?:?]
-	at net.neoforged.fml.loading.moddiscovery.ModFile.close(ModFile.java:246) ~[loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.loading.FMLLoader.close(FMLLoader.java:239) [loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.loading.FMLLoader.create(FMLLoader.java:415) [loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.startup.Entrypoint.startup(Entrypoint.java:65) [loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.startup.GameTestServer.main(GameTestServer.java:17) [loader-11.0.15.jar:11.0]
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[?:?]
-	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[?:?]
-	at net.neoforged.devlaunch.Main.main(Main.java:57) [DevLaunch-1.0.2.jar:?]
-[22Nov2026 12:18:59.352] [main/ERROR] [net.neoforged.fml.loading.modscan.BackgroundScanHandler/SCAN]: An error occurred scanning file composite(filtered(jar(C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.1.2.126/e03e444b0e0793b0fa76b967d944af6fa855516e/neoforge-26.1.2.126-universal.jar))) > jar(C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.1.2.126/e03e444b0e0793b0fa76b967d944af6fa855516e/neoforge-26.1.2.126-universal.jar > mixinextras-neoforge-0.5.5.jar)
-java.util.concurrent.CancellationException
-	at java.base/java.util.concurrent.CompletableFuture.cancel(CompletableFuture.java:2552) ~[?:?]
-	at net.neoforged.fml.loading.moddiscovery.ModFile.close(ModFile.java:246) ~[loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.loading.FMLLoader.close(FMLLoader.java:245) [loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.loading.FMLLoader.create(FMLLoader.java:415) [loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.startup.Entrypoint.startup(Entrypoint.java:65) [loader-11.0.15.jar:11.0]
-	at net.neoforged.fml.startup.GameTestServer.main(GameTestServer.java:17) [loader-11.0.15.jar:11.0]
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[?:?]
-	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[?:?]
-	at net.neoforged.devlaunch.Main.main(Main.java:57) [DevLaunch-1.0.2.jar:?]
-[22Nov2026 12:18:59.358] [main/INFO] [net.neoforged.fml.ModLoader/]: Clearing ModLoader
-[22Nov2026 12:18:59.362] [main/ERROR] [net.neoforged.fml.startup.Entrypoint/]: Failed to start FML: net.neoforged.fml.ModLoadingException: Loading errors encountered:
-	- Mod fissionworks requires create 6.0.0 or above
-	  Currently, create is not installed
-	  
-	- Mod fissionworks requires minecraft 1.21.1
-	  Currently, minecraft is 26.1.2
-	  
-
-	at net.neoforged.fml.loading.FMLLoader.create(FMLLoader.java:356)
-	at net.neoforged.fml.startup.Entrypoint.startup(Entrypoint.java:65)
-	at net.neoforged.fml.startup.GameTestServer.main(GameTestServer.java:17)
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
-	at net.neoforged.devlaunch.Main.main(Main.java:57)
-
+[22Nov2026 12:44:53.988] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.17.4+mixin.0.8.7/5f66cc9f59b8efaa942155a3d5a30599bf6640dd/sponge-mixin-0.17.4+mixin.0.8.7.jar Service=FML Env=SERVER
+[22Nov2026 12:44:54.030] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Loading FML Plugins:
+[22Nov2026 12:44:54.032] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]:  - C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.1.2.126/e03e444b0e0793b0fa76b967d944af6fa855516e/neoforge-26.1.2.126-universal.jar > net.neoforged.neoforge-coremods-26.1.2.126.jar
+[22Nov2026 12:44:54.194] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Building game content classloader:
+ - golemcore (jar(D:/khairy/java mod/mc-dev/Golem-Core/versions/26.1-neoforge/build/libs/golemcore-neoforge-1.0.6+26.1.jar))
+ - hbm (composite(folder(D:/khairy/java mod/mc-dev/NTM-Continuum/versions/26.1-neoforge/build/classes/java/recipes), folder(D:/khairy/java mod/mc-dev/NTM-Continuum/versions/26.1-neoforge/build/resources/recipes), folder(D:/khairy/java mod/mc-dev/NTM-Continuum/versions/26.1-neoforge/build/classes/java/main)))
+ - jei (jar(C:/Users/multi/.gradle/caches/modules-2/files-2.1/mezz.jei/jei-26.1.2-neoforge/29.43.0.107/8c5462e8e6af9ac4dd8b881091667ea0fd1ee3b2/jei-26.1.2-neoforge-29.43.0.107.jar))
+ - mezz_config (jar(C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.mezzdev.config/mezz_config-26.1.2-neoforge/0.6.3/7558f937b99e45cfe92b7f382a1c10cc983370aa/mezz_config-26.1.2-neoforge-0.6.3.jar))
+ - minecraft (composite(filtered(jar(D:/khairy/java mod/mc-dev/NTM-Continuum/versions/26.1-neoforge/build/moddev/artifacts/minecraft-patched-26.1.2.126.jar)), filtered(jar(D:/khairy/java mod/mc-dev/NTM-Continuum/versions/26.1-neoforge/build/moddev/artifacts/minecraft-patched-26.1.2.126.jar))))
+ - mixinextras.neoforge (jar(C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.1.2.126/e03e444b0e0793b0fa76b967d944af6fa855516e/neoforge-26.1.2.126-universal.jar > mixinextras-neoforge-0.5.5.jar))
+ - neoforge (composite(filtered(jar(C:/Users/multi/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.1.2.126/e03e444b0e0793b0fa76b967d944af6fa855516e/neoforge-26.1.2.126-universal.jar))))
+ - net.neoforged.fml.generated (empty(VirtualJar/net.neoforged.fml.generated))
+ - pipez (jar(C:/Users/multi/.gradle/caches/modules-2/files-2.1/maven.modrinth/pipez/neoforge-1.2.31+26.1.2/3c84fb0a8d7e746f1dc2a6fa738e39f3ec58a575/pipez-neoforge-1.2.31+26.1.2.jar))
+[22Nov2026 12:44:54.220] [main/INFO] [net.neoforged.fml.loading.FMLLoader/]: Built game content classloader in 43ms
+[22Nov2026 12:44:55.235] [main/INFO] [net.minecraft.gametest.framework.GameTestMainUtil/]: Running GameTestMain with cwd 'D:\khairy\java mod\mc-dev\NTM-Continuum\versions\26.1-neoforge\runs\generatedata', universe path 'gametestserver'
+[22Nov2026 12:44:55.256] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.5).
+[22Nov2026 12:45:04.591] [modloading-worker-0/INFO] [Golem Core/]: Golem Core loaded on NEOFORGE for MC 26.1
+[22Nov2026 12:45:04.621] [modloading-worker-0/INFO] [net.neoforged.neoforge.common.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 26.1.2.126, for MC 26.1.2
+[22Nov2026 12:45:04.653] [modloading-worker-0/INFO] [hbm/]: Hello NeoForge world!
+[22Nov2026 12:45:04.825] [modloading-worker-0/INFO] [hbm/]: [HBM] Applied 0 bundled fluid property file(s) of Fluids
+[22Nov2026 12:45:04.826] [modloading-worker-0/INFO] [hbm/]: [HBM] Registered 157 fluids
+[22Nov2026 12:45:10.710] [modloading-worker-0/INFO] [hbm/]: Loaded 1 custom machine(s) from D:\khairy\java mod\mc-dev\NTM-Continuum\versions\26.1-neoforge\runs\generatedata\config\hbmConfig\hbmCustomMachines.json
+[22Nov2026 12:45:13.032] [modloading-worker-0/INFO] [Golem Core/]: Payload transport: requested ACCELERATED, channel accessors present
+[22Nov2026 12:45:13.779] [modloading-worker-0/INFO] [hbm/]: Happy ghasts present: a ready Fat Man can be rigged for carrying
+[22Nov2026 12:45:27.980] [modloading-sync-worker/INFO] [hbm/]: Machine config hbmMachines.json holds 26 machine(s)
+[22Nov2026 12:45:28.064] [modloading-sync-worker/INFO] [hbm/]: [HBM] 28 launchable missiles registered
+[22Nov2026 12:45:28.070] [modloading-sync-worker/INFO] [Golem Core/]: Mod entries registered: [com.hbm.HbmEntry]
+[22Nov2026 12:45:28.537] [NeoForge Version Check/INFO] [net.neoforged.fml.VersionChecker/]: [pipez] Starting version check at https://update.maxhenkel.de/neoforge/pipez
+[22Nov2026 12:45:31.966] [NeoForge Version Check/INFO] [net.neoforged.fml.VersionChecker/]: [pipez] Found status: BETA Current: 1.2.31+26.1.2 Target: 1.2.31+26.1.2
+[22Nov2026 12:45:38.006] [main/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 4181 recipes
+[22Nov2026 12:45:38.072] [main/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 1679 advancements
+[22Nov2026 12:45:38.078] [main/INFO] [net.neoforged.neoforge.common.crafting.RecipePriorityManager/]: Loaded 0 recipe priority overrides
+[22Nov2026 12:45:40.026] [Server thread/INFO] [Golem Core/]: Removed 67 recipe(s) listed in recipe_removals files or with unmet golem:requires (0 id(s) listed, 67 unmet)
+[22Nov2026 12:45:40.556] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Selecting global world spawn...
+[22Nov2026 12:45:41.772] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Loading 0 persistent chunks...
+[22Nov2026 12:45:41.774] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Preparing spawn area: 100%
+[22Nov2026 12:45:41.776] [Server thread/INFO] [net.minecraft.server.level.progress.LoggingLevelLoadListener/]: Time elapsed: 1221 ms
+[22Nov2026 12:45:41.802] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: Started game test server
+[22Nov2026 12:45:43.125] [Server thread/INFO] [net.neoforged.neoforge.server.permission.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[22Nov2026 12:45:54.985] [Server thread/INFO] [Golem Core/]: [DATA] generated 5039 row(s) from 2 into D:\khairy\java mod\mc-dev\NTM-Continuum\build\generated\data; stopping
+[22Nov2026 12:45:55.006] [Server thread/INFO] [hbm/]: [HBM] Applied 0 fluid property patch(es) to 0 fluid(s)
+[22Nov2026 12:45:55.009] [Server thread/INFO] [hbm/]: [HBM] Applied 0 fluid property file(s)
+[22Nov2026 12:45:55.020] [Server thread/INFO] [hbm/]: [HBM] Loaded 4114 total recipes
+[22Nov2026 12:45:55.056] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[22Nov2026 12:45:55.056] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+[22Nov2026 12:45:55.057] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[22Nov2026 12:45:55.966] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Test Level]'/minecraft:overworld
+[22Nov2026 12:45:56.935] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Test Level]'/minecraft:the_end
+[22Nov2026 12:45:56.950] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[Test Level]'/minecraft:the_nether
+[22Nov2026 12:45:57.009] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[22Nov2026 12:45:57.009] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[22Nov2026 12:45:57.009] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[22Nov2026 12:45:57.010] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
+[22Nov2026 12:45:57.080] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: Game test server shutting down
