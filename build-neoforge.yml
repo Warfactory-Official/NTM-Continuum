@@ -1,0 +1,72 @@
+# Builds the 1.21.1 NeoForge jars (HBM + the Golem Core jar it needs) on every push to any branch and on demand,
+# and attaches them to the run as a downloadable artifact. Does not publish a release.
+name: Build 1.21.1 NeoForge
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      golem_ref:
+        description: Golem Core branch, tag or commit to build against
+        default: main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-neoforge-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      # Same reason as upstream's prerelease.yml: build Minecraft with the local recompile pipeline.
+      CI: "false"
+    steps:
+      # settings.gradle.kts includes ../Golem-Core, so the two repos sit side by side.
+      - uses: actions/checkout@v4
+        with:
+          path: NTM-Continuum
+
+      - uses: actions/checkout@v4
+        with:
+          repository: Warfactory-Official/Golem-Core
+          ref: ${{ inputs.golem_ref || 'main' }}
+          path: Golem-Core
+
+      # 1.21.1 compiles on 21; the 26.1 node that the HBM build also touches needs 25. The last one listed runs Gradle.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+            25
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Golem Core (1.21.1 NeoForge)
+        working-directory: Golem-Core
+        run: bash ./gradlew --configure-on-demand :1.21.1-neoforge:build --no-daemon --stacktrace
+
+      - name: Build HBM (1.21.1 NeoForge)
+        working-directory: NTM-Continuum
+        run: bash ./gradlew --configure-on-demand :1.21.1-neoforge:build --no-daemon --stacktrace
+
+      - name: Collect jars
+        if: always()
+        run: |
+          mkdir -p dist
+          for repo in NTM-Continuum Golem-Core; do
+            find $repo/versions/1.21.1-neoforge/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \; || true
+          done
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neoforge-1.21.1-jars
+          path: dist/*.jar
+          if-no-files-found: error
