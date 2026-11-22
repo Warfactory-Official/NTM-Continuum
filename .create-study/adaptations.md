@@ -1,0 +1,2 @@
+# adaptations
+[both] [inferred] fission-pile: learned form-by-tool-click from IE (centre block is the click target). Original: 3x3x3 pile, panel on front face is the wrench target, no block entity (state-only FORMED flag), failed form reports first wrong block position, formed core glows. Plugs into Create via AllItems.WRENCH only. Omits stress output, rods, recipes, Ponder. (IE hammer-form, vintageengineering wrench-form, create-nuclear deployer-build) 2026-11-12

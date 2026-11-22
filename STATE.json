@@ -1,0 +1,129 @@
+{
+  "target": {
+    "loader": "neoforge",
+    "minecraft": "1.21.1",
+    "create": "6.0.10",
+    "java": 21
+  },
+  "features": {
+    "sim": {
+      "wave": 1,
+      "compiled": true,
+      "run": false,
+      "tests": "19 pass"
+    },
+    "hall_forming": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "rod_groups": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "console_gui": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "az5": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "fuel_glow": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "rod_models": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "recipes": {
+      "wave": 2,
+      "started": false
+    },
+    "ponder": {
+      "wave": 2,
+      "started": false
+    },
+    "goggles": {
+      "wave": 2,
+      "started": false
+    },
+    "config": {
+      "wave": 2,
+      "started": false
+    },
+    "heat": {
+      "wave": 2,
+      "started": false
+    },
+    "steam": {
+      "wave": 2,
+      "started": false
+    },
+    "kinetic_output": {
+      "wave": 2,
+      "started": false
+    },
+    "zirnox_block": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "zirnox_gui": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "zirnox_fluid_ports": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "gas_fluids": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "fuel_rods": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "meltdown": {
+      "wave": 1,
+      "compiled": false,
+      "run": false
+    },
+    "zirnox_model": {
+      "wave": 1,
+      "compiled": true,
+      "tests": "21 pass"
+    },
+    "gas_compressor": {
+      "wave": 2,
+      "started": false
+    },
+    "turbine_stages": {
+      "wave": 2,
+      "started": false
+    },
+    "condenser": {
+      "wave": 2,
+      "started": false
+    },
+    "spent_fuel_reprocessing": {
+      "wave": 2,
+      "started": false
+    },
+    "zirnox_recipes": {
+      "wave": 2,
+      "started": false
+    }
+  }
+}

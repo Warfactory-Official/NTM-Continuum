@@ -1,0 +1,16 @@
+org.gradle.jvmargs=-Xmx2G
+org.gradle.daemon=false
+minecraft_version=1.21.1
+neo_version=21.1.219
+parchment_minecraft_version=1.21.1
+parchment_mappings_version=2024.11.17
+mod_id=fissionworks
+mod_version=0.1.0
+mod_group_id=fissionworks
+# Create 6.0.10 on CurseForge (file id read from its page)
+create_curse_file=7963363
+# From Create's own gradle.properties on mc1.21.1/dev
+registrate_version=MC1.21-1.3.0+67
+flywheel_version=1.0.6
+ponder_version=1.0.85
+loomx.loom_version=1.16.3

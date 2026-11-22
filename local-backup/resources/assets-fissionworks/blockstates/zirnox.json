@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "fissionworks:block/zirnox"
+    },
+    "facing=east": {
+      "model": "fissionworks:block/zirnox",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "fissionworks:block/zirnox",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "fissionworks:block/zirnox",
+      "y": 270
+    }
+  }
+}

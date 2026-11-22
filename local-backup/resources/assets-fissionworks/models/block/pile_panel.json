@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "fissionworks:block/pile_panel_front",
+    "side": "fissionworks:block/pile_casing",
+    "top": "fissionworks:block/pile_casing"
+  }
+}

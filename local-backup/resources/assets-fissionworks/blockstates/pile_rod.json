@@ -1,0 +1,142 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "fissionworks:block/pile_rod_f0"
+    },
+    "formed=true,group=0,level=0": {
+      "model": "fissionworks:block/pile_rod_f1_g0_l0"
+    },
+    "formed=true,group=0,level=1": {
+      "model": "fissionworks:block/pile_rod_f1_g0_l1"
+    },
+    "formed=true,group=0,level=2": {
+      "model": "fissionworks:block/pile_rod_f1_g0_l2"
+    },
+    "formed=true,group=0,level=3": {
+      "model": "fissionworks:block/pile_rod_f1_g0_l3"
+    },
+    "formed=true,group=0,level=4": {
+      "model": "fissionworks:block/pile_rod_f1_g0_l4"
+    },
+    "formed=true,group=0,level=5": {
+      "model": "fissionworks:block/pile_rod_f1_g0_l5"
+    },
+    "formed=true,group=0,level=6": {
+      "model": "fissionworks:block/pile_rod_f1_g0_l6"
+    },
+    "formed=true,group=0,level=7": {
+      "model": "fissionworks:block/pile_rod_f1_g0_l7"
+    },
+    "formed=true,group=0,level=8": {
+      "model": "fissionworks:block/pile_rod_f1_g0_l8"
+    },
+    "formed=true,group=1,level=0": {
+      "model": "fissionworks:block/pile_rod_f1_g1_l0"
+    },
+    "formed=true,group=1,level=1": {
+      "model": "fissionworks:block/pile_rod_f1_g1_l1"
+    },
+    "formed=true,group=1,level=2": {
+      "model": "fissionworks:block/pile_rod_f1_g1_l2"
+    },
+    "formed=true,group=1,level=3": {
+      "model": "fissionworks:block/pile_rod_f1_g1_l3"
+    },
+    "formed=true,group=1,level=4": {
+      "model": "fissionworks:block/pile_rod_f1_g1_l4"
+    },
+    "formed=true,group=1,level=5": {
+      "model": "fissionworks:block/pile_rod_f1_g1_l5"
+    },
+    "formed=true,group=1,level=6": {
+      "model": "fissionworks:block/pile_rod_f1_g1_l6"
+    },
+    "formed=true,group=1,level=7": {
+      "model": "fissionworks:block/pile_rod_f1_g1_l7"
+    },
+    "formed=true,group=1,level=8": {
+      "model": "fissionworks:block/pile_rod_f1_g1_l8"
+    },
+    "formed=true,group=2,level=0": {
+      "model": "fissionworks:block/pile_rod_f1_g2_l0"
+    },
+    "formed=true,group=2,level=1": {
+      "model": "fissionworks:block/pile_rod_f1_g2_l1"
+    },
+    "formed=true,group=2,level=2": {
+      "model": "fissionworks:block/pile_rod_f1_g2_l2"
+    },
+    "formed=true,group=2,level=3": {
+      "model": "fissionworks:block/pile_rod_f1_g2_l3"
+    },
+    "formed=true,group=2,level=4": {
+      "model": "fissionworks:block/pile_rod_f1_g2_l4"
+    },
+    "formed=true,group=2,level=5": {
+      "model": "fissionworks:block/pile_rod_f1_g2_l5"
+    },
+    "formed=true,group=2,level=6": {
+      "model": "fissionworks:block/pile_rod_f1_g2_l6"
+    },
+    "formed=true,group=2,level=7": {
+      "model": "fissionworks:block/pile_rod_f1_g2_l7"
+    },
+    "formed=true,group=2,level=8": {
+      "model": "fissionworks:block/pile_rod_f1_g2_l8"
+    },
+    "formed=true,group=3,level=0": {
+      "model": "fissionworks:block/pile_rod_f1_g3_l0"
+    },
+    "formed=true,group=3,level=1": {
+      "model": "fissionworks:block/pile_rod_f1_g3_l1"
+    },
+    "formed=true,group=3,level=2": {
+      "model": "fissionworks:block/pile_rod_f1_g3_l2"
+    },
+    "formed=true,group=3,level=3": {
+      "model": "fissionworks:block/pile_rod_f1_g3_l3"
+    },
+    "formed=true,group=3,level=4": {
+      "model": "fissionworks:block/pile_rod_f1_g3_l4"
+    },
+    "formed=true,group=3,level=5": {
+      "model": "fissionworks:block/pile_rod_f1_g3_l5"
+    },
+    "formed=true,group=3,level=6": {
+      "model": "fissionworks:block/pile_rod_f1_g3_l6"
+    },
+    "formed=true,group=3,level=7": {
+      "model": "fissionworks:block/pile_rod_f1_g3_l7"
+    },
+    "formed=true,group=3,level=8": {
+      "model": "fissionworks:block/pile_rod_f1_g3_l8"
+    },
+    "formed=true,group=4,level=0": {
+      "model": "fissionworks:block/pile_rod_f1_g4_l0"
+    },
+    "formed=true,group=4,level=1": {
+      "model": "fissionworks:block/pile_rod_f1_g4_l1"
+    },
+    "formed=true,group=4,level=2": {
+      "model": "fissionworks:block/pile_rod_f1_g4_l2"
+    },
+    "formed=true,group=4,level=3": {
+      "model": "fissionworks:block/pile_rod_f1_g4_l3"
+    },
+    "formed=true,group=4,level=4": {
+      "model": "fissionworks:block/pile_rod_f1_g4_l4"
+    },
+    "formed=true,group=4,level=5": {
+      "model": "fissionworks:block/pile_rod_f1_g4_l5"
+    },
+    "formed=true,group=4,level=6": {
+      "model": "fissionworks:block/pile_rod_f1_g4_l6"
+    },
+    "formed=true,group=4,level=7": {
+      "model": "fissionworks:block/pile_rod_f1_g4_l7"
+    },
+    "formed=true,group=4,level=8": {
+      "model": "fissionworks:block/pile_rod_f1_g4_l8"
+    }
+  }
+}

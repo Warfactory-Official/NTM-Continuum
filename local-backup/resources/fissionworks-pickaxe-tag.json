@@ -1,0 +1,12 @@
+{
+  "values": [
+    "fissionworks:pile_casing",
+    "fissionworks:pile_panel",
+    "fissionworks:pile_rod",
+    "fissionworks:pile_fuel",
+    "fissionworks:pile_moderator",
+    "fissionworks:pile_reflector",
+    "fissionworks:pile_absorber",
+    "fissionworks:zirnox"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "fissionworks:block/pile_fuel_p0"
+    },
+    "formed=true,glow=0": {
+      "model": "fissionworks:block/pile_fuel_p0"
+    },
+    "formed=true,glow=1": {
+      "model": "fissionworks:block/pile_fuel_p1"
+    },
+    "formed=true,glow=2": {
+      "model": "fissionworks:block/pile_fuel_p2"
+    },
+    "formed=true,glow=3": {
+      "model": "fissionworks:block/pile_fuel_p3"
+    },
+    "formed=true,glow=4": {
+      "model": "fissionworks:block/pile_fuel_p4"
+    }
+  }
+}

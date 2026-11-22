@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "fissionworks:block/pile_fuel_p0"
+  }
+}

@@ -1,41 +1,4 @@
-### Gradle
-.gradle/
 build/
-!gradle/wrapper/gradle-wrapper.jar
-
-### Stonecutter
-# Node directories are generated; only the per-node gradle.properties is authored by hand.
-versions/*/build/
-versions/*/.gradle/
-versions/*/runs/
-versions/*/src/generated/
-.stonecutter-cache/
-
-### Dev runs
-runs/
+.gradle/
 run/
-
-### IDE
-.idea/
-*.iml
-*.ipr
-*.iws
-out/
-.vscode/
-.classpath
-.project
-.settings/
-bin/
-
-### Java
-*.class
-hs_err_pid*
-replay_pid*
-
-### OS
-.DS_Store
-Thumbs.db
-
-### Visual test harness (CLI lives in ../Golem-Core/harness)
-.harness/
-*.log
+*.jar

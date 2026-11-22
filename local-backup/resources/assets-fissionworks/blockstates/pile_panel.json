@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,formed=false": {
+      "model": "fissionworks:block/pile_panel"
+    },
+    "facing=north,formed=true": {
+      "model": "fissionworks:block/pile_panel_formed"
+    },
+    "facing=east,formed=false": {
+      "model": "fissionworks:block/pile_panel",
+      "y": 90
+    },
+    "facing=east,formed=true": {
+      "model": "fissionworks:block/pile_panel_formed",
+      "y": 90
+    },
+    "facing=south,formed=false": {
+      "model": "fissionworks:block/pile_panel",
+      "y": 180
+    },
+    "facing=south,formed=true": {
+      "model": "fissionworks:block/pile_panel_formed",
+      "y": 180
+    },
+    "facing=west,formed=false": {
+      "model": "fissionworks:block/pile_panel",
+      "y": 270
+    },
+    "facing=west,formed=true": {
+      "model": "fissionworks:block/pile_panel_formed",
+      "y": 270
+    }
+  }
+}

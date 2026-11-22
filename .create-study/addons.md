@@ -1,0 +1,8 @@
+# addons
+[1.21.1] [seen] create-nuclear: LGPL-3.0, NeoForge 1.21.1, v2.0.0. Multiblock reactor; 2.0 requires Create Deployer to build item/fluid input and output blocks. No wrench-forming seen. (modrinth.com/project/z611fdf7) 2026-11-12
+[1.21.1] [seen] create-new-age: multiblock reactors give heat for boilers, plus electricity. Needs Botarium on 1.20.1 only. (curseforge.com/projects/905861) 2026-11-12
+[1.21.1] [seen] create-going-nuclear: pressurised water reactor, steam in Create pipes, heat port to New Age. NeoForge 1.21.1, Create 6.0.x. (modpackindex.com/mod/209636) 2026-11-12
+[both] [seen] create-nuclear-industry: raytraced radiation and heat fission addon. (modpackindex.com/mod/109887) 2026-11-12
+[1.21.1] [seen] create-going-nuclear (rods): has Control Rod Drives, SCRAM, Control Panel with SCRAM button and Redstone Link channels, RBMK scram power surge, simple vs full physics. Rods are NOT novel; our edge must be hands-on, visible state. (modpackindex.com/mod/209636) 2026-11-12
+[1.21.1] [seen] create-nuclear-industry (rods): boron control rods placed next to fuel rods absorb radiation particles; fuel glows with heat; meltdown cascades. (skinmc.net/project/create-nuclear-industry) 2026-11-12
+[both] [seen] hbm-zirnox: single fully built GCR (Magnox-inspired). Tanks CO2 16000, steam 8000 (super dense), water 32000 mB. Meltdown at 800C or 30 bar. Best CO2 about 14000; no function under 4000 CO2; venting CO2 raises temperature and power. 'Control rod button' is on/off. Rods with more neighbours deplete faster except breeders. Valve vents 1000 mB CO2. Missing table cells = unstable at that CO2. (nucleartech.wiki/wiki/ZIRNOX) 2026-11-13

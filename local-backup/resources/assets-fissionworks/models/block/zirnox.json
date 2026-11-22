@@ -1,0 +1,45 @@
+{
+  "textures": {
+    "front": "fissionworks:block/zirnox_front",
+    "water": "fissionworks:block/zirnox_port_water",
+    "co2": "fissionworks:block/zirnox_port_co2",
+    "steam": "fissionworks:block/zirnox_port_steam",
+    "back": "fissionworks:block/zirnox_back",
+    "bottom": "fissionworks:block/zirnox_bottom",
+    "particle": "fissionworks:block/zirnox_back"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#front"
+        },
+        "east": {
+          "texture": "#water"
+        },
+        "west": {
+          "texture": "#co2"
+        },
+        "up": {
+          "texture": "#steam"
+        },
+        "south": {
+          "texture": "#back"
+        },
+        "down": {
+          "texture": "#bottom"
+        }
+      }
+    }
+  ]
+}

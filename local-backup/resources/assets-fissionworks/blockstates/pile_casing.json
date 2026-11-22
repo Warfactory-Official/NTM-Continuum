@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "fissionworks:block/pile_casing"
+    },
+    "formed=true": {
+      "model": "fissionworks:block/pile_casing_formed"
+    }
+  }
+}
