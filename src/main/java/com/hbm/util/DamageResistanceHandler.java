@@ -2,6 +2,7 @@ package com.hbm.util;
 
 import com.hbm.api.data.ArmorDataMaps;
 import com.hbm.api.entity.IResistanceProvider;
+import com.hbm.config.GeneralConfig;
 import com.hbm.handler.ArmorModEvents;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.ArmorUtil;
@@ -174,9 +175,13 @@ public final class DamageResistanceHandler {
         return result[0];
     }
 
+    private static boolean setBonuses(LivingEntity entity) {
+        return entity instanceof Player || GeneralConfig.mobSetBonuses;
+    }
+
     private static void onEntityAttacked(DamageEvents.DamageEvent event) {
-        if (event.entity() instanceof Player player) {
-            ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        if (setBonuses(event.entity())) {
+            ItemStack chest = event.entity().getItemBySlot(EquipmentSlot.CHEST);
             if (chest.getItem() instanceof ArmorFSB fsb) fsb.handleAttack(event);
             if (event.isCanceled()) return;
         }
@@ -197,8 +202,8 @@ public final class DamageResistanceHandler {
         // 1.7 onEntityDamaged: the player shield soaks first, then the armor modules run.
         ArmorModEvents.absorbShield(event);
         applyArmorModules(event);
-        if (event.entity() instanceof Player player) {
-            ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        if (setBonuses(event.entity())) {
+            ItemStack chest = event.entity().getItemBySlot(EquipmentSlot.CHEST);
             if (chest.getItem() instanceof ArmorFSB fsb) fsb.handleHurt(event);
             if (event.isCanceled()) return;
         }

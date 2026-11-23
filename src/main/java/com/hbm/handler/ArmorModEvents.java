@@ -250,7 +250,7 @@ public final class ArmorModEvents {
     // Sounds
 
     public static final int PLINK_COOLDOWN_TICKS = 10;
-    private static final Map<Player, Long> PLINK = new WeakHashMap<>();
+    private static final Map<LivingEntity, Long> PLINK = new WeakHashMap<>();
 
     /** Remaining time in the same sound throttle used by actual armor interception. */
     public static int plinkCooldown(Player player) {
@@ -259,13 +259,13 @@ public final class ArmorModEvents {
     }
 
     /** 1.7 {@code HbmPlayerProps.plink}: a sound with a 10-tick per-player cooldown. */
-    public static void plink(Player player, SoundEvent sound, float volume, float pitch) {
-        long now = player.level().getGameTime();
-        Long last = PLINK.get(player);
+    public static void plink(LivingEntity entity, SoundEvent sound, float volume, float pitch) {
+        long now = entity.level().getGameTime();
+        Long last = PLINK.get(entity);
         if (last == null || now - last >= PLINK_COOLDOWN_TICKS) {
-            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS,
+            entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), sound, SoundSource.PLAYERS,
                     volume, pitch);
-            PLINK.put(player, now);
+            PLINK.put(entity, now);
         }
     }
 

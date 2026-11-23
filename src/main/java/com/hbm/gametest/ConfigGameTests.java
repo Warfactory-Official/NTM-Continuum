@@ -65,6 +65,7 @@ public final class ConfigGameTests {
             {"01_general", "1.91_sableHardnessMass", "false"},
             {"01_general", "1.92_sableBlockMasses", ""},
             {"01_general", "1.93_deImportBackup", "true"},
+            {"01_general", "1.94_mobSetBonuses", "false"},
             {"09_machines", "9.50_energyRatioHE", "5"},
             {"09_machines", "9.51_energyRatioFE", "1"},
             {"09_machines", "9.52_foreignExportReserve", "0.0"},

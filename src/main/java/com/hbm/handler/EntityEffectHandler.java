@@ -104,6 +104,7 @@ public class EntityEffectHandler {
         // Full-set armour. Runs on both sides because the footstep sound is client-side and the charge
         // drain is server-side; this is the port's stand-in for 1.12's PlayerTickEvent + onArmorTick.
         if (entity instanceof Player player) handleArmor(player);
+        else if (GeneralConfig.mobSetBonuses && !entity.level().isClientSide()) ArmorFSB.handleMobTick(entity);
 
         if (entity.level().isClientSide() && entity instanceof Player player && player.isLocalPlayer()) {
             craterAura(player);

@@ -22,6 +22,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -112,8 +113,8 @@ public class ArmorDNT extends ArmorFSBPowered {
 
     @Override
     public void handleAttack(DamageEvents.DamageEvent event) {
-        if (event.entity() instanceof Player player && ArmorFSB.hasFSBArmor(player)
-                && !event.source().is(DamageTypeTags.IS_EXPLOSION)) {
+        LivingEntity player = event.entity();
+        if (ArmorFSB.hasFSBArmor(player) && !event.source().is(DamageTypeTags.IS_EXPLOSION)) {
             if (event.amount() > 0F && !SILENT_ATTACK.invoker().test(event.source())) {
                 ArmorModEvents.plink(player, Sounds.minecraft("entity.item.break"), 0.5F,
                         1F + player.getRandom().nextFloat() * 0.5F);
@@ -124,7 +125,7 @@ public class ArmorDNT extends ArmorFSBPowered {
 
     @Override
     public void handleHurt(DamageEvents.DamageEvent event) {
-        if (!(event.entity() instanceof Player player) || !ArmorFSB.hasFSBArmor(player)) return;
+        if (!ArmorFSB.hasFSBArmor(event.entity())) return;
         if (event.source().is(DamageTypeTags.IS_EXPLOSION)) event.setAmount(event.amount() * 0.001F);
         else event.setAmount(0F);
     }

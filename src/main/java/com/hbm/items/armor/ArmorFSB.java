@@ -44,6 +44,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -183,7 +184,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
      * {@link #isArmorEnabled}, which is how "out of power" disables a powered suit's bonuses without
      * unequipping anything. The head slot is skipped for suits declaring {@link #setNoHelmet}.
      */
-    public static boolean hasFSBArmor(Player entity) {
+    public static boolean hasFSBArmor(LivingEntity entity) {
         return hasSet(entity, true);
     }
 
@@ -228,7 +229,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
     private static final EquipmentSlot[] ARMOR_SLOTS = {
             EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
 
-    private static boolean hasSet(Player entity, boolean requireEnabled) {
+    private static boolean hasSet(LivingEntity entity, boolean requireEnabled) {
         if (entity == null) return false;
 
         ItemStack plate = entity.getItemBySlot(EquipmentSlot.CHEST);
@@ -248,7 +249,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
     }
 
     /** The worn chestplate if it is an {@link ArmorFSB}, else null. */
-    public static ArmorFSB chestplate(Player player) {
+    public static ArmorFSB chestplate(LivingEntity player) {
         return player != null && player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorFSB fsb
                 ? fsb : null;
     }
@@ -301,20 +302,29 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
 
         ArmorFSB chestplate = chestplate(player);
         if (chestplate == null) return;
+        applyEffects(player, chestplate);
 
+        if (step && chestplate.step != null && player.level().isClientSide() && player.onGround()
+                && !player.isShiftKeyDown()) {
+            steppy(player, chestplate.step.get());
+        }
+    }
+
+    /** port: {@code 1.94_mobSetBonuses}, a full set's effects and step size on a mob; 1.7 ran them for players only. */
+    public static void handleMobTick(LivingEntity entity) {
+        updateStepSize(entity);
+        if (hasFSBArmor(entity)) applyEffects(entity, chestplate(entity));
+    }
+
+    private static void applyEffects(LivingEntity entity, ArmorFSB chestplate) {
         for (MobEffectInstance effect : chestplate.effects) {
             Object kind = effect.getEffect();
             // visible = false hides the particles (upstream's intent); showIcon = true keeps the status
             // icon, which 1.12's five-argument PotionEffect also did. The modern five-argument constructor
             // lets showIcon follow visible, which would make a working set bonus indistinguishable from a
             // broken one.
-            player.addEffect(Effects.instance(kind, effect.getDuration(), effect.getAmplifier(),
+            entity.addEffect(Effects.instance(kind, effect.getDuration(), effect.getAmplifier(),
                     effect.isAmbient(), false, true));
-        }
-
-        if (step && chestplate.step != null && player.level().isClientSide() && player.onGround()
-                && !player.isShiftKeyDown()) {
-            steppy(player, chestplate.step.get());
         }
     }
 
@@ -325,7 +335,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
      * facade tracks ownership by id instead, so only the value is kept. Run on both sides here because the
      * modern step height is a synced attribute rather than a client-only field.
      */
-    private static void updateStepSize(Player player) {
+    private static void updateStepSize(LivingEntity player) {
         ArmorFSB plate = chestplate(player);
         int size = plate != null && hasFSBArmor(player) ? plate.stepSize : 0;
         if (size > 0) StepHeight.set(player, "hbm:armor_step_size", size + 0.003D);

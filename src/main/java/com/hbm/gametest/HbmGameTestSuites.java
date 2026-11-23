@@ -53,6 +53,7 @@ public final class HbmGameTestSuites {
             list.add(Gh207GameTests.TESTS);
             list.add(Gh224GameTests.TESTS);
             list.add(Gh228GameTests.TESTS);
+            list.add(Gh225GameTests.TESTS);
             list.add(Gh126GameTests.TESTS);
             list.add(Gh155GameTests.TESTS);
             list.add(Gh159To160GameTests.TESTS);
@@ -191,6 +192,7 @@ public final class HbmGameTestSuites {
         Gh207GameTests.init();
         Gh224GameTests.init();
         Gh228GameTests.init();
+        Gh225GameTests.init();
         Gh155GameTests.init();
         Gh159To160GameTests.init();
         DerrickBlastGameTests.init();

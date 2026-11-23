@@ -11,6 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -39,7 +40,8 @@ public class ArmorTrenchmaster extends ArmorFSB {
 
     @Override
     public void handleHurt(DamageEvents.DamageEvent event) {
-        if (!(event.entity() instanceof Player player) || !ArmorFSB.hasFSBArmor(player)) return;
+        LivingEntity player = event.entity();
+        if (!ArmorFSB.hasFSBArmor(player)) return;
         // 1.7 source.getSourceOfDamage() == player on an explosion: the wearer's own blast. A modern
         // explosion names its culprit as the causing entity and the exploding thing as the direct one.
         if (event.source().is(DamageTypeTags.IS_EXPLOSION)
@@ -50,7 +52,8 @@ public class ArmorTrenchmaster extends ArmorFSB {
 
     @Override
     public void handleAttack(DamageEvents.DamageEvent event) {
-        if (!(event.entity() instanceof Player player) || !ArmorFSB.hasFSBArmor(player)) return;
+        LivingEntity player = event.entity();
+        if (!ArmorFSB.hasFSBArmor(player)) return;
         if (player.getRandom().nextInt(3) == 0) {
             ArmorModEvents.plink(player, Sounds.minecraft("entity.item.break"), 0.5F,
                     1.0F + player.getRandom().nextFloat() * 0.5F);

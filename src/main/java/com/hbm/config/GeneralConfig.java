@@ -65,6 +65,8 @@ public final class GeneralConfig {
     public static String[] sableBlockMasses = new String[0];
     /** Port-only {@code 1.93_deImportBackup}: the DE importer copies the world beside itself before converting it. */
     public static boolean deImportBackup = true;
+    /** Port-only {@code 1.94_mobSetBonuses}: a full armor set's bonuses also work on mobs wearing it. */
+    public static boolean mobSetBonuses = false;
 
     /** Old {@code 1.99_enableExpensiveMode}; selects the alternate Exposure Chamber catalyst. */
     public static boolean enableExpensiveMode = false;
@@ -213,6 +215,7 @@ public final class GeneralConfig {
         sableBlockMasses = CommonConfig.createConfigStringList(config, CATEGORY_GENERAL, "1.92_sableBlockMasses",
                 "Sable masses for single blocks, as namespace:block=mass with the mass in iron blocks (e.g. hbm:machine_press=4). Wins over 1.91; Sable's own datapack masses win over both.", new String[0]);
         deImportBackup = config.get(CATEGORY_GENERAL, "1.93_deImportBackup", true, "The NTM: Decentralized Edition world importer copies the whole world next to itself before converting it. False skips the copy; make your own backup first.").getBoolean(true);
+        mobSetBonuses = config.get(CATEGORY_GENERAL, "1.94_mobSetBonuses", false, "Full armor set bonuses (effects, step height, damage protection) also apply to mobs wearing the whole set, such as modded companions. False keeps them player-only.").getBoolean(false);
         enableExpensiveMode = config.get(CATEGORY_GENERAL, "1.99_enableExpensiveMode", false, "It does what the name implies.").getBoolean(false);
 
         final String CATEGORY_528 = CommonConfig.CATEGORY_528;
