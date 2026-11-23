@@ -18,6 +18,10 @@ import net.minecraft.world.Container;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
+import net.minecraft.world.level.levelgen.FlatLevelSource;
+import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
@@ -175,6 +179,24 @@ public final class NTMStructureGameTests {
             helper.assertTrue(placeholders == 0, placeholders + " loot placeholders left (" + filled + " filled containers)");
             helper.succeed();
         });
+    }
+
+    /** A superflat world places HBM's structure sets next to its preset's, as 1.7's generator ran in every world type. */
+    public static void flatWorldStructures(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        FlatLevelGeneratorSettings settings = FlatLevelGeneratorSettings.getDefault(
+                level.registryAccess().lookupOrThrow(Registries.BIOME),
+                level.registryAccess().lookupOrThrow(Registries.STRUCTURE_SET),
+                level.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE));
+        ChunkGeneratorStructureState state = new FlatLevelSource(settings).createState(
+                level.registryAccess().lookupOrThrow(Registries.STRUCTURE_SET), level.getChunkSource().randomState(), 0L);
+        long hbm = state.possibleStructureSets().stream()
+                .filter(set -> set.unwrapKey().map(key -> Ids.keyId(key).getNamespace().equals("hbm")).orElse(false))
+                .count();
+        boolean villages = state.possibleStructureSets().stream().anyMatch(set -> set.is(BuiltinStructureSets.VILLAGES));
+        helper.assertTrue(hbm > 0, "A superflat plains world places no HBM structure set");
+        helper.assertTrue(villages, "The flat preset's own villages went missing");
+        helper.succeed();
     }
 
     /**

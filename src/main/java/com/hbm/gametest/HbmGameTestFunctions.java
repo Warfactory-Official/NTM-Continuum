@@ -971,6 +971,18 @@ public final class HbmGameTestFunctions {
             TESTS.function("giant_tank_drops", 100, 8, () -> GiantTankGameTests::dropsAndReplacesWithFluid);
 
     // --- Albion particle accelerator ---
+    public static final GameTests.Function GH213_PA_RFC_POWER =
+            TESTS.function("gh213_pa_rfc_takes_power", 100, 20, () -> AlbionGameTests::rfcTakesPower);
+    public static final GameTests.Function GH213_PA_QUADRUPOLE_POWER =
+            TESTS.function("gh213_pa_quadrupole_takes_power", 100, 20, () -> AlbionGameTests::quadrupoleTakesPower);
+    public static final GameTests.Function GH213_PA_DIPOLE_POWER =
+            TESTS.function("gh213_pa_dipole_takes_power", 100, 20, () -> AlbionGameTests::dipoleTakesPower);
+    public static final GameTests.Function GH213_PA_SOURCE_POWER =
+            TESTS.function("gh213_pa_source_takes_power", 100, 20, () -> AlbionGameTests::sourceTakesPower);
+    public static final GameTests.Function GH213_PA_DETECTOR_POWER =
+            TESTS.function("gh213_pa_detector_takes_power", 100, 20, () -> AlbionGameTests::detectorTakesPower);
+    public static final GameTests.Function GH213_PA_CABLE_FED_RUN =
+            TESTS.function("gh213_pa_cable_fed_run", 260, 56, () -> AlbionGameTests::cableFedRun);
     public static final GameTests.Function PA_STRUCTURE =
             TESTS.function("pa_structure", 40, 16, () -> AlbionGameTests::structure);
     public static final GameTests.Function PA_SOURCE_FIRES =
@@ -1828,6 +1840,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("ntm_structure_new_biomes", 20, () -> NTMStructureGameTests::newStructureBiomes);
     public static final GameTests.Function NTM_STRUCTURE_BOUNDS_MISMATCH =
             TESTS.function("ntm_structure_bounds_mismatch", 40, 48, () -> NTMStructureGameTests::boundsMismatch);
+    public static final GameTests.Function GH215_FLAT_WORLD_STRUCTURES =
+            TESTS.function("gh215_flat_world_structures", 20, () -> NTMStructureGameTests::flatWorldStructures);
     // --- legacy hardcoded dungeons + scattered world blocks, WG-D (implementations live in LegacyDungeonGameTests) ---
     public static final GameTests.Function WGD_BUILDERS = TESTS.function("wgd_builders", 200, () -> LegacyDungeonGameTests::builders);
     public static final GameTests.Function WGD_APPLY = TESTS.function("wgd_apply", 40, 16, () -> LegacyDungeonGameTests::apply);

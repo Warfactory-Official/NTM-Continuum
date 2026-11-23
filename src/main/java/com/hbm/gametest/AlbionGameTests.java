@@ -24,6 +24,7 @@ import com.hbm.tileentity.machine.albion.TileEntityPARFC;
 import com.hbm.tileentity.machine.albion.TileEntityPASource;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.PAState;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.Particle;
+import com.hbm.tileentity.machine.TileEntityMachineBattery;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gui.CompatContainerMenu.ClickAction;
 import dev.golem.core.gui.Menus;
@@ -100,6 +101,85 @@ public final class AlbionGameTests {
         helper.assertTrue(helper.getLevel().getBlockState(spawn).getBlock() != block,
                 "The particle must be injected outside the source's own footprint");
         helper.succeed();
+    }
+
+    public static void rfcTakesPower(GameTestHelper helper) {
+        poweredThroughCable(helper, ModMachineBlocks.pa_rfc.get(), TileEntityPARFC.class);
+    }
+
+    public static void quadrupoleTakesPower(GameTestHelper helper) {
+        poweredThroughCable(helper, ModMachineBlocks.pa_quadrupole.get(), TileEntityPAQuadrupole.class);
+    }
+
+    public static void dipoleTakesPower(GameTestHelper helper) {
+        poweredThroughCable(helper, ModMachineBlocks.pa_dipole.get(), TileEntityPADipole.class);
+    }
+
+    public static void sourceTakesPower(GameTestHelper helper) {
+        poweredThroughCable(helper, ModMachineBlocks.pa_source.get(), TileEntityPASource.class);
+    }
+
+    public static void detectorTakesPower(GameTestHelper helper) {
+        poweredThroughCable(helper, ModMachineBlocks.pa_detector.get(), TileEntityPADetector.class);
+    }
+
+    /** A cable at the part's own connection point delivers all the battery gives. */
+    private static <T extends TileEntityCooledBase> void poweredThroughCable(GameTestHelper helper, Block block, Class<T> type) {
+        T part = place(helper, new BlockPos(8, 4, 8), block, type);
+        part.power = 0;
+        TileEntityMachineBattery battery = cableFeed(helper, part);
+        helper.runAfterDelay(60, () -> {
+            long given = TileEntityMachineBattery.MAX_POWER - battery.power;
+            helper.assertTrue(given > 0 && part.power == given, "A powered cable gave the " + type.getSimpleName()
+                    + " " + part.power + " HE of the " + given + " HE the battery gave");
+            helper.succeed();
+        });
+    }
+
+    /** A full output battery behind a cable on the part's first connection point. */
+    private static TileEntityMachineBattery cableFeed(GameTestHelper helper, TileEntityCooledBase part) {
+        DirPos port = part.getConPos().get(0);
+        BlockPos cable = port.getPos();
+        helper.getLevel().setBlock(cable, ModMachineBlocks.red_cable.get().defaultBlockState(), 3);
+        TileEntityMachineBattery battery = PortedBattery.place(helper.getLevel(),
+                cable.offset(port.getDir().offsetX, port.getDir().offsetY, port.getDir().offsetZ));
+        battery.redLow = (short) TileEntityMachineBattery.MODE_OUTPUT;
+        battery.redHigh = (short) TileEntityMachineBattery.MODE_OUTPUT;
+        battery.power = TileEntityMachineBattery.MAX_POWER;
+        return battery;
+    }
+
+    /** Source, RF cavity and quadrupole charged only through cables: the run must not end on a power failure. */
+    public static void cableFedRun(GameTestHelper helper) {
+        ForgeDirection beam = beam();
+        BlockPos at = new BlockPos(28, 4, 28);
+        TileEntityPASource source = place(helper, at, ModMachineBlocks.pa_source.get(), TileEntityPASource.class);
+        TileEntityPARFC rfc = place(helper, at.offset(beam.offsetX * 9, 0, beam.offsetZ * 9),
+                ModMachineBlocks.pa_rfc.get(), TileEntityPARFC.class);
+        TileEntityPAQuadrupole quad = place(helper, at.offset(beam.offsetX * 15, 0, beam.offsetZ * 15),
+                ModMachineBlocks.pa_quadrupole.get(), TileEntityPAQuadrupole.class);
+        TileEntityPADetector detector = place(helper, at.offset(beam.offsetX * 21, 0, beam.offsetZ * 21),
+                ModMachineBlocks.pa_detector.get(), TileEntityPADetector.class);
+        for (TileEntityCooledBase part : new TileEntityCooledBase[]{source, rfc, quad, detector}) {
+            chill(part);
+            part.power = 0;
+        }
+        detector.power = detector.getMaxPower();
+        quad.inventory.setStackInSlot(1, new ItemStack(ModItems.pa_coil_gold.get()));
+        cableFeed(helper, source);
+        cableFeed(helper, rfc);
+        cableFeed(helper, quad);
+        helper.runAfterDelay(170, () -> {
+            source.inventory.setStackInSlot(1, new ItemStack(ModItems.particle_hydrogen.get()));
+            source.inventory.setStackInSlot(2, new ItemStack(ModItems.particle_copper.get()));
+        });
+        helper.runAfterDelay(200, () -> {
+            helper.assertTrue(source.state != PAState.IDLE && source.state != PAState.RUNNING
+                            && source.state != PAState.CRASH_NOPOWER,
+                    "A cable-fed run ended " + source.state + "; source " + source.power + ", RF cavity " + rfc.power
+                            + ", quadrupole " + quad.power + " HE");
+            helper.succeed();
+        });
     }
 
     public static void beamlineCarries(GameTestHelper helper) {

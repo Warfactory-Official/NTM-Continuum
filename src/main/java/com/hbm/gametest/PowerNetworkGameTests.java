@@ -87,6 +87,8 @@ public final class PowerNetworkGameTests {
             TESTS.function("power_net_generator_not_filled", 200, () -> PowerNetworkGameTests::generatorNotFilled);
     public static final GameTests.Function CONSUMER_NOT_FOREIGN =
             TESTS.function("power_net_consumer_not_foreign_supply", 40, () -> PowerNetworkGameTests::consumerNotForeignSupply);
+    public static final GameTests.Function REFOLDED_PEEL =
+            TESTS.function("gh218_power_graph_refolded_peel", 20, () -> PowerNetworkGameTests::refoldedPeel);
 
     /**
      * A row per test, because a gametest plot is not alone in the level and the graph is. Plots sit
@@ -318,6 +320,37 @@ public final class PowerNetworkGameTests {
             helper.assertTrue(total == SPEED, "The graph round created or destroyed energy: " + total);
             helper.succeed();
         });
+    }
+
+    /** A run split twice, the second split folded back, then a first-split cell looked up through its stale entry. */
+    private static void refoldedPeel(GameTestHelper helper) {
+        LevelNodeGraph<CableData> graph = PowerGraph.get(helper.getLevel());
+        List<Long> cells = new ArrayList<>();
+        try {
+            for (int x = 0; x <= 12; x++) cells.add(hand(helper, graph, x, GRAPH_Z));
+            cells.add(hand(helper, graph, 3, GRAPH_Z + 1));
+            long branch = hand(helper, graph, 7, GRAPH_Z + 1);
+            graph.removeNode(branch);
+            graph.compact();
+
+            long stale = cells.get(1);
+            NodeNetwork<CableData> net = graph.networkAt(stale);
+            helper.assertTrue(net != null && net.size() == 14, "The run lost cells after a refold: "
+                    + (net == null ? "no network" : net.size() + " cells"));
+            graph.invalidateNode(stale);
+            graph.removeNode(stale);
+            cells.remove(stale);
+            helper.assertTrue(!graph.containsCell(stale), "A stale run cell could not be removed");
+        } finally {
+            for (long cell : cells) graph.removeNode(cell);
+        }
+        helper.succeed();
+    }
+
+    private static long hand(GameTestHelper helper, LevelNodeGraph<CableData> graph, int x, int z) {
+        long cell = helper.absolutePos(new BlockPos(x, 5, z)).asLong();
+        graph.addNode(cell, CableData.INSTANCE, MachineCaps.FACE_MASK_ALL);
+        return cell;
     }
 
     /**

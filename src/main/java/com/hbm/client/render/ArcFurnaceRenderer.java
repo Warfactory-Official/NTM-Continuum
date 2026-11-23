@@ -6,7 +6,6 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderState;
@@ -122,22 +121,16 @@ public class ArcFurnaceRenderer extends GemBER<TileEntityMachineArcFurnaceLarge,
         state.cableSwing = state.progressing ? (float) Math.sin((state.gameTime + 0.5F) / 2D) * 30F : 0F;
     }
 
-    /** The pour stream's length is the gap it has to cross, so it is built per frame, not placed. */
+    /** Built per frame to the length it falls, in world axes at the server's spout (centre + facing × 2.875). */
     @Override
     protected void submitUndeclared(State state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
+        if (state.pourColor < 0 || state.pourLength <= 0F) return;
         poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(90F + yaw(state.direction)));
-        if (state.pourColor >= 0 && state.pourLength > 0F) {
-            poseStack.pushPose();
-            poseStack.translate(state.direction.offsetX * 2.875F, 1F,
-                    state.direction.offsetZ * 2.875F);
-            int color = state.pourColor;
-            collector.submitCustomGeometry(poseStack, streamType,
-                    (pose, buffer) -> FoundryRenderHelper.pourStream(pose, buffer, state.direction,
-                            state.pourLength, 0.625F, 0.625F, color));
-            poseStack.popPose();
-        }
+        poseStack.translate(0.5F + state.direction.offsetX * 2.875F, 1F, 0.5F + state.direction.offsetZ * 2.875F);
+        int color = state.pourColor;
+        collector.submitCustomGeometry(poseStack, streamType,
+                (pose, buffer) -> FoundryRenderHelper.pourStream(pose, buffer, state.direction,
+                        state.pourLength, 0.625F, 0.625F, color));
         poseStack.popPose();
     }
 

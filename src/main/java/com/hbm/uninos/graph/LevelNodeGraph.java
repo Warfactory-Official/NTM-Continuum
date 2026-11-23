@@ -695,21 +695,28 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
     }
 
     private GraphSegment<D> resolveChain(GraphSegment<D> s, long posKey) {
-        GraphSegment<D> found = resolveFrom(s, posKey, 0);
+        GraphSegment<D> found = resolveFrom(s, posKey, true);
         return found != null ? found : s;
     }
 
     /**
-     * DFS over the record tree; a view's range can shrink mid-split, so a branch cannot be range-pruned.
+     * Walks the peel and forward records; a view's range can shrink mid-split, so a branch cannot be range-pruned.
+     * The records are not a tree: a peel folded back into its origin forwards to a segment that still lists it.
      */
-    private @Nullable GraphSegment<D> resolveFrom(GraphSegment<D> s, long posKey, int depth) {
-        if (depth > 64) throw new IllegalStateException("peel/forward recursion did not terminate - corrupt");
-        if (s.offsetOf(posKey) >= 0) return s;
-        for (GraphSegment<D> peel = s.pendingPeel; peel != null; peel = peel.peelNext) {
-            GraphSegment<D> found = resolveFrom(peel, posKey, depth + 1);
-            if (found != null) return found;
+    private @Nullable GraphSegment<D> resolveFrom(GraphSegment<D> start, long posKey, boolean offsetIndex) {
+        ReferenceOpenHashSet<GraphSegment<D>> seen = new ReferenceOpenHashSet<>();
+        ArrayDeque<GraphSegment<D>> stack = new ArrayDeque<>();
+        stack.push(start);
+        while (!stack.isEmpty()) {
+            GraphSegment<D> s = stack.pop();
+            if (!seen.add(s)) continue;
+            if (offsetIndex ? s.offsetOf(posKey) >= 0 : rangeContains(s, posKey)) return s;
+            if (s.forwardTo != null) stack.push(s.forwardTo);
+            ArrayDeque<GraphSegment<D>> peels = new ArrayDeque<>();
+            for (GraphSegment<D> peel = s.pendingPeel; peel != null; peel = peel.peelNext) peels.push(peel);
+            while (!peels.isEmpty()) stack.push(peels.pop());
         }
-        return s.forwardTo == null ? null : resolveFrom(s.forwardTo, posKey, depth + 1);
+        return null;
     }
 
     private @Nullable GraphSegment<D> segmentAt(long posKey) {
@@ -728,18 +735,8 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
         GraphSegment<D> s = interiorIndex.get(posKey);
         if (s == null) return null;
         if (s.pendingPeel == null && s.forwardTo == null) return s;
-        GraphSegment<D> found = resolveFromNoWrite(s, posKey, 0);
+        GraphSegment<D> found = resolveFrom(s, posKey, false);
         return found != null ? found : s;
-    }
-
-    private @Nullable GraphSegment<D> resolveFromNoWrite(GraphSegment<D> s, long posKey, int depth) {
-        if (depth > 64) throw new IllegalStateException("peel/forward recursion did not terminate - corrupt");
-        if (rangeContains(s, posKey)) return s;
-        for (GraphSegment<D> peel = s.pendingPeel; peel != null; peel = peel.peelNext) {
-            GraphSegment<D> found = resolveFromNoWrite(peel, posKey, depth + 1);
-            if (found != null) return found;
-        }
-        return s.forwardTo == null ? null : resolveFromNoWrite(s.forwardTo, posKey, depth + 1);
     }
 
     /**

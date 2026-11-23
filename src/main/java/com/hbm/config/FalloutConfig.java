@@ -69,7 +69,7 @@ public final class FalloutConfig {
     static {
         registerPreset("hbm:ignited_by_lava", BlockState::ignitedByLava);
         registerPreset("hbm:vegetation", state -> state.getBlock() instanceof VegetationBlock
-                || state.is(Blocks.VINE) || state.is(Blocks.SUGAR_CANE));
+                || state.is(Blocks.VINE) || state.is(Blocks.SUGAR_CANE) || state.is(Blocks.MOSS_CARPET));
         // 1.7 Material.rock / iron / sand / ground: what a pickaxe or shovel mines, opaque, without 1.7's other materials
         // that modern tools also mine (ice and packed ice, craftedSnow and snow, redstoneLight)
         registerPreset("hbm:solid_terrain", state -> Compat.isSolidRender(state)
@@ -77,7 +77,9 @@ public final class FalloutConfig {
                 && !state.is(BlockTags.ICE) && !state.is(BlockTags.SNOW)
                 && !state.is(Blocks.REDSTONE_LAMP)
                 && !(state.getBlock() instanceof GrassBlock) && !state.is(Blocks.MYCELIUM));
-        registerPreset("hbm:grass_like", state -> state.getBlock() instanceof GrassBlock || state.is(Blocks.MYCELIUM));
+        // port: moss is newer than 1.7 and hoe-mined, so solid_terrain misses it; it burns like grass
+        registerPreset("hbm:grass_like", state -> state.getBlock() instanceof GrassBlock || state.is(Blocks.MYCELIUM)
+                || state.is(Blocks.MOSS_BLOCK));
     }
 
     /** Names a block predicate for the {@code preset} matcher. Call at mod construction. */

@@ -8,6 +8,7 @@ import com.hbm.api.data.HazardDataMaps;
 import com.hbm.api.data.MachinePartDataMaps;
 import com.hbm.api.data.ReactorDataMaps;
 import com.hbm.api.data.WorldDataMaps;
+import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.generic.BlockHazard;
 import com.hbm.config.FalloutConfig;
@@ -71,6 +72,7 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -95,6 +97,8 @@ public final class ValueMapGameTests {
             TESTS.function("value_map_armor_equal_17", 200, () -> ValueMapGameTests::armor);
     public static final GameTests.Function FALLOUT =
             TESTS.function("value_map_fallout_transform", 200, () -> ValueMapGameTests::fallout);
+    public static final GameTests.Function FALLOUT_MOSS =
+            TESTS.function("gh219_fallout_burns_moss", 20, () -> ValueMapGameTests::falloutMoss);
     public static final GameTests.Function REACTOR =
             TESTS.function("value_map_reactor_fuels", 200, () -> ValueMapGameTests::reactorFuels);
     public static final GameTests.Function TABLES =
@@ -198,6 +202,26 @@ public final class ValueMapGameTests {
         helper.assertTrue(sha(dump).equals(HASH_FALLOUT), "fallout rules differ from the Java table: " + sha(dump)
                 + " (" + FalloutConfig.entries().size() + " entries)");
         helper.succeed();
+    }
+
+    /** Moss is newer than 1.7: the block turns to sellafite inside grass's rings and the carpet burns away. */
+    public static void falloutMoss(GameTestHelper helper) {
+        BlockState moss = falloutResult(Blocks.MOSS_BLOCK.defaultBlockState(), 30D);
+        helper.assertTrue(moss != null && moss.is(ModFalloutBlocks.sellafield_slaked.get()),
+                "A moss block at 30% of the radius became " + (moss == null ? "nothing" : SavedIds.stateName(moss)));
+        BlockState carpet = falloutResult(Blocks.MOSS_CARPET.defaultBlockState(), 30D);
+        helper.assertTrue(carpet != null && carpet.isAir(),
+                "A moss carpet became " + (carpet == null ? "nothing" : SavedIds.stateName(carpet)));
+        helper.succeed();
+    }
+
+    private static BlockState falloutResult(BlockState state, double dist) {
+        RandomSource random = RandomSource.create(0);
+        for (FalloutConfig.FalloutEntry entry : FalloutConfig.entries()) {
+            BlockState result = entry.eval(5, state, dist, random, 0);
+            if (result != null) return result;
+        }
+        return null;
     }
 
     private static <T> String json(Codec<T> codec, T value) {

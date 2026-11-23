@@ -19,6 +19,7 @@ import dev.golem.core.platform.ModEntry;
 import dev.golem.core.viewer.FluidIcons;
 import dev.golem.core.world.EntityLoot;
 import dev.golem.core.world.EntityTicks;
+import dev.golem.core.world.FlatWorlds;
 
 /**
  * HBM's common start-up, in Golem Core's three phases (see {@link dev.golem.core.platform.ModEntries}): the same on
@@ -46,6 +47,7 @@ public class HbmEntry implements ModEntry {
         EntityLoot.register(); // golemcore:looting, read by the entity loot tables
         FluidProperties.declare(); // fluid_property + fluid_property_patch
         HbmScripts.declare(); // the HBM script global and HBMEvents (inert without KubeJS)
+        FlatWorlds.placeStructures(Constants.MOD_ID); // 1.7 world generation ran in superflat worlds too
     }
 
     @Override
