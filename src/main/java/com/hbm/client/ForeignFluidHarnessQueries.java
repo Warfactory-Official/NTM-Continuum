@@ -7,14 +7,17 @@ import com.hbm.inventory.fluid.Fluids;
 import dev.golem.core.fluid.FluidCompat;
 import dev.golem.core.fluid.FluidView;
 import dev.golem.core.fluid.TokenFluids;
+import dev.golem.core.Ids;
 import dev.golem.core.harness.HarnessQueryRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluid;
@@ -22,6 +25,7 @@ import net.minecraft.world.level.material.Fluid;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -44,6 +48,8 @@ public final class ForeignFluidHarnessQueries {
     private static JsonObject query(Minecraft mc, JsonObject params) {
         String op = params.has("op") ? params.get("op").getAsString() : "registry";
         if (op.equals("jei")) return jei();
+        if (op.equals("tag")) return tag(params.has("tag") ? params.get("tag").getAsString() : "minecraft:water");
+        if (op.equals("jeitag")) return jeiTag(params.has("tag") ? params.get("tag").getAsString() : "minecraft:water");
         MinecraftServer server = mc.getSingleplayerServer();
         if (mc.player == null || server == null) return new JsonObject();
         CompletableFuture<JsonObject> result = new CompletableFuture<>();
@@ -79,6 +85,32 @@ public final class ForeignFluidHarnessQueries {
         JsonArray array = new JsonArray();
         names.forEach(array::add);
         json.add("names", array);
+        return json;
+    }
+
+    private static JsonObject jeiTag(String tag) {
+        JsonObject json = new JsonObject();
+        Function<String, List<String>> source = null;
+        //? if jei {
+        source = com.hbm.handler.jei.HbmJeiPluginCommon.fluidsInTag;
+        //?}
+        json.addProperty("ready", source != null);
+        if (source == null) return json;
+        JsonArray array = new JsonArray();
+        source.apply(tag).forEach(array::add);
+        json.add("members", array);
+        return json;
+    }
+
+    /** The fluids the client counts in a fluid tag (what JEI's tag view lists). */
+    private static JsonObject tag(String id) {
+        TagKey<Fluid> key = TagKey.create(Registries.FLUID, Ids.parse(id));
+        JsonArray members = new JsonArray();
+        for (Fluid fluid : BuiltInRegistries.FLUID) {
+            if (fluid.defaultFluidState().is(key)) members.add(String.valueOf(BuiltInRegistries.FLUID.getKey(fluid)));
+        }
+        JsonObject json = new JsonObject();
+        json.add("members", members);
         return json;
     }
 

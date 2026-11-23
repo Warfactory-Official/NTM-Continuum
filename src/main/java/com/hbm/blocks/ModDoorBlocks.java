@@ -90,7 +90,8 @@ public final class ModDoorBlocks {
      * A generic door's outline and collision come from its core (the 1.7 {@code getBoundingBox} looked the
      * core up in the world every call), so its shapes must not be baked into vanilla's per-state cache at
      * registry freeze: {@code dynamicShape()} keeps {@code BlockState.getCollisionShape} asking the block.
-     * The declaration is read only when the block is built ({@code DoorDecl} needs a running game).
+     * The declaration is read only when the block is built ({@code DoorDecl} needs a running game). A dynamic shape
+     * is never solid, so {@code forceSolidOn} keeps 1.7's {@code Material.iron}: fluids neither flow in nor break it.
      */
     private static Reg.Handle<BlockDoorGeneric> door(String name, Supplier<DoorDecl> decl, float hardness, float resistance) {
         return door(name, decl, hardness, resistance, false);
@@ -100,7 +101,7 @@ public final class ModDoorBlocks {
     private static Reg.Handle<BlockDoorGeneric> door(String name, Supplier<DoorDecl> decl, float hardness, float resistance,
                                                      boolean seals) {
         return REG.block(name, p -> seals ? new BlockDoorGeneric(p, decl.get()).sealsRadiation() : new BlockDoorGeneric(p, decl.get()),
-                        p -> dummyable(p.strength(hardness, resistance).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion().dynamicShape()))
+                        p -> dummyable(p.strength(hardness, resistance).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion().dynamicShape().forceSolidOn()))
                 .transform(GENERIC_DOOR);
     }
 

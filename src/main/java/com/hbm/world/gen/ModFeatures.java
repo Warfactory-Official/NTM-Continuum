@@ -133,7 +133,7 @@ public final class ModFeatures {
     public static final RegistryObject<Feature<DungeonBlockFeature.Landmine.Config>> LANDMINE_HE =
             REG.register(Registries.FEATURE, "landmine_he", () -> new DungeonBlockFeature.Landmine(DungeonBlockFeature.Landmine.HE_CODEC, WorldgenKeys.BOSNIA));
     public static final RegistryObject<Feature<DungeonBlockFeature.BrokenLantern.Config>> BROKEN_LANTERN =
-            REG.register(Registries.FEATURE, "broken_lantern", DungeonBlockFeature.BrokenLantern::new);
+            REG.register(Registries.FEATURE, "broken_lantern", () -> new DungeonBlockFeature.BrokenLantern(WorldgenKeys.LANTERN));
     public static final RegistryObject<Feature<DungeonBlockFeature.LandedCapsule.Config>> LANDED_CAPSULE =
             REG.register(Registries.FEATURE, "landed_capsule", () -> new DungeonBlockFeature.LandedCapsule(WorldgenKeys.CAPSULE));
     public static final RegistryObject<Feature<DungeonBlockFeature.Broadcaster.Config>> CORRUPTED_BROADCASTER =

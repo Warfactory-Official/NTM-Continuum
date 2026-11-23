@@ -157,7 +157,8 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<BlockCargoElevator> cargo_elevator = REG.<BlockCargoElevator>block(
             "cargo_elevator", BlockCargoElevator::new,
-            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().dynamicShape())
+            // forceSolidOn: 1.7 Material.iron; a dynamic shape alone is never solid and water would break it
+            p -> p.requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).noOcclusion().dynamicShape().forceSolidOn())
             .model(d -> d.models(Models.parented("minecraft:block/block", Slots.of("particle", "hbm:blocks/block_steel")))
                     .states(Variants.simple())).tag(BlockTag.PICKAXE);
 

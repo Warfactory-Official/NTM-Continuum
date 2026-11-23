@@ -3,6 +3,7 @@ package com.hbm.lib;
 import dev.golem.core.dejson.Damage;
 
 import static dev.golem.core.dejson.Damage.BYPASSES_ARMOR;
+import static dev.golem.core.dejson.Damage.BYPASSES_COOLDOWN;
 import static dev.golem.core.dejson.Damage.BYPASSES_EFFECTS;
 import static dev.golem.core.dejson.Damage.BYPASSES_INVULNERABILITY;
 import static dev.golem.core.dejson.Damage.BY_LIVING_NON_PLAYER;
@@ -62,6 +63,8 @@ public final class ModDamageTypes {
                 // 1.12.2 ModDamageSource gluon: absolute, bypasses armour, allowed in creative
                 type("gluon").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
                 type("broadcast").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                // the vampire ability: 1.7 set the health directly and died of magic
+                type("vampire").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_COOLDOWN),
                 type("boil").tags(IS_FIRE),
                 type("digamma").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
                 type("electricity").tags(NO_KNOCKBACK, BYPASSES_ARMOR, BYPASSES_EFFECTS),

@@ -12,6 +12,7 @@ import com.hbm.blocks.ModOreBlocks;
 import com.hbm.blocks.ModTerrainBlocks;
 import com.hbm.config.DungeonConfig;
 import com.hbm.config.GeneralConfig;
+import com.hbm.config.MobConfig;
 import com.hbm.config.WorldConfig;
 import com.hbm.itempool.ItemPools;
 import com.hbm.items.ModFinalConsumableItems;
@@ -284,7 +285,8 @@ public final class WorldgenConfigGameTests {
         level.setBlock(mine.below(), Blocks.STONE.defaultBlockState(), 3);
         level.setBlock(broadcaster.below(), Blocks.STONE.defaultBlockState(), 3);
         int dungeons = DungeonConfig.enableDungeons, minefreq = DungeonConfig.minefreq, broadcasterFreq = DungeonConfig.broadcaster;
-        int geysers = WorldConfig.geyserChlorine;
+        int geysers = WorldConfig.geyserChlorine, lanterns = DungeonConfig.lanternStructure, meteorites = WorldConfig.meteoriteSpawn;
+        int hives = MobConfig.hiveSpawn, pinkTrees = DungeonConfig.pinkTreeStructure;
         try {
             DungeonConfig.enableDungeons = 1;
             DungeonConfig.minefreq = 0;
@@ -294,6 +296,21 @@ public final class WorldgenConfigGameTests {
             WorldConfig.geyserChlorine = 0;
             helper.assertFalse(ModFeatures.GEYSER_CHLORINE.get().place(d(Geyser.Config.CODEC), level,
                     level.getChunkSource().getGenerator(), RandomSource.create(1L), mine), "geyser placed with frequency 0");
+            DungeonConfig.lanternStructure = 0;
+            WorldConfig.meteoriteSpawn = 0;
+            MobConfig.hiveSpawn = 0;
+            DungeonConfig.pinkTreeStructure = 0;
+            RandomSource rand = RandomSource.create(1L);
+            var generator = level.getChunkSource().getGenerator();
+            helper.assertFalse(ModFeatures.BROKEN_LANTERN.get().place(d(DungeonBlockFeature.BrokenLantern.Config.CODEC), level, generator, rand, mine),
+                    "lantern placed with frequency 0");
+            helper.assertFalse(ModFeatures.FALLEN_METEORITE.get().place(d(FallenMeteoriteFeature.Config.CODEC), level, generator, rand, mine),
+                    "meteorite placed with frequency 0");
+            helper.assertFalse(ModFeatures.GLYPHID_HIVE.get().place(d(GlyphidHiveFeature.Config.CODEC), level, generator, rand, mine),
+                    "hive placed with frequency 0");
+            helper.assertFalse(ModFeatures.PINK_TREE.get().place(d(PinkTreeFeature.Config.CODEC), level, generator, rand, mine),
+                    "pink tree placed with frequency 0");
+            helper.assertTrue(level.getBlockState(mine).isAir(), "block set with frequency 0");
             DungeonConfig.minefreq = 64;
             DungeonConfig.broadcaster = 5000;
             helper.assertTrue(placeMine(level, mine) && placeBroadcaster(level, broadcaster), "not placed while enabled");
@@ -304,6 +321,10 @@ public final class WorldgenConfigGameTests {
             DungeonConfig.minefreq = minefreq;
             DungeonConfig.broadcaster = broadcasterFreq;
             WorldConfig.geyserChlorine = geysers;
+            DungeonConfig.lanternStructure = lanterns;
+            WorldConfig.meteoriteSpawn = meteorites;
+            MobConfig.hiveSpawn = hives;
+            DungeonConfig.pinkTreeStructure = pinkTrees;
         }
         helper.succeed();
     }

@@ -1,6 +1,8 @@
 package com.hbm.world.feature;
 
 import com.hbm.blocks.ModDecoCrateBlocks;
+import com.hbm.world.gen.ConfigPlacement;
+import com.hbm.world.gen.WorldgenKeys;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -37,7 +39,7 @@ public class PinkTreeFeature extends Feature<PinkTreeFeature.Config> {
     public boolean place(FeaturePlaceContext<Config> context) {
         WorldGenLevel level = context.level();
         // 1.7 HbmWorldGen: the pink tree sits inside the enableDungeons block
-        if (!DungeonBlockFeature.dungeonsEnabled(level)) return false;
+        if (!DungeonBlockFeature.dungeonsEnabled(level) || ConfigPlacement.value(WorldgenKeys.PINK_TREE) <= 0) return false;
         Config c = context.config();
         RandomSource rand = context.random();
         BlockPos origin = context.origin();

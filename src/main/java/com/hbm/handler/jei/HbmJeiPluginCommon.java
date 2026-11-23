@@ -25,6 +25,8 @@ public final class HbmJeiPluginCommon {
 
     /** The names of the HBM fluid ingredients JEI lists; set once its runtime exists, read by the harness. */
     public static volatile Supplier<List<String>> fluidNames = null;
+    /** The fluid ingredients JEI files under a tag, as {@code name = fluid id}; read by the harness. */
+    public static volatile java.util.function.Function<String, List<String>> fluidsInTag = null;
 
     public static void registerItemSubtypes(ISubtypeRegistration reg) {
         JeiViewer.subtypes(reg, HbmViewerSubtypes::register);
@@ -63,6 +65,7 @@ public final class HbmJeiPluginCommon {
         JeiViewer.runtime(runtime, HbmRecipeViewer.INSTANCE);
         java.util.List<String> fluids = hbmFluidIngredients(runtime);
         fluidNames = () -> hbmFluidIngredients(runtime);
+        fluidsInTag = tag -> fluidsInTag(runtime, runtime.getJeiHelpers().getPlatformFluidHelper(), tag);
         com.hbm.Constants.LOG.info("[JEI] {} HBM fluid(s) listed as fluid ingredients", fluids.size());
     }
 
@@ -79,6 +82,21 @@ public final class HbmJeiPluginCommon {
         java.util.List<String> names = new java.util.ArrayList<>();
         for (T ingredient : runtime.getIngredientManager().getAllIngredients(type)) {
             if (dev.golem.core.fluid.TokenFluids.isToken(type.getBase(ingredient))) names.add(helper.getDisplayName(ingredient));
+        }
+        return names;
+    }
+
+    private static <T> java.util.List<String> fluidsInTag(mezz.jei.api.runtime.IJeiRuntime runtime,
+            mezz.jei.api.helpers.IPlatformFluidHelper<T> fluids, String tag) {
+        mezz.jei.api.ingredients.IIngredientTypeWithSubtypes<net.minecraft.world.level.material.Fluid, T> type =
+                fluids.getFluidIngredientType();
+        mezz.jei.api.ingredients.IIngredientHelper<T> helper = runtime.getIngredientManager().getIngredientHelper(type);
+        java.util.List<String> names = new java.util.ArrayList<>();
+        for (T ingredient : runtime.getIngredientManager().getAllIngredients(type)) {
+            if (helper.getTagStream(ingredient).anyMatch(id -> id.toString().equals(tag))) {
+                names.add(helper.getDisplayName(ingredient) + " = "
+                        + net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(type.getBase(ingredient)));
+            }
         }
         return names;
     }

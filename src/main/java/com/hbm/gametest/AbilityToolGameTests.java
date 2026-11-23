@@ -35,6 +35,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -64,6 +65,8 @@ public final class AbilityToolGameTests {
             TESTS.function("ability_tool_vein_smelter", 40, () -> AbilityToolGameTests::veinSmelter);
     public static final GameTests.Function WEAPON =
             TESTS.function("ability_tool_weapon", 20, () -> AbilityToolGameTests::weapon);
+    public static final GameTests.Function VAMPIRE =
+            TESTS.function("gh239_vampire_goes_through_hurt", 20, () -> AbilityToolGameTests::vampire);
     public static final GameTests.Function CHAINSAW_WEAR =
             TESTS.function("ability_tool_chainsaw_wear", 20, () -> AbilityToolGameTests::chainsawWear);
 
@@ -184,6 +187,28 @@ public final class AbilityToolGameTests {
         helper.assertTrue(slow != null && slow.getAmplifier() == 4 && slow.getDuration() == 40,
                 "stun must apply slowness V for 40 ticks");
         helper.assertTrue(pig.getEffect(MobEffects.WEAKNESS) != null, "stun must apply weakness");
+        helper.succeed();
+    }
+
+    /** VAMPIRE level 0 takes 2 health past armor and the sword's hit cooldown, and nothing from an invulnerable mob. */
+    public static void vampire(GameTestHelper helper) {
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        LivingEntity zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+        zombie.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.DIAMOND_CHESTPLATE));
+        zombie.invulnerableTime = 20;
+        float health = zombie.getHealth();
+        player.setHealth(10F);
+        IWeaponAbility.VAMPIRE.onHit(0, helper.getLevel(), player, zombie, ModAbilityToolItems.steel_sword.get());
+        helper.assertTrue(zombie.getHealth() == health - 2F, "vampire must take 2 health through armor and the cooldown, left " + zombie.getHealth());
+        helper.assertTrue(zombie.invulnerableTime == 20, "vampire must keep the sword hit's cooldown");
+        helper.assertTrue(player.getHealth() == 12F, "vampire must heal the player by 2");
+
+        LivingEntity guarded = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(3, 2, 1));
+        guarded.setInvulnerable(true);
+        float guardedHealth = guarded.getHealth();
+        IWeaponAbility.VAMPIRE.onHit(0, helper.getLevel(), player, guarded, ModAbilityToolItems.steel_sword.get());
+        helper.assertTrue(guarded.getHealth() == guardedHealth && player.getHealth() == 12F,
+                "an invulnerable mob must neither lose health nor heal the player");
         helper.succeed();
     }
 

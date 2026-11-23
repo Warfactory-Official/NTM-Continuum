@@ -945,6 +945,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("door_declarations", 20, () -> DoorGameTests::declarationsAreConsistent);
     public static final GameTests.Function DOOR_BLAST_DOOR_LEAF =
             TESTS.function("door_blast_door_leaf", 200, 8, () -> DoorGameTests::blastDoorLeaf);
+    public static final GameTests.Function DOOR_WATER_DOOR_HOLDS_WATER =
+            TESTS.function("door_water_door_holds_water", 400, 12, () -> DoorGameTests::waterDoorHoldsWater);
 
     public static final GameTests.Function ELECTROLYSER_CONSTRUCTION =
             TESTS.function("electrolyser_construction", 40, () -> ElectrolyserGameTests::constructionRecipe);
@@ -1551,6 +1553,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("volcano_lava_blast", 20, 24, () -> VolcanoGameTests::lavaBlastFillsDestroyedCubesOnly);
 
     // World fluid flow (implementations in FlowingFluidGameTests)
+    public static final GameTests.Function FLUID_WATER_TAG_MEMBERS =
+            TESTS.function("fluid_water_tag_members", 20, () -> FlowingFluidGameTests::waterTagMembers);
     public static final GameTests.Function FLUID_MUD_REACH =
             TESTS.function("fluid_mud_reach", 400, 14, () -> FlowingFluidGameTests::mudReach);
     public static final GameTests.Function FLUID_TOXIC_REACH =

@@ -1,5 +1,7 @@
 package com.hbm.world.feature;
 
+import com.hbm.world.gen.ConfigPlacement;
+import com.hbm.world.gen.WorldgenKeys;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -37,6 +39,8 @@ public class FallenMeteoriteFeature extends Feature<FallenMeteoriteFeature.Confi
 
     @Override
     public boolean place(FeaturePlaceContext<Config> context) {
+        // checked here too: mods that boost features near water place them again without their placement
+        if (ConfigPlacement.value(WorldgenKeys.METEORITE) <= 0) return false;
         Config c = context.config();
         WorldGenLevel level = context.level();
         RandomSource rand = context.random();

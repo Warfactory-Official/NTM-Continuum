@@ -10,6 +10,7 @@ import com.hbm.handler.neutron.NeutronHandler;
 import com.hbm.handler.neutron.NeutronNodeWorld;
 import com.hbm.inventory.recipes.RBMKFuelDisassemblyRecipe;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModItems;
 import com.hbm.items.ModRBMKItems;
 import com.hbm.items.machine.ItemRBMKPellet;
 import com.hbm.items.machine.ItemRBMKRod;
@@ -132,6 +133,10 @@ public final class RBMKGameTests {
         ItemStack crafted = Recipes.craftingResult(helper.getLevel(), 3, 3, grid).orElse(ItemStack.EMPTY);
         helper.assertTrue(ItemStacks.sameItemAndData(crafted, pellets) && crafted.getCount() == 8,
                 "A crafting grid must find the disassembly recipe through the recipe manager, got " + crafted);
+        List<ItemStack> left = Recipes.craftingRemainders(helper.getLevel(), 3, 3, grid).orElse(List.of());
+        helper.assertTrue(left.stream().filter(stack -> !stack.isEmpty()).toList().size() == 1
+                        && left.stream().anyMatch(stack -> stack.is(ModItems.rbmk_fuel_empty.get())),
+                "Disassembly must leave the empty rod in the grid (1.7 setContainerItem), got " + left);
         ItemRBMKRod.setHullHeat(depleted, 50D);
         helper.assertFalse(recipe.matchesItemStacks(List.of(depleted), helper.getLevel()),
                 "Fuel at the 50C safety boundary must not disassemble");

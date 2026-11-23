@@ -9,7 +9,9 @@ import com.hbm.tileentity.machine.TileEntityBlastDoor;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -56,6 +58,40 @@ public final class DoorGameTests {
                 helper.succeed();
             });
         });
+    }
+
+    /** 1.7 doors are {@code Material.iron}: water around a door, closed or open, neither flows into nor breaks a cell. */
+    public static void waterDoorHoldsWater(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockDoorGeneric block = ModDoorBlocks.WATER_DOOR.get();
+        BlockPos core = helper.absolutePos(new BlockPos(8, 1, 8));
+        MultiblockHandlerXR.placeAssembled(level, core, block, Direction.NORTH);
+        TileEntityDoorGeneric door = (TileEntityDoorGeneric) level.getBlockEntity(core);
+        helper.assertTrue(door != null, "water door core has no block entity");
+        int cells = countCells(level, core, block);
+        for (BlockPos pos : BlockPos.betweenClosed(core.offset(-4, 0, -4), core.offset(4, 5, 4))) {
+            if (level.getBlockState(pos).isAir()) level.setBlock(pos, Blocks.WATER.defaultBlockState(), 3);
+        }
+        helper.runAfterDelay(20, () -> {
+            helper.assertTrue(countCells(level, core, block) == cells, "water broke a closed water door");
+            helper.assertTrue(door.tryToggle(null), "the water door refused to open");
+            helper.runAfterDelay(DoorDecl.WATER_DOOR.timeToOpen() + 20, () -> {
+                helper.assertTrue(door.state == TileEntityDoorGeneric.STATE_OPEN, "the water door did not open; state=" + door.state);
+                helper.assertTrue(countCells(level, core, block) == cells, "water broke an open water door");
+                for (BlockPos pos : BlockPos.betweenClosed(core.offset(-12, 0, -12), core.offset(12, 6, 12))) {
+                    if (!level.getFluidState(pos).isEmpty() && !level.getBlockState(pos).is(block)) level.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+                }
+                helper.succeed();
+            });
+        });
+    }
+
+    private static int countCells(ServerLevel level, BlockPos core, BlockDoorGeneric block) {
+        int count = 0;
+        for (BlockPos pos : BlockPos.betweenClosed(core.offset(-4, 0, -4), core.offset(4, 5, 4))) {
+            if (level.getBlockState(pos).is(block)) count++;
+        }
+        return count;
     }
 
     /** Every declaration's open ranges stay inside its own footprint so the moving leaf only ever flags its own cells. */

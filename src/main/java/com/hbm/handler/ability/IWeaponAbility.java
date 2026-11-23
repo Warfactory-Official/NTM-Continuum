@@ -6,15 +6,17 @@ import com.hbm.blocks.generic.BlockBobble;
 import com.hbm.items.ModAbilityToolItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
+import com.hbm.lib.ModDamageSources;
 import com.hbm.potion.ModEffects;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
+import dev.golem.core.world.Compat;
 import dev.golem.core.world.Effects;
+import dev.golem.core.world.LivingHurtAccess;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -86,10 +88,15 @@ public interface IWeaponAbility extends IBaseAbility {
 
             if (victim instanceof LivingEntity living) {
                 if (living.getHealth() <= 0) return;
-                living.setHealth(living.getHealth() - amount);
-                // 1.7 called onDeath(DamageSource.magic) itself once the health it set ran out.
-                if (living.getHealth() <= 0) living.die(world.damageSources().magic());
-                player.heal(amount);
+                // 1.7 set the health directly; a damage type that bypasses what that bypassed lets other mods veto it.
+                // The sword hit's cooldown is kept as setHealth left it.
+                LivingHurtAccess access = (LivingHurtAccess) living;
+                float lastHurt = access.golem$lastHurt();
+                int invulnerable = living.invulnerableTime;
+                boolean hurt = Compat.hurt(living, world, ModDamageSources.source(world, ModDamageSources.VAMPIRE), amount);
+                access.golem$setLastHurt(lastHurt);
+                living.invulnerableTime = invulnerable;
+                if (hurt) player.heal(amount);
             }
         }
     };

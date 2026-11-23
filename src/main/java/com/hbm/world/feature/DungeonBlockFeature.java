@@ -206,8 +206,8 @@ public abstract class DungeonBlockFeature<C extends FeatureConfiguration> extend
             ).apply(i, Config::new));
         }
 
-        public BrokenLantern() {
-            super(Config.CODEC);
+        public BrokenLantern(String... keys) {
+            super(Config.CODEC, keys);
         }
 
         @Override

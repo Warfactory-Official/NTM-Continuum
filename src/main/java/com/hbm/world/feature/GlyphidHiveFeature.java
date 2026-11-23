@@ -2,6 +2,8 @@ package com.hbm.world.feature;
 
 import com.hbm.config.MobConfig;
 import com.hbm.itempool.ItemPools;
+import com.hbm.world.gen.ConfigPlacement;
+import com.hbm.world.gen.WorldgenKeys;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -43,7 +45,7 @@ public class GlyphidHiveFeature extends Feature<GlyphidHiveFeature.Config> {
 
     @Override
     public boolean place(FeaturePlaceContext<Config> context) {
-        if (!MobConfig.enableHives) return false;
+        if (!MobConfig.enableHives || ConfigPlacement.value(WorldgenKeys.HIVE_SPAWN) <= 0) return false;
         WorldGenLevel level = context.level();
         // 1.7 HbmWorldGen enableDungeons (config 2 = the world's Generate Structures option)
         if (!DungeonBlockFeature.dungeonsEnabled(level)) return false;

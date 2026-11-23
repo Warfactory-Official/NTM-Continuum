@@ -83,6 +83,8 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> FLAMETHROWER = key("flamethrower");
     /** The corrupted broadcaster (old {@code ModDamageSource.broadcast}): absolute + bypasses armor. */
     public static final ResourceKey<DamageType> BROADCAST = key("broadcast");
+    /** The vampire weapon ability: absolute, bypasses armor and the hit cooldown. */
+    public static final ResourceKey<DamageType> VAMPIRE = key("vampire");
     /** The pest control box (old {@code ModDamageSource.enervation}): absolute + bypasses armor. */
     public static final ResourceKey<DamageType> ENERVATION = key("enervation");
     /** 1.12.2 {@code ModDamageSource.crucible}: the crucible's cut. Absolute, ignores armour. */

@@ -12,6 +12,7 @@ import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.special.ItemCell;
 import com.hbm.lib.ItemIds;
 import dev.golem.core.Ids;
+import dev.golem.core.world.ComponentIngredient;
 import dev.golem.core.world.FilledContainers;
 import dev.golem.core.world.Ingredients;
 import java.util.TreeSet;
@@ -111,6 +112,10 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
     /** Hands the dictionary to Core's recipe ingredients. Called once from common bootstrap. */
     public static void register() {
         FilledContainers.register(INSTANCE);
+        // a recipe's full tank shows in viewers with its fluid's tint, as make() writes it
+        ComponentIngredient.DISPLAY.register(stack -> {
+            if (stack.getItem() instanceof ItemFluidTank tank) tank.setFluid(stack, ItemFluidTank.getType(stack), tank.getFill(stack));
+        });
     }
 
     @Override

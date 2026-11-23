@@ -9,6 +9,7 @@ import dev.golem.core.fluid.FluidBlock;
 import dev.golem.core.fluid.WorldFluids;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
@@ -289,6 +291,20 @@ public final class FlowingFluidGameTests {
             clear(helper, FLOOR);
             helper.succeed();
         });
+    }
+
+    /** Only 1.7's {@code Material.water} fluids join {@code minecraft:water}: vanilla water and the sulfuric acid block. */
+    public static void waterTagMembers(GameTestHelper helper) {
+        Set<String> allowed = Set.of("minecraft:water", "minecraft:flowing_water", "hbm:sulfuric_acid_fluid", "hbm:flowing_sulfuric_acid_fluid");
+        List<String> extra = new ArrayList<>();
+        for (Fluid fluid : BuiltInRegistries.FLUID) {
+            String id = String.valueOf(BuiltInRegistries.FLUID.getKey(fluid));
+            if (id.startsWith("minecraft:") || id.startsWith("hbm:")) {
+                if (fluid.defaultFluidState().is(FluidTags.WATER) && !allowed.contains(id)) extra.add(id);
+            }
+        }
+        helper.assertTrue(extra.isEmpty(), "fluids in minecraft:water that 1.7 did not make water: " + extra);
+        helper.succeed();
     }
 
     private static void check(GameTestHelper helper, WorldFluids.Handle fluid, boolean water, boolean lava) {

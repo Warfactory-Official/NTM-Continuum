@@ -16,6 +16,7 @@ import com.hbm.registration.Presets;
 import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.Remainders;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -80,7 +81,12 @@ public final class ModRBMKItems {
     public static final RegistryObject<ItemRBMKRod> rbmk_fuel_test = rod("rbmk_fuel_test", "THE VOICES", r -> r.setYield(1_000_000D).setStats(100).setFunction(EnumBurnFunc.EXPERIMENTAL).setHeat(1).setMeltingPoint(100000));
 
     static { pellet(rbmk_fuel_ueu,"Unenriched Uranium"); pellet(rbmk_fuel_meu,"Medium Enriched Uranium-235"); pellet(rbmk_fuel_heu233,"Highly Enriched Uranium-233"); pellet(rbmk_fuel_heu235,"Highly Enriched Uranium-235"); pellet(rbmk_fuel_uzh,"Uranium Zirconium Hydride"); pellet(rbmk_fuel_thmeu,"Thorium with MEU Driver Fuel"); pellet(rbmk_fuel_hep,"Highly Enriched Plutonium-239"); pellet(rbmk_fuel_lep,"Low Enriched Plutonium-239"); pellet(rbmk_fuel_mep,"Medium Enriched Plutonium-239"); pellet(rbmk_fuel_hep241,"Highly Enriched Plutonium-241"); pellet(rbmk_fuel_lea,"Low Enriched Americium-242"); pellet(rbmk_fuel_mea,"Medium Enriched Americium-242"); pellet(rbmk_fuel_hea241,"Highly Enriched Americium-241"); pellet(rbmk_fuel_hea242,"Highly Enriched Americium-242"); pellet(rbmk_fuel_men,"Medium Enriched Neptunium-237"); pellet(rbmk_fuel_hen,"Highly Enriched Neptunium-237"); pellet(rbmk_fuel_mox,"Mixed MEU & LEP Oxide"); pellet(rbmk_fuel_les,"Low Enriched Schrabidium-326"); pellet(rbmk_fuel_mes,"Medium Enriched Schrabidium-326"); pellet(rbmk_fuel_hes,"Highly Enriched Schrabidium-326"); pellet(rbmk_fuel_leaus,"Low Enriched Australium (Tasmanite)"); pellet(rbmk_fuel_heaus,"Highly Enriched Australium (Ayerite)"); pellet(rbmk_fuel_po210be,"Polonium-210 & Beryllium Neutron Source",true); pellet(rbmk_fuel_ra226be,"Radium-226 & Beryllium Neutron Source",true); pellet(rbmk_fuel_pu238be,"Plutonium-238 & Beryllium Neutron Source"); pellet(rbmk_fuel_balefire_gold,"Antihydrogen in a Magnetized Gold-198 Lattice",true); pellet(rbmk_fuel_flashlead,"Antihydrogen confined by a Magnetized Gold-198 and Lead-209 Lattice",true); pellet(rbmk_fuel_balefire,"Draconic Flames",true); pellet(rbmk_fuel_zfb_bismuth,"Zirconium Fast Breeder - LEU/HEP-241#Bi"); pellet(rbmk_fuel_zfb_pu241,"Zirconium Fast Breeder - HEU-235/HEP-240#Pu-241"); pellet(rbmk_fuel_zfb_am_mix,"Zirconium Fast Breeder - HEP-241#MEA"); pellet(rbmk_fuel_drx,"can't you hear, can't you hear the thunder?"); }
-    private static RegistryObject<ItemRBMKRod> rod(String id, String name, Consumer<ItemRBMKRod> configure) { return REG.item(id, (Item.Properties p) -> { ItemRBMKRod value = new ItemRBMKRod(p.stacksTo(1), name); configure.accept(value); return value; }).transform(Presets.sprite()).tab(HbmTab.CONTROL); }
+    /** 1.7 {@code ItemRBMKRod} sets {@code setContainerItem(rbmk_fuel_empty)}: the grid keeps the hull. */
+    private static RegistryObject<ItemRBMKRod> rod(String id, String name, Consumer<ItemRBMKRod> configure) {
+        RegistryObject<ItemRBMKRod> rod = REG.item(id, (Item.Properties p) -> { ItemRBMKRod value = new ItemRBMKRod(p.stacksTo(1), name); configure.accept(value); return value; }).transform(Presets.sprite()).tab(HbmTab.CONTROL);
+        Remainders.add(rod, () -> ModItems.rbmk_fuel_empty.get());
+        return rod;
+    }
     private static void pellet(RegistryObject<ItemRBMKRod> rod, String name) { pellet(rod, name, false); }
     private static void pellet(RegistryObject<ItemRBMKRod> rod, String name, boolean noXenon) { String id = ((Reg.Handle<ItemRBMKRod>) rod).path().replace("fuel", "pellet"); RegistryObject<ItemRBMKPellet> pellet = REG.item(id, (Item.Properties p) -> { ItemRBMKPellet value = new ItemRBMKPellet(p, name); return noXenon ? value.disableXenon() : value; }).tab(HbmTab.CONTROL); PELLETS.put(rod, pellet); }
     public static ItemRBMKPellet pelletFor(ItemRBMKRod rod) { for (Map.Entry<RegistryObject<ItemRBMKRod>, RegistryObject<ItemRBMKPellet>> entry : PELLETS.entrySet()) if (entry.getKey().get() == rod) return entry.getValue().get(); return null; }
