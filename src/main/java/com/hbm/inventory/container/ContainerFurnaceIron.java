@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.SlotSmelting;
 import com.hbm.tileentity.machine.TileEntityFurnaceIron;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
@@ -39,7 +40,7 @@ public class ContainerFurnaceIron extends AbstractContainerMenu {
         addSlot(validated(0, 53, 17));
         addSlot(validated(1, 53, 53));
         addSlot(validated(2, 71, 53));
-        addSlot(takeOnly(3, 125, 35));
+        addSlot(new SlotSmelting(inventory.player, machine, 3, 125, 35));
         addSlot(validated(4, 17, 35));
         Compat.addPlayerInventory(this::addSlot, inventory, 8, 84);
     }
@@ -47,12 +48,6 @@ public class ContainerFurnaceIron extends AbstractContainerMenu {
     private Slot validated(int index, int x, int y) {
         return new Slot(machine, index, x, y) {
             @Override public boolean mayPlace(ItemStack stack) { return machine.canPlaceItem(getContainerSlot(), stack); }
-        };
-    }
-
-    private Slot takeOnly(int index, int x, int y) {
-        return new Slot(machine, index, x, y) {
-            @Override public boolean mayPlace(ItemStack stack) { return false; }
         };
     }
 

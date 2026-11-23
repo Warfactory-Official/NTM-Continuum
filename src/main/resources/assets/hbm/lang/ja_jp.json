@@ -3379,6 +3379,8 @@
   "item.hbm.mirror_tool.desc.0": "Shift + right-click a boiler to memorize its position.",
   "item.hbm.mirror_tool.desc.1": "Right-click mirrors to turn them towards the boiler.",
   "item.hbm.mirror_tool.linked": "集光位置を設定！",
+  "item.hbm.mirror_tool.reach": "鏡が遠すぎます！（最大100m）",
+  "item.hbm.mirror_tool.angle": "鏡の角度が浅すぎます！（最小45°）",
   "block.hbm.machine_arc_welder": "アーク溶接作業機",
   "block.hbm.machine_assembly_factory": "組立製造ファクトリー",
   "block.hbm.machine_assembly_factory.desc.0": "四連の組立装置",

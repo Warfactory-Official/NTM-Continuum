@@ -75,6 +75,7 @@ public final class RestoredCraftingRecipes {
         slabs();
         smelting();
         handlers();
+        zirnoxWaste();
     }
 
     // Helpers
@@ -499,6 +500,23 @@ public final class RestoredCraftingRecipes {
         special(NS, "syringe_mkunicorn", "hbm:syringe_mkunicorn");        // MKUCraftingHandler
         special(NS, "fluid_duct_retype", "hbm:fluid_duct_retype");        // CraftingManager:643-661
         special(NS, "scraps_from_powders", "hbm:scraps_from_powders");    // PowderRecipes:61-65
-        special(NS, "zirnox_waste", "hbm:zirnox_waste");                  // RodRecipes:39-47
+    }
+
+    /** 1.7 {@code RodRecipes}:39-47: a depleted ZIRNOX rod gives two hot waste (meta 1) and leaves the empty rod. */
+    private static void zirnoxWaste() {
+        zirnoxWaste(ItemIds.waste_natural_uranium, ItemIds.rod_zirnox_depleted_natural_uranium_fuel);
+        zirnoxWaste(ItemIds.waste_uranium, ItemIds.rod_zirnox_depleted_uranium_fuel);
+        zirnoxWaste(ItemIds.waste_thorium, ItemIds.rod_zirnox_depleted_thorium_fuel);
+        zirnoxWaste(ItemIds.waste_mox, ItemIds.rod_zirnox_depleted_mox_fuel);
+        zirnoxWaste(ItemIds.waste_plutonium, ItemIds.rod_zirnox_depleted_plutonium_fuel);
+        zirnoxWaste(ItemIds.waste_u233, ItemIds.rod_zirnox_depleted_u233_fuel);
+        zirnoxWaste(ItemIds.waste_u235, ItemIds.rod_zirnox_depleted_u235_fuel);
+        zirnoxWaste(ItemIds.waste_schrabidium, ItemIds.rod_zirnox_depleted_les_fuel);
+        zirnoxWaste(ItemIds.waste_zfb_mox, ItemIds.rod_zirnox_depleted_zfb_mox_fuel);
+    }
+
+    private static void zirnoxWaste(String waste, String rod) {
+        componentShapeless(NS, waste.substring(NS.length() + 1) + "_from_zirnox_rod",
+                stack(waste, 2).with(ComponentIds.fuel_waste_hot, true), item(rod));
     }
 }

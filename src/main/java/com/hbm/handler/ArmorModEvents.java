@@ -113,6 +113,7 @@ public final class ArmorModEvents {
     /** 1.7 {@code onLivingUpdate}'s armor-module loop plus the shield regeneration. Both sides. */
     public static void onLivingUpdate(LivingEntity entity) {
         boolean server = !entity.level().isClientSide();
+        if (server && SEEN.put(entity, Boolean.TRUE) == null) adoptSaved(entity);
         for (EquipmentSlot slot : SLOTS) {
             ItemStack armor = entity.getItemBySlot(slot);
             // Runs for every living entity every tick on both sides: the lists are only allocated when a
@@ -148,10 +149,31 @@ public final class ArmorModEvents {
 
     /** Modifier ids this handler has put on each entity, so unmodded entities cost no attribute work. */
     private static final Map<LivingEntity, Set<String>> APPLIED = new WeakHashMap<>();
+    private static final Map<LivingEntity, Boolean> SEEN = new WeakHashMap<>();
+    private static final String[] NAMES = {ItemArmorMod.Modifier.MAX_HEALTH, ItemArmorMod.Modifier.KNOCKBACK_RESISTANCE,
+            ItemArmorMod.Modifier.ATTACK_DAMAGE, ItemArmorMod.Modifier.MOVEMENT_SPEED};
+
+    /**
+     * The modifiers are saved with the entity, as 1.7's were, so health above the base maximum survives a reload.
+     * An entity loaded with them is tracked from its first tick, so a stale one is removed like any other.
+     */
+    private static void adoptSaved(LivingEntity entity) {
+        for (EquipmentSlot slot : SLOTS) {
+            for (String prefix : new String[]{"hbm:armor_mod_", "hbm:armor_fixed_"}) {
+                for (String name : NAMES) {
+                    String id = prefix + slot.getName() + "_" + name;
+                    AttributeInstance attribute = attribute(entity, name);
+                    if (attribute != null && Attributes.has(attribute, id)) {
+                        APPLIED.computeIfAbsent(entity, e -> new HashSet<>()).add(id);
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Keeps exactly the wanted modifiers under one id prefix. 1.7 swapped modifier maps when the worn stack
-     * changed; asserting the wanted set every tick reaches the same state, and {@link Attributes#setTransient}
+     * changed; asserting the wanted set every tick reaches the same state, and {@link Attributes#setPermanent}
      * leaves an unchanged modifier alone so nothing resyncs. Server thread only.
      */
     private static void reconcileModifiers(LivingEntity entity, String prefix, List<ItemArmorMod.Modifier> wanted) {
@@ -164,7 +186,7 @@ public final class ArmorModEvents {
             AttributeInstance attribute = attribute(entity, modifier.attribute());
             if (attribute == null) continue;
             String id = prefix + modifier.attribute();
-            Attributes.setTransient(attribute, id, modifier.amount(), modifier.op());
+            Attributes.setPermanent(attribute, id, modifier.amount(), modifier.op());
             keep.add(id);
             applied.add(id);
         }

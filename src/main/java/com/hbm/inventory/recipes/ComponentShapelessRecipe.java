@@ -3,6 +3,7 @@ package com.hbm.inventory.recipes;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemFluidTank;
+import com.hbm.items.machine.ItemZirnoxWaste;
 import dev.golem.core.world.ComponentIngredient;
 import dev.golem.core.world.CustomRecipes;
 import dev.golem.core.world.ItemStackSpec;
@@ -13,7 +14,8 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 /**
  * HBM's output policy for component shapeless crafting: a crafted fluid container (1.7's
  * {@code new ItemStack(ModItems.canister_full, 2, Fluids.LUBRICANT.getID())}) gets its fluid (now the {@code hbm:fluid} registry name) written the way
- * every other filled container does, tint included, so it looks and stacks like a machine-filled one.
+ * every other filled container does, tint included, so it looks and stacks like a machine-filled one. Hot ZIRNOX
+ * waste gets its tint the same way.
  */
 public final class ComponentShapelessRecipe extends dev.golem.core.world.ComponentShapelessRecipe {
 
@@ -36,6 +38,7 @@ public final class ComponentShapelessRecipe extends dev.golem.core.world.Compone
             FluidType type = ItemFluidTank.getType(assembled);
             if (type != Fluids.NONE) tank.setFluid(assembled, type, tank.getFill(assembled));
         }
+        if (ItemZirnoxWaste.isHot(assembled)) ItemZirnoxWaste.setHot(assembled, true);
         return assembled;
     }
 

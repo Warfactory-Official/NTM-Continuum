@@ -6,13 +6,17 @@ import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModArmorModItems;
 import dev.golem.core.gametest.GameTestHelpers;
+import dev.golem.core.registry.Entities;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -45,6 +49,30 @@ public final class ArmorModGameTests {
         helper.assertTrue(Math.abs(player.getMaxHealth() - 20F) < 1.0E-4F, "max health not restored " + player.getMaxHealth());
         kb = player.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
         helper.assertTrue(kb == 0D, "knockback resistance not restored " + kb);
+        helper.succeed();
+    }
+
+    /** A heart container's health survives a save and load, and a saved modifier leaves with the armor. */
+    public static void healthSurvivesReload(GameTestHelper helper) {
+        LivingEntity zombie = Entities.createDetached(EntityType.ZOMBIE, helper.getLevel());
+        ItemStack chest = new ItemStack(ModArmorItems.steel_plate.get());
+        ArmorModHandler.applyMod(chest, new ItemStack(ModArmorModItems.heart_container.get()));
+        zombie.setItemSlot(EquipmentSlot.CHEST, chest);
+        ArmorModEvents.onLivingUpdate(zombie);
+        zombie.setHealth(40F);
+        CompoundTag saved = Entities.saveToTag(zombie);
+
+        LivingEntity copy = Entities.createDetached(EntityType.ZOMBIE, helper.getLevel());
+        Entities.loadFromTag(copy, saved);
+        helper.assertTrue(copy.getHealth() == 40F, "health after load " + copy.getHealth());
+        ArmorModEvents.onLivingUpdate(copy);
+        helper.assertTrue(copy.getHealth() == 40F && copy.getMaxHealth() == 40F,
+                "health after the first tick " + copy.getHealth() + "/" + copy.getMaxHealth());
+
+        copy.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
+        ArmorModEvents.onLivingUpdate(copy);
+        helper.assertTrue(copy.getMaxHealth() == 20F && copy.getHealth() == 20F,
+                "the loaded modifier must go with the armor " + copy.getHealth() + "/" + copy.getMaxHealth());
         helper.succeed();
     }
 

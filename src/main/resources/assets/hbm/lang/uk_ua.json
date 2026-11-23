@@ -3361,6 +3361,8 @@
   "item.hbm.mirror_tool.desc.0": "Клацніть правою кнопкою миші по бойлеру, щоб запам'ятати його положення.",
   "item.hbm.mirror_tool.desc.1": "Клацніть по дзеркалах, щоб повернути їх до бойлера.",
   "item.hbm.mirror_tool.linked": "Положення дзеркала встановлено!",
+  "item.hbm.mirror_tool.reach": "Дзеркало поза зоною досяжності! (максимум 100 м)",
+  "item.hbm.mirror_tool.angle": "Кут дзеркала занадто малий! (мінімум 45°)",
   "block.hbm.machine_arc_welder": "Дуговий зварювальник",
   "block.hbm.machine_assembly_factory": "Збиральна фабрика",
   "block.hbm.machine_assembly_factory.desc.0": "Четверна складальна машина.",

@@ -577,6 +577,9 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function FUSION_PLASMA_FORGE_CONTAINER_LAYOUT =
             TESTS.function("fusion_plasma_forge_container_layout", 20,
                     () -> PlasmaForgeContainerGameTests::layoutAndValidation);
+    public static final GameTests.Function GH221_PLASMA_FORGE_TICKING_U238M2 =
+            TESTS.function("gh221_plasma_forge_takes_ticking_u238m2", 20,
+                    () -> PlasmaForgeContainerGameTests::tickingU238m2Accepted);
     public static final GameTests.Function FUSION_PLASMA_FORGE_CONTAINER_TRANSFER =
             TESTS.function("fusion_plasma_forge_container_transfer", 20,
                     () -> PlasmaForgeContainerGameTests::transferRouting);
@@ -1383,6 +1386,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("armor_table_lifecycle", 40, () -> ArmorWaveGameTests::tableSlotsAndLifecycle);
     public static final GameTests.Function ARMOR_MOD_MODIFIERS =
             TESTS.function("armor_mod_modifiers", 40, () -> ArmorModGameTests::modifiersFollowTheWornStack);
+    public static final GameTests.Function GH226_ARMOR_MOD_HEALTH_RELOAD =
+            TESTS.function("gh226_armor_mod_health_survives_reload", 40, () -> ArmorModGameTests::healthSurvivesReload);
     public static final GameTests.Function ARMOR_MOD_TICK =
             TESTS.function("armor_mod_tick", 40, () -> ArmorModGameTests::medalAndMilkTick);
     public static final GameTests.Function ARMOR_MOD_REVIVE =

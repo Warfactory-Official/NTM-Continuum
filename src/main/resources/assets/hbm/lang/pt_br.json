@@ -3283,6 +3283,8 @@
   "item.hbm.mirror_tool.desc.0": "Clique com o botão direito na caldeira para memorizar a posição.",
   "item.hbm.mirror_tool.desc.1": "Clique nos espelhos para apontá-los para a caldeira.",
   "item.hbm.mirror_tool.linked": "Posição de alinhamento definida!",
+  "item.hbm.mirror_tool.reach": "Espelho fora de alcance! (máx. 100 m)",
+  "item.hbm.mirror_tool.angle": "Ângulo do espelho muito baixo! (mín. 45°)",
   "block.hbm.machine_arc_welder": "Soldador a Arco",
   "block.hbm.machine_assembly_factory": "Fábrica de Montagem",
   "block.hbm.machine_assembly_factory.desc.0": "Máquina de montagem quádrupla.",

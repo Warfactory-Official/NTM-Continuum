@@ -236,7 +236,7 @@ public final class PlasmaForgeTable extends GenericTableSource<PlasmaForgeRecipe
                         MAGTUNG.wireDense().count(32),
                         new ComparableStack(ModItems.plate_dineutronium.get(), 64),
                         new ComparableStack(ModItems.powder_magic.get(), 64),
-                        new ComparableStack(new ItemStack(ModNuclearMiscItems.INGOT_U238M2.get())),
+                        new ComparableStack(ModNuclearMiscItems.INGOT_U238M2.get()),
                         new ComparableStack(ModItems.ingot_cft.get(), 64),
                         new ComparableStack(ModItems.ingot_cft.get(), 64))
                 .inputItemsEx(new ComparableStack(ModFinalConsumableItems.ingot_electronium.get(), 64),
@@ -248,7 +248,7 @@ public final class PlasmaForgeTable extends GenericTableSource<PlasmaForgeRecipe
                         OSMIRIDIUM.plateWelded().count(64),
                         ANY_BISMOIDBRONZE.plateCast().count(64),
                         CMB.plateCast().count(64),
-                        new ComparableStack(new ItemStack(ModNuclearMiscItems.INGOT_U238M2.get())),
+                        new ComparableStack(ModNuclearMiscItems.INGOT_U238M2.get()),
                         new ComparableStack(ModItems.ingot_cft.get(), 64),
                         new ComparableStack(ModItems.ingot_cft.get(), 64)));
 

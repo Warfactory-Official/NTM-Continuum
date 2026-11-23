@@ -45,6 +45,7 @@ public final class SolarGameTests {
 
     public static void init() {}
 
+    /** 1.7 {@code ItemMirrorTool}: reach up to 100 blocks, and the mirror at 45° or steeper below or above. */
     public static void toolLinkRangeAndRejection(GameTestHelper helper) {
         BlockPos coreRelative = new BlockPos(3, 1, 3);
         TileEntitySolarBoiler boiler = placeBoiler(helper, coreRelative);
@@ -52,34 +53,30 @@ public final class SolarGameTests {
 
         ItemStack tool = new ItemStack(ModToolItems.mirror_tool.get());
         useOn(helper, tool, coreRelative, false);
-        helper.assertFalse(ModDataComponents.MIRROR_TARGET.has(tool),
-                "Ordinary right-click on the boiler must not overwrite the alignment target");
-        useOn(helper, tool, coreRelative, true);
         helper.assertTrue(ModDataComponents.MIRROR_TARGET.get(tool).orElse(BlockPos.ZERO).equals(core.above()),
-                "Tool must record one block above the boiler core");
+                "A plain right-click must record one block above the boiler core");
         helper.assertTrue(ModDataComponents.MIRROR_TARGET.get(tool.copy()).orElse(BlockPos.ZERO).equals(core.above()),
                 "Mirror target component must persist when the tool stack is copied");
 
-        BlockPos insideRelative = new BlockPos(27, 2, 3);
-        helper.setBlock(insideRelative, ModMachineBlocks.solar_mirror.get().defaultBlockState());
-        TileEntitySolarMirror inside = GameTestHelpers.blockEntity(
-                helper, insideRelative, TileEntitySolarMirror.class);
-        useOn(helper, tool, insideRelative, true);
-        helper.assertTrue(inside.getTarget().equals(BlockPos.ZERO),
-                "Shift-right-click on a mirror must not turn it");
-        useOn(helper, tool, insideRelative, false);
-        helper.assertTrue(inside.getTarget().equals(core.above()),
-                "A target at distance 24 must be accepted");
+        // The target is (3, 2, 3); these mirrors stand 5 above it.
+        TileEntitySolarMirror steep = mirror(helper, tool, new BlockPos(8, 7, 3));
+        helper.assertTrue(steep.getTarget().equals(core.above()), "A mirror at exactly 45° must be accepted");
+        TileEntitySolarMirror shallow = mirror(helper, tool, new BlockPos(9, 7, 3));
+        helper.assertTrue(shallow.getTarget().equals(BlockPos.ZERO), "A mirror under 45° must be refused");
 
-        BlockPos boundaryRelative = new BlockPos(28, 2, 3);
-        helper.setBlock(boundaryRelative, ModMachineBlocks.solar_mirror.get().defaultBlockState());
-        TileEntitySolarMirror boundary = GameTestHelpers.blockEntity(
-                helper, boundaryRelative, TileEntitySolarMirror.class);
-        useOn(helper, tool, boundaryRelative, false);
-        helper.assertTrue(boundary.getTarget().equals(BlockPos.ZERO),
-                "The old strict distance check must reject exactly 25 blocks");
+        TileEntitySolarMirror far = mirror(helper, tool, new BlockPos(3, 102, 3));
+        helper.assertTrue(far.getTarget().equals(core.above()), "A mirror exactly 100 blocks away must be accepted");
+        TileEntitySolarMirror tooFar = mirror(helper, tool, new BlockPos(3, 103, 3));
+        helper.assertTrue(tooFar.getTarget().equals(BlockPos.ZERO), "A mirror beyond 100 blocks must be refused");
         helper.assertTrue(boiler.getBlockPos().equals(core), "Boiler core moved during tool test");
         helper.succeed();
+    }
+
+    private static TileEntitySolarMirror mirror(GameTestHelper helper, ItemStack tool, BlockPos relative) {
+        helper.setBlock(relative, ModMachineBlocks.solar_mirror.get().defaultBlockState());
+        TileEntitySolarMirror mirror = GameTestHelpers.blockEntity(helper, relative, TileEntitySolarMirror.class);
+        useOn(helper, tool, relative, false);
+        return mirror;
     }
 
     public static void daylightAndSkyGate(GameTestHelper helper) {

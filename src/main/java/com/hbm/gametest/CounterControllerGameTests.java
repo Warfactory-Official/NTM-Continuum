@@ -3,6 +3,8 @@ package com.hbm.gametest;
 import com.hbm.Constants;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
+import com.hbm.blocks.network.RadioTorchBase;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.module.ModulePatternMatcher;
@@ -12,6 +14,7 @@ import com.hbm.tileentity.network.RTTYSystem;
 import com.hbm.tileentity.network.TileEntityRadioTorchController;
 import com.hbm.tileentity.network.TileEntityRadioTorchCounter;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
 import com.hbm.tileentity.TileEntityProxyCell;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -52,6 +55,9 @@ public final class CounterControllerGameTests {
     public static final GameTests.Function CONTROLLER_FOLDED = TESTS.function(
             "radio_controller_folded_multiblock", 60, 8,
             () -> CounterControllerGameTests::controllerResolvesFoldedMultiblock);
+    public static final GameTests.Function GH223_CONTROLLER_ON_TERMINAL = TESTS.function(
+            "gh223_controller_attaches_to_interactive_targets", 60, 8,
+            () -> CounterControllerGameTests::controllerAttachesToInteractiveTargets);
 
     public static void init() {}
 
@@ -150,6 +156,51 @@ public final class CounterControllerGameTests {
 
         resolved.runRORFunction("FUN:setactive", new String[]{"1"});
         helper.assertTrue(turret.isOn, "An ROR command through a folded cell must reach the core");
+        helper.succeed();
+    }
+
+    /** 1.7 {@code RadioTorchController}: any {@code IRORInteractive} supports it, value provider or not. */
+    public static void controllerAttachesToInteractiveTargets(GameTestHelper helper) {
+        var controller = ModMachineBlocks.radio_torch_controller.get();
+        BlockState up = controller.defaultBlockState().setValue(RadioTorchBase.FACING, Direction.UP);
+        BlockPos terminalPos = new BlockPos(1, 1, 1);
+        helper.setBlock(terminalPos, ModRBMKBlocks.rbmk_terminal.get().defaultBlockState());
+        helper.assertTrue(up.canSurvive(helper.getLevel(), helper.absolutePos(terminalPos.above())),
+                "The controller must stand on the RoR terminal");
+        helper.setBlock(terminalPos.above(), up);
+        helper.assertTrue(helper.getBlockState(terminalPos.above()).is(controller),
+                "The controller must stay on the RoR terminal");
+        IRORInteractive terminal = RadioTargets.interactive(helper.getLevel(), helper.absolutePos(terminalPos));
+        helper.assertTrue(terminal != null, "The RoR terminal must be an interactive target");
+        terminal.runRORFunction("FUN:write", new String[]{"hello"});
+        BlockEntityRBMKTerminal entity = GameTestHelpers.blockEntity(helper, terminalPos, BlockEntityRBMKTerminal.class);
+        helper.assertTrue("hello".equals(entity.history[0]), "write! must reach the terminal");
+
+        BlockPos stonePos = new BlockPos(3, 1, 1);
+        helper.setBlock(stonePos, Blocks.STONE.defaultBlockState());
+        helper.assertFalse(up.canSurvive(helper.getLevel(), helper.absolutePos(stonePos.above())),
+                "The controller must still refuse a block without an RoR target");
+
+        BlockMultiblockCore turret = ModTurretBlocks.turret_chekhov.get();
+        BlockPos clicked = helper.absolutePos(new BlockPos(4, 1, 4));
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        player.setPos(clicked.getX() - 6D, clicked.getY(), clicked.getZ() - 6D);
+        helper.getLevel().setBlock(clicked, turret.defaultBlockState(), 3);
+        turret.setPlacedBy(helper.getLevel(), clicked, turret.defaultBlockState(), player, new ItemStack(turret));
+        BlockPos core = clicked.above(turret.getHeightOffset()).relative(Direction.NORTH, -turret.getOffset());
+        IRORInteractive owner = RadioTargets.interactive(helper.getLevel(), core);
+        helper.assertTrue(owner != null, "Expected the turret core to take RoR commands");
+        boolean attached = false;
+        for (BlockPos support : BlockPos.betweenClosed(core.offset(-3, -3, -3), core.offset(3, 3, 3))) {
+            if (RadioTargets.interactive(helper.getLevel(), support) != owner) continue;
+            for (Direction side : Direction.values()) {
+                BlockPos at = support.relative(side);
+                if (!helper.getLevel().getBlockState(at).isAir()) continue;
+                attached |= controller.defaultBlockState().setValue(RadioTorchBase.FACING, side)
+                        .canSurvive(helper.getLevel(), at);
+            }
+        }
+        helper.assertTrue(attached, "The controller must attach to a turret, which only takes commands");
         helper.succeed();
     }
 

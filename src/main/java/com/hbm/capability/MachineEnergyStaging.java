@@ -12,6 +12,8 @@ final class MachineEnergyStaging {
     private final IEnergyHandlerMK2 machine;
     private final boolean relay;
     private long insertedHe, extractedHe;
+    /** HE committed through the faces in game tick {@link #tick}: the machine's speeds are per tick, not per call. */
+    private long tick = Long.MIN_VALUE, tickInHe, tickOutHe;
 
     MachineEnergyStaging(IEnergyHandlerMK2 machine) {
         this.machine = machine;
@@ -26,6 +28,13 @@ final class MachineEnergyStaging {
             throw new IllegalStateException("Owned HE buffer is outside its declared capacity");
     }
 
+    /** Starts a new per-tick budget when the game time moved on. */
+    void at(long gameTime) {
+        if (gameTime == tick) return;
+        tick = gameTime;
+        tickInHe = tickOutHe = 0;
+    }
+
     private static long wholeFe(long maximumFe, long availableHe) {
         var amount = Math.min(maximumFe, EnergyConversion.feFromHe(Math.max(0L, availableHe)));
         var quantum = EnergyConversion.feQuantum();
@@ -34,7 +43,7 @@ final class MachineEnergyStaging {
 
     long insertableFe(long maximumFe, IEnergyHandlerMK2 receiver) {
         checkBuffer();
-        var offered = Math.min(receiver.getMaxPower() - receiver.getPower(), receiver.getReceiverSpeed());
+        var offered = Math.min(receiver.getMaxPower() - receiver.getPower(), receiver.getReceiverSpeed() - tickInHe);
         if (relay && offered > 0) offered -= receiver.transferPower(offered, true);
         return wholeFe(maximumFe, offered - insertedHe);
     }
@@ -42,7 +51,7 @@ final class MachineEnergyStaging {
     long extractableFe(long maximumFe, IEnergyHandlerMK2 provider) {
         if (relay) return 0;
         checkBuffer();
-        var available = Math.min(provider.getPower(), provider.getProviderSpeed());
+        var available = Math.min(provider.getPower(), provider.getProviderSpeed() - tickOutHe);
         return wholeFe(maximumFe, available - extractedHe);
     }
 
@@ -70,12 +79,15 @@ final class MachineEnergyStaging {
     /** Native entry/exit methods run only after the outermost transaction commits. */
     boolean hasPending() { return insertedHe != 0 || extractedHe != 0; }
 
+    long pendingInsertedHe() { return insertedHe; }
+
     boolean commit() {
         if (!hasPending()) return false;
         if (relay) {
             // a relay splits each offer non-linearly (the charger gives each item a fifth): offer the rest again until all
             // that was accepted is placed, which the simulation's larger offer guarantees within this tick
             var remaining = insertedHe;
+            tickInHe += insertedHe;
             insertedHe = extractedHe = 0;
             for (int i = 0; remaining > 0 && i < RELAY_PASSES; i++) {
                 var left = machine.transferPower(remaining, false);
@@ -90,6 +102,8 @@ final class MachineEnergyStaging {
             throw new IllegalStateException("Owned HE buffer changed outside its reserved transaction");
         var incoming = insertedHe;
         var outgoing = extractedHe;
+        tickInHe += incoming;
+        tickOutHe += outgoing;
         insertedHe = extractedHe = 0;
         if (incoming > 0 && machine.transferPower(incoming, false) != 0)
             throw new IllegalStateException("Owned HE buffer refused reserved input");

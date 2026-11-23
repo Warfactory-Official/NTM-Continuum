@@ -1024,13 +1024,13 @@ public final class AssemblyMachineTable extends GenericTableSource<GenericRecipe
                 .inputItems(new ComparableStack(ModCasingItems.casing(EnumCasingType.LARGE_STEEL), 2), ANY_SMOKELESS.dust().count(24), new ComparableStack(ModFinalConsumableItems.FLAT.get("item_secret_selenium_steel").get(), 1), new ComparableStack(ModArmorModItems.black_diamond.get()))
                 .setPools(GenericRecipes.POOL_PREFIX_SECRET + "psalm"));
         this.register(new GenericRecipe("chem.shellchlorine").setup(100, 1_000).outputItems(new ItemStack(ModAmmoItems.ammo_arty.get(ArtilleryShellType.CHLORINE), 1))
-                .inputItems(new ComparableStack(new ItemStack(ModAmmoItems.ammo_arty.get(ArtilleryShellType.NORMAL))), ANY_PLASTIC.ingot().count(1))
+                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.get(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot().count(1))
                 .inputFluids(new FluidStack(Fluids.CHLORINE, 4_000)));
         this.register(new GenericRecipe("ass.shellphosgene").setup(100, 1_000).outputItems(new ItemStack(ModAmmoItems.ammo_arty.get(ArtilleryShellType.PHOSGENE), 1))
-                .inputItems(new ComparableStack(new ItemStack(ModAmmoItems.ammo_arty.get(ArtilleryShellType.NORMAL))), ANY_PLASTIC.ingot().count(1))
+                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.get(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot().count(1))
                 .inputFluids(new FluidStack(Fluids.PHOSGENE, 4_000)));
         this.register(new GenericRecipe("ass.shellmustard").setup(100, 1_000).outputItems(new ItemStack(ModAmmoItems.ammo_arty.get(ArtilleryShellType.MUSTARD), 1))
-                .inputItems(new ComparableStack(new ItemStack(ModAmmoItems.ammo_arty.get(ArtilleryShellType.NORMAL))), ANY_PLASTIC.ingot().count(1))
+                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.get(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot().count(1))
                 .inputFluids(new FluidStack(Fluids.MUSTARDGAS, 4_000)));
 
         // space

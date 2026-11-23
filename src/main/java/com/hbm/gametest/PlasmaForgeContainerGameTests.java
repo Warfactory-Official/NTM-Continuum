@@ -8,6 +8,8 @@ import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModBatteryItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMachineItems;
+import com.hbm.items.ModNuclearMiscItems;
+import com.hbm.items.special.ItemUnstable;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.items.machine.ItemBlueprints;
@@ -107,6 +109,23 @@ public final class PlasmaForgeContainerGameTests {
                 "Blueprint slot must display an oversized existing stack");
         helper.assertTrue(menu.getSlot(TileEntityFusionPlasmaForge.SLOT_BOOSTER).getMaxStackSize() >= 96,
                 "Booster slot must display an oversized existing stack");
+        helper.succeed();
+    }
+
+    /** A carried U-238m2 ingot holds a decay timer; 1.7 matched by item only, so the FEnSU slot takes it. */
+    public static void tickingU238m2Accepted(GameTestHelper helper) {
+        TileEntityFusionPlasmaForge forge = place(helper, new BlockPos(1, 1, 1));
+        ContainerMachinePlasmaForge menu = new ContainerMachinePlasmaForge(0, player(helper).getInventory(), forge);
+        forge.plasmaModule.recipe = "ass.fensusan";
+        ItemStack ingot = new ItemStack(ModNuclearMiscItems.INGOT_U238M2.get());
+        ItemUnstable.TIMER.set(ingot, 5);
+        helper.assertTrue(menu.getSlot(TileEntityFusionPlasmaForge.FIRST_INPUT + 9).mayPlace(ingot),
+                "The FEnSU ingot slot must take a U-238m2 ingot carrying its decay timer");
+        helper.assertFalse(menu.getSlot(TileEntityFusionPlasmaForge.FIRST_INPUT + 8).mayPlace(ingot),
+                "Another FEnSU input slot must refuse the ingot");
+        helper.assertFalse(menu.getSlot(TileEntityFusionPlasmaForge.FIRST_INPUT + 9).mayPlace(
+                        new ItemStack(ModNuclearMiscItems.HS_ELEMENTS.get())),
+                "The hidden U-238m2 variant must not stand in for the ingot");
         helper.succeed();
     }
 

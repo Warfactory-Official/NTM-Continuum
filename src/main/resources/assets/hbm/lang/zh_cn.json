@@ -3357,6 +3357,8 @@
   "item.hbm.mirror_tool.desc.0": "右键单击“太阳能锅炉”以记忆位置 ",
   "item.hbm.mirror_tool.desc.1": "再单击“定日镜”可将其转向太阳能锅炉",
   "item.hbm.mirror_tool.linked": "设置对齐位置!",
+  "item.hbm.mirror_tool.reach": "镜面距离超出范围！(最远100m)",
+  "item.hbm.mirror_tool.angle": "镜面角度过小！(最小为45°)",
   "block.hbm.machine_arc_welder": "电弧焊机",
   "block.hbm.machine_assembly_factory": "大型装配厂",
   "block.hbm.machine_assembly_factory.desc.0": "可处理四个配方的装配厂。",

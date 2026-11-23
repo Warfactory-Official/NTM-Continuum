@@ -27,7 +27,7 @@ public final class RadioTorchController extends RadioTorchBase {
 
     @Override
     protected boolean canAttachTo(LevelReader level, BlockPos supportPos, BlockState support, Direction facing) {
-        return RadioTargets.valueProvider(level, supportPos) != null;
+        return RadioTargets.interactive(level, supportPos) != null;
     }
 
     @Override

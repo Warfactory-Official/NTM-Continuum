@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.SlotSmelting;
 import com.hbm.tileentity.machine.TileEntityFurnaceCombination;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -39,7 +40,7 @@ public class ContainerFurnaceCombination extends AbstractContainerMenu {
         this.access = access;
 
         this.addSlot(validated(0, 26, 36));
-        this.addSlot(takeOnly(1, 89, 36));
+        this.addSlot(new SlotSmelting(playerInventory.player, machine, 1, 89, 36));
         this.addSlot(validated(2, 136, 18));
         this.addSlot(takeOnly(3, 136, 54));
 

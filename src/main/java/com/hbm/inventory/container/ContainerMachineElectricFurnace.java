@@ -2,6 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.SlotSmelting;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
@@ -42,9 +43,7 @@ public class ContainerMachineElectricFurnace extends AbstractContainerMenu {
 
         this.addSlot(validated(0, 152, 54));   // battery (1.7 ContainerElectricFurnace positions)
         this.addSlot(validated(1, 20, 35));    // input
-        this.addSlot(new Slot(this.machine, 2, 80, 35) { // output (take only)
-            @Override public boolean mayPlace(ItemStack stack) { return false; }
-        });
+        this.addSlot(new SlotSmelting(playerInventory.player, this.machine, 2, 80, 35));
         this.addSlot(validated(3, 111, 34));   // upgrade
 
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++) {

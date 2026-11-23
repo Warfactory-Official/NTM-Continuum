@@ -1,6 +1,7 @@
 package com.hbm.capability;
 
 import com.hbm.Constants;
+import com.hbm.api.energymk2.ForeignEnergyBridge;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
@@ -36,6 +37,8 @@ import org.jspecify.annotations.Nullable;
 public final class MachineEnergyExposure implements EnergySource {
     private static final MachineEnergyExposure INSTANCE = new MachineEnergyExposure();
     private static final Map<BlockEntity, WeakReference<MachineEnergyStaging>> STAGING = new WeakHashMap<>();
+    /** Game time each machine last committed FE pushed into one of its faces. */
+    private static final Map<BlockEntity, Long> FOREIGN_INPUT = new WeakHashMap<>();
     private static boolean started;
     private MachineEnergyExposure() {}
 
@@ -126,6 +129,15 @@ public final class MachineEnergyExposure implements EnergySource {
         return new Face(owner, machine, staging, level, pos.immutable(), side);
     }
 
+    /**
+     * Whether another mod pushed energy into this machine's faces in the last few ticks. Such a buffer keeps its own
+     * supply, as 1.7's does, rather than paying it to foreign receivers that may be the same mod's other end.
+     */
+    public static boolean takesForeignInput(IEnergyHandlerMK2 machine, long gameTime) {
+        Long stamp = machine instanceof BlockEntity owner ? FOREIGN_INPUT.get(owner) : null;
+        return stamp != null && gameTime - stamp <= ForeignEnergyBridge.RECEIVE_LATCH_TICKS;
+    }
+
     private static final class Face implements EnergySource {
         private final BlockEntity owner;
         private final IEnergyHandlerMK2 machine;
@@ -142,20 +154,23 @@ public final class MachineEnergyExposure implements EnergySource {
         private boolean receives() { return valid() && at(level, pos, side, CapRole.POWER_IN) == machine; }
         private boolean provides() { return valid() && at(level, pos, side, CapRole.POWER_OUT) == machine; }
         private boolean active() { return receives() || provides(); }
+        private MachineEnergyStaging tick() { staging.at(level.getGameTime()); return staging; }
         @Override public Object transactionKey() { return staging; }
         @Override public long amountFe(ServerLevel level, BlockPos pos) { return active() ? staging.amountFe() : 0; }
         @Override public long capacityFe(ServerLevel level, BlockPos pos) { return active() ? staging.capacityFe() : 0; }
-        @Override public long insertableFe(ServerLevel level, BlockPos pos) { return receives() ? staging.insertableFe(Long.MAX_VALUE, machine) : 0; }
-        @Override public long extractableFe(ServerLevel level, BlockPos pos) { return provides() ? staging.extractableFe(Long.MAX_VALUE, machine) : 0; }
-        @Override public long insertableFe(ServerLevel level, BlockPos pos, long maximumFe) { return receives() ? staging.insertableFe(maximumFe, machine) : 0; }
-        @Override public long extractableFe(ServerLevel level, BlockPos pos, long maximumFe) { return provides() ? staging.extractableFe(maximumFe, machine) : 0; }
-        @Override public long insertFe(ServerLevel level, BlockPos pos, @Nullable BlockPos from, long fe) { return receives() ? staging.insert(fe, machine) : 0; }
-        @Override public long extractFe(ServerLevel level, BlockPos pos, long fe) { return provides() ? staging.extract(fe, machine) : 0; }
+        @Override public long insertableFe(ServerLevel level, BlockPos pos) { return receives() ? tick().insertableFe(Long.MAX_VALUE, machine) : 0; }
+        @Override public long extractableFe(ServerLevel level, BlockPos pos) { return provides() ? tick().extractableFe(Long.MAX_VALUE, machine) : 0; }
+        @Override public long insertableFe(ServerLevel level, BlockPos pos, long maximumFe) { return receives() ? tick().insertableFe(maximumFe, machine) : 0; }
+        @Override public long extractableFe(ServerLevel level, BlockPos pos, long maximumFe) { return provides() ? tick().extractableFe(maximumFe, machine) : 0; }
+        @Override public long insertFe(ServerLevel level, BlockPos pos, @Nullable BlockPos from, long fe) { return receives() ? tick().insert(fe, machine) : 0; }
+        @Override public long extractFe(ServerLevel level, BlockPos pos, long fe) { return provides() ? tick().extract(fe, machine) : 0; }
         @Override public Object snapshot(ServerLevel level, BlockPos pos) { return staging.save(); }
         @Override public void restore(ServerLevel level, BlockPos pos, Object state) { staging.restore((long[]) state); }
         @Override public void commit(ServerLevel level, BlockPos pos) {
             if (!staging.hasPending()) return;
             if (!valid()) throw new IllegalStateException("HE owner changed during a committed transaction");
+            staging.at(level.getGameTime());
+            if (staging.pendingInsertedHe() > 0) FOREIGN_INPUT.put(owner, level.getGameTime());
             if (staging.commit()) owner.setChanged();
         }
     }

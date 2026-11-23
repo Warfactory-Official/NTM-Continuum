@@ -46,8 +46,6 @@ public final class ModRecipes {
             REG.register(Registries.RECIPE_SERIALIZER, "scraps_from_powders", () -> ScrapsPowderRecipe.SERIALIZER);
     public static final RegistryObject<RecipeSerializer<MKUCraftingRecipe>> SYRINGE_MKUNICORN =
             REG.register(Registries.RECIPE_SERIALIZER, "syringe_mkunicorn", () -> MKUCraftingRecipe.SERIALIZER);
-    public static final RegistryObject<RecipeSerializer<ZirnoxWasteRecipe>> ZIRNOX_WASTE =
-            REG.register(Registries.RECIPE_SERIALIZER, "zirnox_waste", () -> ZirnoxWasteRecipe.SERIALIZER);
     public static final RegistryObject<RecipeSerializer<FluidDuctRetypeRecipe>> FLUID_DUCT_RETYPE =
             REG.register(Registries.RECIPE_SERIALIZER, "fluid_duct_retype", () -> FluidDuctRetypeRecipe.SERIALIZER);
 

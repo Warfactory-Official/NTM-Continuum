@@ -211,7 +211,7 @@ public final class PowerNetwork {
 
         long injected = bridge == null ? 0L : bridge.injected();
         if (injected > 0L) gather.offer(bridge.injectedSource(), true, false);
-        gather.fileForeignDemand();
+        gather.fileForeignDemand(gameTime);
 
         // 1.7 PowerNetMK2: the tracker is the providers' charge before the round less their charge after it
         long before = 0L;
@@ -434,12 +434,14 @@ public final class PowerNetwork {
         }
 
         /** A buffer-mode battery's headroom is native demand, but the part its own supply covers may go out instead. */
-        void fileForeignDemand() {
+        void fileForeignDemand(long gameTime) {
             if (foreignDemand == null) return;
             long bufferDemand = 0L, bufferSelf = 0L;
             for (Distribution.Share<IEnergyHandlerMK2> share : providers) {
                 IEnergyHandlerMK2 handler = share.endpoint();
                 if (!seenReceiving.contains(handler)) continue;
+                // fed by another mod: paying its own supply out could hand it straight back (a Flux plug and point)
+                if (MachineEnergyExposure.takesForeignInput(handler, gameTime)) continue;
                 long headroom = Math.min(handler.getMaxPower() - handler.getPower(), handler.getReceiverSpeed());
                 bufferDemand += headroom;
                 bufferSelf += Math.min(share.amount(), headroom);

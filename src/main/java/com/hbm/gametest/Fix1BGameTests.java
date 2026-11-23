@@ -11,10 +11,11 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModEntityItems;
 import com.hbm.items.ModFluidItems;
 import com.hbm.items.ModUtilityToolItems;
+import com.hbm.items.ModZirnoxItems;
 import com.hbm.items.machine.ItemFluidDuct;
 import com.hbm.items.machine.ItemFluidIDMulti;
 import com.hbm.items.machine.ItemScraps;
-import com.hbm.items.machine.ItemZirnoxWaste;
+import com.hbm.items.machine.ZirnoxFuel;
 import com.hbm.items.tool.ItemModMinecart;
 import com.hbm.items.weapon.grenade.GrenadeData;
 import com.hbm.items.weapon.grenade.ItemGrenadeExtra.EnumGrenadeExtra;
@@ -25,6 +26,7 @@ import com.hbm.items.weapon.grenade.ItemGrenadeUniversal;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Ingredients;
+import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.Recipes;
 import java.util.ArrayList;
 import java.util.List;
@@ -281,13 +283,18 @@ public final class Fix1BGameTests {
         helper.succeed();
     }
 
+    /** Every depleted rod with a waste gives two hot waste, the same stack the reactor makes, and leaves the empty rod. */
     public static void zirnox(GameTestHelper helper) {
-        ItemStack rod = of("hbm:rod_zirnox_depleted_uranium_fuel");
-        ItemStack waste = craft(helper, rod);
-        expect(helper, waste, "hbm:waste_uranium", 2, "zirnox waste");
-        helper.assertTrue(ItemZirnoxWaste.isHot(waste), "1.7 waste meta 1 is hot");
-        List<ItemStack> left = Recipes.craftingRemainders(helper.getLevel(), 3, 3, grid(9, rod)).orElse(List.of());
-        helper.assertTrue(left.stream().anyMatch(s -> s.is(item("hbm:rod_zirnox_empty"))), "the empty rod stays, got " + left);
+        for (ZirnoxFuel fuel : ZirnoxFuel.values()) {
+            if (!ModZirnoxItems.hasDepleted(fuel)) continue;
+            ItemStack rod = new ItemStack(ModZirnoxItems.depleted(fuel));
+            ItemStack waste = craft(helper, rod);
+            helper.assertTrue(ItemStacks.sameItemAndData(waste, ModZirnoxItems.hotWaste(fuel, 1)) && waste.getCount() == 2,
+                    fuel + " gave " + waste + ", 1.7 gives two of its hot waste");
+            List<ItemStack> left = Recipes.craftingRemainders(helper.getLevel(), 3, 3, grid(9, rod)).orElse(List.of());
+            helper.assertTrue(left.stream().anyMatch(s -> s.is(item("hbm:rod_zirnox_empty"))),
+                    fuel + ": the empty rod stays, got " + left);
+        }
         helper.succeed();
     }
 

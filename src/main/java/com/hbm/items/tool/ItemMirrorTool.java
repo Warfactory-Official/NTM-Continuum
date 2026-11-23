@@ -19,7 +19,7 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 import com.hbm.items.ModDataComponents;
 
-/** The old solar-boiler/mirror coordinate linker. */
+/** 1.7 {@code ItemMirrorTool}: links heliostats to a solar boiler within 100 blocks and at 45° or steeper. */
 public class ItemMirrorTool extends CompatItem {
 
     public ItemMirrorTool(Properties properties) {
@@ -39,37 +39,38 @@ public class ItemMirrorTool extends CompatItem {
         BlockPos clicked = context.getClickedPos();
         ItemStack stack = context.getItemInHand();
         Player player = context.getPlayer();
-        boolean shifting = player != null && player.isShiftKeyDown();
 
-        if (level.getBlockState(clicked).getBlock() instanceof MachineSolarBoiler boilerBlock) {
-            if (!shifting) return super.useOn(context);
+        if (level.getBlockState(clicked).getBlock() instanceof MachineSolarBoiler) {
             BlockPos core = MultiblockSurface.coreOfAny(level, clicked);
             if (core != null && !level.isClientSide()) {
-                // The legacy mirror aims at one block above the boiler core, then resolves tY - 1.
+                // The mirror aims at one block above the boiler core, then resolves tY - 1.
                 ModDataComponents.MIRROR_TARGET.set(stack, core.above());
-                if (player != null) {
-                    player.sendSystemMessage(Component.translatable("item.hbm.mirror_tool.linked")
-                            .withStyle(ChatFormatting.YELLOW));
-                }
+                message(player, "item.hbm.mirror_tool.linked", ChatFormatting.YELLOW);
             }
             return InteractionResult.SUCCESS;
         }
 
-        if (!shifting && level.getBlockState(clicked).getBlock() instanceof SolarMirror
+        if (level.getBlockState(clicked).getBlock() instanceof SolarMirror
                 && ModDataComponents.MIRROR_TARGET.has(stack)) {
             if (!level.isClientSide()
                     && level.getBlockEntity(clicked) instanceof TileEntitySolarMirror mirror) {
                 BlockPos target = ModDataComponents.MIRROR_TARGET.getOr(stack, BlockPos.ZERO);
-                double dx = clicked.getX() - target.getX();
-                double dy = clicked.getY() - target.getY();
-                double dz = clicked.getZ() - target.getZ();
-                if (Math.sqrt(dx * dx + dy * dy + dz * dz) < 25D) {
-                    mirror.setTarget(target);
-                }
+                int dx = clicked.getX() - target.getX();
+                int dy = clicked.getY() - target.getY();
+                int dz = clicked.getZ() - target.getZ();
+                boolean withinReach = Math.sqrt(dx * dx + dy * dy + dz * dz) <= 100D;
+                boolean withinAngle = dx * dx + dz * dz <= dy * dy;
+                if (!withinReach) message(player, "item.hbm.mirror_tool.reach", ChatFormatting.RED);
+                else if (!withinAngle) message(player, "item.hbm.mirror_tool.angle", ChatFormatting.RED);
+                else mirror.setTarget(target);
             }
             return InteractionResult.SUCCESS;
         }
 
         return super.useOn(context);
+    }
+
+    private static void message(Player player, String key, ChatFormatting colour) {
+        if (player != null) player.sendSystemMessage(Component.translatable(key).withStyle(colour));
     }
 }

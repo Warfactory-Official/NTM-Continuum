@@ -11,11 +11,15 @@ import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.handler.ConsumableTreatments;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
+import com.hbm.items.ModArmorModItems;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModItems;
+import com.hbm.items.ModNuclearMiscItems;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.packet.ManlySyncPayload;
 import com.hbm.packet.PollutionSyncPayload;
 import com.hbm.potion.ModEffects;
+import com.hbm.util.AchievementHandler;
 import com.hbm.util.ArmorRegistry;
 import dev.golem.core.autocraft.CraftingMachines;
 import dev.golem.core.net.GolemNetwork;
@@ -27,6 +31,7 @@ import dev.golem.core.world.ItemFirstUse;
 import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.ItemUses;
 import dev.golem.core.world.Sleeps;
+import dev.golem.core.world.Smelts;
 import dev.golem.core.world.Spawns;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +51,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -62,7 +68,8 @@ import net.minecraft.world.phys.BlockHitResult;
  *   <li>{@code PollutionHandler.rampantTargetSetter} ({@code PlayerSleepInBedEvent}) - Core {@link Sleeps};</li>
  *   <li>{@code PollutionHandler.rampantScoutPopulator} ({@code WorldEvent.PotentialSpawns}) -
  *       Core {@link Spawns#onPotentialSpawns};</li>
- *   <li>{@code ModEventHandler.onPlayerInteract}'s 528 explosive energistics - Core {@link ItemFirstUse}.</li>
+ *   <li>{@code ModEventHandler.onPlayerInteract}'s 528 explosive energistics - Core {@link ItemFirstUse};</li>
+ *   <li>{@code ModEventHandler.itemSmelted} ({@code ItemSmeltedEvent}) - Core {@link Smelts}.</li>
  * </ul>
  */
 public final class ModEventHandlerHooks {
@@ -75,6 +82,7 @@ public final class ModEventHandlerHooks {
         if (installed) return;
         installed = true;
         ItemUses.onFinish(ModEventHandlerHooks::onFoodEaten);
+        Smelts.onTake(ModEventHandlerHooks::onItemSmelted);
         ConsumableTreatments.init();
         BlockBreaks.onBreak(ModEventHandlerHooks::onBlockBreak);
         Sleeps.onSleepAttempt((player, pos) -> PollutionHandler.rampantTargetSetter(pos));
@@ -86,6 +94,21 @@ public final class ModEventHandlerHooks {
             SENT_POLLUTION.clear();
             SENT_MANLY.clear();
         });
+    }
+
+    /** 1.7 {@code ModEventHandler.itemSmelted}: 1 in 64 smelted iron ingots or uranium ingots carry a bonus. */
+    public static void onItemSmelted(Player player, ItemStack result) {
+        AchievementHandler.fire(player, result);
+        if (result.is(Items.IRON_INGOT) && player.getRandom().nextInt(64) == 0) {
+            giveOrDrop(player, new ItemStack(ModArmorModItems.lodestone.get()));
+        }
+        if (result.is(ModItems.ingot_uranium.get()) && player.getRandom().nextInt(64) == 0) {
+            giveOrDrop(player, new ItemStack(ModNuclearMiscItems.QUARTZ_PLUTONIUM.get()));
+        }
+    }
+
+    private static void giveOrDrop(Player player, ItemStack stack) {
+        if (!player.getInventory().add(stack)) player.drop(stack, false);
     }
 
     private static final Map<UUID, float[]> SENT_POLLUTION = new HashMap<>();
