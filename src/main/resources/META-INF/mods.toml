@@ -24,7 +24,7 @@ side = "BOTH"
 [[dependencies.${mod_id}]]
 modId = "golemcore"
 mandatory = true
-versionRange = "[1.0.6,)"
+versionRange = "[1.0.7,)"
 ordering = "AFTER"
 side = "BOTH"
 
