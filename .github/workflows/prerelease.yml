@@ -1,5 +1,5 @@
-# Builds every node (chiseledBuild) against Golem Core's main branch and publishes the release jars,
-# HBM's and the matching Golem Core jars it was built against, as a GitHub pre-release.
+# Builds every HBM node (chiseledBuild) against Golem Core's main branch, building only those nodes of Golem Core, and
+# publishes the release jars, HBM's and the matching Golem Core jars it was built against, as a GitHub pre-release.
 # Runs on pushes to main that change a build input (see paths below) and on demand.
 name: Pre-release
 
@@ -70,7 +70,11 @@ jobs:
         env:
           CI: "false"
         working-directory: Golem-Core
-        run: bash ./gradlew chiseledBuild --no-daemon --stacktrace
+        # Only the Golem Core nodes HBM has (NTM-Continuum/versions/*), not Core's whole matrix.
+        run: |
+          tasks=$(for f in ../NTM-Continuum/versions/*/gradle.properties; do n=$(basename "$(dirname "$f")"); echo ":$n:build"; done)
+          echo "Golem Core tasks: $tasks"
+          bash ./gradlew $tasks --no-daemon --stacktrace
 
       - name: Build HBM
         # ModDevGradle builds Minecraft through its binary pipeline whenever CI=true (GitHub always sets
@@ -102,8 +106,12 @@ jobs:
         run: |
           mkdir -p dist
           # build/libs holds the release jar per node (remapJar/reobfJar/jar); devlibs is not shipped.
-          for repo in NTM-Continuum Golem-Core; do
-            find $repo/versions/*/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
+          # HBM's nodes, and Golem Core's jars for those nodes only.
+          for f in NTM-Continuum/versions/*/gradle.properties; do
+            node=$(basename "$(dirname "$f")")
+            for repo in NTM-Continuum Golem-Core; do
+              find $repo/versions/$node/build/libs -maxdepth 1 -name '*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
+            done
           done
           # Tag every jar with this build's number, so jars from different builds never share a file name:
           # hbm-fabric-0.1.0+1.20.1.jar -> hbm-fabric-0.1.0+1.20.1-build.42.jar
