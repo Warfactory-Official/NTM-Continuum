@@ -1,5 +1,6 @@
 package com.hbm.particle.helper;
 
+import dev.golem.core.hook.Hook;
 import net.minecraft.world.level.Level;
 
 /**
@@ -12,6 +13,29 @@ import net.minecraft.world.level.Level;
 public final class ExplosionCreator {
 
     private ExplosionCreator() {}
+
+    /** The three sizes of {@link #composeEffectSmall} and its siblings, as a listener is told them. */
+    public enum Size { SMALL, STANDARD, LARGE }
+
+    /**
+     * Lets an addon draw these explosions itself: a listener that returns true has, and this class sends nothing. For an addon with another
+     * renderer for the same three sizes; none registered, nothing changes.
+     */
+    @FunctionalInterface
+    public interface Interceptor {
+        boolean draw(Level level, double x, double y, double z, Size size);
+    }
+
+    public static final Hook<Interceptor> INTERCEPT = Hook.of(listeners -> (level, x, y, z, size) -> {
+        for (Interceptor listener : listeners) {
+            if (listener.draw(level, x, y, z, size)) return true;
+        }
+        return false;
+    });
+
+    private static boolean intercepted(Level level, double x, double y, double z, Size size) {
+        return !INTERCEPT.isEmpty() && INTERCEPT.invoker().draw(level, x, y, z, size);
+    }
 
     /** The RBMK meltdown mushroom cloud uses the upstream fixed scale-nine preset. */
     public static void composeEffectRBMKMush(Level level, double x, double y, double z) {
@@ -36,15 +60,18 @@ public final class ExplosionCreator {
 
     /** Downscaled, for small bombs. */
     public static void composeEffectSmall(Level level, double x, double y, double z) {
+        if (intercepted(level, x, y, z, Size.SMALL)) return;
         ParticleEffects.explosionLarge(level, x, y, z, 10, 2F, 0.5F, 25F, 5, 8, 20, 0.75F, 1F, -2F, 150F);
     }
 
     public static void composeEffectStandard(Level level, double x, double y, double z) {
+        if (intercepted(level, x, y, z, Size.STANDARD)) return;
         ParticleEffects.explosionLarge(level, x, y, z, 15, 5F, 1F, 45F, 10, 16, 50, 1F, 3F, -2F, 200F);
     }
 
     /** Upscaled. */
     public static void composeEffectLarge(Level level, double x, double y, double z) {
+        if (intercepted(level, x, y, z, Size.LARGE)) return;
         ParticleEffects.explosionLarge(level, x, y, z, 30, 6.5F, 2F, 65F, 25, 16, 50, 1.25F, 3F, -2F, 350F);
     }
 }
