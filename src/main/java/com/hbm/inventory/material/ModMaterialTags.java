@@ -128,6 +128,8 @@ public final class ModMaterialTags {
                 "minecraft:gray_stained_glass", "minecraft:light_gray_stained_glass", "minecraft:cyan_stained_glass",
                 "minecraft:purple_stained_glass", "minecraft:blue_stained_glass", "minecraft:brown_stained_glass",
                 "minecraft:green_stained_glass", "minecraft:red_stained_glass", "minecraft:black_stained_glass");
+        // 1.7 KEY_CLEARGLASS "blockGlassColorless", for the same reason
+        tag("glass_blocks/colorless", "minecraft:glass");
         tag("glass_panes", "minecraft:glass_pane", "minecraft:white_stained_glass_pane",
                 "minecraft:orange_stained_glass_pane", "minecraft:magenta_stained_glass_pane",
                 "minecraft:light_blue_stained_glass_pane", "minecraft:yellow_stained_glass_pane",
