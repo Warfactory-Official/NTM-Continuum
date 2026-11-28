@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine;
 
 import dev.golem.core.world.Explosions;
-import com.hbm.api.environment.Environment;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.inventory.fluid.FluidType;
@@ -55,8 +54,6 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
                 int toSpill = Math.max(drain.tank.getFill() / 2, 1);
                 drain.tank.setFill(drain.tank.getFill() - toSpill);
                 FluidTrait.onRelease(level, pos, drain.tank.getTankType(), FluidReleaseType.SPILL, toSpill);
-                // hbm-space FT_Gaseous.release: a drained gas goes into the planet's air (com.hbm.api.environment)
-                Environment.releaseGas(level, pos, drain.tank.getTankType(), toSpill);
 
                 if (toSpill >= 100 && level.getRandom().nextInt(20) == 0
                         && FluidCombustion.isLiquidAndViscous(drain.tank.getTankType())

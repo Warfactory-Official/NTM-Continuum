@@ -21,6 +21,8 @@ import com.hbm.handler.JetpackHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
+import com.hbm.inventory.fluid.trait.FluidTrait;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModFluidNetItems;
 import com.hbm.items.armor.JetpackBase;
@@ -354,12 +356,19 @@ public final class EnvironmentGameTests {
             flare.doesBurn = true;
             TileEntityMachineGasFlare.serverTick(helper.getLevel(), pos, flare.getBlockState(), flare);
             helper.assertTrue(flare.tank.getFill() == 950, "airless flare must vent 50 mB, left " + flare.tank.getFill());
-            helper.assertTrue(released.equals(List.of("GAS:50")), "vented gas must reach GAS_RELEASE, got " + released);
+            // every fifth tick the flare also spills five ticks' worth, reported ahead of the vent
+            helper.assertTrue(released.equals(List.of("GAS:50")) || released.equals(List.of("GAS:250", "GAS:50")),
+                    "vented gas must reach GAS_RELEASE, got " + released);
             helper.assertTrue(flare.power == 0, "airless flare made power");
 
             released.clear();
             Environment.releaseGas(helper.getLevel(), pos, Fluids.OIL, 100);
             helper.assertTrue(released.isEmpty(), "a liquid is no gas release");
+
+            // hbm-space FT_Gaseous.onFluidRelease: every release of a gas is reported, whatever its type
+            FluidTrait.onRelease(helper.getLevel(), pos, Fluids.GAS, FluidReleaseType.VOID, 40);
+            FluidTrait.onRelease(helper.getLevel(), pos, Fluids.OIL, FluidReleaseType.VOID, 40);
+            helper.assertTrue(released.equals(List.of("GAS:40")), "a released gas must reach GAS_RELEASE, got " + released);
         } finally {
             AIRLESS.remove(pos);
             RELEASED.remove(pos);

@@ -1,5 +1,6 @@
 package com.hbm.inventory.fluid.trait;
 
+import com.hbm.api.environment.Environment;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.handler.radiation.ChunkRadiationManager;
@@ -12,7 +13,7 @@ import java.util.Map;
 /**
  * 1.7 {@code FluidTrait.onRelease}: {@code mB} of a fluid leaving a machine, handed to every trait that reacts to a
  * release. Of 1.7's traits only {@link FT_Polluting} and {@link FT_VentRadiation} do; the port's traits have no common
- * base, so the two are asked here directly.
+ * base, so the two are asked here directly. A gas is also reported to {@link Environment#GAS_RELEASE}.
  */
 public final class FluidTrait {
 
@@ -28,5 +29,7 @@ public final class FluidTrait {
         }
         FT_VentRadiation radiation = type.getTrait(FT_VentRadiation.class);
         if (radiation != null) ChunkRadiationManager.proxy.incrementRad(world, pos, mB * radiation.getRadPerMB());
+        // hbm-space FT_Gaseous.onFluidRelease: a released gas goes into the air, whatever the release type
+        Environment.releaseGas(world, pos, type, mB);
     }
 }

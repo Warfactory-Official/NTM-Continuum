@@ -12,6 +12,7 @@ import com.hbm.tileentity.TilePortShapes;
 import dev.golem.core.Ids;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.hook.Hook;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.SubLevels;
 import dev.golem.core.world.Teleports;
@@ -52,6 +53,14 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
     }
 
     public static boolean hasCrossingFuel() { return crossingFuel != null; }
+
+    /** Told each entity a teleporter sent, with the level and exit it went to. Plain HBM has no listener. */
+    @FunctionalInterface
+    public interface Sent {
+        void sent(Entity entity, ServerLevel destination, Vec3 exit);
+    }
+
+    public static final Hook<Sent> SENT = Hook.notifying();
 
     public long power;
     public @Nullable GlobalPos target;
@@ -104,6 +113,7 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
         if (tele.crossingTank != null) tele.setupFluidPorts(tele.getPorts());
         tele.updateAllPorts();
         tele.receivePower();
+        if (tele.crossingTank != null) tele.receiveFluid(tele.receivingTanks);
         if (tele.target != null) {
             List<Entity> entities = level.getEntities((Entity) null, new AABB(pos.getX() + 0.25, pos.getY(),
                     pos.getZ() + 0.25, pos.getX() + 0.75, pos.getY() + 2, pos.getZ() + 0.75));
@@ -143,6 +153,8 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
         var x = exit.pos().getX() + 0.5D;
         var y = exit.pos().getY() + 1.5D;
         var z = exit.pos().getZ() + 0.5D;
+        var arrival = new Vec3(x, y, z);
+        var destination = crossing ? level.getServer().getLevel(exit.dimension()) : (ServerLevel) entity.level();
 
         if (!crossing) {
             if (entity instanceof ServerPlayer player) player.teleportTo(x, y, z);
@@ -150,13 +162,11 @@ public class TileEntityMachineTeleporter extends TileEntityLoadedBase
                 entity.teleportTo(x, y, z);
                 Compat.syncPosition(entity);
             }
-        } else {
-            var destination = level.getServer().getLevel(exit.dimension());
-            if (destination != null) {
-                // Keep velocity and make the arrival's entity section visible and ticking, as the source crossing does.
-                Teleports.transferWithTicket(entity, destination, new Vec3(x, y, z));
-            }
+        } else if (destination != null) {
+            // Keep velocity and make the arrival's entity section visible and ticking, as the source crossing does.
+            Teleports.transferWithTicket(entity, destination, arrival);
         }
+        if (destination != null) for (Sent listener : SENT) listener.sent(entity, destination, arrival);
         entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ENDERMAN_TELEPORT,
                 SoundSource.BLOCKS, 1.0F, 1.0F);
         power -= consumption;

@@ -299,7 +299,10 @@ public final class Environment {
         void release(Level level, BlockPos pos, FluidType type, double mB);
     }
 
-    /** Notified for every gas HBM vents into the open air (gas flare, drain); plain HBM has no listener. */
+    /**
+     * Notified for every gas HBM lets into the open air: each {@code FluidTrait.onRelease} (any release type) and the
+     * gas flare's vent. Plain HBM has no listener.
+     */
     public static final Hook<GasRelease> GAS_RELEASE = Hook.notifying();
 
     /**
